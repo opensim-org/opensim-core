@@ -778,6 +778,7 @@ TEST_CASE("Eigen can use adouble scalar type in reverse mode.", "[autodiff]") {
         int success = jacobian(tag, 1, 1, &px, J);
         REQUIRE(success == 3);
         REQUIRE(J[0][0] == 3.0);
+        myfree(J);
     }
 
     SECTION("Now with Eigen.") {
@@ -796,6 +797,7 @@ TEST_CASE("Eigen can use adouble scalar type in reverse mode.", "[autodiff]") {
         int success = jacobian(tag, 1, 1, &px[0], J);
         REQUIRE(success == 3);
         REQUIRE(J[0][0] == 3.0);
+        myfree(J);
         //VectorXd v(2);
         //v[0] = 1;
         //v[1] = 5;

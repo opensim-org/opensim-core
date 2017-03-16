@@ -51,7 +51,11 @@ find_package(Adolc REQUIRED)
 #                         -DCMAKE_CXX_FLAGS="-std=c++11"
 # It seems like CMake doesn't know how to specify the C++11 standard flag for
 # LLVM Clang (non-AppleClang), so we do it manually.
-#   TODO might want to modify other linker flags (e.g., SHARED, STATIC)?
+# However, Homebrew's ADOL-C and ColPack seem to be compiled with Homebrew's
+# GCC. If using ADOL-C and ColPack from Hoembrew, then it is best to build
+# this project using Homebrew's GCC as well:
+#    $ cmake <source-dir> -DCMAKE_C_COMPILER=/usr/local/bin/gcc-6 \
+#                         -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-6
 find_package(OpenMP)
 
 

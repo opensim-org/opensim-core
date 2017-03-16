@@ -55,6 +55,11 @@ Dexterous (capable of many things....)
 Names of animals...cheetah, etc.
 Names of famous researchers (Muybridge)
 
+DICOMO (direct collocation for musculoskeletal systems)
+DICOMU
+DICOMS
+
+
 add "printProblemInfo()" to display the values of variable bounds, the number
  of constraints, the number of dynamics whatever, etc. For debugging.
 
