@@ -197,9 +197,9 @@ void testVisModel(Model& model, const std::string standard_filename)
     int same = fromFile.compare(fromModel);
 
     if (visualDebug) {
-        char c;
         std::cout << "press Enter (or Return) to continue" << std::endl;
-        std::cin >> c;
+        std::cin.get();
+        std::cout << "Continuing..." << std::endl;
     }
 
     ASSERT(same == 0, __FILE__, __LINE__, 
@@ -281,9 +281,9 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
              ++i;
     }
     if (visualDebug) {
-        char c;
         std::cout << "press Enter (or Return) to continue" << std::endl;
-        std::cin >> c;
+        std::cin.get();
+        std::cout << "Continuing..." << std::endl;
     }
     return true;
 }
