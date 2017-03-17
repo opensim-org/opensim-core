@@ -300,16 +300,47 @@ public:
     //}
 };
 
-void solveForTrajectory(const std::string& trajectoryFile) {
-    // Create a trajectory.
+std::pair<TimeSeriesTable, TimeSeriesTable> solveForTrajectory() {
+    // Solve a trajectory optimization problem.
+    // ----------------------------------------
     auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>();
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", 100);
     mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    std::string trajectoryFile = "testSingleMuscleDeGroote2016_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
+    // Save the trajectory with a header so that OpenSim can read it.
+    // --------------------------------------------------------------
+    // CSVFileAdapter expects an "endheader" line in the file.
+    auto fRead = std::ifstream(trajectoryFile);
+    std::string trajFileWithHeader = trajectoryFile;
+    trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
+                               "_with_header.csv");
+    auto fWrite = std::ofstream(trajFileWithHeader);
+    fWrite << "endheader" << std::endl;
+    std::string line;
+    while (std::getline(fRead, line)) fWrite << line << std::endl;
+    fRead.close();
+    fWrite.close();
+
+    // Create a table containing only the position of the mass.
+    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable kinematics;
+    kinematics.setColumnLabels({"joint/height/value",
+                                "joint/height/speed"});
+    const auto& position = ocpSolution.getDependentColumn("position");
+    const auto& speed = ocpSolution.getDependentColumn("speed");
+    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+        SimTK::RowVector row(2);
+        row[0] = position[iRow];
+        row[1] = speed[iRow];
+        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
+    }
+
     // Compute actual inverse dynamics moment, for debugging.
+    // ------------------------------------------------------
     TimeSeriesTable actualInvDyn;
     actualInvDyn.setColumnLabels({"inverse_dynamics"});
     DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
@@ -327,6 +358,8 @@ void solveForTrajectory(const std::string& trajectoryFile) {
     }
     CSVFileAdapter::write(actualInvDyn,
                           "DEBUG_testLiftingMass_actualInvDyn.csv");
+
+    return {ocpSolution, kinematics};
 }
 
 OpenSim::Model buildLiftingMassModel() {
@@ -361,40 +394,14 @@ OpenSim::Model buildLiftingMassModel() {
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
 // initial guess.
 void testLiftingMassMuscleRedundancySolverNoGuess(
-        const std::string& trajectoryFile) {
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
+    const auto& ocpSolution = data.first;
+    const auto& kinematics = data.second;
 
     // Build a similar OpenSim model.
     // ------------------------------
     Model model = buildLiftingMassModel();
     model.finalizeFromProperties();
-
-    // Create a kinematics trajectory.
-    // -------------------------------
-    // CSVFileAdapter expects an "endheader" line in the file.
-    auto fRead = std::ifstream(trajectoryFile);
-    std::string trajFileWithHeader = trajectoryFile;
-    trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
-                               "_with_header.csv");
-    auto fWrite = std::ofstream(trajFileWithHeader);
-    fWrite << "endheader" << std::endl;
-    std::string line;
-    while (std::getline(fRead, line)) fWrite << line << std::endl;
-    fRead.close();
-    fWrite.close();
-
-    // Create a table containing only the position of the mass.
-    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
-    TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
-    const auto& position = ocpSolution.getDependentColumn("position");
-    const auto& speed = ocpSolution.getDependentColumn("speed");
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
-        SimTK::RowVector row(2);
-        row[0] = position[iRow];
-        row[1] = speed[iRow];
-        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
-    }
 
     // Create the MuscleRedundancySolver.
     // ----------------------------------
@@ -476,17 +483,19 @@ void testLiftingMassMuscleRedundancySolverNoGuess(
                      "norm_fiber_velocity", 0.04);
 }
 
-//void testLiftingMassStaticOptimization(const std::string& trajectoryFile) {
-//
-//}
+void testLiftingMassStaticOptimization(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
+    const auto& ocpSolution = data.first;
+    const auto& kinematics = data.second;
+
+
+}
 
 int main() {
-    std::string trajectoryFile = "testSingleMuscleDeGroote2016_trajectory.csv";
     SimTK_START_TEST("testSingleMuscleDeGroote2016");
-        solveForTrajectory(trajectoryFile);
-        SimTK_SUBTEST1(testLiftingMassMuscleRedundancySolverNoGuess,
-                       trajectoryFile);
-        //SimTK_SUBTEST1(testLiftingMassStaticOptimization, trajectoryFile);
+        auto data = solveForTrajectory();
+        SimTK_SUBTEST1(testLiftingMassMuscleRedundancySolverNoGuess, data);
+        //SimTK_SUBTEST1(testLiftingMassStaticOptimization, data);
     SimTK_END_TEST();
 }
 

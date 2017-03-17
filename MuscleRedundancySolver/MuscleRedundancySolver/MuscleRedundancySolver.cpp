@@ -73,12 +73,12 @@ public:
             _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
-        _optimal_force.resize(_numCoordActuators);
+        _optimalForce.resize(_numCoordActuators);
         int i_act = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
             if (!actuator.get_appliesForce()) continue;
-            _optimal_force[i_act] = actuator.getOptimalForce();
+            _optimalForce[i_act] = actuator.getOptimalForce();
         }
 
 
@@ -181,7 +181,7 @@ public:
         // CoordinateActuators.
         // --------------------
         for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
-            genForce[0] += _optimal_force[i_act] * controls[i_act];
+            genForce[0] += _optimalForce[i_act] * controls[i_act];
         }
 
         // Muscles.
@@ -311,7 +311,7 @@ private:
     // TODO std::vector<Eigen::SparseMatrixXd> moment arms.
 
     // CoordinateActuator optimal forces.
-    Eigen::VectorXd _optimal_force;
+    Eigen::VectorXd _optimalForce;
 
     // De Groote muscles.
     std::vector<DeGroote2016Muscle<T>> _muscles;

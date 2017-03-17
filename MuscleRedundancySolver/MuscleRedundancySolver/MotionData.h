@@ -42,7 +42,7 @@ public:
                      Eigen::MatrixXd& desiredMoments,
                      Eigen::MatrixXd& muscleTendonLengths) const;
 private:
-    const OpenSim::TimeSeriesTable& _kinematicsData;
+    // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
     double _finalTime;
     GCVSplineSet _inverseDynamics;

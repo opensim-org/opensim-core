@@ -33,7 +33,7 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
 MotionData::MotionData(const OpenSim::Model& model,
            const OpenSim::TimeSeriesTable& kinematicsData,
            const double& lowpassCutoffJointMoments) :
-        _kinematicsData(kinematicsData),
+        // TODO _kinematicsData(kinematicsData),
         _initialTime(kinematicsData.getIndependentColumn().front()),
         _finalTime(kinematicsData.getIndependentColumn().back()) {
 
@@ -160,8 +160,7 @@ void MotionData::interpolate(const Eigen::VectorXd& times,
     desiredMoments.resize(_inverseDynamics.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
         for (size_t i_dof = 0; i_dof < size_t(_inverseDynamics.getSize());
-             ++i_dof)
-        {
+             ++i_dof) {
             const double value = _inverseDynamics[i_dof].calcValue(
                     SimTK::Vector(1, times[i_time]));
             desiredMoments(i_dof, i_time) = value;
