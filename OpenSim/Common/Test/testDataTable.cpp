@@ -193,6 +193,13 @@ int main() {
         }
     }
 
+    // Append columns to DataTable.
+    table.removeDependentsMetaDataForKey("column-index");
+    table.appendColumn("6", {0, 1, 2, 3, 4});
+    table.appendColumn("7", std::vector<double>{0, 1, 2, 3, 4});
+
+    // ASSERT(table.getNumRows() == 5 && table.getNumColumns() == 7);
+
     const auto& tab_metadata_ref = table.getTableMetaData();
     if(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() 
        != 600)
