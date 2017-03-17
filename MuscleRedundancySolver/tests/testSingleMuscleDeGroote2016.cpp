@@ -300,178 +300,189 @@ public:
     //}
 };
 
-void testLiftingMassAgainstGravity()
-{
-    std::string trajectoryFile = "testSingleMuscleDeGroote2016_trajectory.csv";
-    {
-        // Create a trajectory.
-        auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>();
-        ocp->print_description();
-        mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
-                                                      "ipopt", 100);
-        mesh::OptimalControlSolution ocp_solution = dircol.solve();
-        ocp_solution.write(trajectoryFile);
+void solveForTrajectory(const std::string& trajectoryFile) {
+    // Create a trajectory.
+    auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>();
+    ocp->print_description();
+    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+                                                  "ipopt", 100);
+    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    ocp_solution.write(trajectoryFile);
 
-        // Compute actual inverse dynamics moment.
-        TimeSeriesTable actualInvDyn;
-        actualInvDyn.setColumnLabels({"inverse_dynamics"});
-        DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
-                                          ocp->optimal_fiber_length,
-                                          ocp->tendon_slack_length,
-                                          ocp->pennation_angle_at_optimal,
-                                          ocp->max_contraction_velocity);
-        for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
-            const auto& musTenLength = ocp_solution.states(0, iTime);
-            const auto& normFiberLength = ocp_solution.states(3, iTime);
-            double tendonForce;
-            muscle.calcTendonForce(musTenLength, normFiberLength, tendonForce);
-            actualInvDyn.appendRow(ocp_solution.time(iTime),
-                                   SimTK::RowVector(1, -tendonForce));
-        }
-        CSVFileAdapter::write(actualInvDyn,
-                              "DEBUG_testLiftingMass_actualInvDyn.csv");
+    // Compute actual inverse dynamics moment, for debugging.
+    TimeSeriesTable actualInvDyn;
+    actualInvDyn.setColumnLabels({"inverse_dynamics"});
+    DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
+                                      ocp->optimal_fiber_length,
+                                      ocp->tendon_slack_length,
+                                      ocp->pennation_angle_at_optimal,
+                                      ocp->max_contraction_velocity);
+    for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
+        const auto& musTenLength = ocp_solution.states(0, iTime);
+        const auto& normFiberLength = ocp_solution.states(3, iTime);
+        double tendonForce;
+        muscle.calcTendonForce(musTenLength, normFiberLength, tendonForce);
+        actualInvDyn.appendRow(ocp_solution.time(iTime),
+                               SimTK::RowVector(1, -tendonForce));
     }
-
-    // Reproduce the trajectory.
-    {
-        // Build a similar OpenSim model.
-        // ------------------------------
-        DeGroote2016MuscleLiftMinTime ocp;
-        Model model;
-        model.setName("hanging_muscle");
-
-        // First, we need to build a similar OpenSim model.
-        model.set_gravity(SimTK::Vec3(ocp.g, 0, 0));
-        auto* body = new Body("body", ocp.mass,
-                              SimTK::Vec3(0), SimTK::Inertia(0));
-        model.addComponent(body);
-
-        // Allows translation along x.
-        auto* joint = new SliderJoint("joint", model.getGround(), *body);
-        auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-        coord.setName("height");
-        model.addComponent(joint);
-
-        auto* actu = new Millard2012EquilibriumMuscle();
-        actu->setName("actuator");
-        actu->set_max_isometric_force(ocp.max_isometric_force);
-        actu->set_optimal_fiber_length(ocp.optimal_fiber_length);
-        actu->set_tendon_slack_length(ocp.tendon_slack_length);
-        actu->set_pennation_angle_at_optimal(ocp.pennation_angle_at_optimal);
-        actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-        actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
-        model.addComponent(actu);
-
-        model.finalizeFromProperties();
-
-        // Create a kinematics trajectory.
-        // -------------------------------
-        // CSVFileAdapter expects an "endheader" line in the file.
-        auto fRead = std::ifstream(trajectoryFile);
-        std::string trajFileWithHeader = trajectoryFile;
-        trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
-                                   "_with_header.csv");
-        auto fWrite = std::ofstream(trajFileWithHeader);
-        fWrite << "endheader" << std::endl;
-        std::string line;
-        while (std::getline(fRead, line)) fWrite << line << std::endl;
-        fRead.close();
-        fWrite.close();
-
-        // Create a table containing only the position of the mass.
-        TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
-        TimeSeriesTable kinematics;
-        kinematics.setColumnLabels({"joint/height/value"});
-        const auto& position = ocpSolution.getDependentColumn("position");
-        for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
-            kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow],
-                                 SimTK::RowVector(1, position[iRow]));
-        }
-
-        // Create the MuscleRedundancySolver.
-        // ----------------------------------
-        MuscleRedundancySolver mrs;
-        mrs.setModel(model);
-        mrs.setKinematicsData(kinematics);
-        // Without filtering, the moments have high frequency content,
-        // probably related to unfiltered generalized coordinates and getting
-        // accelerations from a spline fit.
-        mrs.set_lowpass_cutoff_frequency_for_joint_moments(80);
-        // TODO is the filtering necessary if we have reserve actuators?
-        mrs.set_create_reserve_actuators(0.001);
-        MuscleRedundancySolver::Solution solution = mrs.solve();
-        solution.write("testSingleMuscleDeGroote2016_mrs");
-
-        // Compare the solution to the initial trajectory optimization solution.
-        // ---------------------------------------------------------------------
-        // TODO the reserve actuators are used far more than they should be,
-        // at the start of the motion. This might be a result of the
-        // filtering of inverse dynamics moments, combined with the spike
-        // in fiber velocity from the initial trajectory optimization.
-        auto interp = [](const TimeSeriesTable& actualTable,
-                         const TimeSeriesTable& expectedTable,
-                         const std::string& expectedColumnLabel) ->
-                SimTK::Vector {
-            const auto& actualTime = actualTable.getIndependentColumn();
-            // Interpolate the expected values based on `actual`'s time.
-            const auto& expectedTime = expectedTable.getIndependentColumn();
-            const auto& expectedCol =
-                    expectedTable.getDependentColumn(expectedColumnLabel);
-            // Create a linear function for interpolation.
-            PiecewiseLinearFunction expectedFunc(expectedTable.getNumRows(),
-                                                 expectedTime.data(),
-                                                 &expectedCol[0]);
-            SimTK::Vector expected(actualTable.getNumRows());
-            for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-                const auto& time = actualTime[i];
-                expected[i] = expectedFunc.calcValue(SimTK::Vector(1, time));
-            }
-            return expected;
-        };
-        // Compare each element.
-        auto compare = [&interp](const TimeSeriesTable& actualTable,
-                                 const TimeSeriesTable& expectedTable,
-                                 const std::string& expectedColumnLabel,
-                                 double tol) {
-            // For this problem, there's only 1 column in this table.
-            const auto& actual = actualTable.getDependentColumnAtIndex(0);
-            SimTK::Vector expected = interp(actualTable, expectedTable,
-                                            expectedColumnLabel);
-            //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-            //    std::cout << "DEBUG " << actual[i] << " " << expected[i]
-            //            << std::endl;
-            //}
-            SimTK_TEST_EQ_TOL(actual, expected, tol);
-        };
-        // A weaker check.
-        auto root_mean_square = [&interp](
-                const TimeSeriesTable& actualTable,
-                const TimeSeriesTable& expectedTable,
-                const std::string& expectedColumnLabel,
-                double tol) {
-            const auto& actual = actualTable.getDependentColumnAtIndex(0);
-            SimTK::Vector expected = interp(actualTable, expectedTable,
-                                            expectedColumnLabel);
-            SimTK_TEST((actual - expected).normRMS() < tol);
-        };
-
-        // The states match better than the controls.
-        // The rationale for the tolerances: as tight as they could be for the
-        // test to pass.
-        compare(solution.activation, ocpSolution, "activation", 0.04);
-        compare(solution.norm_fiber_length, ocpSolution, "norm_fiber_length",
-                0.01);
-
-        // We use a weaker check for the controls; they don't match as well.
-        root_mean_square(solution.excitation, ocpSolution, "excitation", 0.08);
-        root_mean_square(solution.norm_fiber_velocity, ocpSolution,
-                         "norm_fiber_velocity", 0.04);
-    }
+    CSVFileAdapter::write(actualInvDyn,
+                          "DEBUG_testLiftingMass_actualInvDyn.csv");
 }
 
+OpenSim::Model buildLiftingMassModel() {
+    DeGroote2016MuscleLiftMinTime ocp;
+    Model model;
+    model.setName("hanging_muscle");
+
+    // First, we need to build a similar OpenSim model.
+    model.set_gravity(SimTK::Vec3(ocp.g, 0, 0));
+    auto* body = new Body("body", ocp.mass,
+                          SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("height");
+    model.addComponent(joint);
+
+    auto* actu = new Millard2012EquilibriumMuscle();
+    actu->setName("actuator");
+    actu->set_max_isometric_force(ocp.max_isometric_force);
+    actu->set_optimal_fiber_length(ocp.optimal_fiber_length);
+    actu->set_tendon_slack_length(ocp.tendon_slack_length);
+    actu->set_pennation_angle_at_optimal(ocp.pennation_angle_at_optimal);
+    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addComponent(actu);
+    return model;
+}
+
+// Reproduce the trajectory using the MuscleRedundancy, without specifying an
+// initial guess.
+void testLiftingMassMuscleRedundancySolverNoGuess(
+        const std::string& trajectoryFile) {
+
+    // Build a similar OpenSim model.
+    // ------------------------------
+    Model model = buildLiftingMassModel();
+    model.finalizeFromProperties();
+
+    // Create a kinematics trajectory.
+    // -------------------------------
+    // CSVFileAdapter expects an "endheader" line in the file.
+    auto fRead = std::ifstream(trajectoryFile);
+    std::string trajFileWithHeader = trajectoryFile;
+    trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
+                               "_with_header.csv");
+    auto fWrite = std::ofstream(trajFileWithHeader);
+    fWrite << "endheader" << std::endl;
+    std::string line;
+    while (std::getline(fRead, line)) fWrite << line << std::endl;
+    fRead.close();
+    fWrite.close();
+
+    // Create a table containing only the position of the mass.
+    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable kinematics;
+    kinematics.setColumnLabels({"joint/height/value"});
+    const auto& position = ocpSolution.getDependentColumn("position");
+    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow],
+                             SimTK::RowVector(1, position[iRow]));
+    }
+
+    // Create the MuscleRedundancySolver.
+    // ----------------------------------
+    MuscleRedundancySolver mrs;
+    mrs.setModel(model);
+    mrs.setKinematicsData(kinematics);
+    // Without filtering, the moments have high frequency content,
+    // probably related to unfiltered generalized coordinates and getting
+    // accelerations from a spline fit.
+    mrs.set_lowpass_cutoff_frequency_for_joint_moments(80);
+    // TODO is the filtering necessary if we have reserve actuators?
+    mrs.set_create_reserve_actuators(0.001);
+    MuscleRedundancySolver::Solution solution = mrs.solve();
+    solution.write("testSingleMuscleDeGroote2016_mrs");
+
+    // Compare the solution to the initial trajectory optimization solution.
+    // ---------------------------------------------------------------------
+    // TODO the reserve actuators are used far more than they should be,
+    // at the start of the motion. This might be a result of the
+    // filtering of inverse dynamics moments, combined with the spike
+    // in fiber velocity from the initial trajectory optimization.
+    auto interp = [](const TimeSeriesTable& actualTable,
+                     const TimeSeriesTable& expectedTable,
+                     const std::string& expectedColumnLabel) ->
+            SimTK::Vector {
+        const auto& actualTime = actualTable.getIndependentColumn();
+        // Interpolate the expected values based on `actual`'s time.
+        const auto& expectedTime = expectedTable.getIndependentColumn();
+        const auto& expectedCol =
+                expectedTable.getDependentColumn(expectedColumnLabel);
+        // Create a linear function for interpolation.
+        PiecewiseLinearFunction expectedFunc(expectedTable.getNumRows(),
+                                             expectedTime.data(),
+                                             &expectedCol[0]);
+        SimTK::Vector expected(actualTable.getNumRows());
+        for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+            const auto& time = actualTime[i];
+            expected[i] = expectedFunc.calcValue(SimTK::Vector(1, time));
+        }
+        return expected;
+    };
+    // Compare each element.
+    auto compare = [&interp](const TimeSeriesTable& actualTable,
+                             const TimeSeriesTable& expectedTable,
+                             const std::string& expectedColumnLabel,
+                             double tol) {
+        // For this problem, there's only 1 column in this table.
+        const auto& actual = actualTable.getDependentColumnAtIndex(0);
+        SimTK::Vector expected = interp(actualTable, expectedTable,
+                                        expectedColumnLabel);
+        //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+        //    std::cout << "DEBUG " << actual[i] << " " << expected[i]
+        //            << std::endl;
+        //}
+        SimTK_TEST_EQ_TOL(actual, expected, tol);
+    };
+    // A weaker check.
+    auto root_mean_square = [&interp](
+            const TimeSeriesTable& actualTable,
+            const TimeSeriesTable& expectedTable,
+            const std::string& expectedColumnLabel,
+            double tol) {
+        const auto& actual = actualTable.getDependentColumnAtIndex(0);
+        SimTK::Vector expected = interp(actualTable, expectedTable,
+                                        expectedColumnLabel);
+        SimTK_TEST((actual - expected).normRMS() < tol);
+    };
+
+    // The states match better than the controls.
+    // The rationale for the tolerances: as tight as they could be for the
+    // test to pass.
+    compare(solution.activation, ocpSolution, "activation", 0.04);
+    compare(solution.norm_fiber_length, ocpSolution, "norm_fiber_length",
+            0.01);
+
+    // We use a weaker check for the controls; they don't match as well.
+    root_mean_square(solution.excitation, ocpSolution, "excitation", 0.08);
+    root_mean_square(solution.norm_fiber_velocity, ocpSolution,
+                     "norm_fiber_velocity", 0.04);
+}
+
+//void testLiftingMassStaticOptimization(const std::string& trajectoryFile) {
+//
+//}
+
 int main() {
+    std::string trajectoryFile = "testSingleMuscleDeGroote2016_trajectory.csv";
     SimTK_START_TEST("testSingleMuscleDeGroote2016");
-        SimTK_SUBTEST(testLiftingMassAgainstGravity);
+        solveForTrajectory(trajectoryFile);
+        SimTK_SUBTEST1(testLiftingMassMuscleRedundancySolverNoGuess,
+                       trajectoryFile);
+        //SimTK_SUBTEST1(testLiftingMassStaticOptimization, trajectoryFile);
     SimTK_END_TEST();
 }
 
