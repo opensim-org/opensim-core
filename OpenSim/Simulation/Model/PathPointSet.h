@@ -38,8 +38,8 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API PathPointSet : public Set<PathPoint> {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<PathPoint>);
+class OSIMSIMULATION_API PathPointSet : public Set<AbstractPathPoint> {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<AbstractPathPoint>);
 
 private:
     void setNull();

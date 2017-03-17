@@ -74,7 +74,7 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
     }
 
     // Call base class now assuming _node has been corrected for current version
-    PathPoint::updateFromXMLNode(node, versionNumber);
+    Super::updateFromXMLNode(node, versionNumber);
 }
 
 //_____________________________________________________________________________

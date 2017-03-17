@@ -120,7 +120,7 @@ double OpenSimContext::getMuscleLength(Muscle& m) {
   return m.getLength(*_configState);
 }
 
-const Array<PathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
+const Array<AbstractPathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
   return m.getGeometryPath().getCurrentPath(*_configState);
 }
 
@@ -174,10 +174,13 @@ void OpenSimContext::setZCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
     return;
 }
 
-void OpenSimContext::setBody(PathPoint& pathPoint, PhysicalFrame&  newBody) {
-   pathPoint.changeBodyPreserveLocation(*_configState, newBody);
-   this->recreateSystemAfterSystemExists();
-   realizeVelocity();
+void OpenSimContext::setBody(AbstractPathPoint& pathPoint, PhysicalFrame&  newBody) {
+    PathPoint* spp = dynamic_cast<PathPoint*>(&pathPoint);
+    if (spp) {
+        spp->changeBodyPreserveLocation(*_configState, newBody);
+        this->recreateSystemAfterSystemExists();
+        realizeVelocity();
+    }
 }
 
 
@@ -220,7 +223,7 @@ void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
     return;
 }
 
-bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint) {
+bool OpenSimContext::replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint) {
    bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
    recreateSystemAfterSystemExists();
    realizeVelocity();
@@ -228,11 +231,13 @@ bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint&
    return ret;
 }
 
-void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
-    mp.setLocation(*_configState, i, d);
-  _configState->invalidateAll(SimTK::Stage::Position);
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-    return;
+void OpenSimContext::setLocation(AbstractPathPoint& mp, int i, double d) {
+    PathPoint* spp = dynamic_cast<PathPoint*>(&mp);
+    if (spp) {
+        spp->setLocationCoord(*_configState, i, d);
+        _configState->invalidateAll(SimTK::Stage::Position);
+        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    }
 }
 
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
@@ -257,7 +262,7 @@ bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
   return ret;
 }
 
-bool OpenSimContext::isActivePathPoint(PathPoint& mp) {
+bool OpenSimContext::isActivePathPoint(AbstractPathPoint& mp) {
   return mp.isActive(*_configState);
 };
 

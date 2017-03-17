@@ -62,17 +62,21 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
     //=============================================================================
     OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
     // 
-    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
+        SimTK::Stage::Velocity);
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
-    OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet, "The set of points defining the path");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet,
+        "The set of points defining the path");
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet, "The wrap objects that are associated with this path");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet,
+        "The wrap objects that are associated with this path");
     
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3, "Used to initialize the color cache variable");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3,
+        "Used to initialize the color cache variable");
 
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
@@ -100,8 +104,8 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    PathPoint* addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody);
-    PathPoint* appendNewPathPoint(const std::string& proposedName, 
+    AbstractPathPoint* addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody);
+    AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
         PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody);
     bool canDeletePathPoint( int aIndex);
     bool deletePathPoint(const SimTK::State& s, int aIndex);
@@ -109,7 +113,7 @@ public:
     void moveUpPathWrap(const SimTK::State& s, int aIndex);
     void moveDownPathWrap(const SimTK::State& s, int aIndex);
     void deletePathWrap(const SimTK::State& s, int aIndex);
-    bool replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint); 
+    bool replacePathPoint(const SimTK::State& s, AbstractPathPoint* aOldPathPoint, AbstractPathPoint* aNewPathPoint); 
 
     //--------------------------------------------------------------------------
     // GET
@@ -143,7 +147,7 @@ public:
     void setLength( const SimTK::State& s, double length) const;
     double getPreScaleLength( const SimTK::State& s) const;
     void setPreScaleLength( const SimTK::State& s, double preScaleLength);
-    const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
+    const Array<AbstractPathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
     double getLengtheningSpeed(const SimTK::State& s) const;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
@@ -205,12 +209,12 @@ private:
 
     void computePath(const SimTK::State& s ) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
-    void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
+    void applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path ) const;
     double calcPathLengthChange(const SimTK::State& s, const WrapObject& wo, 
                                 const WrapResult& wr, 
-                                const Array<PathPoint*>& path) const; 
+                                const Array<AbstractPathPoint*>& path) const; 
     double calcLengthAfterPathComputation
-       (const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
+       (const SimTK::State& s, const Array<AbstractPathPoint*>& currentPath) const;
 
     void constructProperties();
     void namePathPoints(int aStartingIndex);
