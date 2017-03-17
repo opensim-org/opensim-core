@@ -46,6 +46,7 @@ private:
     double _initialTime;
     double _finalTime;
     GCVSplineSet _inverseDynamics;
+    GCVSplineSet _muscleTendonLengths;
 };
 
 } // namespace OpenSim

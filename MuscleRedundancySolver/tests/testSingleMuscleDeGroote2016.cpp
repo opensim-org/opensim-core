@@ -385,11 +385,15 @@ void testLiftingMassMuscleRedundancySolverNoGuess(
     // Create a table containing only the position of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value"});
+    kinematics.setColumnLabels({"joint/height/value",
+                                "joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
+    const auto& speed = ocpSolution.getDependentColumn("speed");
     for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
-        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow],
-                             SimTK::RowVector(1, position[iRow]));
+        SimTK::RowVector row(2);
+        row[0] = position[iRow];
+        row[1] = speed[iRow];
+        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
     }
 
     // Create the MuscleRedundancySolver.

@@ -9,17 +9,20 @@
 
 using namespace OpenSim;
 
-/// Given a table, create a spline for each colum in `labels`, and provide all
+/// Given a table, create a spline for each column in `labels`, and provide all
 /// of these splines in a set.
+/// If `labels` is empty, all columns are splined.
 /// This function exists because GCVSplineSet's constructor takes a Storage,
 /// not a TimeSeriesTable.
 GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
-                                const std::vector<std::string>& labels,
+                                const std::vector<std::string>& labels = {},
                                 int degree = 5,
                                 double errorVariance = 0.0) {
     GCVSplineSet set;
     const auto& time = table.getIndependentColumn();
-    for (const auto& label : labels) {
+    auto labelsToUse = labels;
+    if (labelsToUse.empty()) labelsToUse = table.getColumnLabels();
+    for (const auto& label : labelsToUse) {
         const auto& column = table.getDependentColumn(label);
         set.adoptAndAppend(new GCVSpline(degree, column.size(), time.data(),
                                          &column[0], label, errorVariance));
@@ -34,6 +37,8 @@ MotionData::MotionData(const OpenSim::Model& model,
         _initialTime(kinematicsData.getIndependentColumn().front()),
         _finalTime(kinematicsData.getIndependentColumn().back()) {
 
+    // Inverse dynamics.
+    // =================
     Model modelForID(model);
     modelForID.finalizeFromProperties();
     // Disable all actuators in the model, as we don't want them to
@@ -95,6 +100,51 @@ MotionData::MotionData(const OpenSim::Model& model,
         forceTrajectorySto.lowpassIIR(cutoffFrequency);
     }
     _inverseDynamics = GCVSplineSet(5, &forceTrajectorySto);
+
+
+    // Muscle analysis.
+    // ================
+    // Form a StatesTrajectory.
+    // ------------------------
+    // (TODO The parameter to this constructor should be a StatesTrajectory).
+    Storage statesSto;
+    OpenSim::Array<std::string> statesLabels("time", 1); // first column label.
+    for (const auto& label : kinematicsData.getColumnLabels()) {
+        statesLabels.append(label);
+    }
+    statesSto.setColumnLabels(statesLabels);
+    for (size_t i_time = 0; i_time < kinematicsData.getNumRows(); ++i_time) {
+        const auto& time = kinematicsData.getIndependentColumn()[i_time];
+        SimTK::Vector row = kinematicsData.getRowAtIndex(i_time).transpose();
+        statesSto.append(time, row);
+    }
+    auto statesTraj = StatesTrajectory::createFromStatesStorage(modelForID,
+                                                                statesSto,
+                                                                true, false);
+
+    // Compute muscle quantities and spline the data.
+    // ----------------------------------------------
+    TimeSeriesTable muscleTendonLengths;
+    // TODO get list of muscles from MuscleRedundancySolver.
+    const auto muscleList = modelForID.getComponentList<Muscle>();
+    std::vector<std::string> musclePathNames;
+    for (const auto& muscle : muscleList) {
+        musclePathNames.push_back(muscle.getAbsolutePathName());
+    }
+    muscleTendonLengths.setColumnLabels(musclePathNames);
+    SimTK::RowVector row(musclePathNames.size());
+    for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
+        const auto& state = statesTraj[i_time];
+        modelForID.realizePosition(state);
+        // TODO handle disabled muscles.
+        int i_muscle = 0;
+        for (const auto& muscle : muscleList) {
+            row[i_muscle] = muscle.getLength(state);
+            i_muscle++;
+        }
+        muscleTendonLengths.appendRow(state.getTime(), row);
+    }
+    _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
 }
 
 void MotionData::interpolate(const Eigen::VectorXd& times,
@@ -117,24 +167,20 @@ void MotionData::interpolate(const Eigen::VectorXd& times,
             desiredMoments(i_dof, i_time) = value;
         }
     }
-    mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
+    // mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
 
 
     // Muscle Analysis: muscle-tendon length.
     // --------------------------------------
     // TODO tailored to hanging mass: just use absolute value of the
     // coordinate value.
-    muscleTendonLengths.resize(1, times.size());
-    const auto& kinematics = _kinematicsData;
-    const auto& muscleTendonLengthColumn =
-            kinematics.getDependentColumn("joint/height/value");
-    GCVSpline muscleTendonLengthData(5, kinematics.getNumRows(),
-                                     &kinematics.getIndependentColumn()[0],
-                                     &muscleTendonLengthColumn[0],
-                                     "muscleTendonLength", 0);
+    muscleTendonLengths.resize(1 /* TODO num muscles */, times.size());
+    // The matrix is in column-major format.
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
-        muscleTendonLengths(0, i_mesh) =
-                std::abs(muscleTendonLengthData.calcValue(
-                        SimTK::Vector(1, times[i_mesh])));
+        SimTK::Vector time(1, times[i_mesh]);
+        for (int i_mus = 0; i_mus < 1; ++i_mus) {
+            muscleTendonLengths(i_mus, i_mesh) =
+                    std::abs(_muscleTendonLengths.get(i_mus).calcValue(time));
+        }
     }
 }
