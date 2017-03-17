@@ -548,33 +548,35 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         GeometryPath* geomPath = paths[i];
         const PathWrapSet& wrapSet = geomPath->getWrapSet();
         const PathPointSet& viaSet = geomPath->getPathPointSet();
-        Array<PathPoint*> activePathPoints = geomPath->getCurrentPath(si);
+        Array<AbstractPathPoint*> activePathPoints = geomPath->getCurrentPath(si);
 
-        PathPoint* orgPoint = &viaSet[0];
-        PathPoint* insPoint = &viaSet[viaSet.getSize()-1];
+        AbstractPathPoint* orgPoint = &viaSet[0];
+        AbstractPathPoint* insPoint = &viaSet[viaSet.getSize()-1];
 
         cableInfo.orgBodyName = orgPoint->getBody().getName();
-        cableInfo.orgLoc = orgPoint->getLocation();
+        cableInfo.orgLoc = orgPoint->getLocation(si);
         cableInfo.insBodyName =  insPoint->getBody().getName();
-        cableInfo.insLoc = insPoint->getLocation();
+        cableInfo.insLoc = insPoint->getLocation(si);
 
         int numVias = 0, numSurfs = 0;
         for (int j = 0; j < activePathPoints.getSize(); ++j) {
-            PathPoint* pp = activePathPoints[j];
-            cout << "pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+            AbstractPathPoint* pp = activePathPoints[j];
+            cout << "pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName()
+                << ", loc = " << pp->getLocation(si) << endl;
         }
 
         for (int j = 0; j < viaSet.getSize(); ++j) {
-            PathPoint* pp = &viaSet[j];
-            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName() << ", loc = " << pp->getLocation() << endl;
+            AbstractPathPoint* pp = &viaSet[j];
+            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName()
+                << ", loc = " << pp->getLocation(si) << endl;
         }
 
         // add vias to cableInfo
         for (int j = 1; j < viaSet.getSize()-1; ++j) { // skip first (origin) and last (insertion) points
-            const PathPoint& pp = viaSet[j];
+            const AbstractPathPoint& pp = viaSet[j];
             ObstacleInfo obs;
             obs.bodyName = pp.getBodyName();
-            obs.X_BS.setP(pp.getLocation());
+            obs.X_BS.setP(pp.getLocation(si));
             obs.wrapObjectPtr=NULL;
             obs.P_S.setToNaN(); // not used for viapoint
             obs.Q_S.setToNaN(); // not used for viapoint
@@ -608,7 +610,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         int obsIdx = 0;
         int viaPtIdx = 1; // skip first (origin) point
         for (int j = 1; j < activePathPoints.getSize()-1; ++j) { // skip first (origin) and last (insertion)
-            PathPoint* pp = activePathPoints[j];
+            AbstractPathPoint* pp = activePathPoints[j];
             if (*pp == viaSet[viaPtIdx]) {
                 viaPtIdx++;
                 obsIdx++;
@@ -617,14 +619,14 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             else { // next two path points should be a wrap point
                 for (int k = 0; k < wrapSet.getSize(); ++k) {
                     const Vec3& wrapStartPointLoc = wrapSet[k].getPreviousWrap().r1;
-                    if (!wrapStartPointLoc.isInf() && pp->getLocation().isNumericallyEqual(wrapStartPointLoc)) {
+                    if (!wrapStartPointLoc.isInf() && pp->getLocation(si).isNumericallyEqual(wrapStartPointLoc)) {
                         ObstacleInfo* obs = wrapObs[k];
                         obs->isActive = true;
                         // pp and next pp are wrap points
                         Transform X_SB = obs->X_BS.invert();
-                        PathPoint* pp_next = activePathPoints[++i]; // increment to next pp
-                        obs->P_S = X_SB*pp->getLocation();
-                        obs->Q_S = X_SB*pp_next->getLocation();
+                        AbstractPathPoint* pp_next = activePathPoints[++i]; // increment to next pp
+                        obs->P_S = X_SB*pp->getLocation(si);
+                        obs->Q_S = X_SB*pp_next->getLocation(si);
                         cableInfo.obstacles.insert(obsIdx++, *obs);
                         break;
                     }
@@ -643,13 +645,18 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         cableInfos.append(cableInfo);
 
-        cout << pathNames[i] << " path, num pts " << activePathPoints.getSize() << ", num vias = " << numVias << ", num surfs = " << numSurfs << endl;
+        cout << pathNames[i] << " path, num pts " << activePathPoints.getSize()
+            << ", num vias = " << numVias << ", num surfs = " << numSurfs << endl;
 
 
         // debugging
 
-        cout << "org" << " = " << orgPoint->getName() << " @ " << orgPoint->getBody().getName() << ", loc = " << orgPoint->getLocation() << endl;
-        cout << "ins" << " = " << insPoint->getName() << " @ " << insPoint->getBody().getName() << ", loc = " << insPoint->getLocation() << endl;
+        cout << "org" << " = " << orgPoint->getName() << " @ " << 
+            orgPoint->getBody().getName() << ", loc = " 
+            << orgPoint->getLocation(si) << endl;
+        cout << "ins" << " = " << insPoint->getName() << " @ " <<
+            insPoint->getBody().getName() << ", loc = " 
+            << insPoint->getLocation(si) << endl;
 
         for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
             ObstacleInfo oi = cableInfo.obstacles[j];
