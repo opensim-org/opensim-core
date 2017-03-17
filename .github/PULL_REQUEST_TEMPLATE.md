@@ -8,5 +8,5 @@ Fixes issue #<issue_number>
 
 ### CHANGELOG.md (choose one)
 
-- [ ] no need to update
-- [ ] updated
+- no need to update because...
+- updated...
