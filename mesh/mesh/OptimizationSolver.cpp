@@ -16,6 +16,6 @@ double OptimizationSolver::optimize(Eigen::VectorXd& variables) const
     // the initial guess based on the bounds.
     if (variables.size() == 0) {
         variables = m_problem->initial_guess_from_bounds();
-    }
+    } // else TODO make sure variables has the correct size.
     return optimize_impl(variables);
 }

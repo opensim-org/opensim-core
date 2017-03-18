@@ -1,17 +1,18 @@
+#include "GlobalStaticOptimizationSolver.h"
 
-#include "MuscleRedundancySolver.h"
 #include "DeGroote2016Muscle.h"
 #include "MotionData.h"
 
 #include <mesh.h>
+
 #include <OpenSim/OpenSim.h>
 
 #include <algorithm>
 
 using namespace OpenSim;
 
-void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
-{
+void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
+        const {
     auto write = [&](const TimeSeriesTable& table, const std::string& suffix)
     {
         if (table.getNumRows()) {
@@ -19,21 +20,18 @@ void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
                                            prefix + "_" + suffix + ".sto");
         }
     };
-    write(excitation, "excitation");
     write(activation, "activation");
-    write(norm_fiber_length, "norm_fiber_length");
-    write(norm_fiber_velocity, "norm_fiber_velocity");
     write(other_controls, "other_controls");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class MRSProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
+class GSOProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
 public:
-    MRSProblemSeparate(const MuscleRedundancySolver& mrs,
+    GSOProblemSeparate(const GlobalStaticOptimizationSolver& mrs,
                        const Model& model, const MotionData& motionData)
-            : mesh::OptimalControlProblemNamed<T>("MRS"),
+            : mesh::OptimalControlProblemNamed<T>("GSO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 
@@ -51,7 +49,7 @@ public:
             if (actuator.get_appliesForce() &&
                     !dynamic_cast<const Muscle*>(&actuator) &&
                     !dynamic_cast<const CoordinateActuator*>(&actuator)) {
-                throw std::runtime_error("[MRS] Only Muscles and "
+                throw std::runtime_error("[GSO] Only Muscles and "
                         "CoordinateActuators are currently supported but the"
                         " model contains an enabled "
                         + actuator.getConcreteClassName() + ". Either set "
@@ -87,19 +85,12 @@ public:
             if (!actuator.get_appliesForce()) continue;
 
             const auto& actuPath = actuator.getAbsolutePathName();
-            // Activation dynamics.
-            this->add_control(actuPath + "_excitation",
+
+            // TODO use activation bounds, not excitation bounds.
+            this->add_control(actuPath + "_activation",
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
-            // TODO use activation bounds, not excitation bounds.
-            this->add_state(actuPath + "_activation",
-                            {actuator.get_min_control(),
-                             actuator.get_max_control()});
 
-            // Fiber dynamics.
-            this->add_control(actuPath + "_norm_fiber_velocity", {-1, 1});
-            // These bounds come from simtk.org/projects/optcntrlmuscle.
-            this->add_state(actuPath + "_norm_fiber_length", {0.2, 1.8});
             this->add_path_constraint(
                     actuator.getAbsolutePathName() + "_equilibrium", 0);
 
@@ -135,45 +126,24 @@ public:
     void initialize_on_mesh(const Eigen::VectorXd& mesh) const override {
 
         // For caching desired joint moments.
-        auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
+        auto* mutableThis = const_cast<GSOProblemSeparate<T>*>(this);
 
+        // TODO precompute matrix A and vector b such that the mucsle-generated
+        // moments are A*a + b.
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         _motionData.interpolateNetMoments(times, mutableThis->_desiredMoments);
-        if (_numMuscles) {
-            _motionData.interpolateMuscleTendonLengths(times,
-                     mutableThis->_muscleTendonLengths);
-        }
+        _motionData.interpolateMuscleTendonLengths(times,
+                mutableThis->_muscleTendonLengths);
+        _motionData.interpolateMuscleTendonVelocities(times,
+                mutableThis->_muscleTendonVelocities);
     }
 
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
-        // Actuator dynamics.
-        // ==================
-        for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
-
-            // Unpack variables.
-            const T& excitation = controls[_numCoordActuators + 2 * i_act];
-            const T& activation = states[2 * i_act];
-            const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
-
-            // Activation dynamics.
-            _muscles[i_act].calcActivationDynamics(excitation, activation,
-                                                   derivatives[2 * i_act]);
-
-            // Fiber dynamics.
-            derivatives[2 * i_act + 1] =
-                    _muscles[i_act].get_max_contraction_velocity() * normFibVel;
-        }
-
-        // TODO std::cout << "DEBUG dynamics " << derivatives << std::endl;
-    }
     void path_constraints(unsigned i_mesh,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& states,
+                          const mesh::VectorX<T>& /*states*/,
                           const mesh::VectorX<T>& controls,
                           Eigen::Ref<mesh::VectorX<T>> constraints)
-            const override {
+    const override {
         // Actuator equilibrium.
         // =====================
 
@@ -191,18 +161,15 @@ public:
         // --------
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
             // Unpack variables.
-            const T& activation = states[2 * i_act];
-            const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
-            const T& normFibLen = states[2 * i_act + 1];
+            const T& activation = controls[_numCoordActuators + i_act];
 
-            // Get the total muscle-tendon length from the data.
+            // Get the total muscle-tendon length and velocity from the data.
             const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
+            const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
 
-            T normTenForce;
-            _muscles[i_act].calcEquilibriumResidual(activation, musTenLen,
-                                                    normFibLen, normFibVel,
-                                                    constraints[i_act],
-                                                    normTenForce);
+            const T normTenForce =
+                    _muscles[i_act].calcRigidTendonNormFiberForceAlongTendon(
+                            activation, musTenLen, musTenVel);
 
             // TODO use moment arms to take care of the sign.
             genForce[0] += -
@@ -224,35 +191,22 @@ public:
                        const mesh::VectorX<T>& /*states*/,
                        const mesh::VectorX<T>& controls,
                        T& integrand) const override {
-        // Use a map to skip over fiber velocities.
-        using ExcitationsVector = Eigen::Map<const mesh::VectorX<T>,
-        /* pointer alignment: Unaligned */   0,
-        /* pointer increment btn elements */ Eigen::InnerStride<2>>;
-        ExcitationsVector muscleExcit(controls.data() + _numCoordActuators,
-                                      _numMuscles);
-
-        integrand = controls.head(_numCoordActuators).squaredNorm()
-                  + muscleExcit.squaredNorm();
+        integrand = controls.squaredNorm();
     }
-    MuscleRedundancySolver::Solution interpret_solution(
-            const mesh::OptimalControlSolution& ocp_sol) const
-    {
+    GlobalStaticOptimizationSolver::Solution interpret_solution(
+            const mesh::OptimalControlSolution& ocp_sol) const {
 
-        MuscleRedundancySolver::Solution sol;
+        GlobalStaticOptimizationSolver::Solution sol;
         if (_numCoordActuators) {
             sol.other_controls.setColumnLabels(_otherControlsLabels);
         }
         if (_numMuscles) {
-            sol.excitation.setColumnLabels(_muscleLabels);
             sol.activation.setColumnLabels(_muscleLabels);
-            sol.norm_fiber_length.setColumnLabels(_muscleLabels);
-            sol.norm_fiber_velocity.setColumnLabels(_muscleLabels);
         }
 
         for (int i_time = 0; i_time < ocp_sol.time.cols(); ++i_time) {
             const auto& time = ocp_sol.time[i_time];
             const auto& controls = ocp_sol.controls.col(i_time);
-            const auto& states = ocp_sol.states.col(i_time);
 
             // Other controls.
             // ---------------
@@ -268,34 +222,15 @@ public:
             // Muscle-related quantities.
             // --------------------------
             if (_numMuscles == 0) continue;
-            SimTK::RowVector excitation(_numMuscles,
-                                        1 /* stride: skip over fiber vel. */,
+            SimTK::RowVector activation(_numMuscles,
                                         controls.data() + _numCoordActuators,
                                         true /* makes this a view */);
-            sol.excitation.appendRow(time, excitation);
-
-            SimTK::RowVector activation(_numMuscles,
-                                        1 /* stride: skip over fiber length */,
-                                        states.data(),
-                                        true /* makes this a view */);
             sol.activation.appendRow(time, activation);
-
-            SimTK::RowVector fiber_length(_numMuscles,
-                                          1 /* stride: skip over activation */,
-                                          states.data() + 1,
-                                          true /* makes this a view */);
-            sol.norm_fiber_length.appendRow(time, fiber_length);
-
-            SimTK::RowVector fiber_velocity(_numMuscles,
-                                       1 /* stride: skip over excit. */,
-                                       controls.data() + _numCoordActuators + 1,
-                                       true /* makes this a view */);
-            sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
         }
         return sol;
     }
 private:
-    const MuscleRedundancySolver& _mrs;
+    const GlobalStaticOptimizationSolver& _mrs;
     Model _model;
     const MotionData& _motionData;
     double _initialTime = SimTK::NaN;
@@ -311,6 +246,7 @@ private:
     // Motion data to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLengths;
+    Eigen::MatrixXd _muscleTendonVelocities;
     // TODO std::vector<Eigen::SparseMatrixXd> moment arms.
 
     // CoordinateActuator optimal forces.
@@ -320,14 +256,15 @@ private:
     std::vector<DeGroote2016Muscle<T>> _muscles;
 };
 
-MuscleRedundancySolver::MuscleRedundancySolver() {
+GlobalStaticOptimizationSolver::GlobalStaticOptimizationSolver() {
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_create_reserve_actuators(-1);
     //constructProperty_model_file("");
     //constructProperty_kinematics_file("");
 }
 
-MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
+// TODO move this to a "InverseMuscleSolver" base class.
+GlobalStaticOptimizationSolver::Solution GlobalStaticOptimizationSolver::solve() {
 
     // Process experimental data.
     // --------------------------
@@ -343,11 +280,11 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
         OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-            "Invalid value (" + std::to_string(optimalForce)
-            + ") for create_reserve_actuators; should be -1 or positive.");
+                "Invalid value (" + std::to_string(optimalForce)
+                + ") for create_reserve_actuators; should be -1 or positive.");
 
         std::cout << "Adding reserve actuators with an optimal force of "
-                  << optimalForce << "..." << std::endl;
+                << optimalForce << "..." << std::endl;
 
         SimTK::State state = model.initSystem();
         std::vector<std::string> coordNames;
@@ -377,7 +314,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Solve the optimal control problem.
     // ----------------------------------
-    auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
+    auto ocp = std::make_shared<GSOProblemSeparate<adouble>>(*this,
                                                              model,
                                                              motionData);
     ocp->print_description();
@@ -388,6 +325,6 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // Return the solution.
     // --------------------
     // TODO remove
-    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
+    ocp_solution.write("GlobalStaticOptimizationSolver_OCP_solution.csv");
     return ocp->interpret_solution(ocp_solution);
 }

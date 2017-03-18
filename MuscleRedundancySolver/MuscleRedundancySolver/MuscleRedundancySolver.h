@@ -122,11 +122,6 @@ public:
     Solution solve();
 
 private:
-    /// Perform inverse dynamics on the provided kinematics data to provide
-    /// the net joint moments/forces that are to be achieved in the
-    /// optimization. This also filters the computed inverse dynamics
-    /// moments/forces.
-    GCVSplineSet computeInverseDynamics() const;
     Model _model;
     // TODO make this a StatesTrajectory?
     TimeSeriesTable _kinematics;

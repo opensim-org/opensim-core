@@ -36,6 +36,9 @@ Automatically generate a nice initial guess:
     //OptimalControlSolution solution = dircol.solve(initial_guess);
 
 
+Test problems with scenarios where the tendon would buckle (MTU length <
+slack length)
+
 Name for project: OptoMusk (optimizing musculoskeletal)
 NMSOpt
 Neuromusculoskeletal Optimization
