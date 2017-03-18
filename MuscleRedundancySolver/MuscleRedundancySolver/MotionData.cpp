@@ -186,7 +186,7 @@ void MotionData::interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
                      "Final time is beyond the end of the kinematics data.");
 
-    const size_t numMuscles = 1; // TODO
+    const int numMuscles = 1; // TODO
     muscleTendonLengths.resize(numMuscles, times.size());
     // The matrix is in column-major format.
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
@@ -205,7 +205,7 @@ void MotionData::interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
                      "Final time is beyond the end of the kinematics data.");
 
-    const size_t numMuscles = 1; // TODO
+    const int numMuscles = 1; // TODO
     muscleTendonVelocities.resize(numMuscles, times.size());
     // The matrix is in column-major format.
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
