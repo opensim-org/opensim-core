@@ -30,23 +30,34 @@ public:
     double getInitialTime() const { return _initialTime; }
     /// Get the last time in the kinematicsData table.
     double getFinalTime() const { return _finalTime; }
-    /// Interpolate the desired net joint moments and the muscle-tendon
-    /// lengths at the provided times.
+    /// Interpolate the desired net joint moments at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
     /// @param[in,out] desiredMoments Inverse dynamics net joint moments
-    ///     Dimensions: degrees of freedom by time.
+    ///     Dimensions: degrees of freedom x time.
+    void interpolateNetMoments(const Eigen::VectorXd& times,
+                     Eigen::MatrixXd& desiredMoments) const;
+    /// Interpolate the muscle-tendon lengths at the provided times.
+    /// @param times The times at which to interpolate; must be between the
+    ///     initial and final times.
     /// @param[in,out] muscleTendonLengths Expressed in meters.
-    ///     Dimensions: muscles by time.
-    void interpolate(const Eigen::VectorXd& times,
-                     Eigen::MatrixXd& desiredMoments,
+    ///     Dimensions: muscles x time.
+    void interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
                      Eigen::MatrixXd& muscleTendonLengths) const;
+    /// Interpolate the muscle-tendon velocities at the provided times.
+    /// @param times The times at which to interpolate; must be between the
+    ///     initial and final times.
+    /// @param[in,out] muscleTendonVelocities Expressed in meters/second.
+    ///     Dimensions: muscles x time.
+    void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
+                     Eigen::MatrixXd& muscleTendonVelocities) const;
 private:
     // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
     double _finalTime;
     GCVSplineSet _inverseDynamics;
     GCVSplineSet _muscleTendonLengths;
+    GCVSplineSet _muscleTendonVelocities;
 };
 
 } // namespace OpenSim

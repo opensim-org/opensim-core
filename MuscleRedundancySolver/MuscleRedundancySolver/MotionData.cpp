@@ -121,42 +121,52 @@ MotionData::MotionData(const OpenSim::Model& model,
     auto statesTraj = StatesTrajectory::createFromStatesStorage(modelForID,
                                                                 statesSto,
                                                                 true, false);
+    // TODO give an error if the states do not contain generalized speeds.
 
     // Compute muscle quantities and spline the data.
     // ----------------------------------------------
     TimeSeriesTable muscleTendonLengths;
+    TimeSeriesTable muscleTendonVelocities;
     // TODO get list of muscles from MuscleRedundancySolver.
     const auto muscleList = modelForID.getComponentList<Muscle>();
     std::vector<std::string> musclePathNames;
     for (const auto& muscle : muscleList) {
         musclePathNames.push_back(muscle.getAbsolutePathName());
     }
-    muscleTendonLengths.setColumnLabels(musclePathNames);
-    SimTK::RowVector row(musclePathNames.size());
-    for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
-        const auto& state = statesTraj[i_time];
-        modelForID.realizePosition(state);
-        // TODO handle disabled muscles.
-        int i_muscle = 0;
-        for (const auto& muscle : muscleList) {
-            row[i_muscle] = muscle.getLength(state);
-            i_muscle++;
+    if (!musclePathNames.empty()) {
+        // TODO actually check which muscles are active.
+        muscleTendonLengths.setColumnLabels(musclePathNames);
+        muscleTendonVelocities.setColumnLabels(musclePathNames);
+        SimTK::RowVector rowMTL(musclePathNames.size());
+        SimTK::RowVector rowMTV(musclePathNames.size());
+        for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
+            const auto& state = statesTraj[i_time];
+            modelForID.realizeVelocity(state);
+
+            // TODO handle disabled muscles.
+            int i_muscle = 0;
+            for (const auto& muscle : muscleList) {
+                rowMTL[i_muscle] = muscle.getLength(state);
+                rowMTV[i_muscle] = muscle.getLengtheningSpeed(state);
+                i_muscle++;
+            }
+            muscleTendonLengths.appendRow(state.getTime(), rowMTL);
+            muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
         }
-        muscleTendonLengths.appendRow(state.getTime(), row);
+        _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
+        // TODO Separately splining muscleTendonLengths and velocities might lead to
+        // inconsistency.
+        _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
     }
-    _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
 }
 
-void MotionData::interpolate(const Eigen::VectorXd& times,
-                 Eigen::MatrixXd& desiredMoments,
-                 Eigen::MatrixXd& muscleTendonLengths) const {
+void MotionData::interpolateNetMoments(const Eigen::VectorXd& times,
+                                       Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
                      "Final time is beyond the end of the kinematics data.");
 
-    // Evaluate inverse dynamics result at all mesh points.
-    // ----------------------------------------------------
     desiredMoments.resize(_inverseDynamics.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
         for (size_t i_dof = 0; i_dof < size_t(_inverseDynamics.getSize());
@@ -166,20 +176,43 @@ void MotionData::interpolate(const Eigen::VectorXd& times,
             desiredMoments(i_dof, i_time) = value;
         }
     }
-    // mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
+     mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
+}
 
+void MotionData::interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
+        Eigen::MatrixXd& muscleTendonLengths) const {
+    OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
+                     "Initial time starts before the kinematics data.");
+    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
+                     "Final time is beyond the end of the kinematics data.");
 
-    // Muscle Analysis: muscle-tendon length.
-    // --------------------------------------
-    // TODO tailored to hanging mass: just use absolute value of the
-    // coordinate value.
-    muscleTendonLengths.resize(1 /* TODO num muscles */, times.size());
+    const size_t numMuscles = 1; // TODO
+    muscleTendonLengths.resize(numMuscles, times.size());
     // The matrix is in column-major format.
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
         SimTK::Vector time(1, times[i_mesh]);
-        for (int i_mus = 0; i_mus < 1; ++i_mus) {
+        for (int i_mus = 0; i_mus < numMuscles; ++i_mus) {
             muscleTendonLengths(i_mus, i_mesh) =
-                    std::abs(_muscleTendonLengths.get(i_mus).calcValue(time));
+                    _muscleTendonLengths.get(i_mus).calcValue(time);
+        }
+    }
+}
+
+void MotionData::interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
+        Eigen::MatrixXd& muscleTendonVelocities) const {
+    OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
+                     "Initial time starts before the kinematics data.");
+    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
+                     "Final time is beyond the end of the kinematics data.");
+
+    const size_t numMuscles = 1; // TODO
+    muscleTendonVelocities.resize(numMuscles, times.size());
+    // The matrix is in column-major format.
+    for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
+        SimTK::Vector time(1, times[i_mesh]);
+        for (int i_mus = 0; i_mus < numMuscles; ++i_mus) {
+            muscleTendonVelocities(i_mus, i_mesh) =
+                    _muscleTendonVelocities.get(i_mus).calcValue(time);
         }
     }
 }

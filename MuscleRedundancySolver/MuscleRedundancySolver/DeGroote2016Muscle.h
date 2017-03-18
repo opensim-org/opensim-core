@@ -7,6 +7,11 @@
 /// materials), and is partially based on the implementation at
 /// http://simtk.org/projects/optcntrlmuscle.
 /// This class template is not part of OpenSim.
+// TODO unify the function signatures (return types).
+// TODO splitting calcEquilibriumResidual() into calcNorm*() functions caused
+// testSingleMuscleDeGroote2016()'s trajectory optimization and
+// MuscleRedundancySolver to increase duration from 9 seconds to 13 seconds
+// (in Debug).
 template <typename T>
 class DeGroote2016Muscle {
 public:
@@ -21,7 +26,8 @@ public:
             _tendon_slack_length(tendon_slack_length),
             _pennation_angle_at_optimal(pennation_angle_at_optimal),
             _max_contraction_velocity(max_contraction_velocity) {
-        _fiber_width = optimal_fiber_length*sin(pennation_angle_at_optimal);
+        _norm_fiber_width = sin(pennation_angle_at_optimal);
+        _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
 
     double get_max_isometric_force() const { return _max_isometric_force; }
@@ -55,28 +61,9 @@ public:
         tendonForce = _max_isometric_force
                 * calcNormTendonForce(musTenLength, normFiberLength);
     }
-    void calcActivationDynamics(const T& excitation, const T& activation,
-                                T& activationDot) const {
-        static const double actTimeConst   = 0.015;
-        static const double deactTimeConst = 0.060;
-        static const double tanhSteepness  = 0.1;
-        //     f = 0.5 tanh(b(e - a))
-        //     z = 0.5 + 1.5a
-        // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
-        const T timeConstFactor = 0.5 + 1.5 * activation;
-        const T tempAct = 1.0 / (actTimeConst * timeConstFactor);
-        const T tempDeact = timeConstFactor / deactTimeConst;
-        const T f = 0.5 * tanh(tanhSteepness * (excitation - activation));
-        const T timeConst = tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
-        activationDot = timeConst * (excitation - activation);
-    }
-    void calcEquilibriumResidual(const T& musTenLength,
-                                 const T& activation,
-                                 const T& normFiberLength,
-                                 const T& normFiberVelocity,
-                                 T& residual, T& normTendonForce) const {
-        // Curve parameters.
-        // -----------------
+    T calcNormFiberForce(const T& activation,
+                         const T& normFiberLength,
+                         const T& normFiberVelocity) const {
         // Active force-length curve.
         static const double b11 =  0.815;
         static const double b21 =  1.055;
@@ -101,27 +88,12 @@ public:
         static const double d3 = -0.374;
         static const double d4 =  0.886;
 
-        // Intermediate quantities.
-        // ------------------------
-        const T fibLength = normFiberLength*_optimal_fiber_length;
-        // Tendon length.
-        // lT = lMT - sqrt(lM^2 - w^2)
-        const T tenLength = musTenLength
-                - sqrt(fibLength*fibLength - _fiber_width*_fiber_width);
-        const T cosPenn = (musTenLength - tenLength)/fibLength;
-
-        // Curves/multipliers.
-        // -------------------
-        // Tendon force-length curve.
-        normTendonForce = calcNormTendonForce(musTenLength,
-                                              normFiberLength);
-
         // Active force-length curve.
         // Sum of 3 gaussians.
         const T activeForceLenMult =
                 gaussian(normFiberLength, b11, b21, b31, b41) +
-                        gaussian(normFiberLength, b12, b22, b32, b42) +
-                        gaussian(normFiberLength, b13, b23, b33, b43);
+                gaussian(normFiberLength, b12, b22, b32, b42) +
+                gaussian(normFiberLength, b13, b23, b33, b43);
 
         // Passive force-length curve.
         const T passiveFibForce = (exp(kPE*(normFiberLength - 1)/e0) - 1)/
@@ -132,23 +104,80 @@ public:
         const T tempLogArg = tempV + sqrt(pow(tempV, 2) + 1);
         const T forceVelMult = d1*log(tempLogArg) + d4;
 
-        // Equilibrium constraint.
-        // -----------------------
-        const T normFibForce =
-                activation*activeForceLenMult*forceVelMult
-                        + passiveFibForce;
-        const T normFibForceAlongTen = normFibForce*cosPenn;
+        return activation*activeForceLenMult*forceVelMult + passiveFibForce;
+    }
+    T calcNormFiberForceAlongTendon(const T& activation,
+                                    const T& normFiberLength,
+                                    const T& normFiberVelocity) const {
+        const T normFiberForce = calcNormFiberForce(activation,
+                                                    normFiberLength,
+                                                    normFiberVelocity);
+        const T cosPenn = sqrt(normFiberLength*normFiberLength -
+                _norm_fiber_width*_norm_fiber_width) / normFiberLength;
+        return normFiberForce * cosPenn;
+    }
+    T calcRigidTendonNormFiberForceAlongTendon(const T& activation,
+                                               const T& musTenLength,
+                                               const T& musTenVelocity) const {
+        // TODO there is too much repetition of calculations surrounding
+        // lengths and pennation.
+        // TODO can we use temporaries (adub etc) to speed up calculation?
+        const T fiberLengthAlongTendon = musTenLength - _tendon_slack_length;
+        const T fiberLength = sqrt(pow(musTenLength - _tendon_slack_length, 2)
+                                           + pow(_fiber_width, 2));
+        const T normFiberLength = fiberLength / _optimal_fiber_length;
+        const T cosPenn = fiberLengthAlongTendon / fiberLength;
+        // lMT = lT + lM cos(alpha) -> differentiate:
+        // vMT = vM cos(alpha) - lM alphaDot sin(alpha) (1)
+        // w = lM sin(alpha) -> differentiate:
+        // 0 = lMdot sin(alpha) + lM alphaDot cos(alpha) ->
+        // alphaDot = -vM sin(alpha) / (lM cos(alpha)) -> plug into (1)
+        // vMT = vM cos(alpha) + vM sin^2(alpha) / cos(alpha)
+        // vMT = vM (cos^2(alpha) + sin^2(alpha)) / cos(alpha)
+        // vM = vMT cos(alpha)
+        const T fiberVelocity = musTenVelocity * cosPenn;
+        // TODO cache max_contraction_velocity * opt_fib_len
+        const T normFiberVelocity = fiberVelocity /
+                (_max_contraction_velocity * _optimal_fiber_length);
+        // TODO what about buckling the tendon (MTU length < slack length)?
+        return calcNormFiberForceAlongTendon(activation, normFiberLength,
+                                             normFiberVelocity);
+    }
+    void calcActivationDynamics(const T& excitation, const T& activation,
+                                T& activationDot) const {
+        static const double actTimeConst   = 0.015;
+        static const double deactTimeConst = 0.060;
+        static const double tanhSteepness  = 0.1;
+        //     f = 0.5 tanh(b(e - a))
+        //     z = 0.5 + 1.5a
+        // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
+        const T timeConstFactor = 0.5 + 1.5 * activation;
+        const T tempAct = 1.0 / (actTimeConst * timeConstFactor);
+        const T tempDeact = timeConstFactor / deactTimeConst;
+        const T f = 0.5 * tanh(tanhSteepness * (excitation - activation));
+        const T timeConst = tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
+        activationDot = timeConst * (excitation - activation);
+    }
+    void calcEquilibriumResidual(const T& activation,
+                                 const T& musTenLength,
+                                 const T& normFiberLength,
+                                 const T& normFiberVelocity,
+                                 T& residual, T& normTendonForce) const {
+        const T normFibForceAlongTen = calcNormFiberForceAlongTendon(
+                activation, normFiberLength, normFiberVelocity);
+
+        normTendonForce = calcNormTendonForce(musTenLength, normFiberLength);
 
         residual = normFibForceAlongTen - normTendonForce;
     }
     /// This alternative does not return normalized tendon force.
-    void calcEquilibriumResidual(const T& musTenLength,
-                                 const T& activation,
+    void calcEquilibriumResidual(const T& activation,
+                                 const T& musTenLength,
                                  const T& normFiberLength,
                                  const T& normFiberVelocity,
                                  T& residual) const {
         T normTendonForce;
-        calcEquilibriumResidual(musTenLength, activation, normFiberLength,
+        calcEquilibriumResidual(activation, musTenLength, normFiberLength,
                                 normFiberVelocity, residual, normTendonForce);
     }
 
@@ -165,6 +194,7 @@ private:
     double _tendon_slack_length = NaN;
     double _pennation_angle_at_optimal = NaN;
     double _max_contraction_velocity = NaN;
+    double _norm_fiber_width = NaN;
     double _fiber_width = NaN;
 };
 
