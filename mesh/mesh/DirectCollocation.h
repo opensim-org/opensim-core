@@ -3,21 +3,16 @@
 
 #include "common.h"
 #include "OptimizationProblem.h"
+#include "OptimalControlProblem.h"
 #include <Eigen/Dense>
 #include <adolc/adolc.h>
 #include <fstream>
 
 namespace mesh {
 
-template<typename T>
-class OptimalControlProblem;
-
 class OptimizationSolver;
 
-struct OptimalControlSolution {
-    Eigen::RowVectorXd time;
-    Eigen::MatrixXd states;
-    Eigen::MatrixXd controls;
+struct OptimalControlSolution : public OptimalControlIterate {
     std::vector<std::string> state_names;
     std::vector<std::string> control_names;
     double objective;
@@ -80,9 +75,31 @@ public:
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
                             const unsigned& num_mesh_points = 20);
+    /// Solve the problem using an initial guess that is based on the bounds
+    /// on the variables.
     OptimalControlSolution solve() const;
-    // Solution solve(const OptimalControlIterate& initial_guess);
+    /// Solve the problem using the provided initial guess. See
+    /// OptimalControlProblemNamed_::set_state_guess() and
+    /// OptimalControlProblemNamed_::set_control_guess() for help with
+    /// creating an initial guess.
+    ///
+    /// Example:
+    /// @code
+    /// auto ocp = std::make_shared<MyOCP>();
+    /// ...
+    /// OptimalControlIterate guess;
+    /// guess.time.setLinSpaced(N, 0, 1);
+    /// ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, 1));
+    /// ...
+    /// OptimalControlSolution solution = dircol.solve(guess);
+    /// @endcode
+    /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
+    // TODO make it even easier to create an initial guess; e.g., creating a
+    // guess template.
+    OptimalControlSolution solve(const OptimalControlIterate& initial_guess)
+            const;
 private:
+    OptimalControlSolution solve_internal(Eigen::VectorXd& variables) const;
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Transcription<T>> m_transcription;
@@ -124,16 +141,21 @@ namespace transcription {
 template<typename T>
 class Transcription : public OptimizationProblem<T> {
 public:
-    // TODO do we still need this type?
-    struct Trajectory {
-        Eigen::RowVectorXd time;
-        Eigen::MatrixXd states;
-        Eigen::MatrixXd controls;
-    };
+    // TODO do we still need this type? Use OptimalControlIterate instead.
+    //struct Trajectory {
+    //    Eigen::RowVectorXd time;
+    //    Eigen::MatrixXd states;
+    //    Eigen::MatrixXd controls;
+    //};
 
+    /// Create a vector of optimization variables (for the generic
+    /// optimization problem) from an states and controls.
+    virtual Eigen::VectorXd
+    construct_iterate(const OptimalControlIterate&) const = 0;
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
-    virtual Trajectory interpret_iterate(const Eigen::VectorXd& x) const = 0;
+    virtual OptimalControlIterate
+    deconstruct_iterate(const Eigen::VectorXd& x) const = 0;
 };
 
 template<typename T>
@@ -159,9 +181,12 @@ public:
     void constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
 
+    /// This function checks the dimensions of the matrices in traj.
+    Eigen::VectorXd
+    construct_iterate(const OptimalControlIterate& traj) const override;
     // TODO can this have a generic implementation in the Transcription class?
-    typename Transcription<T>::Trajectory interpret_iterate(
-            const Eigen::VectorXd& x) const override;
+    OptimalControlIterate
+    deconstruct_iterate(const Eigen::VectorXd& x) const override;
 
 protected:
     /// Eigen::Map is a view on other data, and allows "slicing" so that we can
@@ -176,16 +201,29 @@ protected:
     /// The "outer" stride is the distance between columns and "inner" stride is
     /// the distance between elements of each column (for column-major format).
     template<typename S>
-    using TrajectoryView = Eigen::Map<const MatrixX<S>,
+    using TrajectoryViewConst = Eigen::Map<const MatrixX<S>,
+                                           Eigen::Unaligned,
+                                           Eigen::OuterStride<Eigen::Dynamic>>;
+    template<typename S>
+    using TrajectoryView = Eigen::Map<MatrixX<S>,
                                       Eigen::Unaligned,
                                       Eigen::OuterStride<Eigen::Dynamic>>;
     // TODO move to a single "make_variables_view"
     template<typename S>
-    TrajectoryView<S>
+    TrajectoryViewConst<S>
     make_states_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
-    TrajectoryView<S>
+    TrajectoryViewConst<S>
     make_controls_trajectory_view(const VectorX<S>& variables) const;
+    template<typename S>
+    // TODO find a way to avoid these duplicated functions, using SFINAE.
+    /// This provides a view to which you can write.
+    TrajectoryView<S>
+    make_states_trajectory_view(VectorX<S>& variables) const;
+    /// This provides a view to which you can write.
+    template<typename S>
+    TrajectoryView<S>
+    make_controls_trajectory_view(VectorX<S>& variables) const;
 
     using StatesView = Eigen::Map<VectorX<T>>;
     using ControlsView = Eigen::Map<VectorX<T>>;
@@ -208,8 +246,8 @@ protected:
                 PathConstraintsTrajectoryView(nullptr, 0, 0);
     };
 
-    ConstraintsView make_constraints_view(Eigen::Ref<VectorX<T>> constraints)
-    const;
+    ConstraintsView
+    make_constraints_view(Eigen::Ref<VectorX<T>> constraints) const;
 
 private:
 

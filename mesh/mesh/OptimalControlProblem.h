@@ -6,6 +6,12 @@
 
 namespace mesh {
 
+struct OptimalControlIterate {
+    Eigen::RowVectorXd time;
+    Eigen::MatrixXd states;
+    Eigen::MatrixXd controls;
+};
+
 template <typename T>
 class OptimalControlProblem {
 public:
@@ -72,7 +78,6 @@ public:
     virtual void endpoint_cost(const T& final_time,
                                const VectorX<T>& final_states,
                                T& cost) const;
-    // TODO change time to T.
     virtual void integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
@@ -158,6 +163,8 @@ public:
     OptimalControlProblemNamed() = default;
     OptimalControlProblemNamed(const std::string& name) : m_name(name) {}
 
+    /// @name Assemble the problem
+    /// @{
     void set_time(const InitialBounds& initial_time,
             const FinalBounds& final_time)
     {
@@ -185,6 +192,120 @@ public:
     void add_path_constraint(const std::string& name, const Bounds& bounds) {
         m_path_constraint_infos.push_back({name, bounds});
     }
+    /// @}
+
+    /// @name Helpers for setting an initial guess
+    /// @{
+    /// Set a guess for the trajectory of a single state variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a state variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.states` is empty, this function will set
+    /// its dimensions appropriately according to the provided `guess.time`;
+    /// otherwise, `guess.states` must have the correct dimensions (number of
+    /// states x mesh points).
+    /// @param[in,out] guess
+    ///     The row of the states matrix associated with the provided name
+    ///     is set to value.
+    /// @param[in] name
+    ///     Name of the state variable (provided in add_state()).
+    /// @param[in] value
+    ///     This must have the same number of columns as `guess.time` and
+    ///     `guess.states`.
+    void set_state_guess(OptimalControlIterate& guess,
+                         const std::string& name,
+                         const Eigen::VectorXd& value) {
+        // Check for errors.
+        if (guess.time.size() == 0) {
+            throw std::runtime_error("[mesh] guess.time is empty.");
+        }
+        if (value.size() != guess.time.size()) {
+            throw std::runtime_error("[mesh] Expected value to have " +
+                    std::to_string(guess.time.size()) + " elements, but it has"
+                    " " + std::to_string(value.size()) + ".");
+        }
+        if (guess.states.rows() == 0) {
+            guess.states.resize(m_state_infos.size(), guess.time.size());
+        } else if (size_t(guess.states.rows()) != m_state_infos.size() ||
+                   guess.states.cols() != guess.time.size()) {
+           throw std::runtime_error("[mesh] Expected guess.states to have "
+                   "dimensions " + std::to_string(m_state_infos.size()) + " x "
+                   + std::to_string(guess.time.size()) + ", but dimensions are "
+                   + std::to_string(guess.states.rows()) + " x "
+                   + std::to_string(guess.states.cols()) + ".");
+        }
+
+        // Find the state index.
+        size_t state_index = 0;
+        // TODO store state infos in a map.
+        for (const auto& info : m_state_infos) {
+            if (info.name == name) break;
+            state_index++;
+        }
+        if (state_index == m_state_infos.size()) {
+            throw std::runtime_error(
+                    "[mesh] State " + name + " does not exist.");
+        }
+
+        // Set the guess.
+        guess.states.row(state_index) = value;
+    }
+    /// Set a guess for the trajectory of a single control variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a control variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.control` is empty, this function will set
+    /// its dimensions appropriately according to the provided `guess.time`;
+    /// otherwise, `guess.control` must have the correct dimensions (number of
+    /// controls x mesh points).
+    /// @param[in,out] guess
+    ///     The row of the controls matrix associated with the provided name
+    ///     is set to value.
+    /// @param[in] name
+    ///     Name of the control variable (provided in add_control()).
+    /// @param[in] value
+    ///     This must have the same number of columns as `guess.time` and
+    ///     `guess.controls`.
+    void set_control_guess(OptimalControlIterate& guess,
+                         const std::string& name,
+                         const Eigen::VectorXd& value) {
+        // Check for errors.
+        if (guess.time.size() == 0) {
+            throw std::runtime_error("[mesh] guess.time is empty.");
+        }
+        if (value.size() != guess.time.size()) {
+            throw std::runtime_error("[mesh] Expected value to have " +
+                    std::to_string(guess.time.size()) + " elements, but it has"
+                    " " + std::to_string(value.size()) + ".");
+        }
+        if (guess.controls.rows() == 0) {
+            guess.controls.resize(m_control_infos.size(), guess.time.size());
+        } else if (size_t(guess.controls.rows()) != m_control_infos.size() ||
+                guess.controls.cols() != guess.time.size()) {
+            throw std::runtime_error("[mesh] Expected guess.controls to have "
+                "dimensions " + std::to_string(m_control_infos.size()) + " x "
+                + std::to_string(guess.time.size()) + ", but dimensions are "
+                + std::to_string(guess.controls.rows()) + " x "
+                + std::to_string(guess.controls.cols()) + ".");
+        }
+
+        // Find the control index.
+        size_t control_index = 0;
+        // TODO store control infos in a map.
+        for (const auto& info : m_control_infos) {
+            if (info.name == name) break;
+            control_index++;
+        }
+        if (control_index == m_control_infos.size()) {
+            throw std::runtime_error(
+                    "[mesh] Control " + name + " does not exist.");
+        }
+
+        // Set the guess.
+        guess.controls.row(control_index) = value;
+    }
+    /// @}
+
+    /// @name Get information about the problem
+    /// @{
     int num_states() const override final { return m_state_infos.size(); }
     int num_controls() const override final { return m_control_infos.size(); }
     int num_path_constraints() const override final
@@ -250,6 +371,8 @@ public:
                  << endl;
         }
     }
+    /// @}
+private:
     void bounds(double& initial_time_lower, double& initial_time_upper,
                 double& final_time_lower, double& final_time_upper,
                 Eigen::Ref<Eigen::VectorXd> states_lower,

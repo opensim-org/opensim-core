@@ -48,10 +48,29 @@ template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve() const
 {
     Eigen::VectorXd variables;
+    return solve_internal(variables);
+}
+
+template<typename T>
+OptimalControlSolution DirectCollocationSolver<T>::solve(
+        const OptimalControlIterate& initial_guess) const
+{
+    // TODO support interpolating the guess so that it does not need to be on
+    // the same mesh as specified for the optimal control problem.
+
+    // TODO make sure the dimensions all make sense. num rows/cols.
+    Eigen::VectorXd variables =
+            m_transcription->construct_iterate(initial_guess);
+    return solve_internal(variables);
+}
+
+template<typename T>
+OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
+        Eigen::VectorXd& variables) const
+{
     double obj_value = m_optsolver->optimize(variables);
-    // TODO
-    using Trajectory = typename transcription::LowOrder<T>::Trajectory;
-    Trajectory traj = m_transcription->interpret_iterate(variables);
+    OptimalControlIterate traj =
+            m_transcription->deconstruct_iterate(variables);
     OptimalControlSolution solution;
     solution.time = traj.time;
     solution.states = traj.states;
@@ -61,7 +80,6 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
     solution.control_names = m_ocproblem->get_control_names();
     return solution;
 }
-
 namespace transcription {
 
 template<typename T>
@@ -303,14 +321,52 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
 }
 
 template<typename T>
-typename Transcription<T>::Trajectory LowOrder<T>::
-interpret_iterate(const Eigen::VectorXd& x) const
+Eigen::VectorXd LowOrder<T>::
+construct_iterate(const OptimalControlIterate& traj) const
+{
+    // Check for errors with dimensions.
+    if (traj.time.size() != m_num_mesh_points) {
+        throw std::runtime_error("[mesh] Expected time to have " +
+                std::to_string(m_num_mesh_points) + " elements, but it has " +
+                std::to_string(traj.time.size()) + ".");
+    }
+    if (traj.states.rows() != m_num_states ||
+            traj.states.cols() != m_num_mesh_points) {
+        throw std::runtime_error("[mesh] Expected states to have dimensions " +
+                std::to_string(m_num_states) + " x " +
+                std::to_string(m_num_mesh_points) + " but it has dimensions " +
+                std::to_string(traj.states.rows()) + " x " +
+                std::to_string(traj.states.cols()) + ".");
+    }
+    if (traj.controls.rows() != m_num_controls ||
+            traj.controls.cols() != m_num_mesh_points) {
+        throw std::runtime_error("[mesh] Expected controls to have dimensions "
+                + std::to_string(m_num_controls) + " x " +
+                std::to_string(m_num_mesh_points) + " but it has dimensions " +
+                std::to_string(traj.controls.rows()) + " x " +
+                std::to_string(traj.controls.cols()) + ".");
+    }
+
+    Eigen::VectorXd iterate(this->get_num_variables());
+    // Initial and final time.
+    iterate[0] = traj.time[0];
+    iterate[1] = traj.time.tail<1>()[0];
+    // Create mutable views. This will probably fail miserably if the
+    // dimensions do not match.
+    this->make_states_trajectory_view(iterate) = traj.states;
+    this->make_controls_trajectory_view(iterate) = traj.controls;
+    return iterate;
+}
+
+template<typename T>
+OptimalControlIterate LowOrder<T>::
+deconstruct_iterate(const Eigen::VectorXd& x) const
 {
     const double& initial_time = x[0];
     const double& final_time = x[1];
-    typename Transcription<T>::Trajectory traj;
+    OptimalControlIterate traj;
     traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
-            initial_time, final_time);
+                                              initial_time, final_time);
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
@@ -320,30 +376,59 @@ interpret_iterate(const Eigen::VectorXd& x) const
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
+typename LowOrder<T>::template TrajectoryViewConst<S>
 LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
-    return TrajectoryView<S>(
+    return {
             // Pointer to the start of the states.
             x.data() + m_num_time_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
-            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls));
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls)};
 }
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
+typename LowOrder<T>::template TrajectoryViewConst<S>
 LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
-    return TrajectoryView<S>(
+    return {
             // Start of controls for first mesh interval.
             x.data() + m_num_time_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.
-            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls));
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls)};
+}
+
+// TODO avoid the duplication with the above.
+template<typename T>
+template<typename S>
+typename LowOrder<T>::template TrajectoryView<S>
+LowOrder<T>::make_states_trajectory_view(VectorX<S>& x) const
+{
+    return {
+            // Pointer to the start of the states.
+            x.data() + m_num_time_variables,
+            m_num_states,      // Number of rows.
+            m_num_mesh_points, // Number of columns.
+            // Distance between the start of each column.
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls)};
+}
+
+template<typename T>
+template<typename S>
+typename LowOrder<T>::template TrajectoryView<S>
+LowOrder<T>::make_controls_trajectory_view(VectorX<S>& x) const
+{
+    return {
+            // Start of controls for first mesh interval.
+            x.data() + m_num_time_variables + m_num_states,
+            m_num_controls,          // Number of rows.
+            m_num_mesh_points,       // Number of columns.
+            // Distance between the start of each column; same as above.
+            Eigen::OuterStride<Eigen::Dynamic>(m_num_states + m_num_controls)};
 }
 
 template<typename T>
@@ -360,13 +445,13 @@ LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
                &constr[d + m_num_dynamics_constraints] : nullptr;
     //const unsigned pc =  // path
     // constraints.
-    return ConstraintsView(StatesView(&constr[is], m_num_states),
+    return {StatesView(&constr[is], m_num_states),
             ControlsView(&constr[ic], m_num_controls),
             StatesView(&constr[fs], m_num_states),
             ControlsView(&constr[fc], m_num_controls),
             DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
-                                          m_num_mesh_points));
+                                          m_num_mesh_points)};
 }
 
 } // namespace transcription
