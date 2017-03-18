@@ -17,6 +17,7 @@ mesh_add_test(test_sliding_mass_minimum_time mesh)
 mesh_add_test(test_analytic_optimal_control_solutions mesh)
 mesh_add_test(test_double_pendulum mesh)
 mesh_add_test(test_path_constraints mesh)
+mesh_add_test(test_optimal_control_initial_guess mesh)
 if(TOMU_WITH_SNOPT)
     mesh_add_test(test_snopt mesh) # snopt7_cpp
 endif()
