@@ -95,9 +95,9 @@ void PathWrap::extendConnectToModel(Model& model)
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
         if (wo) {
             _wrapObject = wo;
-            updWrapPoint1().setBody(wo->getFrame());
+            updWrapPoint1().setParentFrame(wo->getFrame());
             updWrapPoint1().setWrapObject(wo);
-            updWrapPoint2().setBody(wo->getFrame());
+            updWrapPoint2().setParentFrame(wo->getFrame());
             updWrapPoint2().setWrapObject(wo);
             break;
         }
