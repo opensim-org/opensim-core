@@ -145,7 +145,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
             // The surface points are expressed w.r.t. the wrap surface's body frame.
             // Transform the surface points into the ground reference frame to draw
             // the surface point as the wrapping portion of the GeometryPath
-            const Transform& X_BG = pwp->getBody().getTransformInGround(state);
+            const Transform& X_BG = pwp->getParentFrame().getTransformInGround(state);
             // Cycle through each surface point and draw it the Ground frame
             for (int j = 0; j<surfacePoints.getSize(); ++j) {
                 // transform the surface point into the Ground reference frame
@@ -242,15 +242,15 @@ getPointForceDirections(const SimTK::State& s,
     for (i = 0; i < np; i++) {
         PointForceDirection *pfd = 
             new PointForceDirection(currentPath[i]->getLocation(s), 
-                                    currentPath[i]->getBody(), Vec3(0));
+                                    currentPath[i]->getParentFrame(), Vec3(0));
         rPFDs->append(pfd);
     }
 
     for (i = 0; i < np-1; i++) {
         start = currentPath[i];
         end = currentPath[i+1];
-        startBody = &start->getBody();
-        endBody = &end->getBody();
+        startBody = &start->getParentFrame();
+        endBody = &end->getParentFrame();
 
         if (startBody != endBody)
         {
@@ -258,10 +258,10 @@ getPointForceDirections(const SimTK::State& s,
             Vec3 direction(0);
 
             // Find the positions of start and end in the inertial frame.
-            //engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
+            //engine.getPosition(s, start->getParentFrame(), start->getLocation(), posStart);
             posStart = start->getLocationInGround(s);
             
-            //engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
+            //engine.getPosition(s, end->getParentFrame(), end->getLocation(), posEnd);
             posEnd = end->getLocationInGround(s);
 
             // Form a vector from start to end, in the inertial frame.
@@ -315,8 +315,8 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
         start = currentPath[i];
         end = currentPath[i+1];
 
-        bo = &start->getBody().getMobilizedBody();
-        bf = &end->getBody().getMobilizedBody();
+        bo = &start->getParentFrame().getMobilizedBody();
+        bf = &end->getParentFrame().getMobilizedBody();
 
         if (bo != bf) {
             // Find the positions of start and end in the inertial frame.
@@ -350,13 +350,13 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             // add in the tension point forces to body forces
             if (mppo) {// moving path point location is a function of the state
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getBody().findTransformInBaseFrame();
+                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
                 bo->applyForceToBodyPoint(s, X_BF*mppo->getLocation(s), force,
                     bodyForces);
             }
             else {
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = start->getBody().findTransformInBaseFrame();
+                auto X_BF = start->getParentFrame().findTransformInBaseFrame();
                 bo->applyForceToBodyPoint(s, X_BF*start->getLocation(s), force,
                     bodyForces);
             }
@@ -369,7 +369,7 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
             }
             else {
                 // transform of the frame of the point to the base mobilized body
-                auto X_BF = end->getBody().findTransformInBaseFrame();
+                auto X_BF = end->getParentFrame().findTransformInBaseFrame();
                 bf->applyForceToBodyPoint(s, X_BF*end->getLocation(s), -force,
                     bodyForces);
             }
@@ -576,10 +576,10 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
         const Vec3& endPt = get_PathPointSet()[end].getLocation(s);
         const Vec3& basePt = get_PathPointSet()[base].getLocation(s);
 
-        Vec3 startPt2 = get_PathPointSet()[start].getBody()
+        Vec3 startPt2 = get_PathPointSet()[start].getParentFrame()
             .findStationLocationInAnotherFrame(s, startPt, aBody);
 
-        Vec3 endPt2 = get_PathPointSet()[end].getBody()
+        Vec3 endPt2 = get_PathPointSet()[end].getParentFrame()
             .findStationLocationInAnotherFrame(s, endPt, aBody);
 
         aOffset = basePt + distance * (endPt2 - startPt2);
