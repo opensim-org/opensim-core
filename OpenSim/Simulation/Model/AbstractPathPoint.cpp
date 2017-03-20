@@ -24,7 +24,6 @@
 // INCLUDES
 //=============================================================================
 #include "AbstractPathPoint.h"
-#include "OpenSim/Simulation/Model/PhysicalFrame.h"
 
 //=============================================================================
 // STATICS
@@ -58,7 +57,14 @@ const std::string& AbstractPathPoint::getBodyName() const {
     return getParentFrame().getName();
 }
 
-void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+// PathPoint used to be the base class for all path points including
+// MovingPathPoints, which was incorrect. AbstractPathPoint was added to
+// the hierarchy to resolve that issue and since the updateFromXML code
+// still pertains to all PathPoints was included here in AbstractPathPoint
+// If derived classes have to override for future changes, do not 
+// forget to invoke Super::updateFromXMLNode.
+void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, 
+                                          int versionNumber)
 {
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {

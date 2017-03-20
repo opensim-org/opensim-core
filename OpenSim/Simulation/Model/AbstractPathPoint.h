@@ -25,10 +25,10 @@
 
 // INCLUDE
 #include "OpenSim/Simulation/Model/Point.h"
+#include "OpenSim/Simulation/Model/PhysicalFrame.h"
 
 namespace OpenSim {
 
-class PhysicalFrame;
 class WrapObject;
 
 //=============================================================================
@@ -43,7 +43,7 @@ public:
 // SOCKETS
 //=============================================================================
     OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
-        "The frame in which this path point is located.");
+        "The frame in which this path point is defined.");
 public:
 //=============================================================================
 // METHODS
@@ -88,6 +88,11 @@ public:
         if (aPoint) delete aPoint;
     }
 
+    /** Update the use of *body* property in previous revisions to the 
+        parent_frame (Socket) for the path point's dependency on a 
+        PhysicalFrame. 
+        @note If overriding updateFromXMLNode of derived classes, do not
+        forget to invoke Super::updateFromXMLNode to include this update.*/
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
 //=============================================================================
