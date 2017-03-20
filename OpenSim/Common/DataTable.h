@@ -801,7 +801,7 @@ public:
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
-    \throws InvalidColumn If the input column contaiins incorrect number of 
+    \throws InvalidColumn If the input column contains incorrect number of 
                           rows.                                               */
     void appendColumn(const std::string& columnLabel,
                       const std::initializer_list<ETY>& container) {
@@ -825,7 +825,7 @@ public:
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
-    \throws InvalidColumn If the input column contaiins incorrect number of 
+    \throws InvalidColumn If the input column contains incorrect number of 
                           rows.                                               */
     template<typename ColIter>
     void appendColumn(const std::string& columnLabel,
@@ -854,7 +854,7 @@ public:
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
-    \throws InvalidColumn If the input column contaiins incorrect number of 
+    \throws InvalidColumn If the input column contains incorrect number of 
                           rows.                                               */
     void appendColumn(const std::string& columnLabel,
                       const Vector& depCol) {
@@ -870,7 +870,7 @@ public:
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
-    \throws InvalidColumn If the input column contaiins incorrect number of 
+    \throws InvalidColumn If the input column contains incorrect number of 
                           rows.                                               */
     void appendColumn(const std::string& columnLabel,
                       const VectorView& depCol) {
