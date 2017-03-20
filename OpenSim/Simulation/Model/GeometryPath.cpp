@@ -486,16 +486,16 @@ double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
  * Add a new path point, with default location, to the path.
  *
  * @param aIndex The position in the pathPointSet to put the new point in.
- * @param aBody The body to attach the point to.
+ * @param frame The frame to attach the point to.
  * @return Pointer to the newly created path point.
  */
 AbstractPathPoint* GeometryPath::
-addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
+addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
 {
     PathPoint* newPoint = new PathPoint();
-    newPoint->setBody(aBody);
+    newPoint->setParentFrame(frame);
     Vec3& location = newPoint->getLocation(s);
-    placeNewPathPoint(s, location, aIndex, aBody);
+    placeNewPathPoint(s, location, aIndex, frame);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.
@@ -519,10 +519,10 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody)
 
 AbstractPathPoint* GeometryPath::
 appendNewPathPoint(const std::string& proposedName, 
-                   PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody)
+                   PhysicalFrame& frame, const SimTK::Vec3& aPositionOnBody)
 {
     PathPoint* newPoint = new PathPoint();
-    newPoint->setBody(aBody);
+    newPoint->setParentFrame(frame);
     newPoint->setName(proposedName);
     newPoint->setLocation(aPositionOnBody);
     upd_PathPointSet().adoptAndAppend(newPoint);
@@ -538,11 +538,11 @@ appendNewPathPoint(const std::string& proposedName,
  * instead)
  * @param aOffset The XYZ location to be determined.
  * @param aIndex The position in the pathPointSet to put the new point in.
- * @param aBody The body to attach the point to.
+ * @param frame The body to attach the point to.
  */
 void GeometryPath::
 placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, 
-                  const PhysicalFrame& aBody)
+                  const PhysicalFrame& frame)
 {
     // The location of the point is determined by moving a 'distance' from 'base' 
     // along a vector from 'start' to 'end.' 'base' is the existing path point 
@@ -577,10 +577,10 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
         const Vec3& basePt = get_PathPointSet()[base].getLocation(s);
 
         Vec3 startPt2 = get_PathPointSet()[start].getParentFrame()
-            .findStationLocationInAnotherFrame(s, startPt, aBody);
+            .findStationLocationInAnotherFrame(s, startPt, frame);
 
         Vec3 endPt2 = get_PathPointSet()[end].getParentFrame()
-            .findStationLocationInAnotherFrame(s, endPt, aBody);
+            .findStationLocationInAnotherFrame(s, endPt, frame);
 
         aOffset = basePt + distance * (endPt2 - startPt2);
     } else if (get_PathPointSet().getSize() == 1) {
