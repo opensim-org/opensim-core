@@ -116,17 +116,22 @@ public:
                 _norm_fiber_width*_norm_fiber_width) / normFiberLength;
         return normFiberForce * cosPenn;
     }
-    T calcRigidTendonNormFiberForceAlongTendon(const T& activation,
-                                               const T& musTenLength,
-                                               const T& musTenVelocity) const {
+    /// There are contexts where we may want to use a different numeric type
+    /// than T, which is why this function is templated on scalar type.
+    // TODO the strategy of templating member functions won't work in OpenSim.
+    template<typename S>
+    void calcRigidTendonFiberKinematics(const S& musTenLength,
+                                        const S& musTenVelocity,
+                                        S& normFiberLength,
+                                        S& normFiberVelocity) const {
         // TODO there is too much repetition of calculations surrounding
         // lengths and pennation.
         // TODO can we use temporaries (adub etc) to speed up calculation?
-        const T fiberLengthAlongTendon = musTenLength - _tendon_slack_length;
-        const T fiberLength = sqrt(pow(musTenLength - _tendon_slack_length, 2)
+        const S fiberLengthAlongTendon = musTenLength - _tendon_slack_length;
+        const S fiberLength = sqrt(pow(musTenLength - _tendon_slack_length, 2)
                                            + pow(_fiber_width, 2));
-        const T normFiberLength = fiberLength / _optimal_fiber_length;
-        const T cosPenn = fiberLengthAlongTendon / fiberLength;
+        normFiberLength = fiberLength / _optimal_fiber_length;
+        const S cosPenn = fiberLengthAlongTendon / fiberLength;
         // lMT = lT + lM cos(alpha) -> differentiate:
         // vMT = vM cos(alpha) - lM alphaDot sin(alpha) (1)
         // w = lM sin(alpha) -> differentiate:
@@ -135,10 +140,18 @@ public:
         // vMT = vM cos(alpha) + vM sin^2(alpha) / cos(alpha)
         // vMT = vM (cos^2(alpha) + sin^2(alpha)) / cos(alpha)
         // vM = vMT cos(alpha)
-        const T fiberVelocity = musTenVelocity * cosPenn;
+        const S fiberVelocity = musTenVelocity * cosPenn;
         // TODO cache max_contraction_velocity * opt_fib_len
-        const T normFiberVelocity = fiberVelocity /
+        normFiberVelocity = fiberVelocity /
                 (_max_contraction_velocity * _optimal_fiber_length);
+    }
+    T calcRigidTendonNormFiberForceAlongTendon(const T& activation,
+                                               const T& musTenLength,
+                                               const T& musTenVelocity) const {
+        T normFiberLength;
+        T normFiberVelocity;
+        calcRigidTendonFiberKinematics(musTenLength, musTenVelocity,
+                                          normFiberLength, normFiberVelocity);
         // TODO what about buckling the tendon (MTU length < slack length)?
         return calcNormFiberForceAlongTendon(activation, normFiberLength,
                                              normFiberVelocity);

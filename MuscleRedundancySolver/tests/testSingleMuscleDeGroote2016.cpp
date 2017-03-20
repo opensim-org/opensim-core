@@ -418,9 +418,9 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
     // Create the GlobalStaticOptimizationSolver.
     // ------------------------------------------
-    GlobalStaticOptimizationSolver mrs;
-    mrs.setModel(model);
-    mrs.setKinematicsData(kinematics);
+    GlobalStaticOptimizationSolver gso;
+    gso.setModel(model);
+    gso.setKinematicsData(kinematics);
     // Without filtering, the moments have high frequency content,
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
@@ -428,10 +428,10 @@ void testLiftingMassGlobalStaticOptimizationSolver(
     // dynamics results in an abrupt change in force when the muscle turns off
     // instantaneously. I tried 80-300 Hz; higher than 100 Hz gives noisy
     // activation.
-    mrs.set_lowpass_cutoff_frequency_for_joint_moments(100);
+    gso.set_lowpass_cutoff_frequency_for_joint_moments(100);
     // TODO is the filtering necessary if we have reserve actuators?
-    mrs.set_create_reserve_actuators(0.001);
-    GlobalStaticOptimizationSolver::Solution solution = mrs.solve();
+    gso.set_create_reserve_actuators(0.001);
+    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
     solution.write("testSingleMuscleDeGroote2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -447,8 +447,9 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
 // initial guess.
-void testLiftingMassMuscleRedundancySolverNoGuess(
-        const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
+void testLiftingMassMuscleRedundancySolver(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
+        bool useStaticOptiGuess) {
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
@@ -468,6 +469,11 @@ void testLiftingMassMuscleRedundancySolverNoGuess(
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(80);
     // TODO is the filtering necessary if we have reserve actuators?
     mrs.set_create_reserve_actuators(0.001);
+    if (useStaticOptiGuess) {
+        mrs.set_initial_guess("static_optimization");
+    } else {
+        mrs.set_initial_guess("bounds");
+    }
     MuscleRedundancySolver::Solution solution = mrs.solve();
     solution.write("testSingleMuscleDeGroote2016_MRS");
 
@@ -500,8 +506,14 @@ int main() {
         }
         {
             auto mrsData = solveForTrajectoryMuscleRedundancySolver();
-            SimTK_SUBTEST1(testLiftingMassMuscleRedundancySolverNoGuess,
-                           mrsData);
+            // Without using static optimization to obtain an initial guess.
+            SimTK_SUBTEST2(testLiftingMassMuscleRedundancySolver, mrsData,
+                           false);
+            // Use static optimization to obtain an initial guess; this
+            // should take under 1 second, compare to 10 seconds for using
+            // the more naive guess above.
+            SimTK_SUBTEST2(testLiftingMassMuscleRedundancySolver, mrsData,
+                           true);
         }
     SimTK_END_TEST();
 }

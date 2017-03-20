@@ -22,6 +22,8 @@ void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
     };
     write(activation, "activation");
     write(other_controls, "other_controls");
+    write(norm_fiber_length, "norm_fiber_length");
+    write(norm_fiber_velocity, "norm_fiber_velocity");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
@@ -128,14 +130,24 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<GSOProblemSeparate<T>*>(this);
 
-        // TODO precompute matrix A and vector b such that the mucsle-generated
-        // moments are A*a + b.
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         _motionData.interpolateNetMoments(times, mutableThis->_desiredMoments);
         _motionData.interpolateMuscleTendonLengths(times,
                 mutableThis->_muscleTendonLengths);
         _motionData.interpolateMuscleTendonVelocities(times,
                 mutableThis->_muscleTendonVelocities);
+
+        // TODO precompute matrix A and vector b such that the muscle-generated
+        // moments are A*a + b.
+        // TODO
+        // b(i_act, i_time) = calcRigidTendonNormFiberForceAlongTendon(0,
+        //      musTenLength(i_act, i_mesh), musTenVelocity(i_act, i_mesh));
+        // TODO diagonal matrix:
+        // A[i_time](i_act, i_act) = calcRigidTendonNormFiberForceAlongTendon(1,
+        //      musTenLength(i_act, i_mesh), musTenVelocity(i_act, i_mesh))
+        //      - b(i_act, i_time);
+        // Multiply A and b by the moment arm matrix.
+
     }
 
     void path_constraints(unsigned i_mesh,
@@ -193,20 +205,23 @@ public:
                        T& integrand) const override {
         integrand = controls.squaredNorm();
     }
-    GlobalStaticOptimizationSolver::Solution interpret_solution(
-            const mesh::OptimalControlSolution& ocp_sol) const {
+    GlobalStaticOptimizationSolver::Solution deconstruct_iterate(
+            const mesh::OptimalControlIterate& ocpVars) const {
 
-        GlobalStaticOptimizationSolver::Solution sol;
+        GlobalStaticOptimizationSolver::Solution vars;
         if (_numCoordActuators) {
-            sol.other_controls.setColumnLabels(_otherControlsLabels);
+            vars.other_controls.setColumnLabels(_otherControlsLabels);
         }
         if (_numMuscles) {
-            sol.activation.setColumnLabels(_muscleLabels);
+            vars.activation.setColumnLabels(_muscleLabels);
+            vars.norm_fiber_length.setColumnLabels(_muscleLabels);
+            vars.norm_fiber_velocity.setColumnLabels(_muscleLabels);
         }
 
-        for (int i_time = 0; i_time < ocp_sol.time.cols(); ++i_time) {
-            const auto& time = ocp_sol.time[i_time];
-            const auto& controls = ocp_sol.controls.col(i_time);
+        // TODO would it be faster to use vars.activation.updMatrix()?
+        for (int i_time = 0; i_time < ocpVars.time.cols(); ++i_time) {
+            const auto& time = ocpVars.time[i_time];
+            const auto& controls = ocpVars.controls.col(i_time);
 
             // Other controls.
             // ---------------
@@ -216,7 +231,7 @@ public:
                 SimTK::RowVector other_controls(_numCoordActuators,
                                                 controls.data(),
                                                 true /* <- this is a view */);
-                sol.other_controls.appendRow(time, other_controls);
+                vars.other_controls.appendRow(time, other_controls);
             }
 
             // Muscle-related quantities.
@@ -225,9 +240,29 @@ public:
             SimTK::RowVector activation(_numMuscles,
                                         controls.data() + _numCoordActuators,
                                         true /* makes this a view */);
-            sol.activation.appendRow(time, activation);
+            vars.activation.appendRow(time, activation);
+
+            // Compute fiber length and velocity.
+            // ----------------------------------
+            // TODO this does not depend on the solution; this could be done in
+            // initialize_on_mesh.
+            SimTK::RowVector normFibLenRow(_numMuscles);
+            SimTK::RowVector normFibVelRow(_numMuscles);
+            for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
+                const auto& musTenLen = _muscleTendonLengths(i_act, i_time);
+                const auto& musTenVel = _muscleTendonVelocities(i_act, i_time);
+                double normFiberLength;
+                double normFiberVelocity;
+                _muscles[i_act].calcRigidTendonFiberKinematics(
+                        musTenLen, musTenVel,
+                        normFiberLength, normFiberVelocity);
+                normFibLenRow[i_act] = normFiberLength;
+                normFibVelRow[i_act] = normFiberVelocity;
+            }
+            vars.norm_fiber_length.appendRow(time, normFibLenRow);
+            vars.norm_fiber_velocity.appendRow(time, normFibVelRow);
         }
-        return sol;
+        return vars;
     }
 private:
     const GlobalStaticOptimizationSolver& _mrs;
@@ -326,5 +361,5 @@ GlobalStaticOptimizationSolver::Solution GlobalStaticOptimizationSolver::solve()
     // --------------------
     // TODO remove
     ocp_solution.write("GlobalStaticOptimizationSolver_OCP_solution.csv");
-    return ocp->interpret_solution(ocp_solution);
+    return ocp->deconstruct_iterate(ocp_solution);
 }

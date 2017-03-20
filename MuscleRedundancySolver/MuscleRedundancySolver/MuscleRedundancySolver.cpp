@@ -2,6 +2,7 @@
 #include "MuscleRedundancySolver.h"
 #include "DeGroote2016Muscle.h"
 #include "MotionData.h"
+#include "GlobalStaticOptimizationSolver.h"
 
 #include <mesh.h>
 #include <OpenSim/OpenSim.h>
@@ -234,9 +235,83 @@ public:
         integrand = controls.head(_numCoordActuators).squaredNorm()
                   + muscleExcit.squaredNorm();
     }
-    MuscleRedundancySolver::Solution interpret_solution(
-            const mesh::OptimalControlSolution& ocp_sol) const
-    {
+    // TODO should take a "Iterate" instead.
+    mesh::OptimalControlIterate construct_iterate(
+            const MuscleRedundancySolver::Solution& mrsVars) const {
+        using Eigen::Map;
+        using Eigen::VectorXd;
+        using Eigen::MatrixXd;
+
+        mesh::OptimalControlIterate vars;
+        // The mrsVars has time as the row dimension, but mrsVars has time as
+        // the column dimension. As a result, some quantities must be
+        // transposed.
+        const size_t numTimes = mrsVars.activation.getNumRows();
+        vars.time = Map<const VectorXd>(
+                mrsVars.activation.getIndependentColumn().data(), numTimes);
+
+        // Each muscle has excitation and norm. fiber velocity controls.
+        vars.controls.resize(_numCoordActuators + 2 * _numMuscles, numTimes);
+        // Each muscle has activation and fiber length states.
+        vars.states.resize(2 * _numMuscles, numTimes);
+
+        if (_numCoordActuators) {
+            vars.controls.topRows(_numCoordActuators) = Map<const MatrixXd>(
+                            &mrsVars.other_controls.getMatrix()(0, 0),
+                            numTimes, _numCoordActuators).transpose();
+        }
+
+        if (_numMuscles) {
+            // SkipRowView is a view onto a Matrix wherein every other row of
+            // the original matrix is skipped. We use this to edit every
+            // other row using a single assignment. Eigen's inner stride (the
+            // second template argument below) is the pointer increment between
+            // two consecutive entries; so a stride of 2 skips 1 row.
+            // The first argument is the outer stride (increment between
+            // columns), which we only know during run-time (e.g., Dynamic).
+            using SkipRowStride = Eigen::Stride<Eigen::Dynamic, 2>;
+            // These tell Map to interpret the passed-in data as a matrix;
+            // the outer stride is just the number of rows (in this case).
+            SkipRowStride controlsStride(vars.controls.outerStride(), 2);
+            SkipRowStride statesStride(vars.states.outerStride(), 2);
+            using SkipRowView = Map<MatrixXd, Eigen::Unaligned, SkipRowStride>;
+
+            SkipRowView excitationView(
+                    // Skip over coordinate actuator controls.
+                    vars.controls.bottomRows(2 *_numMuscles).data(),
+                    _numMuscles, numTimes, controlsStride);
+            excitationView = Map<const MatrixXd>(
+                    &mrsVars.excitation.getMatrix()(0, 0),
+                    numTimes, _numMuscles).transpose();
+
+            SkipRowView activationView(
+                    vars.states.data(), _numMuscles, numTimes, statesStride);
+            activationView = Map<const MatrixXd>(
+                    &mrsVars.activation.getMatrix()(0, 0),
+                    numTimes, _numMuscles).transpose();
+
+            SkipRowView fiberLengthView(
+                    // Skip the first state row, which has activations
+                    // for the first muscle.
+                    vars.states.bottomRows(2 * _numMuscles - 1).data(),
+                    _numMuscles, numTimes, statesStride);
+            fiberLengthView = Map<const MatrixXd>(
+                    &mrsVars.norm_fiber_length.getMatrix()(0, 0),
+                    numTimes, _numMuscles).transpose();
+
+            SkipRowView fiberVelocityView(
+                    // Skip the coordinate actuator rows and the excitation
+                    // for the first muscle.
+                    vars.controls.bottomRows(2 * _numMuscles - 1).data(),
+                    _numMuscles, numTimes, controlsStride);
+            fiberVelocityView = Map<const MatrixXd>(
+                    &mrsVars.norm_fiber_velocity.getMatrix()(0, 0),
+                    numTimes, _numMuscles).transpose();
+        }
+        return vars;
+    }
+    MuscleRedundancySolver::Solution deconstruct_iterate(
+            const mesh::OptimalControlIterate& ocpVars) const {
 
         MuscleRedundancySolver::Solution sol;
         if (_numCoordActuators) {
@@ -249,10 +324,10 @@ public:
             sol.norm_fiber_velocity.setColumnLabels(_muscleLabels);
         }
 
-        for (int i_time = 0; i_time < ocp_sol.time.cols(); ++i_time) {
-            const auto& time = ocp_sol.time[i_time];
-            const auto& controls = ocp_sol.controls.col(i_time);
-            const auto& states = ocp_sol.states.col(i_time);
+        for (int i_time = 0; i_time < ocpVars.time.cols(); ++i_time) {
+            const auto& time = ocpVars.time[i_time];
+            const auto& controls = ocpVars.controls.col(i_time);
+            const auto& states = ocpVars.states.col(i_time);
 
             // Other controls.
             // ---------------
@@ -323,6 +398,7 @@ private:
 MuscleRedundancySolver::MuscleRedundancySolver() {
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_create_reserve_actuators(-1);
+    constructProperty_initial_guess("static_optimization");
     //constructProperty_model_file("");
     //constructProperty_kinematics_file("");
 }
@@ -375,19 +451,67 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         }
     }
 
-    // Solve the optimal control problem.
-    // ----------------------------------
+    // Create the optimal control problem.
+    // -----------------------------------
     auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
                                                              model,
                                                              motionData);
+
+    // Solve for an initial guess with static optimization.
+    // ----------------------------------------------------
+    OPENSIM_THROW_IF(get_initial_guess() != "bounds" &&
+                     get_initial_guess() != "static_optimization", Exception,
+            "Invalid value (" + get_initial_guess() + " for "
+            "initial_guess; should be 'static_optimization' or 'bounds'.");
+    const int num_mesh_points = 100;
+    mesh::OptimalControlIterate guess;
+    if (get_initial_guess() == "static_optimization") {
+        std::cout << std::string(79, '=') << std::endl;
+        std::cout << "Computing an initial guess with static optimization."
+                  << std::endl;
+        std::cout << std::string(79, '-') << std::endl;
+        GlobalStaticOptimizationSolver gso;
+        gso.setModel(_model);
+        gso.setKinematicsData(getKinematicsData());
+        gso.set_lowpass_cutoff_frequency_for_joint_moments(
+                get_lowpass_cutoff_frequency_for_joint_moments());
+        gso.set_create_reserve_actuators(get_create_reserve_actuators());
+        // Convert the static optimization solution into a guess.
+        GlobalStaticOptimizationSolver::Solution gsoSolution = gso.solve();
+        // gsoSolution.write("DEBUG_MuscleRedundancySolver_GSO_solution");
+        MuscleRedundancySolver::Solution mrsGuess;
+        mrsGuess.excitation = gsoSolution.activation;
+        mrsGuess.activation = gsoSolution.activation;
+        mrsGuess.norm_fiber_length = gsoSolution.norm_fiber_length;
+        mrsGuess.norm_fiber_velocity = gsoSolution.norm_fiber_velocity;
+        mrsGuess.other_controls = gsoSolution.other_controls;
+        guess = ocp->construct_iterate(mrsGuess);
+        // guess.write("DEBUG_MuscleRedundancySolver_guess.csv");
+    } else {
+        // This is the behavior if no guess is provided.
+        std::cout << std::string(79, '=') << std::endl;
+        std::cout << "Using variable bounds to form initial guess."
+                  << std::endl;
+        std::cout << std::string(79, '-') << std::endl;
+    }
+
+    // Solve the optimal control problem.
+    // ----------------------------------
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
-                                                  100);
-    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+                                                  num_mesh_points);
+    std::cout << std::string(79, '=') << std::endl;
+    std::cout << "Running the Muscle Redundancy Solver." << std::endl;
+    std::cout << std::string(79, '-') << std::endl;
+    mesh::OptimalControlSolution ocp_solution;
+    if (get_initial_guess() == "static_optimization") {
+        ocp_solution = dircol.solve(guess);
+    } else {
+        ocp_solution = dircol.solve();
+    }
 
     // Return the solution.
     // --------------------
-    // TODO remove
-    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
-    return ocp->interpret_solution(ocp_solution);
+    // ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
+    return ocp->deconstruct_iterate(ocp_solution);
 }

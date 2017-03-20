@@ -23,9 +23,18 @@ public:
     "discourage the use of the reserve actuators. (default is -1, which "
     "means no reserves are created)");
 
+    // TODO rename to iterate?
     struct Solution {
         TimeSeriesTable activation;
         TimeSeriesTable other_controls;
+        // TODO could have separate functions to compute these length/vel tables
+        // given a Solution.
+        /// This is not one of the variables in the optimization problem,
+        /// but may be interesting nonetheless.
+        TimeSeriesTable norm_fiber_length;
+        /// This is not one of the variables in the optimization problem,
+        /// but may be interesting nonetheless.
+        TimeSeriesTable norm_fiber_velocity;
         void write(const std::string& prefix) const;
     };
 

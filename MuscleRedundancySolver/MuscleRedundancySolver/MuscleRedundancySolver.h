@@ -55,6 +55,15 @@ public:
         "discourage the use of the reserve actuators. (default is -1, which "
         "means no reserves are created)");
 
+    OpenSim_DECLARE_PROPERTY(initial_guess, std::string,
+        "How to compute the initial guess for the optimal control problem. "
+        "'static_optimization': Solve a static optimization problem to obtain "
+        "a guess. "
+        "'bounds': The guess is the midpoint of the variables' constraints. "
+        "Default: 'static_optimization'. "
+        "Only change this if static optimization is causing issues; static "
+        " optimization can help solve the problem up 10 times faster.");
+
     //OpenSim_DECLARE_PROPERTY(model_file, std::string,
     //    "Path to a model file (.osim).");
     //OpenSim_DECLARE_PROPERTY(kinematics_file, std::string,
