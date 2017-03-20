@@ -54,8 +54,9 @@ public:
                         size_t expected,
                         size_t received) :
         InvalidRow(file, line, func) {
-        std::string msg = "expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
+        std::string msg = "Incorrect number of columns. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
 
         addMessage(msg);
     }
@@ -69,8 +70,9 @@ public:
                      size_t expected,
                      size_t received) :
         InvalidColumn(file, line, func) {
-        std::string msg = "expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
+        std::string msg = "Incorrect number of rows. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
 
         addMessage(msg);
     }
