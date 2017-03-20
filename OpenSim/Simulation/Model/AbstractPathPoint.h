@@ -35,9 +35,6 @@ class WrapObject;
 //=============================================================================
 /**
  * An abstract class implementing a path point interface.
- *
- * @author Peter Loan
- * @version 1.0
  */
 class OSIMSIMULATION_API AbstractPathPoint : public Point {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractPathPoint, Point);
