@@ -494,7 +494,7 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
-    Vec3& location = newPoint->getLocation(s);
+    Vec3 location = newPoint->getLocation(s);
     placeNewPathPoint(s, location, aIndex, frame);
     upd_PathPointSet().insert(aIndex, newPoint);
 
@@ -572,9 +572,9 @@ placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex,
             distance = 0.5;
         }
 
-        const Vec3& startPt = get_PathPointSet()[start].getLocation(s);
-        const Vec3& endPt = get_PathPointSet()[end].getLocation(s);
-        const Vec3& basePt = get_PathPointSet()[base].getLocation(s);
+        const Vec3 startPt = get_PathPointSet()[start].getLocation(s);
+        const Vec3 endPt = get_PathPointSet()[end].getLocation(s);
+        const Vec3 basePt = get_PathPointSet()[base].getLocation(s);
 
         Vec3 startPt2 = get_PathPointSet()[start].getParentFrame()
             .findStationLocationInAnotherFrame(s, startPt, frame);
@@ -793,7 +793,8 @@ void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
     for (int i = 0; i < get_PathPointSet().getSize(); i++)
     {
-        const string& bodyName = get_PathPointSet().get(i).getBodyName();
+        const string& bodyName = 
+            get_PathPointSet()[i].getParentFrame().getName();
         for (int j = 0; j < aScaleSet.getSize(); j++)
         {
             Scale& aScale = aScaleSet.get(j);
