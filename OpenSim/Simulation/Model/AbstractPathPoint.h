@@ -39,16 +39,16 @@ class WrapObject;
 class OSIMSIMULATION_API AbstractPathPoint : public Point {
     OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractPathPoint, Point);
 public:
-//==============================================================================
+//=============================================================================
 // SOCKETS
-//==============================================================================
+//=============================================================================
     OpenSim_DECLARE_SOCKET(parent_frame, PhysicalFrame,
         "The frame in which this path point is located.");
 public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    AbstractPathPoint() : Super() {}
+    AbstractPathPoint() = default;
     virtual ~AbstractPathPoint() {}
 
     /** get the relative location of the path point with respect to the body
