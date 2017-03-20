@@ -174,10 +174,18 @@ void OpenSimContext::setZCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
     return;
 }
 
-void OpenSimContext::setBody(AbstractPathPoint& pathPoint, PhysicalFrame&  newBody) {
+void OpenSimContext::setBody(AbstractPathPoint& pathPoint, PhysicalFrame&  newBody)
+{
     PathPoint* spp = dynamic_cast<PathPoint*>(&pathPoint);
     if (spp) {
         spp->changeBodyPreserveLocation(*_configState, newBody);
+        this->recreateSystemAfterSystemExists();
+        realizeVelocity();
+        return;
+    }
+    MovingPathPoint* mpp = dynamic_cast<MovingPathPoint*>(&pathPoint);
+    if (mpp) {
+        mpp->setParentFrame(newBody);
         this->recreateSystemAfterSystemExists();
         realizeVelocity();
     }
