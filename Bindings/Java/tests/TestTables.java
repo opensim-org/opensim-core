@@ -98,6 +98,11 @@ class TestTables {
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
         System.out.println(table);
+        // Append columns to the table.
+        Vector col = new Vector(3, 1);
+        table.appendColumn("4", col);
+        table.appendColumn("5", col);
+        assert table.getNumRows() == 3 && table.getNumColumns() == 6;
         // Add table metadata.
         table.addTableMetaDataString("subject-name", "Java");
         table.addTableMetaDataString("subject-yob" , "1995");
@@ -124,7 +129,7 @@ class TestTables {
         } catch (java.lang.RuntimeException exc) {}
         // Access column with index/label out of bounds. Exception expected.
         try {
-            VectorView shouldThrow = table.getDependentColumnAtIndex(5);
+            VectorView shouldThrow = table.getDependentColumnAtIndex(6);
             assert false;
         } catch (java.lang.RuntimeException exc) {}
         try {

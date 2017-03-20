@@ -225,7 +225,7 @@ public:
                 const std::string& func,
                 const std::string& msg = "") :
         Exception(file, line, func) {
-        std::string mesg = "Invalid Argument. " + msg;
+        std::string mesg = "Invalid Call. " + msg;
 
         addMessage(mesg);
     }
