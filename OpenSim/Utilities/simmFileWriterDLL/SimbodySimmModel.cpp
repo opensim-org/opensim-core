@@ -1040,7 +1040,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
             Vec3& attachment = mvp->getLocation(s);
             double range[]{ mvp->get_range(0), mvp->get_range(1) };
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getParentFrame().getName();
             
             if (mvp->hasCoordinate()) {
                 const Coordinate& coord = mvp->getCoordinate();
@@ -1074,7 +1074,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             aStream << " segment " << mpp->getParentFrame().getName() << endl;
         } else {
             Vec3& attachment = pt.getLocation(s);
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getBody().getName() << endl;
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getParentFrame().getName() << endl;
         }
     }
     aStream << "endpoints" << endl;

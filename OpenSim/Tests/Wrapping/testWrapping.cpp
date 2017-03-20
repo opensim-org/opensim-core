@@ -553,9 +553,9 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         AbstractPathPoint* orgPoint = &viaSet[0];
         AbstractPathPoint* insPoint = &viaSet[viaSet.getSize()-1];
 
-        cableInfo.orgBodyName = orgPoint->getBody().getName();
+        cableInfo.orgBodyName = orgPoint->getParentFrame().getName();
         cableInfo.orgLoc = orgPoint->getLocation(si);
-        cableInfo.insBodyName =  insPoint->getBody().getName();
+        cableInfo.insBodyName =  insPoint->getParentFrame().getName();
         cableInfo.insLoc = insPoint->getLocation(si);
 
         int numVias = 0, numSurfs = 0;
@@ -652,10 +652,10 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         // debugging
 
         cout << "org" << " = " << orgPoint->getName() << " @ " << 
-            orgPoint->getBody().getName() << ", loc = " 
+            orgPoint->getParentFrame().getName() << ", loc = " 
             << orgPoint->getLocation(si) << endl;
         cout << "ins" << " = " << insPoint->getName() << " @ " <<
-            insPoint->getBody().getName() << ", loc = " 
+            insPoint->getParentFrame().getName() << ", loc = " 
             << insPoint->getLocation(si) << endl;
 
         for (int j = 0; j < cableInfo.obstacles.getSize(); ++j) {
