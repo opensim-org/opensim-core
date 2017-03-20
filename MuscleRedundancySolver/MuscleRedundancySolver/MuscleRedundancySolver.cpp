@@ -9,6 +9,10 @@
 
 #include <algorithm>
 
+// TODO to get a good initial guess: solve without pennation! avoid all those
+//         sqrts!
+
+
 using namespace OpenSim;
 
 void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
@@ -235,6 +239,9 @@ public:
         integrand = controls.head(_numCoordActuators).squaredNorm()
                   + muscleExcit.squaredNorm();
     }
+    /// If mrsVars seems to be empty (no rows in either the
+    /// mrsVars.activation or mrsVars.other_controls tables), then this returns
+    /// an empty iterate.
     // TODO should take a "Iterate" instead.
     mesh::OptimalControlIterate construct_iterate(
             const MuscleRedundancySolver::Solution& mrsVars) const {
@@ -246,9 +253,21 @@ public:
         // The mrsVars has time as the row dimension, but mrsVars has time as
         // the column dimension. As a result, some quantities must be
         // transposed.
-        const size_t numTimes = mrsVars.activation.getNumRows();
-        vars.time = Map<const VectorXd>(
-                mrsVars.activation.getIndependentColumn().data(), numTimes);
+        size_t numTimes;
+        if (mrsVars.activation.getNumRows() != 0) {
+            numTimes = mrsVars.activation.getNumRows();
+            vars.time = Map<const VectorXd>(
+                    mrsVars.activation.getIndependentColumn().data(), numTimes);
+        } else if (mrsVars.other_controls.getNumRows() != 0) {
+            numTimes = mrsVars.other_controls.getNumRows();
+            vars.time = Map<const VectorXd>(
+                    mrsVars.other_controls.getIndependentColumn().data(),
+                    numTimes);
+        } else {
+            // mrsVars seems to be empty (no muscles or other controls);
+            // return an empty OptimalControlIterate.
+            return vars;
+        }
 
         // Each muscle has excitation and norm. fiber velocity controls.
         vars.controls.resize(_numCoordActuators + 2 * _numMuscles, numTimes);
@@ -412,6 +431,9 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
                      "Invalid value for cutoff frequency for joint moments.");
     MotionData motionData(_model, getKinematicsData(),
                           get_lowpass_cutoff_frequency_for_joint_moments());
+
+    // TODO make sure experimental data is available for all unconstrained
+    // coordinates; throw exception otherwise!
 
     // Create reserve actuators.
     // -------------------------

@@ -150,8 +150,7 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     // TODO user should never get/want raw variables...wrap the solver
     // interface for direct collocation!
     double obj_value = solver.optimize(variables);
-    using Trajectory = transcription::LowOrder<adouble>::Trajectory;
-    Trajectory traj = dircol.interpret_iterate(variables);
+    mesh::OptimalControlIterate traj = dircol.deconstruct_iterate(variables);
 
     // Initial and final position.
     REQUIRE(Approx(traj.states(0, 0)) == 0.0);

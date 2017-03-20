@@ -176,7 +176,7 @@ void MotionData::interpolateNetMoments(const Eigen::VectorXd& times,
             desiredMoments(i_dof, i_time) = value;
         }
     }
-     mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
+    mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
 }
 
 void MotionData::interpolateMuscleTendonLengths(const Eigen::VectorXd& times,

@@ -39,6 +39,9 @@ namespace OpenSim {
 /// model.
 // TODO replace optimal force with something easier to interpret: controls
 // between 0 and 1, and weights in the objective function.
+// TODO method performs better with longer activation/deactivation time
+// constants. TODO get these constants from the muscle model rather than using
+// hard-coded values.
 class MuscleRedundancySolver : public OpenSim::Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MuscleRedundancySolver, OpenSim::Object);
 public:

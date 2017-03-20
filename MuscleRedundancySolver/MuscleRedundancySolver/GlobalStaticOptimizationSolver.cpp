@@ -132,10 +132,12 @@ public:
 
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
         _motionData.interpolateNetMoments(times, mutableThis->_desiredMoments);
-        _motionData.interpolateMuscleTendonLengths(times,
-                mutableThis->_muscleTendonLengths);
-        _motionData.interpolateMuscleTendonVelocities(times,
-                mutableThis->_muscleTendonVelocities);
+        if (_numMuscles) {
+            _motionData.interpolateMuscleTendonLengths(times,
+                    mutableThis->_muscleTendonLengths);
+            _motionData.interpolateMuscleTendonVelocities(times,
+                    mutableThis->_muscleTendonVelocities);
+        }
 
         // TODO precompute matrix A and vector b such that the muscle-generated
         // moments are A*a + b.

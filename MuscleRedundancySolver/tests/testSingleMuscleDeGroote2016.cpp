@@ -79,8 +79,8 @@ void rootMeanSquare(
 ///              f_t = (a f_l(lm) f_v(vm) + f_p(lm)) cos(alpha)
 ///              q(0) = 0.2
 ///              u(0) = 0
-///              q(1) = 0.15
-///              u(1) = 0
+///              q(t_f) = 0.15
+///              u(t_f) = 0
 /// @endverbatim
 /// where lm and vm are determined from the muscle-tendon length and velocity
 /// with the assumption of a rigid tendon.
@@ -225,8 +225,8 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
 ///              u(0) = 0
 ///              a(0) = 0
 ///              vm(0) = 0
-///              q(1) = 0.15
-///              u(1) = 0
+///              q(t_f) = 0.15
+///              u(t_f) = 0
 /// @endverbatim
 /// Making the initial fiber velocity 0 helps avoid a sharp spike in fiber
 /// velocity at the beginning of the motion.
