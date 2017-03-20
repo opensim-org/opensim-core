@@ -147,6 +147,8 @@ public:
         if (_numMuscles) {
             _motionData.interpolateMuscleTendonLengths(times,
                      mutableThis->_muscleTendonLengths);
+            _motionData.interpolateMomentArms(times,
+                     mutableThis->_momentArms);
         }
     }
 
@@ -209,9 +211,10 @@ public:
                                                     constraints[i_act],
                                                     normTenForce);
 
-            // TODO use moment arms to take care of the sign.
-            genForce[0] += -
-                    _muscles[i_act].get_max_isometric_force() * normTenForce;
+            // TODO generalize moment arms.
+            const T& momArm = _momentArms(i_act, i_mesh);
+            const T tenForce = momArm * normTenForce;
+            genForce[0] += _muscles[i_act].get_max_isometric_force() * tenForce;
         }
 
 
@@ -405,6 +408,7 @@ private:
     // Motion data to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLengths;
+    Eigen::MatrixXd _momentArms;
     // TODO std::vector<Eigen::SparseMatrixXd> moment arms.
 
     // CoordinateActuator optimal forces.
@@ -424,20 +428,13 @@ MuscleRedundancySolver::MuscleRedundancySolver() {
 
 MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
-    // Process experimental data.
-    // --------------------------
-    OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-            get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
-                     "Invalid value for cutoff frequency for joint moments.");
-    MotionData motionData(_model, getKinematicsData(),
-                          get_lowpass_cutoff_frequency_for_joint_moments());
-
     // TODO make sure experimental data is available for all unconstrained
     // coordinates; throw exception otherwise!
 
     // Create reserve actuators.
     // -------------------------
     Model model(_model);
+    SimTK::State state = model.initSystem();
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
         OPENSIM_THROW_IF(optimalForce <= 0, Exception,
@@ -447,7 +444,6 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         std::cout << "Adding reserve actuators with an optimal force of "
                   << optimalForce << "..." << std::endl;
 
-        SimTK::State state = model.initSystem();
         std::vector<std::string> coordNames;
         // Borrowed from CoordinateActuator::CreateForceSetOfCoordinateAct...
         for (auto& coord : model.getCoordinatesInMultibodyTreeOrder()) {
@@ -466,6 +462,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
                 model.addComponent(actu);
             }
         }
+        // Re-make the system, since there are new actuators.
+        model.initSystem();
         std::cout << "Added " << coordNames.size() << " reserve actuator(s), "
                 "for each of the following coordinates:" << std::endl;
         for (const auto& name : coordNames) {
@@ -473,11 +471,18 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         }
     }
 
+    // Process experimental data.
+    // --------------------------
+    OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+            get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
+                     "Invalid value for cutoff frequency for joint moments.");
+    MotionData motionData(model, getKinematicsData(),
+                          get_lowpass_cutoff_frequency_for_joint_moments());
+
     // Create the optimal control problem.
     // -----------------------------------
     auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
-                                                             model,
-                                                             motionData);
+                                                             model, motionData);
 
     // Solve for an initial guess with static optimization.
     // ----------------------------------------------------
@@ -534,6 +539,6 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Return the solution.
     // --------------------
-    // ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
+    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
     return ocp->deconstruct_iterate(ocp_solution);
 }

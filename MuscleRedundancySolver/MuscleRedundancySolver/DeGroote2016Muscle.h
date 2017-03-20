@@ -145,16 +145,19 @@ public:
         normFiberVelocity = fiberVelocity /
                 (_max_contraction_velocity * _optimal_fiber_length);
     }
-    T calcRigidTendonNormFiberForceAlongTendon(const T& activation,
-                                               const T& musTenLength,
-                                               const T& musTenVelocity) const {
+    /// Compute the fiber force projected along the tendon, under the assumption
+    /// that the tendon is rigid.
+    T calcRigidTendonFiberForceAlongTendon(const T& activation,
+                                           const T& musTenLength,
+                                           const T& musTenVelocity) const {
         T normFiberLength;
         T normFiberVelocity;
         calcRigidTendonFiberKinematics(musTenLength, musTenVelocity,
                                           normFiberLength, normFiberVelocity);
         // TODO what about buckling the tendon (MTU length < slack length)?
-        return calcNormFiberForceAlongTendon(activation, normFiberLength,
-                                             normFiberVelocity);
+        const T normFiberForce = calcNormFiberForceAlongTendon(
+                activation, normFiberLength, normFiberVelocity);
+        return _max_isometric_force * normFiberForce;
     }
     void calcActivationDynamics(const T& excitation, const T& activation,
                                 T& activationDot) const {

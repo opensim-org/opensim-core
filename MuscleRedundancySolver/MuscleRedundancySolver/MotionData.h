@@ -51,6 +51,9 @@ public:
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
                      Eigen::MatrixXd& muscleTendonVelocities) const;
+    /// TODO generalize
+    void interpolateMomentArms(const Eigen::VectorXd& times,
+                     Eigen::MatrixXd& momentArms) const;
 private:
     // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
@@ -58,6 +61,10 @@ private:
     GCVSplineSet _inverseDynamics;
     GCVSplineSet _muscleTendonLengths;
     GCVSplineSet _muscleTendonVelocities;
+    // The vector contains an entry for each muscle; the spline set is across
+    // coordinates.
+    GCVSplineSet _momentArms;
+    // std::vector<GCVSplineSet> _momentArms;
 };
 
 } // namespace OpenSim
