@@ -773,7 +773,7 @@ public:
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
-    \throws InvalidColumn If the input column contaiins incorrect number of 
+    \throws InvalidColumn If the input column contains incorrect number of 
                           rows.                                               */
     template<typename Container>
     void appendColumn(const std::string& columnLabel,
@@ -819,8 +819,9 @@ public:
 
     \param columnLabel Label of the column to be added. Must not be same as the
                        label of an existing column.
-    \param container Sequence container holding the elements of the column to be
-                     appended.
+    \param begin Iterator referring to the beginning of the range.
+    \param end Iterator referring to the end of the range.
+
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
@@ -844,12 +845,12 @@ public:
         appendColumn(columnLabel, col);
     }
 
-    /** Append column to the DataTable_ using a SimTK::Vector_.
+    /** Append column to the DataTable_ using a SimTK::Vector.
 
     \param columnLabel Label of the column to be added. Must not be same as the
                        label of an existing column.
-    \param container Sequence container holding the elements of the column to be
-                     appended.
+    \param depCol Column vector to be appended to the table.
+
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
@@ -864,8 +865,8 @@ public:
 
     \param columnLabel Label of the column to be added. Must not be same as the
                        label of an existing column.
-    \param container Sequence container holding the elements of the column to be
-                     appended.
+    \param depCol Column vector to be appended to the table.
+
     \throws InvalidCall If DataTable_ contains no rows at the time of this call.
     \throws InvalidArgument If columnLabel specified already exists in the
                             DataTable_.
@@ -875,7 +876,7 @@ public:
                       const VectorView& depCol) {
         OPENSIM_THROW_IF(getNumRows() == 0,
                          InvalidCall,
-                         "DataTable must have one or more rows before we can"
+                         "DataTable must have one or more rows before we can "
                          "append columns to it.");
         OPENSIM_THROW_IF(hasColumn(columnLabel),
                          InvalidArgument,
