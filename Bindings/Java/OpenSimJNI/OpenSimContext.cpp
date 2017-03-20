@@ -239,13 +239,10 @@ bool OpenSimContext::replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, Ab
    return ret;
 }
 
-void OpenSimContext::setLocation(AbstractPathPoint& mp, int i, double d) {
-    PathPoint* spp = dynamic_cast<PathPoint*>(&mp);
-    if (spp) {
-        spp->setLocationCoord(*_configState, i, d);
-        _configState->invalidateAll(SimTK::Stage::Position);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-    }
+void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
+    mp.setLocationCoord(*_configState, i, d);
+    _configState->invalidateAll(SimTK::Stage::Position);
+    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 }
 
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
