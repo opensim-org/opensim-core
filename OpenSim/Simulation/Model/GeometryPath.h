@@ -104,16 +104,18 @@ public:
     //--------------------------------------------------------------------------
     // UTILITY
     //--------------------------------------------------------------------------
-    AbstractPathPoint* addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& aBody);
+    AbstractPathPoint* addPathPoint(const SimTK::State& s, int index,
+        PhysicalFrame& frame);
     AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
-        PhysicalFrame& aBody, const SimTK::Vec3& aPositionOnBody);
-    bool canDeletePathPoint( int aIndex);
-    bool deletePathPoint(const SimTK::State& s, int aIndex);
+        PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
+    bool canDeletePathPoint( int index);
+    bool deletePathPoint(const SimTK::State& s, int index);
     
-    void moveUpPathWrap(const SimTK::State& s, int aIndex);
-    void moveDownPathWrap(const SimTK::State& s, int aIndex);
-    void deletePathWrap(const SimTK::State& s, int aIndex);
-    bool replacePathPoint(const SimTK::State& s, AbstractPathPoint* aOldPathPoint, AbstractPathPoint* aNewPathPoint); 
+    void moveUpPathWrap(const SimTK::State& s, int index);
+    void moveDownPathWrap(const SimTK::State& s, int index);
+    void deletePathWrap(const SimTK::State& s, int index);
+    bool replacePathPoint(const SimTK::State& s, AbstractPathPoint* oldPathPoint,
+        AbstractPathPoint* newPathPoint); 
 
     //--------------------------------------------------------------------------
     // GET
@@ -219,7 +221,7 @@ private:
     void constructProperties();
     void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, 
-                           int aIndex, const PhysicalFrame& aBody);
+                           int index, const PhysicalFrame& frame);
 
 //=============================================================================
 };  // END of class GeometryPath
