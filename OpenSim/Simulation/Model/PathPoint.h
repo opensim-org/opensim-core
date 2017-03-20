@@ -35,7 +35,7 @@ class PhysicalFrame;
 //=============================================================================
 //=============================================================================
 /**
- * A PathPoint that is stationary with respect to parent's PhysicalFrame
+ * A path point that is stationary with respect to parent's PhysicalFrame
  */
 class OSIMSIMULATION_API PathPoint : public AbstractPathPoint {
     OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, AbstractPathPoint);
@@ -44,7 +44,7 @@ public:
 // PROPERTIES
 //==============================================================================
     OpenSim_DECLARE_PROPERTY(location, SimTK::Vec3,
-        "The fixed location of the station expressed in its parent frame.");
+        "The fixed location of the path point expressed in its parent frame.");
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -90,17 +90,20 @@ private:
     // Satisfy Point interface
     /* Calculate the location of this PathPoint in Ground as a function of
        the state. */
-    SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const final {
+    SimTK::Vec3
+        calcLocationInGround(const SimTK::State& state) const override final {
         return getStation().getLocationInGround(state);
     }
     /* Calculate the velocity of this PathPoint with respect to and expressed
        in Ground as a function of the state. */
-    SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const final {
+    SimTK::Vec3
+        calcVelocityInGround(const SimTK::State& state) const override final {
         return getStation().getVelocityInGround(state);
     }
     /* Calculate the acceleration of this PathPoint with respect to and
        expressed in ground as a function of the state. */
-    SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const final {
+    SimTK::Vec3
+        calcAccelerationInGround(const SimTK::State& state) const override final {
         return getStation().getAccelerationInGround(state);
     }
 
@@ -110,11 +113,11 @@ private:
     MemberSubcomponentIndex stationIx{ constructSubcomponent<Station>("station") };
 
 //=============================================================================
-};  // END of class PathPoint_
+};  // END of class PathPoint
 //=============================================================================
 //=============================================================================
 
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_STATIONARY_PATH_POINT_H_
+#endif // OPENSIM_PATH_POINT_H_
