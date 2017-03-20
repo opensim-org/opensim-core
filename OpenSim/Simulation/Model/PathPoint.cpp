@@ -68,26 +68,26 @@ void PathPoint::extendConnectToModel(Model& model)
 }
 
 void PathPoint::
-changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& body)
+changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& frame)
 {
     if (!hasOwner()) {
         throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
-            " change the body on PathPoint which was not assigned to a body.");
+            " change the frame of PathPoint which was not assigned to a frame.");
     }
     // if it is already assigned to body, do nothing
     const PhysicalFrame& currentFrame = getStation().getParentFrame();
 
-    if (currentFrame == body)
+    if (currentFrame == frame)
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the point in the inertial reference frame.
     setLocation(
         currentFrame.findStationLocationInAnotherFrame(s, 
-            getStation().get_location(), body) );
+            getStation().get_location(), frame) );
 
-    // now make "body" this PathPoint's parent Frame
-    setBody(body);
+    // now make frame this PathPoint's parent Frame
+    setParentFrame(frame);
 }
 
 void PathPoint::scale(const SimTK::Vec3& scaleFactors) {
