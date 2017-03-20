@@ -58,31 +58,34 @@ public:
     it is connected to. */
     virtual SimTK::Vec3 getLocation(const SimTK::State& s) const = 0;
 
-    /** get the parent PhysicalFrame in which the PathPointis defined */
+    /** get the parent PhysicalFrame in which the PathPoint is defined */
     const PhysicalFrame& getParentFrame() const;
     /** set the parent PhysicalFrame in which the PathPoint is defined */
     void setParentFrame(const OpenSim::PhysicalFrame& aFrame);
 
-    /** <b>(Deprecated)</b> Old PathPoint interface */
+    /** <b>(Deprecated)</b> Old PathPoint interface.
+        Use getParentFrame() instead to get the PhysicalFrame in which
+        this PathPoint is defined.*/
     DEPRECATED_14("Use getParentFrame() instead.")
     const  PhysicalFrame& getBody() const;
-
+    /** <b>(Deprecated)</b> Old PathPoint interface.
+        Use setParentFrame() instead.*/
     DEPRECATED_14("Use setParentFrame() instead.")
     void setBody(const PhysicalFrame& body);
-    
+    /** <b>(Deprecated)</b> Old PathPoint interface.
+        Use getParentFrame().getName() instead.*/
     DEPRECATED_14("Use getParentFrame().getName() instead.")
     const std::string& getBodyName() const;
 
-    virtual void scale(const SimTK::Vec3& scaleFactors) {}
+    virtual void scale(const SimTK::Vec3& scaleFactors) = 0;
 
     virtual const WrapObject* getWrapObject() const { return nullptr; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }
 
-    // get the partial of the point location w.r.t. to the coordinates (Q)
-    // it is dependent on.
-    virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const
-        { return SimTK::Vec3(0); }
+    /** get the partial derivative of the point location in the parent frame
+        w.r.t. to the coordinates(Q) and expressed in the parent frame. */
+    virtual SimTK::Vec3 getdPointdQ(const SimTK::State& s) const = 0;
 
     static void deletePathPoint(AbstractPathPoint* aPoint) {
         if (aPoint) delete aPoint;

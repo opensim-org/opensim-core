@@ -69,6 +69,10 @@ public:
 
     void scale(const SimTK::Vec3& scaleFactors) override;
 
+    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override {
+        return SimTK::Vec3(0);
+    }
+
 protected:
 
     const Station& getStation() const { 
