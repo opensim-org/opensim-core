@@ -197,6 +197,10 @@ void LowOrder<T>::set_ocproblem(
     m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
             0.5 * mesh_intervals;
 
+    // Allocate working memory.
+    m_derivs.resize(m_num_states, m_num_mesh_points);
+    m_path_constraints.resize(m_num_path_constraints, m_num_mesh_points);
+
     m_ocproblem->initialize_on_mesh(mesh);
 }
 
@@ -280,19 +284,16 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     // Obtain state derivatives at each mesh point.
     // --------------------------------------------
     // TODO storing 1 too many derivatives trajectory; don't need the first
-    // xdot (at t0).
+    // xdot (at t0). (TODO I don't think this is true anymore).
     // TODO tradeoff between memory and parallelism.
-    // TODO reuse this memory!!!!!! Don't allocate every time!!!
-    MatrixX<T> derivs(m_num_states, m_num_mesh_points);
-    MatrixX<T> path_constraints(m_num_path_constraints, m_num_mesh_points);
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                              derivs.col(i_mesh));
+                              m_derivs.col(i_mesh));
         m_ocproblem->path_constraints(i_mesh, time,
                                       states.col(i_mesh), controls.col(i_mesh),
-                                      path_constraints.col(i_mesh));
+                                      m_path_constraints.col(i_mesh));
     }
 
     // Compute constraint defects.
@@ -302,11 +303,11 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     const unsigned N = m_num_mesh_points;
     const auto& x_i = states.rightCols(N - 1);
     const auto& x_im1 = states.leftCols(N - 1);
-    const auto& xdot_i = derivs.rightCols(N - 1);
+    const auto& xdot_i = m_derivs.rightCols(N - 1);
     const auto& h = step_size;
     //constr_view.defects = x_i-(x_im1+h*xdot_i);
     // TODO Trapezoidal:
-    const auto& xdot_im1 = derivs.leftCols(N-1);
+    const auto& xdot_im1 = m_derivs.leftCols(N-1);
     //constr_view.defects = x_i-(x_im1+h*xdot_im1);
     constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
     //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
@@ -317,7 +318,7 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     //}
 
     // Store path constraints.
-    constr_view.path_constraints = path_constraints;
+    constr_view.path_constraints = m_path_constraints;
 }
 
 template<typename T>

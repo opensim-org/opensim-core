@@ -223,6 +223,10 @@ private:
     //double m_initial_time = -1;
     //double m_final_time = -1;
     Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
+
+    // Working memory.
+    mutable MatrixX<T> m_derivs;
+    mutable MatrixX<T> m_path_constraints;
 };
 
 } // namespace transcription
