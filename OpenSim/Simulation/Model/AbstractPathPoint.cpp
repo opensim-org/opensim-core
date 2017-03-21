@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  PathPoint.cpp                          *
+ *                      OpenSim:  AbstractPathPoint.cpp                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -8,7 +8,6 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,7 +23,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "PathPoint.h"
+#include "AbstractPathPoint.h"
 
 //=============================================================================
 // STATICS
@@ -34,64 +33,53 @@ using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Transform;
 
-PathPoint::PathPoint() : Super() 
+
+const PhysicalFrame& AbstractPathPoint::getParentFrame() const
 {
-    constructProperties();
+    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
 }
 
-void PathPoint::constructProperties()
+void AbstractPathPoint::setParentFrame(const OpenSim::PhysicalFrame& frame)
 {
-    //Default location
-    SimTK::Vec3 origin(0.0, 0.0, 0.0);
-    // Location in Body 
-    constructProperty_location(origin);
+    connectSocket_parent_frame(frame);
 }
 
-void PathPoint::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-    updStation().upd_location() = get_location();
-    updStation().updSocket("parent_frame").
-        setConnecteeName(updSocket("parent_frame").getConnecteeName());
+const PhysicalFrame& AbstractPathPoint::getBody() const {
+    return getParentFrame();
 }
 
-void PathPoint::setLocation(const SimTK::Vec3& location) {
-    upd_location() = location;
-    updStation().upd_location() = location;
+void AbstractPathPoint::setBody(const PhysicalFrame& body)
+{
+    setParentFrame(body);
 }
 
-void PathPoint::extendConnectToModel(Model& model)
-{
-    Super::extendConnectToModel(model);
-    // connect the underlying Station to the PathPoint's parent_frame
-    updStation().setParentFrame(getParentFrame());
+const std::string& AbstractPathPoint::getBodyName() const {
+    return getParentFrame().getName();
 }
 
-void PathPoint::
-changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& frame)
+// PathPoint used to be the base class for all path points including
+// MovingPathPoints, which was incorrect. AbstractPathPoint was added to
+// the hierarchy to resolve that issue and since the updateFromXML code
+// still pertains to all PathPoints was included here in AbstractPathPoint
+// If derived classes have to override for future changes, do not 
+// forget to invoke Super::updateFromXMLNode.
+void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, 
+                                          int versionNumber)
 {
-    if (!hasOwner()) {
-        throw Exception("PathPoint::changeBodyPreserveLocation attempted to "
-            " change the frame of PathPoint which was not assigned to a frame.");
+    int documentVersion = versionNumber;
+    if (documentVersion < XMLDocument::getLatestVersion()) {
+        if (documentVersion < 30505) {
+            // replace old properties with latest use of Connectors
+            SimTK::Xml::element_iterator bodyElement = aNode.element_begin("body");
+            std::string bodyName("");
+            if (bodyElement != aNode.element_end()) {
+                bodyElement->getValueAs<std::string>(bodyName);
+                XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                    "parent_frame", bodyName);
+            }
+        }
     }
-    // if it is already assigned to body, do nothing
-    const PhysicalFrame& currentFrame = getStation().getParentFrame();
 
-    if (currentFrame == frame)
-        return;
-
-    // Preserve location means to switch bodies without changing
-    // the location of the point in the inertial reference frame.
-    setLocation(
-        currentFrame.findStationLocationInAnotherFrame(s, 
-            getStation().get_location(), frame) );
-
-    // now make frame this PathPoint's parent Frame
-    setParentFrame(frame);
+    Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-void PathPoint::scale(const SimTK::Vec3& scaleFactors) {
-    auto& loc = upd_location();
-    loc = loc.elementwiseMultiply(scaleFactors);
-    updStation().upd_location() = loc;
-}
