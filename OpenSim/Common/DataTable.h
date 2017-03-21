@@ -731,21 +731,6 @@ public:
         updRowAtIndex(index) = depRow;
     }
 
-    /** Set row corresponding to the given entry in the independent column.
-    This function searches the independent column for exact equality, which may 
-    not be appropriate if `ETX` is of type `double`. See 
-    TimeSeriesTable_::updNearestRow().
-    Equivalent to
-    ```
-    updRow(ind) = depRow;
-    ```
-
-    \throws KeyNotFound If the independent column has no entry with given
-                        value.                                                */
-    void setRow(const ETX& ind, const RowVector& depRow) {
-        updRow(ind) = depRow;
-    }
-
     /** Set row at index. Equivalent to
     ```
     updRowAtIndex(index) = depRow;
@@ -768,6 +753,21 @@ public:
     \throws KeyNotFound If the independent column has no entry with given
                         value.                                                */
     void setRow(const ETX& ind, const RowVectorView& depRow) {
+        updRow(ind) = depRow;
+    }
+
+    /** Set row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
+    Equivalent to
+    ```
+    updRow(ind) = depRow;
+    ```
+
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
+    void setRow(const ETX& ind, const RowVector& depRow) {
         updRow(ind) = depRow;
     }
 
