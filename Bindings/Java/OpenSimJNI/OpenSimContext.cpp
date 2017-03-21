@@ -240,7 +240,9 @@ bool OpenSimContext::replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, Ab
 }
 
 void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
-    mp.setLocationCoord(*_configState, i, d);
+    SimTK::Vec3 loc = mp.getLocation(*_configState);
+    loc[i] = d;
+    mp.setLocation(loc);
     _configState->invalidateAll(SimTK::Stage::Position);
     _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 }
