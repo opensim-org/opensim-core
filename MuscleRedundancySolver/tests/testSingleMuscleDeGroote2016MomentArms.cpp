@@ -447,7 +447,6 @@ void testLiftingMassMuscleRedundancySolver(
     // Without filtering, the moments have high frequency content,
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
-    // TODO mrs.set_lowpass_cutoff_frequency_for_joint_moments(80);
     mrs.set_create_reserve_actuators(0.001);
     MuscleRedundancySolver::Solution solution = mrs.solve();
     solution.write("testSingleMuscleDeGroote2016MomentArms_MRS");

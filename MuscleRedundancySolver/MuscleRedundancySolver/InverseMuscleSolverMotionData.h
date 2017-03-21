@@ -16,14 +16,14 @@ class Model;
 ///   - muscle-tendon lengths
 ///   - moment arms
 /// This class also allows interpolating these data for use by solvers.
-class MotionData {
+class InverseMuscleSolverMotionData {
 public:
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform inverse dynamics and a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
     /// The inverse dynamics moments are filtered with the provided lowpass
     /// cutoff frequency; use -1 to not filter.
-    MotionData(const OpenSim::Model& model,
+    InverseMuscleSolverMotionData(const OpenSim::Model& model,
                const OpenSim::TimeSeriesTable& kinematicsData,
                const double& lowpassCutoffJointMoments);
     /// Get the first time in the kinematicsData table.

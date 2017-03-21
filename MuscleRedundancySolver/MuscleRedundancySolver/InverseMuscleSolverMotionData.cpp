@@ -1,5 +1,5 @@
 
-#include "MotionData.h"
+#include "InverseMuscleSolverMotionData.h"
 
 #include <mesh.h>
 
@@ -30,9 +30,10 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
     return set;
 }
 
-MotionData::MotionData(const OpenSim::Model& model,
-           const OpenSim::TimeSeriesTable& kinematicsData,
-           const double& lowpassCutoffJointMoments) :
+InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
+        const OpenSim::Model& model,
+        const OpenSim::TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffJointMoments) :
         // TODO _kinematicsData(kinematicsData),
         _initialTime(kinematicsData.getIndependentColumn().front()),
         _finalTime(kinematicsData.getIndependentColumn().back())
@@ -173,8 +174,8 @@ MotionData::MotionData(const OpenSim::Model& model,
     }
 }
 
-void MotionData::interpolateNetMoments(const Eigen::VectorXd& times,
-                                       Eigen::MatrixXd& desiredMoments) const {
+void InverseMuscleSolverMotionData::interpolateNetMoments(
+        const Eigen::VectorXd& times, Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
@@ -192,7 +193,8 @@ void MotionData::interpolateNetMoments(const Eigen::VectorXd& times,
     mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
 }
 
-void MotionData::interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
+void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
+        const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonLengths) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
@@ -211,7 +213,8 @@ void MotionData::interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
     }
 }
 
-void MotionData::interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
+void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
+        const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonVelocities) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
@@ -230,8 +233,8 @@ void MotionData::interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
     }
 }
 
-void MotionData::interpolateMomentArms(const Eigen::VectorXd& times,
-                                       Eigen::MatrixXd& momentArms) const {
+void InverseMuscleSolverMotionData::interpolateMomentArms(
+        const Eigen::VectorXd& times, Eigen::MatrixXd& momentArms) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,

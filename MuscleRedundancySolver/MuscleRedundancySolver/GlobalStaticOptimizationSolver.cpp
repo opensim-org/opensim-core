@@ -1,7 +1,7 @@
 #include "GlobalStaticOptimizationSolver.h"
 
 #include "DeGroote2016Muscle.h"
-#include "MotionData.h"
+#include "InverseMuscleSolverMotionData.h"
 
 #include <mesh.h>
 
@@ -32,7 +32,8 @@ template<typename T>
 class GSOProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
 public:
     GSOProblemSeparate(const GlobalStaticOptimizationSolver& mrs,
-                       const Model& model, const MotionData& motionData)
+                       const Model& model,
+                       const InverseMuscleSolverMotionData& motionData)
             : mesh::OptimalControlProblemNamed<T>("GSO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
@@ -276,7 +277,7 @@ public:
 private:
     const GlobalStaticOptimizationSolver& _mrs;
     Model _model;
-    const MotionData& _motionData;
+    const InverseMuscleSolverMotionData& _motionData;
     double _initialTime = SimTK::NaN;
     double _finalTime = SimTK::NaN;
 
@@ -356,8 +357,8 @@ GlobalStaticOptimizationSolver::Solution GlobalStaticOptimizationSolver::solve()
     OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
             get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
                      "Invalid value for cutoff frequency for joint moments.");
-    MotionData motionData(model, getKinematicsData(),
-                          get_lowpass_cutoff_frequency_for_joint_moments());
+    InverseMuscleSolverMotionData motionData(model, getKinematicsData(),
+            get_lowpass_cutoff_frequency_for_joint_moments());
 
     // Solve the optimal control problem.
     // ----------------------------------
