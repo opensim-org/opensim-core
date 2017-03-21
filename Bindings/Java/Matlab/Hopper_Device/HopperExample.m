@@ -1,28 +1,28 @@
-function varargout = tgcs2017(varargin)
-% TGCS2017 MATLAB code for tgcs2017.fig
-%      TGCS2017, by itself, creates a new TGCS2017 or raises the existing
+function varargout = HopperExample(varargin)
+% HOPPEREXAMPLE MATLAB code for HopperExample.fig
+%      HOPPEREXAMPLE, by itself, creates a new HOPPEREXAMPLE or raises the existing
 %      singleton*.
 %
-%      H = TGCS2017 returns the handle to a new TGCS2017 or the handle to
+%      H = HOPPEREXAMPLE returns the handle to a new HOPPEREXAMPLE or the handle to
 %      the existing singleton*.
 %
-%      TGCS2017('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in TGCS2017.M with the given input arguments.
+%      HOPPEREXAMPLE('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in HOPPEREXAMPLE.M with the given input arguments.
 %
-%      TGCS2017('Property','Value',...) creates a new TGCS2017 or raises the
+%      HOPPEREXAMPLE('Property','Value',...) creates a new HOPPEREXAMPLE or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before tgcs2017_OpeningFcn gets called.  An
+%      applied to the GUI before HopperExample_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to tgcs2017_OpeningFcn via varargin.
+%      stop.  All inputs are passed to HopperExample_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help tgcs2017
+% Edit the above text to modify the response to help HopperExample
 
-% Last Modified by GUIDE v2.5 28-Feb-2017 11:35:39
+% Last Modified by GUIDE v2.5 20-Mar-2017 10:37:49
 
 % Begin initialization code - DO NOT EDIT
 
@@ -36,8 +36,8 @@ function varargout = tgcs2017(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @tgcs2017_OpeningFcn, ...
-                   'gui_OutputFcn',  @tgcs2017_OutputFcn, ...
+                   'gui_OpeningFcn', @HopperExample_OpeningFcn, ...
+                   'gui_OutputFcn',  @HopperExample_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -51,23 +51,64 @@ else
 end
 % End initialization code - DO NOT EDIT
 
-function tgcs2017_OpeningFcn(hObject, eventdata, handles, varargin)
+function HopperExample_OpeningFcn(hObject, eventdata, handles, varargin)
 
+%%% SET DEFAULTS %%%
+
+% Spring stiffness
+set(handles.spring_stiffness,'min',1);
+set(handles.spring_stiffness,'max',10);
+set(handles.spring_stiffness,'Value',3);
+
+% Device options disabled
+set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
+
+axes(handles.activation_axes)
 axis([0 5 0 1])
 xlabel('Jump Time (s)')
 ylabel('Activation')
-% Choose default command line output for tgcs2017
+
+% Choose default command line output for HopperExample
 handles.output = hObject;
 
 % Update handles structure
 guidata(hObject, handles);
 
-function varargout = tgcs2017_OutputFcn(hObject, eventdata, handles) 
+function varargout = HopperExample_OutputFcn(hObject, eventdata, handles) 
 
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-% NEW_MUSC_ACT - Plot new activation.
+% SIMULATE - Simulate hopper.
+function simulate_Callback(hObject, eventdata, handles)
+
+muscleActivation = handles.muscleActivation;
+addPassiveDevice = handles.enable_passive.Value;
+passivePatellaWrap = handles.passive_patella_wrap.Value;
+springStiffness = handles.spring_stiffness.Value;
+addActiveDevice = handles.enable_active.Value;
+activePatellaWrap = handles.active_patella_wrap.Value;
+isActivePropMyo = handles.active_as_prop_myo.Value;
+if isActivePropMyo || ~addActiveDevice
+    deviceActivation = [0.0 2.0 3.9;
+                        0.3 1.0 0.1];
+else
+    deviceActivation = handles.deviceActivation;
+end
+visualize = handles.visualize.Value;
+
+axes(handles.results_axes)
+RunHopperGUI('visualize', visualize, ...
+             'muscleActivation', muscleActivation, ...
+             'addPassiveDevice', addPassiveDevice, ...
+             'passivePatellaWrap', passivePatellaWrap, ...
+             'springStiffness', springStiffness, ...
+             'addActiveDevice', addActiveDevice, ...
+             'activePatellaWrap', activePatellaWrap, ...
+             'isActivePropMyo', isActivePropMyo, ...
+             'deviceActivation',deviceActivation)
+
+% NEW_MUSC_ACT - Get new muscle activation.
 function new_musc_act_Callback(hObject, eventdata, handles)
 
 names = {'clear','new_musc_act'};
@@ -76,65 +117,57 @@ for n = 1:length(names)
     set(handles.(names{n}),'Enable','off')
 end
 
-user_act = get_user_act();
-assignin('base','user_act',user_act)
+muscleActivation = getUserActivation();
+handles.muscleActivation = muscleActivation;
+guidata(hObject, handles)
 
 for n = 1:length(names)
     set(handles.(names{n}),'Enable','on')
 end
 
-% TODO: set toggle for hopper with/without device 
-RunHopper_answers
+% NEW_DEVICE_ACT - Get new device activation.
+function new_device_act_Callback(hObject, eventdata, handles)
+deviceActivation = getUserActivation();
+handles.deviceActivation = deviceActivation;
+guidata(hObject, handles)
 
 % CLEAR - Reset axes to clear plotted activations.
 function clear_Callback(hObject, eventdata, handles)
+axes(handles.activation_axes)
 ax = gca;
 cla(ax,'reset');
 axis([0 5 0 1])
 xlabel('Jump Time (s)')
 ylabel('Activation')
 
-
-% --- Executes on button press in without_device.
 function without_device_Callback(hObject, eventdata, handles)
-% hObject    handle to without_device (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
 
-% Hint: get(hObject,'Value') returns toggle state of without_device
+function with_device_Callback(hObject, eventdata, handles)
+set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'on')
 
-
-% --- Executes on button press in radio_with_device.
-function radio_with_device_Callback(hObject, eventdata, handles)
-% hObject    handle to radio_with_device (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of radio_with_device
-
-
-% --- Executes on button press in enable_passive.
+% --- Executes on button press in enable_active.
 function checkbox_passive_enable_Callback(hObject, eventdata, handles)
-% hObject    handle to enable_passive (see GCBO)
+% hObject    handle to enable_active (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of enable_passive
+% Hint: get(hObject,'Value') returns toggle state of enable_active
 
 
 
-function cost_recent_Callback(hObject, eventdata, handles)
-% hObject    handle to cost_recent (see GCBO)
+function metabolic_cost_Callback(hObject, eventdata, handles)
+% hObject    handle to metabolic_cost (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of cost_recent as text
-%        str2double(get(hObject,'String')) returns contents of cost_recent as a double
+% Hints: get(hObject,'String') returns contents of metabolic_cost as text
+%        str2double(get(hObject,'String')) returns contents of metabolic_cost as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function cost_recent_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to cost_recent (see GCBO)
+function metabolic_cost_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to metabolic_cost (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -146,18 +179,18 @@ end
 
 
 
-function cost_best_Callback(hObject, eventdata, handles)
-% hObject    handle to cost_best (see GCBO)
+function device_cost_Callback(hObject, eventdata, handles)
+% hObject    handle to device_cost (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of cost_best as text
-%        str2double(get(hObject,'String')) returns contents of cost_best as a double
+% Hints: get(hObject,'String') returns contents of device_cost as text
+%        str2double(get(hObject,'String')) returns contents of device_cost as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function cost_best_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to cost_best (see GCBO)
+function device_cost_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to device_cost (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -215,21 +248,21 @@ end
 
 
 % --- Executes during object creation, after setting all properties.
-function axes1_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to axes1 (see GCBO)
+function activation_axes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to activation_axes (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-% Hint: place code in OpeningFcn to populate axes1
+% Hint: place code in OpeningFcn to populate activation_axes
 
 
-% --- Executes on button press in enable_passive.
-function enable_passive_Callback(hObject, eventdata, handles)
-% hObject    handle to enable_passive (see GCBO)
+% --- Executes on button press in enable_active.
+function enable_active_Callback(hObject, eventdata, handles)
+% hObject    handle to enable_active (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of enable_passive
+% Hint: get(hObject,'Value') returns toggle state of enable_active
 
 
 % --- Executes on button press in active_patella_wrap.
@@ -259,7 +292,7 @@ function passive_patella_wrap_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of passive_patella_wrap
 
 
-% --- Executes on slider movement.
+% SPRING_STIFFNESS - Set spring stiffness with slider.
 function spring_stiffness_Callback(hObject, eventdata, handles)
 % hObject    handle to spring_stiffness (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -281,15 +314,26 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-% --- Executes on button press in simulate.
-function simulate_Callback(hObject, eventdata, handles)
-% hObject    handle to simulate (see GCBO)
+
+
+function visualize_Callback(hObject, eventdata, handles)
+
+% handles.visualize = get(hObject,'Value');
+% guidata(hObject, handles)
+
+% --- Executes during object creation, after setting all properties.
+function results_axes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to results_axes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: place code in OpeningFcn to populate results_axes
+
+
+% --- Executes on button press in enable_passive.
+function enable_passive_Callback(hObject, eventdata, handles)
+% hObject    handle to enable_passive (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --- Executes on button press in new_device_act.
-function new_device_act_Callback(hObject, eventdata, handles)
-% hObject    handle to new_device_act (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+% Hint: get(hObject,'Value') returns toggle state of enable_passive

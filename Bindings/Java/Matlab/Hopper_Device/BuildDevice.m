@@ -20,7 +20,28 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function device = BuildDevice()
+function device = BuildDevice(varargin)
+
+p = inputParser();
+
+defaultDeviceType = 'active';
+defaultIsPropMyo = true;
+defaultActivation = [0.0 1.0 2.0 3.9;
+                     0.0 0.3 1.0 0.1];
+defaultSpringStiffness = 1;
+
+addOptional(p,'deviceType',defaultDeviceType)
+addOptional(p,'isPropMyo',defaultIsPropMyo)
+addOptional(p,'activation',defaultActivation)
+addOptional(p,'springStiffness',defaultSpringStiffness)
+
+parse(p,varargin{:});
+
+deviceType = p.Results.deviceType;
+isPropMyo = p.Results.isPropMyo;
+activation = p.Results.activation;
+springStiffness = p.Results.springStiffness;
+
 % Build a model of a device, consisting of a PathActuator, a proportional
 % myoelectric controller, and two bodies.
 
@@ -30,13 +51,13 @@ import org.opensim.modeling.*;
 % TODO talk about Container class (if it remains).
 % TODO try making this a Model (done: did not work; two Grounds).
 device = Container();
-device.setName('device')
+device.setName(deviceType)
 
 % The device's mass is distributed between two identical cuffs that attach to
 % the hopper via WeldJoints (to be added below).
 deviceMass = 2.0;
-cuffA = Body('cuffA', deviceMass/2., Vec3(0), Inertia(0.5));
-cuffB = Body('cuffB', deviceMass/2., Vec3(0), Inertia(0.5));
+cuffA = Body(['cuffA_' deviceType], deviceMass/2., Vec3(0), Inertia(0.5));
+cuffB = Body(['cuffB_' deviceType], deviceMass/2., Vec3(0), Inertia(0.5));
 device.addComponent(cuffA);
 device.addComponent(cuffB);
 
@@ -63,21 +84,58 @@ anchorB.setName('anchorB');
 anchorB.connectSocket_child_frame(cuffB);
 device.addComponent(anchorB);
 
-% Attach a PathActuator between the two cuffs.
-pathActuator = PathActuator();
-pathActuator.setName('cableAtoB');
-pathActuator.updGeometryPath().setName('geompath');
-pathActuator.set_optimal_force(1000.0);
-pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
-pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
-device.addComponent(pathActuator);
+switch deviceType
+    case 'active'
+        % Attach a PathActuator between the two cuffs.
+        pathActuator = PathActuator();
+        pathActuator.setName('cableAtoB');
+        pathActuator.updGeometryPath().setName('geompath');
+        pathActuator.set_optimal_force(1000.0);
+        pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
+        pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
+        device.addComponent(pathActuator);
+        
+        if isPropMyo
+            % Create a proportional myoelectric controller.
+            controller = ToyPropMyoController();
+            controller.setName('controller');
+            controller.set_gain(1.0);
+            % Connect the controller's 'actuator' Socket to pathActuator.
+            controller.connectSocket_actuator(pathActuator);
+        else
+            % If not prop myo, apply user specified device activation
+            controller = PrescribedController();
+            controller.setName('controller');
+            controller.addActuator(pathActuator);
+            controlFunction = PiecewiseLinearFunction();
+            for i = 1:size(activation,2)
+                controlFunction.addPoint(activation(1,i), activation(2,i));
+            end
+            controller.addActuator(pathActuator);
+            controller.prescribeControlForActuator('cableAtoB',controlFunction);
+        end
+        device.addComponent(controller)
+        
+    case 'passive'
+        clutchedPathSpring = ClutchedPathSpring();
+        clutchedPathSpring.setName('cableAtoB');
+        clutchedPathSpring.updGeometryPath().setName('geompath');
+        clutchedPathSpring.set_optimal_force(100.0);
+        clutchedPathSpring.addNewPathPoint('pointA', cuffA, Vec3(0));
+        clutchedPathSpring.addNewPathPoint('pointB', cuffB, Vec3(0));
+        clutchedPathSpring.setStiffness(springStiffness);
+        device.addComponent(clutchedPathSpring);
+        
+        controller = PrescribedController();
+        controller.setName('controller');
+        controlFunction = PiecewiseConstantFunction();
+        clutchControl = [0.0 1.0 5.0;
+                         0.0 0.1 1.0];
+        for i = 1:size(clutchControl,2)
+            controlFunction.addPoint(clutchControl(1,i), clutchControl(2,i));
+        end
+        device.addComponent(controller);
+end
 
-% Create a proportional myoelectric controller.
-controller = ToyPropMyoController();
-controller.setName('controller');
-controller.set_gain(1.0);
-% Connect the controller's 'actuator' Socket to pathActuator.
-controller.connectSocket_actuator(pathActuator);
-device.addComponent(controller);
 
 end

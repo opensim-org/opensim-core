@@ -194,11 +194,7 @@ vastus.updGeometryPath().addPathWrap(patella);
 % Create a controller to excite the vastus muscle.
 brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
-controlFunction = PiecewiseConstantFunction();
-
-% controlFunction.addPoint(0.0, 0.3);
-% controlFunction.addPoint(2.0, 1.0);
-% controlFunction.addPoint(3.9, 0.1);
+controlFunction = PiecewiseLinearFunction();
 
 for i = 1:size(activation,2)
     controlFunction.addPoint(activation(1,i), activation(2,i));
@@ -206,6 +202,19 @@ end
 
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
+
+%% Metabolics probe
+% ------------
+probe = Umberger2010MuscleMetabolicsProbe();
+probe.setName('Umberger');
+hopper.addProbe(probe);
+
+probe = Umberger2010MuscleMetabolicsProbe.safeDownCast(hopper.updProbeSet().get('Umberger'));
+probe.addMuscle(vastus.getName(), 0.5);
+hopper.setup();
+probe.useCalculatedMass('vastus');
+probe.setSpecificTension('vastus', 0.6E6);
+probe.setOperation('integrate');
 
 % Device attachment frames.
 % -------------------------

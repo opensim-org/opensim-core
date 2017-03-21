@@ -1,4 +1,4 @@
-function [xy] = get_user_act()
+function [xy] = getUserActivation()
 
 % GET_USER_ACT 
 
@@ -9,7 +9,7 @@ pts = line('Xdata',NaN,'Ydata',NaN,'marker','o');
 
 maxpnts = 100; xy = zeros(2,maxpnts);
 while 1
-    for j=1:maxpnts
+    for j=2:maxpnts
         try 
             [x,y] = ginput(1);
         catch ME
