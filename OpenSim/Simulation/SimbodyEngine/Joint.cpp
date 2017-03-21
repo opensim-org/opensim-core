@@ -21,9 +21,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -32,63 +32,48 @@
 #include "simbody/internal/Constraint.h"
 #include "simbody/internal/MobilizedBody_Ground.h"
 
-//=============================================================================
+//==============================================================================
 // STATICS
-//=============================================================================
+//==============================================================================
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
+//==============================================================================
+// CONSTRUCTORS AND DESTRUCTOR
+//==============================================================================
 Joint::~Joint()
 {
 }
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
+
 Joint::Joint() : Super()
 {
     setNull();
     constructProperties();
 }
 
-/* API constructor. */
-Joint::Joint(const std::string &name, const PhysicalFrame& parent,
-                                      const PhysicalFrame& child,
-                                      bool reverse) : Joint()
+Joint::Joint(const std::string&    name,
+             const PhysicalFrame&  parent,
+             const PhysicalFrame&  child) : Joint()
 {
-    OPENSIM_THROW_IF( name.empty(), ComponentHasNoName,
-                      getClassName());
+    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName, getClassName());
 
     setName(name);
-    set_reverse(reverse);
-
     connectSocket_parent_frame(parent);
     connectSocket_child_frame(child);
 }
 
-/* Convenience Constructor*/
-Joint::Joint(const std::string &name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    bool reverse) : Joint()
+Joint::Joint(const std::string&    name,
+             const PhysicalFrame&  parent,
+             const SimTK::Vec3&    locationInParent,
+             const SimTK::Vec3&    orientationInParent,
+             const PhysicalFrame&  child,
+             const SimTK::Vec3&    locationInChild,
+             const SimTK::Vec3&    orientationInChild) : Joint()
 {
-    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName,
-        getClassName());
+    OPENSIM_THROW_IF(name.empty(), ComponentHasNoName, getClassName());
 
     setName(name);
-    set_reverse(reverse);
 
     // PARENT TRANSFORM
     Rotation parentRotation(BodyRotationSequence,
@@ -166,6 +151,7 @@ Joint::CoordinateIndex Joint::constructCoordinate(Coordinate::MotionType mt,
 void Joint::setNull()
 {
     setAuthors("Ajay Seth");
+    isReversed = false;
 }
 
 //_____________________________________________________________________________
@@ -176,9 +162,6 @@ void Joint::constructProperties()
 {
     // Generalized coordinates
     constructProperty_coordinates();
-
-    // Transform direction (parent->child or child->parent)
-    constructProperty_reverse(false);
 
     //Default frames list is empty
     constructProperty_frames();
@@ -339,7 +322,7 @@ void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
     Super::extendAddToSystem(system);
 
     // The parent node in the multibody tree must part of the system
-    if(get_reverse())
+    if(isReversed)
         // this will be the child if the joint definition is reversed
         getSocket<PhysicalFrame>("child_frame").getConnectee().addToSystem(system);
     else // otherwise it is the parent frame
@@ -669,6 +652,84 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 
                 // Remove old "CoordinateSet" element.
                 aNode.eraseNode(coordSetIter);
+            }
+        }
+
+        // Version 30514 removed the user-facing "reverse" property from Joint.
+        // The parent and child frames are swapped if a "reverse" element is
+        // found and its value is "true".
+        if (documentVersion < 30514) {
+            auto reverseElt = aNode.element_begin("reverse");
+
+            if (reverseElt != aNode.element_end()) {
+                bool swapFrames = false;
+                reverseElt->getValue().tryConvertToBool(swapFrames);
+
+                if (swapFrames) {
+                    std::string oldParentFrameName = "";
+                    std::string oldChildFrameName  = "";
+
+                    // Find names of parent and child frames. If more than one
+                    // "parent_frame" or "child_frame" element exists, keep the
+                    // first one. The "parent_frame" and "child_frame" elements
+                    // may be listed in either order.
+                    SimTK::Xml::element_iterator connectorsNode =
+                        aNode.element_begin("connectors");
+                    SimTK::Xml::element_iterator connectorElt = connectorsNode->
+                        element_begin("Connector_PhysicalFrame_");
+                    SimTK::Xml::element_iterator connecteeNameElt;
+
+                    while (connectorElt != connectorsNode->element_end())
+                    {
+                        if (connectorElt->getRequiredAttributeValue("name") ==
+                            "parent_frame" && oldParentFrameName.empty())
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->getValueAs<std::string>(
+                                oldParentFrameName);
+                        }
+                        else if (connectorElt->getRequiredAttributeValue("name")
+                                 == "child_frame" && oldChildFrameName.empty())
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->getValueAs<std::string>(
+                                oldChildFrameName);
+                        }
+                        ++connectorElt;
+                    }
+
+                    // Swap parent and child frame names. If more than one
+                    // "parent_frame" or "child_frame" element exists, assign
+                    // the same value to all such elements.
+                    connectorsNode = aNode.element_begin("connectors");
+                    connectorElt = connectorsNode->element_begin(
+                                   "Connector_PhysicalFrame_");
+
+                    while (connectorElt != connectorsNode->element_end())
+                    {
+                        if (connectorElt->getRequiredAttributeValue("name") ==
+                            "parent_frame")
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->setValue(oldChildFrameName);
+                        }
+                        else if (connectorElt->getRequiredAttributeValue("name")
+                                 == "child_frame")
+                        {
+                            connecteeNameElt = connectorElt->
+                                               element_begin("connectee_name");
+                            connecteeNameElt->setValue(oldParentFrameName);
+                        }
+                        ++connectorElt;
+                    }
+                }
+
+                // Remove "reverse" element regardless of its value (it is no
+                // longer a property of Joint).
+                aNode.eraseNode(reverseElt);
             }
         }
 

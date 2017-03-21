@@ -116,7 +116,7 @@ class TestInputsOutputs(unittest.TestCase):
         s = model.initSystem()
 
         out = model.getOutput("com_position")
-        self.assertEqual(out.getTypeName(), "SimTK::Vec<3,double,1>")
+        self.assertEqual(out.getTypeName(), "Vec3")
         print(out.getValueAsString(s))
 
         # Users should just call the method connected to this output, but

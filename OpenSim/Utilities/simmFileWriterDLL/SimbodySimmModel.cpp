@@ -1029,15 +1029,18 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 
     const PathPointSet& pts = aMuscle.getGeometryPath().getPathPointSet();
 
+    // get a state for the purpose of probing path points
+    const SimTK::State& s = aMuscle.getSystem().getDefaultState();
+
     aStream << "beginpoints" << endl;
     for (int i = 0; i < pts.getSize(); i++)
     {
-        PathPoint& pt = pts.get(i);
+        AbstractPathPoint& pt = pts.get(i);
         if (pt.getConcreteClassName()==("ConditionalPathPoint")) {
             ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
-            Vec3& attachment = mvp->getLocation();
+            Vec3 attachment = mvp->getLocation(s);
             double range[]{ mvp->get_range(0), mvp->get_range(1) };
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getParentFrame().getName();
             
             if (mvp->hasCoordinate()) {
                 const Coordinate& coord = mvp->getCoordinate();
@@ -1052,7 +1055,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             }
         } else if (pt.getConcreteClassName()==("MovingPathPoint")) {
             MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
-            const Vec3& attachment = mpp->get_location();
+            const Vec3 attachment(0);
             if (mpp->hasXCoordinate()) {
                 aStream << "f" << addMuscleFunction(&mpp->get_x_location(), mpp->getXCoordinate().getMotionType(), Coordinate::Translational) << "(" << mpp->getXCoordinate().getName() << ") ";
             } else {
@@ -1068,10 +1071,10 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             } else {
                 aStream << attachment[2];
             }
-            aStream << " segment " << mpp->getBody().getName() << endl;
+            aStream << " segment " << mpp->getParentFrame().getName() << endl;
         } else {
-            Vec3& attachment = pt.getLocation();
-            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getBody().getName() << endl;
+            Vec3 attachment = pt.getLocation(s);
+            aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getParentFrame().getName() << endl;
         }
     }
     aStream << "endpoints" << endl;

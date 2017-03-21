@@ -45,8 +45,8 @@ Description:
   
          scale  ik  id  rra  cmc  forward  analyze     (case-insensitive)
 
-  or the name of any registered OpenSim class (even from a plugin). Here are
-  descriptions of the Tools listed above:
+  or the name of any registered (concrete) OpenSim class (even from a plugin).
+  Here are descriptions of the Tools listed above:
   
          scale    Create a subject-specific model.
          ik       Inverse Kinematics
@@ -114,12 +114,15 @@ int print_xml(int argc, const char** argv) {
     const auto* obj = Object::getDefaultInstanceOfType(className);
 
     if (!obj) {
-        throw Exception("There is no tool or class named '" + className + "'.\n"
+        throw Exception("There is no tool or registered concrete class named '"
+                + className + "'.\n"
                 "Did you intend to load a plugin (with --library)?");
     }
 
     std::cout << "Printing '" << outputFile << "'." << std::endl;
+    Object::setSerializeAllDefaults(true);
     obj->print(outputFile);
+    Object::setSerializeAllDefaults(false);
 
     return EXIT_SUCCESS;
 }

@@ -42,7 +42,8 @@ void testSignalGenerator() {
     const double amplitude = 1.5;
     const double omega = 3.1;
     const double phase = 0.3;
-    signalGen->set_function(Sine(amplitude, omega, phase));
+    const double offset = 0.12345;
+    signalGen->set_function(Sine(amplitude, omega, phase, offset));
     world.addComponent(signalGen);
     
     auto* reporter = new TableReporter();
@@ -69,7 +70,7 @@ void testSignalGenerator() {
         const double time = 0.1 * i;
         system.realize(s, Stage::Report);
         SimTK_TEST_EQ(results.getRowAtIndex(i)[0],
-                amplitude * std::sin(omega * time + phase));
+                amplitude * std::sin(omega * time + phase) + offset);
     }
 }
 

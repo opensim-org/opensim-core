@@ -35,7 +35,7 @@ env:
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
     - SWIG_VER=3.0.6
-    - PATH="$PATH:$TRAVIS_BUILD_DIR/travis_scripts"
+    - PATH="$PATH:$TRAVIS_BUILD_DIR/.github"
     - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
     - USE_CACHE=false
 

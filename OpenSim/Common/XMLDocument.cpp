@@ -60,7 +60,8 @@ using namespace std;
 // 30511 for replacing Probe::isDisabled with Probe::enabled.
 // 30512 for removing Model::FrameSet and moving frames to components list
 // 30513 for removing internal (silent) clamping of Muscle controls (excitations)
-const int XMLDocument::LatestVersion = 30513;
+// 30514 for removing "reverse" property from Joint
+const int XMLDocument::LatestVersion = 30514;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

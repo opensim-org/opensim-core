@@ -165,12 +165,13 @@
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
+%include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 %include <OpenSim/Simulation/Model/PathPoint.h>
 %include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 %include <OpenSim/Simulation/Model/MovingPathPoint.h>
-%template(SetPathPoint) OpenSim::Set<OpenSim::PathPoint>;
-%template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
+%template(SetPathPoint) OpenSim::Set<OpenSim::AbstractPathPoint>;
+%template(ArrayPathPoint) OpenSim::Array<OpenSim::AbstractPathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
 
 %include <OpenSim/Simulation/Model/PointForceDirection.h>
@@ -231,6 +232,13 @@
 %template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
 
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
+%include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+%include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
+%include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
+%include <OpenSim/Actuators/FiberForceLengthCurve.h>
+%include <OpenSim/Actuators/ForceVelocityCurve.h>
+%include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+%include <OpenSim/Actuators/TendonForceLengthCurve.h>
 %include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
 %include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
@@ -268,7 +276,7 @@ constructors because they have additional arguments.
     NAME(const std::string& name,
          const PhysicalFrame& parent,
          const PhysicalFrame& child) {
-        return new NAME(name, parent, child, false);
+        return new NAME(name, parent, child);
     }
     
     NAME(const std::string& name,
@@ -279,7 +287,7 @@ constructors because they have additional arguments.
          const SimTK::Vec3& locationInChild,
          const SimTK::Vec3& orientationInChild) {
         return new NAME(name, parent, locationInParent, orientationInParent,
-                    child, locationInChild, orientationInChild, false);
+                    child, locationInChild, orientationInChild);
     }
 };
 %enddef

@@ -25,8 +25,10 @@
 // INCLUDES
 //=============================================================================
 #include "WrapObject.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "WrapResult.h"
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+
 
 //=============================================================================
 // STATICS
@@ -140,7 +142,7 @@ void WrapObject::extendFinalizeFromProperties()
 }
 
 int WrapObject::wrapPathSegment(const SimTK::State& s, 
-                                PathPoint& aPoint1, PathPoint& aPoint2,
+                                AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
                                 const PathWrap& aPathWrap, 
                                 WrapResult& aWrapResult) const
 {
@@ -151,11 +153,11 @@ int WrapObject::wrapPathSegment(const SimTK::State& s,
 
     // Convert the path points from the frames of the bodies they are attached
     // to, to the frame of the wrap object's body
-    pt1 = aPoint1.getBody()
-        .findStationLocationInAnotherFrame(s, aPoint1.getLocation(), getFrame());
+    pt1 = aPoint1.getParentFrame()
+        .findStationLocationInAnotherFrame(s, aPoint1.getLocation(s), getFrame());
     
-    pt2 = aPoint2.getBody()
-        .findStationLocationInAnotherFrame(s, aPoint2.getLocation(), getFrame());
+    pt2 = aPoint2.getParentFrame()
+        .findStationLocationInAnotherFrame(s, aPoint2.getLocation(s), getFrame());
 
     // Convert the path points from the frame of the wrap object's body
     // into the frame of the wrap object

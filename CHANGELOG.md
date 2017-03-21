@@ -4,7 +4,7 @@ GitHub issues or pull requests that
 are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
-This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim/opensim-core).
+This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
 **Note**: This document is currently under construction.
 
@@ -48,6 +48,12 @@ Converting from v3.x to v4.0
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
+- The `reverse` property in Joint can no longer be set by the user; Model uses
+  SimTK::MultibodyGraphMaker to determine whether joints should be reversed when
+  building the multibody system. The joint's transform and coordinates maintain
+  a parent->child sense even if the joint has been reversed. For backwards
+  compatibility, a joint's parent and child PhysicalFrames are swapped when
+  opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
   `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
   (see the documentation in the `Manager` class for more details):

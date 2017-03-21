@@ -169,6 +169,7 @@ void testNonzeroInterceptCustomJointVsPin();
 // Multibody tree constructions tests
 void testAddedFreeJointForBodyWithoutJoint();
 void testAutomaticJointReversal();
+void testUserJointReversal();
 void testAutomaticLoopJointBreaker();
 
 int main()
@@ -193,6 +194,14 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl;
         failures.push_back("testAutomaticJointReversal");
+    }
+
+    // The parent and child frames should be swapped if the "reverse" element
+    // has been set to "true" in an old model file.
+    try { ++itc; testUserJointReversal(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testUserJointReversal");
     }
 
     // test that kinematic loops are broken to form a tree with constraints
@@ -2038,7 +2047,8 @@ void testAddedFreeJointForBodyWithoutJoint()
     model.initSystem();
 
     ASSERT_EQUAL(6, model.getNumCoordinates(), 0);
-    model.printBasicInfo(cout);
+    model.finalizeFromProperties();
+    model.printBasicInfo();
 }
 
 void testAutomaticJointReversal()
@@ -2124,10 +2134,6 @@ void testAutomaticJointReversal()
 
     //model.setUseVisualizer(true);
     SimTK::State& s = model.initSystem();
-
-    ASSERT(hip->get_reverse() == true);
-    ASSERT(knee->get_reverse() == true);
-    ASSERT(ankle->get_reverse() == true);
 
     SimTK::Transform pelvisX = pelvis->getTransformInGround(s);
     cout << "Pelvis Transform (reverse): " << pelvisX << endl;
@@ -2224,6 +2230,43 @@ void testAutomaticJointReversal()
 
     double accErr = ((acom - acomc).norm())/(acom.norm()+SimTK::Eps);
     ASSERT_EQUAL(accErr, 0.0, sqrt(integ_accuracy));
+}
+
+void testUserJointReversal()
+{
+    using namespace OpenSim;
+
+    cout << "\n==========================================================="
+         << "\n Test joint reversal set by user in old model file"
+         << "\n==========================================================="
+         << endl;
+
+    // Open model.
+    auto model = Model("double_pendulum_testReverse.osim");
+    model.finalizeConnections(model); //calls finalizeFromProperties internally
+
+    // In this model file:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod1 and child is rod2
+    // but the "reverse" element of pin2 is set to "true" so, after
+    // deserialization, the following should be true:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
+    auto& pin1 = model.getComponent<Joint>("pin1");
+    ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
+        __FILE__, __LINE__,
+        "Incorrect parent frame when 'reverse' element is set to 'false'");
+    ASSERT(pin1.getChildFrame().findBaseFrame().getName() == "rod1",
+        __FILE__, __LINE__,
+        "Incorrect child frame when 'reverse' element is set to 'false'");
+
+    auto& pin2 = model.getComponent<Joint>("pin2");
+    ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2",
+        __FILE__, __LINE__,
+        "Incorrect parent frame when 'reverse' element is set to 'true'");
+    ASSERT(pin2.getChildFrame().findBaseFrame().getName() == "rod1",
+        __FILE__, __LINE__,
+        "Incorrect child frame when 'reverse' element is set to 'true'");
 }
 
 void testAutomaticLoopJointBreaker()

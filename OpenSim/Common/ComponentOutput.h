@@ -32,6 +32,7 @@
 
 // INCLUDES
 #include "Exception.h"
+#include "Object.h"
 
 #include <functional>
 #include <map>
@@ -287,8 +288,9 @@ public:
         return _result;
     }
     
-    std::string getTypeName() const override
-        { return SimTK::NiceTypeName<T>::namestr(); }
+    std::string getTypeName() const override {
+        return OpenSim::Object_GetClassName<T>::name();
+    }
 
     std::string getValueAsString(const SimTK::State& state) const override {
         if (isListOutput()) {

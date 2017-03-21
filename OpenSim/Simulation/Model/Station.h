@@ -67,9 +67,9 @@ public:
 
     virtual ~Station();
 
-    /** get the parent PhysicalFrame to which the Station is attached */
+    /** get the parent PhysicalFrame in which the Station is defined */
     const PhysicalFrame& getParentFrame() const;
-    /** setter of Reference Frame off which the Station is defined */
+    /** set the parent PhysicalFrame in which the Station is defined */
     void setParentFrame(const OpenSim::PhysicalFrame& aFrame);
 
     /** Find this Station's location in any Frame */

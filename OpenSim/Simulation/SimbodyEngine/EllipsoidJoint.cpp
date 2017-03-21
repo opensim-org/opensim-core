@@ -21,58 +21,48 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "EllipsoidJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include "simbody/internal/MobilizedBody_Ellipsoid.h"
 
-//=============================================================================
+//==============================================================================
 // STATICS
-//=============================================================================
+//==============================================================================
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
+//==============================================================================
+// CONSTRUCTORS AND DESTRUCTOR
+//==============================================================================
 EllipsoidJoint::EllipsoidJoint() : Super()
 {
     constructProperties();
 }
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-EllipsoidJoint::EllipsoidJoint( const std::string& name,
-                                const PhysicalFrame& parent,
-                                const PhysicalFrame& child,
-                                const SimTK::Vec3& ellipsoidRadii,
-                                bool reverse) :
-                                  Super(name, parent, child, reverse)
+
+EllipsoidJoint::EllipsoidJoint(const std::string&    name,
+                               const PhysicalFrame&  parent,
+                               const PhysicalFrame&  child,
+                               const SimTK::Vec3&    ellipsoidRadii) :
+                               Super(name, parent, child)
 {
     constructProperties();
     set_radii_x_y_z(ellipsoidRadii);
 }
 
-/* Deprecated Constructor*/
-EllipsoidJoint::EllipsoidJoint(const std::string& name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    const SimTK::Vec3& ellipsoidRadii,
-    bool reverse) :
+EllipsoidJoint::EllipsoidJoint(const std::string&    name,
+                               const PhysicalFrame&  parent,
+                               const SimTK::Vec3&    locationInParent,
+                               const SimTK::Vec3&    orientationInParent,
+                               const PhysicalFrame&  child,
+                               const SimTK::Vec3&    locationInChild,
+                               const SimTK::Vec3&    orientationInChild,
+                               const SimTK::Vec3&    ellipsoidRadii) :
     Super(name, parent, locationInParent, orientationInParent,
-        child, locationInChild, orientationInChild, reverse)
+          child, locationInChild, orientationInChild)
 {
     constructProperties();
     set_radii_x_y_z(ellipsoidRadii);

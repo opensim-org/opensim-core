@@ -27,7 +27,8 @@
 //============================================================================
 // INCLUDE
 //============================================================================
-#include "Controller.h"
+#include "osimExampleComponentsDLL.h"
+#include "OpenSim/Simulation/Control/Controller.h"
 
 
 namespace OpenSim { 
@@ -36,13 +37,13 @@ namespace OpenSim {
 //=============================================================================
 /**
  * ToyReflexController is a concrete controller that excites muscles in response
- * to muscle lengthening to simulate a simple stretch reflex. This controller is 
- * meant to serve as an example how to implement a controller in
+ * to muscle lengthening to simulate a simple stretch reflex. This controller 
+ * is meant to serve as an example how to implement a controller in
  * OpenSim. It is intended for demonstrative purposes only. 
  *
  * @author  Ajay Seth
  */
-class OSIMSIMULATION_API ToyReflexController : public Controller {
+class OSIMEXAMPLECOMPONENTS_API ToyReflexController : public Controller {
 OpenSim_DECLARE_CONCRETE_OBJECT(ToyReflexController, Controller);
 
 public:
@@ -75,7 +76,8 @@ public:
      * @param s         system state 
      * @param controls  writable model controls
      */
-    void computeControls(const SimTK::State& s, SimTK::Vector &controls) const override;
+    void computeControls(const SimTK::State& s,
+                         SimTK::Vector &controls) const override;
 
 
 private:
@@ -84,7 +86,7 @@ private:
     // ModelComponent interface to connect this component to its model
     void extendConnectToModel(Model& aModel) override;
 
-    //=============================================================================
+    //=========================================================================
 };  // END of class ToyReflexController
 
 }; //namespace

@@ -245,7 +245,9 @@ bool InverseDynamicsTool::run()
         }
         else
             modelFromFile = false;
-        _model->printBasicInfo(cout);
+
+        _model->finalizeFromProperties();
+        _model->printBasicInfo();
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
 

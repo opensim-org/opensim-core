@@ -41,6 +41,11 @@ public:
     using Exception::Exception;
 };
 
+class InvalidColumn : public Exception {
+public:
+    using Exception::Exception;
+};
+
 class IncorrectNumColumns : public InvalidRow {
 public:
     IncorrectNumColumns(const std::string& file,
@@ -49,8 +54,25 @@ public:
                         size_t expected,
                         size_t received) :
         InvalidRow(file, line, func) {
-        std::string msg = "expected = " + std::to_string(expected);
-        msg += " received = " + std::to_string(received);
+        std::string msg = "Incorrect number of columns. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
+
+        addMessage(msg);
+    }
+};
+
+class IncorrectNumRows : public InvalidColumn {
+public:
+    IncorrectNumRows(const std::string& file,
+                     size_t line,
+                     const std::string& func,
+                     size_t expected,
+                     size_t received) :
+        InvalidColumn(file, line, func) {
+        std::string msg = "Incorrect number of rows. ";
+        msg += "Expected = " + std::to_string(expected);
+        msg += ", Received = " + std::to_string(received);
 
         addMessage(msg);
     }
@@ -293,6 +315,10 @@ public:
     void 
     setDependentsMetaData(const DependentsMetaData& dependentsMetaData);
 
+    /** Remove key-value pair associated with the given key from dependents
+    metadata.                                                                 */
+    void removeDependentsMetaDataForKey(const std::string& key);
+
     /// @} End of MetaData accessors/mutators.
 
     /// @name Column-labels related accessors/mutators.
@@ -432,6 +458,9 @@ public:
     bool hasColumn(const size_t columnIndex) const;
 
 protected:
+    /** Append column-label.                                                  */
+    void appendColumnLabel(const std::string& columnLabel);
+    
     /** Get number of rows. Implemented by derived classes.                   */
     virtual size_t implementGetNumRows() const       = 0;
     
