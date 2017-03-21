@@ -1073,7 +1073,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
             }
             aStream << " segment " << mpp->getParentFrame().getName() << endl;
         } else {
-            Vec3& attachment = pt.getLocation(s);
+            Vec3 attachment = pt.getLocation(s);
             aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getParentFrame().getName() << endl;
         }
     }

@@ -561,21 +561,23 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         int numVias = 0, numSurfs = 0;
         for (int j = 0; j < activePathPoints.getSize(); ++j) {
             AbstractPathPoint* pp = activePathPoints[j];
-            cout << "pp" << j << " = " << pp->getName() << " @ " << pp->getBodyName()
-                << ", loc = " << pp->getLocation(si) << endl;
+            cout << "pp" << j << " = " << pp->getName() << " @ "
+                 << pp->getParentFrame().getName() << ", loc = "
+                 << pp->getLocation(si) << endl;
         }
 
         for (int j = 0; j < viaSet.getSize(); ++j) {
             AbstractPathPoint* pp = &viaSet[j];
-            cout << "mp" << j << " = " << pp->getName() << " @ " << pp->getBodyName()
-                << ", loc = " << pp->getLocation(si) << endl;
+            cout << "mp" << j << " = " << pp->getName() << " @ "
+                 << pp->getParentFrame().getName() << ", loc = "
+                 << pp->getLocation(si) << endl;
         }
 
         // add vias to cableInfo
         for (int j = 1; j < viaSet.getSize()-1; ++j) { // skip first (origin) and last (insertion) points
             const AbstractPathPoint& pp = viaSet[j];
             ObstacleInfo obs;
-            obs.bodyName = pp.getBodyName();
+            obs.bodyName = pp.getParentFrame().getName();
             obs.X_BS.setP(pp.getLocation(si));
             obs.wrapObjectPtr=NULL;
             obs.P_S.setToNaN(); // not used for viapoint
