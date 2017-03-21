@@ -1038,7 +1038,7 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
         AbstractPathPoint& pt = pts.get(i);
         if (pt.getConcreteClassName()==("ConditionalPathPoint")) {
             ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
-            Vec3& attachment = mvp->getLocation(s);
+            Vec3 attachment = mvp->getLocation(s);
             double range[]{ mvp->get_range(0), mvp->get_range(1) };
             aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getParentFrame().getName();
             
