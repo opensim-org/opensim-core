@@ -745,7 +745,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if (back > front) // have non-whitespace name
+        if (back >= front) // have non-whitespace name
             prefix = subCompName + "/";
         for (int j = 0; j<nsubs; ++j) {
             names.append(prefix + subnames[j]);
@@ -760,7 +760,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if(back > front) // have non-whitespace name
+        if(back >= front) // have non-whitespace name
             prefix = subCompName+"/";
         for(int j =0; j<nsubs; ++j){
             names.append(prefix+subnames[j]);
@@ -774,7 +774,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if (back > front) // have non-whitespace name
+        if (back >= front) // have non-whitespace name
             prefix = subCompName + "/";
         for (int j = 0; j<nsubs; ++j) {
             names.append(prefix + subnames[j]);
