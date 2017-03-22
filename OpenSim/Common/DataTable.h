@@ -721,6 +721,56 @@ public:
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
+    /** Set row at index. Equivalent to
+    ```
+    updRowAtIndex(index) = depRow;
+    ```
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void setRowAtIndex(size_t index, const RowVectorView& depRow) {
+        updRowAtIndex(index) = depRow;
+    }
+
+    /** Set row at index. Equivalent to
+    ```
+    updRowAtIndex(index) = depRow;
+    ```
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void setRowAtIndex(size_t index, const RowVector& depRow) {
+        updRowAtIndex(index) = depRow;
+    }
+
+    /** Set row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
+    Equivalent to
+    ```
+    updRow(ind) = depRow;
+    ```
+
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
+    void setRow(const ETX& ind, const RowVectorView& depRow) {
+        updRow(ind) = depRow;
+    }
+
+    /** Set row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
+    Equivalent to
+    ```
+    updRow(ind) = depRow;
+    ```
+
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
+    void setRow(const ETX& ind, const RowVector& depRow) {
+        updRow(ind) = depRow;
+    }
+
     /** Remove row at index.
 
     \throws RowIndexOutOfRange If the index is out of range.                  */

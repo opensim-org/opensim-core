@@ -102,6 +102,13 @@ class TestDataTable(unittest.TestCase):
         assert table.hasColumn(0)
         assert table.hasColumn(2)
         # Edit rows of the table.
+        row = osim.RowVector([100, 200, 300, 400])
+        table.setRowAtIndex(0, row)
+        row = table.getRowAtIndex(0)
+        assert (row[0] == 100 and
+                row[1] == 200 and
+                row[2] == 300 and
+                row[3] == 400)
         row0 = table.getRowAtIndex(0)
         row0[0] = 10
         row0[1] = 10
