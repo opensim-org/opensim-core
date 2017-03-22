@@ -144,6 +144,9 @@ protected:
      * called whenever the quadrant property changes. */
     void extendFinalizeFromProperties() override;
 
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+        override;
+
 private:
     void constructProperties();
 

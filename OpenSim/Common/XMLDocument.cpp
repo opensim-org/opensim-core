@@ -61,7 +61,8 @@ using namespace std;
 // 30512 for removing Model::FrameSet and moving frames to components list
 // 30513 for removing internal (silent) clamping of Muscle controls (excitations)
 // 30514 for removing "reverse" property from Joint
-const int XMLDocument::LatestVersion = 30514;
+// 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
+const int XMLDocument::LatestVersion = 30515;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
