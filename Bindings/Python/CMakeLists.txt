@@ -160,7 +160,9 @@ macro(OpenSimAddPythonModule)
     endif()
     
     if(${OPENSIM_USE_INSTALL_RPATH})
-        set_target_properties(${_libname} PROPERTIES
+        # Use APPEND to include the BTK RPATH, set in CMAKE_INSTALL_RPATH.
+        # TODO test that NOT using APPEND causes BTK to not be found.
+        set_property(TARGET ${_libname} APPEND PROPERTY
             INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
             )
     endif()

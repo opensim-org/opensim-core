@@ -222,6 +222,10 @@ script:
   - make -j8 install > /dev/null
 
   ## Test python wrapping.
+  # Since we use OPENSIM_COPY_SIMBODY=ON, ensure the Python bindings are not
+  # relying on the original Simbody libraries but rather the copied ones.
+  # This should make sure we have the correct RPATH for Simbody on macOS.
+  - rm -r ~/simbody
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.

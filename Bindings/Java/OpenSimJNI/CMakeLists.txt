@@ -114,8 +114,15 @@ set_source_files_properties(
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
 if(${OPENSIM_USE_INSTALL_RPATH})
-    set_target_properties(osim${KIT} PROPERTIES
-        INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
+    # TODO @loader_path only makes sense on macOS, so we need to revisit for
+    # Linux (use $ORIGIN).
+
+    # The osim libraries that osimJavaJNI needs are in the same folder as
+    # osimJavaJNI. Adding @loader_rpath (the \ is to escape the @) to the
+    # run-path list will let osimJavaJNI find osimTools, etc.
+    # Use APPEND to include the BTK RPATH, set in CMAKE_INSTALL_RPATH.
+    set_property(TARGET osim${KIT} APPEND PROPERTY
+        INSTALL_RPATH "\@loader_path/"
         )
 endif()
 
