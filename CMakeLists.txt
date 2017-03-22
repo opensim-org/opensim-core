@@ -597,6 +597,11 @@ elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
         COMMENT ${MESSAGE})
 endif()
 
+# Directories for Simbody headers and libraries for building.
+# -----------------------------------------------------------
+# TODO no longer necessary; Simbody's library targets provide the 
+# include directories.
+include_directories("${Simbody_INCLUDE_DIR}")
 
 # Copy files over from the Simbody installation.
 # ----------------------------------------------
