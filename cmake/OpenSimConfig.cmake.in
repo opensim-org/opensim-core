@@ -50,6 +50,9 @@ list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Vendors/lepton/include"
     )
 
+# TODO This should be removed, especially when we copy the intact Simbody
+# installation into the OpenSim installation. Simbody's library targets now
+# provide the necessary include directories.
 if(@OPENSIM_COPY_SIMBODY@)
     # Simbody headers have been copied to OpenSim.
     list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
