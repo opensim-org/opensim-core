@@ -1,11 +1,10 @@
-function [xy] = getUserActivation(color)
+function [xy] = getUserActivation()
 
 
 w = [0 5 0 1];
 axis(w), hold on, grid on
 
-pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
-pts2 = line('Xdata',NaN,'Ydata',NaN,'LineStyle','--','LineWidth',1.5,'Color',color);
+pts = line('Xdata',NaN,'Ydata',NaN,'marker','o');
 
 maxpnts = 100; xy = zeros(2,maxpnts);
 while 1
@@ -19,7 +18,6 @@ while 1
       xy(:,j) = [x;y];
       if j>1
          set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
-         set(pts2,'Xdata',[xy(1,j) 5],'Ydata',[xy(2,j) xy(2,j)])
       else
          set(pts,'Xdata',x,'Ydata',y)
          
@@ -28,6 +26,6 @@ while 1
    if j>1, break, end
 
 end 
-xy(:,j) = [5;xy(2,j-1)];
-xy(:,j+1:maxpnts)=[];
+
+xy(:,j:maxpnts)=[];
 

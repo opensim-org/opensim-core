@@ -62,7 +62,7 @@ deviceActivation = p.Results.deviceActivation;
 import org.opensim.modeling.*;
 
 % Build hopper model
-hopper = BuildHopper('activation',muscleActivation);
+hopper = BuildHopper('isDemo',false,'activation',muscleActivation);
 hopper.printSubcomponentInfo();
 
 % Build devices

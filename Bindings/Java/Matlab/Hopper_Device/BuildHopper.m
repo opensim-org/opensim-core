@@ -24,6 +24,7 @@ function hopper = BuildHopper(varargin)
 % Build a model of a one-leg hopper, with one muscle.
 
 p = inputParser();
+defaultIsDemo = 'true';
 defaultMuscleModel = 'Thelen2003';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
@@ -31,6 +32,7 @@ defaultActivation = [0.0 2.0 3.9;
                      0.3 1.0 0.1];
 defaultPrintModel = false; 
 
+addOptional(p,'isDemo',defaultIsDemo)
 addOptional(p,'muscleModel',defaultMuscleModel)
 addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
 addOptional(p,'MillardTendonParams',defaultMillardTendonParams)
@@ -39,6 +41,7 @@ addOptional(p,'printModel',defaultPrintModel)
 
 parse(p,varargin{:});
 
+isDemo = p.Results.isDemo;
 muscleModel = p.Results.muscleModel;
 maxIsometricForce = p.Results.maxIsometricForce;
 MillardTendonParams = p.Results.MillardTendonParams;
@@ -194,7 +197,12 @@ vastus.updGeometryPath().addPathWrap(patella);
 % Create a controller to excite the vastus muscle.
 brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
-controlFunction = PiecewiseLinearFunction();
+if isDemo
+    controlFunction = PiecewiseConstantFunction();
+else
+    controlFunction = PiecewiseLinearFunction();
+end
+
 
 for i = 1:size(activation,2)
     controlFunction.addPoint(activation(1,i), activation(2,i));
@@ -214,7 +222,8 @@ probe.addMuscle(vastus.getName(), 0.5);
 hopper.setup();
 probe.useCalculatedMass('vastus');
 probe.setSpecificTension('vastus', 0.6E6);
-probe.setOperation('integrate');
+%probe.setOperation('integrate');
+%probe.set_initial_conditions_for_integration(0,0.0);
 
 % Device attachment frames.
 % -------------------------

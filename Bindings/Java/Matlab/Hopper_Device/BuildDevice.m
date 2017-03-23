@@ -117,13 +117,16 @@ switch deviceType
         device.addComponent(controller)
         
     case 'passive'
-        clutchedPathSpring = ClutchedPathSpring();
-        clutchedPathSpring.setName('cableAtoB');
+        name = 'cableAtoB';
+        springDissipation = 0.1; 
+        relaxationTau = 5;
+        spring0 = 0.0;
+        clutchedPathSpring = ClutchedPathSpring(name, springStiffness, ...
+                                  springDissipation, relaxationTau, spring0);
         clutchedPathSpring.updGeometryPath().setName('geompath');
         clutchedPathSpring.set_optimal_force(100.0);
         clutchedPathSpring.addNewPathPoint('pointA', cuffA, Vec3(0));
         clutchedPathSpring.addNewPathPoint('pointB', cuffB, Vec3(0));
-        clutchedPathSpring.setStiffness(springStiffness);
         device.addComponent(clutchedPathSpring);
         
         controller = PrescribedController();

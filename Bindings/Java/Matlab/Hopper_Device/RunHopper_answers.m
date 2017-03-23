@@ -33,7 +33,7 @@ hopper = BuildHopper();
 %       activation.
 % [Step 1, Task A]
 % ANSWER{
-hopper.printSubcomponentInfo();
+hopper.printSubcomponentInfo()
 hopper.getComponent('slider').printOutputInfo();
 hopper.getComponent('vastus').printOutputInfo();
 % }

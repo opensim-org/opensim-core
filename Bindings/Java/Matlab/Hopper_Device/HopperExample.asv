@@ -108,7 +108,41 @@ RunHopperGUI('visualize', visualize, ...
              'activePatellaWrap', activePatellaWrap, ...
              'isActivePropMyo', isActivePropMyo, ...
              'deviceActivation',deviceActivation)
-         
+
+% NEW_MUSC_ACT - Get new muscle activation.
+function new_musc_act_Callback(hObject, eventdata, handles)
+
+names = {'clear','new_musc_act'};
+
+for n = 1:length(names)
+    set(handles.(names{n}),'Enable','off')
+end
+
+axes(handles.activation_axes)
+muscleActivation = getUserActivation();
+handles.muscleActivation = muscleActivation;
+guidata(hObject, handles)
+
+for n = 1:length(names)
+    set(handles.(names{n}),'Enable','on')
+end
+
+% NEW_DEVICE_ACT - Get new device activation.
+function new_device_act_Callback(hObject, eventdata, handles)
+axes(handles.activation_axes)
+deviceActivation = getUserActivation();
+handles.deviceActivation = deviceActivation;
+guidata(hObject, handles)
+
+% CLEAR - Reset axes to clear plotted activations.
+function clear_Callback(hObject, eventdata, handles)
+axes(handles.activation_axes)
+ax = gca;
+cla(ax,'reset');
+axis([0 5 0 1])
+xlabel('Jump Time (s)')
+ylabel('Activation')
+
 % WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel
 function without_device_Callback(hObject, eventdata, handles)
 set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
@@ -120,95 +154,25 @@ set(handles.enable_passive,'value',0)
 set(handles.enable_active,'enable','on')
 set(handles.enable_active,'value',0)
 
-% NEW_MUSC_ACT - Get new muscle activation.
-function new_musc_act_Callback(hObject, eventdata, handles)
-
-handle_names = fieldnames(handles);
-reenable = cell(0);
-for i = 1:length(handle_names)
-    handle = getfield(handles,handle_names{i});
-    if isprop(handle,'Callback')
-        if strcmp(get(handle,'Enable'),'on')
-            reenable{1,length(reenable)+1} = handle;
-        end
-    end
-end
-
-set(handles.new_musc_act,'Enable','off')
-set(handles.clear,'Enable','off')
-set(handles.visualize,'Enable','off')
-set(findall(handles.choose_config, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.simulate_hopper_model, '-property', 'enable'), 'enable', 'off')
-
-axes(handles.activation_axes)
-muscleActivation = getUserActivation([0.64 0.08 0.18]);
-handles.muscleActivation = muscleActivation;
-guidata(hObject, handles)
-
-for i = 1:length(reenable)
-    set(reenable{i},'Enable','on')
-end
-
-% NEW_DEVICE_ACT - Get new device activation.
-function new_device_act_Callback(hObject, eventdata, handles)
-handle_names = fieldnames(handles);
-reenable = cell(0);
-for i = 1:length(handle_names)
-    handle = getfield(handles,handle_names{i});
-    if isprop(handle,'Callback')
-        if strcmp(get(handle,'Enable'),'on')
-            reenable{1,length(reenable)+1} = handle;
-        end
-    end
-end
-
-set(handles.new_musc_act,'Enable','off')
-set(handles.clear,'Enable','off')
-set(handles.visualize,'Enable','off')
-set(findall(handles.choose_config, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.simulate_hopper_model, '-property', 'enable'), 'enable', 'off')
-
-
-axes(handles.activation_axes)
-deviceActivation = getUserActivation([0 0.45 0.74]);
-handles.deviceActivation = deviceActivation;
-guidata(hObject, handles)
-
-for i = 1:length(reenable)
-    set(reenable{i},'Enable','on')
-end
-
-% CLEAR - Reset axes to clear plotted activations.
-function clear_Callback(hObject, eventdata, handles)
-axes(handles.activation_axes)
-ax = gca;
-cla(ax,'reset');
-axis([0 5 0 1])
-xlabel('Jump Time (s)')
-ylabel('Activation')
-
 % ENABLE_PASSIVE - Add a passive device to the hopper.
 function enable_passive_Callback(hObject, eventdata, handles)
 
 if get(hObject,'Value')
     set(handles.passive_patella_wrap,'Enable','on')
     set(handles.spring_stiffness,'Enable','on')
-    set(handles.spring_stiffness_text,'Enable','on')
 else
     set(handles.passive_patella_wrap,'Enable','off')
     set(handles.spring_stiffness,'Enable','off')
-    set(handles.spring_stiffness_text,'Enable','off')
 end
-
-function active_patella_wrap_Callback(hObject, eventdata, handles)
 
 % SPRING_STIFFNESS - Set spring stiffness with slider.
 function spring_stiffness_Callback(hObject, eventdata, handles)
 
 
-% ENABLE_ACTIVE - Add an active device to the hopper.
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+
+% ENABLE_PASSIVE - Add a passive device to the hopper.
 function enable_active_Callback(hObject, eventdata, handles)
 
 if get(hObject,'Value')
@@ -221,15 +185,6 @@ else
     set(handles.new_device_act,'Enable','off')
 end
 
-% ACTIVE_AS_PROP_MYO - Specify a proportional myoelectric controller for
-%                      the active device
-function active_as_prop_myo_Callback(hObject, eventdata, handles)
-
-if get(hObject,'Value')
-    set(handles.new_device_act,'Enable','off')
-else
-    set(handles.new_device_act,'Enable','on')
-end
 
 function metabolic_cost_Callback(hObject, eventdata, handles)
 % hObject    handle to metabolic_cost (see GCBO)
@@ -334,10 +289,22 @@ function activation_axes_CreateFcn(hObject, eventdata, handles)
 
 
 
+% --- Executes on button press in active_patella_wrap.
+function active_patella_wrap_Callback(hObject, eventdata, handles)
+% hObject    handle to active_patella_wrap (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of active_patella_wrap
 
 
+% --- Executes on button press in active_as_prop_myo.
+function active_as_prop_myo_Callback(hObject, eventdata, handles)
+% hObject    handle to active_as_prop_myo (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
 
-
+% Hint: get(hObject,'Value') returns toggle state of active_as_prop_myo
 
 
 % --- Executes on button press in passive_patella_wrap.
