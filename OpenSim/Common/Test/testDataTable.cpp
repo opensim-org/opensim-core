@@ -383,17 +383,17 @@ int main() {
         tableVec3.appendRow(0.3, {{2, 2, 2}, {3, 3, 3}, {1, 1, 1}});
 
         const auto& avgRowVec3 = tableVec3.averageRow(0.1, 0.2);
-        for(size_t i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(std::abs(avgRowVec3[0][i] - 2) > 1e-8/*epsilon*/,
                              Exception,
                              "Test failed: averageRow() failed.");
 
         const auto& nearRowVec3 = tableVec3.getNearestRow(0.29);
-        for(size_t i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
             ASSERT(nearRowVec3[0][i] == 2);
         tableVec3.updNearestRow(0.29) += SimTK::Vec3{2};
         tableVec3.updNearestRow(0.29) -= SimTK::Vec3{2};
-        for(size_t i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
             ASSERT(nearRowVec3[0][i] == 2);
 
         std::cout << tableVec3 << std::endl;
@@ -450,14 +450,14 @@ int main() {
         tableQuat.appendRow(0.3, {{2, 2, 2, 2}, {3, 3, 3, 3}, {1, 1, 1, 1}});
 
         const auto& avgRowQuat = tableQuat.averageRow(0.1, 0.2);
-        for(size_t i = 0; i < 4; ++i) {
+        for(int i = 0; i < 4; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowQuat[0][i] - 0.5) > 1e-8/*epsilon*/,
                              Exception,
                              "Test failed: averageRow() failed.");
         }
 
         const auto& nearRowQuat = tableQuat.getNearestRow(0.29);
-        for(size_t i = 0; i < 4; ++i)
+        for(int i = 0; i < 4; ++i)
             ASSERT(std::abs(nearRowQuat[0][i] - 0.5) < 1e-8/*eps*/);
 
         std::cout << tableQuat << std::endl;
@@ -501,21 +501,21 @@ int main() {
                                         {{1, 1, 1}, {1, 1, 1}}});
 
         const auto& avgRowSVec = tableSpatialVec.averageRow(0.1, 0.2);
-        for(size_t i = 0; i < 3; ++i) {
+        for(int i = 0; i < 3; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowSVec[0][0][i] - 2) > 1e-8/*eps*/,
                              Exception,
                              "Test failed: averageRow() failed.");
         }
 
         const auto& nearRowSVec = tableSpatialVec.getNearestRow(0.29);
-        for(size_t i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
             ASSERT(nearRowSVec[0][0][i] == 2);
 
         tableSpatialVec.updNearestRow(0.29) += SimTK::SpatialVec{{2, 2, 2},
                                                                  {2, 2, 2}};
         tableSpatialVec.updNearestRow(0.29) -= SimTK::SpatialVec{{2, 2, 2},
                                                                  {2, 2, 2}};
-        for(size_t i = 0; i < 3; ++i)
+        for(int i = 0; i < 3; ++i)
             ASSERT(nearRowSVec[0][0][i] == 2);
 
         std::cout << tableSpatialVec << std::endl;

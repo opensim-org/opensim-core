@@ -197,9 +197,9 @@ void testVisModel(Model& model, const std::string standard_filename)
     int same = fromFile.compare(fromModel);
 
     if (visualDebug) {
-        char c;
         std::cout << "press Enter (or Return) to continue" << std::endl;
-        std::cin >> c;
+        std::cin.get();
+        std::cout << "Continuing..." << std::endl;
     }
 
     ASSERT(same == 0, __FILE__, __LINE__, 
@@ -281,9 +281,9 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
              ++i;
     }
     if (visualDebug) {
-        char c;
         std::cout << "press Enter (or Return) to continue" << std::endl;
-        std::cin >> c;
+        std::cin.get();
+        std::cout << "Continuing..." << std::endl;
     }
     return true;
 }
@@ -476,7 +476,7 @@ void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitiv
     // that DecorativeCylinder is Y aligned while WrapCylinder is Z aligned
     cylTransform.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
     stdPrimitives.push_back(
-        DecorativeCylinder(.025, .05).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeCylinder(.025, .05).setBodyId(0).setColor(Vec3(0, 0.2, 0.8))
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Transform(cylTransform.R(), Vec3({ .01, -.4, .01 }))));
@@ -491,17 +491,17 @@ void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitiv
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Transform(cylTransform.R(), Vec3({ .05, -.25, 0 }))));
     stdPrimitives.push_back(
-        DecorativeSphere(.055).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeSphere(.055).setBodyId(0).setColor(Vec3(0, 0.2, 0.8))
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ .01, -.3, .01 })));
     stdPrimitives.push_back(
-        DecorativeEllipsoid(Vec3(.1, .05, .15)).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeEllipsoid(Vec3(.1, .05, .15)).setBodyId(0).setColor(Vec3(0, 0.2, 0.8))
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ -.01, -.5, .0 })));
     stdPrimitives.push_back(
-        DecorativeTorus(.08, .035).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeTorus(.08, .035).setBodyId(0).setColor(Vec3(0, 0.2, 0.8))
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ -.02, -.6, .01 })));

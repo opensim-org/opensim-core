@@ -721,6 +721,56 @@ public:
         return _depData.updRow((int)std::distance(_indData.cbegin(), iter));
     }
 
+    /** Set row at index. Equivalent to
+    ```
+    updRowAtIndex(index) = depRow;
+    ```
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void setRowAtIndex(size_t index, const RowVectorView& depRow) {
+        updRowAtIndex(index) = depRow;
+    }
+
+    /** Set row at index. Equivalent to
+    ```
+    updRowAtIndex(index) = depRow;
+    ```
+
+    \throws RowIndexOutOfRange If the index is out of range.                  */
+    void setRowAtIndex(size_t index, const RowVector& depRow) {
+        updRowAtIndex(index) = depRow;
+    }
+
+    /** Set row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
+    Equivalent to
+    ```
+    updRow(ind) = depRow;
+    ```
+
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
+    void setRow(const ETX& ind, const RowVectorView& depRow) {
+        updRow(ind) = depRow;
+    }
+
+    /** Set row corresponding to the given entry in the independent column.
+    This function searches the independent column for exact equality, which may 
+    not be appropriate if `ETX` is of type `double`. See 
+    TimeSeriesTable_::updNearestRow().
+    Equivalent to
+    ```
+    updRow(ind) = depRow;
+    ```
+
+    \throws KeyNotFound If the independent column has no entry with given
+                        value.                                                */
+    void setRow(const ETX& ind, const RowVector& depRow) {
+        updRow(ind) = depRow;
+    }
+
     /** Remove row at index.
 
     \throws RowIndexOutOfRange If the index is out of range.                  */
@@ -1143,10 +1193,10 @@ protected:
             precision  = defPrecision;
         if(rows.empty())
             for(size_t i = 0u; i < getNumRows()   ; ++i)
-                rows.push_back(i);
+                rows.push_back(static_cast<int>(i));
         if(cols.empty())
             for(size_t i = 0u; i < getNumColumns(); ++i)
-                cols.push_back(i);
+                cols.push_back(static_cast<int>(i));
 
         auto toStr = [&] (const double val) {
             std::ostringstream stream{};
@@ -1161,7 +1211,7 @@ protected:
         table.push_back({std::string{}, indColLabel});
         for(int col : cols) {
             if(col < 0)
-                col += getNumColumns();
+                col += static_cast<int>(getNumColumns());
             if(numComponentsPerElement() == 1)
                 table.front().push_back(getColumnLabel(col));
             else
@@ -1174,7 +1224,7 @@ protected:
         // Fill up the rows, including row-number, time column, row data.
         for(int row : rows) {
             if(row < 0)
-                row += getNumRows();
+                row += static_cast<int>(getNumRows());
             std::vector<std::string> rowData{};
             rowData.push_back(std::to_string(row) + rowNumSepChar);
             rowData.push_back(toStr(getIndependentColumn()[row]));
@@ -1228,17 +1278,17 @@ protected:
                     width -= columnWidths[endCol];
                 }
                 result.append(columnWidths[0], fillChar);
-                for(unsigned col = beginCol; col < endCol; ++col) {
+                for(size_t col = beginCol; col < endCol; ++col) {
                     result.append(columnWidths[col] - table[0][col].length(),
                                   fillChar);
                     result.append(table[0][col]);
                 }
                 result.push_back(newlineChar);
-                for(unsigned row = beginRow; row < endRow; ++row) {
+                for(size_t row = beginRow; row < endRow; ++row) {
                     result.append(columnWidths[0] - table[row][0].length(),
                                   fillChar);
                     result.append(table[row][0]);
-                    for(unsigned col = beginCol; col < endCol; ++col) {
+                    for(size_t col = beginCol; col < endCol; ++col) {
                         result.append(columnWidths[col] -
                                       table[row][col].length(), fillChar);
                         result.append(table[row][col]);

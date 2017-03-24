@@ -89,6 +89,7 @@ from the internet, we turn this option OFF." ON)
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
+# TODO rename to OPENSIM_COPY_DEPENDENCIES and handle BTK.
 option(OPENSIM_COPY_SIMBODY "Copy Simbody headers and libraries into the
 OpenSim installation. This way, you can treat OpenSim and Simbody as one
 package, and you only need to set environment variables (e.g., PATH,
@@ -96,7 +97,23 @@ LD_LIBRARY_PATH, DYLD_LIBRARY_PATH) for OpenSim.  On Windows, this also copies
 Simbody dll's and exe's into the OpenSim build directory, so that you don't
 need to set PATH to run OpenSim tests and examples; this is done via the
 SimbodyFiles project. If OFF, you likely must set those environment variables
-for both OpenSim and Simbody." ON)
+for both OpenSim and Simbody. To make a distributable installation on macOS, 
+this should be set to ON to avoid using absolute paths for RPATHs to Simbody
+libraries." ON)
+
+option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
+the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
+into the package. If you are building OpenSim on the same machine on which you
+plan to use it, you can leave this OFF. If you are distributing OpenSim to
+other computers, you should turn this ON. If macOS, this option affects how
+RPATH is set for the SWIG-generated shared libraries. This variable has no
+effect if BUILD_PYTHON_WRAPPING is OFF." OFF)
+# There are many potential ways to distribute the python bindings; here's how
+# you might want to set the above option for different ways of distributing:
+#   simtk.org GUI distribution, macOS: ON (since no env. vars are set)
+#   simtk.org GUI distrubution, Windows: OFF (PATH is set)
+#   pypi: ON (there is no way to install the C++ libraries otherwise)
+#   debian, homebrew, conda: OFF (can have a separate C++ library package)
 
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
@@ -428,6 +445,21 @@ if(${BUILD_JAVA_WRAPPING})
     endif()
 endif()
 
+if(${BUILD_PYTHON_WRAPPING})
+    # PythonInterp is supposed to come before PythonLibs.
+    find_package(PythonInterp 2.7 REQUIRED)
+    find_package(PythonLibs 2.7 REQUIRED)
+
+    # We update the python install dir to include the python version,
+    # now that we know it. We replace the token "VERSION" with the actual python
+    # version.
+    string(REPLACE "VERSION" "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
+        OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
+    # This must be done before adding the OpenSim libraries, since
+    # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
+    # OpenSimMacros.cmake).
+endif()
+
 if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
@@ -457,39 +489,40 @@ if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
 endif()
 
 
-## On APPLE, use MACOSX_RPATH.
-## On Linux, this variable has no effect.
-set(OPENSIM_USE_INSTALL_RPATH FALSE)
+## RPATH 
+# If it is necessary to not put RPATHS in the installed binaries, set
+# set CMAKE_SKIP_INSTALL_RPATH to OFF.
 if(APPLE)
-    option(OPENSIM_NO_LIBRARY_PATH_ENV_VAR
-        "If ON, you don't need to set 
-        DYLD_LIBRARY_PATH (on OSX) to make use of OpenSim's executables.
-        Instead, we bake the location of OpenSim's libraries into the
-        executables, so the executables already know where to find the
-        libraries. This uses the RPATH mechanism." ON)
-    if(${OPENSIM_NO_LIBRARY_PATH_ENV_VAR})
-        # CMake 2.8.12 introduced the ability to set RPATH for shared libraries on
-        # OSX. This helps executables find the libraries they depend on without
-        # having to set the DYLD_LIBRARY_PATH environment variable.
-        # The code below is all taken from the link below, and implements the
-        # scenario "Always use full RPATH".
-        # http://www.cmake.org/Wiki/CMake_RPATH_handling
-        # Note: the RPATH won't succeed if the libraries are moved; in this case,
-        # one will still need to set DYLD_LIBRARY_PATH (or alter the RPATH in the
-        # executables/libraries that depend on Simbody's libraries).
-        set(CMAKE_MACOSX_RPATH ON)
+    # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
+    # on OSX. This helps executables find the libraries they depend on
+    # without having to set the DYLD_LIBRARY_PATH environment variable. 
+    # See http://www.cmake.org/Wiki/CMake_RPATH_handling and `man dydl`.
+    # We have attempted to make the RPATH work even if the
+    # installation is relocated (using relative paths), but you may need to
+    # use DYLD_LIBRARY_PATH (or alter the RPATH using install_name_tool) in
+    # these cases.
+    ## On Linux, this variable has no effect.
+    set(CMAKE_MACOSX_RPATH ON)
 
-        # Add the automatically determined parts of the RPATH
-        # which point to directories outside the build tree to the install RPATH.
+    if(NOT OPENSIM_COPY_SIMBODY)
+        # Add the automatically determined parts of the RPATH which point
+        # to directories outside the build tree to the install RPATH.
+        # If we are copying Simbody into OpenSim's installation, then
+        # there's no need to link to the libraries in Simbody's original
+        # installation. Furthermore, we may be distributing OpenSim to
+        # other computers that will not have our original Simbody
+        # installation, and so the RPATH would point to a nonexistant
+        # directory on others' computers.
+        # TODO handle copying BTK.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    endif()
 
-        # The RPATH to be used when installing, but only if it's not a system
-        # directory.
-        list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
-        if("${isSystemDir}" STREQUAL "-1")
-            set(OPENSIM_USE_INSTALL_RPATH TRUE)
-        endif()
+    # Set RPATH so that OpenSim can find its own libraries, but only if
+    # OpenSim is not installed into a system library directory.
+    list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" isSystemDir)
+    if("${isSystemDir}" STREQUAL "-1")
+        set(OPENSIM_USE_INSTALL_RPATH TRUE)
     endif()
 endif()
 ## Add rpath to the binaries on Linux.
@@ -522,6 +555,11 @@ if(WITH_BTK)
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
     CopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
+        "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
+    # TODO this should be handled separately between macOS and Linux.
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${BTK_LIBRARY_DIRS}")
 endif()
 
@@ -599,12 +637,14 @@ endif()
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
+# TODO no longer necessary; Simbody's library targets provide the 
+# include directories.
 include_directories("${Simbody_INCLUDE_DIR}")
-
 
 # Copy files over from the Simbody installation.
 # ----------------------------------------------
 if(${OPENSIM_COPY_SIMBODY})
+    # TODO copy BTK as well.
 
     # Install Simbody headers into OpenSim installation.
     install(DIRECTORY "${Simbody_INCLUDE_DIR}/"
@@ -617,12 +657,11 @@ if(${OPENSIM_COPY_SIMBODY})
     # is only needed for programmers goes in sdk/lib.
     # TODO use SimbodyConfig.cmake variables instead of these globs.
     if(WIN32)
-        file(GLOB SIMBODY_BIN_FILES
-            ${Simbody_BIN_DIR}/*.dll
-            ${Simbody_BIN_DIR}/*.exe)
-        file(GLOB SIMBODY_ARCHIVE_FILES
-            ${Simbody_LIB_DIR}/*.lib)
+        file(GLOB SIMBODY_BIN_FILES ${Simbody_BIN_DIR}/*.dll
+                                    ${Simbody_BIN_DIR}/*.exe)
+        file(GLOB SIMBODY_ARCHIVE_FILES ${Simbody_LIB_DIR}/*.lib)
     else()
+        # TODO simbody-visualizer executable probably isn't even there.
         file(GLOB SIMBODY_BIN_FILES
             ${Simbody_BIN_DIR}/simbody*) # executables only (e.g., visualizer).
         # If the LIB_DIR is some common place for libraries (e.g., /usr/lib/),
@@ -682,6 +721,10 @@ if(${OPENSIM_COPY_SIMBODY})
                 VERBATIM)
         endforeach()
     endif()
+endif()
+if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(SimTK "${Simbody_BIN_DIR}"
+        "${Simbody_LIB_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 
