@@ -1,7 +1,4 @@
 
-# Find python.
-# ============
-
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
     # Multi-configuration generators like MSVC and XCODE use one build tree for
