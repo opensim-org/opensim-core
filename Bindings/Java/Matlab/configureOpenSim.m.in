@@ -41,7 +41,7 @@ function configureOpenSim()
 %    mechanism likely requires administrator (sudo) privileges, as it involves
 %    editing files within the MATLAB installation.
 %
-%    This function requires MATLAB 2007b or later to run.
+%    This function requires MATLAB 2007a or later to run.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -165,7 +165,12 @@ try
            'type: `model = org.opensim.modeling.Model();`'];
     showMessage(msg, 'OpenSim successfully added', false);
 catch ME
-    throwAsCaller(ME); % Avoid a stacktrace.
+    if verLessThan('matlab', '7.4')
+        error(ME.message);
+    else
+        % Introduced in version 2007b (7.4).
+        throwAsCaller(ME); % Avoid a stacktrace.
+    end
 end % try...catch
 end % function
 
