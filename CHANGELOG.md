@@ -145,7 +145,7 @@ programmatically in MATLAB or python.
   within the valid ranges defined by the Actuators and that includes the
   specific bounds of Muscle models. (PR #1548)
 - The `buildinfo.txt` file, which contains the name of the compiler used to
-  compile OpenSim and related informatino, is now named `OpenSim_buildinfo.txt`
+  compile OpenSim and related information, is now named `OpenSim_buildinfo.txt`
   and may be installed in a different location.
 
 
