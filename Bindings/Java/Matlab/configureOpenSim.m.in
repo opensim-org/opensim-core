@@ -253,10 +253,10 @@ function [newC, foundExisting] = searchForOpenSimString(C, txtname)
     timeStr = datestr(now, 30);
     newC = cell(0);
     foundExisting = false;
-    [Cnrows, Cncols] = cellfun(@size, C);
-    for i = 1:Cnrows
+    [Cnrows, Cncols] = cellfun(@size, C, 'UniformOutput', false);
+    for i = 1:Cnrows{1}
         if isempty(strfind(lower(C{1}{i}), 'opensim')) || ...
-                any(strfind(strip(C{1}{i}), '#') == 1)
+                any(regexpi(C{1}{i}, '^\s*#') == 1)
             % The line does not contain 'opensim' or is commented out ('#').
             newC = [newC, C{1}{i, 1}];
         else
