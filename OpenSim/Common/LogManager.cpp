@@ -109,9 +109,9 @@ LogManager::LogManager()
 
     // Example setup: redirect output to both the terminal and an output file
     out.addLogCallback(new StreamLogCallback(&cout,false));
-    out.addLogCallback(new StreamLogCallback("out.log"));
+    out.addLogCallback(new StreamLogCallback("opensim_out.log"));
     err.addLogCallback(new StreamLogCallback(&cerr,false));
-    err.addLogCallback(new StreamLogCallback("err.log"));
+    err.addLogCallback(new StreamLogCallback("opensim_err.log"));
 #endif
 }
 
