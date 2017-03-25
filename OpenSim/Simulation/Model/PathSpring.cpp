@@ -109,8 +109,12 @@ void PathSpring::extendFinalizeFromProperties()
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(DefaultPathSpringColor);
 
-    // Resting length must be greater than 0.0.
-    assert(get_resting_length() > 0.0);
+    OPENSIM_THROW_IF_FRMOBJ(get_resting_length() < 0,
+        InvalidPropertyValue, getProperty_resting_length().getName());
+    OPENSIM_THROW_IF_FRMOBJ(get_stiffness() < 0,
+        InvalidPropertyValue, getProperty_resting_length().getName());
+    OPENSIM_THROW_IF_FRMOBJ(get_dissipation() < 0,
+        InvalidPropertyValue, getProperty_resting_length().getName());
 }
 
 
