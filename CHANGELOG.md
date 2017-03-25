@@ -64,6 +64,8 @@ Converting from v3.x to v4.0
   - After:
     - state.setTime(0.0);
 	- manager.integrate(state, 1.0);
+- The out.log and err.log files have been renamed to opensim_out.log and
+  opensim_err.log.
 
 Composing a Component from other components
 -------------------------------------------
