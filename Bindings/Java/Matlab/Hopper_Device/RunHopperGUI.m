@@ -22,10 +22,28 @@
 %-----------------------------------------------------------------------%
 
 function RunHopperGUI(varargin)
+% This function is used by the HopperExample GUI.
+
+% TODO consider renaming to RunHopperForGUI; I initially thought this script
+% would launch a GUI.
+
+% TODO: clicking Simulate without having chosen an Activation causes an error;
+% perhaps we should give users an initial activation so that clicking Simulate
+% without clicking anything else will just work?
+
+% TODO clicking New Muscle Activation a second time puts my clicks in the
+% bottom plot; not the top plot. Make sure to hold onto a handle for the
+% Activation figure.
+% TODO annotate height plot to show Run Number (also show somewhere in the
+% GUI).
+
+% TODO consider renaming HopperExample to HopperPlayground,
+% HopperOptimizationGUI, InteractiveHopper.
 
 p = inputParser();
 
 defaultVisualize = true;
+% TODO copy over modified activations from BuildHopper.m.
 defaultMuscleActivation = [0.0 1.0 2.0 3.9;
                            0.0 0.3 1.0 0.1];
 defaultAddPassiveDevice = false;

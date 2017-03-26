@@ -124,8 +124,6 @@
 %include <OpenSim/Simulation/Control/ControlLinear.h>
 %include <OpenSim/Simulation/Control/Controller.h>
 %include <OpenSim/Simulation/Control/PrescribedController.h>
-%include <OpenSim/Simulation/Control/ToyPropMyoController.h>
-// TODO also swig-wrap ToyReflexController?
 
 %include <OpenSim/Simulation/Manager/Manager.h>
 %include <OpenSim/Simulation/Model/AbstractTool.h>
