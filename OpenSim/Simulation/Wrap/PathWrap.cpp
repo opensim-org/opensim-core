@@ -83,9 +83,9 @@ void PathWrap::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
-    _path = dynamic_cast<const GeometryPath*>(&getParent());
+    _path = dynamic_cast<const GeometryPath*>(&getOwner());
     std::string msg = "PathWrap '" + getName()
-        + "' must have a GeometryPath as its parent.";
+        + "' must have a GeometryPath as its owner.";
     OPENSIM_THROW_IF(_path == nullptr, Exception, msg);
 
     ComponentList<const PhysicalFrame> bodiesList =
@@ -95,9 +95,9 @@ void PathWrap::extendConnectToModel(Model& model)
         const WrapObject* wo = it->getWrapObject(getWrapObjectName());
         if (wo) {
             _wrapObject = wo;
-            updWrapPoint1().setBody(wo->getFrame());
+            updWrapPoint1().setParentFrame(wo->getFrame());
             updWrapPoint1().setWrapObject(wo);
-            updWrapPoint2().setBody(wo->getFrame());
+            updWrapPoint2().setParentFrame(wo->getFrame());
             updWrapPoint2().setWrapObject(wo);
             break;
         }

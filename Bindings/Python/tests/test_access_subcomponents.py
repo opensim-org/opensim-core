@@ -40,7 +40,7 @@ class TestAccessSubcomponents(unittest.TestCase):
         num_joints = 0
         for joint in model.getJointList():
             num_joints += 1
-            joint.get_reverse()
+            joint.numCoordinates()
         assert num_joints == 2
 
         # Custom filtering.

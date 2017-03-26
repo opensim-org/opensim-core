@@ -60,6 +60,11 @@
 %template(ArrayConstObjPtr) OpenSim::Array<const OpenSim::Object*>;
 %template(ArrayPtrsConstObj) OpenSim::ArrayPtrs<const OpenSim::Object>;
 
+namespace OpenSim {
+    %ignore LoadOpenSimLibraries;
+}
+%include <OpenSim/Common/LoadOpenSimLibrary.h>
+
 // Used in Component::generateDecorations.
 %include <OpenSim/Common/ModelDisplayHints.h>
 

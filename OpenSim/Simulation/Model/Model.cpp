@@ -758,7 +758,7 @@ void Model::extendConnectToModel(Model &model)
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, *ground, *child);
-            free->upd_reverse() = mob.isReversedFromJoint();
+            free->isReversed = mob.isReversedFromJoint();
             // TODO: Joints are currently required to be in the JointSet
             // When the reordering of Joints is eliminated (see following else block)
             // this limitation can be removed and the free joint adopted as in 
@@ -769,7 +769,7 @@ void Model::extendConnectToModel(Model &model)
         else{
             // Update the directionality of the joint according to tree's
             // preferential direction
-            static_cast<Joint*>(mob.getJointRef())->upd_reverse() =
+            static_cast<Joint*>(mob.getJointRef())->isReversed =
                 mob.isReversedFromJoint();
 
             // order the joint components in the order of the multibody tree
@@ -1471,80 +1471,78 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 //=============================================================================
 // PRINT
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Print some basic information about the model.
- *
- * @param aOStream Output stream.
- */
-void Model::printBasicInfo(std::ostream &aOStream) const
+void Model::printBasicInfo(std::ostream& aOStream) const
 {
-    aOStream<<"               MODEL: "<<getName()<<std::endl;
-    aOStream<<"         coordinates: "<<getCoordinateSet().getSize()<<std::endl;
-    aOStream<<"              forces: "<<getForceSet().getSize()<<std::endl;
-    aOStream<<"           actuators: "<<getActuators().getSize()<<std::endl;
-    aOStream<<"             muscles: "<<getMuscles().getSize()<<std::endl;
-    aOStream<<"            analyses: "<<getNumAnalyses()<<std::endl;
-    aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
-    aOStream<<"              bodies: "<<getBodySet().getSize()<<std::endl;
-    aOStream<<"              joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
-    aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
-    aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
-    aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-    aOStream<<"  contact geometries: "<< getContactGeometrySet().getSize() << std::endl;
-    aOStream<<"misc modelcomponents: "<< getMiscModelComponentSet().getSize() << std::endl;
+    OPENSIM_THROW_IF_FRMOBJ(!isObjectUpToDateWithProperties(), Exception,
+        "Model::finalizeFromProperties() must be called first.");
 
+    aOStream
+        << "\n               MODEL: " << getName()
+        << "\n         coordinates: " << countNumComponents<Coordinate>()
+        << "\n              forces: " << countNumComponents<Force>()
+        << "\n           actuators: " << countNumComponents<Actuator>()
+        << "\n             muscles: " << countNumComponents<Muscle>()
+        << "\n            analyses: " << getNumAnalyses()
+        << "\n              probes: " << countNumComponents<Probe>()
+        << "\n              bodies: " << countNumComponents<Body>()
+        << "\n              joints: " << countNumComponents<Joint>()
+        << "\n         constraints: " << countNumComponents<Constraint>()
+        << "\n             markers: " << countNumComponents<Marker>()
+        << "\n         controllers: " << countNumComponents<Controller>()
+        << "\n  contact geometries: " << countNumComponents<ContactGeometry>()
+        << "\nmisc modelcomponents: " << getMiscModelComponentSet().getSize()
+        << std::endl;
 }
-//_____________________________________________________________________________
-/**
- * Print detailed information about the model.
- *
- * @param aOStream Output stream.
- */
-void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const
-{
-    //int i;
 
+void Model::printDetailedInfo(const SimTK::State& s, std::ostream& aOStream) const
+{
     aOStream << "MODEL: " << getName() << std::endl;
 
-    aOStream << std::endl;
-    aOStream << "numStates = " << s.getNY() << std::endl;
-    aOStream << "numCoordinates = " << getNumCoordinates() << std::endl;
-    aOStream << "numSpeeds = " << getNumSpeeds() << std::endl;
-    aOStream << "numActuators = " << getActuators().getSize() << std::endl;
-    aOStream << "numBodies = " << getNumBodies() << std::endl;
-    aOStream << "numConstraints = " << getConstraintSet().getSize() << std::endl;
-    aOStream << "numProbes = " << getProbeSet().getSize() << std::endl;
+    aOStream
+        << "\nnumStates = "      << s.getNY()
+        << "\nnumCoordinates = " << countNumComponents<Coordinate>()
+        << "\nnumSpeeds = "      << countNumComponents<Coordinate>()
+        << "\nnumActuators = "   << countNumComponents<Actuator>()
+        << "\nnumBodies = "      << countNumComponents<Body>()
+        << "\nnumConstraints = " << countNumComponents<Constraint>()
+        << "\nnumProbes = "      << countNumComponents<Probe>()
+        << std::endl;
 
     aOStream << "\nANALYSES (total: " << getNumAnalyses() << ")" << std::endl;
-    for (int i = 0; i < _analysisSet.getSize(); i++)
-        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName() << std::endl;
+    for (int i = 0; i < _analysisSet.getSize(); ++i)
+        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName()
+                 << std::endl;
 
-    aOStream << "\nBODIES (total: " << getNumBodies() << ")" << std::endl;
-    const BodySet& bodySet = getBodySet();
-    for(int i=0; i < bodySet.getSize(); i++) {
-        const OpenSim::Body& body = bodySet.get(i);
-        aOStream << "body[" + std::to_string(i) + "] = " + body.getName() + ". ";
-        aOStream << "mass: " << body.get_mass() << std::endl;
-        const SimTK::Inertia& inertia = body.getInertia();
-        aOStream << "              moments of inertia:  " << inertia.getMoments()
+    aOStream << "\nBODIES (total: " << countNumComponents<Body>() << ")"
+             << std::endl;
+    unsigned bodyNum = 0u;
+    for (const auto& body : getComponentList<Body>()) {
+        const auto inertia = body.getInertia();
+        aOStream << "body[" << bodyNum << "] = " << body.getName() << ". "
+            << "mass: " << body.get_mass()
+            << "\n              moments of inertia:  " << inertia.getMoments()
+            << "\n              products of inertia: " << inertia.getProducts()
             << std::endl;
-        aOStream << "              products of inertia: " << inertia.getProducts()
-            << std::endl;
+        ++bodyNum;
     }
 
-    aOStream << "\nJOINTS (total: " << getNumJoints() << ")" << std::endl;
-    const JointSet& jointSet = getJointSet();
-    for (int i = 0; i < jointSet.getSize(); i++) {
-        const OpenSim::Joint& joint = get_JointSet().get(i);
-        aOStream << "joint[" << i << "] = " << joint.getName() << ".";
-        aOStream << " parent: " << joint.getParentFrame().getName() <<
-            ", child: " << joint.getChildFrame().getName() << std::endl;
+    aOStream << "\nJOINTS (total: " << countNumComponents<Joint>() << ")"
+             << std::endl;
+    unsigned jointNum = 0u;
+    for (const auto& joint : getComponentList<Joint>()) {
+        aOStream << "joint[" << jointNum << "] = " << joint.getName() << "."
+                 << " parent: " << joint.getParentFrame().getName()
+                 << ", child: " << joint.getChildFrame().getName() << std::endl;
+        ++jointNum;
     }
 
-    aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
-    for (int i = 0; i < getActuators().getSize(); i++) {
-         aOStream << "actuator[" << i << "] = " << getActuators().get(i).getName() << std::endl;
+    aOStream << "\nACTUATORS (total: " << countNumComponents<Actuator>() << ")"
+             << std::endl;
+    unsigned actuatorNum = 0u;
+    for (const auto& actuator : getComponentList<Actuator>()) {
+        aOStream << "actuator[" << actuatorNum << "] = " << actuator.getName()
+                 << std::endl;
+        ++actuatorNum;
     }
 
     /*
@@ -1569,11 +1567,12 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
     n = getNP();
     aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
+    */
 
-*/
     Array<string> stateNames = getStateVariableNames();
-    aOStream<<"\nSTATES (total: "<<stateNames.getSize()<<")"<<std::endl;
-    for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
+    aOStream << "\nSTATES (total: " << stateNames.getSize() << ")" << std::endl;
+    for (int i = 0; i < stateNames.getSize(); ++i)
+        aOStream << "y[" << i << "] = " << stateNames[i] << std::endl;
 }
 
 //--------------------------------------------------------------------------

@@ -88,10 +88,15 @@ class TestBasics {
             assert count == 1;
         }
     }
+
+    public static void testToyReflexController() {
+        ToyReflexController controller = new ToyReflexController();
+    }
         
   public static void main(String[] args) {
       testBasics();
       testMuscleList();
+      testToyReflexController();
       
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);

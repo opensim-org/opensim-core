@@ -40,27 +40,28 @@ using namespace std;
 
 // Global variables to define integration time window, optimizer step count,
 // the best solution.
-int stepCount = 0;
-double initialTime = 0.0;
-double finalTime = 0.25;
+int stepCount = 0; 
+const double initialTime = 0.0;
+const double finalTime = 0.25;
+const double desired_accuracy = 1.0e-5;
 double bestSoFar = Infinity;
 
 class ExampleOptimizationSystem : public OptimizerSystem {
-   public:
-
-       /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
-       ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
-           OptimizerSystem(numParameters), 
-           numControls(numParameters), 
-           si(s),
-           osimModel(aModel)
-       {
-           // Create the integrator for the simulation.
-           p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
-           p_integrator->setAccuracy(1.0e-7);
-       }
+public:
+    /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
+    ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
+        OptimizerSystem(numParameters), 
+        numControls(numParameters), 
+        si(s),
+        osimModel(aModel)
+    {
+        // Create the integrator for the simulation.
+        p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
+        p_integrator->setAccuracy(desired_accuracy);
+    }
                 
-    int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const override {
+    int objectiveFunc(const Vector &newControls,
+        bool new_coefficients, Real& f) const override {
 
         // make a copy of the initial states
         State s = si;
@@ -151,7 +152,7 @@ int main()
         Real f = NaN;
         
         /* Define initial values and bounds for the controls to optimize */
-        Vector controls(numControls, 0.01);
+        Vector controls(numControls, 0.02);
         controls[3] = 0.99;
         controls[4] = 0.99;
         controls[5] = 0.99;
@@ -168,8 +169,8 @@ int main()
 
         // Specify settings for the optimizer
         opt.setConvergenceTolerance(0.1);
-        opt.useNumericalGradient(true, 1e-5);
-        opt.setMaxIterations(100);
+        opt.useNumericalGradient(true, desired_accuracy);
+        opt.setMaxIterations(2);
         opt.setLimitedMemoryHistory(500);
 
         // Optimize it!
@@ -196,7 +197,7 @@ int main()
 
         // Re-run simulation with optimal controls.
         RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-7);
+        integrator.setAccuracy(desired_accuracy);
         Manager manager(osimModel, integrator);
         osimModel.updDefaultControls() = controls;
 

@@ -868,6 +868,7 @@ void testThelen2003Muscle()
         myMcl->setActivationTimeConstant(actTimeConstant);
         myMcl->setDeactivationTimeConstant(deactTimeConstant);
         myMcl->setMinimumActivation(minimumActivation);
+        myMcl->setMinControl(minimumActivation);
 
         myMcl->finalizeFromProperties();
 

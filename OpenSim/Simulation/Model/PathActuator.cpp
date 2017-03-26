@@ -143,7 +143,7 @@ void PathActuator::addNewPathPoint(
          PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
-    PathPoint* newPathPoint = updGeometryPath()
+    AbstractPathPoint* newPathPoint = updGeometryPath()
         .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
@@ -217,9 +217,6 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
 void PathActuator::extendFinalizeFromProperties()
 {
     GeometryPath &path = updGeometryPath();
-
-    // Set owner here in case errors happen later so we can put useful message about responsible party.
-    path.setOwner(this);
 
     Super::extendFinalizeFromProperties();
 }

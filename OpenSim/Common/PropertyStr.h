@@ -74,6 +74,7 @@ public:
 #ifndef SWIG
     PropertyStr& operator=(const PropertyStr &aProperty);
 #endif
+    void assign(const AbstractProperty& that) override;
 
     //--------------------------------------------------------------------------
     // GET AND SET

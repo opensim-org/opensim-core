@@ -111,7 +111,6 @@ void PathSpring::extendFinalizeFromProperties()
 
     // Resting length must be greater than 0.0.
     assert(get_resting_length() > 0.0);
-    path.setOwner(this);
 }
 
 

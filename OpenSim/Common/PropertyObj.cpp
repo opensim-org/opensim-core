@@ -121,6 +121,15 @@ operator=(const PropertyObj &aProperty)
     return(*this);
 }
 
+void PropertyObj::assign(const AbstractProperty& that) {
+    try {
+        *this = dynamic_cast<const PropertyObj&>(that);
+    } catch(const std::bad_cast&) {
+        OPENSIM_THROW(InvalidArgument,
+                      "Unsupported type. Expected: " + this->getTypeName() +
+                      " | Received: " + that.getTypeName());
+    }
+}
 
 //=============================================================================
 // GET AND SET

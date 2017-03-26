@@ -341,11 +341,11 @@ void testPrintXML() {
     testCommand("print-xml x y z", EXIT_FAILURE,
             StartsWith("Unexpected argument: print-xml, x, y, z"));
     testCommand("print-xml bleepbloop", EXIT_FAILURE,
-            "There is no tool or class named 'bleepbloop'.\n"
-            "Did you intend to load a plugin (with --library)?\n");
+        "There is no tool or registered concrete class named 'bleepbloop'.\n"
+        "Did you intend to load a plugin (with --library)?\n");
     testCommand("print-xml bleepbloop y", EXIT_FAILURE,
-            "There is no tool or class named 'bleepbloop'.\n"
-            "Did you intend to load a plugin (with --library)?\n");
+        "There is no tool or registered concrete class named 'bleepbloop'.\n"
+        "Did you intend to load a plugin (with --library)?\n");
 
     // Successful input.
     // =================

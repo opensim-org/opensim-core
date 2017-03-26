@@ -53,28 +53,26 @@ CustomJoint::CustomJoint()
 /**
  * Constructor with specified SpatialTransform.
  */
-CustomJoint::CustomJoint(const std::string &name,
-                         const PhysicalFrame& parent,
-                         const PhysicalFrame& child,
-                         SpatialTransform& spatialTransform,
-                         bool reverse) :
-                         Super(name, parent, child, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const PhysicalFrame&  child,
+                         SpatialTransform&     spatialTransform) :
+                         Super(name, parent, child)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
 }
 
-CustomJoint::CustomJoint(const std::string& name,
-    const PhysicalFrame& parent,
-    const SimTK::Vec3& locationInParent,
-    const SimTK::Vec3& orientationInParent,
-    const PhysicalFrame& child,
-    const SimTK::Vec3& locationInChild,
-    const SimTK::Vec3& orientationInChild,
-    SpatialTransform& spatialTransform,
-    bool reverse) :
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInChild, orientationInChild, reverse)
+CustomJoint::CustomJoint(const std::string&    name,
+                         const PhysicalFrame&  parent,
+                         const SimTK::Vec3&    locationInParent,
+                         const SimTK::Vec3&    orientationInParent,
+                         const PhysicalFrame&  child,
+                         const SimTK::Vec3&    locationInChild,
+                         const SimTK::Vec3&    orientationInChild,
+                         SpatialTransform&     spatialTransform) :
+    Super(name, parent, locationInParent, orientationInParent,
+          child, locationInChild, orientationInChild)
 {
     constructProperties();
     set_SpatialTransform(spatialTransform);
@@ -235,7 +233,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     // if the joint is reversed then flip the underlying tree representation
     // of inboard and outboard bodies, although the joint direction will be 
     // preserved, the inboard must exist first.
-    if (get_reverse()){
+    if (isReversed){
         inb = getChildFrame().getMobilizedBody();
         inbX = getChildFrame().findTransformInBaseFrame();
 
@@ -283,7 +281,7 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
         getConcreteClassName().c_str(), getSpatialTransform().getConcreteClassName().c_str());
 
     SimTK::MobilizedBody::Direction dir =
-        SimTK::MobilizedBody::Direction(get_reverse());
+        SimTK::MobilizedBody::Direction(isReversed);
 
     SimTK::MobilizedBody::FunctionBased
         simtkBody(inb, inbX, 

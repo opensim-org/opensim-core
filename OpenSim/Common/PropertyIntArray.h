@@ -33,7 +33,7 @@
 #include <string>
 #include "Property_Deprecated.h"
 #include "Array.h"
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
@@ -84,6 +84,8 @@ public:
     //--------------------------------------------------------------------------
 public:
     PropertyIntArray& operator=(const PropertyIntArray &aProperty);
+
+    void assign(const AbstractProperty& that) override;
 
     //--------------------------------------------------------------------------
     // GET AND SET

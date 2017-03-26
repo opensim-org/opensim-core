@@ -108,7 +108,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     ball.setName("ball");
 
     // Add joints
-    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 
     // Rename coordinates for a free joint
     for(int i=0; i<free.numCoordinates(); i++){
