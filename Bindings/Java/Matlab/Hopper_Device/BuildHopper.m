@@ -27,15 +27,15 @@ p = inputParser();
 defaultMuscleModel = 'Thelen2003';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
-defaultActivation = [0.0 2.0 3.9;
-                     0.3 1.0 0.1];
+defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                     0.3 0.3  1.0 1.0  0.1 0.1];
 defaultPrintModel = false; 
 
-addOptional(p,'muscleModel',defaultMuscleModel)
-addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
-addOptional(p,'MillardTendonParams',defaultMillardTendonParams)
-addOptional(p,'activation',defaultActivation)
-addOptional(p,'printModel',defaultPrintModel)
+addOptional(p, 'muscleModel', defaultMuscleModel)
+addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
+addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
+addOptional(p, 'activation', defaultActivation)
+addOptional(p, 'printModel', defaultPrintModel)
 
 parse(p,varargin{:});
 
@@ -203,18 +203,16 @@ end
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
 
-%% Metabolics probe
-% ------------
+%% Metabolics probe.
+% ------------------
 probe = Umberger2010MuscleMetabolicsProbe();
 probe.setName('Umberger');
 hopper.addProbe(probe);
 
-probe = Umberger2010MuscleMetabolicsProbe.safeDownCast(hopper.updProbeSet().get('Umberger'));
 probe.addMuscle(vastus.getName(), 0.5);
 hopper.setup();
 probe.useCalculatedMass('vastus');
 probe.setSpecificTension('vastus', 0.6E6);
-probe.setOperation('integrate');
 
 % Device attachment frames.
 % -------------------------

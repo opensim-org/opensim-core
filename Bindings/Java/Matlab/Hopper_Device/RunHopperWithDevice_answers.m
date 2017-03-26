@@ -75,8 +75,8 @@ hopper.addComponent(device);
 % }
 
 % (Done for you) Configure the device to wrap over the patella.
-if hopper.hasComponent('device')
-    cable = PathActuator.safeDownCast(hopper.updComponent('device/cableAtoB'));
+if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 
+    cable = PathActuator.safeDownCast(device.updComponent('cableAtoB'));
     patellaPath = 'thigh/patellaFrame/patella';
     wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
     cable.updGeometryPath().addPathWrap(wrapObject);
