@@ -109,12 +109,15 @@ void PathSpring::extendFinalizeFromProperties()
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(DefaultPathSpringColor);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_resting_length() < 0,
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
         InvalidPropertyValue, getProperty_resting_length().getName());
-    OPENSIM_THROW_IF_FRMOBJ(get_stiffness() < 0,
-        InvalidPropertyValue, getProperty_resting_length().getName());
-    OPENSIM_THROW_IF_FRMOBJ(get_dissipation() < 0,
-        InvalidPropertyValue, getProperty_resting_length().getName());
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
+        InvalidPropertyValue, getProperty_stiffness().getName());
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
+        InvalidPropertyValue, getProperty_dissipation().getName());
 }
 
 

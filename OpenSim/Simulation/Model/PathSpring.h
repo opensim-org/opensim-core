@@ -82,8 +82,8 @@ public:
 // PUBLIC METHODS
 //==============================================================================
     
-    /** Construct a ClutchedPathSpring with default parameters. Users should
-    note that the default values for resting_length, stiffness, and dissipation
+    /** Construct a PathSpring with default parameters. Users should note
+    that the default values for resting_length, stiffness, and dissipation
     are `NaN` so they must be set before simulating. */
     PathSpring();
 
