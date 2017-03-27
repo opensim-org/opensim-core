@@ -26,12 +26,18 @@ for iCol = 0 : nCol -1
 
     col_label  = char(table.getColumnLabels.get(iCol));
 
-    if ~isempty(strfind(col_label, '/')) || ~isempty(strfind(col_label, '|'))
+    if ~isempty(strfind(col_label, '/')) || ...
+        ~isempty(strfind(col_label, '|')) || ...
+        ~isempty(strfind(col_label, '[')) || ...
+        ~isempty(strfind(col_label, ']'))
+
         % Remove an initial slash.
         col_label = regexprep(col_label, '^/', '');
         % Replace all other slashes or vertical bars with an underscore.
         col_label = strrep(col_label, '/', '_');
         col_label = strrep(col_label, '|', '_');
+        col_label = strrep(col_label, '[', '_');
+        col_label = strrep(col_label, ']', '_');
     end
     eval(['[data.' col_label '] = rowdata;']);
 

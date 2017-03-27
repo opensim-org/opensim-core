@@ -54,7 +54,7 @@ reporter.set_report_time_interval(0.2); % seconds
 reporter.addToReport(...
     hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'));
+    hopper.getComponent('vastus').getOutput('activation'), 'vastus_activation');
 hopper.addComponent(reporter);
 % }
 
@@ -76,7 +76,7 @@ csv.write(table, 'hopper_results.csv');
 % [Step 1, Task D]
 % ANSWER{
 results = opensimTimeSeriesTableToMatlab(table);
-fieldnames(results)
+fieldnames(results);
 figure;
 plot(results.time, results.height);
 xlabel('time');
