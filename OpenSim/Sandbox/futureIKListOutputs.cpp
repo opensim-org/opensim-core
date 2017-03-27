@@ -225,10 +225,10 @@ public:
 protected:
     void extendFinalizeFromProperties() override {
         // Create the output channels.
-        for (const auto& marker : getParent().getComponentList<Marker>()) {
+        for (const auto& marker : getOwner().getComponentList<Marker>()) {
             updOutput("model_marker_pos").addChannel(marker.getName());
         }
-        for (const auto& coord : getParent().getComponentList<Coordinate>()) {
+        for (const auto& coord : getOwner().getComponentList<Coordinate>()) {
             updOutput("coords").addChannel(coord.getName());
         }
     }
@@ -398,11 +398,10 @@ void testFutureIKListOutputs() {
     modelMarkers->updInput("inputs").connect(ik->getOutput("model_marker_pos"));
     // Connect to all channels in the "coords" list output.
     solution->updInput("inputs").connect(ik->getOutput("coords"));
-    hjc->dumpConnectionInfo();
-    ik->dumpConnectionInfo();
+    hjc->printSocketInfo();
+    ik->printSocketInfo();
 
-
-    model.dumpSubcomponentInfo();
+    model.printSubcomponentInfo();
 
     SimTK::State& s = model.initSystem();
     

@@ -23,7 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
@@ -87,6 +87,16 @@ public:
     PropertyDblVec_* clone() const override {
         PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
         return prop;
+    }
+    
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyDblVec_&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
     }
 
 public:

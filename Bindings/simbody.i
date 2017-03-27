@@ -172,12 +172,27 @@ namespace SimTK {
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
-
 %include <SWIGSimTK/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 }
+
+%extend SimTK::Rotation_<double> {
+    Vec3 multiply(const Vec3& v) {
+        return operator*(*$self, v);
+    }
+
+    RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+
+    RowVector_<Vec3> multiply(const RowVectorView_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+}
+
+
 // Transform
 %include <SWIGSimTK/Transform.h>
 namespace SimTK {
@@ -214,8 +229,8 @@ namespace SimTK {
 typedef int MobilizedBodyIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
 %include <SWIGSimTK/PolygonalMesh.h>

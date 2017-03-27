@@ -1,5 +1,5 @@
-%module(directors="1") opensimModel
-%module opensimModel
+%module(directors="1") opensimActuatorsAnalysesTools
+%module opensimActuatorsAnalysesTools
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 

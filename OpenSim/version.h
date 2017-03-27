@@ -72,6 +72,9 @@ namespace OpenSim {
 
         if( 0 == os.compare("Windows")) {
             switch( atoi(GET_COMPILER_INFO) ) {
+            case 1910:
+                str = "Visual Studio 2017";
+                break;
             case 1900:
                 str = "Visual Studio 2015";
                 break;
@@ -82,20 +85,20 @@ namespace OpenSim {
                 str = "Visual Studio 2011";
                 break;
             case 1600:
-                    str = "Visual Studio 2010";
-                    break;
-                case 1500:
-                    str = "Visual Studio 2008";
-                    break;
-                case 1400:
-                    str = "Visual Studio 2005";
-                    break;
-                case 1310:
-                    str = "Visual Studio 2003";
-                    break;
-                case 1300:
-                    str = "Visual Studio 2002";
-                    break;
+                str = "Visual Studio 2010";
+                break;
+            case 1500:
+                str = "Visual Studio 2008";
+                break;
+            case 1400:
+                str = "Visual Studio 2005";
+                break;
+            case 1310:
+                str = "Visual Studio 2003";
+                break;
+            case 1300:
+                str = "Visual Studio 2002";
+                break;
             }
         } else if( 0 == os.compare("Darwin")) {
             str = "Mac OS X :";

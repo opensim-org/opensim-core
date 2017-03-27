@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 // UNIX PLATFORM
-#ifndef WIN32
+#ifndef _WIN32
 
 #define OSIMANALYSES_API
 

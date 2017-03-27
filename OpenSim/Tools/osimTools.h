@@ -1,5 +1,5 @@
-#ifndef _osimTools_h_
-#define _osimTools_h_
+#ifndef OPENSIM_OSIMTOOLS_H_
+#define OPENSIM_OSIMTOOLS_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  osimTools.h                            *
  * -------------------------------------------------------------------------- *
@@ -29,6 +29,7 @@
 #include "AnalyzeTool.h"
 
 #include "InverseKinematicsTool.h"
+#include "InverseDynamicsTool.h"
 #include "GenericModelMaker.h"
 #include "TrackingTask.h"
 #include "MuscleStateTrackingTask.h"
@@ -49,4 +50,4 @@
 #include "CorrectionController.h"
 #include "RegisterTypes_osimTools.h"    // to expose RegisterTypes_osimTools
 
-#endif // _osimTools_h_
+#endif // OPENSIM_OSIMTOOLS_H_

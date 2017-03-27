@@ -15,7 +15,7 @@ class TestComponentInterface(unittest.TestCase):
             "gait10dof18musc_subject01.osim"))
         model.finalizeFromProperties();
         num_matches = model.printComponentsMatching("_r")
-        self.assertEquals(num_matches, 98)
+        self.assertEquals(num_matches, 126)
     def test_attachGeometry_memory_management(self):
         model = osim.Model()
         model.getGround().attachGeometry(osim.Sphere(1.5))

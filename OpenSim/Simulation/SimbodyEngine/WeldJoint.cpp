@@ -54,7 +54,6 @@ template <> SimTK::MobilizedBody::Weld Joint::createMobilizedBody<SimTK::Mobiliz
     const PhysicalFrame* associatedBod) const 
 {
     // CREATE MOBILIZED BODY
-    // Weld does not include reverse option since it has no coordinates to define
     SimTK::MobilizedBody::Weld simtkBody(inboard, inboardTransform, outboard, outboardTransform);
 
     startingCoorinateIndex = assignSystemIndicesToBodyAndCoordinates(simtkBody,

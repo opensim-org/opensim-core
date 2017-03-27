@@ -73,6 +73,8 @@ public:
 public:
     PropertyBool& operator=(const PropertyBool &aProperty);
 
+    void assign(const AbstractProperty& that) override;
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------

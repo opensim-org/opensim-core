@@ -50,7 +50,6 @@
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
-#include <OpenSim/Simulation/Control/ToyPropMyoController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -146,5 +145,11 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+#include <OpenSim/Actuators/FiberForceLengthCurve.h>
+#include <OpenSim/Actuators/ForceVelocityCurve.h>
+#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+#include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

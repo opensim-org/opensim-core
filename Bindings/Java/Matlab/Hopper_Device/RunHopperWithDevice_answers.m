@@ -75,20 +75,20 @@ hopper.addComponent(device);
 % }
 
 % (Done for you) Configure the device to wrap over the patella.
-if hopper.hasComponent('device')
-    cable = PathActuator.safeDownCast(hopper.updComponent('device/cableAtoB'));
+if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 
+    cable = PathActuator.safeDownCast(device.updComponent('cableAtoB'));
     patellaPath = 'thigh/patellaFrame/patella';
     wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
     cable.updGeometryPath().addPathWrap(wrapObject);
 end
 
-% TODO: Print the names of the outputs of the device's PathActuator and
-%       ToyPropMyoController subcomponents.
+% TODO: Print the names of the outputs of the device's PathActuator
+%       subcomponent 'cableAtoB', and the names of the inputs for the device's
+%       ToyPropMyoController subcomponent 'controller'.
 % [Step 2, Task E]
 % ANSWER{
 device.getComponent('cableAtoB').printOutputInfo();
-device.getComponent('controller').printOutputInfo();
-% TODO device.getComponent('controller').dumpInputInfo();
+device.getComponent('controller').printInputInfo();
 % }
 
 % TODO: Use the vastus muscle's activation output as the ToyPropMyoController's  
@@ -117,8 +117,9 @@ reporter.set_report_time_interval(0.2); % seconds.
 reporter.addToReport(...
     hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'));
-reporter.addToReport(device.getComponent('controller').getOutput('myo_control'));
+    hopper.getComponent('vastus').getOutput('activation'), 'vastus_activation');
+reporter.addToReport(...
+    device.getComponent('controller').getOutput('myo_control'), 'myo_control');
 hopper.addComponent(reporter);
 % }
 
@@ -133,10 +134,10 @@ if exist('reporter') == 1
     csv = CSVFileAdapter();
     csv.write(table, 'hopper_device_results.csv');
       
-    % (Done for you) Convert the TableReporter's Table to a MATLAB struct and plot
-    % the the hopper's height over the motion.
+    % (Done for you) Convert the TableReporter's Table to a MATLAB struct and
+    % plot the hopper's height over the motion.
     results = opensimTimeSeriesTableToMatlab(table);
-    fieldnames(results)
+    fieldnames(results);
     if isfield(results, 'height')
         plot(results.time, results.height);
         xlabel('time');

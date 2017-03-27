@@ -30,10 +30,11 @@ defaultActivation = [0.0 1.0 2.0 3.9;
                      0.0 0.3 1.0 0.1];
 defaultSpringStiffness = 1;
 
-addOptional(p,'deviceType',defaultDeviceType)
-addOptional(p,'isPropMyo',defaultIsPropMyo)
-addOptional(p,'activation',defaultActivation)
-addOptional(p,'springStiffness',defaultSpringStiffness)
+addOptional(p, 'deviceType', defaultDeviceType, ...
+        @(x) strcmp(x, 'active') || strcmp(x, 'passive'))
+addOptional(p, 'isPropMyo', defaultIsPropMyo)
+addOptional(p, 'activation', defaultActivation)
+addOptional(p, 'springStiffness', defaultSpringStiffness)
 
 parse(p,varargin{:});
 
@@ -48,10 +49,10 @@ springStiffness = p.Results.springStiffness;
 import org.opensim.modeling.*;
 
 % Create the device.
-% TODO talk about Container class (if it remains).
-% TODO try making this a Model (done: did not work; two Grounds).
-device = Container();
-device.setName(deviceType)
+% This class is from the osimExampleComponents library, and acts like a
+% container for the other components of the device.
+device = HopperDevice();
+device.setName(['device_' deviceType])
 
 % The device's mass is distributed between two identical cuffs that attach to
 % the hopper via WeldJoints (to be added below).

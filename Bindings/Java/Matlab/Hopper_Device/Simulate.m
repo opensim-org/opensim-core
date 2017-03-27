@@ -26,6 +26,13 @@ function Simulate(model, state, visualize)
 
 import org.opensim.modeling.*;
 
+% This env. var. is used to turn off the visualizer during automated tests.
+if getenv('OPENSIM_USE_VISUALIZER') == '1'
+    visualize = true;
+elseif getenv('OPENSIM_USE_VISUALIZER') == '0'
+    visualize = false;
+end
+
 if visualize
     model.setUseVisualizer(true);
 end
