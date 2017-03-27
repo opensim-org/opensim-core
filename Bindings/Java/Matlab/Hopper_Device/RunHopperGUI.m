@@ -43,9 +43,8 @@ function RunHopperGUI(varargin)
 p = inputParser();
 
 defaultVisualize = true;
-% TODO copy over modified activations from BuildHopper.m.
-defaultMuscleActivation = [0.0 1.0 2.0 3.9;
-                           0.0 0.3 1.0 0.1];
+defaultMuscleActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                           0.3 0.3  1.0 1.0  0.1 0.1];
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;
 defaultSpringStiffness = 1;
