@@ -35,8 +35,8 @@ namespace OpenSim {
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
 #define EQUAL_WITHIN_TOLERANCE(a,b,c) (DABS(((a)-(b))) <= (c))
-#define MAKE_3DVECTOR(pt1,pt2,pt3) {pt3[0]=pt2[0]-pt1[0];pt3[1]=pt2[1]-pt1[1];pt3[2]=pt2[2]-pt1[2];}
-#define MAKE_3DVECTOR21(pt1,pt2,pt3) {pt3[0]=pt1[0]-pt2[0];pt3[1]=pt1[1]-pt2[1];pt3[2]=pt1[2]-pt2[2];}
+#define MAKE_3DVECTOR(pt1,pt2,pt3) {pt3[0]=(pt2[0]-pt1[0]);pt3[1]=(pt2[1]-pt1[1]);pt3[2]=(pt2[2]-pt1[2]);}
+#define MAKE_3DVECTOR21(pt1,pt2,pt3) {pt3[0]=(pt1[0]-pt2[0]);pt3[1]=(pt1[1]-pt2[1]);pt3[2]=(pt1[2]-pt2[2]);}
 #define COPY_1X3VECTOR(from,to) {\
 to[0] = from[0];\
 to[1] = from[1];\
