@@ -57,8 +57,8 @@ function HopperExample_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Spring stiffness
 set(handles.spring_stiffness,'min',1);
-set(handles.spring_stiffness,'max',100);
-set(handles.spring_stiffness,'Value',10);
+set(handles.spring_stiffness,'max',25000);
+set(handles.spring_stiffness,'Value',100);
 
 % Device options disabled
 set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')

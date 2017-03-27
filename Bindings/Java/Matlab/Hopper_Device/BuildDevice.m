@@ -26,8 +26,8 @@ p = inputParser();
 
 defaultDeviceType = 'active';
 defaultIsPropMyo = true;
-defaultActivation = [0.0 1.0 2.0 3.9;
-                     0.0 0.3 1.0 0.1];
+defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                     0.3 0.3  1.0 1.0  0.1 0.1];
 defaultSpringStiffness = 1;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
@@ -91,7 +91,7 @@ switch deviceType
         pathActuator = PathActuator();
         pathActuator.setName('cableAtoB');
         pathActuator.updGeometryPath().setName('geompath');
-        pathActuator.set_optimal_force(1000.0);
+        pathActuator.setOptimalForce(0);
         pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
         pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(pathActuator);
@@ -122,10 +122,12 @@ switch deviceType
         springDissipation = 0.1; 
         relaxationTau = 5;
         spring0 = 0.0;
+        
+        % TODO: change ClutchedPathSpring to PathSpring
         clutchedPathSpring = ClutchedPathSpring(name, springStiffness, ...
                                   springDissipation, relaxationTau, spring0);
         clutchedPathSpring.updGeometryPath().setName('geompath');
-        clutchedPathSpring.set_optimal_force(100.0);
+        clutchedPathSpring.set_optimal_force(1000.0);
         clutchedPathSpring.addNewPathPoint('pointA', cuffA, Vec3(0));
         clutchedPathSpring.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(clutchedPathSpring);
@@ -133,8 +135,8 @@ switch deviceType
         controller = PrescribedController();
         controller.setName('controller');
         controlFunction = PiecewiseConstantFunction();
-        clutchControl = [0.0 1.0 5.0;
-                         0.0 0.1 1.0];
+        clutchControl = [0.0 2.5 5.0;
+                         1.0 1.0 1.0];
         for i = 1:size(clutchControl,2)
             controlFunction.addPoint(clutchControl(1,i), clutchControl(2,i));
         end

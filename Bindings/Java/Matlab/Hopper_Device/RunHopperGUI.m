@@ -43,17 +43,16 @@ function RunHopperGUI(varargin)
 p = inputParser();
 
 defaultVisualize = true;
-% TODO copy over modified activations from BuildHopper.m.
-defaultMuscleActivation = [0.0 1.0 2.0 3.9;
-                           0.0 0.3 1.0 0.1];
+defaultMuscleActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                     0.3 0.3  1.0 1.0  0.1 0.1];
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;
 defaultSpringStiffness = 1;
 defaultAddActiveDevice = false;
 defaultActivePatellaWrap = false;
 defaultIsActivePropMyo = false;
-defaultDeviceActivation = [0.0 1.0 2.0 3.9;
-                           0.0 0.3 1.0 0.1];
+defaultDeviceActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                     0.3 0.3  1.0 1.0  0.1 0.1];
 
 addOptional(p,'visualize',defaultVisualize)
 addOptional(p,'muscleActivation',defaultMuscleActivation)
@@ -80,7 +79,7 @@ deviceActivation = p.Results.deviceActivation;
 import org.opensim.modeling.*;
 
 % Build hopper model
-hopper = BuildHopper('isDemo',false,'activation',muscleActivation);
+hopper = BuildHopper('activation',muscleActivation);
 hopper.printSubcomponentInfo();
 
 % Build devices
@@ -91,7 +90,7 @@ patellaWrap = cell(0);
 if addPassiveDevice
     passive = BuildDevice('deviceType','passive','springStiffness',springStiffness);
     devices{1,length(devices)+1} = passive;
-    deviceNames{1,length(deviceNames)+1} = 'passive';
+    deviceNames{1,length(deviceNames)+1} = 'device_passive';
     patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;
     
 end
@@ -104,7 +103,7 @@ if addActiveDevice
     end
     
     devices{1,length(devices)+1} = active;
-    deviceNames{1,length(deviceNames)+1} = 'active';
+    deviceNames{1,length(deviceNames)+1} = 'device_active';
     patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;
     
 end
@@ -142,8 +141,14 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-    if patellaWrap{d} && hopper.hasComponent(deviceNames{d})
-        cable = PathActuator.safeDownCast(hopper.updComponent([deviceNames{d} '/cableAtoB']));
+   %debug1 = hopper.hasComponent([deviceNames{d}])
+    %debug2 = hopper.hasComponent(['device_' deviceNames{d}])
+    if patellaWrap{d} && hopper.hasComponent(['device_' deviceNames{d}])
+        if strcmp(deviceNames{d},'device_passive')
+            cable = PathSpring.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+        elseif strcmp(deviceNames{d},'device_active')
+            cable = PathActuator.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+        end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
         cable.updGeometryPath().addPathWrap(wrapObject);
@@ -152,11 +157,13 @@ for d = 1:length(devices)
     % Print the names of the outputs of the device's PathActuator and
     % ToyPropMyoController subcomponents.
     device.getComponent('cableAtoB').printOutputInfo();
-    device.getComponent('controller').printOutputInfo();
+    if strcmp(deviceNames{d},'device_active')
+        device.getComponent('controller').printOutputInfo();
+    end
     
     % Use the vastus muscle's activation output as the ToyPropMyoController's
     % activation input.
-    if strcmp(deviceNames{d},'active') && isActivePropMyo
+    if strcmp(deviceNames{d},'device_active') && isActivePropMyo
         device.updComponent('controller').updInput('activation').connect(...
             hopper.getComponent('vastus').getOutput('activation'));
     end
@@ -180,7 +187,7 @@ reporter.addToReport(...
 reporter.addToReport(...
     hopper.getComponent('vastus').getOutput('activation'))
 reporterVector.addToReport(...
-      hopper.getComponent('Umberger').getOutput('probe_outputs'));
+    hopper.getComponent('Umberger').getOutput('probe_outputs'));
 %reporter.addToReport(device.getComponent('controller').getOutput('myo_control'));
 hopper.addComponent(reporter);
 
@@ -214,11 +221,11 @@ end
 %     disp(table.toString());
 %     csv = CSVFileAdapter();
 %     csv.write(table, 'hopper_device_results_Vector.csv');
-%     
+%
 %     % (Done for you) Convert the TableReporter's Table to a MATLAB struct and plot
 %     % the the hopper's height over the motion.
 %     results = opensimTimeSeriesTableToMatlab(table);
-%     
+%
 %     fieldnames(results)
 %     if isfield(results, 'height')
 %         plot(results.time, results.height);
