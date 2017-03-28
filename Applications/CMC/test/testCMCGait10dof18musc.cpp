@@ -36,19 +36,20 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
+    // Model uses Millard2012EquilibriumMuscle type muscles
     try { testGait10dof18musc(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc_Thelen");
+        failures.push_back("testGait10dof18musc_Millard");
     }
 
-    // redo with the Millard2012EquilibriumMuscle 
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
+    // redo with the Thelen2003Muscle
+    Object::renameType("Millard2012EquilibriumMuscle", "Thelen2003Muscle");
 
     try { testGait10dof18musc(); }
     catch (const std::exception& e) {
         cout << e.what() <<endl;
-        failures.push_back("testGait10dof18musc_Millard");
+        failures.push_back("testGait10dof18musc_Thelen");
     }
 
     if (!failures.empty()) {
@@ -80,8 +81,11 @@ void testGait10dof18musc() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within .6 degrees .6 degs/s; activations within 1%
-    std::vector<double> rms_tols(nstates, 0.01);
+    // angles and speeds within 0.01 rads and .05 rad/s; activations within 5%
+    std::vector<double> rms_tols(nstates, 0.1);
+    for (int i = 0; i < 10; ++i) {
+        rms_tols[2*i ] = 0.01; //generalized coordinates
+    }
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");
