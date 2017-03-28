@@ -1,5 +1,5 @@
 function configureOpenSim()
-%% configureOpenSim() adds OpenSim library paths to MATLAB path files.
+% configureOpenSim() adds OpenSim library paths to MATLAB path files.
 %    Once run, you will have access to the OpenSim API in MATLAB:
 %
 %        >> import org.opensim.modeling.*;
@@ -41,7 +41,7 @@ function configureOpenSim()
 %    mechanism likely requires administrator (sudo) privileges, as it involves
 %    editing files within the MATLAB installation.
 %
-%    This function requires MATLAB 2007a or later to run.
+%    This function requires MATLAB 2008a or later to run.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -165,12 +165,8 @@ try
            'type: `model = org.opensim.modeling.Model();`'];
     showMessage(msg, 'OpenSim successfully added', false);
 catch ME
-    if verLessThan('matlab', '7.4')
-        error(ME.message);
-    else
-        % Introduced in version 2007b (7.4).
-        throwAsCaller(ME); % Avoid a stacktrace.
-    end
+    % Introduced in version 2007b (7.4).
+    throwAsCaller(ME); % Avoid a stacktrace.
 end % try...catch
 end % function
 
