@@ -122,7 +122,7 @@ of the Model, called a System (SimTK::System), using Simbody. Creation of the
 System is initiated by a call to the Model's initSystem() method. The System and
 related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
-method, in which case it will allocate an maintain a ModelVisualizer.
+method, in which case it will allocate and maintain a ModelVisualizer.
 
 @authors Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman
 @see ModelComponent, ModelVisualizer, SimTK::System
