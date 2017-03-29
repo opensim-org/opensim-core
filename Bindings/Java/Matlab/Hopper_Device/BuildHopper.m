@@ -24,18 +24,20 @@ function hopper = BuildHopper(varargin)
 % Build a model of a one-leg hopper, with one muscle.
 
 p = inputParser();
-defaultMuscleModel = 'Thelen2003';
+defaultMuscleModel = 'Millard2012Equilibrium';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
 defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
-defaultPrintModel = false; 
+defaultPrintModel = false;
+defaultAdditionalMass = 0;
 
 addOptional(p, 'muscleModel', defaultMuscleModel)
 addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
 addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
 addOptional(p, 'activation', defaultActivation)
 addOptional(p, 'printModel', defaultPrintModel)
+addOptional(p, 'additionalMass', defaultAdditionalMass)
 
 parse(p,varargin{:});
 
@@ -44,6 +46,7 @@ maxIsometricForce = p.Results.maxIsometricForce;
 MillardTendonParams = p.Results.MillardTendonParams;
 activation = p.Results.activation;
 printModel = p.Results.printModel;
+additionalMass = p.Results.additionalMass;
 
 import org.opensim.modeling.*;
 
@@ -53,11 +56,12 @@ hopper.setName('Dennis')
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
-pelvisMass = 30.0; pelvisHalfLength = 0.1;
+pelvisMass = 50.0 + additionalMass; 
+pelvisHalfLength = 0.1;
 pelvisInertia = Inertia(Vec3(pelvisMass * 2/3*pelvisHalfLength^2));
 pelvis = Body('pelvis', pelvisMass, Vec3(0), pelvisInertia);
 
-linkMass = 10.0; linkHalfLength = 0.25; linkRadius = 0.035;
+linkMass = 1; linkHalfLength = 0.25; linkRadius = 0.035;
 linkIxx = linkMass * (linkRadius^2 / 4 + linkHalfLength^2 / 3);
 linkInertia = Inertia(Vec3(linkIxx, linkMass * linkRadius^2 / 2, linkIxx));
 thigh = Body('thigh', linkMass, Vec3(0), linkInertia);
@@ -155,6 +159,7 @@ switch muscleModel
     case 'Thelen2003'
         vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
             mclTendonSlackLen, mclPennAng);
+
     case 'Millard2012Equilibrium'
         vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
             mclTendonSlackLen, mclPennAng);

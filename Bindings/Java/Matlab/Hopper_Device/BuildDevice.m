@@ -29,12 +29,14 @@ defaultIsPropMyo = true;
 defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultSpringStiffness = 1;
+defaultPassivePatellaWrap = true;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
         @(x) strcmp(x, 'active') || strcmp(x, 'passive'))
 addOptional(p, 'isPropMyo', defaultIsPropMyo)
 addOptional(p, 'activation', defaultActivation)
 addOptional(p, 'springStiffness', defaultSpringStiffness)
+addOptional(p, 'passivePatellaWrap', defaultPassivePatellaWrap)
 
 parse(p,varargin{:});
 
@@ -42,6 +44,7 @@ deviceType = p.Results.deviceType;
 isPropMyo = p.Results.isPropMyo;
 activation = p.Results.activation;
 springStiffness = p.Results.springStiffness;
+passivePatellaWrap = p.Results.passivePatellaWrap;
 
 % Build a model of a device, consisting of a PathActuator, a proportional
 % myoelectric controller, and two bodies.
@@ -56,7 +59,7 @@ device.setName(['device_' deviceType])
 
 % The device's mass is distributed between two identical cuffs that attach to
 % the hopper via WeldJoints (to be added below).
-deviceMass = 2.0;
+deviceMass = 1;
 cuffA = Body(['cuffA_' deviceType], deviceMass/2., Vec3(0), Inertia(0.5));
 cuffB = Body(['cuffB_' deviceType], deviceMass/2., Vec3(0), Inertia(0.5));
 device.addComponent(cuffA);
@@ -91,7 +94,7 @@ switch deviceType
         pathActuator = PathActuator();
         pathActuator.setName('cableAtoB');
         pathActuator.updGeometryPath().setName('geompath');
-        pathActuator.setOptimalForce(0);
+        pathActuator.setOptimalForce(1000);
         pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
         pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(pathActuator);
@@ -121,8 +124,13 @@ switch deviceType
         name = 'cableAtoB';
         springDissipation = 0.1; 
         relaxationTau = 5;
-        spring0 = 0.0;
         
+        if passivePatellaWrap
+            spring0 = 0.7166;
+        else
+            spring0 = 0.6329;
+        end
+               
         % TODO: change ClutchedPathSpring to PathSpring
         clutchedPathSpring = ClutchedPathSpring(name, springStiffness, ...
                                   springDissipation, relaxationTau, spring0);

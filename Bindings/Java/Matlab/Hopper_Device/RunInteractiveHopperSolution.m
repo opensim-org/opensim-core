@@ -21,48 +21,46 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-function RunHopperGUI(varargin)
-% This function is used by the HopperExample GUI.
+function RunInteractiveHopperSolution(varargin)
+% This function is used by the InteractiveHopper GUI.
 
 % TODO consider renaming to RunHopperForGUI; I initially thought this script
 % would launch a GUI.
 
-% TODO: clicking Simulate without having chosen an Activation causes an error;
-% perhaps we should give users an initial activation so that clicking Simulate
-% without clicking anything else will just work?
-
-% TODO clicking New Muscle Activation a second time puts my clicks in the
-% bottom plot; not the top plot. Make sure to hold onto a handle for the
-% Activation figure.
 % TODO annotate height plot to show Run Number (also show somewhere in the
 % GUI).
 
-% TODO consider renaming HopperExample to HopperPlayground,
-% HopperOptimizationGUI, InteractiveHopper.
-
 p = inputParser();
 
-defaultVisualize = true;
+defaultVisualize = false;
 defaultMuscleActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;
 defaultSpringStiffness = 1;
+defaultPassiveMass = 0;
 defaultAddActiveDevice = false;
 defaultActivePatellaWrap = false;
 defaultIsActivePropMyo = false;
 defaultDeviceActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
+defaultActiveMass = 0;
+defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
+defaultMaxIsometricForce = 4000.0;
 
 addOptional(p,'visualize',defaultVisualize)
 addOptional(p,'muscleActivation',defaultMuscleActivation)
 addOptional(p,'addPassiveDevice',defaultAddPassiveDevice)
 addOptional(p,'passivePatellaWrap',defaultPassivePatellaWrap)
 addOptional(p,'springStiffness',defaultSpringStiffness)
+addOptional(p,'passiveMass',defaultPassiveMass)
 addOptional(p,'addActiveDevice',defaultAddActiveDevice)
 addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
 addOptional(p,'deviceActivation',defaultDeviceActivation)
+addOptional(p,'activeMass',defaultActiveMass)
+addOptional(p,'MillardTendonParams',defaultMillardTendonParams)
+addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
 
 parse(p,varargin{:});
 
@@ -71,15 +69,29 @@ muscleActivation = p.Results.muscleActivation;
 addPassiveDevice = p.Results.addPassiveDevice;
 passivePatellaWrap = p.Results.passivePatellaWrap;
 springStiffness = p.Results.springStiffness;
+passiveMass = p.Results.passiveMass;
 addActiveDevice = p.Results.addActiveDevice;
 activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
 deviceActivation = p.Results.deviceActivation;
+activeMass = p.Results.activeMass;
+MillardTendonParams = p.Results.MillardTendonParams;
+maxIsometricForce = p.Results.maxIsometricForce;
 
 import org.opensim.modeling.*;
 
+% Additional mass to be added at the pelvis for given configuration
+additionalMass = 0;
+if addPassiveDevice, additionalMass = additionalMass + 2.5; end
+if addActiveDevice, additionalMass = additionalMass + 2.5; end
+additionalMass = additionalMass + passiveMass;
+additionalMass = additionalMass + activeMass;
+
 % Build hopper model
-hopper = BuildHopper('activation',muscleActivation);
+hopper = BuildHopper('activation',muscleActivation, ...
+                     'additionalMass',additionalMass, ...
+                     'MillardTendonParams', MillardTendonParams, ...
+                     'maxIsometricForce', maxIsometricForce);
 hopper.printSubcomponentInfo();
 
 % Build devices
@@ -88,7 +100,7 @@ deviceNames = cell(0);
 patellaWrap = cell(0);
 
 if addPassiveDevice
-    passive = BuildDevice('deviceType','passive','springStiffness',springStiffness);
+    passive = BuildDevice('deviceType','passive','springStiffness',springStiffness,'passivePatellaWrap',passivePatellaWrap);
     devices{1,length(devices)+1} = passive;
     deviceNames{1,length(deviceNames)+1} = 'device_passive';
     patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;
@@ -110,7 +122,6 @@ end
 
 %% Connect the devices to the hopper.
 % ----------------------------------
-
 for d = 1:length(devices)
     
     % Print the names of the device's subcomponents, and locate the
@@ -141,13 +152,14 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-   %debug1 = hopper.hasComponent([deviceNames{d}])
-    %debug2 = hopper.hasComponent(['device_' deviceNames{d}])
-    if patellaWrap{d} && hopper.hasComponent(['device_' deviceNames{d}])
+
+    if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
-            cable = PathSpring.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+            % TODO: Change to downcast from PathSpring when PathSpring is
+            % working for passive device
+            cable = PathActuator.safeDownCast(hopper.updComponent([deviceNames{d} '/cableAtoB']));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+            cable = PathActuator.safeDownCast(hopper.updComponent([deviceNames{d} '/cableAtoB']));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
@@ -169,6 +181,7 @@ for d = 1:length(devices)
     end
     
 end
+
 %% Report quantities of interest.
 % -------------------------------
 % Configure the outputs we wish to display during the simulation.
