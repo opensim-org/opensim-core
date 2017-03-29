@@ -68,7 +68,9 @@ addons:
       # To send a password to ssh.
       - sshpass
   # To avoid being prompted when ssh'ing into sourceforge.
-  ssh_known_hosts: shell.sourceforge.net
+  ssh_known_hosts:
+      - web.sourceforge.net
+      - shell.sourceforge.net
 
 before_install:
   - cd $TRAVIS_BUILD_DIR
@@ -123,9 +125,9 @@ before_install:
   - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Install Simbody.
-  # The Simbody travis script uploads the latestsimbody binaries to bintray.
+  # The Simbody travis script uploads the simbody binaries to sourceforge.
   - SIMBODYZIP=simbody-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
-  - wget https://dl.bintray.com/chrisdembia/opensim-testing/$SIMBODYZIP
+  - wget https://prdownloads.sourceforge.net/myosin/latest/$SIMBODYZIP
   # Put Simbody in ~/simbody (-q: quiet).
   - unzip -q $SIMBODYZIP -d ~
 
@@ -235,7 +237,7 @@ script:
     
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
-  # The `-e "ssh...` is for providing the password andautomatically
+  # The `-e "ssh...` is for providing the password and automatically
   # accepting the ssh key.
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
   # MYOSIN_SOURCEFORGE_PASSWORD is a hidden environment variable that we set
