@@ -128,7 +128,7 @@ before_install:
   ## Install Simbody.
   # The Simbody travis script uploads the simbody binaries to sourceforge.
   - SIMBODYZIP=simbody-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
-  - wget https://prdownloads.sourceforge.net/myosin/latest/$SIMBODYZIP
+  - wget https://prdownloads.sourceforge.net/myosin/simbody/latest/$SIMBODYZIP
   # Put Simbody in ~/simbody (-q: quiet).
   - unzip -q $SIMBODYZIP -d ~
 
