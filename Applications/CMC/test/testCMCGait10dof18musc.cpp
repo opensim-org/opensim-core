@@ -81,7 +81,8 @@ void testGait10dof18musc() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within 0.01 rads and .05 rad/s; activations within 5%
+    // angles and speeds within 0.01 rads and 0.1 rad/s;
+    // and activations to within 10%
     std::vector<double> rms_tols(nstates, 0.1);
     for (int i = 0; i < 10; ++i) {
         rms_tols[2*i ] = 0.01; //generalized coordinates
