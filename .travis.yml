@@ -237,14 +237,14 @@ script:
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
-  # TODO only do this if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]
+  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
   # Decrypt the private key stored in the repository to the tmp dir.
-  - openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
   # Start the ssh agent.
-  - eval "$(ssh-agent -s)"
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
   # Register this private key with this client (the travis machine).
-  - chmod 600 /tmp/deploy_myosin_sourceforge_rsa
-  - ssh-add /tmp/deploy_myosin_sourceforge_rsa
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
 
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
