@@ -26,25 +26,31 @@ p = inputParser();
 
 defaultDeviceType = 'active';
 defaultIsPropMyo = true;
-defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+defaultControl = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultSpringStiffness = 1;
 defaultPassivePatellaWrap = true;
+defaultMaxTension = 1000;
+defaultGain = 1;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
         @(x) strcmp(x, 'active') || strcmp(x, 'passive'))
 addOptional(p, 'isPropMyo', defaultIsPropMyo)
-addOptional(p, 'activation', defaultActivation)
+addOptional(p, 'control', defaultControl)
 addOptional(p, 'springStiffness', defaultSpringStiffness)
 addOptional(p, 'passivePatellaWrap', defaultPassivePatellaWrap)
+addOptional(p, 'maxTension', defaultMaxTension)
+addOptional(p, 'gain', defaultGain)
 
 parse(p,varargin{:});
 
 deviceType = p.Results.deviceType;
 isPropMyo = p.Results.isPropMyo;
-activation = p.Results.activation;
+control = p.Results.control;
 springStiffness = p.Results.springStiffness;
 passivePatellaWrap = p.Results.passivePatellaWrap;
+maxTension = p.Results.maxTension;
+gain = p.Results.gain;
 
 % Build a model of a device, consisting of a PathActuator, a proportional
 % myoelectric controller, and two bodies.
@@ -94,7 +100,9 @@ switch deviceType
         pathActuator = PathActuator();
         pathActuator.setName('cableAtoB');
         pathActuator.updGeometryPath().setName('geompath');
-        pathActuator.setOptimalForce(1000);
+        pathActuator.setOptimalForce(maxTension);
+        pathActuator.setMinControl(0.0);
+        pathActuator.setMaxControl(1.0);
         pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
         pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(pathActuator);
@@ -103,17 +111,17 @@ switch deviceType
             % Create a proportional myoelectric controller.
             controller = ToyPropMyoController();
             controller.setName('controller');
-            controller.set_gain(1.0);
+            controller.set_gain(gain);
             % Connect the controller's 'actuator' Socket to pathActuator.
             controller.connectSocket_actuator(pathActuator);
         else
-            % If not prop myo, apply user specified device activation
+            % If not prop myo, apply user specified device control
             controller = PrescribedController();
             controller.setName('controller');
             controller.addActuator(pathActuator);
             controlFunction = PiecewiseLinearFunction();
-            for i = 1:size(activation,2)
-                controlFunction.addPoint(activation(1,i), activation(2,i));
+            for i = 1:size(control,2)
+                controlFunction.addPoint(control(1,i), control(2,i));
             end
             controller.addActuator(pathActuator);
             controller.prescribeControlForActuator('cableAtoB',controlFunction);

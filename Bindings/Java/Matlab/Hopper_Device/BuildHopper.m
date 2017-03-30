@@ -27,7 +27,7 @@ p = inputParser();
 defaultMuscleModel = 'Millard2012Equilibrium';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
-defaultActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultPrintModel = false;
 defaultAdditionalMass = 0;
@@ -35,7 +35,7 @@ defaultAdditionalMass = 0;
 addOptional(p, 'muscleModel', defaultMuscleModel)
 addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
 addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
-addOptional(p, 'activation', defaultActivation)
+addOptional(p, 'excitation', defaultExcitation)
 addOptional(p, 'printModel', defaultPrintModel)
 addOptional(p, 'additionalMass', defaultAdditionalMass)
 
@@ -44,7 +44,7 @@ parse(p,varargin{:});
 muscleModel = p.Results.muscleModel;
 maxIsometricForce = p.Results.maxIsometricForce;
 MillardTendonParams = p.Results.MillardTendonParams;
-activation = p.Results.activation;
+excitation = p.Results.excitation;
 printModel = p.Results.printModel;
 additionalMass = p.Results.additionalMass;
 
@@ -56,7 +56,7 @@ hopper.setName('Dennis')
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
-pelvisMass = 50.0 + additionalMass; 
+pelvisMass = 50.0 + additionalMass;
 pelvisHalfLength = 0.1;
 pelvisInertia = Inertia(Vec3(pelvisMass * 2/3*pelvisHalfLength^2));
 pelvis = Body('pelvis', pelvisMass, Vec3(0), pelvisInertia);
@@ -149,7 +149,6 @@ hopper.addContactGeometry(floor);
 hopper.addContactGeometry(foot);
 hopper.addForce(contactForce);
 
-
 %% Actuator.
 % ----------
 % Create the vastus muscle and set its origin and insertion points.
@@ -179,8 +178,8 @@ vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
 vastus.addNewPathPoint('insertion', shank, Vec3(linkRadius, 0.15, 0));
 hopper.addForce(vastus);
 
-%/ Attach a cylinder (patella) to the distal end of the thigh over which the
-%/ vastus muscle can wrap. 
+% Attach a cylinder (patella) to the distal end of the thigh over which the
+% vastus muscle can wrap. 
 patellaFrame = PhysicalOffsetFrame('patellaFrame', thigh, ...
         Transform(linkDistalPoint));
 patella = WrapCylinder();
@@ -201,8 +200,8 @@ brain = PrescribedController();
 brain.setActuators(hopper.updActuators());
 controlFunction = PiecewiseLinearFunction();
 
-for i = 1:size(activation,2)
-    controlFunction.addPoint(activation(1,i), activation(2,i));
+for i = 1:size(excitation,2)
+    controlFunction.addPoint(excitation(1,i), excitation(2,i));
 end
 
 brain.prescribeControlForActuator('vastus', controlFunction);

@@ -21,11 +21,8 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-function RunInteractiveHopperSolution(varargin)
+function [results] = RunInteractiveHopperSolution(varargin)
 % This function is used by the InteractiveHopper GUI.
-
-% TODO consider renaming to RunHopperForGUI; I initially thought this script
-% would launch a GUI.
 
 % TODO annotate height plot to show Run Number (also show somewhere in the
 % GUI).
@@ -33,8 +30,9 @@ function RunInteractiveHopperSolution(varargin)
 p = inputParser();
 
 defaultVisualize = false;
-defaultMuscleActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+defaultMuscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
+defaultMuscleMass = 0;
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;
 defaultSpringStiffness = 1;
@@ -42,14 +40,17 @@ defaultPassiveMass = 0;
 defaultAddActiveDevice = false;
 defaultActivePatellaWrap = false;
 defaultIsActivePropMyo = false;
-defaultDeviceActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
+defaultMaxTension = 1000;
+defaultGain = 1;
+defaultDeviceControl = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultActiveMass = 0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
 defaultMaxIsometricForce = 4000.0;
 
 addOptional(p,'visualize',defaultVisualize)
-addOptional(p,'muscleActivation',defaultMuscleActivation)
+addOptional(p,'muscleExcitation',defaultMuscleExcitation)
+addOptional(p,'muscleMass',defaultMuscleMass)
 addOptional(p,'addPassiveDevice',defaultAddPassiveDevice)
 addOptional(p,'passivePatellaWrap',defaultPassivePatellaWrap)
 addOptional(p,'springStiffness',defaultSpringStiffness)
@@ -57,7 +58,9 @@ addOptional(p,'passiveMass',defaultPassiveMass)
 addOptional(p,'addActiveDevice',defaultAddActiveDevice)
 addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
-addOptional(p,'deviceActivation',defaultDeviceActivation)
+addOptional(p,'maxTension',defaultMaxTension)
+addOptional(p,'gain',defaultGain)
+addOptional(p,'deviceControl',defaultDeviceControl)
 addOptional(p,'activeMass',defaultActiveMass)
 addOptional(p,'MillardTendonParams',defaultMillardTendonParams)
 addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
@@ -65,7 +68,8 @@ addOptional(p,'maxIsometricForce',defaultMaxIsometricForce)
 parse(p,varargin{:});
 
 visualize = p.Results.visualize;
-muscleActivation = p.Results.muscleActivation;
+muscleExcitation = p.Results.muscleExcitation;
+muscleMass = p.Results.muscleMass;
 addPassiveDevice = p.Results.addPassiveDevice;
 passivePatellaWrap = p.Results.passivePatellaWrap;
 springStiffness = p.Results.springStiffness;
@@ -73,7 +77,9 @@ passiveMass = p.Results.passiveMass;
 addActiveDevice = p.Results.addActiveDevice;
 activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
-deviceActivation = p.Results.deviceActivation;
+maxTension = p.Results.maxTension;
+gain = p.Results.gain;
+deviceControl = p.Results.deviceControl;
 activeMass = p.Results.activeMass;
 MillardTendonParams = p.Results.MillardTendonParams;
 maxIsometricForce = p.Results.maxIsometricForce;
@@ -82,13 +88,12 @@ import org.opensim.modeling.*;
 
 % Additional mass to be added at the pelvis for given configuration
 additionalMass = 0;
-if addPassiveDevice, additionalMass = additionalMass + 2.5; end
-if addActiveDevice, additionalMass = additionalMass + 2.5; end
+additionalMass = additionalMass + muscleMass;
 additionalMass = additionalMass + passiveMass;
 additionalMass = additionalMass + activeMass;
 
 % Build hopper model
-hopper = BuildHopper('activation',muscleActivation, ...
+hopper = BuildHopper('excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
                      'MillardTendonParams', MillardTendonParams, ...
                      'maxIsometricForce', maxIsometricForce);
@@ -100,24 +105,29 @@ deviceNames = cell(0);
 patellaWrap = cell(0);
 
 if addPassiveDevice
-    passive = BuildDevice('deviceType','passive','springStiffness',springStiffness,'passivePatellaWrap',passivePatellaWrap);
+    passive = BuildDevice('deviceType','passive', ... 
+                          'springStiffness',springStiffness, ...
+                          'passivePatellaWrap',passivePatellaWrap);
     devices{1,length(devices)+1} = passive;
     deviceNames{1,length(deviceNames)+1} = 'device_passive';
-    patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;
-    
+    patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;  
 end
 
 if addActiveDevice
     if isActivePropMyo
-        active = BuildDevice('deviceType','active','isPropMyo',true);
+        active = BuildDevice('deviceType','active', ...
+                             'isPropMyo',true, ...
+                             'gain',gain);
     else
-        active = BuildDevice('deviceType','active','isPropMyo',false,'activation',deviceActivation);
+        active = BuildDevice('deviceType','active', ...
+                             'isPropMyo',false, ... 
+                             'control',deviceControl, ...
+                             'maxTension',maxTension);
     end
     
     devices{1,length(devices)+1} = active;
     deviceNames{1,length(deviceNames)+1} = 'device_active';
-    patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;
-    
+    patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;   
 end
 
 %% Connect the devices to the hopper.
@@ -130,7 +140,6 @@ for d = 1:length(devices)
     % 'deviceAttachmentPoint'.
     device = devices{d};
     device.printSubcomponentInfo();
-    
     
     % Get the 'anchor' joints in the device, and downcast them to the
     % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
@@ -174,7 +183,7 @@ for d = 1:length(devices)
     end
     
     % Use the vastus muscle's activation output as the ToyPropMyoController's
-    % activation input.
+    % control input.
     if strcmp(deviceNames{d},'device_active') && isActivePropMyo
         device.updComponent('controller').updInput('activation').connect(...
             hopper.getComponent('vastus').getOutput('activation'));
