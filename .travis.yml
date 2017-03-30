@@ -128,7 +128,7 @@ before_install:
   ## Install Simbody.
   # The Simbody travis script uploads the simbody binaries to sourceforge.
   - SIMBODYZIP=simbody-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
-  - wget https://prdownloads.sourceforge.net/myosin/simbody/latest/$SIMBODYZIP
+  - wget https://prdownloads.sourceforge.net/myosin/simbody/$SIMBODYZIP
   # Put Simbody in ~/simbody (-q: quiet).
   - unzip -q $SIMBODYZIP -d ~
 
@@ -284,7 +284,7 @@ deploy:
   # '--archive' preserves symlinks.
   provider: script
   skip_cleanup: true
-  script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/latest/
+  script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
     branch: travis_deploy_to_sourceforge
     # Upload for both linux (once) and OSX. Might need to modify the condition
