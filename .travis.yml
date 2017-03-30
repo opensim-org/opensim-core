@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
     - os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
       
 branches:
   except:
@@ -36,7 +36,6 @@ env:
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
     - SWIG_VER=3.0.6
     - PATH="$PATH:$TRAVIS_BUILD_DIR/.github"
-    - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
     - USE_CACHE=false
 
 cache: false
@@ -238,6 +237,7 @@ script:
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
+  # TODO only do this if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]
   # Decrypt the private key stored in the repository to the tmp dir.
   - openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d
   # Start the ssh agent.
@@ -269,32 +269,27 @@ script:
 before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
-  - mkdir ~/binstar-packages
+  - mkdir ~/to_deploy
   - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
   # Zip up opensim relative to where it's installed.
   - cd $OPENSIM_HOME/../
-  - zip --recurse-paths --quiet ~/binstar-packages/$ZIPNAME opensim-core
+  # Leave symlinks intact.
+  - zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-core
 
-  # Paths in the .bintray.json file are relative to the current directory.
-  - cd ~
+  # SSH for sourceforge is already set up, in the `script:` section.
 
 deploy:
-  # Uploads to https://bintray.com/chrisdembia/opensim-testing/opensim-core/view
-  #            https://dl.bintray.com/chrisdembia/opensim-testing/
-  # See http://docs.travis-ci.com/user/deployment/bintray/ for help.
-  provider: bintray
-  file: $TRAVIS_BUILD_DIR/doc/.bintray.json
-  user: chrisdembia
+  # Uploads to sourceforge.net/projects/myosin
+  # See https://docs.travis-ci.com/user/deployment/custom/
+  # '--archive' preserves symlinks.
+  provider: script
   skip_cleanup: true
-  # API key is encrypted with travis.
-  key: $BINTRAY_API_KEY
+  script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/latest/
   on:
     branch: master
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
-
-# TODO delete .bintray.json file.
 
 # Below is a description of the process for securely uploading files to
 # Sourceforge, taken from https://oncletom.io/2016/travis-ssh-deploy/.
