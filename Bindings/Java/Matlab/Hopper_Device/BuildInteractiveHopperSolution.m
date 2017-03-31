@@ -21,96 +21,137 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-function RunHopperGUI(varargin)
-% This function is used by the HopperExample GUI.
+function [hopper] = BuildInteractiveHopperSolution(varargin)
+% This function is used to build an InteractiveHopper GUI solution.
 
-% TODO consider renaming to RunHopperForGUI; I initially thought this script
-% would launch a GUI.
-
-% TODO: clicking Simulate without having chosen an Activation causes an error;
-% perhaps we should give users an initial activation so that clicking Simulate
-% without clicking anything else will just work?
-
-% TODO clicking New Muscle Activation a second time puts my clicks in the
-% bottom plot; not the top plot. Make sure to hold onto a handle for the
-% Activation figure.
 % TODO annotate height plot to show Run Number (also show somewhere in the
 % GUI).
 
-% TODO consider renaming HopperExample to HopperPlayground,
-% HopperOptimizationGUI, InteractiveHopper.
+%% INPUT PARSING 
 
+% Create input parser
 p = inputParser();
 
-defaultVisualize = true;
-defaultMuscleActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
-                     0.3 0.3  1.0 1.0  0.1 0.1];
+% Default values if no input is specified
+defaultMuscle = 'averageJoe';
+defaultMuscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
+                          0.3 0.3  1.0 1.0  0.1 0.1];
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;
-defaultSpringStiffness = 1;
+defaultPassiveParameter = 50;
 defaultAddActiveDevice = false;
 defaultActivePatellaWrap = false;
 defaultIsActivePropMyo = false;
-defaultDeviceActivation = [0.0 1.99 2.0 3.89 3.9 4.0;
-                     0.3 0.3  1.0 1.0  0.1 0.1];
+defaultActiveParameter = 50;
+defaultDeviceControl = [0.0 2.5 5.0;
+                        0.0 0.75 0.0];
 
-addOptional(p,'visualize',defaultVisualize)
-addOptional(p,'muscleActivation',defaultMuscleActivation)
+% Create optional values for input parser                   
+addOptional(p,'muscle',defaultMuscle)
+addOptional(p,'muscleExcitation',defaultMuscleExcitation)
 addOptional(p,'addPassiveDevice',defaultAddPassiveDevice)
 addOptional(p,'passivePatellaWrap',defaultPassivePatellaWrap)
-addOptional(p,'springStiffness',defaultSpringStiffness)
+addOptional(p,'passiveParameter',defaultPassiveParameter)
 addOptional(p,'addActiveDevice',defaultAddActiveDevice)
 addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
-addOptional(p,'deviceActivation',defaultDeviceActivation)
+addOptional(p,'activeParameter',defaultActiveParameter)
+addOptional(p,'deviceControl',defaultDeviceControl)
 
+% Parse inputs
 parse(p,varargin{:});
 
-visualize = p.Results.visualize;
-muscleActivation = p.Results.muscleActivation;
+% Retrieve inputs and/or default values
+muscle = p.Results.muscle;
+muscleExcitation = p.Results.muscleExcitation;
 addPassiveDevice = p.Results.addPassiveDevice;
 passivePatellaWrap = p.Results.passivePatellaWrap;
-springStiffness = p.Results.springStiffness;
+passiveParameter = p.Results.passiveParameter;
 addActiveDevice = p.Results.addActiveDevice;
 activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
-deviceActivation = p.Results.deviceActivation;
+activeParameter = p.Results.activeParameter;
+deviceControl = p.Results.deviceControl;
 
 import org.opensim.modeling.*;
 
-% Build hopper model
-hopper = BuildHopper('activation',muscleActivation);
+%% HOPPER AND DEVICE SETTINGS
+
+additionalMass = 0;
+
+% Retrieve muscle settings based on user selection 
+%   default: "The Average Joe"
+[muscleFunc] = InteractiveHopperSettings(muscle);
+[maxIsometricForce,tendonStiffness,tendonSlackLength,muscleMass] = muscleFunc();
+MillardTendonParams = [0.049 tendonStiffness 0.67 0.5 tendonSlackLength];
+additionalMass = additionalMass + muscleMass;
+
+% Retreive passive device settings if passive device specified
+%   default: no passive device
+%            if device --> passiveParameter = 50
+if addPassiveDevice
+    passive = InteractiveHopperSettings('passive');
+    [passiveMass,springStiffness] = passive(passiveParameter);
+    additionalMass = additionalMass + passiveMass;
+end
+
+% Retreive passive device settings if passive device specified
+%   default: no active device
+%            if device --> activeParameter = 50
+if addActiveDevice
+    if isActivePropMyo
+        activePropMyo = InteractiveHopperSettings('activePropMyo');
+        [activeMass,gain] = activePropMyo(activeParameter);
+    else
+        activeControl = InteractiveHopperSettings('activeControl');
+        [activeMass,maxTension] = activeControl(activeParameter);
+    end
+    additionalMass = additionalMass + activeMass;
+end
+
+%% BUILD HOPPER MODEL
+
+% Build hopper
+hopper = BuildHopper('excitation',muscleExcitation, ...
+                     'additionalMass',additionalMass, ...
+                     'MillardTendonParams', MillardTendonParams, ...
+                     'maxIsometricForce', maxIsometricForce);
 hopper.printSubcomponentInfo();
 
-% Build devices
+%% BUILD DEVICES
 devices = cell(0);
 deviceNames = cell(0);
 patellaWrap = cell(0);
 
+% Passive device
 if addPassiveDevice
-    passive = BuildDevice('deviceType','passive','springStiffness',springStiffness);
+    passive = BuildDevice('deviceType','passive', ... 
+                          'springStiffness',springStiffness, ...
+                          'passivePatellaWrap',passivePatellaWrap);
     devices{1,length(devices)+1} = passive;
     deviceNames{1,length(deviceNames)+1} = 'device_passive';
-    patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;
-    
+    patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;  
 end
 
+% Active device
 if addActiveDevice
     if isActivePropMyo
-        active = BuildDevice('deviceType','active','isPropMyo',true);
+        active = BuildDevice('deviceType','active', ...
+                             'isPropMyo',true, ...
+                             'gain',gain);
     else
-        active = BuildDevice('deviceType','active','isPropMyo',false,'activation',deviceActivation);
+        active = BuildDevice('deviceType','active', ...
+                             'isPropMyo',false, ... 
+                             'control',deviceControl, ...
+                             'maxTension',maxTension);
     end
     
     devices{1,length(devices)+1} = active;
     deviceNames{1,length(deviceNames)+1} = 'device_active';
-    patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;
-    
+    patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;   
 end
 
-%% Connect the devices to the hopper.
-% ----------------------------------
-
+%% CONNECT DEVICES TO HOPPER
 for d = 1:length(devices)
     
     % Print the names of the device's subcomponents, and locate the
@@ -119,7 +160,6 @@ for d = 1:length(devices)
     % 'deviceAttachmentPoint'.
     device = devices{d};
     device.printSubcomponentInfo();
-    
     
     % Get the 'anchor' joints in the device, and downcast them to the
     % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
@@ -141,13 +181,14 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-   %debug1 = hopper.hasComponent([deviceNames{d}])
-    %debug2 = hopper.hasComponent(['device_' deviceNames{d}])
-    if patellaWrap{d} && hopper.hasComponent(['device_' deviceNames{d}])
+
+    if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
-            cable = PathSpring.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+            % TODO: Change to downcast from PathSpring when PathSpring is
+            % working for passive device
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(hopper.updComponent(['device_' deviceNames{d} '/cableAtoB']));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
@@ -162,76 +203,12 @@ for d = 1:length(devices)
     end
     
     % Use the vastus muscle's activation output as the ToyPropMyoController's
-    % activation input.
+    % control input.
     if strcmp(deviceNames{d},'device_active') && isActivePropMyo
         device.updComponent('controller').updInput('activation').connect(...
             hopper.getComponent('vastus').getOutput('activation'));
     end
     
 end
-%% Report quantities of interest.
-% -------------------------------
-% Configure the outputs we wish to display during the simulation.
-% Create a TableReporter, give it a name, and set its reporting interval
-%   to 0.2 seconds. Wire the following outputs to the reporter:
-%   - hopper's height,
-%   - vastus muscle activation,
-%   - device controller's control signal output.
-% Then add the reporter to the hopper.
-reporter = TableReporter();
-reporterVector = TableReporterVector();
-reporter.setName('hopper_device_results');
-reporter.set_report_time_interval(0.2); % seconds.
-reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'))
-reporterVector.addToReport(...
-    hopper.getComponent('Umberger').getOutput('probe_outputs'));
-%reporter.addToReport(device.getComponent('controller').getOutput('myo_control'));
-hopper.addComponent(reporter);
-
-sHD = hopper.initSystem();
-
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHD, visualize);
-
-if exist('reporter') == 1
-    % (Done for you) Display the TableReporter's data, and save it to a file.
-    table = reporter.getTable();
-    disp(table.toString());
-    csv = CSVFileAdapter();
-    csv.write(table, 'hopper_device_results.csv');
-    
-    % (Done for you) Convert the TableReporter's Table to a MATLAB struct and plot
-    % the the hopper's height over the motion.
-    results = opensimTimeSeriesTableToMatlab(table);
-    fieldnames(results)
-    if isfield(results, 'height')
-        plot(results.time, results.height);
-        xlabel('time');
-        ylabel('height');
-    end
-end
-
-% if exist('reporterVector') == 1
-%     % (Done for you) Display the TableReporter's data, and save it to a file.
-%     table = reporterVector.getTable();
-%     keyboard
-%     disp(table.toString());
-%     csv = CSVFileAdapter();
-%     csv.write(table, 'hopper_device_results_Vector.csv');
-%
-%     % (Done for you) Convert the TableReporter's Table to a MATLAB struct and plot
-%     % the the hopper's height over the motion.
-%     results = opensimTimeSeriesTableToMatlab(table);
-%
-%     fieldnames(results)
-%     if isfield(results, 'height')
-%         plot(results.time, results.height);
-%         xlabel('time');
-%         ylabel('height');
-%     end
-% end
 
 end
