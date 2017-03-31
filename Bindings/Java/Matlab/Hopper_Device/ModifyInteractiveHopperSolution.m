@@ -21,11 +21,8 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-function [results] = RunInteractiveHopperSolution(varargin)
-% This function is used by the InteractiveHopper GUI.
-
-% TODO annotate height plot to show Run Number (also show somewhere in the
-% GUI).
+function [hopper] = ModifyInteractiveHopperSolution(hopper, varargin)
+% This function is used to modify an InteractiveHopper GUI solution
 
 %% INPUT PARSING 
 
@@ -33,7 +30,6 @@ function [results] = RunInteractiveHopperSolution(varargin)
 p = inputParser();
 
 % Default values if no input is specified
-defaultVisualize = false;
 defaultMuscle = 'averageJoe';
 defaultMuscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
                           0.3 0.3  1.0 1.0  0.1 0.1];
@@ -48,7 +44,6 @@ defaultDeviceControl = [0.0 2.5 5.0;
                         0.0 0.75 0.0];
 
 % Create optional values for input parser                   
-addOptional(p,'visualize',defaultVisualize)
 addOptional(p,'muscle',defaultMuscle)
 addOptional(p,'muscleExcitation',defaultMuscleExcitation)
 addOptional(p,'addPassiveDevice',defaultAddPassiveDevice)
@@ -64,7 +59,6 @@ addOptional(p,'deviceControl',defaultDeviceControl)
 parse(p,varargin{:});
 
 % Retrieve inputs and/or default values
-visualize = p.Results.visualize;
 muscle = p.Results.muscle;
 muscleExcitation = p.Results.muscleExcitation;
 addPassiveDevice = p.Results.addPassiveDevice;
@@ -112,23 +106,25 @@ if addActiveDevice
     additionalMass = additionalMass + activeMass;
 end
 
-%% BUILD HOPPER MODEL
+%% MODIFY HOPPER MODEL
 
 % Build hopper
-hopper = BuildHopper('excitation',muscleExcitation, ...
+hopper = ModifyHopper(hopper, ...
+                     'excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
                      'MillardTendonParams', MillardTendonParams, ...
                      'maxIsometricForce', maxIsometricForce);
 hopper.printSubcomponentInfo();
 
-%% BUILD DEVICES
+%% MODIFY DEVICES
 devices = cell(0);
 deviceNames = cell(0);
 patellaWrap = cell(0);
 
 % Passive device
 if addPassiveDevice
-    passive = BuildDevice('deviceType','passive', ... 
+    passive = ModifyDevice(hopper, ...
+                          'deviceType','passive', ... 
                           'springStiffness',springStiffness, ...
                           'passivePatellaWrap',passivePatellaWrap);
     devices{1,length(devices)+1} = passive;
@@ -139,11 +135,13 @@ end
 % Active device
 if addActiveDevice
     if isActivePropMyo
-        active = BuildDevice('deviceType','active', ...
+        active = ModifyDevice(hopper, ...
+                             'deviceType','active', ...
                              'isPropMyo',true, ...
                              'gain',gain);
     else
-        active = BuildDevice('deviceType','active', ...
+        active = ModifyDevice(hopper, ...
+                             'deviceType','active', ...
                              'isPropMyo',false, ... 
                              'control',deviceControl, ...
                              'maxTension',maxTension);
@@ -154,86 +152,15 @@ if addActiveDevice
     patellaWrap{1,length(patellaWrap)+1} = activePatellaWrap;   
 end
 
-%% CONNECT DEVICES TO HOPPER
-for d = 1:length(devices)
-    
-    % Print the names of the device's subcomponents, and locate the
-    % subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
-    % the hopper's subcomponents, and locate the two subcomponents named
-    % 'deviceAttachmentPoint'.
-    device = devices{d};
-    device.printSubcomponentInfo();
-    
-    % Get the 'anchor' joints in the device, and downcast them to the
-    % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
-    % model, and downcast them to the PhysicalFrame class.
-    anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
-    anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
-    thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttachmentPoint'));
-    shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttachmentPoint'));
-    
-    % Connect the parent frame sockets of the device's anchor joints to the
-    % attachment frames on the hopper; attach anchorA to the thigh, and
-    % anchorB to the shank.
-    anchorA.connectSocket_parent_frame(thighAttach);
-    anchorB.connectSocket_parent_frame(shankAttach);
-    
-    % Add the device to the hopper model.
-    hopper.addComponent(device);
-    
-    % Configure the device to wrap over the patella.
-
-    if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
-        if strcmp(deviceNames{d},'device_passive')
-            % TODO: Change to downcast from PathSpring when PathSpring is
-            % working for passive device
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
-        elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
-        end
-        patellaPath = 'thigh/patellaFrame/patella';
-        wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
-        cable.updGeometryPath().addPathWrap(wrapObject);
-    end
-    
-    % Print the names of the outputs of the device's PathActuator and
-    % ToyPropMyoController subcomponents.
-    device.getComponent('cableAtoB').printOutputInfo();
-    if strcmp(deviceNames{d},'device_active')
-        device.getComponent('controller').printOutputInfo();
-    end
-    
-    % Use the vastus muscle's activation output as the ToyPropMyoController's
-    % control input.
-    if strcmp(deviceNames{d},'device_active') && isActivePropMyo
-        device.updComponent('controller').updInput('activation').connect(...
-            hopper.getComponent('vastus').getOutput('activation'));
-    end
-    
 end
 
-%% REPORT RESULTS
+function ModifyHopper(hopper, varargin)
 
-% Create table reporter and add hop height and vastus activation to report
-reporter = TableReporter();
-reporter.setName('hopper_device_results');
-reporter.set_report_time_interval(0.2); % seconds.
-reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'))
-hopper.addComponent(reporter);
 
-sHD = hopper.initSystem();
 
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHD, visualize);
-
-if exist('reporter') == 1
-    table = reporter.getTable();
-    results = opensimTimeSeriesTableToMatlab(table);
 end
+
+function ModifyDevices(hopper, varargin)
+
 
 end
