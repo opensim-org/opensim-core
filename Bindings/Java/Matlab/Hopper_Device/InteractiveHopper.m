@@ -51,9 +51,13 @@ else
 end
 % End initialization code - DO NOT EDIT
 
+% INTERACTIVEHOPPER_OPENINGFCN
 function InteractiveHopper_OpeningFcn(hObject, eventdata, handles, varargin)
 
-%%% SET DEFAULTS %%%
+% Group all handles for enabling/disabling
+handles.all = [handles.new_musc_excitation handles.muscles handles.choose_config ...
+               handles.choose_assistive_strategy handles.simulate_hopper_model ...
+               handles.setup_file handles.clear handles.reset];
 
 % Max height
 setField(handles.max_jump_best,0)
@@ -78,11 +82,9 @@ xlabel('Jump Time (s)')
 ylabel('Excitation')
 
 % Default muscle: "The Average Joe"
-maxIsometricForce = 4000.0;
-tendonStiffness = 28.1;
-tendonSlackLength = 0.25;
-metabolicCostLimit = 5;
-setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,metabolicCostLimit)
+averageJoe = InteractiveHopperSettings('averageJoe');
+[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe();
+setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
 
 % Choose default command line output for InteractiveHopper
 handles.output = hObject;
@@ -90,6 +92,7 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
+% INTERACTIVEHOPPER_OUTPUTFCN
 function varargout = InteractiveHopper_OutputFcn(hObject, eventdata, handles) 
 
 % Get default command line output from handles structure
@@ -98,7 +101,8 @@ varargout{1} = handles.output;
 % SIMULATE - Simulate hopper.
 function simulate_Callback(hObject, eventdata, handles)
 
-%%% Muscle %%%% 
+% Muscle
+muscle = handles.muscle;
 if isfield(handles,'muscleExcitation')
     muscleExcitation = handles.muscleExcitation;
 else
@@ -113,35 +117,27 @@ else
     pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
     set(pts,'Xdata',muscleExcitation(1,:),'Ydata',muscleExcitation(2,:))
 end
-maxIsometricForce = handles.max_isometric_force.Value;
-tendonStiffness = handles.tendon_stiffness.Value;
-tendonSlackLength = handles.tendon_slack_length.Value;
-muscleMass = handles.muscle_mass.Value;
-MillardTendonParams = [0.049 tendonStiffness 0.67 0.5 tendonSlackLength];
 
-%%% Passive device %%%
+
+% Passive device
 addPassiveDevice = handles.enable_passive.Value;
 passivePatellaWrap = handles.passive_patella_wrap.Value;
-springStiffness = handles.stiffness.Value;
-passiveMass = handles.passive_mass.Value;
+passiveParameter = handles.passive_slider.Value;
 
-%%% Active device %%%
+% Active device 
 addActiveDevice = handles.enable_active.Value;
+activePatellaWrap = handles.active_patella_wrap.Value;
+activeParameter = handles.active_slider.Value;
 isActivePropMyo = handles.active_as_prop_myo.Value;
 if addActiveDevice
     if isActivePropMyo
         deviceControl = muscleExcitation;
-        maxTension = 1000;
-        gain = handles.tension_or_gain.Value;
-        
     else 
-        maxTension = handles.tension_or_gain.Value;
-        gain = 1;
         if isfield(handles,'deviceControl')
             deviceControl = handles.deviceControl;
         else
             deviceControl = [0.0 2.5 5.0;
-                0.0 0.75 0.0];
+                             0.0 0.75 0.0];
             handles.deviceControl = deviceControl;
             guidata(hObject, handles)
             axes(handles.control_axes)
@@ -150,32 +146,28 @@ if addActiveDevice
             set(pts,'Xdata',deviceControl(1,:),'Ydata',deviceControl(2,:))
         end
     end
+else
+    deviceControl = [0.0 2.5 5.0;
+                     0.0 0.75 0.0];
 end
-
-activePatellaWrap = handles.active_patella_wrap.Value;
-activeMass = handles.active_mass.Value;
 
 % Other GUI, visualization features
 visualize = handles.visualize.Value;
 
-axes(handles.results_axes)
+% Run hopper solution
 results = RunInteractiveHopperSolution('visualize', visualize, ...
+             'muscle', muscle, ...
              'muscleExcitation', muscleExcitation, ...
-             'muscleMass', muscleMass, ...
              'addPassiveDevice', addPassiveDevice, ...
              'passivePatellaWrap', passivePatellaWrap, ...
-             'springStiffness', springStiffness, ...
-             'passiveMass', passiveMass, ...
+             'passiveParameter', passiveParameter, ...
              'addActiveDevice', addActiveDevice, ...
              'activePatellaWrap', activePatellaWrap, ...
              'isActivePropMyo', isActivePropMyo, ...
-             'maxTension', maxTension, ...
-             'gain', gain, ...
-             'deviceControl',deviceControl, ...
-             'activeMass', activeMass, ...
-             'MillardTendonParams', MillardTendonParams, ...
-             'maxIsometricForce', maxIsometricForce);
-         
+             'activeParameter', activeParameter, ...
+             'deviceControl',deviceControl);
+
+% Update max jump height value
 maxHeight = max(results.height);
 maxHeightBest = get(handles.max_jump_best,'Value');
 
@@ -184,13 +176,23 @@ setField(handles.max_jump_recent,maxHeight(1))
 if maxHeight(1) > maxHeightBest
    setField(handles.max_jump_best,maxHeight(1))
 end
-         
+
+% Plot results
+axes(handles.results_axes)
+if isfield(results, 'height')
+    plot(results.time, results.height);
+    xlabel('time');
+    ylabel('height');
+end
+       
 % WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel
 function without_device_Callback(hObject, eventdata, handles)
+
 set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
 
 % WITH_DEVICE - If adding device, enable option to add device
 function with_device_Callback(hObject, eventdata, handles)
+
 set(handles.enable_passive,'enable','on')
 set(handles.enable_passive,'value',0)
 set(handles.enable_active,'enable','on')
@@ -198,38 +200,41 @@ set(handles.enable_active,'value',0)
 
 % AVERAGE_JOE - Sets "The Average Joe" muscle.
 function average_joe_Callback(hObject, eventdata, handles)
-maxIsometricForce = 4000.0;
-tendonStiffness = 28.1;
-tendonSlackLength = 0.25;
-mass = 5;
 
-setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
+muscle = 'averageJoe';
+handles.muscle = muscle;
+guidata(hObject, handles)
+averageJoe = InteractiveHopperSettings(muscle);
+[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe();
+setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
 
 % ARNOLD - Sets "The Arnold" muscle.
 function arnold_Callback(hObject, eventdata, handles)
-maxIsometricForce = 5000.0;
-tendonStiffness = 30;
-tendonSlackLength = 0.15;
-mass = 3.5;
 
-setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
+muscle = 'arnold';
+handles.muscle = muscle;
+guidata(hObject, handles)
+arnold = InteractiveHopperSettings(muscle);
+[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = arnold();
+setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
     
 % KATIE_LEDECKY - Sets "The Katie Ledecky" muscle.
 function katie_ledecky_Callback(hObject, eventdata, handles)
-maxIsometricForce = 3500.0;
-tendonStiffness = 25;
-tendonSlackLength = 0.30;
-mass = 7.5;
-    
+
+muscle = 'katieLedecky';
+handles.muscle = muscle;
+guidata(hObject, handles)
+katieLedecky = InteractiveHopperSettings(muscle);
+[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = katieLedecky();
 setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
 
 % SETMUSCLE - Set a muscle given specific parameters.
-function setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
+function setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
 
-setField(handles.max_isometric_force,maxIsometricForce)
-setField(handles.tendon_stiffness,tendonStiffness)
-setField(handles.tendon_slack_length,tendonSlackLength)
-setField(handles.muscle_mass,mass)
+setField(handles.max_isometric_force, maxIsometricForce)
+setField(handles.tendon_stiffness, tendonStiffness)
+setField(handles.tendon_slack_length, tendonSlackLength)
+setField(handles.muscle_mass, mass)
 
 % NEW_MUSC_EXCITATION - Get new muscle excitation.
 function new_musc_excitation_Callback(hObject, eventdata, handles)
@@ -245,15 +250,10 @@ for i = 1:length(handle_names)
     end
 end
 
-set(handles.new_musc_excitation,'Enable','off')
-set(handles.clear,'Enable','off')
-set(handles.visualize,'Enable','off')
-set(findall(handles.choose_config, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.simulate_hopper_model, '-property', 'enable'), 'enable', 'off')
+set(findall(handles.all, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
-muscleExcitation = getUserActivation([0.64 0.08 0.18]);
+muscleExcitation = getUserControl([0.64 0.08 0.18]);
 handles.muscleExcitation = muscleExcitation;
 guidata(hObject, handles)
 
@@ -263,6 +263,7 @@ end
 
 % NEW_DEVICE_CONTROL - Get new device control.
 function new_device_control_Callback(hObject, eventdata, handles)
+
 handle_names = fieldnames(handles);
 reenable = cell(0);
 for i = 1:length(handle_names)
@@ -274,15 +275,10 @@ for i = 1:length(handle_names)
     end
 end
 
-set(handles.new_musc_excitation,'Enable','off')
-set(handles.clear,'Enable','off')
-set(handles.visualize,'Enable','off')
-set(findall(handles.choose_config, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
-set(findall(handles.simulate_hopper_model, '-property', 'enable'), 'enable', 'off')
+set(findall(handles.all, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
-deviceControl = getUserActivation([0 0.45 0.74]);
+deviceControl = getUserControl([0 0.45 0.74]);
 handles.deviceControl = deviceControl;
 guidata(hObject, handles)
 
@@ -292,6 +288,7 @@ end
 
 % CLEAR - Clear results and control axes.
 function clear_Callback(hObject, eventdata, handles)
+
 axes(handles.results_axes)
 ax = gca;
 cla(ax,'reset');
@@ -322,20 +319,23 @@ function active_patella_wrap_Callback(hObject, eventdata, handles)
 
 % PASSIVE_SLIDER - Set spring stiffness with slider.
 function passive_slider_Callback(hObject, eventdata, handles)
-sliderVal = get(hObject,'Value');
-setPassive(handles,sliderVal)
+
+passiveParameter = get(hObject,'Value');
+setPassive(handles,passiveParameter)
 
 % SETPASSIVE - Given a PASSIVE_SLIDER value, set the spring stiffness
 %             and mass
-function setPassive(handles,sliderVal)
-stiffness = sliderVal*100;
-passive_mass = sliderVal*0.1;
+function setPassive(handles,passiveParameter)
+
+passive = InteractiveHopperSettings('passive');
+[passive_mass,stiffness] = passive(passiveParameter);
 
 setField(handles.stiffness,stiffness)
 setField(handles.passive_mass,passive_mass)
 
 % SETFIELD - Set the value and string of a field given a value
 function setField(handle,value)
+
 if isempty(value)
     set(handle,'String',' ')
     set(handle,'Value', 0)
@@ -376,20 +376,21 @@ end
 
 % ACTIVE_SLIDER
 function active_slider_Callback(hObject, eventdata, handles)
-sliderVal = get(hObject,'Value');
-setActive(handles,sliderVal)
+
+activeParameter = get(hObject,'Value');
+setActive(handles,activeParameter)
 
 % SETACTIVE - Set Max Tension or Gain and Mass for active device based on
 %             slider input from user.
-function setActive(handles,sliderVal)
+function setActive(handles,activeParameter)
 
-switch get(handles.tension_or_gain_text,'String')
-    case 'Max Tension'
-        tension_or_gain = sliderVal*10;
-    case 'Gain'
-        tension_or_gain = (sliderVal/100)+0.5;
+if handles.active_as_prop_myo.Value
+    activePropMyo = InteractiveHopperSettings('activePropMyo');
+    [active_mass,tension_or_gain] = activePropMyo(activeParameter);
+else
+    activeControl = InteractiveHopperSettings('activeControl');
+    [active_mass,tension_or_gain] = activeControl(activeParameter);
 end
-active_mass = sliderVal*0.1;
 
 setField(handles.tension_or_gain,tension_or_gain)
 setField(handles.active_mass,active_mass)
@@ -411,11 +412,52 @@ else
     enable(handles,handle_names,true)
     setField(handles.tension_or_gain,100)
     set(handles.tension_or_gain_text,'String','Max Tension')
-    set(handles.tension_or_gain_units,'String','N-m')
+    set(handles.tension_or_gain_units,'String','N')
     setActive(handles,sliderVal)
 end
 
-%% Currently unused callback and create functions
+% GETUSERCONTROL
+function [xy] = getUserControl(color)
+
+w = [0 5 0 1];
+axis(w), hold on, grid on
+
+title(getString(message('SPLINES:resources:axesLabel_WhenYouAreDone')))
+pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
+pts2 = line('Xdata',NaN,'Ydata',NaN,'LineStyle','--','LineWidth',1.5,'Color',color);
+
+maxpnts = 100; xy = zeros(2,maxpnts);
+while 1
+    for j=2:maxpnts
+        try
+            [x,y] = ginput(1);
+        catch ME
+            display('ERROR: ginput failed')
+        end
+        if isempty(x)||x<w(1)||x>w(2)||y<w(3)||y>w(4)
+            xy(1,j) = 5;
+            xy(2,j) = xy(2,j-1);
+            
+            set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
+            break;
+        end
+        xy(:,j) = [x;y];
+        if j>1
+            set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
+            set(pts2,'Xdata',[xy(1,j) 5],'Ydata',[xy(2,j) xy(2,j)])
+        else
+            set(pts,'Xdata',x,'Ydata',y)
+        end
+    end
+    
+    if j>1, break, end
+    
+end
+title(' ')
+xy(:,j) = [5;xy(2,j-1)];
+xy(:,j+1:maxpnts)=[];
+
+% Currently unused callback and create functions - DO NOT DELETE
 function max_jump_recent_Callback(hObject, eventdata, handles)
 
 function max_jump_recent_CreateFcn(hObject, eventdata, handles)

@@ -207,17 +207,6 @@ end
 brain.prescribeControlForActuator('vastus', controlFunction);
 hopper.addController(brain);
 
-%% Metabolics probe.
-% ------------------
-probe = Umberger2010MuscleMetabolicsProbe();
-probe.setName('Umberger');
-hopper.addProbe(probe);
-
-probe.addMuscle(vastus.getName(), 0.5);
-hopper.setup();
-probe.useCalculatedMass('vastus');
-probe.setSpecificTension('vastus', 0.6E6);
-
 % Device attachment frames.
 % -------------------------
 % Create frames on the thigh and shank segments for attaching the device.

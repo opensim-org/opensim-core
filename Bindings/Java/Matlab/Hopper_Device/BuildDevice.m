@@ -26,9 +26,9 @@ p = inputParser();
 
 defaultDeviceType = 'active';
 defaultIsPropMyo = true;
-defaultControl = [0.0 1.99 2.0 3.89 3.9 4.0;
-                     0.3 0.3  1.0 1.0  0.1 0.1];
-defaultSpringStiffness = 1;
+defaultControl = [0.0 2.5 5.0;
+                  0.0 0.75 0.0];
+defaultSpringStiffness = 5000; 
 defaultPassivePatellaWrap = true;
 defaultMaxTension = 1000;
 defaultGain = 1;
