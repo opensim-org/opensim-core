@@ -81,9 +81,11 @@ axis([0 5 0 1])
 xlabel('Jump Time (s)')
 ylabel('Excitation')
 
-% Default muscle: "The Average Joe"
-averageJoe = InteractiveHopperSettings('averageJoe');
-[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe();
+% Default muscle
+muscle = 'averageJoe';
+handles.muscle = muscle;
+muscleFunc = InteractiveHopperSettings(muscle);
+[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = muscleFunc();
 setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
 
 % Choose default command line output for InteractiveHopper
@@ -156,8 +158,7 @@ visualize = handles.visualize.Value;
 
 % Build or modify hopper solution
 %if ~exist('hopper','var')
-    hopper = BuildInteractiveHopperSolution('visualize', visualize, ...
-             'muscle', muscle, ...
+    hopper = BuildInteractiveHopperSolution('muscle', muscle, ...
              'muscleExcitation', muscleExcitation, ...
              'addPassiveDevice', addPassiveDevice, ...
              'passivePatellaWrap', passivePatellaWrap, ...
@@ -168,8 +169,7 @@ visualize = handles.visualize.Value;
              'activeParameter', activeParameter, ...
              'deviceControl',deviceControl);
 % else
-%    hopper = ModifyInteractiveHopperSolution('visualize', visualize, ...
-%              'muscle', muscle, ...
+%    hopper = ModifyInteractiveHopperSolution('muscle', muscle, ...
 %              'muscleExcitation', muscleExcitation, ...
 %              'addPassiveDevice', addPassiveDevice, ...
 %              'passivePatellaWrap', passivePatellaWrap, ...
@@ -183,6 +183,7 @@ visualize = handles.visualize.Value;
          
 
 % Create table reporter and add hop height and vastus activation to report
+import org.opensim.modeling.*
 reporter = TableReporter();
 reporter.setName('hopper_device_results');
 reporter.set_report_time_interval(0.2); % seconds.
@@ -201,6 +202,7 @@ Simulate(hopper, sHD, visualize);
 % Get table reporter
 if exist('reporter') == 1
     table = reporter.getTable();
+    disp(table.toString());
     results = opensimTimeSeriesTableToMatlab(table);
 end
 
