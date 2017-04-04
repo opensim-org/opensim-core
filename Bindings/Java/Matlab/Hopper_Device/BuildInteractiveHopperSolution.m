@@ -24,9 +24,6 @@
 function [hopper] = BuildInteractiveHopperSolution(varargin)
 % This function is used to build an InteractiveHopper GUI solution.
 
-% TODO annotate height plot to show Run Number (also show somewhere in the
-% GUI).
-
 %% INPUT PARSING 
 
 % Create input parser
@@ -81,7 +78,7 @@ additionalMass = 0;
 
 % Retrieve muscle settings based on user selection 
 %   default: "The Average Joe"
-[muscleFunc] = InteractiveHopperSettings(muscle);
+[muscleFunc] = InteractiveHopperParameters(muscle);
 [maxIsometricForce,tendonStiffness,tendonSlackLength,muscleMass] = muscleFunc();
 MillardTendonParams = [0.049 tendonStiffness 0.67 0.5 tendonSlackLength];
 additionalMass = additionalMass + muscleMass;
@@ -90,7 +87,7 @@ additionalMass = additionalMass + muscleMass;
 %   default: no passive device
 %            if device --> passiveParameter = 50
 if addPassiveDevice
-    passive = InteractiveHopperSettings('passive');
+    passive = InteractiveHopperParameters('passive');
     [passiveMass,springStiffness] = passive(passiveParameter);
     additionalMass = additionalMass + passiveMass;
 end
@@ -100,10 +97,10 @@ end
 %            if device --> activeParameter = 50
 if addActiveDevice
     if isActivePropMyo
-        activePropMyo = InteractiveHopperSettings('activePropMyo');
+        activePropMyo = InteractiveHopperParameters('activePropMyo');
         [activeMass,gain] = activePropMyo(activeParameter);
     else
-        activeControl = InteractiveHopperSettings('activeControl');
+        activeControl = InteractiveHopperParameters('activeControl');
         [activeMass,maxTension] = activeControl(activeParameter);
     end
     additionalMass = additionalMass + activeMass;
