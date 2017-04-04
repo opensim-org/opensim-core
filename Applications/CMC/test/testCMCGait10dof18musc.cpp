@@ -40,16 +40,7 @@ int main() {
     try { testGait10dof18musc(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc_Millard");
-    }
-
-    // redo with the Thelen2003Muscle
-    Object::renameType("Millard2012EquilibriumMuscle", "Thelen2003Muscle");
-
-    try { testGait10dof18musc(); }
-    catch (const std::exception& e) {
-        cout << e.what() <<endl;
-        failures.push_back("testGait10dof18musc_Thelen");
+        failures.push_back("testGait10dof18musc");
     }
 
     if (!failures.empty()) {
@@ -62,6 +53,8 @@ int main() {
     return 0;
 }
 
+// Perform regression test with standard generated from Gait10dof18musc
+// example in OpenSim 3.2
 void testGait10dof18musc() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                      testGait10dof18musc                       *" << endl;
@@ -81,15 +74,14 @@ void testGait10dof18musc() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within 0.01 rads and 0.1 rad/s;
-    // and activations to within 10%
-    std::vector<double> rms_tols(nstates, 0.1);
-    for (int i = 0; i < 10; ++i) {
-        rms_tols[2*i ] = 0.01; //generalized coordinates
-    }
+    // angles and speeds within 0.01 rads and 0.01 rad/s;
+    // and activations to within 1%
+    std::vector<double> rms_tols(nstates, 0.01);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");
 
     cout << "\ntestGait10dof18musc "+ muscleType +" passed\n" << endl;
 }
+
+
