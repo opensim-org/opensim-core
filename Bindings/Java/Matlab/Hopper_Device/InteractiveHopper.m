@@ -22,7 +22,7 @@ function varargout = InteractiveHopper(varargin)
 
 % Edit the above text to modify the response to help InteractiveHopper
 
-% Last Modified by GUIDE v2.5 29-Mar-2017 15:20:31
+% Last Modified by GUIDE v2.5 02-Apr-2017 19:26:45
 
 % Begin initialization code - DO NOT EDIT
 
@@ -54,42 +54,20 @@ end
 % INTERACTIVEHOPPER_OPENINGFCN
 function InteractiveHopper_OpeningFcn(hObject, eventdata, handles, varargin)
 
-% Group all handles for enabling/disabling
-handles.all = [handles.new_musc_excitation handles.muscles handles.choose_config ...
-               handles.choose_assistive_strategy handles.simulate_hopper_model ...
-               handles.setup_file handles.clear handles.reset];
+% Choose default command line output for InteractiveHopper
+handles.output = hObject;
 
-% Max height
-setField(handles.max_jump_best,0)
+% Load default settings
+handles = InteractiveHopperSettings(handles,'load','setDefaults',true);
 
-% Passive slider value
-set(handles.passive_slider,'min',1);
-set(handles.passive_slider,'max',100);
-set(handles.passive_slider,'Value',50);
-
-% Active slider value
-set(handles.active_slider,'min',1);
-set(handles.active_slider,'max',100);
-set(handles.active_slider,'Value',50);
-
-% Device options disabled
-set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
-
-% Label axes
+% Label control axes
 axes(handles.control_axes)
 axis([0 5 0 1])
 xlabel('Jump Time (s)')
 ylabel('Excitation')
 
-% Default muscle
-muscle = 'averageJoe';
-handles.muscle = muscle;
-muscleFunc = InteractiveHopperSettings(muscle);
-[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = muscleFunc();
-setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
-
-% Choose default command line output for InteractiveHopper
-handles.output = hObject;
+% Initialize run counter
+setField(handles.run_counter,0)
 
 % Update handles structure
 guidata(hObject, handles);
@@ -103,10 +81,14 @@ varargout{1} = handles.output;
 % SIMULATE - Simulate hopper.
 function simulate_Callback(hObject, eventdata, handles)
 
+% Update run counter
+setField(handles.run_counter,handles.run_counter.Value+1);
+handles.setup.String = sprintf('setup_%03.0f',handles.run_counter.Value);
+
 % Muscle
-muscle = handles.muscle;
+muscle = handles.muscle.Value;
 if isfield(handles,'muscleExcitation')
-    muscleExcitation = handles.muscleExcitation;
+    muscleExcitation = handles.muscleExcitation.Value;
 else
     muscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
                         0.3 0.3  1.0 1.0  0.1 0.1];
@@ -115,7 +97,7 @@ else
     muscleExcitation(2,len) = muscleExcitation(2,len-1);
     
     axes(handles.control_axes)
-    color = [0.64 0.08 0.18];
+    color = handles.muscleExcitationColor.Value;
     pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
     set(pts,'Xdata',muscleExcitation(1,:),'Ydata',muscleExcitation(2,:))
 end
@@ -136,14 +118,14 @@ if addActiveDevice
         deviceControl = muscleExcitation;
     else 
         if isfield(handles,'deviceControl')
-            deviceControl = handles.deviceControl;
+            deviceControl = handles.deviceControl.Value;
         else
             deviceControl = [0.0 2.5 5.0;
                              0.0 0.75 0.0];
-            handles.deviceControl = deviceControl;
+            handles.deviceControl.Value = deviceControl;
             guidata(hObject, handles)
             axes(handles.control_axes)
-            color = [0 0.45 0.74];
+            color = handles.deviceControlColor.Value;
             pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
             set(pts,'Xdata',deviceControl(1,:),'Ydata',deviceControl(2,:))
         end
@@ -224,26 +206,33 @@ if isfield(results, 'height')
     ylabel('height');
 end
        
-% WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel
+% WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel.
 function without_device_Callback(hObject, eventdata, handles)
 
 set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
 
-% WITH_DEVICE - If adding device, enable option to add device
+% WITH_DEVICE - If adding device, enable option to add device.
 function with_device_Callback(hObject, eventdata, handles)
 
-set(handles.enable_passive,'enable','on')
-set(handles.enable_passive,'value',0)
-set(handles.enable_active,'enable','on')
-set(handles.enable_active,'value',0)
+set(handles.enable_passive,'Enable','on')
+if handles.enable_passive.Value
+    set(findall(handles.passive, '-property', 'enable'), 'enable', 'on')
+
+end
+
+set(handles.enable_active,'Enable','on')
+if handles.enable_active.Value
+    set(findall(handles.active, '-property', 'enable'), 'enable', 'on')
+
+end
 
 % AVERAGE_JOE - Sets "The Average Joe" muscle.
 function average_joe_Callback(hObject, eventdata, handles)
 
 muscle = 'averageJoe';
-handles.muscle = muscle;
+handles.muscle.Value = muscle;
 guidata(hObject, handles)
-averageJoe = InteractiveHopperSettings(muscle);
+averageJoe = InteractiveHopperParameters(muscle);
 [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe();
 setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
 
@@ -251,9 +240,9 @@ setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
 function arnold_Callback(hObject, eventdata, handles)
 
 muscle = 'arnold';
-handles.muscle = muscle;
+handles.muscle.Value = muscle;
 guidata(hObject, handles)
-arnold = InteractiveHopperSettings(muscle);
+arnold = InteractiveHopperParameters(muscle);
 [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = arnold();
 setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
     
@@ -261,9 +250,9 @@ setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
 function katie_ledecky_Callback(hObject, eventdata, handles)
 
 muscle = 'katieLedecky';
-handles.muscle = muscle;
+handles.muscle.Value = muscle;
 guidata(hObject, handles)
-katieLedecky = InteractiveHopperSettings(muscle);
+katieLedecky = InteractiveHopperParameters(muscle);
 [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = katieLedecky();
 setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
 
@@ -289,11 +278,12 @@ for i = 1:length(handle_names)
     end
 end
 
-set(findall(handles.all, '-property', 'enable'), 'enable', 'off')
+set(findall(handles.interactive_hopper, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
-muscleExcitation = getUserControl([0.64 0.08 0.18]);
-handles.muscleExcitation = muscleExcitation;
+color = handles.muscleExcitationColor.Value;
+muscleExcitation = getUserControl(color);
+handles.muscleExcitation.Value = muscleExcitation;
 guidata(hObject, handles)
 
 for i = 1:length(reenable)
@@ -314,11 +304,12 @@ for i = 1:length(handle_names)
     end
 end
 
-set(findall(handles.all, '-property', 'enable'), 'enable', 'off')
+set(findall(handles.interactive_hopper, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
-deviceControl = getUserControl([0 0.45 0.74]);
-handles.deviceControl = deviceControl;
+color = handles.deviceControlColor.Value;
+deviceControl = getUserControl(color);
+handles.deviceControl.Value = deviceControl;
 guidata(hObject, handles)
 
 for i = 1:length(reenable)
@@ -347,8 +338,8 @@ handle_names = {'passive_patella_wrap','passive_slider','stiffness_text', ...
 
 if get(hObject,'Value')
     enable(handles,handle_names,true)
-    set(handles.passive_slider,'Value',50)
-    setPassive(handles,50)
+    passive_slider = handles.passive_slider.Value;
+    setPassive(handles,passive_slider)
 else
     enable(handles,handle_names,false)
     setPassive(handles,[])
@@ -356,23 +347,23 @@ end
 
 function active_patella_wrap_Callback(hObject, eventdata, handles)
 
-% PASSIVE_SLIDER - Set spring stiffness with slider.
+% PASSIVE_SLIDER - Set passive device parameters.
 function passive_slider_Callback(hObject, eventdata, handles)
 
 passiveParameter = get(hObject,'Value');
 setPassive(handles,passiveParameter)
 
 % SETPASSIVE - Given a PASSIVE_SLIDER value, set the spring stiffness
-%             and mass
+%              and mass.
 function setPassive(handles,passiveParameter)
 
-passive = InteractiveHopperSettings('passive');
+passive = InteractiveHopperParameters('passive');
 [passive_mass,stiffness] = passive(passiveParameter);
 
 setField(handles.stiffness,stiffness)
 setField(handles.passive_mass,passive_mass)
 
-% SETFIELD - Set the value and string of a field given a value
+% SETFIELD - Set the value and string of a field given a value.
 function setField(handle,value)
 
 if isempty(value)
@@ -406,14 +397,14 @@ handle_names = {'active_patella_wrap','active_as_prop_myo','new_device_control',
 
 if get(hObject,'Value')
     enable(handles,handle_names,true)
-    set(handles.active_slider,'Value',50)
-    setActive(handles,50)
+    active_slider = handles.active_slider.Value;
+    setActive(handles,active_slider)
 else
     enable(handles,handle_names,false)
     setActive(handles,[])
 end
 
-% ACTIVE_SLIDER
+% ACTIVE_SLIDER - Set active device parameters.
 function active_slider_Callback(hObject, eventdata, handles)
 
 activeParameter = get(hObject,'Value');
@@ -424,10 +415,10 @@ setActive(handles,activeParameter)
 function setActive(handles,activeParameter)
 
 if handles.active_as_prop_myo.Value
-    activePropMyo = InteractiveHopperSettings('activePropMyo');
+    activePropMyo = InteractiveHopperParameters('activePropMyo');
     [active_mass,tension_or_gain] = activePropMyo(activeParameter);
 else
-    activeControl = InteractiveHopperSettings('activeControl');
+    activeControl = InteractiveHopperParameters('activeControl');
     [active_mass,tension_or_gain] = activeControl(activeParameter);
 end
 
@@ -435,27 +426,47 @@ setField(handles.tension_or_gain,tension_or_gain)
 setField(handles.active_mass,active_mass)
 
 % ACTIVE_AS_PROP_MYO - Specify a proportional myoelectric controller for
-%                      the active device
+%                      the active device.
 function active_as_prop_myo_Callback(hObject, eventdata, handles)
 
 handle_names = {'new_device_control'};
-sliderVal = handles.active_slider.Value;
+active_slider = handles.active_slider.Value;
 
 if get(hObject,'Value')
     enable(handles,handle_names,false)
-    setField(handles.tension_or_gain,1)
     set(handles.tension_or_gain_text,'String','Gain')
     setField(handles.tension_or_gain_units,[])
-    setActive(handles,sliderVal)
+    setActive(handles,active_slider)
 else
     enable(handles,handle_names,true)
-    setField(handles.tension_or_gain,100)
     set(handles.tension_or_gain_text,'String','Max Tension')
     set(handles.tension_or_gain_units,'String','N')
-    setActive(handles,sliderVal)
+    setActive(handles,active_slider)
 end
 
-% GETUSERCONTROL
+% RESET - Load default GUI settings.
+function reset_Callback(hObject, eventdata, handles)
+
+handles = InteractiveHopperSettings(handles,'load','setDefaults',true);
+guidata(hObject, handles);
+
+% SAVE_SETUP - Save current GUI configuration.
+function save_setup_Callback(hObject, eventdata, handles)
+
+filename = handles.setup.String;
+handles = InteractiveHopperSettings(handles,'save','filename',filename);
+guidata(hObject, handles);
+
+% LOAD_SETUP - Load previous GUI configuration.
+function load_setup_Callback(hObject, eventdata, handles)
+
+runCount = handles.run_counter.Value;
+filename = handles.setup.String;
+handles = InteractiveHopperSettings(handles,'load','filename',filename);
+setField(handles.run_counter,runCount)
+guidata(hObject, handles);
+
+% GETUSERCONTROL - Get user muscle excitation or device control.
 function [xy] = getUserControl(color)
 
 w = [0 5 0 1];
@@ -471,13 +482,14 @@ while 1
         try
             [x,y] = ginput(1);
         catch ME
-            display('ERROR: ginput failed')
+            disp('ERROR: ginput failed')
         end
         if isempty(x)||x<w(1)||x>w(2)||y<w(3)||y>w(4)
             xy(1,j) = 5;
             xy(2,j) = xy(2,j-1);
             
             set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
+            delete(pts2)
             break;
         end
         xy(:,j) = [x;y];
@@ -597,20 +609,22 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function reset_Callback(hObject, eventdata, handles)
-
-function setup_Callback(hObject, eventdata, handles)
-
 function setup_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
 
-function save_setup_Callback(hObject, eventdata, handles)
-
-function load_setup_Callback(hObject, eventdata, handles)
-
 function tension_or_gain_CreateFcn(hObject, eventdata, handles)
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+function setup_Callback(hObject, eventdata, handles)
+
+function run_counter_Callback(hObject, eventdata, handles)
+
+function run_counter_CreateFcn(hObject, eventdata, handles)
+
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
