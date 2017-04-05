@@ -12,9 +12,9 @@ for iCol = 0 : nCol -1
     if strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTableVec3')
 
         for iRow = 0 : nRow - 1
-            rowdata(iRow+1,1) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(0);
-            rowdata(iRow+1,2) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(1);
-            rowdata(iRow+1,3) = table.getDependentColumnAtIndex(iCol).getElt(iRow,1).get(2);       
+            rowdata(iRow+1,1) = table.getDependentColumnAtIndex(iCol).getElt(iRow,0).get(0);
+            rowdata(iRow+1,2) = table.getDependentColumnAtIndex(iCol).getElt(iRow,0).get(1);
+            rowdata(iRow+1,3) = table.getDependentColumnAtIndex(iCol).getElt(iRow,0).get(2);       
         end
 
     elseif strcmp( char(table.getClass), 'class org.opensim.modeling.TimeSeriesTable')
