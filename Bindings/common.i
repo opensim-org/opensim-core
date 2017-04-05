@@ -43,6 +43,7 @@
 %include <OpenSim/Common/PiecewiseLinearFunction.h>
 %include <OpenSim/Common/MultiplierFunction.h>
 %include <OpenSim/Common/GCVSpline.h>
+%include <OpenSim/Common/GCVSplineSet.h>
 %include <OpenSim/Common/Sine.h>
 %include <OpenSim/Common/PolynomialFunction.h>
 
