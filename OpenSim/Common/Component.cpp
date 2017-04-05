@@ -1398,13 +1398,7 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
 
 const SimTK::MultibodySystem& Component::getSystem() const
 {
-    if (!hasSystem()){
-        std::string msg = getConcreteClassName()+"::getSystem() ";
-        msg += getName() + " has no reference to a System.\n";
-        msg += "Make sure you added the Component to the Model and ";
-        msg += "called Model::initSystem(). ";
-        throw Exception(msg, __FILE__, __LINE__);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
     return _system.getRef();
 }
 
