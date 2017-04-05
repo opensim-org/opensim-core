@@ -1029,7 +1029,8 @@ void testProbesUsingMillardMuscleSimulation()
     model.addAnalysis(muscleAnalysis);
 
     // Print the model.
-    printf("\n"); model.printBasicInfo(cout); printf("\n");
+    model.finalizeFromProperties();
+    printf("\n"); model.printBasicInfo(); printf("\n");
     const std::string baseFilename = "testMuscleMetabolicsProbes";
     if (OUTPUT_FILES) {
         const std::string fname = baseFilename + "Model.osim";
@@ -1312,7 +1313,8 @@ void testProbesUsingMillardMuscleSimulation()
     model.addAnalysis(probeReporter2);
 
     // Print the model.
-    printf("\n"); model.printBasicInfo(cout); printf("\n");
+    model.finalizeFromProperties();
+    printf("\n"); model.printBasicInfo(); printf("\n");
     if (OUTPUT_FILES) {
         const std::string fname = baseFilename + "Model2.osim";
         model.print(fname);

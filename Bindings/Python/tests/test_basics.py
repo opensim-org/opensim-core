@@ -18,7 +18,7 @@ class TestBasics(unittest.TestCase):
     def test_version(self):
         print(osim.__version__)
 
-    def test_Thelen2003Muscle_helper_classes(self):
+    def test_muscle_helper_classes(self):
         # This test exists because some classes that Thelen2003Muscle used were
         # not accessibly in the bindings.
         muscle = osim.Thelen2003Muscle()
@@ -28,6 +28,11 @@ class TestBasics(unittest.TestCase):
 
         adm = muscle.getActivationModel()
         adm.get_activation_time_constant()
+
+        muscle = osim.Millard2012EquilibriumMuscle()
+
+        tendonFL = osim.TendonForceLengthCurve()
+        muscle.setTendonForceLengthCurve(tendonFL)
 
     def test_SimTKArray(self):
         # Initally created to test the creation of a separate simbody module.
@@ -89,4 +94,6 @@ class TestBasics(unittest.TestCase):
         ellipsoid = osim.WrapEllipsoid()
         model.getGround().addWrapObject(ellipsoid)
 
+    def test_ToyReflexController(self):
+        controller = osim.ToyReflexController()
         

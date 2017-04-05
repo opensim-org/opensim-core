@@ -262,8 +262,8 @@ bool InverseKinematicsTool::run()
         else
             modelFromFile = false;
 
-        _model->printBasicInfo(cout);
-
+        _model->finalizeFromProperties();
+        _model->printBasicInfo();
 
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.

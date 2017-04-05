@@ -145,5 +145,11 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/FiberCompressiveForceCosPennationCurve.h>
 #include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+#include <OpenSim/Actuators/FiberForceLengthCurve.h>
+#include <OpenSim/Actuators/ForceVelocityCurve.h>
+#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+#include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

@@ -28,6 +28,7 @@
 #include <string>
 #include <typeinfo>
 #include "osimCommonDLL.h"
+#include "Exception.h"
 #include "SimTKcommon/internal/Xml.h"
 
 
@@ -35,6 +36,24 @@ namespace OpenSim {
 
 class Object;
 template <class T> class Property;
+
+//==============================================================================
+/// Property Exceptions
+//==============================================================================
+class InvalidPropertyValue : public Exception {
+public:
+    InvalidPropertyValue(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& propertName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Property '" + propertName;
+        msg += "' has an invalid value.";
+        addMessage(msg);
+    }
+};
+
 
 //==============================================================================
 //                            ABSTRACT PROPERTY

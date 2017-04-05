@@ -158,6 +158,26 @@ void ScalarActuator::constructProperties()
     constructProperty_max_control( Infinity);
 }
 
+void ScalarActuator::setMinControl(const double& aMinControl)
+{
+    set_min_control(aMinControl);
+}
+
+double ScalarActuator::getMinControl() const
+{
+    return get_min_control();
+}
+
+void ScalarActuator::setMaxControl(const double& aMaxControl)
+{
+    set_max_control(aMaxControl);
+}
+
+double ScalarActuator::getMaxControl() const
+{
+    return get_max_control();
+}
+
 // Create the underlying computational system component(s) that support the
 // ScalarActuator model component
 void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const

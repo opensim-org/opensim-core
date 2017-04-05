@@ -1,7 +1,8 @@
-OpenSim Core [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci]
+OpenSim Core
 ============
+ [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci] [![ZenHub][zenhub_image]][zenhub]
 
-**NOTE: This repository contains OpenSim 4.0 development and cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
+**NOTE: This repository cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
 
 OpenSim is software that lets users develop models of musculoskeletal
 structures and create dynamic simulations of movement, such as this one:
@@ -121,7 +122,7 @@ and prints the following information to the console:
         [reporter]
                     |           /m|             |
                     | odel_/biceps|             |
-                time| /fiber_force|  elbow_angle|
+                time| |fiber_force|  elbow_angle|
         ------------| ------------| ------------|
                    0|     1.180969|    1.5707963|
                    1|     57.27509|   0.77066412|
@@ -599,24 +600,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 #### Set environment variables
 
 1. **Executables**. If you want to run OpenSim-Core's executables from
-   anywhere on your computer, you must update your PATH. *Note* some of the
-   names of OpenSim-Core executables conflict with some UNIX commands (e.g.,
-   `id`). To give preference to OpenSim-Core's executables, we must *prepend*
-   OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
+   anywhere on your computer, you must update your PATH. Open a terminal and
+   type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
-
-2. **Libraries**. Hopefully you can skip this step. This step is required if:
-  1. You are using CMake version 2.8.11 or older.
-  2. You plan on building C++ executables or libraries on top of OpenSim, *and*
-     you plan to "install" them in the CMake sense of the word (that is, you're
-     not going to simply use them from your project's build directory).
-  3. You plan to use the Java or MATLAB scripting.
-
-  If any of these are true, then you must add OpenSim-Core libraries to your
-  linker path. Open a terminal and type:
-
-          $ echo 'export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -806,19 +793,10 @@ And you could get all the optional dependencies via:
 
 #### Set environment variables
 
-1. **Executables**. Add OpenSim-Core's executables to the path so you can access them from any
-   directory on your computer. NOTE that some of the names of OpenSim-Core
-   executables conflict with some UNIX commands (e.g., `id`). To give
-   preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
-   `bin/` directory to the path.
+1. **Executables**. Add OpenSim-Core's executables to the path so you can
+   access them from any directory on your computer.
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
-
-2. **Libraries**. Allow executables to find OpenSim-Core libraries by
-  adding the OpenSim-Core
-   `lib/` directory to your linker path.
-
-        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
 
 Your changes will only take effect in new terminal windows.
 
@@ -921,6 +899,9 @@ ctest -j8
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
+[zenhub_image]: https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png
+[zenhub]: https://zenhub.com
+
 [running_gif]: doc/images/opensim_running.gif
 [simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javase/downloads/index.html

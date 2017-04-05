@@ -1,5 +1,5 @@
-#ifndef __Sine_h__
-#define __Sine_h__
+#ifndef OPENSIM_SINE_H_
+#define OPENSIM_SINE_H_
 /* -------------------------------------------------------------------------- *
  *                              OpenSim:  Sine.h                              *
  * -------------------------------------------------------------------------- *
@@ -28,7 +28,6 @@
 #include <string>
 #include "Function.h"
 #include "FunctionAdapter.h"
-#include "PropertyDbl.h"
 
 namespace OpenSim {
 
@@ -37,95 +36,65 @@ namespace OpenSim {
 /**
  * A class for representing a Sine function.
  *
- * This class inherits from Function and so can be used as input to
- * any class requiring a Function as input. Implements f(x) = A*sin(omega*x+phase)
+ * This class inherits from Function and can be used as input to
+ * any Component requiring a Function as input. Implements:
+ *  f(x) = amplitude*sin(omega*x+phase)+offset;
  *
  * @author Ajay Seth
  * @version 1.0
  */
 class OSIMCOMMON_API Sine : public Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(Sine, Function);
-
-//=============================================================================
-// MEMBER VARIABLES
-//=============================================================================
 protected:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
 
-    PropertyDbl _amplitudeProp;
-    double &_amplitude;
+    OpenSim_DECLARE_PROPERTY(amplitude, double,
+        "The amplitude of the sinusoidal function.");
 
-    PropertyDbl _omegaProp;
-    double &_omega;
+    OpenSim_DECLARE_PROPERTY(omega, double,
+        "The angular frequency (omega) in radians/sec.");
 
-    PropertyDbl _phaseProp;
-    double &_phase;
+    OpenSim_DECLARE_PROPERTY(phase, double,
+        "The phase shift of the sinusoidal function.");
+
+    OpenSim_DECLARE_PROPERTY(offset, double,
+        "The DC offset in the sinusoidal function.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-    Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) { setupProperties();}
+    //Default construct, copy and assignment
+    Sine() {
+        constructProperties();
+    }
+
     // Convenience Constructor
-    Sine(double amplitude, double omega, double phase) : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
-        setupProperties();
-        _amplitude = amplitude;  _omega = omega;  _phase = phase; 
-    }
-    // Copy Constructor
-    Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
-            setupProperties();
-            _amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
-    };
-    virtual ~Sine() {};
-
-private:
-    void setupProperties() {
-        _amplitudeProp.setName("amplitude");
-        _amplitudeProp.setComment("amplitude of the sinusoidal function");
-        _amplitudeProp.setValue(1);
-        _propertySet.append(&_amplitudeProp);
-
-        _omegaProp.setName("omega");
-        _omegaProp.setComment("the angular frequency (omega) in radians/sec");
-        _omegaProp.setValue(1);
-        _propertySet.append(&_omegaProp);
-
-        _phaseProp.setName("phase");
-        _phaseProp.setComment("the phase shift of the sinusoidal function");
-        _phaseProp.setValue(0);
-        _propertySet.append(&_phaseProp);
-    }
-
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-public:
-    Sine& operator=(const Sine &func)
+    Sine(double amplitude, double omega, double phase, double offset=0) : Sine()
     {
-        Function::operator=(func);
-        _amplitude = func._amplitude;  _omega = func._omega;  _phase = func._phase; 
-        return(*this);
+        set_amplitude(amplitude);
+        set_omega(omega);
+        set_phase(phase);
+        set_offset(offset);
     }
-    //--------------------------------------------------------------------------
-    // SET AND GET
-    //--------------------------------------------------------------------------
-public:
+
+    virtual ~Sine() {};
 
     //--------------------------------------------------------------------------
     // EVALUATION
     //--------------------------------------------------------------------------
-    double calcValue(const SimTK::Vector& x) const override
-    {
-        return _amplitude*sin(_omega*x[0] + _phase);
+    double calcValue(const SimTK::Vector& x) const override {
+        return get_amplitude()*sin(get_omega()*x[0] + get_phase())
+            + get_offset();
     }
     
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const override
-    {
+    double calcDerivative(const std::vector<int>& derivComponents,
+        const SimTK::Vector& x) const override {
         int n = (int)derivComponents.size();
-
-        return _amplitude*pow(_omega,n)*sin(_omega*x[0] + _phase + n*SimTK::Pi/2);
+        return get_amplitude()*pow(get_omega(),n) * 
+            sin(get_omega()*x[0] + get_phase() + n*SimTK::Pi/2);
     }
 
     SimTK::Function* createSimTKFunction() const override {
@@ -135,6 +104,13 @@ public:
     int getArgumentSize() const override {return 1;}
     int getMaxDerivativeOrder() const override {return 10;}
 
+private:
+    void constructProperties() {
+        constructProperty_amplitude(1.0);
+        constructProperty_omega(1.0);
+        constructProperty_phase(0.0);
+        constructProperty_offset(0.0);
+    }
 //=============================================================================
 };  // END class Sine
 //=============================================================================
@@ -142,4 +118,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif  // __Sine_h__
+#endif  // OPENSIM_SINE_H_

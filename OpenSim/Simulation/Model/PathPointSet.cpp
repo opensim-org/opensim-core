@@ -42,7 +42,7 @@ PathPointSet::~PathPointSet(void)
  * Default constructor of a PathPointSet.
  */
 PathPointSet::PathPointSet() :
-    Set<PathPoint>()
+    Set<AbstractPathPoint>()
 {
     setNull();
 }
@@ -52,7 +52,7 @@ PathPointSet::PathPointSet() :
  * Copy constructor of a PathPointSet.
  */
 PathPointSet::PathPointSet(const PathPointSet& aPathPointSet):
-    Set<PathPoint>(aPathPointSet)
+    Set<AbstractPathPoint>(aPathPointSet)
 {
     setNull();
     *this = aPathPointSet;
@@ -80,7 +80,7 @@ void PathPointSet::setNull()
 #ifndef SWIG
 PathPointSet& PathPointSet::operator=(const PathPointSet &aPathPointSet)
 {
-    Set<PathPoint>::operator=(aPathPointSet);
+    Set<AbstractPathPoint>::operator=(aPathPointSet);
     return (*this);
 }
 #endif

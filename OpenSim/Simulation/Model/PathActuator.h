@@ -49,7 +49,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the muscle.");
+        "The set of points defining the path of the actuator.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 

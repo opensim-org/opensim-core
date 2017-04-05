@@ -53,7 +53,7 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-const int expectedNumComponents = 134;
+const int expectedNumComponents = 180;
 const int expectedNumJointsWithStateVariables = 2;
 const int expectedNumModelComponentsWithStateVariables = 10;
 // Below updated from 1 to 3 to account for offset frame and its geometry added

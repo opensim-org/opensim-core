@@ -73,6 +73,12 @@ class TestTables {
         assert table.hasColumn(0);
         assert table.hasColumn(2);
         // Edit rows of the table.
+        row.set(0, 0); row.set(1, 1); row.set(2, 2); row.set(3, 3);
+        table.setRowAtIndex(0, row);
+        assert table.getRowAtIndex(0).get(0) == 0 &&
+               table.getRowAtIndex(0).get(1) == 1 &&
+               table.getRowAtIndex(0).get(2) == 2 &&
+               table.getRowAtIndex(0).get(3) == 3;
         row0 = table.getRowAtIndex(0);
         row0.set(0, 10); row0.set(1, 10); row0.set(2, 10); row0.set(3, 10);
         assert table.getRowAtIndex(0).get(0) == 10 &&
@@ -98,6 +104,11 @@ class TestTables {
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
         System.out.println(table);
+        // Append columns to the table.
+        Vector col = new Vector(3, 1);
+        table.appendColumn("4", col);
+        table.appendColumn("5", col);
+        assert table.getNumRows() == 3 && table.getNumColumns() == 6;
         // Add table metadata.
         table.addTableMetaDataString("subject-name", "Java");
         table.addTableMetaDataString("subject-yob" , "1995");
@@ -124,7 +135,7 @@ class TestTables {
         } catch (java.lang.RuntimeException exc) {}
         // Access column with index/label out of bounds. Exception expected.
         try {
-            VectorView shouldThrow = table.getDependentColumnAtIndex(5);
+            VectorView shouldThrow = table.getDependentColumnAtIndex(6);
             assert false;
         } catch (java.lang.RuntimeException exc) {}
         try {

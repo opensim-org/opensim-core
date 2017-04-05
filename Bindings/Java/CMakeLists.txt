@@ -26,6 +26,13 @@ set(SWIG_JAVA_ACTUATORS_CXX_FILE
 set(SWIG_JAVA_ACTUATORS_H_FILE   
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.h")
 
+set(SWIG_JAVA_EXAMPLECOMPONENTS_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_examplecomponents.i")
+set(SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE 
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_examplecomponents.cxx")
+set(SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE   
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_examplecomponents.h")
+
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -81,6 +88,9 @@ add_custom_command(
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/actuators-analysis-tools
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/examplecomponents
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${JAVA_COMPILE} 
             org/opensim/modeling/*.java 

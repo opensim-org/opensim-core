@@ -300,9 +300,7 @@ void testRunTool() {
             "Printing 'testruntool_cmc_setup.xml'.\n");
     // This fails because this setup file doesn't have much in it.
     testCommand("run-tool testruntool_cmc_setup.xml", EXIT_FAILURE,
-            std::regex("(Preparing to run CMCTool.)" + RE_ANY +
-                       "(Running tool default.)" + RE_ANY +
-                       "(ERROR- A model has not been set.)" + RE_ANY));
+            std::regex(RE_ANY + "(ERROR- A model has not been set.)" + RE_ANY));
     // Similar to the previous two commands, except for scaling
     // (since ScaleTool goes through a different branch of the code).
     testCommand("print-xml scale testruntool_scale_setup.xml", EXIT_SUCCESS,
@@ -341,11 +339,11 @@ void testPrintXML() {
     testCommand("print-xml x y z", EXIT_FAILURE,
             StartsWith("Unexpected argument: print-xml, x, y, z"));
     testCommand("print-xml bleepbloop", EXIT_FAILURE,
-            "There is no tool or class named 'bleepbloop'.\n"
-            "Did you intend to load a plugin (with --library)?\n");
+        "There is no tool or registered concrete class named 'bleepbloop'.\n"
+        "Did you intend to load a plugin (with --library)?\n");
     testCommand("print-xml bleepbloop y", EXIT_FAILURE,
-            "There is no tool or class named 'bleepbloop'.\n"
-            "Did you intend to load a plugin (with --library)?\n");
+        "There is no tool or registered concrete class named 'bleepbloop'.\n"
+        "Did you intend to load a plugin (with --library)?\n");
 
     // Successful input.
     // =================

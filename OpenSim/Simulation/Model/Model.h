@@ -122,7 +122,7 @@ of the Model, called a System (SimTK::System), using Simbody. Creation of the
 System is initiated by a call to the Model's initSystem() method. The System and
 related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
-method, in which case it will allocate an maintain a ModelVisualizer.
+method, in which case it will allocate and maintain a ModelVisualizer.
 
 @authors Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman
 @see ModelComponent, ModelVisualizer, SimTK::System
@@ -420,13 +420,13 @@ public:
 
     /** Get read-only access to the internal Simbody MultibodySystem that was
     created by this %Model at the last initSystem() call. **/    
-    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; }
+    const SimTK::MultibodySystem& getMultibodySystem() const {return getSystem(); }
     /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
     that was created by this %Model at the last initSystem() call. Be careful
     if you make modifications to the System because that will invalidate 
     initialization already performed by the Model. 
     @see initStateWithoutRecreatingSystem() **/    
-    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; }
+    SimTK::MultibodySystem& updMultibodySystem() const {return updSystem(); }
 
     /** Get read-only access to the internal DefaultSystemSubsystem allocated
     by this %Model's Simbody MultibodySystem. **/
@@ -927,15 +927,16 @@ public:
      *
      * @param aOStream Output stream.
      */
-    void printBasicInfo(std::ostream &aOStream) const;
+    void printBasicInfo(std::ostream& aOStream = std::cout) const;
 
     /**
      * Print detailed information about the model.
      *
-     * @param s   the system State.
+     * @param s        the system State.
      * @param aOStream Output stream.
      */
-    void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
+    void printDetailedInfo(const SimTK::State& s,
+                           std::ostream& aOStream = std::cout) const;
 
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
