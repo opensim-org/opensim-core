@@ -179,6 +179,11 @@ namespace OpenSim {
 %ignore OpenSim::DataTable_::DataTable_(const DataTable_<double, double>&,
                                         const std::vector<std::string>&);
 %ignore OpenSim::DataTable_<double, double>::flatten;
+%extend OpenSim::DataTable_ {
+    OpenSim::DataTable_<ETX, ETY> clone() const {
+        return OpenSim::DataTable_<ETX, ETY>{*$self};
+    }
+}
 %extend OpenSim::DataTable_<double, double> {
     DataTable_<double, SimTK::Vec3>
     packVec3() {
@@ -215,6 +220,11 @@ namespace OpenSim {
 }
 
 %ignore OpenSim::TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
+%extend OpenSim::TimeSeriesTable_ {
+    OpenSim::TimeSeriesTable_<ETY> clone() const {
+        return OpenSim::TimeSeriesTable_<ETY>{*$self};
+    }
+}
 %extend OpenSim::TimeSeriesTable_<double> {
     TimeSeriesTable_<SimTK::Vec3>
     packVec3() {
