@@ -2060,8 +2060,7 @@ protected:
      * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
-    SimTK::MultibodySystem& updSystem() const
-        { return *_system; } 
+    SimTK::MultibodySystem& updSystem() const;
 
     /** Get the index of a Component's continuous state variable in the Subsystem for
         allocations. This method is intended for derived Components that may need direct

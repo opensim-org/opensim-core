@@ -1402,6 +1402,12 @@ const SimTK::MultibodySystem& Component::getSystem() const
     return _system.getRef();
 }
 
+SimTK::MultibodySystem& Component::updSystem() const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+    return _system.getRef();
+}
+
 //------------------------------------------------------------------------------
 //                         OTHER REALIZE METHODS
 //------------------------------------------------------------------------------
