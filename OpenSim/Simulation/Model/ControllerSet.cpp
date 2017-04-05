@@ -137,7 +137,6 @@ void ControllerSet::constructStorage()
         columnLabels.append(_actuatorSet->get(i).getName());
 
     _controlStore->setColumnLabels(columnLabels);
-        
 }
 
 void ControllerSet::storeControls( const SimTK::State& s, int step  )
