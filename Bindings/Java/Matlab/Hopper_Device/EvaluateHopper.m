@@ -24,12 +24,10 @@
 % Perform a hop with the provided model and evaluate the performance of the
 % hop.
 
-function [score, peakHeight, finalHeight, metabolicCost, deviceEnergyConsumption] = ...
-        EvaluateHopper(hopper)
+function [score, peakHeight, finalHeight] = EvaluateHopper(hopper, print)
+        
 
 import org.opensim.modeling.*;
-
-print = true;
 
 % TODO make sure this isn't causing a memory leak.
 hopperCopy = hopper.clone();
@@ -48,28 +46,6 @@ heightRep.addToReport(...
     hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 hopperCopy.addComponent(heightRep);
 
-% Currently not using metabolic probe
-% metRep = TableReporterVector();
-% metRep.setName('metabolics_reporter');
-% metRep.set_report_time_interval(0.05);
-% metRep.addToReport(...
-%         hopperCopy.getComponent('Umberger').getOutput('probe_outputs'), ...
-%         'metabolic_rate_total');
-% hopperCopy.addComponent(metRep);
-
-
-% TODO handle multiple devices.
-% TODO it is not yet possible to loop through components of a given type in
-% MATLAB.
-if hopperCopy.hasComponent('device_active')
-    powerRep = TableReporter();
-    powerRep.setName('device_power_reporter');
-    powerRep.set_report_time_interval(0.05);
-    powerRep.addToReport(...
-            hopperCopy.getComponent('device_active').getOutput('power'), ...
-            'device_power');
-    hopperCopy.addComponent(powerRep);
-end
 
 % Simulate.
 % ---------
@@ -80,7 +56,7 @@ Simulate(hopperCopy, state, false);
 % Process reporter tables.
 % ------------------------
 heightTable = heightRep.getTable();
-heightStruct = opensimTimeSeriesTableToMatlab(heightTable);
+heightStruct = osimTableToStruct(heightTable);
 [peakHeight, maxHeightIdx] = max(heightStruct.height(:, 1));
 finalHeight = heightStruct.height(end, 1);
 if print 
@@ -88,28 +64,9 @@ if print
         peakHeight, heightStruct.time(maxHeightIdx));
 end
 
-% Currently not using metabolic probe
-% metTable = metRep.getTable();
-% met = opensimTimeSeriesTableToMatlab(metTable);
-% % opensimTimeSeriesTableToMatlab thinks this field has 3 columns; take only
-% % the first column.
-% metabolicCost = trapz(met.time, met.metabolic_rate_total_0_(:, 1));
-% fprintf('Metabolic cost: %f Joules\n', metabolicCost);
-metabolicCost = 0;
-
-if hopperCopy.hasComponent('device_active')
-    powerTable = powerRep.getTable();
-    power = opensimTimeSeriesTableToMatlab(powerTable);
-    % opensimTimeSeriesTableToMatlab thinks this field has 3 columns; take only
-    % the first column.
-    deviceEnergyConsumption = trapz(power.time, power.device_power(:, 1));
-    fprintf('Device energy consumption: %f Joules\n', deviceEnergyConsumption);
-else
-    deviceEnergyConsumption = 0;
-end
-
-%score = peakHeight / (metabolicCost + deviceEnergyConsumption);
 score = peakHeight;
-fprintf('Score: %f\n', score);
+if print
+    fprintf('Score: %f\n', score);
+end
 
 end
