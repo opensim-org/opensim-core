@@ -10,8 +10,6 @@ add_library(mesh
     legacy.h                                        legacy.cpp
     )
 
-# TODO
-link_directories(mesh "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017.1.143/windows/compiler/lib/intel64_win/")
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
 #   b. when a client library links to this library ("INTERFACE").

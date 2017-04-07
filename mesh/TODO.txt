@@ -1,6 +1,10 @@
 Create Eigen-like wrapper for ADOL-C and its drivers, so that I am passing
 around Vectors, not C-style arrays.
 
+Nocedal's book says to use partial separability for auto diff, and also that
+you can get benefits by evalulating the objective and constraints at the same
+time, in case they share a lot of the computaitonal graph.
+
 Move ADOL-C code from IpoptSolver::TNLP to OptimizationProblem<adouble>.
 
 Trying non-virtual interface for OptimizationProblem, but a Proxy class could
@@ -32,6 +36,9 @@ Automatically generate a nice initial guess:
     //OptimalControlSolution solution = dircol.solve(initial_guess);
 
 
+Test problems with scenarios where the tendon would buckle (MTU length <
+slack length)
+
 Name for project: OptoMusk (optimizing musculoskeletal)
 NMSOpt
 Neuromusculoskeletal Optimization
@@ -42,12 +49,101 @@ TONMS
 
 Runner
 
+Nimble
+Cursory
+Muscop
+
+Dexterous (capable of many things....)
+
+Names of animals...cheetah, etc.
+Names of famous researchers (Muybridge)
+
+DICOMO (direct collocation for musculoskeletal systems)
+DICOMU
+DICOMS
+
+
+add "printProblemInfo()" to display the values of variable bounds, the number
+ of constraints, the number of dynamics whatever, etc. For debugging.
+
+# iCub provides Ipopt binaries but not for msvc14.
+http://wiki.icub.org/wiki/Installing_IPOPT
+http://www.icub.org/download/packages/windows/
+
+
+first: install wget in cygwin and run get.Blas, etc in each subdirectory.
 
 Mixing MSVC with gfortran:
 http://stackoverflow.com/questions/3320017/mix-gfortran-msvc-objects-when-linking-undefined-reference-to-chkstk
 
 ./configure --prefix=... --with-blas=BUILD --with-lapack=BUILD --enable-msvc
+--enabled-shared=yes
+enable-shared forces use of dynamic runtime (MSVC), which must be consistent
+across all libraries.
 must tell ifort where msvc's link.exe is, by editing ifort.cfg
 
 Does linking to gfortran.lib make the resulting binary viral?
 https://cournape.wordpress.com/2009/03/09/gfortran-visual-studio/
+
+LibraryHandler.c(25) fatal error C1189: Do not have function for save
+printing into a C-string (snprintf or _snprintf). I edited the configured
+config.h to have #define HAVE_SNPRINTF.
+
+dos2unix: must have this installed. this fixes the SLURRY of link errors
+(undefined symbol...)
+
+ampl is being built and statically linked to, even though i don't have it?
+
+add option to build IPOPT static libraries MD_StaticRelease vs
+MD_DynamicRelease: mismatch.
+
+Cannot link StaticRelease vs DynamicRelease; inconsistent with Ipopt.
+Make sure IPOPT is compiled with /MD instead of /MT
+http://stackoverflow.com/questions/14714877/mismatch-detected-for-runtimelibrary
+
+
+lnk1104: cannot open file 'ifconsol.lib'
+call "%IFORT_COMPILER17%bin\ifortvars.bat" intel64
+http://stackoverflow.com/questions/39683544/error-lnk1104-cannot-open-file-ifconsol-lib-using-f2py-and-intel-fortran
+
+FFLAGS='-MD -O3 -fpp -nologo
+CFLAGS='-MD -O2 -nologo -wd4996 -D_CRT_SECURE_NO_DEPRECATE -DNDEBUG   '
+CXXFLAGS='-MD -O2 -nologo -EHsc -GR -wd4996 -D_CRT_SECURE_NO_DEPRECATE
+-DNDEBUG   '
+
+OPT_CFLAGS='-MD -O2 -nologo -wd4996 -D_CRT_SECURE_NO_DEPRECATE -DNDEBUG   '
+OPT_CXXFLAGS='-MD -O2 -nologo -EHsc -GR -wd4996 -D_CRT_SECURE_NO_DEPRECATE
+-DNDEBUG   '
+OPT_FFLAGS='-MD -O3 -fpp -nologo  '
+
+http://list.coin-or.org/pipermail/ipopt/2010-September/002118.html
+http://stackoverflow.com/questions/10113017/setting-the-msvc-runtime-in-cmake
+http://stackoverflow.com/questions/14714877/mismatch-detected-for
+-runtimelibrary
+
+How appveyor is built on appveyor (using mingw):
+
+https://github.com/chrisdembia/Ipopt/blob/master/appveyor.yml
+
+IPOPT wiki, notes for compiling on windows:
+https://projects.coin-or.org/BuildTools/wiki/current-issues
+https://projects.coin-or.org/Ipopt/wiki/CompilationHints
+
+CasADi notes on building IPOPT on windows:
+https://groups.google.com/forum/#!topic/casadi-users/51stEY211XQ
+
+Julia issue about IPOPT
+https://github.com/JuliaOpt/Ipopt.jl/issues/27
+
+Compiling MUMPS on windows, conflict between link.exe from cygwin and ifortran:
+http://list.coin-or.org/pipermail/ipopt/2009-July/001647.html
+
+
+Can we compile MUMPS with gfortran and use that library with Ipopt compiled
+with MSVC? chrome-extension://klbibkeccnjlkjkiokjodocebajanakg/suspended.html#uri=http://stackoverflow.com/questions/3320017/mix-gfortran-msvc-objects-when-linking-undefined-reference-to-chkstk
+
+Ipopt compiling on windows instructions:
+https://www.coin-or.org/Ipopt/documentation/node15.html#CygwinInstall
+
+
+ADOL-C source code downloads: https://www.coin-or.org/download/source/ADOL-C/

@@ -1,7 +1,11 @@
 # These CMake functions serve to reduce duplication across CMakeLists.txt files.
+
 include(CMakeParseArguments)
 
-# TODO document
+# Create an exectuable for the file ${TEST_NAME}.cpp, which depends on
+# libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
+# We expect that the test cases use the Catch testing framework, and
+# therefore we pass some command-line flags that Catch interprets.
 function(mesh_add_test TEST_NAME LIB_DEPENDENCIES)
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
     target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})

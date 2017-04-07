@@ -3,9 +3,6 @@
 
 #include "common.h"
 #include <Eigen/Dense>
-// TODO should be able to remove dependenc on adolc in this file.
-#include <adolc/adolc.h>
-#include <IpTNLP.hpp>
 
 #include <memory>
 
@@ -15,13 +12,17 @@ class AbstractOptimizationProblem;
 
 class OptimizationProblemProxy;
 
-// TODO templatized?
 class OptimizationSolver {
 public:
-    // TODO do not force adouble in the future.
+    /// Provide the problem to solve.
     OptimizationSolver(const AbstractOptimizationProblem& problem);
-    // TODO must be an lvalue??
-    // TODO might want to change this interface.
+    /// Optimize the optimization problem.
+    /// @param[in,out] variables Pass in the initial guess to the problem, or
+    ///     leave empty to use a naive initial guess based on the variables'
+    ///     bounds (see OptimizationProblemProxy::initial_guess_from_bounds()).
+    ///     After this function returns, `variables` contains the solution to
+    ///     the optimization problem.
+    /// @returns The value of the objective function evaluated at the solution.
     double optimize(Eigen::VectorXd& variables) const;
 protected:
     virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;

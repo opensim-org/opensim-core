@@ -3,6 +3,8 @@
 
 #include "OptimizationSolver.h"
 
+#include <IpTNLP.hpp>
+
 namespace mesh {
 
 class IpoptSolver : public OptimizationSolver {
