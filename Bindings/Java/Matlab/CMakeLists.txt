@@ -8,6 +8,7 @@ endif()
 # Install.
 # --------
 install(DIRECTORY examples/ DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Hopper_Device DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 install(DIRECTORY Utilities DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 
 # The configureOpenSim.m script contains paths into the OpenSim installation
