@@ -28,7 +28,7 @@ find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 #link_directories(${ADOLC_LIBRARY_DIRS})
 
 find_package(IPOPT REQUIRED)
-find_package(Adolc REQUIRED)
+find_package(ADOLC REQUIRED)
 
 set(CMAKE_SHARED_LINKER_FLAGS "${IPOPT_LINK_FLAGS}")
 
