@@ -29,6 +29,11 @@ public:
         _norm_fiber_width = sin(pennation_angle_at_optimal);
         _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
+    DeGroote2016Muscle<double> convert_scalartype_double() const {
+        return DeGroote2016Muscle<double>(_max_isometric_force,
+                _optimal_fiber_length, _tendon_slack_length,
+                _pennation_angle_at_optimal, _max_contraction_velocity);
+    }
 
     double get_max_isometric_force() const { return _max_isometric_force; }
     double get_optimal_fiber_length() const { return _optimal_fiber_length; }
@@ -54,7 +59,13 @@ public:
         const T tenLen = musTenLength
                        - sqrt(fibLen*fibLen - _fiber_width*_fiber_width);
         const T normTenLen = tenLen / _tendon_slack_length;
-        return c1 * exp(kT * (normTenLen - c2)) - c3;
+        std::cout << "DEBUG normTenLen " << static_cast<const double&>
+        (normTenLen + 0) << " " <<
+                static_cast<const double&>(fibLen + 0) << " " <<
+                _tendon_slack_length << std::endl;
+        // TODO Friedl did not find it necessary to clip.
+        // TODO need to handle buckling.
+        return fmax(0, c1 * exp(kT * (normTenLen - c2)) - c3);
     }
     void calcTendonForce(const T& musTenLength, const T& normFiberLength,
                          T& tendonForce) const {
@@ -119,7 +130,7 @@ public:
     /// There are contexts where we may want to use a different numeric type
     /// than T, which is why this function is templated on scalar type.
     // TODO the strategy of templating member functions won't work in OpenSim.
-    template<typename S>
+    template <typename S>
     void calcRigidTendonFiberKinematics(const S& musTenLength,
                                         const S& musTenVelocity,
                                         S& normFiberLength,
@@ -184,6 +195,13 @@ public:
 
         normTendonForce = calcNormTendonForce(musTenLength, normFiberLength);
 
+        std::cout << "DEBUG eq " <<
+                static_cast<const double&>(normTendonForce) <<
+                " " <<
+                static_cast<const double&>(normFibForceAlongTen + 0) << " " <<
+                _tendon_slack_length <<
+
+                std::endl;
         residual = normFibForceAlongTen - normTendonForce;
     }
     /// This alternative does not return normalized tendon force.
