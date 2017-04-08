@@ -77,9 +77,15 @@ for iLabel = 0 : nLabels - 1
     
     % Get the osim table column label
     col_label  = char(osimtable.getColumnLabels.get(iLabel));
-    % replace fwd slashes if present
-    if isempty(strfind(col_label, '/'))
+    
+    % MATLAB structs must start with a letter, and can only contain
+    % letters, digits, and underscores.
+    % Remove an initial slash.
+    col_label = regexprep(col_label, '^/', '');
+    % replace '/' and '|' if present
+    if ~isempty(strfind(col_label, '/')) || ~isempty(strfind(col_label, '|'))
         col_label = strrep(col_label,'/', '_');
+        col_label = strrep(col_label,'|', '_');
     end
     % Add the label and data to the data struct
     structdata.(col_label) = dataArray;

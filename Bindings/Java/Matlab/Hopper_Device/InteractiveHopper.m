@@ -185,7 +185,7 @@ Simulate(hopper, sHD, visualize);
 if exist('reporter') == 1
     table = reporter.getTable();
     disp(table.toString());
-    results = opensimTimeSeriesTableToMatlab(table);
+    results = osimTableToStruct(table);
 end
 
 % Update max jump height value

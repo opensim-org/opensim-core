@@ -75,7 +75,7 @@ csv.write(table, 'hopper_results.csv');
 %       the hopper's height over the motion.
 % [Step 1, Task D]
 % ANSWER{
-results = opensimTimeSeriesTableToMatlab(table);
+results = osimTableToStruct(table);
 fieldnames(results);
 figure;
 plot(results.time, results.height);

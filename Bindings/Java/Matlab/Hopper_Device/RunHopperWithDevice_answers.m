@@ -136,7 +136,7 @@ if exist('reporter') == 1
       
     % (Done for you) Convert the TableReporter's Table to a MATLAB struct and
     % plot the hopper's height over the motion.
-    results = opensimTimeSeriesTableToMatlab(table);
+    results = osimTableToStruct(table);
     fieldnames(results);
     if isfield(results, 'height')
         plot(results.time, results.height);

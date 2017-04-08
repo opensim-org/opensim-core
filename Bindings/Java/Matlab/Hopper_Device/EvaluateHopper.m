@@ -24,8 +24,8 @@
 % Perform a hop with the provided model and evaluate the performance of the
 % hop.
 
-function [score, peakHeight, metabolicCost, deviceEnergyConsumption] = ...
-        EvaluateHopper(hopper)
+function [score, peakHeight, finalHeight] = EvaluateHopper(hopper, print)
+        
 
 import org.opensim.modeling.*;
 
@@ -37,35 +37,15 @@ hopperCopy.setUseVisualizer(false);
 
 % Set up reporters.
 % -----------------
-heightRep = TableReporterVec3();
-heightRep.setName('com_height_reporter');
+heightRep = TableReporter();
+heightRep.setName('height_reporter');
 % Reducing the reporting interval from 0.10 vs 0.05 only increases runtime of
 % this function by about 1.5%.
 heightRep.set_report_time_interval(0.05);
-heightRep.addToReport(hopperCopy.getOutput('com_position'), 'com_position');
+heightRep.addToReport(...
+    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 hopperCopy.addComponent(heightRep);
 
-metRep = TableReporterVector();
-metRep.setName('metabolics_reporter');
-metRep.set_report_time_interval(0.05);
-metRep.addToReport(...
-        hopperCopy.getComponent('Umberger').getOutput('probe_outputs'), ...
-        'metabolic_rate_total');
-hopperCopy.addComponent(metRep);
-
-powerRep = TableReporter();
-powerRep.setName('device_power_reporter');
-powerRep.set_report_time_interval(0.05);
-
-% TODO handle multiple devices.
-% TODO it is not yet possible to loop through components of a given type in
-% MATLAB.
-if hopperCopy.hasComponent('device_active')
-    powerRep.addToReport(...
-            hopperCopy.getComponent('device_active').getOutput('power'), ...
-            'device_power');
-end
-hopperCopy.addComponent(powerRep);
 
 % Simulate.
 % ---------
@@ -76,26 +56,17 @@ Simulate(hopperCopy, state, false);
 % Process reporter tables.
 % ------------------------
 heightTable = heightRep.getTable();
-height = opensimTimeSeriesTableToMatlab(heightTable);
-[peakHeight, maxHeightIdx] = max(height.com_position(:, 2));
-fprintf('Peak mass center height: %f meters (at time %f seconds)\n', ...
-        peakHeight, height.time(maxHeightIdx));
+heightStruct = osimTableToStruct(heightTable);
+[peakHeight, maxHeightIdx] = max(heightStruct.height(:, 1));
+finalHeight = heightStruct.height(end, 1);
+if print 
+    fprintf('Peak mass center height: %f meters (at time %f seconds)\n', ...
+        peakHeight, heightStruct.time(maxHeightIdx));
+end
 
-metTable = metRep.getTable();
-met = opensimTimeSeriesTableToMatlab(metTable);
-% opensimTimeSeriesTableToMatlab thinks this field has 3 columns; take only
-% the first column.
-metabolicCost = trapz(met.time, met.metabolic_rate_total_0_(:, 1));
-fprintf('Metabolic cost: %f Joules\n', metabolicCost);
-
-powerTable = powerRep.getTable();
-power = opensimTimeSeriesTableToMatlab(powerTable);
-% opensimTimeSeriesTableToMatlab thinks this field has 3 columns; take only
-% the first column.
-deviceEnergyConsumption = trapz(power.time, power.device_power(:, 1));
-fprintf('Device energy consumption: %f Joules\n', deviceEnergyConsumption);
-
-score = peakHeight / (metabolicCost + deviceEnergyConsumption);
-fprintf('Score: %f\n', score);
+score = peakHeight;
+if print
+    fprintf('Score: %f\n', score);
+end
 
 end
