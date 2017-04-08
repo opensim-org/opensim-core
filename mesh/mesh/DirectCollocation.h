@@ -34,6 +34,18 @@ public:
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
                             const unsigned& num_mesh_points = 20);
+    /// Get the OptimizationSolver, through which you can query optimizer
+    /// settings like maximum number of iterations. This provides only const
+    /// access, so it does not let you edit settings of the solver; see the
+    /// non-const variant below if you need to change settings.
+    const OptimizationSolver& optimization_solver() const {
+        return *m_optsolver.get();
+    }
+    /// Get the OptimizationSolver, through which you can set optimizer
+    /// settings like maximum number of iterations.
+    OptimizationSolver& optimization_solver() {
+        return *m_optsolver.get();
+    }
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
     OptimalControlSolution solve() const;

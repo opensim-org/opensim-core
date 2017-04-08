@@ -18,6 +18,9 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
+    if (m_max_iterations != -1) {
+        app->Options()->SetIntegerValue("max_iter", m_max_iterations);
+    }
     // TODO app->Options()->SetStringValue("derivative_test", "second-order");
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
