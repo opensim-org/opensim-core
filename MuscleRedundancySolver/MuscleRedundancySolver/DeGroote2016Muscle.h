@@ -59,6 +59,13 @@ public:
         const T tenLen = musTenLength
                        - sqrt(fibLen*fibLen - _fiber_width*_fiber_width);
         const T normTenLen = tenLen / _tendon_slack_length;
+        // std::cout << "DEBUG normTenLen " << static_cast<const double&>
+        // (normTenLen + 0) << " " <<
+        //         static_cast<const double&>(fibLen + 0) << " " <<
+        //         _tendon_slack_length << std::endl;
+        // TODO Friedl did not find it necessary to clip.
+        // TODO need to handle buckling.
+        // return fmax(0, c1 * exp(kT * (normTenLen - c2)) - c3);
         return c1 * exp(kT * (normTenLen - c2)) - c3;
     }
     void calcTendonForce(const T& musTenLength, const T& normFiberLength,
@@ -66,10 +73,7 @@ public:
         tendonForce = _max_isometric_force
                 * calcNormTendonForce(musTenLength, normFiberLength);
     }
-    T calcNormFiberForce(const T& activation,
-                         const T& normFiberLength,
-                         const T& normFiberVelocity) const {
-        // Active force-length curve.
+    T calcActiveForceLengthMultiplier(const T& normFiberLength) const {
         static const double b11 =  0.815;
         static const double b21 =  1.055;
         static const double b31 =  0.162;
@@ -82,10 +86,12 @@ public:
         static const double b23 =  1.000;
         static const double b33 =  0.354;
         static const double b43 =  0.000;
-
-        // Passive force-length curve.
-        static const double kPE = 4.0;
-        static const double e0  = 0.6;
+        // Sum of 3 gaussians.
+        return gaussian(normFiberLength, b11, b21, b31, b41) +
+               gaussian(normFiberLength, b12, b22, b32, b42) +
+               gaussian(normFiberLength, b13, b23, b33, b43);
+    }
+    T calcForceVelocityMultiplier(const T& normFiberVelocity) const {
 
         // Muscle force-velocity.
         static const double d1 = -0.318;
@@ -93,23 +99,32 @@ public:
         static const double d3 = -0.374;
         static const double d4 =  0.886;
 
-        // Active force-length curve.
-        // Sum of 3 gaussians.
-        const T activeForceLenMult =
-                gaussian(normFiberLength, b11, b21, b31, b41) +
-                gaussian(normFiberLength, b12, b22, b32, b42) +
-                gaussian(normFiberLength, b13, b23, b33, b43);
-
-        // Passive force-length curve.
-        const T passiveFibForce = (exp(kPE*(normFiberLength - 1)/e0) - 1)/
-                (exp(kPE) - 1);
-
-        // Force-velocity curve.
         const T tempV = d2*normFiberVelocity + d3;
         const T tempLogArg = tempV + sqrt(pow(tempV, 2) + 1);
-        const T forceVelMult = d1*log(tempLogArg) + d4;
+        return  d1*log(tempLogArg) + d4;
+    }
+    T calcNormPassiveFiberForce(const T& normFiberLength) const {
+        // Passive force-length curve.
+        static const double kPE = 4.0;
+        static const double e0  = 0.6;
+        return (exp(kPE*(normFiberLength - 1)/e0) - 1) / (exp(kPE) - 1);
+    }
+    T calcNormFiberForce(const T& activation,
+                         const T& normFiberLength,
+                         const T& normFiberVelocity) const {
 
-        return activation*activeForceLenMult*forceVelMult + passiveFibForce;
+        // Active force-length curve.
+        const T activeForceLenMult =
+                calcActiveForceLengthMultiplier(normFiberLength);
+
+        // Passive force-length curve.
+        const T normPassiveFibForce =
+                calcNormPassiveFiberForce(normFiberLength);
+
+        // Force-velocity curve.
+        const T forceVelMult = calcForceVelocityMultiplier(normFiberVelocity);
+
+        return activation*activeForceLenMult*forceVelMult + normPassiveFibForce;
     }
     T calcNormFiberForceAlongTendon(const T& activation,
                                     const T& normFiberLength,
@@ -189,6 +204,12 @@ public:
 
         normTendonForce = calcNormTendonForce(musTenLength, normFiberLength);
 
+        // std::cout << "DEBUG eq " <<
+        //         static_cast<const double&>(normTendonForce) <<
+        //         " " <<
+        //         static_cast<const double&>(normFibForceAlongTen + 0) << " " <<
+        //         _tendon_slack_length <<
+        //        std::endl;
         residual = normFibForceAlongTen - normTendonForce;
     }
     /// This alternative does not return normalized tendon force.
@@ -205,7 +226,7 @@ public:
 protected:
     static T gaussian(const T& x, const double& b1, const double& b2,
                       const double& b3, const double& b4) {
-        return b1*exp((-0.5*pow(x - b2, 2))/(b3 + b4*x));
+        return b1*exp((-0.5*pow(x - b2, 2)) / pow(b3 + b4*x, 2));
     };
 
 private:
