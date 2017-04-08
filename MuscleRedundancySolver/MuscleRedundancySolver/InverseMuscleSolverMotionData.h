@@ -16,14 +16,14 @@ class Model;
 ///   - muscle-tendon lengths
 ///   - moment arms
 /// This class also allows interpolating these data for use by solvers.
-class MotionData {
+class InverseMuscleSolverMotionData {
 public:
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform inverse dynamics and a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
     /// The inverse dynamics moments are filtered with the provided lowpass
     /// cutoff frequency; use -1 to not filter.
-    MotionData(const OpenSim::Model& model,
+    InverseMuscleSolverMotionData(const OpenSim::Model& model,
                const OpenSim::TimeSeriesTable& kinematicsData,
                const double& lowpassCutoffJointMoments);
     /// Get the first time in the kinematicsData table.
@@ -51,13 +51,24 @@ public:
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
                      Eigen::MatrixXd& muscleTendonVelocities) const;
+    /// TODO generalize
+    void interpolateMomentArms(const Eigen::VectorXd& times,
+                     Eigen::MatrixXd& momentArms) const;
 private:
+    void computeInverseDynamics(const OpenSim::Model& model,
+                                const TimeSeriesTable& kinematicsData,
+                                const double& lowpassCutoffJointMoments);
     // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
     double _finalTime;
+    size_t _numActiveMuscles;
     GCVSplineSet _inverseDynamics;
     GCVSplineSet _muscleTendonLengths;
     GCVSplineSet _muscleTendonVelocities;
+    // The vector contains an entry for each muscle; the spline set is across
+    // coordinates.
+    GCVSplineSet _momentArms;
+    // std::vector<GCVSplineSet> _momentArms;
 };
 
 } // namespace OpenSim

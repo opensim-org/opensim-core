@@ -25,7 +25,12 @@ public:
 
     // TODO rename to iterate?
     struct Solution {
+        /// The activation trajectories for all enabled (appliesForce) muscles.
+        /// This will be empty if there are no enabled muscles.
         TimeSeriesTable activation;
+        /// The control for enabled (appliesForce) CoordinateActuators, etc.
+        /// This will be empty if there are no CoordinateActuators, etc.
+        /// enabled.
         TimeSeriesTable other_controls;
         // TODO could have separate functions to compute these length/vel tables
         // given a Solution.
@@ -35,6 +40,9 @@ public:
         /// This is not one of the variables in the optimization problem,
         /// but may be interesting nonetheless.
         TimeSeriesTable norm_fiber_velocity;
+        /// This is not one of the variables in the optimization problem,
+        /// but may be interesting nonetheless. In units of Newtons.
+        TimeSeriesTable tendon_force;
         void write(const std::string& prefix) const;
     };
 

@@ -7,6 +7,8 @@
 #include "SNOPTSolver.h"
 #include "IpoptSolver.h"
 
+#include <iomanip>
+
 namespace mesh {
 
 template<typename T>
@@ -80,6 +82,14 @@ OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
     solution.control_names = m_ocproblem->get_control_names();
     return solution;
 }
+
+template<typename T>
+void DirectCollocationSolver<T>::print_constraint_values(
+        const OptimalControlIterate& ocp_vars, std::ostream& stream) const
+{
+    m_transcription->print_constraint_values(ocp_vars, stream);
+}
+
 namespace transcription {
 
 template<typename T>
@@ -197,6 +207,10 @@ void LowOrder<T>::set_ocproblem(
     m_trapezoidal_quadrature_coefficients.tail(num_mesh_intervals) +=
             0.5 * mesh_intervals;
 
+    // Allocate working memory.
+    m_derivs.resize(m_num_states, m_num_mesh_points);
+    m_path_constraints.resize(m_num_path_constraints, m_num_mesh_points);
+
     m_ocproblem->initialize_on_mesh(mesh);
 }
 
@@ -280,19 +294,16 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     // Obtain state derivatives at each mesh point.
     // --------------------------------------------
     // TODO storing 1 too many derivatives trajectory; don't need the first
-    // xdot (at t0).
+    // xdot (at t0). (TODO I don't think this is true anymore).
     // TODO tradeoff between memory and parallelism.
-    // TODO reuse this memory!!!!!! Don't allocate every time!!!
-    MatrixX<T> derivs(m_num_states, m_num_mesh_points);
-    MatrixX<T> path_constraints(m_num_path_constraints, m_num_mesh_points);
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                              derivs.col(i_mesh));
+                              m_derivs.col(i_mesh));
         m_ocproblem->path_constraints(i_mesh, time,
                                       states.col(i_mesh), controls.col(i_mesh),
-                                      path_constraints.col(i_mesh));
+                                      m_path_constraints.col(i_mesh));
     }
 
     // Compute constraint defects.
@@ -302,11 +313,11 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     const unsigned N = m_num_mesh_points;
     const auto& x_i = states.rightCols(N - 1);
     const auto& x_im1 = states.leftCols(N - 1);
-    const auto& xdot_i = derivs.rightCols(N - 1);
+    const auto& xdot_i = m_derivs.rightCols(N - 1);
     const auto& h = step_size;
     //constr_view.defects = x_i-(x_im1+h*xdot_i);
     // TODO Trapezoidal:
-    const auto& xdot_im1 = derivs.leftCols(N-1);
+    const auto& xdot_im1 = m_derivs.leftCols(N-1);
     //constr_view.defects = x_i-(x_im1+h*xdot_im1);
     constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
     //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
@@ -317,7 +328,7 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     //}
 
     // Store path constraints.
-    constr_view.path_constraints = path_constraints;
+    constr_view.path_constraints = m_path_constraints;
 }
 
 template<typename T>
@@ -372,6 +383,133 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
     traj.controls = this->make_controls_trajectory_view(x);
 
     return traj;
+}
+
+template<typename T>
+void LowOrder<T>::
+print_constraint_values(const OptimalControlIterate& ocp_vars,
+                        std::ostream& stream) const
+{
+    // TODO also print_bounds() information.
+
+    // Gather and organize all constraint values and bounds.
+    VectorX<T> vars = construct_iterate(ocp_vars).template cast<T>();
+    VectorX<T> constraint_values(this->get_num_constraints());
+    constraints(vars, constraint_values);
+    ConstraintsView values = make_constraints_view(constraint_values);
+
+    // TODO avoid cast by templatizing make_constraints_view().
+    VectorX<T> lower_T =
+            this->get_constraint_lower_bounds().template cast<T>();
+    ConstraintsView lower = make_constraints_view(lower_T);
+    VectorX<T> upper_T =
+            this->get_constraint_upper_bounds().template cast<T>();
+    ConstraintsView upper = make_constraints_view(upper_T);
+    auto state_names = m_ocproblem->get_state_names();
+    auto control_names = m_ocproblem->get_control_names();
+
+    // Find the longest state or control name.
+    auto compare_size = [](const std::string& a, const std::string& b) {
+        return a.size() < b.size();
+    };
+    int max_name_length = std::max(
+            std::max_element(state_names.begin(), state_names.end(),
+                             compare_size)->size(),
+            std::max_element(control_names.begin(), control_names.end(),
+                             compare_size)->size());
+
+    stream << "Total number of constraints: "
+            << constraint_values.size() << "." << std::endl;
+    stream << "L and U indicate which constraints are violated. " << std::endl;
+
+    // Initial and final bounds on state and control variables.
+    // --------------------------------------------------------
+    auto print_ifbounds = [&stream, max_name_length](
+            const std::string& description, Eigen::Map<VectorX<T>>& lower,
+            Eigen::Map<VectorX<T>>& values, Eigen::Map<VectorX<T>>& upper,
+            const std::vector<std::string>& names) {
+        stream << "\n" << description << ": " << std::endl;
+        stream << std::setw(max_name_length) << "  "
+               << std::setw(9) << "lower" << "    "
+               << std::setw(9) << "value" << "    "
+               << std::setw(9) << "upper" << " " << std::endl;
+        for (Eigen::Index i = 0; i < lower.size(); ++i) {
+            // The nasty static cast is because operator<< for badouble is
+            // undefined (though I see it in the ADOL-C source code).
+            auto& L = static_cast<const double&>(lower[i]);
+            auto& V = static_cast<const double&>(values[i]);
+            auto& U = static_cast<const double&>(upper[i]);
+            stream << std::setw(max_name_length) << names[i] << "  "
+                   << std::setprecision(2) << std::scientific
+                   << std::setw(9) << L << " <= "
+                   << std::setw(9) << V << " <= "
+                   << std::setw(9) << U << " ";
+            // Show if the constraint is violated.
+            if (L <= V) stream << " ";
+            else        stream << "L";
+            if (V <= U) stream << " ";
+            else        stream << "U";
+            stream << std::endl;
+        }
+    };
+    print_ifbounds("Initial state constraints",
+                   lower.initial_states, values.initial_states,
+                   upper.initial_states, state_names);
+    print_ifbounds("Initial control constraints",
+                   lower.initial_controls, values.initial_controls,
+                   upper.initial_controls, control_names);
+    print_ifbounds("Final state constraints",
+                   lower.final_states, values.final_states,
+                   upper.final_states, state_names);
+    print_ifbounds("Final control constraints",
+                   lower.final_controls, values.final_controls,
+                   upper.final_controls, control_names);
+
+    // Differential equation defects.
+    // ------------------------------
+    stream << "\nDifferential equation defects:" << std::endl;
+    stream << std::setw(max_name_length) << " " << "  norm across the mesh"
+           << std::endl;
+    std::string spacer(7, ' ');
+    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+        auto& norm = static_cast<const double&>(
+                values.defects.row(i_state).norm());
+
+        stream << std::setw(max_name_length) << state_names[i_state]
+               << spacer
+               << std::setprecision(2) << std::scientific << std::setw(9)
+               << norm << std::endl;
+    }
+
+    // Path constraints.
+    // -----------------
+    stream << "\nPath constraints:" << std::endl;
+    auto pathcon_names = m_ocproblem->get_path_constraint_names();
+
+    int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
+                                                   pathcon_names.end(),
+                                                   compare_size)->size();
+    // stream << std::setw(max_pathcon_name_length) << " "
+    //        << "  norm across the mesh" << std::endl;
+    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+    //     auto& norm = static_cast<const double&>(
+    //             values.path_constraints.row(i_pc).norm());
+    //     stream << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
+    //             << spacer
+    //             << std::setprecision(2) << std::scientific << std::setw(9)
+    //             << norm << std::endl;
+    // }
+    for (size_t i_mesh = 0; i_mesh < values.path_constraints.cols(); ++i_mesh) {
+
+        stream << std::setw(4) << i_mesh << "  ";
+        for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+            auto& value = static_cast<const double&>(
+                    values.path_constraints(i_pc, i_mesh));
+            stream << std::setprecision(2) << std::scientific << std::setw(9)
+                   << value << "  ";
+        }
+        stream << std::endl;
+    }
 }
 
 template<typename T>
@@ -451,7 +589,7 @@ LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
             ControlsView(&constr[fc], m_num_controls),
             DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
-                                          m_num_mesh_points)};
+                                             m_num_mesh_points)};
 }
 
 } // namespace transcription

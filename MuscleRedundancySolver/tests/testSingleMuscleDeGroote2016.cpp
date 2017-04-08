@@ -4,6 +4,7 @@
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
 #include <mesh.h>
+#include "testing.h"
 
 using namespace OpenSim;
 
@@ -19,55 +20,6 @@ using namespace OpenSim;
 // TODO test passive swing (force excitation/activation to be 0), and ensure
 // the recovered activity is nearly zero.
 
-// Helper functions for comparing vectors.
-// ---------------------------------------
-SimTK::Vector interp(const TimeSeriesTable& actualTable,
-                     const TimeSeriesTable& expectedTable,
-                     const std::string& expectedColumnLabel) {
-    const auto& actualTime = actualTable.getIndependentColumn();
-    // Interpolate the expected values based on `actual`'s time.
-    const auto& expectedTime = expectedTable.getIndependentColumn();
-    const auto& expectedCol =
-            expectedTable.getDependentColumn(expectedColumnLabel);
-    // Create a linear function for interpolation.
-    PiecewiseLinearFunction expectedFunc(expectedTable.getNumRows(),
-                                         expectedTime.data(),
-                                         &expectedCol[0]);
-    SimTK::Vector expected(actualTable.getNumRows());
-    for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-        const auto& time = actualTime[i];
-        expected[i] = expectedFunc.calcValue(SimTK::Vector(1, time));
-    }
-    return expected;
-};
-// Compare each element.
-void compare(const TimeSeriesTable& actualTable,
-                         const TimeSeriesTable& expectedTable,
-                         const std::string& expectedColumnLabel,
-                         double tol) {
-    // For this problem, there's only 1 column in this table.
-    const auto& actual = actualTable.getDependentColumnAtIndex(0);
-    SimTK::Vector expected = interp(actualTable, expectedTable,
-                                    expectedColumnLabel);
-    //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-    //    std::cout << "DEBUG " << actual[i] << " " << expected[i]
-    //            << std::endl;
-    //}
-    SimTK_TEST_EQ_TOL(actual, expected, tol);
-};
-// A weaker check. Compute the root mean square of the error between the
-// trajectory optimization and the inverse solver and ensure it is below a
-// tolerance.
-void rootMeanSquare(
-        const TimeSeriesTable& actualTable,
-        const TimeSeriesTable& expectedTable,
-        const std::string& expectedColumnLabel,
-        double tol) {
-    const auto& actual = actualTable.getDependentColumnAtIndex(0);
-    SimTK::Vector expected = interp(actualTable, expectedTable,
-                                    expectedColumnLabel);
-    SimTK_TEST((actual - expected).normRMS() < tol);
-};
 
 /// Lift a muscle against gravity from a fixed starting state to a fixed end
 /// position and velocity, in minimum time.
@@ -79,8 +31,8 @@ void rootMeanSquare(
 ///              f_t = (a f_l(lm) f_v(vm) + f_p(lm)) cos(alpha)
 ///              q(0) = 0.2
 ///              u(0) = 0
-///              q(1) = 0.15
-///              u(1) = 0
+///              q(t_f) = 0.15
+///              u(t_f) = 0
 /// @endverbatim
 /// where lm and vm are determined from the muscle-tendon length and velocity
 /// with the assumption of a rigid tendon.
@@ -100,7 +52,6 @@ public:
 
     DeGroote2016MuscleLiftMinTimeStatic() :
             mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
-        // The motion occurs in 1 second.
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -123,12 +74,9 @@ public:
         derivatives[0] = speed;
 
         // Multibody dynamics.
-        const T normTendonForce =
-                m_muscle.calcRigidTendonNormFiberForceAlongTendon(activation,
-                                                                  position,
-                                                                  speed);
-        const T tendonForce = m_muscle.get_max_isometric_force()
-                            * normTendonForce;
+        const T tendonForce =
+                m_muscle.calcRigidTendonFiberForceAlongTendon(activation,
+                                                              position, speed);
         derivatives[1] = g - tendonForce / mass;
     }
     void endpoint_cost(const T& final_time,
@@ -167,7 +115,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     fRead.close();
     fWrite.close();
 
-    // Create a table containing only the position of the mass.
+    // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels({"joint/height/value",
@@ -225,8 +173,8 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
 ///              u(0) = 0
 ///              a(0) = 0
 ///              vm(0) = 0
-///              q(1) = 0.15
-///              u(1) = 0
+///              q(t_f) = 0.15
+///              u(t_f) = 0
 /// @endverbatim
 /// Making the initial fiber velocity 0 helps avoid a sharp spike in fiber
 /// velocity at the beginning of the motion.
@@ -245,7 +193,6 @@ public:
 
     DeGroote2016MuscleLiftMinTimeDynamic() :
             mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
-        // The motion occurs in 1 second.
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -335,7 +282,7 @@ solveForTrajectoryMuscleRedundancySolver() {
     fRead.close();
     fWrite.close();
 
-    // Create a table containing only the position of the mass.
+    // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels({"joint/height/value",

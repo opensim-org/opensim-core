@@ -16,6 +16,11 @@ class OptimizationSolver {
 public:
     /// Provide the problem to solve.
     OptimizationSolver(const AbstractOptimizationProblem& problem);
+    /// Get the maximum number of iterations the optimizer is allowed to take.
+    int get_max_iterations() const;
+    /// Set the maximum number of iterations the optimizer is allowed to take.
+    /// Set to -1 to use the optimizer's default setting.
+    void set_max_iterations(int max_iterations);
     /// Optimize the optimization problem.
     /// @param[in,out] variables Pass in the initial guess to the problem, or
     ///     leave empty to use a naive initial guess based on the variables'
@@ -29,6 +34,7 @@ protected:
     std::shared_ptr<const OptimizationProblemProxy> m_problem;
     // TODO rename m_problem to m_proxy? m_probproxy?
 //    const OptimizationProblemProxy& m_problem;
+    int m_max_iterations = -1;
 };
 
 // TODO perhaps NewtonSolver {}; ?

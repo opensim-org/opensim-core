@@ -2,6 +2,10 @@
 .*.swo
 .*.swp
 
+# OpenSim
+err.log
+out.log
+
 # CLion
 cmake-build-*
 .idea

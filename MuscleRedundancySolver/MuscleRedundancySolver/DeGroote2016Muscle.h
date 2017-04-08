@@ -29,6 +29,11 @@ public:
         _norm_fiber_width = sin(pennation_angle_at_optimal);
         _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
+    DeGroote2016Muscle<double> convert_scalartype_double() const {
+        return DeGroote2016Muscle<double>(_max_isometric_force,
+                _optimal_fiber_length, _tendon_slack_length,
+                _pennation_angle_at_optimal, _max_contraction_velocity);
+    }
 
     double get_max_isometric_force() const { return _max_isometric_force; }
     double get_optimal_fiber_length() const { return _optimal_fiber_length; }
@@ -145,16 +150,19 @@ public:
         normFiberVelocity = fiberVelocity /
                 (_max_contraction_velocity * _optimal_fiber_length);
     }
-    T calcRigidTendonNormFiberForceAlongTendon(const T& activation,
-                                               const T& musTenLength,
-                                               const T& musTenVelocity) const {
+    /// Compute the fiber force projected along the tendon, under the assumption
+    /// that the tendon is rigid.
+    T calcRigidTendonFiberForceAlongTendon(const T& activation,
+                                           const T& musTenLength,
+                                           const T& musTenVelocity) const {
         T normFiberLength;
         T normFiberVelocity;
         calcRigidTendonFiberKinematics(musTenLength, musTenVelocity,
                                           normFiberLength, normFiberVelocity);
         // TODO what about buckling the tendon (MTU length < slack length)?
-        return calcNormFiberForceAlongTendon(activation, normFiberLength,
-                                             normFiberVelocity);
+        const T normFiberForce = calcNormFiberForceAlongTendon(
+                activation, normFiberLength, normFiberVelocity);
+        return _max_isometric_force * normFiberForce;
     }
     void calcActivationDynamics(const T& excitation, const T& activation,
                                 T& activationDot) const {
