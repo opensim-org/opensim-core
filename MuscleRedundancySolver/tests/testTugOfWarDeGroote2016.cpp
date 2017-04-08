@@ -13,6 +13,216 @@ using namespace OpenSim;
 // multiple muscles and degrees of freedom. TODO
 
 // TODO now this is a minimum effort problem.
+// TODO document.
+//template <typename T>
+//class DeGroote2016MuscleTugOfWarMinEffortStatic
+//        : public mesh::OptimalControlProblemNamed<T> {
+//public:
+//    const double d = DISTANCE;
+//    double mass = -1;
+//    int m_i_position = -1;
+//    int m_i_speed = -1;
+//    int m_i_activation_l = -1;
+//    int m_i_activation_r = -1;
+//    int m_i_excitation_l = -1;
+//    int m_i_excitation_r = -1;
+//    DeGroote2016Muscle<adouble> m_muscle;
+//
+//    DeGroote2016MuscleTugOfWarMinEffortStatic(const Model& /*model*/) :
+//            mesh::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+//        this->set_time(0, 0.5);
+//        m_i_position =
+//                this->add_state("position", {-0.02, 0.02}, /*TODO*/
+//                                -0.015, 0.015);
+//        m_i_speed = this->add_state("speed", {-5, 15}, 0, 0);
+//        m_i_activation_l = this->add_state("activation_l", {0, 1}, 0);
+//        m_i_activation_r = this->add_state("activation_r", {0, 1}, 0);
+//        m_i_excitation_l = this->add_control("excitation_l", {0, 1});
+//        m_i_excitation_r = this->add_control("excitation_r", {0, 1});
+//        mass = 1;
+//        m_muscle = DeGroote2016Muscle<adouble>(1, 1, 1, 1, 1);
+//    }
+//    void dynamics(const mesh::VectorX<T>& states,
+//                  const mesh::VectorX<T>& controls,
+//                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+//        // Unpack variables.
+//        // -----------------
+//        const T& position = states[m_i_position];
+//        const T& speed = states[m_i_speed];
+//        const T& activationL = states[m_i_activation_l];
+//        const T& activationR = states[m_i_activation_r];
+//        const T& excitationL = controls[m_i_excitation_l];
+//        const T& excitationR = controls[m_i_excitation_r];
+//
+//        // Multibody kinematics.
+//        // ---------------------
+//        derivatives[m_i_position] = speed;
+//
+//        const double max_force = 2;
+//
+//        T forceL;
+//        {
+//            const T tendon_slack_length_l = 0.20;
+//            const T optimal_fiber_length_l = 0.05;
+//            const T norm_fiber_length_l =
+//                    (d + position - tendon_slack_length_l) /
+//                            optimal_fiber_length_l;
+//            const T forceLenMultL = m_muscle.calcActiveForceLengthMultiplier
+//                    (norm_fiber_length_l);
+//            forceL = max_force * forceLenMultL * activationL;
+//        }
+//        T forceR;
+//        {
+//            const T tendon_slack_length_r = 0.20;
+//            const T optimal_fiber_length_r = 0.05;
+//            const T norm_fiber_length_r =
+//                    (d - position - tendon_slack_length_r) /
+//                            optimal_fiber_length_r;
+//            const T forceLenMultR = m_muscle.calcActiveForceLengthMultiplier
+//                    (norm_fiber_length_r);
+//            forceR = max_force * forceLenMultR * activationR;
+//        }
+//        derivatives[m_i_speed] = (-forceL + forceR) / mass;
+//
+//        derivatives[m_i_activation_l] = 1 / 0.05 * (excitationL - activationL);
+//        derivatives[m_i_activation_r] = 1 / 0.05 * (excitationR - activationR);
+//
+//    }
+//    // void path_constraints(unsigned /*i_mesh*/,
+//    //                       const T& /*time*/,
+//    //                       const mesh::VectorX<T>& states,
+//    //                       const mesh::VectorX<T>& controls,
+//    //                       Eigen::Ref<mesh::VectorX<T>> constraints)
+//    // const override {
+//    // }
+//    void integral_cost(const T& /*time*/,
+//                       const mesh::VectorX<T>& /*states*/,
+//                       const mesh::VectorX<T>& controls,
+//                       T& integrand) const override {
+//        const auto& controlL = controls[m_i_excitation_l];
+//        const auto& controlR = controls[m_i_excitation_r];
+//        integrand = controlL * controlL + controlR * controlR;
+//        //const auto& activationL = states[m_i_activation_l];
+//        //const auto& activationR = states[m_i_activation_r];
+//        //integrand = activationL * activationL + activationR * activationR;
+//    }
+//};
+
+const double DISTANCE = 0.25;
+
+// TODO document.
+template <typename T>
+class DeGroote2016MuscleTugOfWarMinEffort
+        : public mesh::OptimalControlProblemNamed<T> {
+public:
+    const double d = DISTANCE;
+    double mass = -1;
+    int m_i_position = -1;
+    int m_i_speed = -1;
+    int m_i_activation_l = -1;
+    int m_i_activation_r = -1;
+    int m_i_excitation_l = -1;
+    int m_i_excitation_r = -1;
+    DeGroote2016Muscle<adouble> m_muscle;
+
+    DeGroote2016MuscleTugOfWarMinEffort(const Model& /*model*/) :
+            mesh::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+        this->set_time(0, 0.5);
+        m_i_position =
+                this->add_state("position", {-0.02, 0.02}, /*TODO*/
+                                -0.015, 0.015);
+        m_i_speed = this->add_state("speed", {-5, 15}, 0, 0);
+        m_i_activation_l = this->add_state("activation_l", {0, 1}, 0);
+        m_i_activation_r = this->add_state("activation_r", {0, 1}, 0);
+        m_i_excitation_l = this->add_control("excitation_l", {0, 1});
+        m_i_excitation_r = this->add_control("excitation_r", {0, 1});
+        mass = 1;
+        m_muscle = DeGroote2016Muscle<adouble>(1, 1, 1, 1, 1);
+    }
+    void dynamics(const mesh::VectorX<T>& states,
+                  const mesh::VectorX<T>& controls,
+                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+        // Unpack variables.
+        // -----------------
+        const T& position = states[m_i_position];
+        const T& speed = states[m_i_speed];
+        const T& activationL = states[m_i_activation_l];
+        const T& activationR = states[m_i_activation_r];
+        const T& excitationL = controls[m_i_excitation_l];
+        const T& excitationR = controls[m_i_excitation_r];
+
+        // Multibody kinematics.
+        // ---------------------
+        derivatives[m_i_position] = speed;
+
+        const double max_force = 2;
+        // activation dynamics
+        // fiber f-l
+        // fiber f-v
+        // passive f-l
+        // tendon f-l
+
+        T forceL;
+        {
+            const T tendon_slack_length_l = 0.20;
+            const T optimal_fiber_length_l = 0.05;
+            const T max_contraction_velocity_l = 10 * optimal_fiber_length_l;
+            const T norm_fiber_length_l =
+                    (d + position - tendon_slack_length_l) /
+                            optimal_fiber_length_l;
+            const T norm_fiber_velocity_l = speed / max_contraction_velocity_l;
+            const T forceLenMultL = m_muscle.calcActiveForceLengthMultiplier
+                    (norm_fiber_length_l);
+            const T forceVelMultL = m_muscle.calcForceVelocityMultiplier
+                    (norm_fiber_velocity_l);
+            const T normPassFibForceL = m_muscle.calcNormPassiveFiberForce
+                    (norm_fiber_length_l);
+            forceL = max_force * (activationL * forceLenMultL * forceVelMultL +
+                    normPassFibForceL);
+        }
+        T forceR;
+        {
+            const T tendon_slack_length_r = 0.20;
+            const T optimal_fiber_length_r = 0.05;
+            const T max_contraction_velocity_r = 10 * optimal_fiber_length_r;
+            const T norm_fiber_length_r =
+                    (d - position - tendon_slack_length_r) /
+                            optimal_fiber_length_r;
+            const T norm_fiber_velocity_r = -speed / max_contraction_velocity_r;
+            const T forceLenMultR = m_muscle.calcActiveForceLengthMultiplier
+                    (norm_fiber_length_r);
+            const T forceVelMultR = m_muscle.calcForceVelocityMultiplier
+                    (norm_fiber_velocity_r);
+            const T normPassFibForceR = m_muscle.calcNormPassiveFiberForce
+                    (norm_fiber_length_r);
+            forceR = max_force * (activationR * forceLenMultR * forceVelMultR +
+                    normPassFibForceR);
+        }
+        derivatives[m_i_speed] = (-forceL + forceR) / mass;
+
+        derivatives[m_i_activation_l] = 1 / 0.05 * (excitationL - activationL);
+        derivatives[m_i_activation_r] = 1 / 0.05 * (excitationR - activationR);
+
+    }
+    // void path_constraints(unsigned /*i_mesh*/,
+    //                       const T& /*time*/,
+    //                       const mesh::VectorX<T>& states,
+    //                       const mesh::VectorX<T>& controls,
+    //                       Eigen::Ref<mesh::VectorX<T>> constraints)
+    // const override {
+    // }
+    void integral_cost(const T& /*time*/,
+                       const mesh::VectorX<T>& /*states*/,
+                       const mesh::VectorX<T>& controls,
+                       T& integrand) const override {
+        const auto& controlL = controls[m_i_excitation_l];
+        const auto& controlR = controls[m_i_excitation_r];
+        integrand = controlL * controlL + controlR * controlR;
+        //const auto& activationL = states[m_i_activation_l];
+        //const auto& activationR = states[m_i_activation_r];
+        //integrand = activationL * activationL + activationR * activationR;
+    }
+};
 
 /// Two muscles coordinate to move a mass on a table (no gravity) from one
 /// fixed state to another, in minimum time.
@@ -43,7 +253,6 @@ using namespace OpenSim;
 ///              u(t_f) = 0
 /// @endverbatim
 /// This class can also solve the problem without muscle dynamics.
-const double DISTANCE = 0.25;
 
 template <typename T>
 class DeGroote2016MuscleTugOfWarMinTime
@@ -561,19 +770,31 @@ void test2Muscles1DOFMuscleRedundancySolver(
 
 int main() {
     SimTK_START_TEST("testTugOfWarDeGroote2016");
-        Model model = buildTugOfWarModel();
-        model.finalizeFromProperties();
+        Model mTODO;
+        auto ocp = std::make_shared<DeGroote2016MuscleTugOfWarMinEffort
+                <adouble>>(
+                mTODO);
+        ocp->print_description();
+        const int N = 100;
+        mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+                                                      "ipopt", N);
+        mesh::OptimalControlSolution ocp_solution = dircol.solve();
+        dircol.print_constraint_values(ocp_solution);
+        std::string trajectoryFile = "testTugOfWarDeGroote2016_DEBUG.csv";
+        ocp_solution.write(trajectoryFile);
+//        Model model = buildTugOfWarModel();
+//        model.finalizeFromProperties();
 //        {
 //            auto gsoData =
 //                    solveForTrajectoryGlobalStaticOptimizationSolver(model);
 //            SimTK_SUBTEST2(test2Muscles1DOFGlobalStaticOptimizationSolver,
 //                           gsoData, model);
 //        }
-        {
-            auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
-            // TODO
+//        {
+//            auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
+//            // TODO
 //            SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
 //                           model);
-        }
+//        }
     SimTK_END_TEST();
 }
