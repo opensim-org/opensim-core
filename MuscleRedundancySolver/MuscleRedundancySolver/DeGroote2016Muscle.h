@@ -156,7 +156,7 @@ public:
     /// There are contexts where we may want to use a different numeric type
     /// than T, which is why this function is templated on scalar type.
     // TODO the strategy of templating member functions won't work in OpenSim.
-    template<typename S>
+    template <typename S>
     void calcRigidTendonFiberKinematics(const S& musTenLength,
                                         const S& musTenVelocity,
                                         S& normFiberLength,

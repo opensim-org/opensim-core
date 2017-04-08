@@ -90,6 +90,7 @@ public:
 
         _numMuscles = 0;
         for (const auto& actuator : _model.getComponentList<Muscle>()) {
+            // TODO conslidate with MotionData.
             if (!actuator.get_appliesForce()) continue;
 
             const auto& actuPath = actuator.getAbsolutePathName();
@@ -213,9 +214,10 @@ public:
                                                     normTenForce);
 
             // TODO generalize moment arms.
+            const T tenForce = _muscles[i_act].get_max_isometric_force()
+                             * normTenForce;
             const T& momArm = _momentArms(i_act, i_mesh);
-            const T tenForce = momArm * normTenForce;
-            genForce[0] += _muscles[i_act].get_max_isometric_force() * tenForce;
+            genForce[0] += momArm * tenForce;
         }
 
 
