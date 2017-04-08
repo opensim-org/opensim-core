@@ -408,6 +408,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     auto state_names = m_ocproblem->get_state_names();
     auto control_names = m_ocproblem->get_control_names();
 
+    // TODO handle the case where there are no states or no controls.
+
     // Find the longest state or control name.
     auto compare_size = [](const std::string& a, const std::string& b) {
         return a.size() < b.size();
@@ -483,12 +485,18 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
     // Path constraints.
     // -----------------
-    stream << "\nPath constraints:" << std::endl;
+    stream << "\nPath constraints:";
     auto pathcon_names = m_ocproblem->get_path_constraint_names();
 
-    int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
-                                                   pathcon_names.end(),
-                                                   compare_size)->size();
+    if (pathcon_names.empty()) {
+        stream << " none" << std::endl;
+        return;
+    }
+    stream << std::endl;
+
+    // int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
+    //                                                pathcon_names.end(),
+    //                                                compare_size)->size();
     // stream << std::setw(max_pathcon_name_length) << " "
     //        << "  norm across the mesh" << std::endl;
     // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
@@ -499,7 +507,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     //             << std::setprecision(2) << std::scientific << std::setw(9)
     //             << norm << std::endl;
     // }
-    for (size_t i_mesh = 0; i_mesh < values.path_constraints.cols(); ++i_mesh) {
+    for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
+         ++i_mesh) {
 
         stream << std::setw(4) << i_mesh << "  ";
         for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
