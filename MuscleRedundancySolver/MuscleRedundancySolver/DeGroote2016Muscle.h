@@ -29,6 +29,11 @@ public:
         _norm_fiber_width = sin(pennation_angle_at_optimal);
         _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
+    DeGroote2016Muscle<double> convert_scalartype_double() const {
+        return DeGroote2016Muscle<double>(_max_isometric_force,
+                _optimal_fiber_length, _tendon_slack_length,
+                _pennation_angle_at_optimal, _max_contraction_velocity);
+    }
 
     double get_max_isometric_force() const { return _max_isometric_force; }
     double get_optimal_fiber_length() const { return _optimal_fiber_length; }
