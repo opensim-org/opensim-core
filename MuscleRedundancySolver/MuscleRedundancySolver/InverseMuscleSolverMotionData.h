@@ -55,9 +55,13 @@ public:
     void interpolateMomentArms(const Eigen::VectorXd& times,
                      Eigen::MatrixXd& momentArms) const;
 private:
+    void computeInverseDynamics(const OpenSim::Model& model,
+                                const TimeSeriesTable& kinematicsData,
+                                const double& lowpassCutoffJointMoments);
     // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
     double _finalTime;
+    size_t _numActiveMuscles;
     GCVSplineSet _inverseDynamics;
     GCVSplineSet _muscleTendonLengths;
     GCVSplineSet _muscleTendonVelocities;
