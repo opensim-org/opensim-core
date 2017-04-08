@@ -24,6 +24,7 @@ void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
     write(other_controls, "other_controls");
     write(norm_fiber_length, "norm_fiber_length");
     write(norm_fiber_velocity, "norm_fiber_velocity");
+    write(tendon_force, "tendon_force");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
@@ -226,6 +227,7 @@ public:
             vars.activation.setColumnLabels(_muscleLabels);
             vars.norm_fiber_length.setColumnLabels(_muscleLabels);
             vars.norm_fiber_velocity.setColumnLabels(_muscleLabels);
+            vars.tendon_force.setColumnLabels(_muscleLabels);
         }
 
         // TODO would it be faster to use vars.activation.updMatrix()?
@@ -247,10 +249,10 @@ public:
             // Muscle-related quantities.
             // --------------------------
             if (_numMuscles == 0) continue;
-            SimTK::RowVector activation(_numMuscles,
-                                        controls.data() + _numCoordActuators,
-                                        true /* makes this a view */);
-            vars.activation.appendRow(time, activation);
+            SimTK::RowVector activationRow(_numMuscles,
+                                           controls.data() + _numCoordActuators,
+                                           true /* makes this a view */);
+            vars.activation.appendRow(time, activationRow);
 
             // Compute fiber length and velocity.
             // ----------------------------------
@@ -258,19 +260,26 @@ public:
             // initialize_on_mesh.
             SimTK::RowVector normFibLenRow(_numMuscles);
             SimTK::RowVector normFibVelRow(_numMuscles);
+            SimTK::RowVector tenForceRow(_numMuscles);
             for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
                 const auto& musTenLen = _muscleTendonLengths(i_act, i_time);
                 const auto& musTenVel = _muscleTendonVelocities(i_act, i_time);
                 double normFiberLength;
                 double normFiberVelocity;
-                _muscles[i_act].calcRigidTendonFiberKinematics(
-                        musTenLen, musTenVel,
+                const auto muscle = _muscles[i_act].convert_scalartype_double();
+                muscle.calcRigidTendonFiberKinematics(musTenLen, musTenVel,
                         normFiberLength, normFiberVelocity);
                 normFibLenRow[i_act] = normFiberLength;
                 normFibVelRow[i_act] = normFiberVelocity;
+
+                const auto& activation = activationRow.getElt(0, i_act);
+                tenForceRow[i_act] =
+                        muscle.calcRigidTendonFiberForceAlongTendon(
+                                activation, musTenLen, musTenVel);
             }
             vars.norm_fiber_length.appendRow(time, normFibLenRow);
             vars.norm_fiber_velocity.appendRow(time, normFibVelRow);
+            vars.tendon_force.appendRow(time, tenForceRow);
         }
         return vars;
     }
@@ -310,7 +319,8 @@ GlobalStaticOptimizationSolver::GlobalStaticOptimizationSolver() {
 }
 
 // TODO move this to a "InverseMuscleSolver" base class.
-GlobalStaticOptimizationSolver::Solution GlobalStaticOptimizationSolver::solve() {
+GlobalStaticOptimizationSolver::Solution
+GlobalStaticOptimizationSolver::solve() {
 
     // Create reserve actuators.
     // -------------------------
