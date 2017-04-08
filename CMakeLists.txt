@@ -9,6 +9,13 @@ else()
 endif()
 cmake_minimum_required(VERSION 3.2)
 
+# CMake settings.
+# ---------------
+# To allow a folder hierarchy within Visual Studio's Solution Explorer.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Compiler flags.
+# ---------------
 set(CMAKE_CXX_STANDARD 11)
 # Using c++11 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
