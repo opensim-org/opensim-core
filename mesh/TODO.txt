@@ -29,6 +29,8 @@ Trying non-virtual interface for OptimizationProblem, but a Proxy class could
 List of optimization solvers:
 http://plato.asu.edu/sub/nlores.html#general
 
+Linear solvers:
+http://www.netlib.org/utk/people/JackDongarra/la-sw.html
 
 Automatically generate a nice initial guess:
 //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
@@ -52,6 +54,12 @@ Runner
 Nimble
 Cursory
 Muscop
+Muskop
+
+mutrop
+tropics
+tropical
+tropism
 
 Dexterous (capable of many things....)
 
@@ -62,6 +70,7 @@ DICOMO (direct collocation for musculoskeletal systems)
 DICOMU
 DICOMS
 
+Indygo
 
 add "printProblemInfo()" to display the values of variable bounds, the number
  of constraints, the number of dynamics whatever, etc. For debugging.
