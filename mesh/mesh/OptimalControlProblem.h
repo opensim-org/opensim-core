@@ -17,23 +17,11 @@ struct OptimalControlIterate {
 
         // Column headers.
         f << "time";
-        if (state_names.size() == size_t(states.rows())) {
-            for (int i_state = 0; i_state < states.rows(); ++i_state) {
-                f << "," << state_names[i_state];
-            }
-        } else {
-            for (int i_state = 0; i_state < states.rows(); ++i_state) {
-                f << ",state" << i_state;
-            }
+        for (int i_state = 0; i_state < states.rows(); ++i_state) {
+            f << "," << state_names[i_state];
         }
-        if (control_names.size() == size_t(controls.rows())) {
-            for (int i_control = 0; i_control < controls.rows(); ++i_control) {
-                f << "," << control_names[i_control];
-            }
-        } else {
-            for (int i_control = 0; i_control < controls.rows(); ++i_control) {
-                f << ",control" << i_control;
-            }
+        for (int i_control = 0; i_control < controls.rows(); ++i_control) {
+            f << "," << control_names[i_control];
         }
         f << std::endl;
 
@@ -64,8 +52,12 @@ public:
     virtual int num_controls() const = 0;
     // TODO assume 0?
     virtual int num_path_constraints() const { return 0; }
-    virtual std::vector<std::string> get_state_names() const { return {}; }
-    virtual std::vector<std::string> get_control_names() const { return {}; }
+    /// If no names were provided, these will be "state0", "state1", etc.
+    virtual std::vector<std::string> get_state_names() const;
+    /// If no names were provided, these will be "control0", "control1", etc.
+    virtual std::vector<std::string> get_control_names() const;
+    /// If no names were provided, these will be "pathcon0", "pathcon1", etc.
+    virtual std::vector<std::string> get_path_constraint_names() const;
 
     virtual void print_description() const;
 
@@ -124,6 +116,38 @@ public:
             const VectorX<T>& controls,
             T& integrand) const;
 };
+
+template<typename T>
+std::vector<std::string>
+OptimalControlProblem<T>::get_state_names() const
+{
+    size_t N = num_states();
+    std::vector<std::string> names(N);
+    for (size_t i = 0; i < N; ++i) names[i] = "state" + std::to_string(i);
+    return names;
+}
+
+template<typename T>
+std::vector<std::string>
+OptimalControlProblem<T>::get_control_names() const
+{
+    size_t N = num_controls();
+    std::vector<std::string> names(N);
+    for (size_t i = 0; i < N; ++i) names[i] = "control" + std::to_string(i);
+    return names;
+
+}
+
+template<typename T>
+std::vector<std::string>
+OptimalControlProblem<T>::get_path_constraint_names() const
+{
+    size_t N = num_path_constraints();
+    std::vector<std::string> names(N);
+    for (size_t i = 0; i < N; ++i) names[i] = "pathcon" + std::to_string(i);
+    return names;
+
+}
 
 template<typename T>
 void OptimalControlProblem<T>::print_description() const {
@@ -213,13 +237,18 @@ public:
         m_final_time_bounds = final_time;
     }
     // TODO make sure initial and final bounds are within the bounds.
-    void add_state(const std::string& name, const Bounds& bounds,
+    /// This returns an index that can be used to access this specific state
+    /// variable within `dynamics()` , `path_constraints()`, etc.
+    int add_state(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
     {
         m_state_infos.push_back({name, bounds, initial_bounds, final_bounds});
+        return m_state_infos.size() - 1;
     }
-    void add_control(const std::string& name, const Bounds& bounds,
+    /// This returns an index that can be used to access this specific control
+    /// variable within `dynamics()` , `path_constraints()`, etc.
+    int add_control(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
     {
@@ -229,9 +258,13 @@ public:
         // problem if initial/final bounds are omitted. Use the Bounds'
         // objects' "is_set()" function.
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
+        return m_control_infos.size() - 1;
     }
-    void add_path_constraint(const std::string& name, const Bounds& bounds) {
+    /// This returns an index that can be used to access this specific path
+    /// constraint element within `path_constraints()`.
+    int add_path_constraint(const std::string& name, const Bounds& bounds) {
         m_path_constraint_infos.push_back({name, bounds});
+        return m_path_constraint_infos.size() - 1;
     }
     /// @}
 
@@ -363,6 +396,13 @@ public:
     std::vector<std::string> get_control_names() const override {
         std::vector<std::string> names;
         for (const auto& info : m_control_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    std::vector<std::string> get_path_constraint_names() const override {
+        std::vector<std::string> names;
+        for (const auto& info : m_path_constraint_infos) {
             names.push_back(info.name);
         }
         return names;
