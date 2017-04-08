@@ -75,7 +75,6 @@ public:
     DeGroote2016MuscleLiftMinTime(bool muscleDynamics) :
             mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time"),
             m_muscleDynamics(muscleDynamics) {
-        // The motion occurs in 1 second.
         this->set_time(0, {0.01, 1.0});
         this->add_state("angle", {-SimTK::Pi/2, SimTK::Pi/2}, 0, SimTK::Pi/4);
         this->add_state("speed", {-5, 10}, 0, 0);

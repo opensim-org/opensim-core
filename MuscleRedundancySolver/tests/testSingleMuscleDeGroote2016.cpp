@@ -52,7 +52,6 @@ public:
 
     DeGroote2016MuscleLiftMinTimeStatic() :
             mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
-        // The motion occurs in 1 second.
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -194,7 +193,6 @@ public:
 
     DeGroote2016MuscleLiftMinTimeDynamic() :
             mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
-        // The motion occurs in 1 second.
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
