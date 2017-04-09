@@ -222,8 +222,18 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
                 .formRelativePath(modelForID.getAbsolutePathName()).toString()
                 + "/value";
     }
-    FunctionSet coordFunctions =
-            createGCVSplineSet(kinematicsData, columnLabels);
+    auto coordFunctions = createGCVSplineSet(kinematicsData, columnLabels);
+
+    // For debugging, print the splined coordinates, speeds, and accelerations.
+    // auto coordSto = std::unique_ptr<Storage>(
+    //         coordFunctions.constructStorage(0));
+    // coordSto->print("DEBUG_splinedCoordinates.sto");
+    // auto speedSto = std::unique_ptr<Storage>(
+    //         coordFunctions.constructStorage(1));
+    // speedSto->print("DEBUG_splinedSpeeds.sto");
+    // auto accelSto = std::unique_ptr<Storage>(
+    //         coordFunctions.constructStorage(2));
+    // accelSto->print("DEBUG_splinedAccelerations.sto");
 
     // Convert normalized mesh points into times at which to evaluate
     // net joint moments.
@@ -241,14 +251,16 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // --------------------------------------
     Storage forceTrajectorySto;
     const size_t numDOFs = forceTrajectory[0].size();
-    OpenSim::Array<std::string> labels("", numDOFs);
+    OpenSim::Array<std::string> labels("", numDOFs + 1);
+    labels[0] = "time";
     for (size_t i = 0; i < numDOFs; ++i) {
-        labels[i] = "force" + std::to_string(i);
+        labels[i + 1] = "force" + std::to_string(i);
     }
     forceTrajectorySto.setColumnLabels(labels);
     for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
         forceTrajectorySto.append(times[i_time], forceTrajectory[i_time]);
     }
+    // forceTrajectorySto.print("DEBUG_desiredMoments_unfiltered.sto");
     const double& cutoffFrequency = lowpassCutoffJointMoments;
     if (cutoffFrequency > 0) {
         // Filter; otherwise, inverse dynamics moments are too noisy.

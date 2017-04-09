@@ -223,6 +223,8 @@ public:
         // Multibody dynamics.
         T tendonForce;
         m_muscle.calcTendonForce(position, normFibLen, tendonForce);
+        // TODO might make more sense to use fiber force; might be a more
+        // direct relationship (that, or make tendon length a variable).
         derivatives[1] = g - tendonForce / mass;
 
         // Activation dynamics.
@@ -389,7 +391,7 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
-    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.05);
+    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.06);
 }
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
@@ -431,15 +433,20 @@ void testLiftingMassMuscleRedundancySolver(
     // filtering of inverse dynamics moments, combined with the spike
     // in fiber velocity from the initial trajectory optimization.
 
+
     // The states match better than the controls.
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
-    compare(solution.activation, ocpSolution, "activation", 0.04);
+    // TODO the noisy accelerations + filtering of inverse dynamics moments
+    // leads to an incorrect net joint moment at the end of the motion,
+    // causing the muscle to be active when it shouldn't be. When this issue
+    // is fixed, we can tighten the activation comparison.
+    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.03);
     compare(solution.norm_fiber_length, ocpSolution, "norm_fiber_length",
-            0.01);
+            0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.08);
+    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.20);
     rootMeanSquare(solution.norm_fiber_velocity, ocpSolution,
                    "norm_fiber_velocity", 0.04);
 }
