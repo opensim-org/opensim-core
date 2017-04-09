@@ -90,16 +90,15 @@ void testIsometricMuscleRoundtrip() {
             const auto& actual = table.getDependentColumn(
                     "/isometric_muscle/actuator");
             SimTK::Vector expectedVector(table.getNumRows(), expected);
+            // actual.dump("actual");
             SimTK_TEST_EQ_TOL(actual, expectedVector, tol);
         };
 
-        // For some reason, this muscle model only requires an excitation
-        // of 0.4 to achieve the motion.
-        compare(solution.excitation, 0.4, 0.01);
-        compare(solution.activation, 0.4, 0.01);
+        compare(solution.excitation, 0.5, 0.01);
+        compare(solution.activation, 0.5, 0.01);
         compare(solution.norm_fiber_velocity, 0.0, 0.01);
         // The fiber must be shorter than 0.1 meters so that the tendon is
-        // not slack and convey a force.
+        // not slack and can convey a force.
         compare(solution.norm_fiber_length, 0.98, 0.01);
     }
     // TODO test other muscle states (e.g, isometric at a greater
