@@ -5,7 +5,7 @@
 
 using namespace OpenSim;
 
-/// This system only contains a a single CoordinateActuator; no muscles. This is
+/// This system only contains a single CoordinateActuator; no muscles. This is
 /// moreso a test of the inverse dynamics we perform.
 void testHangingMassRoundtrip() {
     // Generate motion.
@@ -78,7 +78,7 @@ void testHangingMassRoundtrip() {
             //std::cout << "DEBUG " << actual[i]
             //          << " "      << expected[i] << std::endl;
         }
-        SimTK_TEST_EQ_TOL(actual, expected, 0.1);
+        SimTK_TEST_EQ_TOL(actual, expected, 0.05);
     }
 }
 
