@@ -1,6 +1,8 @@
 #ifndef MRS_DEGROOTE2016MUSCLE_H_
 #define MRS_DEGROOTE2016MUSCLE_H_
 
+#include <adolc/adolc.h>
+
 /// This class template implements the muscle model from De Groote et al.,
 /// 2016, Evaluation of Direct Collocation Optimal Control Problem
 /// Formulations for Solving the Muscle Redundancy Problem (see supplemental
@@ -43,13 +45,16 @@ public:
     double get_max_contraction_velocity() const
     { return _max_contraction_velocity; }
 
-    T calcNormTendonForce(const T& musTenLength,
-                          const T& normFiberLength) const {
+    T calcNormTendonForce(const T& normTendonLength) const {
         // Tendon force-length curve.
         static const double kT = 35;
         static const double c1 = 0.200;
         static const double c2 = 0.995;
         static const double c3 = 0.250;
+        return c1 * exp(kT * (normTendonLength - c2)) - c3;
+    }
+    T calcNormTendonForce(const T& musTenLength,
+                          const T& normFiberLength) const {
         // TODO computing tendon force is why we'd want a single "continuous"
         // function rather than separate dynamics and path constraints
         // functions.
@@ -66,7 +71,7 @@ public:
         // TODO Friedl did not find it necessary to clip.
         // TODO need to handle buckling.
         // return fmax(0, c1 * exp(kT * (normTenLen - c2)) - c3);
-        return c1 * exp(kT * (normTenLen - c2)) - c3;
+        return calcNormTendonForce(normTenLen);
     }
     void calcTendonForce(const T& musTenLength, const T& normFiberLength,
                          T& tendonForce) const {
@@ -107,7 +112,13 @@ public:
         // Passive force-length curve.
         static const double kPE = 4.0;
         static const double e0  = 0.6;
-        return (exp(kPE*(normFiberLength - 1)/e0) - 1) / (exp(kPE) - 1);
+        // y is negative for normFiberLength < 1, but we don't want
+        // negative forces. We could use an if-statement to set force to 0 if
+        // normFiberLength < 1, but this wouldn't work well with ADOL-C. We
+        // could use ADOL-C's fmax(), but it was causing EXC_BAD_INSTRUCTION
+        // in sparse_hess(). The function (y + |y|)/2 has the desired effect.
+        const T y = (exp(kPE*(normFiberLength - 1)/e0) - 1) / (exp(kPE) - 1);
+        return (y + fabs(y)) / 2;
     }
     T calcNormFiberForce(const T& activation,
                          const T& normFiberLength,
@@ -124,6 +135,12 @@ public:
         // Force-velocity curve.
         const T forceVelMult = calcForceVelocityMultiplier(normFiberVelocity);
 
+        //std::cout << "DEBUG fib force comps "
+        //        << static_cast<const double&>(activation + 0) << " "
+        //        << static_cast<const double&>(activeForceLenMult + 0) << " "
+        //        << static_cast<const double&>(forceVelMult + 0) << " "
+        //        << static_cast<const double&>(normPassiveFibForce + 0) << " "
+        //        << std::endl;
         return activation*activeForceLenMult*forceVelMult + normPassiveFibForce;
     }
     T calcNormFiberForceAlongTendon(const T& activation,
@@ -204,12 +221,12 @@ public:
 
         normTendonForce = calcNormTendonForce(musTenLength, normFiberLength);
 
-        // std::cout << "DEBUG eq " <<
-        //         static_cast<const double&>(normTendonForce) <<
-        //         " " <<
-        //         static_cast<const double&>(normFibForceAlongTen + 0) << " " <<
-        //         _tendon_slack_length <<
-        //        std::endl;
+        //std::cout << "DEBUG eq " <<
+        //        static_cast<const double&>(normTendonForce) <<
+        //        " " <<
+        //        static_cast<const double&>(normFibForceAlongTen + 0) << " " <<
+        //        _tendon_slack_length <<
+        //       std::endl;
         residual = normFibForceAlongTen - normTendonForce;
     }
     /// This alternative does not return normalized tendon force.
