@@ -414,11 +414,18 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     auto compare_size = [](const std::string& a, const std::string& b) {
         return a.size() < b.size();
     };
-    int max_name_length = std::max(
-            std::max_element(state_names.begin(), state_names.end(),
-                             compare_size)->size(),
-            std::max_element(control_names.begin(), control_names.end(),
-                             compare_size)->size());
+    size_t max_name_length = 0;
+    if (!state_names.empty()) {
+        max_name_length = std::max_element(state_names.begin(),
+                                           state_names.end(),
+                                           compare_size)->size();
+    }
+    if (!control_names.empty()) {
+        max_name_length = std::max(max_name_length,
+                                   std::max_element(control_names.begin(),
+                                                    control_names.end(),
+                                                    compare_size)->size());
+    }
 
     stream << "Total number of constraints: "
             << constraint_values.size() << "." << std::endl;
@@ -490,23 +497,30 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
     if (pathcon_names.empty()) {
         stream << " none" << std::endl;
+        // Return early if there are no path constraints.
         return;
     }
     stream << std::endl;
 
-    // int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
-    //                                                pathcon_names.end(),
-    //                                                compare_size)->size();
-    // stream << std::setw(max_pathcon_name_length) << " "
-    //        << "  norm across the mesh" << std::endl;
-    // for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
-    //     auto& norm = static_cast<const double&>(
-    //             values.path_constraints.row(i_pc).norm());
-    //     stream << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
-    //             << spacer
-    //             << std::setprecision(2) << std::scientific << std::setw(9)
-    //             << norm << std::endl;
-    // }
+    int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
+                                                   pathcon_names.end(),
+                                                   compare_size)->size();
+    stream << std::setw(max_pathcon_name_length) << " "
+           << "  norm across the mesh" << std::endl;
+    for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+        auto& norm = static_cast<const double&>(
+                values.path_constraints.row(i_pc).norm());
+        stream << std::setw(2) << i_pc << ":"
+                << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
+                << spacer
+                << std::setprecision(2) << std::scientific << std::setw(9)
+                << norm << std::endl;
+    }
+    stream << "Path constraint values at each mesh point:" << std::endl;
+    for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
+        stream << std::setw(9) << i_pc << "  ";
+    }
+    stream << std::endl;
     for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
          ++i_mesh) {
 
@@ -519,6 +533,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
         }
         stream << std::endl;
     }
+    // Reset the IO manipulators back to their original values.
+    // TODO
 }
 
 template<typename T>
