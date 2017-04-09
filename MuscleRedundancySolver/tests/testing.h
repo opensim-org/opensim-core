@@ -35,7 +35,8 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
     //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-    //    std::cout << "DEBUG " << actual[i] << " " << expected[i]
+    //    std::cout << "DEBUG " << actual[i] << " " << expected[i] << " "
+    //            << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
     //            << std::endl;
     //}
     SimTK_TEST_EQ_TOL(actual, expected, tol);
@@ -51,7 +52,13 @@ void rootMeanSquare(
     const auto& actual = actualTable.getDependentColumnAtIndex(0);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
-    SimTK_TEST((actual - expected).normRMS() < tol);
+    const auto rmsError = (actual - expected).normRMS();
+    //std::cout << "DEBUG " << expectedColumnLabel << std::endl;
+    //for (int i = 0; i < actual.size(); ++i) {
+    //    std::cout << actual[i] << " " << expected[i] << std::endl;
+    //}
+    //std::cout << "DEBUG RMS error: " << rmsError << std::endl;
+    SimTK_TEST(rmsError < tol);
 };
 
 #endif // TOMU_TESTING_H

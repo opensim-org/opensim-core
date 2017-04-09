@@ -410,12 +410,13 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
     // Create the MuscleRedundancySolver.
     // ----------------------------------
-    GlobalStaticOptimizationSolver mrs;
-    mrs.setModel(model);
-    mrs.setKinematicsData(kinematics);
+    GlobalStaticOptimizationSolver gso;
+    gso.setModel(model);
+    gso.setKinematicsData(kinematics);
+    gso.set_lowpass_cutoff_frequency_for_joint_moments(100);
     double reserveOptimalForce = 0.001;
-    mrs.set_create_reserve_actuators(reserveOptimalForce);
-    GlobalStaticOptimizationSolver::Solution solution = mrs.solve();
+    gso.set_create_reserve_actuators(reserveOptimalForce);
+    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
     solution.write("testSingleMuscleDeGroote2016MomentArms_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -452,14 +453,14 @@ void testLiftingMassMuscleRedundancySolver(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    compare(solution.activation, ocpSolution, "activation", 0.05);
+    compare(solution.activation, ocpSolution, "activation", 0.06);
     compare(solution.norm_fiber_length, ocpSolution, "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.08);
+    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.06);
     rootMeanSquare(solution.norm_fiber_velocity, ocpSolution,
-                  "norm_fiber_velocity", 0.04);
+                  "norm_fiber_velocity", 0.02);
 }
 
 int main() {
