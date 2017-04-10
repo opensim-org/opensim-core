@@ -221,8 +221,8 @@ namespace OpenSim {
 
 %ignore OpenSim::TimeSeriesTable_::TimeSeriesTable_(TimeSeriesTable_ &&);
 %extend OpenSim::TimeSeriesTable_ {
-    OpenSim::TimeSeriesTable_<ETY> clone() const {
-        return OpenSim::TimeSeriesTable_<ETY>{*$self};
+    OpenSim::TimeSeriesTable_<ETY>* clone() const {
+        return new OpenSim::TimeSeriesTable_<ETY>{*$self};
     }
 }
 %extend OpenSim::TimeSeriesTable_<double> {
