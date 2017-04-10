@@ -1493,7 +1493,7 @@ public:
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. Also list the connectee names for inputs that are connected. */
+    connected. Also list the (desired) connectee names for the intputs.      */
     void printInputInfo() const;
 
     template<typename C>
