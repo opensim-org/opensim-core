@@ -36,19 +36,11 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
+    // Model uses Millard2012EquilibriumMuscle type muscles
     try { testGait10dof18musc(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc_Thelen");
-    }
-
-    // redo with the Millard2012EquilibriumMuscle 
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try { testGait10dof18musc(); }
-    catch (const std::exception& e) {
-        cout << e.what() <<endl;
-        failures.push_back("testGait10dof18musc_Millard");
+        failures.push_back("testGait10dof18musc");
     }
 
     if (!failures.empty()) {
@@ -61,6 +53,8 @@ int main() {
     return 0;
 }
 
+// Perform regression test with standard generated from Gait10dof18musc
+// example in OpenSim 3.2
 void testGait10dof18musc() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                      testGait10dof18musc                       *" << endl;
@@ -80,7 +74,8 @@ void testGait10dof18musc() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within .6 degrees .6 degs/s; activations within 1%
+    // angles and speeds within 0.01 rads and 0.01 rad/s;
+    // and activations to within 1%
     std::vector<double> rms_tols(nstates, 0.01);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
@@ -88,3 +83,5 @@ void testGait10dof18musc() {
 
     cout << "\ntestGait10dof18musc "+ muscleType +" passed\n" << endl;
 }
+
+
