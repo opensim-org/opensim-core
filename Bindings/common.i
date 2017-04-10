@@ -180,8 +180,8 @@ namespace OpenSim {
                                         const std::vector<std::string>&);
 %ignore OpenSim::DataTable_<double, double>::flatten;
 %extend OpenSim::DataTable_ {
-    OpenSim::DataTable_<ETX, ETY> clone() const {
-        return OpenSim::DataTable_<ETX, ETY>{*$self};
+    OpenSim::DataTable_<ETX, ETY>* clone() const {
+        return new OpenSim::DataTable_<ETX, ETY>{*$self};
     }
 }
 %extend OpenSim::DataTable_<double, double> {
