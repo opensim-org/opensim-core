@@ -596,20 +596,25 @@ void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
 {
 
     Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (fixed) return;
+    if (!fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
         const Appearance& defaultAppearance = get_Appearance();
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
-
-        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
-        SimTK::Transform X_GW = X_GB*getTransform();
+        // B: base Frame (Body or Ground)
+        // F: PhysicalFrame that this WrapSphere is connected to
+        // P: the frame defined (relative to F) by the location and orientation
+        //    properties.
+        const auto& X_BF = getFrame().findTransformInBaseFrame();
+        const auto& X_FP = getTransform();
+        const auto X_BP = X_BF * X_FP;
         appendToThis.push_back(
             SimTK::DecorativeSphere(getRadius())
-            .setTransform(X_GW).setResolution(2.0)
+            .setTransform(X_BP).setResolution(2.0)
             .setColor(color).setOpacity(defaultAppearance.get_opacity())
-            .setScale(1).setRepresentation(defaultAppearance.get_representation()));
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
     }
 
 
