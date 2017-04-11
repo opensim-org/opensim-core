@@ -163,33 +163,13 @@ visualize = handles.visualize.Value;
 %              'deviceControl',deviceControl);    
 % end
          
-
-% Create table reporter and add hop height and vastus activation to report
-import org.opensim.modeling.*
-reporter = TableReporter();
-reporter.setName('hopper_device_results');
-reporter.set_report_time_interval(0.2); % seconds.
-reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'))
-hopper.addComponent(reporter);
-
-% Initialize system
-sHD = hopper.initSystem();
-
-% Simulate hopper
-Simulate(hopper, sHD, visualize);
-
-% Get table reporter
-if exist('reporter') == 1
-    table = reporter.getTable();
-    disp(table.toString());
-    results = osimTableToStruct(table);
-end
+% EvaluateHopper's second and third args are bools for visualizing and
+% for printing EvaluateHopper info to console
+[score, peakHeight, finalHeight, heightStruct] = ...
+    EvaluateHopper(hopper, visualize, false);
 
 % Update max jump height value
-maxHeight = max(results.height);
+maxHeight = peakHeight;
 maxHeightBest = get(handles.max_jump_best,'Value');
 
 setField(handles.max_jump_recent,maxHeight(1))
@@ -200,11 +180,9 @@ end
 
 % Plot results
 axes(handles.results_axes)
-if isfield(results, 'height')
-    plot(results.time, results.height);
-    xlabel('time');
-    ylabel('height');
-end
+plot(heightStruct.time, heightStruct.height);
+xlabel('time');
+ylabel('height');
        
 % WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel.
 function without_device_Callback(hObject, eventdata, handles)

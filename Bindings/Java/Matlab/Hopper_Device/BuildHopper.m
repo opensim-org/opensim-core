@@ -56,12 +56,12 @@ hopper.setName('Dennis')
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
-pelvisMass = 50.0 + additionalMass;
+pelvisMass = 20.0 + additionalMass;
 pelvisHalfLength = 0.1;
 pelvisInertia = Inertia(Vec3(pelvisMass * 2/3*pelvisHalfLength^2));
 pelvis = Body('pelvis', pelvisMass, Vec3(0), pelvisInertia);
 
-linkMass = 1; linkHalfLength = 0.25; linkRadius = 0.035;
+linkMass = 2.5; linkHalfLength = 0.25; linkRadius = 0.035;
 linkIxx = linkMass * (linkRadius^2 / 4 + linkHalfLength^2 / 3);
 linkInertia = Inertia(Vec3(linkIxx, linkMass * linkRadius^2 / 2, linkIxx));
 thigh = Body('thigh', linkMass, Vec3(0), linkInertia);

@@ -24,7 +24,7 @@
 % Perform a hop with the provided model and evaluate the performance of the
 % hop.
 
-function [score, peakHeight, finalHeight] = EvaluateHopper(hopper, print)
+function [score, peakHeight, finalHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
         
 
 import org.opensim.modeling.*;
@@ -51,7 +51,7 @@ hopperCopy.addComponent(heightRep);
 % ---------
 state = hopperCopy.initSystem();
 % The last argument determines if the simbody-visualizer should be used.
-Simulate(hopperCopy, state, false);
+Simulate(hopperCopy, state, visualize);
 
 % Process reporter tables.
 % ------------------------
