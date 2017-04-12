@@ -1,34 +1,41 @@
-function table_rotated = rotateTableData(table, axis, value)
-
+function T_R = rotateTableData(T, A, V)
+% t = rotateTableData(table, A, V) returns an opentsim table with
+% elements rotated about A by V. table is an opensim
+% TimeseriesTableVec3, A is a string ('x','y','z'), and V is a 
+% number.
+%  
+% Example;
+% t_r = rotateTableData(t, 'x', 90) - rotate all (Vec3) elements in t by 90
+%                                     degrees about the x axis.
+ 
 %% import java libraries
 import org.opensim.modeling.*
 
 %% set up the transform
-if strcmp(axis, 'x')
+if strcmp(A, 'x')
     coordinate = CoordinateAxis(0)
-elseif strcmp(axis, 'y')
+elseif strcmp(A, 'y')
     coordinate = CoordinateAxis(1)
-elseif strcmp(axis, 'z')
+elseif strcmp(A, 'z')
     coordinate = CoordinateAxis(2)
 else
-    error(['axis value must be either x,y or z'])
+    error(['Axis must be either x,y or z'])
 end
 
 %% instantiate a transform object
-r = Rotation( deg2rad(value) , coordinate ) ;
+r = Rotation( deg2rad(V) , coordinate ) ;
 
-%% rotate the values in each row
+%% rotate the elements in each row
+% clone the table.
+T_R = T.clone();
 
-% make a table copy
-table_rotated = table;
-
-for iRow = 0 : table_rotated.getNumRows() - 1
+for iRow = 0 : T_R.getNumRows() - 1
     % get a row from the table
-    row = table_rotated.getRowAtIndex(iRow);
+    R = T_R.getRowAtIndex(iRow);
     % pass the row to Rotation. 
-    row_rotated = r.multiply(row);
-    % override the row value
-    table_rotated.setRowAtIndex(iRow,row_rotated)
+    R_R = r.multiply(R);
+    % overwrite row with rotated row
+    T_R.setRowAtIndex(iRow,R_R)
 end
 
 end

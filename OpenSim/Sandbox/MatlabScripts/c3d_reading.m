@@ -80,7 +80,7 @@ forces = tables.get('forces');
 %% Rotate marker and force data
 axis = 'x'; value = 90;
 markers_rot = rotateTableData(markers, axis, value);
-forces_rot = rotateTableData(markers, axis, value);
+forces_rot = rotateTableData(forces, axis, value);
 
 %% Print the rotated markers to trc file
 TRCFileAdapter().write(markers_rot,[filename '.trc']);
@@ -93,6 +93,8 @@ postfix = StdVectorString(); postfix.add('_x');postfix.add('_y');postfix.add('_z
 forces_flattened = forces_rot.flatten(postfix);
 % make a sto adapter and write the forces table to file.
 STOFileAdapter().write(forces_flattened,[filename '.mot']);
+
+MOTfileadapter()
 
 end
 
