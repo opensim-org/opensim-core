@@ -78,7 +78,7 @@ macro(OpenSimAddJavaTest TESTNAME)
     file(COPY ${FILETOCOPY}
          DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestTables")
     string(CONCAT FILETOCOPY
-           "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/MatlabScripts/"
+           "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/"
            "double_pendulum_markers.osim")
     file(COPY ${FILETOCOPY}
          DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestReporter")
