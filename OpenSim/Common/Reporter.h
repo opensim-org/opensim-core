@@ -305,12 +305,13 @@ private:
         }
 
         // TODO set width based on number of significant digits.
-        std::cout << std::setw(_width) << state.getTime() << "| ";
+        std::cout << std::setw(_width) << std::scientific
+                  << state.getTime() << "| ";
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            std::cout << std::setw(_width)
-                << std::setprecision(nSigFigs) << value << "| ";
+            std::cout << std::setw(_width) << std::scientific
+                      << std::setprecision(nSigFigs) << value << "| ";
         }
         std::cout << std::endl;
 
@@ -318,7 +319,7 @@ private:
     }
 
     unsigned int _printCount = 0;
-    int _width = 12;
+    int _width = 14;
 };
 
 // specialization where InputT is Vector_<T> and ValueT is Real

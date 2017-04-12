@@ -56,6 +56,8 @@ class TestTables {
                row2.get(2) == 3 &&
                row2.get(3) == 3;
         System.out.println(table);
+        // Clone table.
+        DataTable tableClone = table.clone();
         // Get independent column.
         StdVectorDouble indCol = table.getIndependentColumn();
         assert indCol.get(0) == 0.1 &&
@@ -104,6 +106,22 @@ class TestTables {
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
         System.out.println(table);
+        // Assert that clone was not edited due to above operations
+        // on rows/columns.
+        assert tableClone.getNumRows() == 3;
+        assert tableClone.getNumColumns() == 4;
+        assert tableClone.getRowAtIndex(0).get(0) == 1 &&
+               tableClone.getRowAtIndex(0).get(1) == 1 &&
+               tableClone.getRowAtIndex(0).get(2) == 1 &&
+               tableClone.getRowAtIndex(0).get(3) == 1 &&
+               tableClone.getRowAtIndex(1).get(0) == 2 &&
+               tableClone.getRowAtIndex(1).get(1) == 2 &&
+               tableClone.getRowAtIndex(1).get(2) == 2 &&
+               tableClone.getRowAtIndex(1).get(3) == 2 &&
+               tableClone.getRowAtIndex(2).get(0) == 3 &&
+               tableClone.getRowAtIndex(2).get(1) == 3 &&
+               tableClone.getRowAtIndex(2).get(2) == 3 &&
+               tableClone.getRowAtIndex(2).get(3) == 3;
         // Append columns to the table.
         Vector col = new Vector(3, 1);
         table.appendColumn("4", col);
