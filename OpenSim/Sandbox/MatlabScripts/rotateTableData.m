@@ -13,11 +13,11 @@ import org.opensim.modeling.*
 
 %% set up the transform
 if strcmp(A, 'x')
-    coordinate = CoordinateAxis(0)
+    coordinate = CoordinateAxis(0);
 elseif strcmp(A, 'y')
-    coordinate = CoordinateAxis(1)
+    coordinate = CoordinateAxis(1);
 elseif strcmp(A, 'z')
-    coordinate = CoordinateAxis(2)
+    coordinate = CoordinateAxis(2);
 else
     error(['Axis must be either x,y or z'])
 end
