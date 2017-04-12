@@ -34,8 +34,8 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
                 TEST_ARGS CONFIGURATIONS ${cfg}
                 ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
                 NO_UNITTEST_FRAMEWORK
+                UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
                 )
-            #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
         if(WIN32)
             # Must set PATH so that osimJavaJNI can find osimCommon, etc.
             set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
@@ -47,6 +47,7 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
             UNITTEST_FILE "${_full_path_to_mfile}"
             ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
             NO_UNITTEST_FRAMEWORK
+            # Necessary for custom initial working dir in MATLAB:
             UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
             )
         #TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
