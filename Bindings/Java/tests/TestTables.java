@@ -58,6 +58,14 @@ class TestTables {
         System.out.println(table);
         // Clone table.
         DataTable tableClone = table.clone();
+        // Reorder columns of the table.
+        StdVectorInt newColumnIndices = new StdVectorInt();
+        newColumnIndices.add(3); newColumnIndices.add(1);
+        newColumnIndices.add(0); newColumnIndices.add(2);
+        table.reorderColumns(newColumnIndices);
+        newColumnIndices.set(0, 2); newColumnIndices.set(1, 1);
+        newColumnIndices.set(2, 3); newColumnIndices.set(3, 0);
+        table.reorderColumns(newColumnIndices);
         // Get independent column.
         StdVectorDouble indCol = table.getIndependentColumn();
         assert indCol.get(0) == 0.1 &&

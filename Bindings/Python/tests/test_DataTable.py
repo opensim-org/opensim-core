@@ -88,6 +88,9 @@ class TestDataTable(unittest.TestCase):
                 row2[2] == row[2] and
                 row2[3] == row[3])
         print table
+        # Reorder columns of the table.
+        table.reorderColumns([3, 1, 0, 2])
+        table.reorderColumns([2, 1, 3, 0])
         # Retrieve independent column.
         assert table.getIndependentColumn() == (0.1, 0.2, 0.3)
         # Retrieve dependent columns.
