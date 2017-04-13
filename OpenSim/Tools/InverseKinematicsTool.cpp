@@ -369,6 +369,8 @@ bool InverseKinematicsTool::run()
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
+        // Once done, remove the analysis we added
+        _model->removeAnalysis(&kinematicsReporter);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
