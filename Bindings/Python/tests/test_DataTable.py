@@ -90,6 +90,22 @@ class TestDataTable(unittest.TestCase):
         print table
         # Reorder columns of the table.
         table.reorderColumns([3, 1, 0, 2])
+        col0 = table.getDependentColumnAtIndex(0)
+        col1 = table.getDependentColumnAtIndex(1)
+        col2 = table.getDependentColumnAtIndex(2)
+        col3 = table.getDependentColumnAtIndex(3)
+        assert (col0[0] == 4  and
+                col0[1] == 8  and
+                col0[2] == 16 and
+                col1[0] == 2  and
+                col1[1] == 4  and
+                col1[2] == 8  and
+                col2[0] == 1  and
+                col2[1] == 2  and
+                col2[2] == 4  and
+                col3[0] == 3  and
+                col3[1] == 6  and
+                col3[2] == 12)
         table.reorderColumns([2, 1, 3, 0])
         # Retrieve independent column.
         assert table.getIndependentColumn() == (0.1, 0.2, 0.3)
