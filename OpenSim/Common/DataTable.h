@@ -999,12 +999,12 @@ public:
     }
 
     /** Reorder columns of the DataTable by providing the new order of 
-    column indices. The new order is basically a permutation of column indices
+    column indices. The new order is simply a permutation of column indices
     0 to num-columns-1. For example:
     \code
     // Change order of last three columns only. Leave the first two columns 
     // as is.
-    table.reorderColumns({0, 1, 5, 3, 4});
+    table.reorderColumns({0, 1, 4, 2, 3});
     \endcode
 
     \throws IncorrectNumColumns If the input array contains incorrect number of
@@ -1050,12 +1050,12 @@ public:
     }
     
     /** Reorder columns of the DataTable by providing the new order of 
-    column labels. The new order is basically a permutation of existing 
+    column labels. The new order is simply a permutation of existing 
     column labels. For example:
     \code
     // Change order of last three columns only. Leave the first two columns 
     // as is. Here "col0", "col1", ... are existing column-labels.
-    table.reorderColumns({"col0", "col1", "col5", "col3", "col4"});
+    table.reorderColumns({"col0", "col1", "col4", "col2", "col3"});
     \endcode
 
     \throws IncorrectNumColumns If the input array contains incorrect number of
