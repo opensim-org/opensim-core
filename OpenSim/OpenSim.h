@@ -29,17 +29,4 @@
 #include "Analyses/osimAnalyses.h"
 #include "Tools/osimTools.h"
 
-class osimInstantiator
-{
-public:
-    osimInstantiator() {
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-    }
-};
-
-static osimInstantiator instantiator;
 #endif // _opensim_h_
