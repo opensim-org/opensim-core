@@ -97,3 +97,6 @@ class TestBasics(unittest.TestCase):
     def test_ToyReflexController(self):
         controller = osim.ToyReflexController()
         
+    def test_GCVSplineSet(self):
+        splineset = osim.GCVSplineSet(os.path.join(test_dir, 'std_subject01_walk1_ik.mot'))
+        splineset = osim.GCVSplineSet(osim.TimeSeriesTable(os.path.join(test_dir, 'std_subject01_walk1_ik.mot')), [], 5, 0)
