@@ -372,7 +372,6 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
         endforeach()
         add_custom_target("Copy_${DEP_NAME}_DLLs" ALL DEPENDS ${DLL_NAMES})
         if(OPENSIM_COPY_DEPENDENCIES)
-            # TODO
             install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()

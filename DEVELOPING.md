@@ -66,6 +66,51 @@ OpenSim GUI distribution. In this case, the following settings should be used:
     OPENSIM_PYTHON_STANDALONE=ON                non-default
     on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
     on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
+    OPENSIM_SIMBODY_DOXYGEN_LOCATION=https://simtk.org/api_docs/simbody/<version>/
+
+The last variable causes OpenSim's doxygen documentation to link to Simbody's
+documentation online.
+
+The layout of the distribution on Windows is as follows:
+
+  - `bin/` OpenSim, SimTK, and BTK DLLs, opensim-cmd.exe, simbody-visualizer.exe
+  - `cmake/` OpenSimConfig.cmake, etc.
+  - `sdk/`
+    - `APIExamples/`: C++ examples.
+    - `doc/` API doxygen documentation.
+    - `include/` OpenSim (and Lepton) headers.
+    - `Java/` Source files for Java interface, and org-opensim-modeling.jar.
+    - `lib/` OpenSim "import" libraries, used during linking.
+    - `Scripts/` MATLAB and Python examples/utilities.
+    - `Simbody/` A copy of the Simbody installation.
+      - `bin/` SimTK DLLs.
+      - `cmake/` SimbodyConfig.cmake, etc.
+      - `doc/` Simbody User Guide, etc.
+      - `include/` Simbody headers.
+      - `lib/` SimTK "import" libraries, used during linking.
+    - `python/` OpenSim Python bindings.
+    - `OpenSim_buildinfo.txt` Describes the compiler used to build OpenSim.
+
+The layout of the distribution on macOS (and Linux) is as follows:
+
+  - `bin/` opensim-cmd
+  - `etc/OpenSim_buildinfo.txt` Describes the compiler used to build OpenSim.
+  - `include/`
+    - `OpenSim/` OpenSim headers.
+    - `simbody/` Simbody headers.
+    - `Vendors/` Lepton headers.
+  - `lib/` (on some Linux variants, `lib/<arch>/`) OpenSim, SimTK, and BTK  shared libraries.
+    - `cmake/` OpenSimConfig.cmake, SimbodyConfig.cmake, etc.
+    - `python2.7/site-packages/` OpenSim Python bindings.
+  - `libexec/simbody/simbody-visualizer`
+  - `share/`
+    - `doc/OpenSim/` API doxygen documentation.
+      - `APIExamles/` C++ examples.
+      - `Scripts/` MATLAB and Python examples/utilities.
+    - `java/org-opensim-modeling.jar`
+    - `OpenSim/java/` Source files for Java interface.
+
+This layout is intended to follow the UNIX Filesystem Hierarchy Standard.
 
 We hope to distribute opensim-core binaries through common package managers
 (we already have some progress for Ubuntu, macOS/Homebrew, and Conda). In these

@@ -89,15 +89,11 @@ from the internet, we turn this option OFF." ON)
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-# TODO: do the following even when COPY_SIMBODY is false:
-# On Windows, this also copies
-# Simbody dll's and exe's into the OpenSim build directory, so that you don't
-# need to set PATH to run OpenSim tests and examples; this is done via the
-# SimbodyFiles project. 
 option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
-etc. On UNIX: we use relative RPATHs when ON, and absolute RPATHs when OFF." ON)
+etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
+when OFF." ON)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
 the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
@@ -655,16 +651,6 @@ include_directories("${Simbody_INCLUDE_DIR}")
 # ----------------------------------------------------
 if(${OPENSIM_COPY_DEPENDENCIES})
 
-    # Simbody
-    # -------
-    #if(UNIX)
-    #    # TODO this doesn't really work though since it still creates the
-    #    # directories.
-    #    set(install_simbody_regex_args
-    #        "FILES_MATCHING REGEX \".*(simbody|SimTK|Simbody).*\"")
-    #        ##.*SimTK.*" # |*SimTK*|*Simbody*)
-    #endif()
-
     if(WIN32)
         # The issue with install(DIRECTORY) is that it creates directories in
         # the installation for *every* directory in DIRECTORY, even if that
@@ -690,14 +676,16 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         install(DIRECTORY "${Simbody_BIN_DIR}/"
                 DESTINATION "${CMAKE_INSTALL_BINDIR}"
                 FILES_MATCHING PATTERN "*.exe")
-        # TODO DLLs are already installed by the Win macro...but not
-        # simbody-visualizer.exe!
-        # DLLs are supposed to be copied to OpenSim's bin dir; not happening
-        # right now. TODO fixed?
+        # TODO We are copying Simbody DLLs to both the bin and sdk/Simbody/bin
+        # folders; we would prefer to only copy to the former, but
+        # SimbodyTargets-*.cmake expect dlls in sdk/Simbody/bin.
     else()
         # We would have liked to use install(DIRECTORY) on UNIX, but the
         # dependencies may be installed in system-wide locations and we don't
-        # want to copy extraneous files/directories.
+        # want to copy extraneous files/directories; install(DIRECTORY) creates
+        # a directory in DESTINATION for *every* directory in DIRECTORY, even
+        # if we do not want to copy any files from some of the directories in
+        # DIRECTORY.
 
         # include
         file(RELATIVE_PATH install_simbodyincludedir
@@ -719,6 +707,7 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 DESTINATION "${install_simbodylibdir}/${subdir}")
         endforeach()
     
+        # simbody-visualizer
         file(RELATIVE_PATH install_simbodyvizdir 
             "${Simbody_ROOT_DIR}" "${Simbody_VIZ_DIR}")
         install(DIRECTORY "${Simbody_VIZ_DIR}/"
@@ -749,35 +738,9 @@ if(${OPENSIM_COPY_DEPENDENCIES})
     else()
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
-        # TODO this is not where we agreed on putting BTK lib files...
-        # BTK_INSTALL_LIBDIR? only would be different on Windows.
         install(FILES ${btk_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-
-        # TODO copy select files
-        #install(DIRECTORY "${BTK_INSTALL_PREFIX}/"
-        #        DESTINATION "${OPENSIM_INSTALL_BTKDIR}"
-        #        USE_SOURCE_PERMISSIONS)
-
-        # TODO on Windows, copy both BTK lib and bin files.
     endif()
-
-    #     install(DIRECTORY "${Simbody_ROOT_DIR}/"
-    #             DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}"
-    #             # To retain the executable bit on simbody-visualizer, etc.
-    #             USE_SOURCE_PERMISSIONS
-    #             # If Simbody is installed in a system-wide location (e.g.,
-    #             # /usr/local) we only want to copy over libraries that have
-    #             # SimTK, etc. in their name. TODO will still copy over all the
-    #             # empty directories though.
-    #             FILES_MATCHING REGEX ".*include/simbody.*"
-    #                            REGEX ".*SimTK.*"
-    #                            REGEX ".*cmake/Simbody.*"
-    #                            REGEX ".*pkgconfig/simbody.*"
-    #                            REGEX ".*simbody-visualizer.*"
-    #                            REGEX ".*share.*simbody.*"
-    #             # There's no need to install Simbody examples.
-    #             PATTERN "*examples*" EXCLUDE)
 
 endif()
 

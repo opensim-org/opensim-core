@@ -19,11 +19,11 @@
 #   @CMAKE_PROJECT_NAME@_JAVA_FILES_DIR -- Directory containing the Java source
 #                                          files.
 #                                            
-# This file will also find OpenSim dependencies (Simbody and BTK); you do not
+# This file will also find Simbody; you do not
 # need to use `find_package(Simbody)` in your own project. If OpenSim's
-# installation does *not* contain Simbody and BTK, you might need to set
-# CMAKE_PREFIX_PATH to the directory or directories containing these
-# dependencies.
+# installation does *not* contain Simbody (and BTK), you might need to set
+# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that BTK
+# libraries are available during runtime.
 #
 # Adapted from SimbodyConfig.cmake
 #
@@ -37,16 +37,11 @@ set_and_check(@CMAKE_PROJECT_NAME@_ROOT_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
 # -------
 set_and_check(@CMAKE_PROJECT_NAME@_LIB_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 
-# TODO
-#if(@WITH_BTK@)
-#    list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@BTK_LIBRARY_DIRS@")
-#endif()
-
 # INCLUDE_DIRS
 # ------------
 list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@"
-    # TODO change this.
+    # TODO change to CMAKE_INSTALL_INCLUDEDIR/OpenSim/lepton
     "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Vendors/lepton/include"
     )
 
@@ -77,23 +72,10 @@ if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
     # Find the copy of Simbody within the OpenSim installation.
     find_package(Simbody @SIMBODY_VERSION_TO_USE@
         PATHS "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@" NO_MODULE NO_DEFAULT_PATH)
-
-    # if(@WITH_BTK@) # WITH_BTK
-    #     link_directories("@PACKAGE_CMAKE_INSTALL_LIBDIR@")
-    #     # Alternative (if we installed the BTKConfig.cmake and related files.
-    #     #find_package(BTK REQUIRED PATHS "@BTK_DIR@" NO_MODULE NO_DEFAULT_PATH)
-    #     # We could omit this line if BTK exported its targets:
-    #     #include("${BTK_USE_FILE}")
-    # endif()
 else()
     # Find the correct version anywhere on the machine.
     include(CMakeFindDependencyMacro)
     find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
-    # if(@WITH_BTK@) # WITH_BTK
-    #     find_dependency(BTK)
-    #     # We could omit this line if BTK exported its targets:
-    #     include("${BTK_USE_FILE}")
-    # endif()
 endif()
 
 
