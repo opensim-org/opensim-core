@@ -107,6 +107,8 @@ if(${DOXYGEN_FOUND})
         variable from your CMakeCache.txt, and it will be 
         automatically populated again.")
 
+    # TODO change behavior based on OPENSIM_COPY_SIMBODY
+    # OPENSIM_COPY_DEPENDENCIES and if Simbody doxygen was built.
     mark_as_advanced(OPENSIM_SIMBODY_DOXYGEN_LOCATION)
 
     # This variable is used in Doxyfile.in.
@@ -114,6 +116,7 @@ if(${DOXYGEN_FOUND})
     if(Simbody_DOXYGEN_TAGFILE)
         # The variable above is only defined if Simbody's Doxygen documentation
         # was (built and) installed.
+        # TODO different if OPENSIM_COPY_DEPENDENCIES.
         set(OPENSIM_SIMBODY_TAGFILE_CONFIG
             "${Simbody_DOXYGEN_TAGFILE}=${OPENSIM_SIMBODY_DOXYGEN_LOCATION}")
     endif()

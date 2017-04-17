@@ -33,11 +33,14 @@ endif()
 
 # This depends on OpenSimConfig.cmake being located somewhere predictable
 # on your machine. If you have installed it somewhere that CMake won't be
-# able to guess, you'll need to tell find_package where to look, or
-# specify the installation directory in the CMAKE_PREFIX_PATH variable.
+# able to guess, you'll need to tell find_package where to look (with the PATHS
+or HINTS parameters), or # specify the installation directory in the
+CMAKE_PREFIX_PATH variable.
 find_package(OpenSim REQUIRED)
 
+# TODO we can make this unnecessary:
 include_directories(${OpenSim_INCLUDE_DIRS})
+# TODO this should not be necessary, but BTK might require it...:
 link_directories(${OpenSim_LIB_DIR})
 
 add_executable(myexe ${my_source_files} ${my_header_files})

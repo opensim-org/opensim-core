@@ -51,3 +51,29 @@ void XXX::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
         Super::updateFromXMLNode(node, versionNumber);
 }
 ```
+
+CMake options for packaging a binary distribution
+-------------------------------------------------
+
+When packaging opensim-core for distribution, it is important to set certain
+CMake options correctly so that the distribution contains the necessary files
+from dependencies. The variables to set depend on how opensim-core is being
+distributed. Currently, opensim-core binaries are distributed through the
+OpenSim GUI distribution. In this case, the following settings should be used:
+
+    WITH_BTK=ON                                 non-default
+    OPENSIM_COPY_DEPENDENCIES=ON                default
+    OPENSIM_PYTHON_STANDALONE=ON                non-default
+    on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
+    on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
+
+We hope to distribute opensim-core binaries through common package managers
+(we already have some progress for Ubuntu, macOS/Homebrew, and Conda). In these
+cases, the dependencies should be installed via their own packages so that the
+OpenSim installation does not need to contain the dependencies.
+
+    WITH_BTK=ON                                 non-default
+    OPENSIM_COPY_DEPENDENCIES=OFF               non-default
+    OPENSIM_PYTHON_STANDALONE=OFF               default
+    on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
+    on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
