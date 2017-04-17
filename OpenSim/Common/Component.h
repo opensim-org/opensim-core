@@ -149,7 +149,7 @@ public:
                          const std::string& func,
                          const Object& obj) :
         Exception(file, line, func, obj) {
-        std::string msg = "Component has not been added to a System.\n";
+        std::string msg = "Component has no underlying System.\n";
         msg += "You must call initSystem() on the top-level Component ";
         msg += "(i.e. Model) first.";
         addMessage(msg);
@@ -716,6 +716,7 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
