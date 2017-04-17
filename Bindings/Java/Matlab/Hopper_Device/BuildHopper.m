@@ -24,7 +24,6 @@ function hopper = BuildHopper(varargin)
 % Build a model of a one-leg hopper, with one muscle.
 
 p = inputParser();
-defaultMuscleModel = 'Millard2012Equilibrium';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
 defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
@@ -32,7 +31,6 @@ defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
 defaultPrintModel = false;
 defaultAdditionalMass = 0;
 
-addOptional(p, 'muscleModel', defaultMuscleModel)
 addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
 addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
 addOptional(p, 'excitation', defaultExcitation)
@@ -41,7 +39,6 @@ addOptional(p, 'additionalMass', defaultAdditionalMass)
 
 parse(p,varargin{:});
 
-muscleModel = p.Results.muscleModel;
 maxIsometricForce = p.Results.maxIsometricForce;
 MillardTendonParams = p.Results.MillardTendonParams;
 excitation = p.Results.excitation;
@@ -56,12 +53,12 @@ hopper.setName('Dennis')
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
-pelvisMass = 50.0 + additionalMass;
+pelvisMass = 20.0 + additionalMass;
 pelvisHalfLength = 0.1;
 pelvisInertia = Inertia(Vec3(pelvisMass * 2/3*pelvisHalfLength^2));
 pelvis = Body('pelvis', pelvisMass, Vec3(0), pelvisInertia);
 
-linkMass = 1; linkHalfLength = 0.25; linkRadius = 0.035;
+linkMass = 2.5; linkHalfLength = 0.25; linkRadius = 0.035;
 linkIxx = linkMass * (linkRadius^2 / 4 + linkHalfLength^2 / 3);
 linkInertia = Inertia(Vec3(linkIxx, linkMass * linkRadius^2 / 2, linkIxx));
 thigh = Body('thigh', linkMass, Vec3(0), linkInertia);
@@ -154,25 +151,18 @@ hopper.addForce(contactForce);
 % Create the vastus muscle and set its origin and insertion points.
 mclFmax = maxIsometricForce; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
 mclPennAng = 0.;
-switch muscleModel
-    case 'Thelen2003'
-        vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
-            mclTendonSlackLen, mclPennAng);
+vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
+    mclTendonSlackLen, mclPennAng);
 
-    case 'Millard2012Equilibrium'
-        vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
-            mclTendonSlackLen, mclPennAng);
-        
-        eIso = MillardTendonParams(1);
-        kIso = MillardTendonParams(2);
-        fToe = MillardTendonParams(3);
-        curviness = MillardTendonParams(4);
-        tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
-        vastus.setTendonForceLengthCurve(tendonFL);
-        
-        lTs = MillardTendonParams(5);
-        vastus.setTendonSlackLength(lTs);     
-end
+eIso = MillardTendonParams(1);
+kIso = MillardTendonParams(2);
+fToe = MillardTendonParams(3);
+curviness = MillardTendonParams(4);
+tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
+vastus.setTendonForceLengthCurve(tendonFL);
+
+lTs = MillardTendonParams(5);
+vastus.setTendonSlackLength(lTs);     
     
 vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
 vastus.addNewPathPoint('insertion', shank, Vec3(linkRadius, 0.15, 0));
