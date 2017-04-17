@@ -31,7 +31,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "FunctionSet.h"
-
+#include "TimeSeriesTable.h"
 
 
 //=============================================================================
@@ -65,6 +65,10 @@ public:
     GCVSplineSet();
     GCVSplineSet(const char *aFileName);
     GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
+    GCVSplineSet(const TimeSeriesTable& table,
+                 const std::vector<std::string>& labels = {},
+                 int degree                             = 5,
+                 double errorVariance                   = 0.0);
     virtual ~GCVSplineSet();
 
 private:

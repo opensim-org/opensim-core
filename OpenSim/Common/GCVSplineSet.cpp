@@ -105,6 +105,42 @@ GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
     construct(aDegree,aStore,aErrorVariance);
 }
 
+//_____________________________________________________________________________
+/**
+ * Construct a set of generalized cross-validated splines based on the states
+ * stored in a TimeSeriesTable.
+ *
+ * Each column in the TimeSeriesTable is fit with a spline of the specified
+ * degree and is named the name of its corresponding column label.  
+ *
+ * @param table TimeSeriesTable object.
+ * @param labels Columns to use from TimeSeriesTable.
+ * @param degree Degree of the constructed splines (1, 3, 5, or 7).
+ * @param aErrorVariance Estimate of the variance of the error in the data to
+ * be fit.  If negative, the variance will be estimated.  If 0.0, the fit will
+ * try to fit the data points exactly- no smoothing.  If
+ * positive, the fits will be smoothed according to the specified variance.
+ * The larger the error variance, the more the smoothing.  Note that this is
+ * the error variance assumed for each column in the Storage.  If different
+ * variances should be set for the various columns, you will need to
+ * construct each GCVSpline individually.
+ * @see Storage
+ * @see GCVSpline
+ */
+GCVSplineSet::
+GCVSplineSet(const TimeSeriesTable& table,
+             const std::vector<std::string>& labels,
+             int degree,
+             double errorVariance) {
+    const auto& time = table.getIndependentColumn();
+    auto labelsToUse = labels;
+    if (labelsToUse.empty()) labelsToUse = table.getColumnLabels();
+    for (const auto& label : labelsToUse) {
+        const auto& column = table.getDependentColumn(label);
+        adoptAndAppend(new GCVSpline(degree, column.size(), time.data(),
+                                     &column[0], label, errorVariance));
+    }
+}
 
 //=============================================================================
 // CONSTRUCTION
