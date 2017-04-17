@@ -121,10 +121,10 @@ GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
  * try to fit the data points exactly- no smoothing.  If
  * positive, the fits will be smoothed according to the specified variance.
  * The larger the error variance, the more the smoothing.  Note that this is
- * the error variance assumed for each column in the Storage.  If different
- * variances should be set for the various columns, you will need to
+ * the error variance assumed for each column in the TimeSeriesTable.  If 
+ * different variances should be set for the various columns, you will need to
  * construct each GCVSpline individually.
- * @see Storage
+ * @see TimeSeriesTable.
  * @see GCVSpline
  */
 GCVSplineSet::
