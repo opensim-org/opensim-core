@@ -577,6 +577,9 @@ void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // wipe-out the existing System 
+    _system.reset();
+
     if(getForceSet().getSize()>0)
     {
         ForceSet &fs = updForceSet();

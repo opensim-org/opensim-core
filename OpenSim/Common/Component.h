@@ -149,9 +149,9 @@ public:
                          const std::string& func,
                          const Object& obj) :
         Exception(file, line, func, obj) {
-        std::string msg = "This Component has not been added to a System.\n";
-        msg += "You must call initSystem on the top-level Component ";
-        msg += "(i.e., Model) first.";
+        std::string msg = "Component has not been added to a System.\n";
+        msg += "You must call initSystem() on the top-level Component ";
+        msg += "(i.e. Model) first.";
         addMessage(msg);
     }
 };
@@ -414,13 +414,17 @@ public:
     /** Define a Component's internal data members and structure according to
         its properties. This includes its subcomponents as part of the component
         ownership tree and identifies its owner (if present) in the tree.
-        finalizeFromProperties propagates to all of the component's
-        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
-        on itself.*/
+        finalizeFromProperties propagates to all of the component's subcomponents
+        prior to invoking the virtual extendFinalizeFromProperties() on itself.
+        Note, finalizeFromProperties() disassociates the Component from the
+        System it was added to (result of addToSystem()), which results from
+        calling  Model::initSystem(), for example.*/
     void finalizeFromProperties();
 
-    /** Connect this Component to its aggregate component, which is the root
-        of a tree of components.*/
+    /** Satisfy the Component's connections specified by its Sockets and Inputs.
+        Locate Component and their Outputs to satisfy the connections in an
+        aggregate Component, which is the root of a tree of Components, which
+        for example, forms a complete model. */
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
@@ -2556,20 +2560,12 @@ private:
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
         {   return updSystem().updDefaultSubsystem(); }
 
-    void clearStateAllocations() {
-        _namedModelingOptionInfo.clear();
-        _namedStateVariableInfo.clear();
-        _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();    
-    }
+    // Clear all modeling options, continuous and discrete state variables,
+    // and cache variable allocated by this Component
+    void clearStateAllocations();
 
     // Reset by clearing underlying system indices.
-    void reset() {
-        _simTKcomponentIndex.invalidate();
-        clearStateAllocations();
-
-        resetSubcomponentOrder();
-    }
+    void reset();
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 

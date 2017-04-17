@@ -1663,4 +1663,22 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 }
 
+
+void Component::clearStateAllocations()
+{
+    _namedModelingOptionInfo.clear();
+    _namedStateVariableInfo.clear();
+    _namedDiscreteVariableInfo.clear();
+    _namedCacheVariableInfo.clear();
+}
+
+void Component::reset()
+{
+    _system.release();
+    _simTKcomponentIndex.invalidate();
+    clearStateAllocations();
+
+    resetSubcomponentOrder();
+}
+
 } // end of namespace OpenSim
