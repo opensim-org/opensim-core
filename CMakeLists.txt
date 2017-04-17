@@ -488,7 +488,7 @@ endif()
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
 # set CMAKE_SKIP_INSTALL_RPATH to OFF.
-if(APPLE) # TODO
+if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
     # on OSX. This helps executables find the libraries they depend on
     # without having to set the DYLD_LIBRARY_PATH environment variable. 
@@ -504,12 +504,12 @@ if(APPLE) # TODO
         # Add the automatically determined parts of the RPATH which point
         # to directories outside the build tree to the install RPATH.
         # If we are copying Simbody into OpenSim's installation, then
-        # there's no need to link to the libraries in Simbody's original
-        # installation. Furthermore, we may be distributing OpenSim to
-        # other computers that will not have our original Simbody
-        # installation, and so the RPATH would point to a nonexistant
+        # there's no need to link to the libraries in Simbody's or BTK's
+        # original installations. Furthermore, we may be distributing OpenSim
+        # to other computers that will not have our original Simbody or BTK
+        # installations, and so the RPATH would point to a nonexistant
         # directory on others' computers.
-        # TODO handle copying BTK.
+        # TODO test COPY_DEPENDENCIES off to test that RPATH works for BTK.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     endif()
 
@@ -520,15 +520,6 @@ if(APPLE) # TODO
     if("${isSystemDir}" STREQUAL "-1")
         set(OPENSIM_USE_INSTALL_RPATH TRUE)
     endif()
-endif()
-## Add rpath to the binaries on Linux.
-## Note -- The binaries may not be relocatable because the rpath added here is
-##         absolute. 
-# TODO
-if(PLATFORM_NAME MATCHES Linux)
-    set(CMAKE_INSTALL_RPATH
-       "${CMAKE_INSTALL_RPATH};${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
@@ -556,9 +547,6 @@ if(WITH_BTK)
         OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
-    # TODO this should be handled separately between macOS and Linux.
-    # TODO
-    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${BTK_LIBRARY_DIRS}")
 endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)

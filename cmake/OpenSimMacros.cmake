@@ -136,36 +136,13 @@ function(OpenSimAddLibrary)
 
     # RPATH (so that libraries find library dependencies)
     if(${OPENSIM_USE_INSTALL_RPATH})
-        # TODO @loader_path only makes sense on macOS, so we need to revisit
-        # for Linux (use $ORIGIN).
-
-        set(run_path_list "\@loader_path/")
-        # TODO if/when Simbody and BTK libraries are installed in their own
-        # directories (not beside OpenSim libraries), we will have to add the
-        # following (also for BTK; this commented code has not been tested):
-        #if(${OPENSIM_COPY_SIMBODY})
-        #    file(RELATIVE_PATH lib_dir_to_install_dir
-        #        "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-        #        "${CMAKE_INSTALL_PREFIX}")
-        #    # The location of Simbody's libraries within the Simbody root.
-        #    file(RELATIVE_PATH simbody_root_dir_to_simbody_lib_dir
-        #         "${SIMBODY_ROOT_DIR}" "${SIMBODY_LIB_DIR}")
-        #        ) 
-        #    # The location of Simbody's libraries relative to OpenSim's
-        #    # installation root (OPENSIM_INSTALL_SIMBODYDIR does not exist).
-        #    file(install_dir_to_simbody_lib_dir
-        #       "${OPENSIM_INSTALL_SIMBODYDIR}${simbody_root_dir_to_simbody_lib_dir}"
-        #       )
-        #    set(lib_dir_to_simbody_lib_dir
-        #        "${lib_dir_to_install_dir}${install_dir_to_simbody_lib_dir}")
-        #    list(APPEND run_path_list
-        #           "\@loader_path/${lib_dir_to_simbody_lib_dir}")
-        #endif()
-        # It is possible that on UNIX (APPLE and Linux), we will install
-        # Simbody and BTK beside OpenSim, rather than in their own directories.
-        # Use APPEND to include the BTK RPATH, set in CMAKE_INSTALL_RPATH.
+        if(APPLE)
+            set(install_rpath "\@loader_path/")
+        elseif(UNIX)
+            set(install_rpath "\$ORIGIN/")
+        endif()
         set_property(TARGET ${OSIMADDLIB_LIBRARY_NAME} APPEND PROPERTY
-            INSTALL_RPATH "${run_path_list}"
+            INSTALL_RPATH "${install_rpath}"
             )
     endif()
 
@@ -300,8 +277,11 @@ function(OpenSimAddApplication)
 
     # RPATH (so that the executable finds libraries without using env. vars).
     if(${OPENSIM_USE_INSTALL_RPATH})
-        # TODO @executable_path only makes sense on macOS, so we need to revisit
-        # for Linux (use $ORIGIN).
+        if(APPLE)
+            set(rpath_macro "\@executable_path")
+        elseif(UNIX)
+            set(rpath_macro "\$ORIGIN")
+        endif()
 
         # bin_dir_to_install_dir is most likely "../"
         file(RELATIVE_PATH bin_dir_to_install_dir
@@ -310,8 +290,7 @@ function(OpenSimAddApplication)
         set(bin_dir_to_lib_dir
             "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
         set_property(TARGET ${OSIMADDAPP_NAME} APPEND PROPERTY
-            INSTALL_RPATH "\@executable_path/${bin_dir_to_lib_dir}"
-            )
+            INSTALL_RPATH "${rpath_macro}/${bin_dir_to_lib_dir}")
     endif()
 
 endfunction()

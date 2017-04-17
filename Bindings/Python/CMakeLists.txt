@@ -150,19 +150,20 @@ macro(OpenSimAddPythonModule)
     endif()
     
     if(${OPENSIM_USE_INSTALL_RPATH})
-        # TODO @loader_path only makes sense on macOS, so we need to revisit
-        # for Linux (use $ORIGIN).
         # We always set a relative RPATH but only use an absolute RPATH if the
         # python package is not standalone, as the libraries are not copied
         # into the python package.
         # TODO consider using a relative path from the python package directory
         # to the OpenSim library directory.
-        set(run_path_list "\@loader_path/")
+        if(APPLE)
+            set(run_path_list "\@loader_path/")
+        elseif(UNIX)
+            set(run_path_list "\$ORIGIN/")
+        endif()
         if(NOT OPENSIM_PYTHON_STANDALONE)
             list(APPEND run_path_list
                     "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
         endif()
-        # Use APPEND to include the BTK RPATH, set in CMAKE_INSTALL_RPATH.
         set_property(TARGET ${_libname} APPEND PROPERTY
             INSTALL_RPATH "${run_path_list}")
     endif()
