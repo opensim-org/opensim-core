@@ -215,7 +215,7 @@ void Component::componentsFinalizeFromProperties() const
 }
 
 // Base class implementation of non-virtual finalizeConnections method.
-void Component::finalizeConnections(Component &root)
+void Component::finalizeConnections(Component& root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -1674,7 +1674,7 @@ void Component::clearStateAllocations()
 
 void Component::reset()
 {
-    _system.release();
+    _system.reset();
     _simTKcomponentIndex.invalidate();
     clearStateAllocations();
 
