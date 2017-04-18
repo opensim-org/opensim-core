@@ -422,9 +422,9 @@ public:
     void finalizeFromProperties();
 
     /** Satisfy the Component's connections specified by its Sockets and Inputs.
-        Locate Component and their Outputs to satisfy the connections in an
-        aggregate Component, which is the root of a tree of Components, which
-        for example, forms a complete model. */
+        Locate Components and their Outputs to satisfy the connections in an
+        aggregate Component (e.g. Model), which is the root of a tree of
+        Components. */
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
@@ -586,6 +586,7 @@ public:
         static_assert(std::is_base_of<Component, T>::value,
                 "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
+        clearObjectIsUpToDateWithProperties();
         return ComponentList<T>(*this);
     }
 
@@ -708,7 +709,12 @@ public:
         return getComponent<Component>(pathname);
     }
 
-    /** Get a writable reference to a subcomponent.
+    /** Get a writable reference to a subcomponent. Use this method
+    * to edit the properties and connections of the subcomponent.
+    * Note: the method will mark this Component as not up-to-date with
+    * its properties and will require finalizeFromProperties() to be
+    * invoked directly or indirectly (by finalizeConnections() or 
+    * Model::initSystem())
     * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
