@@ -578,6 +578,9 @@ void Model::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     // wipe-out the existing System 
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
     _system.reset();
 
     if(getForceSet().getSize()>0)
