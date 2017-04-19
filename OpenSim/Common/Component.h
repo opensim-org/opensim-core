@@ -711,7 +711,7 @@ public:
 
     /** Get a writable reference to a subcomponent. Use this method
     * to edit the properties and connections of the subcomponent.
-    * Note: the method will mark this Component as not up-to-date with
+    * Note: the method will mark this Component as out-of-date with
     * its properties and will require finalizeFromProperties() to be
     * invoked directly or indirectly (by finalizeConnections() or 
     * Model::initSystem())
