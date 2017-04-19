@@ -34,7 +34,6 @@ int main() {
     LoadOpenSimLibrary("osimActuators");
 
     try {
-        // the specific model used here is not important
         Model model("arm26.osim");
         model.finalizeFromProperties();
 
@@ -67,11 +66,11 @@ int main() {
         ASSERT_THROW(ComponentHasNoSystem, model.realizeDynamics(dummy_state));
         ASSERT_THROW(ComponentHasNoSystem, 
                      model.computeStateVariableDerivatives(dummy_state));
-        // should be able to create a Manager either
+        // should not be able to create a Manager either
         ASSERT_THROW(ComponentHasNoSystem,
                      Manager manager(model));
 
-        // get a valid state
+        // get a valid System and corresponding state
         SimTK::State state = model.initSystem();
         Manager manager(model);
         state.setTime(0.0);
@@ -86,12 +85,16 @@ int main() {
         // given a stale but compatible state
         ASSERT_THROW(ComponentHasNoSystem, manager.integrate(state, 1.));
 
+        // once again, get a valid System and corresponding state
         state = model.initSystem();
-        //re-establish all the connections in the model
+        
+        // Test for the effects of calling finalizeConnections() on the model
+        // after initSystem() has been called.
+        // In this case, there are no changes to the connections to be finalized.
         model.finalizeConnections(model);
 
         // verify that finalizeConnections() does not wipe out the underlying 
-        // System iff there are no changes to the dependencies
+        // System when there are no changes to the connections
         auto& sys = model.getSystem();
 
         auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
@@ -104,14 +107,15 @@ int main() {
         // used by any joints, constraints or forces
         state = model.initSystem();
 
-        // now update the elbow and connect to the new frame
+        // update the elbow Joint and connect its socket to the new frame
         Joint& elbow = model.updComponent<Joint>("r_elbow");
         elbow.connectSocket_parent_frame(*elbowInHumerus);
 
         // satisfy the new connections in the model
         model.finalizeConnections(model);
 
-        // now changing the connections should invalidate the System
+        // now finalizing the connections will invalidate the System because
+        // a Component (the elbow Joint and its connection) was updated
         ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
 
         // verify the new connection was made
