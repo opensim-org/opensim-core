@@ -30,7 +30,7 @@ defaultControl = [0.0 2.5 5.0;
                   0.0 0.75 0.0];
 defaultSpringStiffness = 5000; 
 defaultPassivePatellaWrap = true;
-defaultMaxTension = 1000;
+defaultMaxTension = 2000;
 defaultGain = 1;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
