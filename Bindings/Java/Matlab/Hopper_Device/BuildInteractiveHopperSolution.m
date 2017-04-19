@@ -178,14 +178,13 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-
     if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
             % TODO: Change to downcast from PathSpring when PathSpring is
             % working for passive device
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBpassive'));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBactive'));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
@@ -194,8 +193,8 @@ for d = 1:length(devices)
     
     % Print the names of the outputs of the device's PathActuator and
     % ToyPropMyoController subcomponents.
-    device.getComponent('cableAtoB').printOutputInfo();
     if strcmp(deviceNames{d},'device_active')
+        device.getComponent('cableAtoBactive').printOutputInfo();
         device.getComponent('controller').printOutputInfo();
     end
     
