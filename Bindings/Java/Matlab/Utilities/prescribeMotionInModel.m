@@ -45,6 +45,7 @@ end
 
 % Initialize model
 osimModel=Model(modelfilepath);
+osimModel.finalizeFromProperties();
 
 % Create the coordinate storage object from the input .sto file
 coordinateSto=Storage(motfilepath);

@@ -28,10 +28,11 @@ modelFilePath = fullfile(pathname,filename);
 
 %% Generate an instance of the model
 model = Model(modelFilePath);
-
+model.finalizeFromProperties();
 %% Get the number of coordinates  and a handle to the coordainte set
-nCoord = model.getCoordinateSet.getSize();
 coordSet = model.getCoordinateSet();
+nCoord = coordSet.getSize();
+
 
 %% Instantiate some empty vec3's for later.
 massCenter = Vec3();
