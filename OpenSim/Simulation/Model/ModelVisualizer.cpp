@@ -239,6 +239,17 @@ void ModelVisualizer::createVisualizer() {
             SimTK::Pathname::getEnvironmentVariable("OPENSIM_HOME")
             + "/bin");
     }
+    if (SimTK::Pathname::environmentVariableExists("PATH")) {
+        const auto& path = SimTK::Pathname::getEnvironmentVariable("PATH");
+        std::string buffer{};
+        for(const auto ch : path) {
+            if(ch == ':' || ch == ';') {
+                searchPath.push_back(buffer);
+                buffer.clear();
+            } else
+                buffer.push_back(ch);
+        }
+    }
     _viz = new SimTK::Visualizer(_model.getMultibodySystem(),
                                  searchPath);
 
