@@ -42,6 +42,7 @@ defaultIsActivePropMyo = false;
 defaultActiveParameter = 50;
 defaultDeviceControl = [0.0 2.5 5.0;
                         0.0 0.75 0.0];
+defaultPrintSubcomponentInfo = true;
 
 % Create optional values for input parser                   
 addOptional(p,'muscle',defaultMuscle)
@@ -54,6 +55,7 @@ addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
 addOptional(p,'activeParameter',defaultActiveParameter)
 addOptional(p,'deviceControl',defaultDeviceControl)
+addOptional(p,'printSubcomponentInfo',defaultPrintSubcomponentInfo)
 
 % Parse inputs
 parse(p,varargin{:});
@@ -69,6 +71,7 @@ activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
 activeParameter = p.Results.activeParameter;
 deviceControl = p.Results.deviceControl;
+printSubcomponentInfo = p.Results.printSubcomponentInfo;
 
 import org.opensim.modeling.*;
 
@@ -113,7 +116,9 @@ hopper = BuildHopper('excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
                      'MillardTendonParams', MillardTendonParams, ...
                      'maxIsometricForce', maxIsometricForce);
-hopper.printSubcomponentInfo();
+if printSubcomponentInfo
+    hopper.printSubcomponentInfo();
+end
 
 %% BUILD DEVICES
 devices = cell(0);
@@ -156,7 +161,9 @@ for d = 1:length(devices)
     % the hopper's subcomponents, and locate the two subcomponents named
     % 'deviceAttachmentPoint'.
     device = devices{d};
-    device.printSubcomponentInfo();
+    if printSubcomponentInfo
+        device.printSubcomponentInfo();
+    end
     
     % Get the 'anchor' joints in the device, and downcast them to the
     % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper

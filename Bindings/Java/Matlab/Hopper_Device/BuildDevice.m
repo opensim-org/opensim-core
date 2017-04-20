@@ -132,12 +132,6 @@ switch deviceType
         name = 'cableAtoBpassive';
         springDissipation = 0.1; 
         relaxationTau = 5;
-        
-%         if passivePatellaWrap
-%             spring0 = 0.7166;
-%         else
-%             spring0 = 0.6329;
-%         end
         spring0 = 0;
                
         % TODO: change ClutchedPathSpring to PathSpring
