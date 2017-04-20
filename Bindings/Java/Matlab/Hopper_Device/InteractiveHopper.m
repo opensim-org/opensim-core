@@ -166,8 +166,7 @@ visualize = handles.visualize.Value;
          
 % EvaluateHopper's second and third args are bools for visualizing and
 % for printing EvaluateHopper info to console
-[score, peakHeight, finalHeight, heightStruct] = ...
-    EvaluateHopper(hopper, visualize, false);
+[peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, false);
 
 % Update max jump height value
 maxHeight = peakHeight;
