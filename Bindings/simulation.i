@@ -225,11 +225,15 @@
 %template(JointList) OpenSim::ComponentList<const OpenSim::Joint>;
 %template(JointIterator) OpenSim::ComponentListIterator<const OpenSim::Joint>;
 
+%template(ActuatorList) OpenSim::ComponentList<const OpenSim::Actuator>;
+%template(ActuatorIterator) OpenSim::ComponentListIterator<const OpenSim::Actuator>;
+
 %template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
 %template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
 %template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
 %template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
 %template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
+%template(getActuatorList) OpenSim::Model::getComponentList<OpenSim::Actuator>;
 
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/ActiveForceLengthCurve.h>

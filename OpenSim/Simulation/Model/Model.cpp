@@ -384,9 +384,6 @@ SimTK::State& Model::initializeState() {
     for (int i=0; i<getProbeSet().getSize(); ++i)
         getProbeSet().get(i).reset(_workingState);
 
-    // Reset the controller's storage
-    upd_ControllerSet().constructStorage();
-    
     // Do the assembly
     createAssemblySolver(_workingState);
     assemble(_workingState);
