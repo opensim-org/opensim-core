@@ -5,7 +5,7 @@ model = opensim.Model('subject01_adjusted.osim')
 states = opensim.StatesTrajectory('subject01_fast_trial01_cmc.osimstates')
 # A 1-D numpy array of times for the states.
 time = states.getTimes()
-duration = time[-1] - time[0]
+duration = time[1] - time[0]
 
 # Generic metabolics model.
 met = opensim.Umberger2010MuscleMetabolics('Rajagopal2015_metabolics.xml')
