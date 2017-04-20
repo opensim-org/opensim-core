@@ -270,7 +270,7 @@ before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
   - mkdir ~/to_deploy
-  - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
+  - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}_tgcs2017.zip
   # Zip up opensim relative to where it's installed.
   - cd $OPENSIM_HOME/../
   # Leave symlinks intact.
@@ -286,7 +286,7 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    branch: master 
+    branch: tgcs2017_build_on_ci
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
