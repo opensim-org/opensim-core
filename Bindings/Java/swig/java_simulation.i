@@ -19,9 +19,9 @@ using namespace SimTK;
 %javamethodmodifiers OpenSim::ForceSet::append "private";
 %rename OpenSim::ForceSet::append private_append;
 %typemap(javacode) OpenSim::ForceSet %{
-   public boolean append(Force aFroce) {
-       aFroce.markAdopted();
-       return private_append(aFroce);
+   public boolean append(Force aForce) {
+       aForce.markAdopted();
+       return private_append(aForce);
    }
 %}
 

@@ -82,7 +82,9 @@ public:
 // PUBLIC METHODS
 //==============================================================================
     
-    /** Default constructor */
+    /** Construct a PathSpring with default parameters. Users should note
+    that the default values for resting_length, stiffness, and dissipation
+    are `NaN` so they must be set before simulating. */
     PathSpring();
 
     /** Convenience constructor with PathSpring parameters

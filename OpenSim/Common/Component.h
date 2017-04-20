@@ -1493,7 +1493,7 @@ public:
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. Also list the connectee names for inputs that are connected. */
+    connected. Also list the (desired) connectee names for the inputs.       */
     void printInputInfo() const;
 
     template<typename C>
@@ -2060,8 +2060,7 @@ protected:
      * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
-    SimTK::MultibodySystem& updSystem() const
-        { return *_system; } 
+    SimTK::MultibodySystem& updSystem() const;
 
     /** Get the index of a Component's continuous state variable in the Subsystem for
         allocations. This method is intended for derived Components that may need direct
@@ -2881,7 +2880,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     }
     // If processing a subtree under _root we stop when our successor is the same
     // as the successor of _root as this indicates we're leaving the _root's subtree.
-    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+    else if (_node->_nextComponent.get() == _root->_nextComponent.get())
         _node = nullptr;
     else // move on to the next component we computed earlier for the full tree
         _node = _node->_nextComponent.get();
@@ -2896,7 +2895,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Similar logic to operator++ but applies _filter->isMatch()
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
                                 !_filter.isMatch(*_node) || 
-                                (_node == &_root))){
+                                (_node == _root))){
         if (_node->_memberSubcomponents.size() > 0) {
             _node = _node->_memberSubcomponents[0].get();
         }
@@ -2907,7 +2906,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
             _node = _node->_adoptedSubcomponents[0].get();
         }
         else {
-            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+            if (_node->_nextComponent.get() == _root->_nextComponent.get()){ // end of subtree under _root
                 _node = nullptr;
                 continue;
             }

@@ -73,28 +73,46 @@ int run_tool(int argc, const char** argv) {
 
     // Deserialize.
     const auto& setupFile = args["<setup-xml-file>"].asString();
-    Object* obj = Object::makeObjectFromFile(setupFile);
+    auto obj = std::unique_ptr<Object>(Object::makeObjectFromFile(setupFile));
     if (obj == nullptr) {
         throw Exception( "A problem occurred when trying to load file '" +
                 setupFile + "'.");
     }
 
     // Detect and run the tool.
-    if (auto* tool = dynamic_cast<AbstractTool*>(obj)) {
+    if (auto* tool = dynamic_cast<AbstractTool*>(obj.get())) {
         // AbstractTool.
+        // We must use the concrete class constructor, as it loads the model
+        // (this also preserves the behavior of the previous command line
+        // tools).
         std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
                   << std::endl;
-        const bool success = tool->run();
+        std::unique_ptr<AbstractTool> concreteTool;
+        if        (dynamic_cast<RRATool*>(tool)) {
+            concreteTool.reset(new RRATool(setupFile));
+        } else if (dynamic_cast<CMCTool*>(tool)) {
+            concreteTool.reset(new CMCTool(setupFile));
+        } else if (dynamic_cast<ForwardTool*>(tool)) {
+            concreteTool.reset(new ForwardTool(setupFile));
+        } else if (dynamic_cast<AnalyzeTool*>(tool)) {
+            concreteTool.reset(new AnalyzeTool(setupFile));
+        } else {
+            std::cout << "Detected an AbstractTool that is not RRA, "
+                "CMC, Forward, or Analyze; custom tools may not get "
+                "constructed properly." << std::endl;
+            concreteTool.reset(tool->clone());
+        }
+        const bool success = concreteTool->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
-    } else if (auto* tool = dynamic_cast<Tool*>(obj)) {
+    } else if (auto* tool = dynamic_cast<Tool*>(obj.get())) {
         // Tool.
         std::cout << "Preparing to run " << tool->getConcreteClassName() << "."
                   << std::endl;
         const bool success = tool->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
-    } else if (auto* scale = dynamic_cast<ScaleTool*>(obj)) {
+    } else if (auto* scale = dynamic_cast<ScaleTool*>(obj.get())) {
         // ScaleTool.
         std::cout << "Preparing to run " << scale->getConcreteClassName() << "."
                   << std::endl;

@@ -118,24 +118,23 @@ This code produces the following animation:
 ![Simulation of an arm actuated by a muscle][simple_example_gif]
 
 and prints the following information to the console:
-
-        [reporter]
-                    |           /m|             |
-                    | odel_/biceps|             |
-                time| |fiber_force|  elbow_angle|
-        ------------| ------------| ------------|
-                   0|     1.180969|    1.5707963|
-                   1|     57.27509|   0.77066412|
-                   2|    19.728411|    1.5680456|
-                   3|    56.090431|    1.4419861|
-                   4|     34.54835|     1.508348|
-                   5|    32.603721|    1.5180237|
-                   6|    37.136052|    1.5021235|
-                   7|    35.698502|    1.5071888|
-                   8|     34.18601|    1.5079186|
-                   9|    34.341649|     1.506727|
-                  10|    35.784713|     1.507164|
-
+```
+[reporter]
+              |   /model_/bice|               | 
+          time| ps|fiber_force|    elbow_angle| 
+--------------| --------------| --------------| 
+  0.000000e+00| 1.18096897e+00| 1.57079633e+00| 
+1.00000000e+00| 5.72750904e+01| 7.70664118e-01| 
+2.00000000e+00| 1.97284113e+01| 1.56804557e+00| 
+3.00000000e+00| 5.60904315e+01| 1.44198608e+00| 
+4.00000000e+00| 3.45483498e+01| 1.50834805e+00| 
+5.00000000e+00| 3.26037208e+01| 1.51802366e+00| 
+6.00000000e+00| 3.71360518e+01| 1.50212351e+00| 
+7.00000000e+00| 3.56985024e+01| 1.50718884e+00| 
+8.00000000e+00| 3.41860103e+01| 1.50791862e+00| 
+9.00000000e+00| 3.43416494e+01| 1.50672695e+00| 
+1.00000000e+01| 3.57847134e+01| 1.50716396e+00| 
+```
 ---
 
 Building from the source code
@@ -600,24 +599,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 #### Set environment variables
 
 1. **Executables**. If you want to run OpenSim-Core's executables from
-   anywhere on your computer, you must update your PATH. *Note* some of the
-   names of OpenSim-Core executables conflict with some UNIX commands (e.g.,
-   `id`). To give preference to OpenSim-Core's executables, we must *prepend*
-   OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
+   anywhere on your computer, you must update your PATH. Open a terminal and
+   type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
-
-2. **Libraries**. Hopefully you can skip this step. This step is required if:
-  1. You are using CMake version 2.8.11 or older.
-  2. You plan on building C++ executables or libraries on top of OpenSim, *and*
-     you plan to "install" them in the CMake sense of the word (that is, you're
-     not going to simply use them from your project's build directory).
-  3. You plan to use the Java or MATLAB scripting.
-
-  If any of these are true, then you must add OpenSim-Core libraries to your
-  linker path. Open a terminal and type:
-
-          $ echo 'export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -807,19 +792,10 @@ And you could get all the optional dependencies via:
 
 #### Set environment variables
 
-1. **Executables**. Add OpenSim-Core's executables to the path so you can access them from any
-   directory on your computer. NOTE that some of the names of OpenSim-Core
-   executables conflict with some UNIX commands (e.g., `id`). To give
-   preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
-   `bin/` directory to the path.
+1. **Executables**. Add OpenSim-Core's executables to the path so you can
+   access them from any directory on your computer.
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
-
-2. **Libraries**. Allow executables to find OpenSim-Core libraries by
-  adding the OpenSim-Core
-   `lib/` directory to your linker path.
-
-        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
 
 Your changes will only take effect in new terminal windows.
 

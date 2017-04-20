@@ -1130,12 +1130,14 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             t = max*sqrt(u*u+v*v+w*w);
         }
 
+        double P{ 0 }, P2{ 0 }, Q{ 0 }, Q2{ 0 }, R{ 0 }, _R2{ 0 };
+        double PQ{ 0 }, PR{ 0 }, QR{ 0 }, PQR{ 0 }, fp{ 0 };
+
         for (i = 0; i < 64; i++)
         {
-            double P = t+a2, P2 = P*P;
-            double Q = t+b2, Q2 = Q*Q;
-            double R = t+c2, _R2 = R*R;
-            double PQ, PR, QR, PQR, fp;
+            P = t+a2, P2 = P*P;
+            Q = t+b2, Q2 = Q*Q;
+            R = t+c2, _R2 = R*R;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
         
