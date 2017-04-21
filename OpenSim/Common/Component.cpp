@@ -1531,7 +1531,8 @@ void Component::printInputInfo() const {
                   << std::string(maxlenInputName -
                                  input->getName().length(), ' ')
                   << input->getName() << " : ";
-        if (input->getNumConnectees() == 0) {
+        if (input->getNumConnectees() == 0 || 
+            (input->getNumConnectees() == 1 && input->getConnecteeName().empty())) {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
