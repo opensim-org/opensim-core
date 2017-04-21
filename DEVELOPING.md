@@ -85,7 +85,6 @@ The layout of the distribution on Windows is as follows:
     - `Simbody/` A copy of the Simbody installation.
       - `bin/` SimTK DLLs.
       - `cmake/` SimbodyConfig.cmake, etc.
-      - `doc/` Simbody User Guide, etc.
       - `include/` Simbody headers.
       - `lib/` SimTK "import" libraries, used during linking.
     - `python/` OpenSim Python bindings.
