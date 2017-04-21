@@ -76,8 +76,8 @@ function(OpenSimAddLibrary)
         INTERFACE $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}>
                   $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}/Vendors/lepton/include>
         # Used by client projects using an installed OpenSim:
-        INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/OpenSim>
-                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/OpenSim/lepton>
+        INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/OpenSim>
         )
 
     # This target links to the libraries provided as arguments to this func.

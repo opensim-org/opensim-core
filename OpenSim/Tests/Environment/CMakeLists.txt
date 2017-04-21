@@ -2,7 +2,7 @@
 set(TEST_ENVIRONMENT checkEnvironment)       
  
 add_executable(${TEST_ENVIRONMENT}
-    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/test.cpp)         
+    ${OpenSim_SOURCE_DIR}/OpenSim/Examples/checkEnvironment/checkEnvironment.cpp)         
 target_link_libraries(${TEST_ENVIRONMENT} osimTools)
 set_target_properties(${TEST_ENVIRONMENT}        
        PROPERTIES        
