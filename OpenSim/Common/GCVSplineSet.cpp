@@ -21,77 +21,28 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson
- */
-
-
-// INCLUDES
 #include "GCVSplineSet.h"
 #include "GCVSpline.h"
 #include "Storage.h"
 
 
-//=============================================================================
-// DESTRUCTOR AND CONSTRUCTORS
-//=============================================================================
-//_____________________________________________________________________________
-
-
 using namespace OpenSim;
-/**
- * Destructor.
- */
-GCVSplineSet::~GCVSplineSet()
-{
+
+GCVSplineSet::~GCVSplineSet() {
+    // No operation;
 }
 
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-GCVSplineSet::
-GCVSplineSet()
-{
+GCVSplineSet::GCVSplineSet() {
     setNull();
 }
-//_____________________________________________________________________________
-/**
- * Construct a set of generalized cross-validated splines from file.
- *
- * @param aFileName Name of the file.
- */
-GCVSplineSet::
-GCVSplineSet(const char *aFileName) :
-    FunctionSet(aFileName)
-{
+
+GCVSplineSet::GCVSplineSet(const char *aFileName) :
+    FunctionSet(aFileName) {
     setNull();
 }
-//_____________________________________________________________________________
-/**
- * Construct a set of generalized cross-validated splines based on the states
- * stored in an Storage object.
- *
- * Each column in the Storage object is fit with a spline of the specified
- * degree and is named the name of its corresponding column label.  Note that
- * column labels in the storage object are assumed to be tab delimited.
- *
- * @param aDegree Degree of the constructed splines (1, 3, 5, or 7).
- * @param aStore Storage object.
- * @param aErrorVariance Estimate of the variance of the error in the data to
- * be fit.  If negative, the variance will be estimated.  If 0.0, the fit will
- * try to fit the data points exactly- no smoothing.  If
- * positive, the fits will be smoothed according to the specified variance.
- * The larger the error variance, the more the smoothing.  Note that this is
- * the error variance assumed for each column in the Storage.  If different
- * variances should be set for the various columns, you will need to
- * construct each GCVSpline individually.
- * @see Storage
- * @see GCVSpline
- */
-GCVSplineSet::
-GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
-{
+GCVSplineSet::GCVSplineSet(int aDegree,
+                           const Storage *aStore,
+                           double aErrorVariance) {
     setNull();
     if(aStore==NULL) return;
     setName(aStore->getName());
@@ -105,33 +56,10 @@ GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
     construct(aDegree,aStore,aErrorVariance);
 }
 
-//_____________________________________________________________________________
-/**
- * Construct a set of generalized cross-validated splines based on the states
- * stored in a TimeSeriesTable.
- *
- * Each column in the TimeSeriesTable is fit with a spline of the specified
- * degree and is named the name of its corresponding column label.  
- *
- * @param table TimeSeriesTable object.
- * @param labels Columns to use from TimeSeriesTable.
- * @param degree Degree of the constructed splines (1, 3, 5, or 7).
- * @param aErrorVariance Estimate of the variance of the error in the data to
- * be fit.  If negative, the variance will be estimated.  If 0.0, the fit will
- * try to fit the data points exactly- no smoothing.  If
- * positive, the fits will be smoothed according to the specified variance.
- * The larger the error variance, the more the smoothing.  Note that this is
- * the error variance assumed for each column in the TimeSeriesTable.  If 
- * different variances should be set for the various columns, you will need to
- * construct each GCVSpline individually.
- * @see TimeSeriesTable.
- * @see GCVSpline
- */
-GCVSplineSet::
-GCVSplineSet(const TimeSeriesTable& table,
-             const std::vector<std::string>& labels,
-             int degree,
-             double errorVariance) {
+GCVSplineSet::GCVSplineSet(const TimeSeriesTable& table,
+                           const std::vector<std::string>& labels,
+                           int degree,
+                           double errorVariance) {
     const auto& time = table.getIndependentColumn();
     auto labelsToUse = labels;
     if (labelsToUse.empty()) labelsToUse = table.getColumnLabels();
@@ -142,29 +70,13 @@ GCVSplineSet(const TimeSeriesTable& table,
     }
 }
 
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set all member variables to NULL values.
- */
-void GCVSplineSet::
-setNull()
-{
+void GCVSplineSet::setNull() {
+    // No operation.
 }
-//_____________________________________________________________________________
-/**
- * Construct a set of generalized cross-validated splines based on the states
- * stored in an Storage object.
- *
- * @param aDegree Degree of the constructed splines (1, 3, 5, or 7).
- * @param aStore Storage object.
- * @param aErrorVariance Error variance for the data.
- */
-void GCVSplineSet::
-construct(int aDegree,const Storage *aStore,double aErrorVariance)
-{
+
+void GCVSplineSet::construct(int aDegree,
+                             const Storage *aStore,
+                             double aErrorVariance) {
     if(aStore==NULL) return;
 
     // DESCRIPTION
@@ -188,8 +100,9 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 
         // CHECK
         if(nTime!=nData) {
-            std::cout << "\nGCVSplineSet.construct: ERR- number of times (" << nTime << ")"
-                  << " and number of data (" << nData << ") don't agree.\n";
+            std::cout << "\nGCVSplineSet.construct: ERR- number of times ("
+                      << nTime << ")" << " and number of data (" << nData
+                      << ") don't agree.\n";
             break;
         }
         if(nData==0) break;
@@ -219,47 +132,12 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
     if(data!=NULL) delete[] data;
 }
 
-
-//=============================================================================
-// SET AND GET
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the function at a specified index.
- *
- * @param aIndex Index of the desired function:  0 <= aIndex < getSize().
- * @return Function at index aIndex.  If aIndex is not value NULL is returned.
- */
-GCVSpline* GCVSplineSet::
-getGCVSpline(int aIndex) const
-{
+GCVSpline* GCVSplineSet::getGCVSpline(int aIndex) const {
     GCVSpline& func = (GCVSpline&)get(aIndex);
     return(&func);
 }
 
-
-//=============================================================================
-// UTILITY
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Construct a storage object (see Storage) for this spline \set\ or for some
- * derivative of this spline set.
- *
- * @param aDerivOrder Derivative order.  0 constructs from the spline,
- * 1 constructs from the first derivative of the spline, 2 constructs from
- * the second derivative of the spline, etc.
- * @param aDX Spacing of the data points in the independent variable.  If
- * negative the spacing of the independent variable is taken from the
- * original data, as determined from the first non-NULL spline in the set.
- * aDX has a default value of -1.
- * @return Storage object.  If a valid storage object cannot be constructed
- * NULL is returned.
- * @see Storage
- */
-Storage* GCVSplineSet::
-constructStorage(int aDerivOrder,double aDX)
-{
+Storage* GCVSplineSet::constructStorage(int aDerivOrder,double aDX) {
     if(aDerivOrder<0) return(NULL);
     if(getSize()<=0) return(NULL);
 
