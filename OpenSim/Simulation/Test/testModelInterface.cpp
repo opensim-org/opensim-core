@@ -40,15 +40,17 @@ int main() {
         // model should be up-to-date with its properties
         ASSERT(model.isObjectUpToDateWithProperties());
 
-        // make an edit to a Component contained in the model's Set
-        model.updMuscles()[0].upd_min_control() = 0.02;
+        // get writable access to Components contained in the model's Set
+        auto& muscles = model.updMuscles();
+        // to make edits, for example, muscles[0].upd_min_control() = 0.02;
         ASSERT(!model.isObjectUpToDateWithProperties());
 
         model.finalizeFromProperties();
         ASSERT(model.isObjectUpToDateWithProperties());
 
-        // make an edit to a Component contained in another Set
-        model.updBodySet()[1].upd_mass() = 0.05;
+        // get writable access to another Set for the purpose of editing
+        auto& bodies = model.updBodySet();
+        // for example, bodies[1].upd_mass() = 0.05;
         ASSERT(!model.isObjectUpToDateWithProperties());
 
         model.finalizeFromProperties();
@@ -57,6 +59,7 @@ int main() {
         // make an edit through model's ComponentList access
         for (auto& body : model.updComponentList<Body>()) {
             body.upd_mass_center() = SimTK::Vec3(0);
+            break;
         }
         ASSERT(!model.isObjectUpToDateWithProperties());
 
