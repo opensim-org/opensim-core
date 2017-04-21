@@ -124,7 +124,7 @@ after_test:
   - cd %APPVEYOR_BUILD_FOLDER%
   - ## On master branch, create NuGet package for OpenSim.
   - # Detect if we are on the master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU travis_build_on_ci IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF %APPVEYOR_REPO_BRANCH% EQU tgcs2017_build_on_ci IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - # Create and upload NuGet package.
   - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%" -BasePath %OPENSIM_INSTALL_DIR%
   - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%.0.0.0.nupkg
