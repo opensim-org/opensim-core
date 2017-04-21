@@ -103,7 +103,7 @@ build_script:
   # Build.
   # Hack to avoid error MSB3191: Unable to create directory "C:\projects\opensim_build\Release\"
   # which may result from parallel jobs trying to create this directory.
-  - cmake --build . --target SimbodyFiles --config Release
+  - cmake --build . --target Copy_Simbody_DLLs --config Release
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
 test_script:
