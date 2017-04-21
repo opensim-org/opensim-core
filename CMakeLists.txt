@@ -180,8 +180,8 @@ else()
 
     # Set the variables that would have otherwise been set by GNUInstallDirs.
     set(CMAKE_INSTALL_BINDIR bin)
-    set(CMAKE_INSTALL_INCLUDEDIR sdk/include) # TODO sdk/OpenSim/include
-    set(CMAKE_INSTALL_LIBDIR sdk/lib)         # TODO sdk/OpenSim/lib
+    set(CMAKE_INSTALL_INCLUDEDIR sdk/include)
+    set(CMAKE_INSTALL_LIBDIR sdk/lib)
     set(CMAKE_INSTALL_DOCDIR sdk/doc)
     # SYSCONFDIR holds read-only single-machine machine-dependent data.
     set(CMAKE_INSTALL_SYSCONFDIR sdk)
@@ -509,7 +509,6 @@ if(UNIX) # Linux and macOS
         # to other computers that will not have our original Simbody or BTK
         # installations, and so the RPATH would point to a nonexistant
         # directory on others' computers.
-        # TODO test COPY_DEPENDENCIES off to test that RPATH works for BTK.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
     endif()
 

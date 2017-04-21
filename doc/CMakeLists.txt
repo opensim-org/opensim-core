@@ -114,8 +114,6 @@ if(${DOXYGEN_FOUND})
     if(Simbody_DOXYGEN_TAGFILE)
         # The variable above is only defined if Simbody's Doxygen documentation
         # was (built and) installed.
-        # TODO if OPENSIM_COPY_DEPENDENCIES, use the copy of Simbody's doxygen
-        # that we copy into OpenSim's installation.
         set(OPENSIM_SIMBODY_TAGFILE_CONFIG
             "${Simbody_DOXYGEN_TAGFILE}=${OPENSIM_SIMBODY_DOXYGEN_LOCATION}")
     endif()
