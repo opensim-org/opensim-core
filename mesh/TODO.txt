@@ -31,6 +31,14 @@ http://plato.asu.edu/sub/nlores.html#general
 
 Linear solvers:
 http://www.netlib.org/utk/people/JackDongarra/la-sw.html
+Also, PETSc (suggested by Millard's colleague):
+> Large scale sparse linear systems are usually solved iteratively with
+> Krylov subspace methods like Conjugate Gradient. He may have a look at
+> the Krylov subspace solver implementations in PETSc
+> (http://www.mcs.anl.gov/petsc/). There are plenty of them to try. PETSc
+> offers a C interface (I think a MATLAB interface is available for some
+> features) and many algorithms are already parallelized with MPI and
+> CUDA.
 
 Automatically generate a nice initial guess:
 //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
@@ -45,6 +53,12 @@ Name for project: OptoMusk (optimizing musculoskeletal)
 NMSOpt
 Neuromusculoskeletal Optimization
 nemuskopt
+
+MuST: Muscolo Skeletal Tracking
+MuSOC:Muscolo Skeletal Optimal Control
+
+Muscolo
+Muscollo
 
 NMSTO
 TONMS
