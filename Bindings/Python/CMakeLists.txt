@@ -123,13 +123,10 @@ macro(OpenSimAddPythonModule)
     endif()
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
-    
-    include_directories(${OpenSim_SOURCE_DIR} 
-                        ${OpenSim_SOURCE_DIR}/Vendors 
-                        ${PYTHON_INCLUDE_PATH}
-                        )
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
+
+    target_include_directories(${_libname} PRIVATE ${PYTHON_INCLUDE_PATH})
     
     target_link_libraries(${_libname}
         osimTools osimExampleComponents ${PYTHON_LIBRARIES})

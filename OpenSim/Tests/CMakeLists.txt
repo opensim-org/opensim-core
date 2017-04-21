@@ -1,6 +1,3 @@
-include_directories(${OpenSim_SOURCE_DIR}
-                    ${OpenSim_SOURCE_DIR}/Vendors)
-
 if(BUILD_TESTING)
     add_subdirectory(Components)
     add_subdirectory(AddComponents)

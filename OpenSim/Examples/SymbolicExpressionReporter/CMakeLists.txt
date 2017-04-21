@@ -5,12 +5,6 @@ if(BUILD_API_EXAMPLES)
 
 set(EXAMPLE_EXPRESSION_REPORTER_PLUGIN exampleExpressionReporterPlugin)
 
-include_directories(${OpenSim_SOURCE_DIR}
-            ${OpenSim_SOURCE_DIR}/OpenSim
-            ${OpenSim_SOURCE_DIR}/Vendors
-            ${OpenSim_SOURCE_DIR}/Vendors/lepton/include
-            )
-
 add_library(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
     osimExpPluginDLL.cpp
     osimExpPluginDLL.h
