@@ -644,19 +644,19 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         # the installation for *every* directory in DIRECTORY, even if that
         # dirctory doesn't contain any files matching the provided
         # pattern/regex.
-        # We can safely assume that Simbody is installed standalone; therefore,
-        # it should be safe to use install(DIRECTORY). This may not be true
-        # with conda or chocolatey. However, we would need to handle the
-        # differing location for cmake config files, and the fact that the
-        # lib/bin directories contain libblaas, liblapack, and pthread.
+        # We can safely assume that Simbody is installed in an isolated
+        # dirctory; therefore, it should be safe to use install(DIRECTORY).
+        # This may not be true with conda or chocolatey.
         install(DIRECTORY "${Simbody_ROOT_DIR}/"
                 DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}"
-                # There's no need to install Simbody examples.
                 FILES_MATCHING PATTERN "*SimTK*.dll")
         install(DIRECTORY "${Simbody_ROOT_DIR}/"
                 DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}"
-                # There's no need to install Simbody examples.
-                PATTERN "*examples*" EXCLUDE
+                # There's no need to install Simbody examples or docs.
+                PATTERN "*examples/*" EXCLUDE
+                PATTERN "*doc/*" EXCLUDE
+                # Don't copy lapack, blas, etc. into sdk/Simbody/bin/; they are
+                # already copied into bin/.
                 PATTERN "*.dll" EXCLUDE
                 PATTERN "*.exe" EXCLUDE)
         # DLLs are handled by OpenSimCopyDependencyDLLsForWin(), but we still
@@ -666,7 +666,8 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 FILES_MATCHING PATTERN "*.exe")
         # TODO We are copying Simbody DLLs to both the bin and sdk/Simbody/bin
         # folders; we would prefer to only copy to the former, but
-        # SimbodyTargets-*.cmake expect dlls in sdk/Simbody/bin.
+        # SimbodyTargets-*.cmake expect dlls in sdk/Simbody/bin. In the future,
+        # we can edit the *.cmake files to no longer expect these DLLs.
     else()
         # We would have liked to use install(DIRECTORY) on UNIX, but the
         # dependencies may be installed in system-wide locations and we don't
@@ -679,7 +680,7 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         file(RELATIVE_PATH install_simbodyincludedir
             "${Simbody_ROOT_DIR}" "${Simbody_INCLUDE_DIR}")
         install(DIRECTORY "${Simbody_INCLUDE_DIR}/"
-                DESTINATION "${install_simbodyincludedir}")
+                DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}/${install_simbodyincludedir}")
     
         # lib (and cmake, pkgconfig)
         file(RELATIVE_PATH install_simbodylibdir 
@@ -692,26 +693,16 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         foreach(simbody_lib_file ${simbody_desired_lib_files})
             get_filename_component(subdir "${simbody_lib_file}" DIRECTORY)
             install(FILES "${Simbody_LIB_DIR}/${simbody_lib_file}"
-                DESTINATION "${install_simbodylibdir}/${subdir}")
+                DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}/${install_simbodylibdir}/${subdir}")
         endforeach()
     
         # simbody-visualizer
         file(RELATIVE_PATH install_simbodyvizdir 
             "${Simbody_ROOT_DIR}" "${Simbody_VIZ_DIR}")
         install(DIRECTORY "${Simbody_VIZ_DIR}/"
-                DESTINATION "${install_simbodyvizdir}"
+                DESTINATION "${OPENSIM_INSTALL_SIMBODYDIR}/${install_simbodyvizdir}"
                 USE_SOURCE_PERMISSIONS
                 FILES_MATCHING PATTERN "*simbody-visualizer*")
-
-        # TODO copy over Simbody PDF documentation.
-    
-        # doxygen.
-        if(Simbody_DOXYGEN_DIR)
-            file(RELATIVE_PATH install_simbodydoxygendir
-                "${Simbody_ROOT_DIR}" "${Simbody_DOXYGEN_DIR}")
-            install(DIRECTORY "${Simbody_DOXYGEN_DIR}/"
-                    DESTINATION "${install_simbodydoxygendir}")
-        endif()
     endif()
 
 

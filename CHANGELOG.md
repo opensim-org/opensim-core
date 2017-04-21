@@ -120,7 +120,8 @@ in Python.
 
 Other Changes
 -------------
-- There is now a formal CMake mechanism for using OpenSim in your own C++ project. See cmake/SampleCMakeLists.txt. (PR #187)
+- There is now a formal CMake mechanism for using OpenSim in your own C++
+  project. See cmake/SampleCMakeLists.txt. (PR #187)
 - Substantial cleanup of the internal CMake scripts.
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
@@ -135,6 +136,8 @@ programmatically in MATLAB or python.
 - Thelen2003Muscle and Millard2012EquilibriumMuscle no longer clamp excitations (i.e. controls)
   internally. If controls are out of bounds an Exception is thrown. Also, the min_control
   property now defaults to the minimum_activation. It is the responsibility of the controller (or solver) to provide controls that are within the valid ranges defined by the Actuators and that includes the specific bounds of Muscle models. (PR #1548)
+- macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
+  `DYLD_LIBRARY_PATH` to use OpenSim libraries.
 
 Documentation
 --------------

@@ -63,7 +63,7 @@ OpenSim GUI distribution. In this case, the following settings should be used:
 
     WITH_BTK=ON                                 non-default
     OPENSIM_COPY_DEPENDENCIES=ON                default
-    OPENSIM_PYTHON_STANDALONE=ON                non-default
+    OPENSIM_PYTHON_STANDALONE=OFF               default
     on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
     on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
     OPENSIM_SIMBODY_DOXYGEN_LOCATION=https://simtk.org/api_docs/simbody/<version>/
