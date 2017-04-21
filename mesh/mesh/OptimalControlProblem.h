@@ -428,7 +428,7 @@ public:
                             << info.initial_bounds.lower << ", "
                             << info.initial_bounds.upper << "].";
                 }
-                if (info.initial_bounds.is_set()) {
+                if (info.final_bounds.is_set()) {
                     cout << " final bounds: ["
                             << info.final_bounds.lower << ", "
                             << info.final_bounds.upper << "]";
