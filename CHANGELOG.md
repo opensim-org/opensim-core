@@ -126,7 +126,8 @@ in Python.
 
 Other Changes
 -------------
-- There is now a formal CMake mechanism for using OpenSim in your own C++ project. See cmake/SampleCMakeLists.txt. (PR #187)
+- There is now a formal CMake mechanism for using OpenSim in your own C++
+  project. See cmake/SampleCMakeLists.txt. (PR #187)
 - Substantial cleanup of the internal CMake scripts.
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
@@ -147,8 +148,8 @@ programmatically in MATLAB or python.
 - The `buildinfo.txt` file, which contains the name of the compiler used to
   compile OpenSim and related information, is now named `OpenSim_buildinfo.txt`
   and may be installed in a different location.
-
-
+- macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
+  `DYLD_LIBRARY_PATH` to use OpenSim libraries.
 
 Documentation
 --------------
