@@ -627,6 +627,10 @@ endif()
 # (that is, put Simbody's dll's in the same directory as OpenSim's
 # executables and libraries).
 OpenSimCopyDependencyDLLsForWin(Simbody "${Simbody_BIN_DIR}")
+if(WIN32)
+    add_dependencies(Copy_Simbody_DLLs Simbody_CONFIG_check)
+endif()
+
 
 # Directories for Simbody headers and libraries for building.
 # -----------------------------------------------------------
