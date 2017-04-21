@@ -102,6 +102,7 @@ plan to use it, you can leave this OFF. If you are distributing OpenSim to
 other computers, you should turn this ON. If macOS, this option affects how
 RPATH is set for the SWIG-generated shared libraries. This variable has no
 effect if BUILD_PYTHON_WRAPPING is OFF." OFF)
+mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 # There are many potential ways to distribute the python bindings; here's how
 # you might want to set the above option for different ways of distributing:
 #   simtk.org GUI distribution, macOS: ON (since no env. vars are set)
@@ -487,7 +488,8 @@ endif()
 
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
-# set CMAKE_SKIP_INSTALL_RPATH to OFF.
+# CMAKE_SKIP_INSTALL_RPATH to OFF.
+set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
     # on OSX. This helps executables find the libraries they depend on
@@ -691,8 +693,7 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         file(GLOB_RECURSE simbody_desired_lib_files
             RELATIVE "${Simbody_LIB_DIR}"
             "${Simbody_LIB_DIR}/*SimTK*" "${Simbody_LIB_DIR}/*Simbody*.cmake"
-            "${Simbody_LIB_DIR}/*SampleCMakeLists.txt*"
-            "${Simbody_LIB_DIR}/*simbody.pc")
+            "${Simbody_LIB_DIR}/*SampleCMakeLists.txt*")
         foreach(simbody_lib_file ${simbody_desired_lib_files})
             get_filename_component(subdir "${simbody_lib_file}" DIRECTORY)
             install(FILES "${Simbody_LIB_DIR}/${simbody_lib_file}"
