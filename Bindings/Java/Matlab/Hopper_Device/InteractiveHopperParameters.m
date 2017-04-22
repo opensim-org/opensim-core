@@ -74,7 +74,7 @@ max = 100;
 %   slider value for the passive device.
 function [mass,stiffness] = passive(param)
 
-stiffness = param*100;
+stiffness = param*500;
 mass = param*0.1;
 
 % ACTIVECONTROL
@@ -84,7 +84,7 @@ mass = param*0.1;
 %   device.
 function [mass,maxTension] = activeControl(param)
 
-maxTension = param*10;
+maxTension = param*20;
 mass = param*0.1;
 
 % ACTIVEPROPMYO
@@ -94,7 +94,7 @@ mass = param*0.1;
 %   device.
 function [mass,gain] = activePropMyo(param)
 
-gain = (param/100)+0.5;
+gain = param/100;
 mass = param*0.1;
 
 % AVERAGEJOE

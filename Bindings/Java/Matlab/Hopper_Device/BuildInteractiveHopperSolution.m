@@ -42,6 +42,7 @@ defaultIsActivePropMyo = false;
 defaultActiveParameter = 50;
 defaultDeviceControl = [0.0 2.5 5.0;
                         0.0 0.75 0.0];
+defaultPrintSubcomponentAndOutputInfo = true;
 
 % Create optional values for input parser                   
 addOptional(p,'muscle',defaultMuscle)
@@ -54,6 +55,7 @@ addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
 addOptional(p,'activeParameter',defaultActiveParameter)
 addOptional(p,'deviceControl',defaultDeviceControl)
+addOptional(p,'printSubcomponentAndOutputInfo',defaultPrintSubcomponentAndOutputInfo)
 
 % Parse inputs
 parse(p,varargin{:});
@@ -69,6 +71,7 @@ activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
 activeParameter = p.Results.activeParameter;
 deviceControl = p.Results.deviceControl;
+printSubcomponentAndOutputInfo = p.Results.printSubcomponentAndOutputInfo;
 
 import org.opensim.modeling.*;
 
@@ -113,7 +116,9 @@ hopper = BuildHopper('excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
                      'MillardTendonParams', MillardTendonParams, ...
                      'maxIsometricForce', maxIsometricForce);
-hopper.printSubcomponentInfo();
+if printSubcomponentAndOutputInfo
+    hopper.printSubcomponentInfo();
+end
 
 %% BUILD DEVICES
 devices = cell(0);
@@ -156,7 +161,9 @@ for d = 1:length(devices)
     % the hopper's subcomponents, and locate the two subcomponents named
     % 'deviceAttachmentPoint'.
     device = devices{d};
-    device.printSubcomponentInfo();
+    if printSubcomponentAndOutputInfo
+        device.printSubcomponentInfo();
+    end
     
     % Get the 'anchor' joints in the device, and downcast them to the
     % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
@@ -178,14 +185,13 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-
     if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
             % TODO: Change to downcast from PathSpring when PathSpring is
             % working for passive device
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBpassive'));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBactive'));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
@@ -194,8 +200,8 @@ for d = 1:length(devices)
     
     % Print the names of the outputs of the device's PathActuator and
     % ToyPropMyoController subcomponents.
-    device.getComponent('cableAtoB').printOutputInfo();
-    if strcmp(deviceNames{d},'device_active')
+    if strcmp(deviceNames{d},'device_active') && printSubcomponentAndOutputInfo
+        device.getComponent('cableAtoBactive').printOutputInfo();
         device.getComponent('controller').printOutputInfo();
     end
     
