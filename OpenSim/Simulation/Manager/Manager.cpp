@@ -669,6 +669,11 @@ integrate(SimTK::State& s, double finalTime)
 
     // Only initialize a TimeStepper if it hasn't been done yet
     if (_timeStepper == NULL) initializeTimeStepper(s);
+    s.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+    SimTK::State sCopy = s;
+    _timeStepper->initialize(sCopy);
+    
+    
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
@@ -814,7 +819,7 @@ void Manager::initializeTimeStepper(const SimTK::State& s)
 {
     _timeStepper.reset(
         new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
-    _timeStepper->initialize(s);
+    //_timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
 }
 
