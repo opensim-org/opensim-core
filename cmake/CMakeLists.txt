@@ -16,6 +16,7 @@ configure_package_config_file(
         CMAKE_INSTALL_INCLUDEDIR
         CMAKE_INSTALL_LIBDIR
         OPENSIM_INSTALL_CMAKEDIR
+        OPENSIM_INSTALL_SIMBODYDIR
     )
 
 # Version file.
