@@ -159,21 +159,21 @@ for d = 1:length(devices)
     % Print the names of the device's subcomponents, and locate the
     % subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
     % the hopper's subcomponents, and locate the two subcomponents named
-    % 'deviceAttachmentPoint'.
+    % 'deviceAttach'.
     device = devices{d};
     if printSubcomponentAndOutputInfo
         device.printSubcomponentInfo();
     end
     
     % Get the 'anchor' joints in the device, and downcast them to the
-    % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
+    % WeldJoint class. Get the 'deviceAttach' frames in the hopper
     % model, and downcast them to the PhysicalFrame class.
     anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
     anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
     thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttachmentPoint'));
+        hopper.getComponent('thigh/deviceAttach'));
     shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttachmentPoint'));
+        hopper.getComponent('shank/deviceAttach'));
     
     % Connect the parent frame sockets of the device's anchor joints to the
     % attachment frames on the hopper; attach anchorA to the thigh, and

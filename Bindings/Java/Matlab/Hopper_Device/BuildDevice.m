@@ -72,9 +72,9 @@ device.addComponent(cuffA);
 device.addComponent(cuffB);
 
 % Attach a sphere to each cuff for visualization.
-sphere = Sphere(0.01);
+sphere = Sphere(0.025);
 sphere.setName('sphere');
-sphere.setColor(Vec3(1, 0, 0));
+sphere.setColor(Vec3(0, 0.5, 0));
 cuffA.attachGeometry(sphere);
 cuffB.attachGeometry(sphere.clone());
 
@@ -107,6 +107,7 @@ switch deviceType
         pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
         pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(pathActuator);
+        device.set_actuator_name(name);
         
         if isPropMyo
             % Create a proportional myoelectric controller.
@@ -142,6 +143,7 @@ switch deviceType
         clutchedPathSpring.addNewPathPoint('pointA', cuffA, Vec3(0));
         clutchedPathSpring.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(clutchedPathSpring);
+        device.set_actuator_name(name);
         
         controller = PrescribedController();
         controller.setName('controller');
