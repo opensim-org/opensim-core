@@ -77,12 +77,22 @@ sliderToGround = SliderJoint('slider', ...
         pelvis,             Vec3(0), sliderOrientation);
 linkDistalPoint = Vec3(0, -linkHalfLength, 0);
 linkProximalPoint = Vec3(0, linkHalfLength, 0);
-% Define the pelvis as the parent so the reported value is hip flexion.
-hip = PinJoint('hip', pelvis, Vec3(0),           Vec3(0), ...
-                      thigh,  linkProximalPoint, Vec3(0));
-% Define the shank as the parent so the reported value is knee flexion.
-knee = PinJoint('knee', shank, linkProximalPoint, Vec3(0), ...
-                        thigh, linkDistalPoint,   Vec3(0));
+% Hip. Define the pelvis as the parent so the reported value is hip flexion.
+hipThighOffset = PhysicalOffsetFrame('hip_thigh_offset', thigh, ...
+        Transform(linkProximalPoint));
+hip = PinJoint();
+hip.setName('hip');
+hip.connectSocket_parent_frame(pelvis);
+hip.connectSocket_child_frame(hipThighOffset);
+hip.addComponent(hipThighOffset);
+% Knee. Define the shank as the parent so the reported value is knee flexion.
+kneeShankOffset = PhysicalOffsetFrame('knee_shank_offset', shank, ...
+        Transform(linkProximalPoint));
+kneeThighOffset = PhysicalOffsetFrame('knee_thigh_offset', thigh, ...
+        Transform(linkDistalPoint));
+knee = PinJoint('knee', kneeShankOffset, kneeThighOffset);
+knee.addComponent(kneeShankOffset);
+knee.addComponent(kneeThighOffset);
 
 %/ Add the joints to the model.
 hopper.addJoint(sliderToGround);
@@ -102,6 +112,14 @@ kneeCoord = knee.upd_coordinates(0);
 kneeCoord.setName('kneeFlexion');
 kneeCoord.setDefaultValue(0.75);
 
+%% Constraint.
+% ------------
+% Create a constraint to keep the foot (distal end of the shank) directly
+% beneath the pelvis (the Y-axis points upwards).
+constraint = PointOnLineConstraint(hopper.getGround(), Vec3(0, 1 ,0), ...
+        Vec3(0), shank, linkDistalPoint);
+shank.addComponent(constraint);
+
 
 %% Passive force components.
 % --------------------------
@@ -117,12 +135,6 @@ kneeStiff = [50., 40.]; kneeDamping = 2.; kneeTransition = 10.;
 kneeLimitForce = CoordinateLimitForce('kneeFlexion', kneeRange(1), ...
     kneeStiff(1), kneeRange(2), kneeStiff(2), kneeDamping, kneeTransition);
 knee.addComponent(kneeLimitForce);
-
-% Create a constraint to keep the foot (distal end of the shank) directly
-% beneath the pelvis (the Y-axis points upwards).
-constraint = PointOnLineConstraint(hopper.getGround(), Vec3(0, 1 ,0), ...
-        Vec3(0), shank, linkDistalPoint);
-shank.addComponent(constraint);
 
 % Use a contact model to prevent the foot (ContactSphere) from passing
 % through the floor (ContactHalfSpace).
@@ -200,9 +212,9 @@ hopper.addController(brain);
 % Device attachment frames.
 % -------------------------
 % Create frames on the thigh and shank segments for attaching the device.
-thighAttachment = PhysicalOffsetFrame('deviceAttachmentPoint', thigh, ...
+thighAttachment = PhysicalOffsetFrame('deviceAttach', thigh, ...
         Transform(Vec3(linkRadius, 0.15, 0)));
-shankAttachment = PhysicalOffsetFrame('deviceAttachmentPoint', shank, ...
+shankAttachment = PhysicalOffsetFrame('deviceAttach', shank, ...
         Transform(Vec3(linkRadius, 0, 0)));
 thigh.addComponent(thighAttachment);
 shank.addComponent(shankAttachment);

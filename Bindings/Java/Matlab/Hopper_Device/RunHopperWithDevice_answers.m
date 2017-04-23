@@ -37,7 +37,7 @@ device = BuildDevice();
 % TODO: Print the names of the device's subcomponents, and locate the
 %       subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
 %       the hopper's subcomponents, and locate the two subcomponents named
-%       'deviceAttachmentPoint'.
+%       'deviceAttach'.
 % [Step 2, Task A]
 
 
@@ -47,16 +47,16 @@ hopper.printSubcomponentInfo();
 % }
 
 % TODO: Get the 'anchor' joints in the device, and downcast them to the
-%       WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
+%       WeldJoint class. Get the 'deviceAttach' frames in the hopper
 %       model, and downcast them to the PhysicalFrame class.
 % [Step 2, Task B]
 % ANSWER{
 anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
 anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
 thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttachmentPoint'));
+        hopper.getComponent('thigh/deviceAttach'));
 shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttachmentPoint'));
+        hopper.getComponent('shank/deviceAttach'));
 % }
 
 % TODO: Connect the parent frame sockets of the device's anchor joints to the
@@ -82,20 +82,22 @@ if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive')
     cable.updGeometryPath().addPathWrap(wrapObject);
 end
 
-% TODO: Print the names of the outputs of the device's PathActuator
-%       subcomponent 'cableAtoB', and the names of the inputs for the device's
-%       ToyPropMyoController subcomponent 'controller'.
+% TODO: Print the names of the outputs of the vastus muscle, and the names of 
+%       the inputs and outputs for the device's ToyPropMyoController 
+%       subcomponent 'controller'.
 % [Step 2, Task E]
 % ANSWER{
-device.getComponent('cableAtoBactive').printOutputInfo();
+hopper.getComponent('vastus').printOutputInfo(false);
 device.getComponent('controller').printInputInfo();
+device.getComponent('controller').printOutputInfo();
 % }
 
-% TODO: Use the vastus muscle's activation output as the ToyPropMyoController's  
-%       activation input.
+% TODO: Use the vastus muscle's activation output as the 
+%       ToyPropMyoController's  activation input.
 % [Step 2, Task F]
 % ANSWER{
-device.updComponent('controller').updInput('activation').connect(...
+contr = ToyPropMyoController.safeDownCast(device.updComponent('controller'));
+contr.connectInput_activation(...
     hopper.getComponent('vastus').getOutput('activation'));
 % }
 
