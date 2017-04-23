@@ -76,7 +76,7 @@ hopper.addComponent(device);
 
 % (Done for you) Configure the device to wrap over the patella.
 if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 
-    cable = PathActuator.safeDownCast(device.updComponent('cableAtoB'));
+    cable = PathActuator.safeDownCast(device.updComponent('cableAtoBactive'));
     patellaPath = 'thigh/patellaFrame/patella';
     wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
     cable.updGeometryPath().addPathWrap(wrapObject);
@@ -87,7 +87,7 @@ end
 %       ToyPropMyoController subcomponent 'controller'.
 % [Step 2, Task E]
 % ANSWER{
-device.getComponent('cableAtoB').printOutputInfo();
+device.getComponent('cableAtoBactive').printOutputInfo();
 device.getComponent('controller').printInputInfo();
 % }
 

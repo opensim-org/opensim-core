@@ -24,8 +24,7 @@
 % Perform a hop with the provided model and evaluate the performance of the
 % hop.
 
-function [score, peakHeight, finalHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
-        
+function [peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
 
 import org.opensim.modeling.*;
 
@@ -58,15 +57,9 @@ Simulate(hopperCopy, state, visualize);
 heightTable = heightRep.getTable();
 heightStruct = osimTableToStruct(heightTable);
 [peakHeight, maxHeightIdx] = max(heightStruct.height(:, 1));
-finalHeight = heightStruct.height(end, 1);
 if print 
-    fprintf('Peak mass center height: %f meters (at time %f seconds)\n', ...
+    fprintf('Peak height: %f meters (at time %f seconds)\n', ...
         peakHeight, heightStruct.time(maxHeightIdx));
-end
-
-score = peakHeight;
-if print
-    fprintf('Score: %f\n', score);
 end
 
 end

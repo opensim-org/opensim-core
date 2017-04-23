@@ -30,7 +30,7 @@ defaultControl = [0.0 2.5 5.0;
                   0.0 0.75 0.0];
 defaultSpringStiffness = 5000; 
 defaultPassivePatellaWrap = true;
-defaultMaxTension = 1000;
+defaultMaxTension = 2000;
 defaultGain = 1;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
@@ -96,9 +96,10 @@ device.addComponent(anchorB);
 
 switch deviceType
     case 'active'
+        name = 'cableAtoBactive';
         % Attach a PathActuator between the two cuffs.
         pathActuator = PathActuator();
-        pathActuator.setName('cableAtoB');
+        pathActuator.setName(name);
         pathActuator.updGeometryPath().setName('geompath');
         pathActuator.setOptimalForce(maxTension);
         pathActuator.setMinControl(0.0);
@@ -123,21 +124,15 @@ switch deviceType
             for i = 1:size(control,2)
                 controlFunction.addPoint(control(1,i), control(2,i));
             end
-            controller.addActuator(pathActuator);
-            controller.prescribeControlForActuator('cableAtoB',controlFunction);
+            controller.prescribeControlForActuator(name,controlFunction);
         end
         device.addComponent(controller)
         
     case 'passive'
-        name = 'cableAtoB';
+        name = 'cableAtoBpassive';
         springDissipation = 0.1; 
         relaxationTau = 5;
-        
-        if passivePatellaWrap
-            spring0 = 0.7166;
-        else
-            spring0 = 0.6329;
-        end
+        spring0 = 0;
                
         % TODO: change ClutchedPathSpring to PathSpring
         clutchedPathSpring = ClutchedPathSpring(name, springStiffness, ...
@@ -150,12 +145,14 @@ switch deviceType
         
         controller = PrescribedController();
         controller.setName('controller');
+        controller.addActuator(clutchedPathSpring);
         controlFunction = PiecewiseConstantFunction();
         clutchControl = [0.0 2.5 5.0;
                          1.0 1.0 1.0];
         for i = 1:size(clutchControl,2)
             controlFunction.addPoint(clutchControl(1,i), clutchControl(2,i));
         end
+        controller.prescribeControlForActuator(name,controlFunction);
         device.addComponent(controller);
 end
 
