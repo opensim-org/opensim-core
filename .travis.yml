@@ -133,7 +133,7 @@ before_install:
   - unzip -q $SIMBODYZIP -d ~
 
   ## Install SWIG to build Java/python wrapping.
-  - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
+  # PCRE is already installed. - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
   - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
   - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
@@ -188,7 +188,7 @@ install:
   # Configure OpenSim.
   #######################################################################################################################
   - cd ~/opensim-core-build
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON -DBUILD_TESTING=off
 
   #######################################################################################################################
   # Build OpenSim.
@@ -215,7 +215,7 @@ script:
   # TODO On Debug, we need to tell travis not to timeout if it doesn't get
   # any output for more than 10 minutes. We do this using "travis_wait".
   #- if [ "$BTYPE" = "Debug" ]; export NO_TIMEOUT="travis_wait"; fi
-  - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
+  # TODO - ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
 
   ## Print out valgrind output.
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
