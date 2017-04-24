@@ -144,6 +144,7 @@ private:
     bool isSimmReservedToken(const std::string& aToken);
     void postProcessSIMMMotion();
     void exchangeTimeColumnWith(int aColumnIndex);
+    void createFromTimeSeriesTable(const TimeSeriesTable& table);
 public:
 
     //--------------------------------------------------------------------------
