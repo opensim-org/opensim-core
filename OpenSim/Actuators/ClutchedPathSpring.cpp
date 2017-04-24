@@ -122,6 +122,24 @@ void ClutchedPathSpring::setInitialStretch(double stretch0)
      set_initial_stretch(getStretch(state));
  }
  
+ void ClutchedPathSpring::extendFinalizeFromProperties()
+ {
+     Super::extendFinalizeFromProperties();
+
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
+         InvalidPropertyValue, getProperty_stiffness().getName());
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
+         InvalidPropertyValue, getProperty_dissipation().getName());
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_relaxation_time_constant()) || get_relaxation_time_constant() < 0),
+         InvalidPropertyValue, 
+         getProperty_relaxation_time_constant().getName());
+     OPENSIM_THROW_IF_FRMOBJ(
+         (SimTK::isNaN(get_initial_stretch()) || get_initial_stretch() < 0),
+         InvalidPropertyValue, getProperty_initial_stretch().getName());
+ }
 
 
 

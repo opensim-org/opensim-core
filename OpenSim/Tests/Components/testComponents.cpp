@@ -290,7 +290,7 @@ void testComponent(const Component& instanceToTest)
     }
     
     // This method calls connect().
-    cout << "Call Model::setup()." << endl;
+    cout << "Calling Model::setup()." << endl;
     try{
         model.setup();
     }
@@ -301,7 +301,6 @@ void testComponent(const Component& instanceToTest)
         cout << " having structural dependencies that are not specified as Sockets.";
         cout << endl;
     }
-
 
     // 7. Build the system.
     // --------------------
@@ -314,6 +313,12 @@ void testComponent(const Component& instanceToTest)
         cout << " '" << x.what() << "'" << endl;
         cout << "Skipping ... " << endl;
     }
+
+    // Verify that the Model (and its System) remains up-to-date with its
+    // properties after initSystem (or attempt). Throw if not.
+    OPENSIM_THROW_IF(!model.isObjectUpToDateWithProperties(), Exception,
+        "testComponents:: model.initSystem() caused Model to no longer be "
+        "up-to-date with its properties.");
 
     // Outputs.
     // --------

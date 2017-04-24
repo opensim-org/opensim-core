@@ -2,16 +2,6 @@
 # Find python.
 # ============
 
-# PythonInterp is supposed to come before PythonLibs.
-find_package(PythonInterp 2.7 REQUIRED)
-find_package(PythonLibs 2.7 REQUIRED)
-
-# We may need to update the python install dir to include the python version,
-# now that we know it. We replace the token "VERSION" with the actual python
-# version.
-string(REPLACE "VERSION" "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
-    OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
-
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
     # Multi-configuration generators like MSVC and XCODE use one build tree for
@@ -160,11 +150,32 @@ macro(OpenSimAddPythonModule)
     endif()
     
     if(${OPENSIM_USE_INSTALL_RPATH})
-        # Use APPEND to include the BTK RPATH, set in CMAKE_INSTALL_RPATH.
-        # TODO test that NOT using APPEND causes BTK to not be found.
+        # We always set a relative RPATH but only use an absolute RPATH if the
+        # python package is not standalone, as the libraries are not copied
+        # into the python package.
+        if(APPLE)
+            set(rpath_macro "\@loader_path")
+        elseif(UNIX)
+            set(rpath_macro "\$ORIGIN")
+        endif()
+
+        set(run_path_list "${rpath_macro}/")
+
+        # Locate osim libraries, etc in the lib dir.
+        file(RELATIVE_PATH py_dir_to_install_dir
+            "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_PYTHONDIR}/opensim"
+            "${CMAKE_INSTALL_PREFIX}")
+        set(py_dir_to_lib_dir
+            "${py_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
+        list(APPEND run_path_list "${rpath_macro}/${py_dir_to_lib_dir}")
+
+        # Absolute RPATH.
+        if(NOT OPENSIM_PYTHON_STANDALONE)
+            list(APPEND run_path_list
+                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+        endif()
         set_property(TARGET ${_libname} APPEND PROPERTY
-            INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}"
-            )
+            INSTALL_RPATH "${run_path_list}")
     endif()
 
     # Copy files into the build tree python package.
