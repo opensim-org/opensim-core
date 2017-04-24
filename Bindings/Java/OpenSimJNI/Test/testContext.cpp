@@ -187,6 +187,16 @@ int main()
     context->cacheModelAndState();
     PropertyHelper::setValueDouble(v, massProp);
     context->restoreStateFromCachedModel();
+
+    // Exercise PathPoint operations used to edit Path in GUI
+    PathPointSet& pathPoints = dTRIlong->updGeometryPath().updPathPointSet();
+    AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
+    const PhysicalFrame& saveBody = savePoint.getBody();
+    AbstractPathPoint* clonedPoint = savePoint.clone();
+    // Delete second PathPoint from TRIlong muscle
+    context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
+    // TODO Insert new PathPoint same location 
+    // TODO change type of a path point from Stationary to Via or Moving or vice versa
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;

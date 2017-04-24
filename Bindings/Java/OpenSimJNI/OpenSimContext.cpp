@@ -264,7 +264,7 @@ void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame
 
 bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
     bool ret = p.deletePathPoint(*_configState, menuChoice );
-  _configState->invalidateAll(SimTK::Stage::Position);
+  _configState->invalidateAll(SimTK::Stage::Position); // This maynot be enough anymore in 4.0
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
   return ret;
 }
