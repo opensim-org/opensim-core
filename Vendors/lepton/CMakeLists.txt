@@ -15,3 +15,5 @@ OpenSimAddLibrary(VENDORLIB LOWERINCLUDEDIRNAME
     TESTDIRS test
     INCLUDEDIRS include include/lepton
     )
+
+# TODO change header installation location to CMAKE_INSTALL_INCLUDEDIR/OpenSim/lepton
