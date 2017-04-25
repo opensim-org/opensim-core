@@ -98,11 +98,6 @@ public:
 protected:
     // Change the color of the device's path as its tension changes.
     void extendRealizeDynamics(const SimTK::State& s) const override {
-        // TODO: Following lines are commented out for now because the active
-        //       and passive PathActuators have different names as a workaround
-        //       to a bug where PrescribedController will only control the
-        //       first actuator found with a given name. Re-visit once
-        //       PrescribedController issue is resolved.
         const auto& actuator = getComponent<PathActuator>(get_actuator_name());
         double level = fmin(1., getTension(s) / actuator.get_optimal_force());
         actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.5, 0));
