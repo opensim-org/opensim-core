@@ -44,12 +44,10 @@ class Actuator;
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *
- * @note Version 4.0 introduced the ability to have multiple components
- * with the same name as long as the components have unique absolute paths
- * (i.e., they are located in different components). However, Controllers 
- * will currently not work properly if you have multiple actuators with
- * the same name; the controller will always only actuate the first 
- * actuator with a given name.
+ * @note Controllers currently do not use the Socket mechanism to locate 
+ * and connect to the Actuators that Controllers depend on. As a result,
+ * for now, Controllers do not support controlling multiple actuators with 
+ * the same name.
  *
  * @author Ajay Seth
  */
