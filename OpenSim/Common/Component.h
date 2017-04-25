@@ -416,9 +416,10 @@ public:
         ownership tree and identifies its owner (if present) in the tree.
         finalizeFromProperties propagates to all of the component's subcomponents
         prior to invoking the virtual extendFinalizeFromProperties() on itself.
-        Note, finalizeFromProperties() disassociates the Component from the
-        System it was added to (result of addToSystem()), which results from
-        calling  Model::initSystem(), for example.*/
+        Note that if the Component has already been added to a System (result of
+        addToSystem(); e.g., Model::initSystem()) when finalizeFromProperties()
+        is called, then finalizeFromProperties() disassociates the component from
+        that System.*/
     void finalizeFromProperties();
 
     /** Satisfy the Component's connections specified by its Sockets and Inputs.
