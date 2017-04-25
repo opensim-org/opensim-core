@@ -20,7 +20,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "OpenSim/Common/Adapters.h"
+#include "OpenSim/Common/Storage.h"
 
 #include <unordered_set>
 #include <fstream>
@@ -225,6 +227,19 @@ int main() {
         TimeSeriesTable table{filename};
         STOFileAdapter_<double>::write(table, tmpfile);
         compareFiles(filename, tmpfile);
+
+        // Make sure Storage can read the new STO/MOT files.
+        Storage storage{tmpfile};
+        ASSERT(table.getNumRows() == storage.getSize());
+        ASSERT(table.getNumColumns() == storage.getColumnLabels().getSize());
+        for(auto i = 0; i < storage.getSize(); ++i) {
+            const auto& statevec = storage.getStateVector(i);
+            ASSERT(statevec->getTime() == table.getIndependentColumn().at(i));
+            const auto& storageRow = statevec->getData();
+            const auto& tableRow = table.getRowAtIndex(i);
+            for(auto j = 0; j < table.getNumColumns(); ++j)
+                ASSERT(storageRow.get(j) == tableRow[j]);
+        }
     }
 
     std::remove(tmpfile.c_str());
