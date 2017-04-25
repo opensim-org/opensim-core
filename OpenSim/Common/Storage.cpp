@@ -1317,7 +1317,7 @@ void Storage::createFromTimeSeriesTable(const TimeSeriesTable& table) {
     _storage.setSize(table.getNumRows());
     for(auto r = 0u; r < table.getNumRows(); ++r)
         _storage.set(r, StateVector{table.getIndependentColumn().at(r),
-                                    table.getRowAtIndex(r).getAsVector()});
+                    table.getRowAtIndex(r).transpose().getAsVector()});
 
     _fileVersion = 1;
     const auto& metadata = table.getTableMetaData();
