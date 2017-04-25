@@ -130,7 +130,7 @@ public:
      * Get the function at a specified index.
      *
      * @param aIndex Index of the desired function:  0 <= aIndex < getSize().
-     * @return Function at index aIndex.  If aIndex is not value NULL is 
+     * @return Function at index aIndex.  If aIndex is not a valid value NULL is
      *         returned.
      */
     GCVSpline* getGCVSpline(int aIndex) const;
