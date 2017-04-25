@@ -577,6 +577,12 @@ void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // wipe-out the existing System 
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    _system.reset();
+
     if(getForceSet().getSize()>0)
     {
         ForceSet &fs = updForceSet();
@@ -2121,14 +2127,7 @@ void Model::realizeReport(const SimTK::State& state) const
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-    try {
-        realizeAcceleration(s);
-    }
-    catch (const std::exception& e){
-        string exmsg = e.what();
-        throw Exception(
-            "Model::computeStateVariableDerivatives: failed. See: "+exmsg);
-    }
+    realizeAcceleration(s);
 }
 
 /**
