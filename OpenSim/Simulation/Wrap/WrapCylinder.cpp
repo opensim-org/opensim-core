@@ -820,13 +820,8 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
         // assumptions between DecorativeCylinder aligned with y  and
         // WrapCylinder aligned with z
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
-        // B: base Frame (Body or Ground)
-        // F: PhysicalFrame that this ContactGeometry is connected to
-        // P: the frame defined (relative to F) by the location and orientation
-        //    properties.
-        const SimTK::Transform& X_BF = getFrame().findTransformInBaseFrame();
-        const auto& X_FP = getTransform();
-        const auto X_BP = X_BF * X_FP;
+
+        const auto X_BP = getWrapGeometryTransformInBody();
         SimTK::Transform X_BP_ztoy = X_BP*ztoy;
         appendToThis.push_back(
             SimTK::DecorativeCylinder(get_radius(),

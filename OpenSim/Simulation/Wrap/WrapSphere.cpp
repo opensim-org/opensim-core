@@ -602,13 +602,7 @@ void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const Appearance& defaultAppearance = get_Appearance();
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
-        // B: base Frame (Body or Ground)
-        // F: PhysicalFrame that this WrapSphere is connected to
-        // P: the frame defined (relative to F) by the location and orientation
-        //    properties.
-        const auto& X_BF = getFrame().findTransformInBaseFrame();
-        const auto& X_FP = getTransform();
-        const auto X_BP = X_BF * X_FP;
+        const auto X_BP = getWrapGeometryTransformInBody();
         appendToThis.push_back(
             SimTK::DecorativeSphere(getRadius())
             .setTransform(X_BP).setResolution(2.0)

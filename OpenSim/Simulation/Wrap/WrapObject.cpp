@@ -271,3 +271,15 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
     }
     Super::updateFromXMLNode(node, versionNumber);
 }
+
+SimTK::Transform WrapObject::getWrapGeometryTransformInBody() const
+{
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this WrapGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
+    const SimTK::Transform& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    return X_BP;
+}

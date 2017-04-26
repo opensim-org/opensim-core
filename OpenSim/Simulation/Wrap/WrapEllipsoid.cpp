@@ -1309,13 +1309,7 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
         
-        // B: base Frame (Body or Ground)
-        // F: PhysicalFrame that this WrapEllipsoid is connected to
-        // P: the frame defined (relative to F) by the location and orientation
-        //    properties.
-        const auto& X_BF = getFrame().findTransformInBaseFrame();
-        const auto& X_FP = getTransform();
-        const auto X_BP = X_BF * X_FP;
+        const auto X_BP = getWrapGeometryTransformInBody();
         appendToThis.push_back(
             SimTK::DecorativeEllipsoid(getRadii())
             .setTransform(X_BP).setResolution(2.0)
