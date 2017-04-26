@@ -109,6 +109,7 @@ Storage::Storage(int aCapacity,const string &aName) :
 /**
  * Construct an Storage instance from file.
  * This constructor is far from bullet proof.
+ * This constructor also reads files written by STOFileAdapter with version 2.
  *
  * @param aFileName Name of the file from which the Storage is to be
  * constructed.
@@ -1320,6 +1321,7 @@ void Storage::createFromTimeSeriesTable(const TimeSeriesTable& table) {
                     table.getRowAtIndex(r).transpose().getAsVector()});
 
     _fileVersion = 1;
+    _inDegrees = true;
     const auto& metadata = table.getTableMetaData();
     for(const auto& key : metadata.getKeys()) {
         if(key == "units")
