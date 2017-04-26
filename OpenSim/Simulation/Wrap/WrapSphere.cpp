@@ -602,7 +602,7 @@ void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const Appearance& defaultAppearance = get_Appearance();
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
-        const auto X_BP = getWrapGeometryTransformInBody();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeSphere(getRadius())
             .setTransform(X_BP).setResolution(2.0)

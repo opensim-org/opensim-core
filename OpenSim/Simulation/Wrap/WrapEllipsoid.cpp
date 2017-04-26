@@ -1309,7 +1309,7 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
         
-        const auto X_BP = getWrapGeometryTransformInBody();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeEllipsoid(getRadii())
             .setTransform(X_BP).setResolution(2.0)

@@ -142,7 +142,7 @@ protected:
      * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
      * it is attached to.
      */
-    SimTK::Transform getWrapGeometryTransformInBody() const;
+    SimTK::Transform calcWrapGeometryTransformInBaseFrame() const;
    /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
      * based on the name of the quadrant. finalizeFromProperties() should be
      * called whenever the quadrant property changes. */

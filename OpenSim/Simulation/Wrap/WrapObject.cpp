@@ -272,7 +272,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
     Super::updateFromXMLNode(node, versionNumber);
 }
 
-SimTK::Transform WrapObject::getWrapGeometryTransformInBody() const
+SimTK::Transform WrapObject::calcWrapGeometryTransformInBaseFrame() const
 {
     // B: base Frame (Body or Ground)
     // F: PhysicalFrame that this WrapGeometry is connected to

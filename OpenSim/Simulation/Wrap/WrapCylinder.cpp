@@ -821,7 +821,7 @@ void WrapCylinder::generateDecorations(bool fixed, const ModelDisplayHints& hint
         // WrapCylinder aligned with z
         ztoy.updR().setRotationFromAngleAboutX(SimTK_PI / 2);
 
-        const auto X_BP = getWrapGeometryTransformInBody();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         SimTK::Transform X_BP_ztoy = X_BP*ztoy;
         appendToThis.push_back(
             SimTK::DecorativeCylinder(get_radius(),

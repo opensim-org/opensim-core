@@ -528,7 +528,7 @@ void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, 
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
 
-        const auto X_BP = getWrapGeometryTransformInBody();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeTorus(getOuterRadius(),
                 getInnerRadius())
