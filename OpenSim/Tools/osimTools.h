@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "ScaleTool.h"
+#include "RRATool.h"
 #include "CMCTool.h"
 #include "ForwardTool.h"
 #include "AnalyzeTool.h"

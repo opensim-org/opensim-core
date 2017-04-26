@@ -78,6 +78,9 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
+    /** Construct a ClutchedPathSpring with default parameters. Users should
+        note that the default values for stiffness and dissipation are `NaN`
+        so they must be set before simulating. */
     ClutchedPathSpring();
     
     /** Convenience constructor with ClutchedPathSpring parameters
@@ -138,6 +141,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
+    void extendFinalizeFromProperties() override;
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
 private:
