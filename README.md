@@ -159,9 +159,6 @@ On Windows using Visual Studio
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
-        If you want to use *Visual Studio Enterprise 2015*, you may be able
-        to get it for free at [Dreamspark](https://www.dreamspark.com) if
-        you are at an academic institution.
     * Visual Studio 2015 does not install C++
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
@@ -253,17 +250,18 @@ On Windows using Visual Studio
         cmake --build . --config RelWithDebInfo
 
    Alternative values for `--config` in this command are:
-    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
-      Library names end with `_d`.
-    * **Release**: no debugger symbols; optimized.
-    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
-      than Release; choose this if unsure.
-    * **MinSizeRel**: minimum size; optimized.
+   
+   * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+     Library names end with `_d`.
+   * **Release**: no debugger symbols; optimized.
+   * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+     than Release; choose this if unsure.
+   * **MinSizeRel**: minimum size; optimized.
 
-      You must run this command for each of the configurations you plan to use
-      with OpenSim (see below). You should run this command for the release
-      configuration *last* to ensure that you use the release version of the
-      command-line applications instead of the slow debug versions.
+   You must run this command for each of the configurations you plan to use
+   with OpenSim (see below). You should run this command for the release
+   configuration *last* to ensure that you use the release version of the
+   command-line applications instead of the slow debug versions.
 11. If you like, you can now remove the directory used for building
     dependencies (`c:/opensim-core-dependencies-build`).
 
@@ -275,8 +273,9 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
-       build as 64-bit, select *Visual Studio 14 Win64*. The choice between
+    1. Choose the *Visual Studio 14* or *Visual Studio 14 2015* generator. To
+       build as 64-bit, select *Visual Studio 14 Win64* or 
+       *Visual Studio 14 2015 Win64*. The choice between
        32-bit/64-bit must be the same across all dependencies.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
@@ -555,11 +554,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers. (If you installed Python
-      with Homebrew, [CMake will not find the Homebrew Python libraries on its
-      own](https://github.com/Homebrew/homebrew/issues/25118); you must set the
-      CMake variable `PYTHON_LIBRARIES` manually. Use `'$(python-config
-      --prefix)/lib/libpython2.7.dylib'` in bash to get the correct value.)
+      Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to create
    Xcode project files in the build directory.

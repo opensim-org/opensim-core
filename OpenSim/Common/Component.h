@@ -149,9 +149,9 @@ public:
                          const std::string& func,
                          const Object& obj) :
         Exception(file, line, func, obj) {
-        std::string msg = "This Component has not been added to a System.\n";
-        msg += "You must call initSystem on the top-level Component ";
-        msg += "(i.e., Model) first.";
+        std::string msg = "Component has no underlying System.\n";
+        msg += "You must call initSystem() on the top-level Component ";
+        msg += "(i.e. Model) first.";
         addMessage(msg);
     }
 };
@@ -414,13 +414,18 @@ public:
     /** Define a Component's internal data members and structure according to
         its properties. This includes its subcomponents as part of the component
         ownership tree and identifies its owner (if present) in the tree.
-        finalizeFromProperties propagates to all of the component's
-        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
-        on itself.*/
+        finalizeFromProperties propagates to all of the component's subcomponents
+        prior to invoking the virtual extendFinalizeFromProperties() on itself.
+        Note that if the Component has already been added to a System (result of
+        addToSystem(); e.g., Model::initSystem()) when finalizeFromProperties()
+        is called, then finalizeFromProperties() disassociates the component from
+        that System.*/
     void finalizeFromProperties();
 
-    /** Connect this Component to its aggregate component, which is the root
-        of a tree of components.*/
+    /** Satisfy the Component's connections specified by its Sockets and Inputs.
+        Locate Components and their Outputs to satisfy the connections in an
+        aggregate Component (e.g. Model), which is the root of a tree of
+        Components. */
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
@@ -582,6 +587,7 @@ public:
         static_assert(std::is_base_of<Component, T>::value,
                 "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
+        clearObjectIsUpToDateWithProperties();
         return ComponentList<T>(*this);
     }
 
@@ -704,7 +710,12 @@ public:
         return getComponent<Component>(pathname);
     }
 
-    /** Get a writable reference to a subcomponent.
+    /** Get a writable reference to a subcomponent. Use this method
+    * to edit the properties and connections of the subcomponent.
+    * Note: the method will mark this Component as out-of-date with
+    * its properties and will require finalizeFromProperties() to be
+    * invoked directly or indirectly (by finalizeConnections() or 
+    * Model::initSystem())
     * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
@@ -712,6 +723,7 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
@@ -2556,20 +2568,12 @@ private:
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
         {   return updSystem().updDefaultSubsystem(); }
 
-    void clearStateAllocations() {
-        _namedModelingOptionInfo.clear();
-        _namedStateVariableInfo.clear();
-        _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();    
-    }
+    // Clear all modeling options, continuous and discrete state variables,
+    // and cache variable allocated by this Component
+    void clearStateAllocations();
 
     // Reset by clearing underlying system indices.
-    void reset() {
-        _simTKcomponentIndex.invalidate();
-        clearStateAllocations();
-
-        resetSubcomponentOrder();
-    }
+    void reset();
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
