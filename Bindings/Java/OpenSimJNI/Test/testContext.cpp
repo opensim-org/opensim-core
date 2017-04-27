@@ -191,7 +191,7 @@ int main()
     // Exercise PathPoint operations used to edit Path in GUI
     PathPointSet& pathPoints = dTRIlong->updGeometryPath().updPathPointSet();
     AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
-    const PhysicalFrame& saveBody = savePoint.getBody();
+    const PhysicalFrame& saveBody = savePoint.getParentFrame();
     AbstractPathPoint* clonedPoint = savePoint.clone();
     // Delete second PathPoint from TRIlong muscle
     context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
