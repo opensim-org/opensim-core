@@ -255,6 +255,7 @@ void testExcitationUpdatesWithManager()
         {
             muscleSet.get(j).setExcitation(state, 1.0);
         }
+        arm.markControlsAsValid(state); // TODO
         cout << state.getTime() << " ";
         manager.integrate(state, stepsize*(i + 1));
         arm.realizeDynamics(state);

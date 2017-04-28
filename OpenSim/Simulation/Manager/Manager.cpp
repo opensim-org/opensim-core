@@ -668,10 +668,21 @@ integrate(SimTK::State& s, double finalTime)
     if (_constantDT || _specifiedDT) fixedStep = true;
 
     // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(s);
-    s.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
-    SimTK::State sCopy = s;
-    _timeStepper->initialize(sCopy);
+    if (_timeStepper == NULL) {
+        initializeTimeStepper(s);
+    } else {
+        //_integ->updAdvancedState() = s;
+        _integ->updAdvancedState().updY() = s.getY();
+        _integ->updAdvancedState().updTime() = s.getTime();
+        _model->getMultibodySystem().realizeModel(_integ->updAdvancedState());
+        _model->getMultibodySystem().realize(_integ->updAdvancedState(), SimTK::Stage::Instance);
+        //_model->getMultibodySystem().realize(_integ->getAdvancedState(), SimTK::Stage::Position);
+        _integ->reinitialize(SimTK::Stage::Position/*TODO*/, false);
+    }
+    
+//TODO    s.invalidateAllCacheAtOrAbove(SimTK::Stage::Instance);
+//TODO    SimTK::State sCopy = s;
+//    _timeStepper->initialize(s);
     
     
 
@@ -738,8 +749,11 @@ integrate(SimTK::State& s, double finalTime)
         if (checkHalt()) break;
     }
     finalize(_integ->updAdvancedState());
+    // TODO s = _integ->getAdvancedState(); // TODO _integ->getState();
+    //SimTK::State sCopy = _integ->getState();
+    //s = sCopy; // TODO _integ->getState();
     s = _integ->getState();
-
+    
     // CLEAR ANY INTERRUPT
     clearHalt();
 
@@ -819,7 +833,7 @@ void Manager::initializeTimeStepper(const SimTK::State& s)
 {
     _timeStepper.reset(
         new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
-    //_timeStepper->initialize(s);
+   // _timeStepper->initialize(s);
     _timeStepper->setReportAllSignificantStates(true);
 }
 
