@@ -401,7 +401,15 @@ loadStatesFromFile(SimTK::State& s)
         _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
         _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
-        _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        // used to use createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        double ti = qStore->getFirstTime();
+        double tf = qStore->getLastTime();
+        uStore->addToRdStorage(*qStore, ti, tf);
+
+        delete _statesStore;
+        _statesStore = new Storage(512, "states");
+
+        _model->formStateStorage(*qStore, *_statesStore);
 
         delete qStore;
         delete uStore;
@@ -434,8 +442,14 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
     _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
     _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
-    _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+    double ti = qStore->getFirstTime();
+    double tf = qStore->getLastTime();
+    uStore->addToRdStorage(*qStore, ti, tf);
 
+    delete _statesStore;
+    _statesStore = new Storage(512, "states");
+
+    _model->formStateStorage(*qStore, *_statesStore);
     delete qStore;
     delete uStore;
 }
