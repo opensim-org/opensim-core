@@ -196,24 +196,29 @@ int main()
     AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
     const std::string& saveFrameName = savePoint.getParentFrame().getName();
     AbstractPathPoint* clonedPoint = savePoint.clone();
-    // Delete second PathPoint from TRIlong muscle
+
+    // Test delete second PathPoint from TRIlong muscle
     context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
     assert(pathPoints.getSize() == origSize - 1);
     std::string pathAfterDeletionInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterDeletionInXML << endl;
-    // TODO Insert new PathPoint same location 
+    
+    // Test adding PathPoint to TRIlong muscle (Stationary)
     Component& frame = model->updComponent(saveFrameName);
     PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
     context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
     assert(pathPoints.getSize() == origSize);
     std::string pathAfterReinsertionInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterReinsertionInXML << endl;
+
+    // Test changing type to ConditionalPathPoint
     ConditionalPathPoint* newPoint = new ConditionalPathPoint();
     AbstractPathPoint& oldPoint = pathPoints.get(2);
     newPoint->setCoordinate(model->getCoordinateSet().get(0));
     newPoint->setParentFrame(oldPoint.getParentFrame());
     context->replacePathPoint(dTRIlong->updGeometryPath(), oldPoint, *newPoint);
     assert(pathPoints.getSize() == origSize);
+
     std::string pathAfterTypeChangeToViaInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
