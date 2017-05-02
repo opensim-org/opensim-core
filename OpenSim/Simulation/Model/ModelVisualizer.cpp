@@ -232,7 +232,8 @@ void ModelVisualizer::createVisualizer() {
     // for the SimbodyVisualizer executable. The search will go as 
     // follows: first look in the same directory as the currently-
     // executing executable; then look in the $OPENSIM_HOME/bin 
-    // directory, then look in various default Simbody places.
+    // directory, then look at all the paths in the environment
+    // variable PATH, then look in various default Simbody places.
     Array_<String> searchPath;
     if (SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
         searchPath.push_back( 
