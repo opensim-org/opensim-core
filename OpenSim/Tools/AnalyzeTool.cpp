@@ -612,8 +612,6 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         analysisSet.get(i).setStatesStore(aStatesStore);
     }
 
-    // TODO: some sort of filtering or something to make derivatives smoother?
-    GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
     double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;
