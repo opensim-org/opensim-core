@@ -1979,9 +1979,10 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         }
         mapColumns[i] = fix;
         if (fix==-1){
-            cout << "Column "<< rStateNames[i] 
-                 << " not found in formStateStorage, assuming its default value."
-                 << defaultStateValues[i] << endl;
+            cout << "Column "<< rStateNames[i] << 
+                " not found by Model::formStateStorage(). "
+                "Assuming its default value of "
+                << defaultStateValues[i] << endl;
         }
     }
     // Now cycle through each state (row of Storage) and form the Model consistent
