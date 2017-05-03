@@ -960,7 +960,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     for(i=0;i<size;i++) {
         qStore->getTime(i,time);
         qStore->getData(i,nq,&qu[0]);
-        uStore->getData(i,nq,&qu[nq]);
+        uStore->getData(i,nu,&qu[nq]);
         for (int j = 0; j < nq; j++) {
             Coordinate& coord = coordinateSet.get(j);
             coord.setValue(constrainedState, qu[j], false);
