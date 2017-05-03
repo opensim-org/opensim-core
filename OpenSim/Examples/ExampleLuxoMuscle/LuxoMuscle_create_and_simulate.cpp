@@ -257,10 +257,9 @@ int main(int argc, char* argv[]) {
         // Integrate from initial time to final time
         
         
-        manager.setInitialTime(0.0);
-        manager.setFinalTime(sim_time);
+        state.setTime(0.0);
         std::cout<<"Integrating for " << sim_time << " seconds" <<std::endl;
-        manager.integrate(state);
+        manager.integrate(state, sim_time);
         std::cout<<"Integration finished."<<std::endl;
         
         //////////////////////////////
