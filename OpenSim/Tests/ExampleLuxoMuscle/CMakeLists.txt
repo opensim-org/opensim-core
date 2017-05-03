@@ -2,7 +2,7 @@
 set(TEST_TARGET testExampleLuxoMuscle)
 set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-# Copy dependencies from ExampleMain into the run directory
+# Copy dependencies from ExampleLuxoMuscle into the run directory.
 set(EXAMPLE_DIR "${OpenSim_SOURCE_DIR}/OpenSim/Examples/ExampleLuxoMuscle")
 file(GLOB TEST_FILES 
     ${EXAMPLE_DIR}/*.obj 
@@ -19,7 +19,6 @@ foreach(dataFile ${TEST_FILES})
     file(COPY ${dataFile} DESTINATION ${TEST_DIR})
 endforeach(dataFile) 
 
-# Copy the standard answer for example main
 set(TEST_EXAMPLE_DIR "${OpenSim_SOURCE_DIR}/OpenSim/Tests/ExampleLuxoMuscle")
 
 # Add test.
