@@ -174,6 +174,9 @@ createSTOFileAdapterForReading(const std::string& fileName);
 std::shared_ptr<DataAdapter>
 createSTOFileAdapterForWriting(const AbstractDataTable& table);
 
+typedef STOFileAdapter_<double> STOFileAdapter;
+typedef STOFileAdapter_<SimTK::Vec3> STOFileAdapterVec3;
+
 }
 
 #endif // OPENSIM_STO_FILE_ADAPTER_H_
