@@ -2483,7 +2483,7 @@ findIndex(double aT) const
  */
 void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const
 {
-    assert(aStartTime < aEndTime);
+    SimTK_ASSERT_ALWAYS(aStartTime <= aEndTime, "Start time must be <= end time");
 
     oStartFrame = findIndex(0, aStartTime);
     oEndFrame = findIndex(getSize()-1, aEndTime);
