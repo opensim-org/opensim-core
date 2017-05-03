@@ -16,5 +16,6 @@ if(BUILD_TESTING)
     add_subdirectory(VisualizeModel)
     add_subdirectory(README)
     add_subdirectory(Wrapping)
+    add_subdirectory(ExampleLuxoMuscle)
 endif()
 

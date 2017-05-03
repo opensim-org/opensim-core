@@ -193,8 +193,11 @@ void createLuxoJr(OpenSim::Model &model);
 /**
  * main routine to run the model.
  */
-int main()
-{
+int main(int argc, char* argv[]) {
+    bool showVisualizer{true};
+    if(argc > 1 && std::string{argv[1]} == "noVisualizer")
+            showVisualizer = false;
+
     try {
         // Create an OpenSim model and set its name
         Model luxo;
@@ -206,7 +209,7 @@ int main()
         std::cout << "Finished making Luxo Jr skeleton" << std::endl;
         
         // Turn on 3D visualization for this Luxo lamp model
-        luxo.setUseVisualizer(true);
+        luxo.setUseVisualizer(showVisualizer);
         luxo.updDisplayHints().set_show_frames(true);
         
         // Pose the model
@@ -214,13 +217,13 @@ int main()
         std::cout << "State initialized." << std::endl;
         
         // Configure the 3D visualizer environment
-        luxo.updMatterSubsystem().setShowDefaultGeometry(false);
-        Visualizer& viz = luxo.updVisualizer().updSimbodyVisualizer();
-        viz.setBackgroundType(viz.GroundAndSky);
-        viz.setShowSimTime(true);
-        
-        
-        
+        Visualizer* viz{};
+        if(showVisualizer) {
+            luxo.updMatterSubsystem().setShowDefaultGeometry(false);
+            viz = &luxo.updVisualizer().updSimbodyVisualizer();
+            viz->setBackgroundType(viz->GroundAndSky);
+            viz->setShowSimTime(true);
+        }
         
         SimTK::Transform camera_pose(
                              camera_offset_distance*camera_offset_direction);
@@ -231,7 +234,8 @@ int main()
         //viz.pointCameraAt(camera_look_at, Vec3(0,1,0));
         
         // show the model!
-        viz.report(state);
+        if(showVisualizer)
+            viz->report(state);
         
         // Create the force reporter for obtaining the forces applied to the
         // model during a forward simulation
@@ -253,10 +257,9 @@ int main()
         // Integrate from initial time to final time
         
         
-        manager.setInitialTime(0.0);
-        manager.setFinalTime(sim_time);
+        state.setTime(0.0);
         std::cout<<"Integrating for " << sim_time << " seconds" <<std::endl;
-        manager.integrate(state);
+        manager.integrate(state, sim_time);
         std::cout<<"Integration finished."<<std::endl;
         
         //////////////////////////////
@@ -276,11 +279,10 @@ int main()
         
         std::cout << "OpenSim example completed successfully.\n";
         // enter anything in the command prompt to quit
-        std::cout << "Enter anything to quit." << std::endl;
-        std::cin.get();
-        
-        
-        
+        if(showVisualizer) {
+            std::cout << "Enter anything to quit." << std::endl;
+            std::cin.get();
+        }
     }
     catch (OpenSim::Exception ex)
     {
@@ -415,8 +417,7 @@ void createLuxoJr(OpenSim::Model &model){
     
     // allow this joint's coordinate to float freely when assembling constraints
     // the joint we create next will drive the pose of the 4-bar linkage
-    posteriorKnee->upd_CoordinateSet()[0]
-                                    .set_is_free_to_satisfy_constraints(true);
+    posteriorKnee->updCoordinate().set_is_free_to_satisfy_constraints(true);
     
     // Create anterior leg Hlink
     //----------------------------
@@ -451,7 +452,7 @@ void createLuxoJr(OpenSim::Model &model){
     
     // this anterior knee joint defines the motion of the lower 4-bar linkage
     // set it's default coordinate value to a slightly flexed position.
-    anterior_knee->upd_CoordinateSet()[0].set_default_value(SimTK::Pi/6);
+    anterior_knee->updCoordinate().set_default_value(SimTK::Pi/6);
     
     // Create pelvis bracket
     //-----------------------
@@ -486,8 +487,7 @@ void createLuxoJr(OpenSim::Model &model){
     // since the previous, anterior knee joint drives the pose of the lower
     // 4-bar linkage, set the anterior hip angle such that it's free to satisfy
     // constraints that couple it to the 4-bar linkage.
-    anteriorHip->upd_CoordinateSet()[0]
-                                    .set_is_free_to_satisfy_constraints(true);
+    anteriorHip->updCoordinate().set_is_free_to_satisfy_constraints(true);
     
     // Close the loop for the lower, four-bar linkage with a constraint
     //------------------------------------------------------------------
@@ -533,7 +533,7 @@ void createLuxoJr(OpenSim::Model &model){
     model.addBody(chest); model.addJoint(anteriorTorsoHinge);
     
     // set torso rotation slightly anterior
-    anteriorTorsoHinge->upd_CoordinateSet()[0].setDefaultValue(-1*SimTK::Pi/4);
+    anteriorTorsoHinge->updCoordinate().setDefaultValue(-1*SimTK::Pi/4);
     
     // Create chest piece
     //-----------------------
@@ -564,8 +564,8 @@ void createLuxoJr(OpenSim::Model &model){
     
     // set posterior back joint to freely follow anterior joint through 4-bar
     // linkage coupling.
-    posteriorTorsoHinge->upd_CoordinateSet()[0]
-    .set_is_free_to_satisfy_constraints(true);
+    posteriorTorsoHinge->updCoordinate()
+                        .set_is_free_to_satisfy_constraints(true);
     
     // Create shoulder bracket
     //-----------------------
@@ -599,8 +599,8 @@ void createLuxoJr(OpenSim::Model &model){
     // since the previous, anterior thoracic joint drives the pose of the lower
     // 4-bar linkage, set the anterior shoulder angle such that it's free to
     // satisfy constraints that couple it to the 4-bar linkage.
-    anteriorThoracicJoint->upd_CoordinateSet()[0]
-        .set_is_free_to_satisfy_constraints(true);
+    anteriorThoracicJoint->updCoordinate()
+                          .set_is_free_to_satisfy_constraints(true);
 
     // Close the loop for the lower, four-bar linkage with a constraint
     //------------------------------------------------------------------
@@ -643,13 +643,13 @@ void createLuxoJr(OpenSim::Model &model){
     
     // lock the kneck coordinate so the head doens't spin without actuators or
     // passive forces
-    cervicalJoint->upd_CoordinateSet()[0].set_locked(true);
+    cervicalJoint->updCoordinate().set_locked(true);
 
     // Coordinate Limit forces for restricting leg range of motion.
     //-----------------------------------------------------------------------
     CoordinateLimitForce* kneeLimitForce =
             new CoordinateLimitForce(
-                     anterior_knee->get_CoordinateSet()[0].getName(),
+                     anterior_knee->getCoordinate().getName(),
                      knee_flexion_max, joint_softstop_stiffness,
                      knee_flexion_min, joint_softstop_stiffness,
                      joint_softstop_damping,
@@ -660,7 +660,7 @@ void createLuxoJr(OpenSim::Model &model){
     //-----------------------------------------------------------------------
     CoordinateLimitForce* backLimitForce =
     new CoordinateLimitForce(
-                         anteriorTorsoHinge->get_CoordinateSet()[0].getName(),
+                         anteriorTorsoHinge->getCoordinate().getName(),
                          back_extension_max, joint_softstop_stiffness,
                          back_extension_min, joint_softstop_stiffness,
                          joint_softstop_damping,
@@ -729,7 +729,7 @@ void createLuxoJr(OpenSim::Model &model){
     // flip the z coordinates of all path points
     PathPointSet& points = kneeExtensorLeft->updGeometryPath().updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {
-        points[i].setLocationCoord(2, -1*points[i].getLocationCoord(2));
+        dynamic_cast<PathPoint&>(points[i]).upd_location()[2] *= -1;
     }
 
     kneeExtensorLeft->set_ignore_tendon_compliance(true);
@@ -757,7 +757,7 @@ void createLuxoJr(OpenSim::Model &model){
     PathPointSet& pointsLeft = backExtensorLeft->updGeometryPath()
         .updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {
-        pointsLeft[i].setLocationCoord(2, -1*pointsLeft[i].getLocationCoord(2));
+        dynamic_cast<PathPoint&>(pointsLeft[i]).upd_location()[2] *= -1;
     }
     backExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorLeft);
@@ -807,8 +807,8 @@ void createLuxoJr(OpenSim::Model &model){
                             *pelvisBracket,
                             back_assist_insertion_transform);
     
-    model.addFrame(back_assist_origin_frame);
-    model.addFrame(back_assist_insertion_frame);
+    model.addComponent(back_assist_origin_frame);
+    model.addComponent(back_assist_insertion_frame);
     
     // add frames for connecting a knee assistance device between the posterior
     // leg and bottom bracket.
@@ -822,8 +822,8 @@ void createLuxoJr(OpenSim::Model &model){
                         *bottom_bracket,
                         knee_assist_insertion_transform);
     
-    model.addFrame(knee_assist_origin_frame);
-    model.addFrame(knee_assist_insertion_frame);
+    model.addComponent(knee_assist_origin_frame);
+    model.addComponent(knee_assist_insertion_frame);
 
     // Temporary: make the frame geometry disappear.
     for (auto& c : model.getComponentList<OpenSim::FrameGeometry>()) {
