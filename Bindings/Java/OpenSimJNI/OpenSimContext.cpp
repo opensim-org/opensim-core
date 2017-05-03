@@ -250,9 +250,10 @@ void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame
 }
 
 bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
-    bool ret = p.deletePathPoint(*_configState, menuChoice );
-    recreateSystemKeepStage();
-    return ret;
+    bool deletedSuccessfully = p.deletePathPoint(*_configState, menuChoice );
+    if (deletedSuccessfully) 
+        recreateSystemKeepStage();
+    return deletedSuccessfully;
 }
 
 bool OpenSimContext::isActivePathPoint(AbstractPathPoint& mp) {
