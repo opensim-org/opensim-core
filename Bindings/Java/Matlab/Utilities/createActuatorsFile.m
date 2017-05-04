@@ -28,11 +28,13 @@ modelFilePath = fullfile(pathname,filename);
 
 %% Generate an instance of the model
 model = Model(modelFilePath);
-model.finalizeFromProperties();
+
+%% Instantiate the underlying computational System and return a handle to the State
+state = model.initSystem();
+
 %% Get the number of coordinates  and a handle to the coordainte set
 coordSet = model.getCoordinateSet();
 nCoord = coordSet.getSize();
-
 
 %% Instantiate some empty vec3's for later.
 massCenter = Vec3();
@@ -40,9 +42,6 @@ axisValues = Vec3();
 
 %% Instantiate an empty Force set
 forceSet = ForceSet();
-
-%% Instantiate the underlying computational System and return a handle to the State
-state = model.initSystem();
 
 %% Set the optimal force
 optimalForce = 1;
