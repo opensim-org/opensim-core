@@ -32,23 +32,45 @@ using namespace OpenSim;
 using namespace std;
 
 void testTutorialOne();
-SimTK::Vector testTugOfWar_Passive();
-void testTugOfWar_DefaultActivation();
-void testTugOfWar_ActivationOverride();
+
+// Test different default activations are respected when activation
+// states are not provided. Note if default_activation is 1.0 it 
+// reproduces  the "skyscraper" bug issue #83 in OpenSim32 repo
+void testTugOfWar(const string& dataFileName, const double& defaultAct);
 
 
 int main()
 {
-    try {
-        //testTutorialOne();
-        SimTK::Vector passiveForces = testTugOfWar_Passive();
-        testTugOfWar_DefaultActivation();
-        testTugOfWar_ActivationOverride();
+    SimTK::Array_<std::string> failures;
+
+    try { /*testTutorialOne();*/ }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testTutorialOne");
     }
-    catch (const exception& e) {
-        cout << "testTutorialOne Failed: " << e.what() << endl;
+    // produce passive force-length curve
+    try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.01); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; 
+        failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.01");
+    }
+    //produced passive + active but before skyscraper bug appears (at 0.9)
+    try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.8); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.8");
+    }
+    // now supply activation states which should be used instead of the default
+    try { testTugOfWar("Tug_of_War_ConstantVelocity_RampActivation.sto", 0.0); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testTugOfWar with activation state provided");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
+
     cout << "Done" << endl;
     return 0;
 }
@@ -78,73 +100,31 @@ void testTutorialOne() {
     cout << "testAnalyzeTutorialOne passed" << endl;
 }
 
-SimTK::Vector testTugOfWar_Passive() {
+void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     AnalyzeTool analyze("Tug_of_War_Setup_Analyze.xml");
+    analyze.setCoordinatesFileName("");
+    analyze.setStatesFileName("");
+
+    // Access the model and muscle being analyzed
     Model& model = analyze.getModel();
     Millard2012EquilibriumMuscle& muscle =
         static_cast<Millard2012EquilibriumMuscle&>(model.updMuscles()[0]);
-    //muscle.setFiberDamping(0.001);
-    //set default activation to zero
-    muscle.set_default_activation(0.0);
-    // set min achievable activation to 0 as well
-    muscle.set_minimum_activation(0.0);
-    analyze.run();
-
-    // Load the AnalyzTool results for the muscle's force through time
-    TimeSeriesTable_<double> results =
-        STOFileAdapter_<double>::
-        read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_ForceReporter_forces.sto");
-    assert(results.getNumColumns() == 1);
-    SimTK::Vector forces = results.getDependentColumnAtIndex(0);
-
-    // Load in the States used to perform the Analysis
-    Storage statesSto("Tug_of_War_ConstantVelocity.sto");
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-        model, statesSto, true, false);
-    size_t nstates = statesTraj.getSize();
-
-    assert(forces.size() == nstates);
-
-    SimTK::Vector pfs(nstates, SimTK::NaN);
-
-    SimTK::State s = model.getWorkingState();
-    double tf = SimTK::NaN;
-    // Independently compute the passive fiber force at every state
-    for (int i = 0; i < nstates; ++i) {
-        s = statesTraj[i];
-        muscle.setActivation(s, 0.0);
-        muscle.setFiberLength(s, muscle.get_default_fiber_length());
-        muscle.computeEquilibrium(s);
-        model.realizeDynamics(s);
-        assert(muscle.getActivation(s) == 0.0);
-        // At 0 activation, the fiber force must be given by its passive properties
-        pfs[i] = muscle.getPassiveFiberForceAlongTendon(s);
-        tf = muscle.getTendonForce(s);
-
-        // equilibrium demands tendon and fiber are equivalent
-        ASSERT_EQUAL<double>(tf, pfs[i], SimTK::SqrtEps);
-
-        // Verify that the current computed and AnalyzeTool reported force are
-        // equivalent
-        //cout << "Passive-fiber-force: " << pfs[i] <<
-        //    " Analyze muscle force: " << forces[i] << endl;
-        ASSERT_EQUAL<double>(pfs[i], forces[i], SimTK::SqrtEps, __FILE__, __LINE__,
-            "Passive fiber force failed to match reported muscle force.");
+    bool isCoordinatesOnly = true;
+    // Load in the States used to recompute the results of the Analysis 
+    Storage dataStore(dataFileName);
+    if (dataStore.getColumnLabels().findIndex(muscle.getName() + ".activation") > 0) {
+        isCoordinatesOnly = false;
+        analyze.setStatesFileName(dataFileName);
+        // ramp input starts at 0.0
+        muscle.set_minimum_activation(0.0);
+    }
+    else {
+        analyze.setCoordinatesFileName(dataFileName);
     }
 
-    return pfs;
-}
-
-void testTugOfWar_DefaultActivation() {
-    AnalyzeTool analyze("Tug_of_War_Setup_Analyze.xml");
-    Model& model = analyze.getModel();
-    Millard2012EquilibriumMuscle& muscle =
-        static_cast<Millard2012EquilibriumMuscle&>(model.updMuscles()[0]);
-    //muscle.setFiberDamping(0.0001);
     // Test that the default activation is taken into consideration by
-    // the Analysis and that above was by chance due to 0 activation
-    //set default activation to zero
-    muscle.set_default_activation(0.8);
+    // the Analysis and reflected in the AnalyzeTool solution
+    muscle.set_default_activation(defaultAct);
     analyze.run();
 
     // Load the AnalyzTool results for the muscle's force through time
@@ -154,100 +134,58 @@ void testTugOfWar_DefaultActivation() {
     assert(results.getNumColumns() == 1);
     SimTK::Vector forces = results.getDependentColumnAtIndex(0);
 
-    // Load in the States used to perform the Analysis
-    Storage statesSto("Tug_of_War_ConstantVelocity.sto");
+    // Load input data as StatesTrajectory used to perform the Analysis
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
-        model, statesSto, true, false);
+        model, dataStore, true, false);
     size_t nstates = statesTraj.getSize();
 
-    // muscle active, damping, total muscle and tendon force quantities
-    double af, pf, mf, tf = SimTK::NaN;
+    // muscle active, passive, total muscle and tendon force quantities
+    double af, pf, mf, tf;
+    af= pf = mf = tf = SimTK::NaN;
 
+    // Tolerance for muscle equilibrium solution 
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
     for (int i = 0; i < nstates; ++i) {
         s = statesTraj[i];
-        muscle.setActivation(s, muscle.get_default_activation());
+        // When the muscle states are not supplied in the input dataStore
+        // (isCoordinatesOnly == true), then set it to its default value.
+        if (isCoordinatesOnly) {
+            muscle.setActivation(s, muscle.get_default_activation());
+        }
+        // technically, fiber lengths could be supplied, but this test case
+        // (a typical use case) does not and therefore set to its default.
         muscle.setFiberLength(s, muscle.get_default_fiber_length());
         muscle.computeEquilibrium(s);
         model.realizeDynamics(s);
-        // make sure the activation is not be reset to zero
-        assert(muscle.getActivation(s) == muscle.get_default_activation());
-        // At default activation the active force is non-zero
+
+        if (isCoordinatesOnly) {
+            // check that activation is not reset to zero or other value
+            SimTK_ASSERT_ALWAYS(muscle.getActivation(s) == defaultAct,
+                "Test failed to correctly use the default activation value.");
+        }
+        else {
+            // check that activation used was that supplied by the dataStore
+            SimTK_ASSERT_ALWAYS(muscle.getActivation(s) == s.getTime(),
+                "Test failed to correctly use the supplied activation values.");
+        }
+ 
+        // get active and passive forces given the default activation
         af = muscle.getActiveFiberForceAlongTendon(s);
         pf = muscle.getPassiveFiberForceAlongTendon(s);
-        // now the total muscle force is the active + passive
-        mf = af + pf; //  + df;
-        tf = muscle.getTendonForce(s);
-
-        // equilibrium demands tendon and muscle fiber are equivalent
-        ASSERT_EQUAL<double>(tf, mf, equilTol);
-        // Verify that the current computed and AnalyzeTool reported force are
-        // equivalent
-        cout << "Muscle-fiber-force: " << mf <<
-            " Analyze muscle force: " << forces[i] << endl;
-        ASSERT_EQUAL<double>(mf, forces[i], equilTol, __FILE__, __LINE__,
-            "Total fiber force failed to match reported muscle force.");
-    }
-}
-
-void testTugOfWar_ActivationOverride() {
-    AnalyzeTool analyze("Tug_of_War_Setup_Analyze.xml");
-    analyze.setCoordinatesFileName("");
-
-    // Load in the States used to perform the Analysis
-    Storage statesSto("Tug_of_War_ConstantVelocity_RampActivation.sto");
-    analyze.setStatesFileName("Tug_of_War_ConstantVelocity_RampActivation.sto");
-
-    Model& model = analyze.getModel();
-    Millard2012EquilibriumMuscle& muscle =
-        static_cast<Millard2012EquilibriumMuscle&>(model.updMuscles()[0]);
-    analyze.run();
-
-    // Load the AnalyzTool results for the muscle's force through time
-    TimeSeriesTable_<double> results =
-        STOFileAdapter_<double>::
-        read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_ForceReporter_forces.sto");
-    assert(results.getNumColumns() == 1);
-    SimTK::Vector forces = results.getDependentColumnAtIndex(0);
-
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-        model, statesSto, true, false);
-    size_t nstates = statesTraj.getSize();
-
-    assert(forces.size() == nstates);
-
-    // muscle active, damping, total muscle and tendon force quantities
-    double af, pf, mf, tf = SimTK::NaN;
-
-    const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
-    SimTK::State s = model.getWorkingState();
-    // At the first State, independently compute the muscle force
-    for (int i = 0; i < nstates; ++i) {
-        s = statesTraj[i];
-        muscle.setFiberLength(s, muscle.get_default_fiber_length());
-        muscle.computeEquilibrium(s);
-        model.realizeDynamics(s);
-        // activation is not reset to zero and must reflect the read-in state
-        assert(muscle.getActivation(s) > 0.0);
-        // At default activation the active force is non-zero
-        af = muscle.getActiveFiberForceAlongTendon(s);
-        pf = muscle.getPassiveFiberForceAlongTendon(s);
-        tf = muscle.getTendonForce(s);
         // now the total muscle force is the active + passive
         mf = af + pf;
+        tf = muscle.getTendonForce(s);
 
         // equilibrium demands tendon and muscle fiber are equivalent
         ASSERT_EQUAL<double>(tf, mf, equilTol);
         // Verify that the current computed and AnalyzeTool reported force are
-        // equivalent
-        cout << "Muscle-fiber-force: " << mf <<
-            " Analyze muscle force: " << forces[i] << endl;
+        // equivalent for the provided motion file
+        cout << s.getTime() << " :: muscle-fiber-force: " << mf <<
+            " Analyze reported force: " << forces[i] << endl;
         ASSERT_EQUAL<double>(mf, forces[i], equilTol, __FILE__, __LINE__,
             "Total fiber force failed to match reported muscle force.");
     }
 }
-
-

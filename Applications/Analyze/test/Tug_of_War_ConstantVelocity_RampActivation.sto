@@ -5,7 +5,7 @@ nColumns=3
 inDegrees=no		
 endheader		
 time	block_tz	LeftMuscle.activation
-0	-0.05	0.01
+0	-0.05	0.0
 0.01	-0.049	0.01
 0.02	-0.048	0.02
 0.03	-0.047	0.03
