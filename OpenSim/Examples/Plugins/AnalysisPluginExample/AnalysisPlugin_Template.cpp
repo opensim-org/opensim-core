@@ -224,7 +224,7 @@ record(const SimTK::State& s)
     double Mass = 0.0;
 
     // GROUND BODY
-    const Body& ground = _model->getGroundBody();
+    const Ground& ground = _model->getGround();
 
     // POSITION
     const BodySet& bodySet = _model->getBodySet();
@@ -235,8 +235,11 @@ record(const SimTK::State& s)
         SimTK::Vec3 com = body.getMassCenter();
 
         // GET POSITIONS AND EULER ANGLES
-        _model->getSimbodyEngine().getPosition(s,body,com,vec);
-        _model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
+        vec = body.getPositionInGround(s);
+        auto dirCosR = body.getTransformInGround(s).R();
+        for(auto r = 0u; r < 3; ++r)
+            for(auto c = 0u; c < 3; ++c)
+                dirCos[r][c] = dirCosR[r][c];
         _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
             &angVec[0],&angVec[1],&angVec[2]);
 
