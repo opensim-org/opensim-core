@@ -30,5 +30,5 @@ file(GLOB SOURCE_FILES ${EXAMPLE_DIR}/*.cpp
 add_library(${TEST_TARGET} SHARED ${SOURCE_FILES})
 target_link_libraries(${TEST_TARGET} osimTools)
 add_test(NAME ${TEST_TARGET}
-         COMMAND analyze -L ${TEST_TARGET} -S
+         COMMAND "${CMAKE_BINARY_DIR}/analyze" -L ${TEST_TARGET} -S
                  subject01_Setup_AnalysisPluginTemplate.xml)
