@@ -29,6 +29,8 @@ file(GLOB SOURCE_FILES ${EXAMPLE_DIR}/*.cpp
                        ${EXAMPLE_DIR}/*.h)
 add_library(${TEST_TARGET} SHARED ${SOURCE_FILES})
 target_link_libraries(${TEST_TARGET} osimTools)
+set_target_properties(${TEST_TARGET} PROPERTIES
+                      DEFINE_SYMBOL OSIMPLUGIN_EXPORTS)
 
 add_test(NAME ${TEST_TARGET}
          COMMAND opensim-cmd -L $<TARGET_FILE:${TEST_TARGET}> run-tool
