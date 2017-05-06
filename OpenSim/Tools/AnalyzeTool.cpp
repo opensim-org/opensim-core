@@ -401,7 +401,15 @@ loadStatesFromFile(SimTK::State& s)
         _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
         _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
-        _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        // used to use createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+        double ti = qStore->getFirstTime();
+        double tf = qStore->getLastTime();
+        uStore->addToRdStorage(*qStore, ti, tf);
+
+        delete _statesStore;
+        _statesStore = new Storage(512, "states");
+
+        _model->formStateStorage(*qStore, *_statesStore);
 
         delete qStore;
         delete uStore;
@@ -434,8 +442,14 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
     _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
     _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
-    _statesStore = createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
+    double ti = qStore->getFirstTime();
+    double tf = qStore->getLastTime();
+    uStore->addToRdStorage(*qStore, ti, tf);
 
+    delete _statesStore;
+    _statesStore = new Storage(512, "states");
+
+    _model->formStateStorage(*qStore, *_statesStore);
     delete qStore;
     delete uStore;
 }
@@ -598,8 +612,6 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
         analysisSet.get(i).setStatesStore(aStatesStore);
     }
 
-    // TODO: some sort of filtering or something to make derivatives smoother?
-    GCVSplineSet statesSplineSet(5,&aStatesStore);
 
     // PERFORM THE ANALYSES
     double /*tPrev=0.0,*/t=0.0/*,dt=0.0*/;
