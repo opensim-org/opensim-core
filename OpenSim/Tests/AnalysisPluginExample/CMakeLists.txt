@@ -2,7 +2,7 @@
 set(TEST_TARGET testAnalysisPluginExample)
 set(TEST_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-# Copy dependencies from ExampleLuxoMuscle into the run directory.
+# Copy dependencies from AnalysisPluginExample into the run directory.
 set(EXAMPLE_DIR
   "${OpenSim_SOURCE_DIR}/OpenSim/Examples/Plugins/AnalysisPluginExample")
 set(TEST_FILES_DIR "${EXAMPLE_DIR}/TestPlugin")

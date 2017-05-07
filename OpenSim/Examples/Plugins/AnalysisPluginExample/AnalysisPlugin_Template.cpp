@@ -236,12 +236,11 @@ record(const SimTK::State& s)
 
         // GET POSITIONS AND EULER ANGLES
         vec = body.getPositionInGround(s);
-        auto dirCosR = body.getTransformInGround(s).R();
-        for(auto r = 0u; r < 3; ++r)
-            for(auto c = 0u; c < 3; ++c)
-                dirCos[r][c] = dirCosR[r][c];
-        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-            &angVec[0],&angVec[1],&angVec[2]);
+        angVec = body.getTransformInGround(s).R()
+            .convertThreeAxesRotationToThreeAngles(SimTK::BodyRotationSequence,
+                                                   SimTK::XAxis,
+                                                   SimTK::YAxis,
+                                                   SimTK::ZAxis);
 
         // CONVERT TO DEGREES?
         if(getInDegrees()) {
