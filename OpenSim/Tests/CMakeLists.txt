@@ -17,5 +17,6 @@ if(BUILD_TESTING)
     add_subdirectory(README)
     add_subdirectory(Wrapping)
     add_subdirectory(ExampleLuxoMuscle)
+    add_subdirectory(AnalysisPluginExample)
 endif()
 
