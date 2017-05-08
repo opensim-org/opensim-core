@@ -182,7 +182,6 @@ public:
                   Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
         // Unpack variables.
         // -----------------
-        const T& position = states[m_i_position];
         const T& speed = states[m_i_speed];
         const T& activationL = states[m_i_activation_l];
         const T& activationR = states[m_i_activation_r];
@@ -195,14 +194,9 @@ public:
 
         // Multibody dynamics.
         // -------------------
-        T forceL;
-        const T& normFibLenL = states[m_i_norm_fiber_length_l];
-        m_muscleL.calcTendonForce(d + position, normFibLenL, forceL);
-        T forceR;
-        const T& normFibLenR = states[m_i_norm_fiber_length_r];
-        m_muscleR.calcTendonForce(d - position, normFibLenR, forceR);
+        const T netForce = calcNetForce(states);
 
-        derivatives[m_i_speed] = (-forceL + forceR) / mass;
+        derivatives[m_i_speed] = netForce / mass;
 
         // Activation dynamics.
         // --------------------
@@ -219,6 +213,18 @@ public:
                 m_muscleL.get_max_contraction_velocity() * normFibVelL;
         derivatives[m_i_norm_fiber_length_r] =
                 m_muscleR.get_max_contraction_velocity() * normFibVelR;
+    }
+    T calcNetForce(const mesh::VectorX<T>& states) const {
+        const T& position = states[m_i_position];
+
+        T forceL;
+        const T& normFibLenL = states[m_i_norm_fiber_length_l];
+        m_muscleL.calcTendonForce(d + position, normFibLenL, forceL);
+        T forceR;
+        const T& normFibLenR = states[m_i_norm_fiber_length_r];
+        m_muscleR.calcTendonForce(d - position, normFibLenR, forceR);
+
+        return -forceL + forceR;
     }
     void path_constraints(unsigned /*i_mesh*/,
                           const T& /*time*/,
@@ -705,28 +711,16 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
-    // TimeSeriesTable actualInvDyn;
-    // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
-    //                                   ocp->optimal_fiber_length,
-    //                                   ocp->tendon_slack_length,
-    //                                   ocp->pennation_angle_at_optimal,
-    //                                   ocp->max_contraction_velocity);
-    // for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
-    //     const auto& angle = ocp_solution.states(0, iTime);
-    //     const auto& normFibLen = ocp_solution.states(3, iTime);
-    //     const auto intAngle = SimTK::Pi / 2 - angle;
-    //     const auto musTenLen = ocp->d * sqrt(2 * (1 - cos(intAngle)));
-    //     const auto momArm = -ocp->d * sin(intAngle) /
-    //             sqrt(2 * (1 - cos(intAngle)));
-    //     double tendonForce;
-    //     muscle.calcTendonForce(musTenLen, normFibLen, tendonForce);
-    //     actualInvDyn.appendRow(ocp_solution.time(iTime),
-    //                            SimTK::RowVector(1, -momArm * tendonForce));
-    // }
-    // CSVFileAdapter::write(actualInvDyn,
-    //     "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
-
+    TimeSeriesTable actualInvDyn;
+    actualInvDyn.setColumnLabels({"inverse_dynamics"});
+    auto ocpd = std::make_shared<TugOfWarDynamic<double>>(model);
+    for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
+        auto netForce = ocpd->calcNetForce(ocp_solution.states.col(iTime));
+        actualInvDyn.appendRow(ocp_solution.time(iTime),
+                               SimTK::RowVector(1, netForce));
+    }
+    CSVFileAdapter::write(actualInvDyn,
+                          "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
     return {ocpSolution, kinematics};
 }
 
@@ -775,7 +769,7 @@ void test2Muscles1DOFMuscleRedundancySolver(
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(30);
-    mrs.set_create_reserve_actuators(0.001);
+    mrs.set_create_reserve_actuators(0.01);
     MuscleRedundancySolver::Solution solution = mrs.solve();
     solution.write("testTugOfWarDeGroote2016_MRS");
 
@@ -809,7 +803,7 @@ int main() {
 
         {
             auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
-//            // TODO
+            // TODO
             SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
                            model);
         }
