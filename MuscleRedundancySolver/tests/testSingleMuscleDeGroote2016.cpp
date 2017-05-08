@@ -442,7 +442,8 @@ void testLiftingMassMuscleRedundancySolver(
     // causing the muscle to be active when it shouldn't be. When this issue
     // is fixed, we can tighten the activation comparison.
     rootMeanSquare(solution.activation, ocpSolution, "activation", 0.03);
-    compare(solution.norm_fiber_length, ocpSolution, "norm_fiber_length",
+    compare(solution.norm_fiber_length, "/hanging_muscle/actuator",
+            ocpSolution,                "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.

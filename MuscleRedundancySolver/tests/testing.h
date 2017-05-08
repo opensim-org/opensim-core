@@ -27,11 +27,12 @@ SimTK::Vector interp(const OpenSim::TimeSeriesTable& actualTable,
 };
 // Compare each element.
 void compare(const OpenSim::TimeSeriesTable& actualTable,
+             const std::string& actualColumnLabel,
              const OpenSim::TimeSeriesTable& expectedTable,
              const std::string& expectedColumnLabel,
              double tol) {
     // For this problem, there's only 1 column in this table.
-    const auto& actual = actualTable.getDependentColumnAtIndex(0);
+    const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
     //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
