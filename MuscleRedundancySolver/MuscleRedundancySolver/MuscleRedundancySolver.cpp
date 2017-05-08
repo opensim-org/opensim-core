@@ -525,6 +525,10 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         std::cout << std::string(79, '-') << std::endl;
     }
 
+
+    // TODO perhaps solve without pennation initially? Pennation slows down
+    // convergence.
+
     // Solve the optimal control problem.
     // ----------------------------------
     ocp->print_description();
