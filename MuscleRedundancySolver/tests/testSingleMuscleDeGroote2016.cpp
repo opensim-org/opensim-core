@@ -391,7 +391,9 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
-    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.06);
+    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+                   ocpSolution,         "activation",
+                   0.06);
 }
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
@@ -441,15 +443,20 @@ void testLiftingMassMuscleRedundancySolver(
     // leads to an incorrect net joint moment at the end of the motion,
     // causing the muscle to be active when it shouldn't be. When this issue
     // is fixed, we can tighten the activation comparison.
-    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.03);
+    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+                   ocpSolution,         "activation",
+                   0.03);
     compare(solution.norm_fiber_length, "/hanging_muscle/actuator",
             ocpSolution,                "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.20);
-    rootMeanSquare(solution.norm_fiber_velocity, ocpSolution,
-                   "norm_fiber_velocity", 0.04);
+    rootMeanSquare(solution.excitation, "/hanging_muscle/actuator",
+                   ocpSolution,         "excitation",
+                   0.20);
+    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscle/actuator",
+                   ocpSolution,                  "norm_fiber_velocity",
+                   0.04);
 }
 
 int main() {

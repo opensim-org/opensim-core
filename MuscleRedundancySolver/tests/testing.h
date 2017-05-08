@@ -47,10 +47,11 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
 // tolerance.
 void rootMeanSquare(
         const OpenSim::TimeSeriesTable& actualTable,
+        const std::string& actualColumnLabel,
         const OpenSim::TimeSeriesTable& expectedTable,
         const std::string& expectedColumnLabel,
         double tol) {
-    const auto& actual = actualTable.getDependentColumnAtIndex(0);
+    const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
     const auto rmsError = (actual - expected).normRMS();

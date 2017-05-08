@@ -421,7 +421,9 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    rootMeanSquare(solution.activation, ocpSolution, "activation", 0.03);
+    rootMeanSquare(solution.activation, "/hanging_muscle/actuator",
+                   ocpSolution,         "activation",
+                   0.03);
     auto reserveForceRMS = reserveOptimalForce *
          solution.other_controls.getDependentColumnAtIndex(0).normRMS();
     SimTK_TEST(reserveForceRMS < 0.02);
@@ -457,13 +459,16 @@ void testLiftingMassMuscleRedundancySolver(
             ocpSolution,         "activation",
             0.06);
     compare(solution.norm_fiber_length, "/hanging_muscle/actuator",
-            ocpSolution, "norm_fiber_length",
+            ocpSolution,                "norm_fiber_length",
             0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.06);
-    rootMeanSquare(solution.norm_fiber_velocity, ocpSolution,
-                  "norm_fiber_velocity", 0.02);
+    rootMeanSquare(solution.excitation, "/hanging_muscle/actuator",
+                   ocpSolution,         "excitation",
+                   0.06);
+    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscle/actuator",
+                   ocpSolution,                  "norm_fiber_velocity",
+                   0.02);
 }
 
 int main() {
