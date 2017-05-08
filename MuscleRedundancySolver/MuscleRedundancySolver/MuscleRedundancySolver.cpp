@@ -369,25 +369,25 @@ public:
             // --------------------------
             if (_numMuscles == 0) continue;
             SimTK::RowVector excitation(_numMuscles,
-                                        1 /* stride: skip over fiber vel. */,
+                                        2 /* stride: skip over fiber vel. */,
                                         controls.data() + _numCoordActuators,
                                         true /* makes this a view */);
             sol.excitation.appendRow(time, excitation);
 
             SimTK::RowVector activation(_numMuscles,
-                                        1 /* stride: skip over fiber length */,
+                                        2 /* stride: skip over fiber length */,
                                         states.data(),
                                         true /* makes this a view */);
             sol.activation.appendRow(time, activation);
 
-            SimTK::RowVector fiber_length(_numMuscles,
-                                          1 /* stride: skip over activation */,
+            SimTK::RowVector fiber_length(_numMuscles, /*TODO*/
+                                          2 /* stride: skip over activation */,
                                           states.data() + 1,
                                           true /* makes this a view */);
             sol.norm_fiber_length.appendRow(time, fiber_length);
 
             SimTK::RowVector fiber_velocity(_numMuscles,
-                                       1 /* stride: skip over excit. */,
+                                       2 /* stride: skip over excit. */,
                                        controls.data() + _numCoordActuators + 1,
                                        true /* makes this a view */);
             sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
