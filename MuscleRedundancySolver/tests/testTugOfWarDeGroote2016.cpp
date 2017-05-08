@@ -769,7 +769,8 @@ void test2Muscles1DOFMuscleRedundancySolver(
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(30);
-    mrs.set_create_reserve_actuators(0.01);
+    const double reserveOptimalForce = 0.01;
+    mrs.set_create_reserve_actuators(reserveOptimalForce);
     MuscleRedundancySolver::Solution solution = mrs.solve();
     solution.write("testTugOfWarDeGroote2016_MRS");
 
@@ -782,11 +783,20 @@ void test2Muscles1DOFMuscleRedundancySolver(
     compare(solution.norm_fiber_length, "/tug_of_war/right",
             ocpSolution,                "norm_fiber_length_r",
             0.02);
-//
-//    // We use a weaker check for the controls; they don't match as well.
-//    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.08);
-//    rootMeanSquare(solution.norm_fiber_velocity, ocpSolution,
-//                   "norm_fiber_velocity", 0.04);
+
+    // We use a weaker check for the controls; they don't match as well.
+//TODO    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.08);
+    rootMeanSquare(solution.norm_fiber_velocity, "/tug_of_war/left",
+                   ocpSolution,                  "norm_fiber_velocity_l",
+                   0.01);
+    rootMeanSquare(solution.norm_fiber_velocity, "/tug_of_war/right",
+                   ocpSolution,                  "norm_fiber_velocity_r",
+                   0.03);
+
+    // The reserve forces should be small.
+    auto reserveForceRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceRMS < 0.001);
 }
 
 int main() {
