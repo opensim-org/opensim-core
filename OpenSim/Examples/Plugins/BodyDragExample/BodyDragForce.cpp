@@ -123,9 +123,7 @@ void BodyDragForce::computeForce(const SimTK::State& s,
     // get CoM position of body in the GROUND coordinate system
     bodyCoMPosGround = aBody.getPositionInGround(s);
     // get CoM velocity of body in the GROUND coordinate system
-    auto spatialVel = aBody.getVelocityInGround(s);
-    bodyCoMVelGround = spatialVel[1] + SimTK::cross(spatialVel[0],
-                                                    bodyCoMPosBody);
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
 
     for (int i=0; i<3;i++)
     {
@@ -209,9 +207,8 @@ OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) con
     // get CoM position of body in the GROUND coordinate system
     bodyCoMPosGround = aBody.getPositionInGround(s);
     // get CoM velocity of body in the GROUND coordinate system
-    auto spatialVel = aBody.getVelocityInGround(s);
-    bodyCoMVelGround = spatialVel[1] + SimTK::cross(spatialVel[0],
-                                                    bodyCoMPosBody);
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
+
     for (int i=0; i<3;i++)
     {
         if (bodyCoMVelGround[i]>0) oppVelSign[i] = -1;                                      // get opposite sign of CoM velocity (GROUND coordinate system)
