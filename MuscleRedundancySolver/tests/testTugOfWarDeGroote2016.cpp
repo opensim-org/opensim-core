@@ -142,10 +142,13 @@ public:
     int m_i_activation_l = -1;
     int m_i_activation_r = -1;
     int m_i_norm_fiber_length_l = -1;
+    int m_i_norm_fiber_length_r = -1;
     int m_i_excitation_l = -1;
     int m_i_excitation_r = -1;
     int m_i_norm_fiber_velocity_l = -1;
     int m_i_fiber_equilibrium_l = -1;
+    int m_i_norm_fiber_velocity_r = -1;
+    int m_i_fiber_equilibrium_r = -1;
 
     DeGroote2016Muscle<adouble> m_muscle;
 
@@ -160,12 +163,18 @@ public:
         m_i_activation_r = this->add_state("activation_r", {0, 1}, 0);
         m_i_norm_fiber_length_l = this->add_state("norm_fiber_length_l",
                                                   {0.2, 1.8});
+        m_i_norm_fiber_length_r = this->add_state("norm_fiber_length_r",
+                                                  {0.2, 1.8});
         m_i_excitation_l = this->add_control("excitation_l", {0, 1});
         m_i_excitation_r = this->add_control("excitation_r", {0, 1});
         m_i_norm_fiber_velocity_l = this->add_control("norm_fiber_velocity_l",
                                                       {-1, 1}, 0);
+        m_i_norm_fiber_velocity_r = this->add_control("norm_fiber_velocity_r",
+                                                      {-1, 1}, 0);
         m_i_fiber_equilibrium_l =
                 this->add_path_constraint("fiber_equilibrium_l", 0);
+        m_i_fiber_equilibrium_r =
+                this->add_path_constraint("fiber_equilibrium_r", 0);
         mass = 1;
         m_muscle = DeGroote2016Muscle<adouble>(1, 1, 1, 1, 1);
     }
@@ -178,10 +187,8 @@ public:
         const T& speed = states[m_i_speed];
         const T& activationL = states[m_i_activation_l];
         const T& activationR = states[m_i_activation_r];
-        const T& normFibLenL = states[m_i_norm_fiber_length_l];
-        const T& excitationL = controls[m_i_excitation_l];
-        const T& excitationR = controls[m_i_excitation_r];
         const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+        const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
 
         // Multibody kinematics.
         // ---------------------
@@ -196,38 +203,35 @@ public:
 
         T forceL;
         {
+            const T& normFibLenL = states[m_i_norm_fiber_length_l];
             // TODO pennation.
-            const T normFiberForce = calcNormFiberForce(activationL, normFibLenL,
+            const T normFiberForce = calcNormFiberForce(activationL,
+                                                        normFibLenL,
                                                         normFibVelL);
             forceL = max_force * normFiberForce;
         }
         T forceR;
         {
-            const T tendon_slack_length_r = 0.20;
-            const T optimal_fiber_length_r = 0.05;
-            const T max_contraction_velocity_r = 10 * optimal_fiber_length_r;
+            const T& normFibLenR = states[m_i_norm_fiber_length_r];
             // TODO pennation.
-            const T norm_fiber_length_r =
-                    (d - position - tendon_slack_length_r) /
-                            optimal_fiber_length_r;
-            const T norm_fiber_velocity_r = -speed / max_contraction_velocity_r;
-            const T forceLenMultR = m_muscle.calcActiveForceLengthMultiplier
-                    (norm_fiber_length_r);
-            const T forceVelMultR = m_muscle.calcForceVelocityMultiplier
-                    (norm_fiber_velocity_r);
-            const T normPassFibForceR = m_muscle.calcNormPassiveFiberForce
-                    (norm_fiber_length_r);
-            forceR = max_force * (activationR * forceLenMultR * forceVelMultR +
-                    normPassFibForceR);
+            const T normFiberForce = calcNormFiberForce(activationR,
+                                                        normFibLenR,
+                                                        normFibVelR);
+            forceR = max_force * normFiberForce;
         }
         derivatives[m_i_speed] = (-forceL + forceR) / mass;
 
+        const T& excitationL = controls[m_i_excitation_l];
+        const T& excitationR = controls[m_i_excitation_r];
         derivatives[m_i_activation_l] = 1 / 0.05 * (excitationL - activationL);
         derivatives[m_i_activation_r] = 1 / 0.05 * (excitationR - activationR);
 
         const double max_contraction_velocity_l = 10;
+        const double max_contraction_velocity_r = 10;
         derivatives[m_i_norm_fiber_length_l] = max_contraction_velocity_l *
                 normFibVelL;
+        derivatives[m_i_norm_fiber_length_r] = max_contraction_velocity_r *
+                normFibVelR;
     }
     void path_constraints(unsigned /*i_mesh*/,
                           const T& /*time*/,
@@ -236,24 +240,45 @@ public:
                           Eigen::Ref<mesh::VectorX<T>> constraints)
     const override {
         const T& position = states[m_i_position];
-        const T& activationL = states[m_i_activation_l];
-        const T& normFibLenL = states[m_i_norm_fiber_length_l];
-        const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
 
-        const T normFiberForce = calcNormFiberForce(activationL, normFibLenL,
-                                                    normFibVelL);
-        // TODO pennation.
-        const T tendon_slack_length_l = 0.20;
-        const T optimal_fiber_length_l = 0.05;
-        const T tendonLengthL = d + position
-                - optimal_fiber_length_l * normFibLenL;
-        const T normTendonLengthL = tendonLengthL / tendon_slack_length_l;
-        const T normTendonForce =
-                m_muscle.calcNormTendonForce(normTendonLengthL);
-        // TODO std::cout << "DEBUG " << normTendonLengthL.value() << " " <<
-        // TODO         normTendonForce.value() << std::endl;
-        constraints[m_i_fiber_equilibrium_l] = normFiberForce -
-                normTendonForce;
+        {
+            const T& activationL = states[m_i_activation_l];
+            const T& normFibLenL = states[m_i_norm_fiber_length_l];
+            const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+            const T normFiberForce = calcNormFiberForce(activationL,
+                                                        normFibLenL,
+                                                        normFibVelL);
+            const T tendon_slack_length_l = 0.20;
+            const T optimal_fiber_length_l = 0.05;
+            // TODO pennation.
+            const T tendonLengthL = d + position
+                    - optimal_fiber_length_l * normFibLenL;
+            const T normTendonLengthL = tendonLengthL / tendon_slack_length_l;
+            const T normTendonForce =
+                    m_muscle.calcNormTendonForce(normTendonLengthL);
+            constraints[m_i_fiber_equilibrium_l] =
+                    normFiberForce - normTendonForce;
+        }
+        {
+            const T& activationR = states[m_i_activation_r];
+            const T& normFibLenR = states[m_i_norm_fiber_length_r];
+            const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
+            const T normFiberForce = calcNormFiberForce(activationR,
+                                                        normFibLenR,
+                                                        normFibVelR);
+
+            // TODO make different from left muscle's properties.
+            const T tendon_slack_length_r = 0.20;
+            const T optimal_fiber_length_r = 0.05;
+            // TODO pennation.
+            const T tendonLengthR = d - position
+                    - optimal_fiber_length_r * normFibLenR;
+            const T normTendonLengthR = tendonLengthR / tendon_slack_length_r;
+            const T normTendonForce =
+                    m_muscle.calcNormTendonForce(normTendonLengthR);
+            constraints[m_i_fiber_equilibrium_r] =
+                    normFiberForce - normTendonForce;
+        }
     }
     T calcNormFiberForce(const T& activation,
                          const T& normFibLen,
