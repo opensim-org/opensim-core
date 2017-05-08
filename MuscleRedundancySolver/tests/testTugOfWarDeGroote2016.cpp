@@ -268,8 +268,8 @@ public:
                                                         normFibVelR);
 
             // TODO make different from left muscle's properties.
-            const T tendon_slack_length_r = 0.20;
-            const T optimal_fiber_length_r = 0.05;
+            const T tendon_slack_length_r = 0.15;
+            const T optimal_fiber_length_r = 0.10;
             // TODO pennation.
             const T tendonLengthR = d - position
                     - optimal_fiber_length_r * normFibLenR;
