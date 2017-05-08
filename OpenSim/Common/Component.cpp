@@ -215,7 +215,7 @@ void Component::componentsFinalizeFromProperties() const
 }
 
 // Base class implementation of non-virtual finalizeConnections method.
-void Component::finalizeConnections(Component &root)
+void Component::finalizeConnections(Component& root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -1531,7 +1531,8 @@ void Component::printInputInfo() const {
                   << std::string(maxlenInputName -
                                  input->getName().length(), ' ')
                   << input->getName() << " : ";
-        if (input->getNumConnectees() == 0) {
+        if (input->getNumConnectees() == 0 || 
+            (input->getNumConnectees() == 1 && input->getConnecteeName().empty())) {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
@@ -1660,6 +1661,24 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
+}
+
+
+void Component::clearStateAllocations()
+{
+    _namedModelingOptionInfo.clear();
+    _namedStateVariableInfo.clear();
+    _namedDiscreteVariableInfo.clear();
+    _namedCacheVariableInfo.clear();
+}
+
+void Component::reset()
+{
+    _system.reset();
+    _simTKcomponentIndex.invalidate();
+    clearStateAllocations();
+
+    resetSubcomponentOrder();
 }
 
 } // end of namespace OpenSim
