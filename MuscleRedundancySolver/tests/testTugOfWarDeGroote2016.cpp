@@ -129,6 +129,7 @@ public:
     }
 };
 
+
 // TODO document.
 template <typename T>
 class DeGroote2016MuscleTugOfWarMinEffortDynamic
@@ -146,8 +147,6 @@ public:
     int m_i_norm_fiber_velocity_l = -1;
     int m_i_fiber_equilibrium_l = -1;
 
-    const T tendon_slack_length_l = 0.20;
-    const T optimal_fiber_length_l = 0.05;
     DeGroote2016Muscle<adouble> m_muscle;
 
     DeGroote2016MuscleTugOfWarMinEffortDynamic(const Model& /*model*/) :
@@ -160,11 +159,11 @@ public:
         m_i_activation_l = this->add_state("activation_l", {0, 1}, 0);
         m_i_activation_r = this->add_state("activation_r", {0, 1}, 0);
         m_i_norm_fiber_length_l = this->add_state("norm_fiber_length_l",
-                                                  {0.2, 1});
+                                                  {0.2, 1.8});
         m_i_excitation_l = this->add_control("excitation_l", {0, 1});
         m_i_excitation_r = this->add_control("excitation_r", {0, 1});
         m_i_norm_fiber_velocity_l = this->add_control("norm_fiber_velocity_l",
-                                                      {-1, 1});
+                                                      {-1, 1}, 0);
         m_i_fiber_equilibrium_l =
                 this->add_path_constraint("fiber_equilibrium_l", 0);
         mass = 1;
@@ -197,20 +196,10 @@ public:
 
         T forceL;
         {
-            //const T norm_fiber_length_l =
-            //        (d + position - tendon_slack_length_l) /
-            //                optimal_fiber_length_l;
-            //const T norm_fiber_velocity_l = speed /
-            // max_contraction_velocity_l;
             // TODO pennation.
-            const T forceLenMultL = m_muscle.calcActiveForceLengthMultiplier
-                    (normFibLenL);
-            const T forceVelMultL = m_muscle.calcForceVelocityMultiplier
-                    (normFibVelL);
-            const T normPassFibForceL = m_muscle.calcNormPassiveFiberForce
-                    (normFibLenL);
-            forceL = max_force * (activationL * forceLenMultL * forceVelMultL +
-                    normPassFibForceL);
+            const T normFiberForce = calcNormFiberForce(activationL, normFibLenL,
+                                                        normFibVelL);
+            forceL = max_force * normFiberForce;
         }
         T forceR;
         {
@@ -251,20 +240,31 @@ public:
         const T& normFibLenL = states[m_i_norm_fiber_length_l];
         const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
 
-        const T forceLenMultL = m_muscle.calcActiveForceLengthMultiplier
-                (normFibLenL);
-        const T forceVelMultL = m_muscle.calcForceVelocityMultiplier
-                (normFibVelL);
-        const T normPassFibForceL = m_muscle.calcNormPassiveFiberForce
-                (normFibLenL);
-        const T normFiberForce = (activationL * forceLenMultL * forceVelMultL +
-                normPassFibForceL);
+        const T normFiberForce = calcNormFiberForce(activationL, normFibLenL,
+                                                    normFibVelL);
         // TODO pennation.
-        const T normTendonLengthL = d + position
+        const T tendon_slack_length_l = 0.20;
+        const T optimal_fiber_length_l = 0.05;
+        const T tendonLengthL = d + position
                 - optimal_fiber_length_l * normFibLenL;
-        const T normTendonForce = m_muscle.calcNormTendonForce
-                (normTendonLengthL);
-        constraints[m_i_fiber_equilibrium_l] = normFiberForce - normTendonForce;
+        const T normTendonLengthL = tendonLengthL / tendon_slack_length_l;
+        const T normTendonForce =
+                m_muscle.calcNormTendonForce(normTendonLengthL);
+        // TODO std::cout << "DEBUG " << normTendonLengthL.value() << " " <<
+        // TODO         normTendonForce.value() << std::endl;
+        constraints[m_i_fiber_equilibrium_l] = normFiberForce -
+                normTendonForce;
+    }
+    T calcNormFiberForce(const T& activation,
+                         const T& normFibLen,
+                         const T& normFibVel) const {
+        const T forceLenMult =
+                m_muscle.calcActiveForceLengthMultiplier(normFibLen);
+        const T forceVelMult =
+                m_muscle.calcForceVelocityMultiplier(normFibVel);
+        const T normPassFibForce =
+                m_muscle.calcNormPassiveFiberForce(normFibLen);
+        return activation * forceLenMult * forceVelMult + normPassFibForce;
     }
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
@@ -825,18 +825,38 @@ void test2Muscles1DOFMuscleRedundancySolver(
 
 int main() {
     SimTK_START_TEST("testTugOfWarDeGroote2016");
-        Model mTODO;
-        using TugOfWarDynamic =
-                DeGroote2016MuscleTugOfWarMinEffortDynamic<adouble>;
-        auto ocp = std::make_shared<TugOfWarDynamic>(mTODO);
-        ocp->print_description();
-        const int N = 100;
-        mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
-                                                      "ipopt", N);
-        mesh::OptimalControlSolution ocp_solution = dircol.solve();
-        dircol.print_constraint_values(ocp_solution);
-        std::string trajectoryFile = "testTugOfWarDeGroote2016_DEBUG.csv";
-        ocp_solution.write(trajectoryFile);
+        {
+            Model mTODO;
+            using TugOfWarStatic =
+            DeGroote2016MuscleTugOfWarMinEffortStatic<adouble>;
+            auto ocp = std::make_shared<TugOfWarStatic>(mTODO);
+            ocp->print_description();
+            const int N = 100;
+            mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+                                                          "ipopt", N);
+            mesh::OptimalControlSolution ocp_solution = dircol.solve();
+            dircol.print_constraint_values(ocp_solution);
+            std::string trajectoryFile =
+                    "testTugOfWarDeGroote2016Static_DEBUG.csv";
+            ocp_solution.write(trajectoryFile);
+        }
+        std::cout << "DYNAMIC" << std::endl;
+        {
+            Model mTODO;
+            using TugOfWarDynamic =
+            DeGroote2016MuscleTugOfWarMinEffortDynamic<adouble>;
+            auto ocp = std::make_shared<TugOfWarDynamic>(mTODO);
+            ocp->print_description();
+            const int N = 100; // TODO
+            mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+                                                          "ipopt", N);
+            mesh::OptimalControlSolution ocp_solution = dircol.solve();
+            dircol.print_constraint_values(ocp_solution);
+            std::string trajectoryFile =
+                    "testTugOfWarDeGroote2016Dynamic_DEBUG.csv";
+            ocp_solution.write(trajectoryFile);
+
+        }
 //        Model model = buildTugOfWarModel();
 //        model.finalizeFromProperties();
 //        {
