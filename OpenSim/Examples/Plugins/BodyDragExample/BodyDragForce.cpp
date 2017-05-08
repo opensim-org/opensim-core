@@ -162,7 +162,7 @@ void BodyDragForce::computeForce(const SimTK::State& s,
         cout << "Drag coefficient = " << get_coefficient() << "\tDrag exponent = " << get_exponent() << endl;
         cout << "dragForce (ground) = " << dragForceGround << endl;
         cout << "dragForce (body frame) = " << dragForceBody << endl;
-        system("pause");
+        auto res = system("pause");
     }
 
     return;
