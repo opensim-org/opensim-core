@@ -109,8 +109,8 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             momentArms.appendRow(state.getTime(), rowMA);
         }
         _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
-        // TODO Separately splining muscleTendonLengths and velocities might lead to
-        // inconsistency.
+        // TODO Separately splining muscleTendonLengths and velocities might
+        // lead to inconsistency.
         _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
         _momentArms = createGCVSplineSet(momentArms);
     }
