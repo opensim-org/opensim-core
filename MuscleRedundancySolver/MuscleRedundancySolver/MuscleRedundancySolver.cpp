@@ -232,15 +232,26 @@ public:
         // std::cout << "DEBUG constraints " << constraints << std::endl;
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& /*states*/,
+                       const mesh::VectorX<T>& states,
                        const mesh::VectorX<T>& controls,
                        T& integrand) const override {
         // Use a map to skip over fiber velocities.
         using ExcitationsVector = Eigen::Map<const mesh::VectorX<T>,
-        /* pointer alignment: Unaligned */   0,
-        /* pointer increment btn elements */ Eigen::InnerStride<2>>;
+                /* pointer alignment: Unaligned */   0,
+                /* pointer increment btn elements */ Eigen::InnerStride<2>>;
         ExcitationsVector muscleExcit(controls.data() + _numCoordActuators,
                                       _numMuscles);
+
+        // We attempted to minimize activations to prevent the initial
+        // activation from being incorrectly large (b/c no penalty), but this
+        // did not end up being a solution to the problem.
+        // TODO could also just minimize initial activation.
+        // Use a map to skip over fiber lengths.
+        // using ActivationsVector = Eigen::Map<const mesh::VectorX<T>,
+        //         /* pointer alignment: Unaligned */   0,
+        //         /* pointer increment btn elements */ Eigen::InnerStride<2>>;
+        // ActivationsVector muscleActiv(states.data() + _numCoordActuators,
+        //                               _numMuscles);
 
         integrand = controls.head(_numCoordActuators).squaredNorm()
                   + muscleExcit.squaredNorm();
