@@ -70,7 +70,6 @@ public:
                   Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
         // Unpack variables.
         // -----------------
-        const T& position = states[m_i_position];
         const T& speed = states[m_i_speed];
         const T& activationL = states[m_i_activation_l];
         const T& activationR = states[m_i_activation_r];
@@ -83,17 +82,29 @@ public:
 
         // Multibody dynamics.
         // -------------------
-        T forceL = m_muscleL.calcRigidTendonFiberForceAlongTendon(
-                    activationL, d + position, speed);
-        T forceR = m_muscleR.calcRigidTendonFiberForceAlongTendon(
-                    activationR, d - position, -speed);
-        derivatives[m_i_speed] = (-forceL + forceR) / mass;
+        const T netForce = calcNetForce(states, controls);
+        derivatives[m_i_speed] = netForce / mass;
 
         // TODO remove activation dynamics.
         m_muscleL.calcActivationDynamics(excitationL, activationL,
                                          derivatives[m_i_activation_l]);
         m_muscleR.calcActivationDynamics(excitationR, activationR,
                                          derivatives[m_i_activation_r]);
+    }
+    T calcNetForce(const mesh::VectorX<T>& states,
+                   const mesh::VectorX<T>& /*controls*/) const {
+        const T& position = states[m_i_position];
+        const T& speed = states[m_i_speed];
+
+        const T& activationL = states[m_i_activation_l];
+        const T forceL = m_muscleL.calcRigidTendonFiberForceAlongTendon(
+                activationL, d + position, speed);
+
+        const T& activationR = states[m_i_activation_r];
+        const T forceR = m_muscleR.calcRigidTendonFiberForceAlongTendon(
+                activationR, d - position, -speed);
+
+        return -forceL + forceR;
     }
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
@@ -619,19 +630,10 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
     actualInvDyn.setColumnLabels({"inverse_dynamics"});
     auto ocpd = std::make_shared<TugOfWarStatic<double>>(model);
     for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
-        const auto& position = ocp_solution.states(0, iTime);
-        const auto& speed = ocp_solution.states(1, iTime);
-        const auto& activationL = ocp_solution.states(2, iTime);
-        const auto& activationR = ocp_solution.states(3, iTime);
-        // TODO use the following when we get rid of activation dynamics:
-        // TODO const auto& activationL = ocp_solution.controls(0, iTime);
-        // TODO const auto& activationR = ocp_solution.controls(1, iTime);
-        auto forceL = ocpd->m_muscleL.calcRigidTendonFiberForceAlongTendon(
-                activationL, DISTANCE + position, speed);;
-        auto forceR = ocpd->m_muscleR.calcRigidTendonFiberForceAlongTendon(
-                activationR, DISTANCE - position, -speed);
+        auto netForce = ocpd->calcNetForce(ocp_solution.states.col(iTime),
+                                           ocp_solution.controls.col(iTime));
         actualInvDyn.appendRow(ocp_solution.time(iTime),
-                               SimTK::RowVector(1, -forceL + forceR));
+                               SimTK::RowVector(1, netForce));
     }
     CSVFileAdapter::write(actualInvDyn,
         "DEBUG_testTugOfWar_GSO_actualInvDyn.csv");
