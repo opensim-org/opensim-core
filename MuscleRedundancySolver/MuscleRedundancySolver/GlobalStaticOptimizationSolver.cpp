@@ -95,9 +95,6 @@ public:
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
 
-            this->add_path_constraint(
-                    actuator.getAbsolutePathName() + "_equilibrium", 0);
-
             _muscleLabels.push_back(actuPath);
             _numMuscles++;
         }
@@ -175,6 +172,7 @@ public:
         // --------------------
         for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
             // TODO fix this too.
+            // TODO generalize to multiple DOFs.
             genForce[0] += _optimalForce[i_act] * controls[i_act];
         }
 
@@ -195,6 +193,7 @@ public:
             const T momArm = _momentArms(i_act, i_mesh);
             // TODO const T momArm = _momentArms[i_mesh](i_act, i_coord);
 
+            // TODO generalize to multiple DOFs.
             genForce[0] += momArm * muscleForce;
         }
         // const auto& momArm = _momentArms[i_mesh](i_act/* TODO, i_coord */);
@@ -204,9 +203,8 @@ public:
         // ===================
         // /*const TODO*/ auto generatedMoments = _mrs.controlToMoment * controls;
         // TODO constraints = _desiredMoments[index] - generatedMoments;
-        constraints.segment(_numMuscles, _numDOFs)
-                = _desiredMoments.col(i_mesh).template cast<adouble>()
-                - genForce;
+        constraints = _desiredMoments.col(i_mesh).template cast<adouble>()
+                    - genForce;
 
         // std::cout << "DEBUG constraints " << constraints << std::endl;
     }
@@ -383,5 +381,6 @@ GlobalStaticOptimizationSolver::solve() {
     // --------------------
     // TODO remove
     ocp_solution.write("GlobalStaticOptimizationSolver_OCP_solution.csv");
+    // dircol.print_constraint_values(ocp_solution);
     return ocp->deconstruct_iterate(ocp_solution);
 }
