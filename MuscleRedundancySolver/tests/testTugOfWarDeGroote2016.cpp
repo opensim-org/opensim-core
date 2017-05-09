@@ -776,7 +776,19 @@ void test2Muscles1DOFMuscleRedundancySolver(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-// TODO    compare(solution.activation, ocpSolution, "activation", 0.05);
+
+    // TODO activation_l starts at 0.45, even though it should start at 0. I
+    // initially thought this was due to the initial guess from GSO, but
+    // setting "initial_guess" to "bounds" does not fix the issue.
+    // TODO does not pass yet.
+    compare(solution.activation, "/tug_of_war/left",
+            ocpSolution,         "activation_l",
+            0.05);
+    // TODO does not pass yet.
+    compare(solution.activation, "/tug_of_war/right",
+            ocpSolution,         "activation_r",
+            0.05);
+
     compare(solution.norm_fiber_length, "/tug_of_war/left",
             ocpSolution,                "norm_fiber_length_l",
             0.02);
@@ -785,7 +797,17 @@ void test2Muscles1DOFMuscleRedundancySolver(
             0.02);
 
     // We use a weaker check for the controls; they don't match as well.
-//TODO    rootMeanSquare(solution.excitation, ocpSolution, "excitation", 0.08);
+    // TODO excitation_l does not match well at the end of the motion; should
+    // go to 0 but ends at 0.15.
+    // TODO does not pass yet.
+    rootMeanSquare(solution.excitation, "/tug_of_war/left",
+                   ocpSolution,         "excitation_l",
+                   0.08);
+    // TODO does not pass yet.
+    rootMeanSquare(solution.excitation, "/tug_of_war/right",
+                   ocpSolution,         "excitation_r",
+                   0.08);
+
     rootMeanSquare(solution.norm_fiber_velocity, "/tug_of_war/left",
                    ocpSolution,                  "norm_fiber_velocity_l",
                    0.01);

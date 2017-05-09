@@ -10,5 +10,6 @@ fig = pl.figure()
 ax = fig.add_subplot(1, 1, 1)
 ax.plot(filtered.index, filtered[filtered.columns[0]], label='filtered')
 ax.plot(actual.index, actual[actual.columns[0]], label='actual')
+pl.legend()
 
 pl.show()
