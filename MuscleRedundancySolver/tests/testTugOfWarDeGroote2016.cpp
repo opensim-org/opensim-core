@@ -743,18 +743,22 @@ void test2Muscles1DOFGlobalStaticOptimizationSolver(
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(50);
-    double reserveOptimalForce = 0.01;
+    double reserveOptimalForce = 0.001;
     mrs.set_create_reserve_actuators(reserveOptimalForce);
     GlobalStaticOptimizationSolver::Solution solution = mrs.solve();
     solution.write("testTugOfWarDeGroote2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    // TODO rootMeanSquare(solution.activation, ocpSolution, "activation", 0
-    // TODO // .03);//
-    // TODO auto reserveForceRMS = reserveOptimalForce *//
-    // TODO         solution.other_controls.getDependentColumnAtIndex(0).nor// mRMS();
-    // TODO SimTK_TEST(reserveForceRMS < 0.02);
+    rootMeanSquare(solution.activation, "/tug_of_war/left",
+                   ocpSolution,         "activation_l",
+                   0.005);
+    rootMeanSquare(solution.activation, "/tug_of_war/right",
+                   ocpSolution,         "activation_r",
+                   0.01);
+    auto reserveForceRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceRMS < 0.0001);
 }
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
