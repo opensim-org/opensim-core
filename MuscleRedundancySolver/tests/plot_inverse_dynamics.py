@@ -3,7 +3,7 @@ import pandas as pd
 
 filtered = pd.read_csv('DEBUG_desiredMoments.csv', index_col=0, header=None)
 
-actual = pd.read_csv('DEBUG_testTugOfWar_MRS_actualInvDyn.csv', index_col=0,
+actual = pd.read_csv('DEBUG_testTugOfWar_GSO_actualInvDyn.csv', index_col=0,
                      skiprows=3)
 
 fig = pl.figure()

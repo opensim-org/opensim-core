@@ -621,8 +621,11 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
     for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
         const auto& position = ocp_solution.states(0, iTime);
         const auto& speed = ocp_solution.states(1, iTime);
-        const auto& activationL = ocp_solution.controls(0, iTime);
-        const auto& activationR = ocp_solution.controls(1, iTime);
+        const auto& activationL = ocp_solution.states(2, iTime);
+        const auto& activationR = ocp_solution.states(3, iTime);
+        // TODO use the following when we get rid of activation dynamics:
+        // TODO const auto& activationL = ocp_solution.controls(0, iTime);
+        // TODO const auto& activationR = ocp_solution.controls(1, iTime);
         auto forceL = ocpd->m_muscleL.calcRigidTendonFiberForceAlongTendon(
                 activationL, DISTANCE + position, speed);;
         auto forceR = ocpd->m_muscleR.calcRigidTendonFiberForceAlongTendon(
@@ -737,8 +740,8 @@ void test2Muscles1DOFGlobalStaticOptimizationSolver(
     GlobalStaticOptimizationSolver mrs;
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
-    mrs.set_lowpass_cutoff_frequency_for_joint_moments(150);
-    double reserveOptimalForce = 0.001;
+    mrs.set_lowpass_cutoff_frequency_for_joint_moments(50);
+    double reserveOptimalForce = 0.01;
     mrs.set_create_reserve_actuators(reserveOptimalForce);
     GlobalStaticOptimizationSolver::Solution solution = mrs.solve();
     solution.write("testTugOfWarDeGroote2016_GSO");
@@ -826,18 +829,17 @@ int main() {
         Model model = buildTugOfWarModel();
         model.finalizeFromProperties();
         {
-// TODO             auto gsoData =
-// TODO                     solveForTrajectoryGlobalStaticOptimizationSolver(model);
-// TODO             // TODO
-// TODO             SimTK_SUBTEST2(test2Muscles1DOFGlobalStaticOptimizationSolver,
-// TODO                            gsoData, model);
+            auto gsoData =
+                    solveForTrajectoryGlobalStaticOptimizationSolver(model);
+            SimTK_SUBTEST2(test2Muscles1DOFGlobalStaticOptimizationSolver,
+                           gsoData, model);
         }
 
-        {
-            auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
-            // TODO
-            SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
-                           model);
-        }
+//        {
+//            auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
+//            // TODO
+//            SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
+//                           model);
+//        }
     SimTK_END_TEST();
 }
