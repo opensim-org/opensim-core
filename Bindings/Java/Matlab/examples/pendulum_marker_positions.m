@@ -27,12 +27,11 @@
 %% import java libraries
 import org.opensim.modeling.*
 
+%% Instantiate a (empty) model
 model = Model();
 model.setUseVisualizer(true);
 
-
-%% build model
-
+%% Build model
 % bodies
 r1  = Body('rod1', 1, Vec3(0), Inertia(0));
 r2  = Body('rod2',  1, Vec3(0), Inertia(0));
@@ -63,7 +62,7 @@ m6 = Marker(); m6.set_location(Vec3(-0.25,0.2,-0.2)); m6.setParentFrame(r2); m6.
 model.addMarker(m); model.addMarker(m2); model.addMarker(m3);
 model.addMarker(m4); model.addMarker(m5); model.addMarker(m6);
 
-%% set the default values of the coordinates
+%% Set the default values of the coordinates
 model.getCoordinateSet().get(0).setDefaultValue(-1.04719755)
 model.getCoordinateSet().get(1).setDefaultValue(-0.78539816)
 
@@ -95,7 +94,7 @@ mReporter.addToReport(model.getMarkerSet().get(4).getOutput('location'), 'marker
 mReporter.addToReport(model.getMarkerSet().get(5).getOutput('location'), 'marker_6');
 model.addComponent(mReporter);
 
-% Run a forward simulation using the Manager.
+%% Run a forward simulation using the Manager.
 % cReporter.clearTable(); mReporter.clearTable();
 state = model.initSystem();
 manager = Manager(model);
@@ -103,19 +102,18 @@ manager.setInitialTime(0);
 manager.setFinalTime(4);
 manager.integrate(state);
 
-% Write joint angles to .sto file.
+%% Write joint angles to .sto file.
 filename = 'pendulum_coordinates.sto';
 STOFileAdapter.write(cReporter.getTable(), filename);
 fprintf('Joint angles written to %s\n', filename);
 
-% Write marker locations to .sto file.
+%% Write marker locations to .sto file.
 filename = 'marker_locations.sto';
 markerTable = mReporter.getTable();
 STOFileAdapterVec3.write(markerTable, filename);
 fprintf('Marker locations written to %s\n', filename);
 
-% Write marker locations to .trc file. The TRCFileAdapter requires DataRate and
-% Units be included in the table metadata.
+%% Write marker locations to .trc file.
 filename = 'marker_locations.trc';
 markerTable.addTableMetaDataString('DataRate', num2str(reportTimeInterval));
 markerTable.addTableMetaDataString('Units', 'm');
