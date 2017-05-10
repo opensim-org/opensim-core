@@ -1,9 +1,11 @@
 function plotMuscleFLCurves(modelpath)
-%
+% Plot the force length curve of a muscle in the Model
 % This function computes and plots the active and passive force--length curves
 % for a specified muscle over the range of possible fiber lengths. (This range
 % is only approximate for muscles that cross more than one degree of freedom.)
 
+% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
+% Ajay Seth, Ayman Habib, Jen Hicks.
 
 %% Import OpenSim libraries.
 import org.opensim.modeling.*

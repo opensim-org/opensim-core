@@ -1,14 +1,14 @@
 function createActuatorsFile(varargin)
-%  makes a template actuators file that can
-%  be used in Static Optimization, RRA and CMC. Function identifies the
-%  coordinates that are connected to ground and places point or torque
-%  actuators on translational or rotational coordinates, respectively. All
-%  other coordinates will get coordinate actuators. Any constrained 
-%  coordinates will be ignored.
+%  Make a template actuators file
+%  Function identifies the coordinates that are connected to ground and 
+%  places point or torque actuators on translational or rotational 
+%  coordinates, respectively. All other coordinates will get coordinate 
+%  actuators. Any constrained coordinates will be ignored.
 
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
+%% Check the inputs
 if isempty(varargin)
     % open dialog boxes to select the model
     [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
@@ -23,7 +23,7 @@ else
     error(['Number of inputs is > 1. Function only takes a single filepath']);
 end
 
-%% get the model path
+%% Get the model path
 modelFilePath = fullfile(pathname,filename);
 
 %% Generate an instance of the model
@@ -128,11 +128,11 @@ for iCoord = 0 : nCoord - 1
     forceSet.cloneAndAppend(newActuator);
 end
 
-%% get the parts of the file path
+%% Get the parts of the file path
 [pathname,filename,ext] = fileparts(modelFilePath);
-%% define the new print path
+%% Define the new print path
 printPath = fullfile(pathname, [filename '_actuators.xml']);
-%% print the actuators xml file
+%% Print the actuators xml file
 forceSet.print(printPath);
 %% Display printed file
 display(['Printed actuators to ' printPath])
