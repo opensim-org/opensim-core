@@ -91,6 +91,11 @@ public:
         /// This will be empty if there are no CoordinateActuators, etc.
         /// enabled.
         TimeSeriesTable other_controls;
+        /// The tendon force trajectories for all enabled (appliesForce)
+        /// muscles. This is *not* a variable in the MuscleRedundancySolver;
+        /// rather, this is provided to support analysis of results.
+        /// This will be empty if there are no enabled muscles.
+        TimeSeriesTable tendon_force;
         /// Write the solution to a series of OpenSim Storage files (one
         /// for each table) whose paths begin with `prefix`. Empty tables are
         /// not written.

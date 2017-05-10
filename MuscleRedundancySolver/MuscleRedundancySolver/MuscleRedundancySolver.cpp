@@ -29,6 +29,7 @@ void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
     write(norm_fiber_length, "norm_fiber_length");
     write(norm_fiber_velocity, "norm_fiber_velocity");
     write(other_controls, "other_controls");
+    write(tendon_force, "tendon_force");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
@@ -346,6 +347,10 @@ public:
         }
         return vars;
     }
+    /// The mesh points in the iterate must match those that this solver is
+    /// expecting (for the current mesh refinement iteration); this is
+    /// because computing tendon length requires on the cached muscle-tendon
+    /// lengths.
     MuscleRedundancySolver::Solution deconstruct_iterate(
             const mesh::OptimalControlIterate& ocpVars) const {
 
@@ -358,6 +363,7 @@ public:
             sol.activation.setColumnLabels(_muscleLabels);
             sol.norm_fiber_length.setColumnLabels(_muscleLabels);
             sol.norm_fiber_velocity.setColumnLabels(_muscleLabels);
+            sol.tendon_force.setColumnLabels(_muscleLabels);
         }
 
         for (int i_time = 0; i_time < ocpVars.time.cols(); ++i_time) {
@@ -402,6 +408,19 @@ public:
                                        controls.data() + _numCoordActuators + 1,
                                        true /* makes this a view */);
             sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
+
+            // Compute other helpful quantities from the states.
+            SimTK::RowVector tendon_force(_numMuscles);
+            for (int i_musc = 0; i_musc < _numMuscles; ++i_musc) {
+                const auto muscle =
+                        _muscles[i_musc].convert_scalartype_double();
+                const auto& musTenLen = _muscleTendonLengths(i_musc, i_time);
+                const auto& normFibLen = states[2 * i_musc + 1];
+
+                muscle.calcTendonForce(musTenLen, normFibLen,
+                                       tendon_force[i_musc]);
+            }
+            sol.tendon_force.appendRow(time, tendon_force);
         }
         return sol;
     }
