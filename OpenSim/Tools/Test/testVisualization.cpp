@@ -501,7 +501,7 @@ void populate_wrapModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimitiv
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ -.01, -.5, .0 })));
     stdPrimitives.push_back(
-        DecorativeTorus(.08, .035).setBodyId(0).setColor(Vec3(0, 0.2, 0.8))
+        DecorativeTorus(.08, .035).setBodyId(1).setColor(Vec3(0, 0.2, 0.8))
         .setIndexOnBody(-1).setScale(1).setOpacity(0.5)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(Vec3({ -.02, -.6, .01 })));

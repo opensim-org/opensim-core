@@ -232,12 +232,24 @@ void ModelVisualizer::createVisualizer() {
     // for the SimbodyVisualizer executable. The search will go as 
     // follows: first look in the same directory as the currently-
     // executing executable; then look in the $OPENSIM_HOME/bin 
-    // directory, then look in various default Simbody places.
+    // directory, then look at all the paths in the environment
+    // variable PATH, then look in various default Simbody places.
     Array_<String> searchPath;
     if (SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
         searchPath.push_back( 
             SimTK::Pathname::getEnvironmentVariable("OPENSIM_HOME")
             + "/bin");
+    }
+    if (SimTK::Pathname::environmentVariableExists("PATH")) {
+        const auto& path = SimTK::Pathname::getEnvironmentVariable("PATH");
+        std::string buffer{};
+        for(const auto ch : path) {
+            if(ch == ':' || ch == ';') {
+                searchPath.push_back(buffer);
+                buffer.clear();
+            } else
+                buffer.push_back(ch);
+        }
     }
     _viz = new SimTK::Visualizer(_model.getMultibodySystem(),
                                  searchPath);
