@@ -9,6 +9,9 @@ namespace OpenSim {
 // be called "muscle" redundancy solver.
 /// TODO describe filtering.
 
+// TODO create the option to directly specify inverse dynamics generalized
+// forces, so that users can process them however they desire.
+
 /// ### Reserve actuators
 ///
 /// Sometimes it is not possible to achieve the desired net joint moments using
