@@ -393,8 +393,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     // TODO also print_bounds() information.
 
     // We want to be able to restore the stream's original formatting.
-    // TODO not working std::ios orig_fmt(nullptr);
-    // TODO not working orig_fmt.copyfmt(stream);
+    std::ios orig_fmt(nullptr);
+    orig_fmt.copyfmt(stream);
 
     // Gather and organize all constraint values and bounds.
     VectorX<T> vars = construct_iterate(ocp_vars).template cast<T>();
@@ -538,8 +538,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
         stream << std::endl;
     }
 
-    // Reset the IO format back to what it was before this function.
-    // TODO not working stream.copyfmt(std::ios(nullptr)); // TODO orig_fmt);
+    // Reset the IO format back to what it was before invoking this function.
+    stream.copyfmt(orig_fmt);
 }
 
 template<typename T>
