@@ -35,6 +35,7 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
     const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
+    //std::cout << "DEBUG " << expectedColumnLabel << std::endl;
     //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
     //    std::cout << "DEBUG " << actual[i] << " " << expected[i] << " "
     //            << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
