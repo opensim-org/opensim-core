@@ -8,7 +8,7 @@ add_library(mesh
     DirectCollocation.h     DirectCollocation.hpp   DirectCollocation.cpp
     OptimalControlProblem.h
     legacy.h                                        legacy.cpp
-    )
+    OptimalControlIterate.h                         OptimalControlIterate.cpp)
 
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
