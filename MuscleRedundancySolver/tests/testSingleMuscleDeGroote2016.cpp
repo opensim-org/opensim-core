@@ -108,9 +108,12 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
+    // Skip the "num_states=#" and "num_controls=#" lines.
+    std::string line;
+    std::getline(fRead, line);
+    std::getline(fRead, line);
     auto fWrite = std::ofstream(trajFileWithHeader);
     fWrite << "endheader" << std::endl;
-    std::string line;
     while (std::getline(fRead, line)) fWrite << line << std::endl;
     fRead.close();
     fWrite.close();
@@ -277,9 +280,12 @@ solveForTrajectoryMuscleRedundancySolver() {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
+    // Skip the "num_states=#" and "num_controls=#" lines.
+    std::string line;
+    std::getline(fRead, line);
+    std::getline(fRead, line);
     auto fWrite = std::ofstream(trajFileWithHeader);
     fWrite << "endheader" << std::endl;
-    std::string line;
     while (std::getline(fRead, line)) fWrite << line << std::endl;
     fRead.close();
     fWrite.close();
