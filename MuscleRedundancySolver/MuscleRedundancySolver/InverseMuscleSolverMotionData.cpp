@@ -242,6 +242,12 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // TODO avoid copy.
     SimTK::Array_<double> simtkTimes(times); // , SimTK::DontCopy());
 
+    /* For debugging: use exact inverse dynamics solution.
+    auto table = CSVFileAdapter::read(
+            "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
+    _inverseDynamics = createGCVSplineSet(table);
+     */
+
     // Perform Inverse Dynamics.
     // -------------------------
     SimTK::Array_<SimTK::Vector> forceTrajectory;
