@@ -99,12 +99,18 @@ public:
             this->add_control(actuPath + "_excitation",
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
-            // TODO use activation bounds, not excitation bounds.
+            // TODO use activation bounds, not excitation bounds (then
+            // also update the property comment for zero_initial_activation).
+            const double initialActiv = mrs.get_zero_initial_activation() ?
+                    std::max(actuator.get_min_control(), 0.0) : SimTK::NaN;
             this->add_state(actuPath + "_activation",
                             {actuator.get_min_control(),
-                             actuator.get_max_control()});
+                             actuator.get_max_control()},
+                            initialActiv);
 
             // Fiber dynamics.
+            // TODO initial value should be 0? That is what CMC does (via
+            // equilibrateMuscles()).
             this->add_control(actuPath + "_norm_fiber_velocity", {-1, 1});
             // These bounds come from simtk.org/projects/optcntrlmuscle.
             this->add_state(actuPath + "_norm_fiber_length", {0.2, 1.8});
@@ -233,7 +239,7 @@ public:
         // std::cout << "DEBUG constraints " << constraints << std::endl;
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& states,
+                       const mesh::VectorX<T>& /*states*/,
                        const mesh::VectorX<T>& controls,
                        T& integrand) const override {
         // Use a map to skip over fiber velocities.
@@ -455,6 +461,7 @@ MuscleRedundancySolver::MuscleRedundancySolver() {
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_initial_guess("static_optimization");
+    constructProperty_zero_initial_activation(false);
     //constructProperty_model_file("");
     //constructProperty_kinematics_file("");
 }

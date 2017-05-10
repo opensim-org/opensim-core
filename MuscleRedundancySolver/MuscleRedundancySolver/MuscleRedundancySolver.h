@@ -67,6 +67,16 @@ public:
         "Only change this if static optimization is causing issues; static "
         " optimization can help solve the problem up 10 times faster.");
 
+    // TODO consider allowing setting initial fiber velocity instead, though
+    // it is not as good at avoiding poor initial activations, etc.
+    OpenSim_DECLARE_PROPERTY(zero_initial_activation, bool,
+        "Should the initial activation of all muscles be constrained to 0? "
+        "This may be useful because the optimizer will often otherwise set "
+        "initial activation to an unreasonably large value (there is no cost "
+        "for this). If a muscle's min_control is greater than 0, then "
+        "min_control is used instead. "
+        "Default: false");
+
     //OpenSim_DECLARE_PROPERTY(model_file, std::string,
     //    "Path to a model file (.osim).");
     //OpenSim_DECLARE_PROPERTY(kinematics_file, std::string,
