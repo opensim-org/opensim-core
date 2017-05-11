@@ -14,3 +14,6 @@ MRSAddTest(testSingleMuscle osimMuscleRedundancySolver)
 MRSAddTest(testSingleMuscleDeGroote2016 osimMuscleRedundancySolver)
 MRSAddTest(testSingleMuscleDeGroote2016MomentArms osimMuscleRedundancySolver)
 MRSAddTest(testTugOfWarDeGroote2016 osimMuscleRedundancySolver)
+
+file(COPY testTugOfWarDeGroote2016_MRS_initial_guess.csv
+     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

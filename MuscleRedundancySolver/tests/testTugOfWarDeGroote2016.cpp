@@ -393,11 +393,15 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
+    // Skip the "num_states=#" and "num_controls=#" lines.
+    std::string line;
+    std::getline(fRead, line);
+    std::getline(fRead, line);
     auto fWrite = std::ofstream(trajFileWithHeader);
     fWrite << "endheader" << std::endl;
-    std::string line;
     while (std::getline(fRead, line)) fWrite << line << std::endl;
-    fRead.close(); fWrite.close();
+    fRead.close();
+    fWrite.close();
 
     // Create a table containing only the angle and speed of the pendulum.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
@@ -444,28 +448,32 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
                                                   "ipopt", N);
     // Create an initial guess.
     // This initial guess reduces the number of iterations from 52 to 32.
-    using Eigen::RowVectorXd;
-    mesh::OptimalControlIterate guess;
-    guess.time.setLinSpaced(N, 0, 0.5);
-    ocp->set_state_guess(guess, "position",
-                         RowVectorXd::LinSpaced(N, -0.015, 0.015));
-    ocp->set_state_guess(guess, "speed", RowVectorXd::Constant(N, 0.06));
-    ocp->set_state_guess(guess, "activation_l",
-                         RowVectorXd::LinSpaced(N, 0, 1));
-    ocp->set_state_guess(guess, "norm_fiber_length_l",
-                         RowVectorXd::LinSpaced(N, 0.9, 1.1));
-    ocp->set_control_guess(guess, "excitation_l",
-                           RowVectorXd::LinSpaced(N, 0, 1));
-    ocp->set_control_guess(guess, "norm_fiber_velocity_l",
-                           RowVectorXd::Constant(N, 0.03));
-    ocp->set_state_guess(guess, "activation_r",
-                         RowVectorXd::LinSpaced(N, 1, 0));
-    ocp->set_state_guess(guess, "norm_fiber_length_r",
-                         RowVectorXd::LinSpaced(N, 1.1, 0.9));
-    ocp->set_control_guess(guess, "excitation_r",
-                           RowVectorXd::LinSpaced(N, 1, 0));
-    ocp->set_control_guess(guess, "norm_fiber_velocity_r",
-                           RowVectorXd::Constant(N, -0.03));
+    // using Eigen::RowVectorXd;
+    // mesh::OptimalControlIterate guess;
+    // guess.time.setLinSpaced(N, 0, 0.5);
+    // ocp->set_state_guess(guess, "position",
+    //                      RowVectorXd::LinSpaced(N, -0.015, 0.015));
+    // ocp->set_state_guess(guess, "speed", RowVectorXd::Constant(N, 0.06));
+    // ocp->set_state_guess(guess, "activation_l",
+    //                      RowVectorXd::LinSpaced(N, 0, 1));
+    // ocp->set_state_guess(guess, "norm_fiber_length_l",
+    //                      RowVectorXd::LinSpaced(N, 0.9, 1.1));
+    // ocp->set_control_guess(guess, "excitation_l",
+    //                        RowVectorXd::LinSpaced(N, 0, 1));
+    // ocp->set_control_guess(guess, "norm_fiber_velocity_l",
+    //                        RowVectorXd::Constant(N, 0.03));
+    // ocp->set_state_guess(guess, "activation_r",
+    //                      RowVectorXd::LinSpaced(N, 1, 0));
+    // ocp->set_state_guess(guess, "norm_fiber_length_r",
+    //                      RowVectorXd::LinSpaced(N, 1.1, 0.9));
+    // ocp->set_control_guess(guess, "excitation_r",
+    //                        RowVectorXd::LinSpaced(N, 1, 0));
+    // ocp->set_control_guess(guess, "norm_fiber_velocity_r",
+    //                        RowVectorXd::Constant(N, -0.03));
+    // Initializing with a previous solution reduces the number of iterations
+    // from 32 to 20.
+    mesh::OptimalControlIterate guess(
+            "testTugOfWarDeGroote2016_MRS_initial_guess.csv");
     mesh::OptimalControlSolution ocp_solution = dircol.solve(guess);
     //mesh::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
@@ -481,9 +489,12 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
+    // Skip the "num_states=#" and "num_controls=#" lines.
+    std::string line;
+    std::getline(fRead, line);
+    std::getline(fRead, line);
     auto fWrite = std::ofstream(trajFileWithHeader);
     fWrite << "endheader" << std::endl;
-    std::string line;
     while (std::getline(fRead, line)) fWrite << line << std::endl;
     fRead.close();
     fWrite.close();
