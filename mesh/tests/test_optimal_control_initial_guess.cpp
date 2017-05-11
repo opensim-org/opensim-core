@@ -172,6 +172,40 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 }
 
 
+TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]")
+{
+    // Create an iterate.
+    OptimalControlIterate it0;
+    int num_times = 15;
+    int num_states = 3;
+    int num_controls = 2;
+    it0.time.resize(num_times);
+    it0.time.setRandom();
+
+    it0.states.resize(num_states, num_times);
+    it0.states.setRandom();
+
+    it0.controls.resize(num_controls, num_times);
+    it0.controls.setRandom();
+
+    it0.state_names = {"a", "b", "c"};
+    it0.control_names = {"x", "y"};
+
+    // Serialize.
+    const std::string filename = "test_OptimalControlIterate_serialization.csv";
+    it0.write(filename);
+
+    // Deserialize.
+    OptimalControlIterate it1(filename);
+
+    // Test.
+    REQUIRE_EIGEN(it0.time, it1.time, 1e-5);
+    REQUIRE_EIGEN(it0.states, it1.states, 1e-5);
+    REQUIRE_EIGEN(it0.controls, it1.controls, 1e-5);
+
+    REQUIRE(it0.state_names == it1.state_names);
+    REQUIRE(it0.control_names == it1.control_names);
+}
 
 
 
