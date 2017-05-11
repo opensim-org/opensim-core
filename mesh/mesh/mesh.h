@@ -13,6 +13,7 @@
 #include "SNOPTSolver.h"
 #include "IpoptSolver.h"
 
+#include "OptimalControlIterate.h"
 #include "OptimalControlProblem.h"
 #include "DirectCollocation.h"
 // TODO should not have using declarations in a header file.

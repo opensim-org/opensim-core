@@ -46,7 +46,7 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
         // Add 1 for the time column.
         throw std::runtime_error("Expected " +
                 std::to_string(1 + num_states + num_controls) +
-                "columns but got " + std::to_string(1 + i_label) +
+                " columns but got " + std::to_string(1 + i_label) +
                 " columns.");
     }
 
