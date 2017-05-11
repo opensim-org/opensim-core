@@ -3,7 +3,8 @@
 
 #include <catch.hpp>
 
-/// TODO
+/// Compare any two Eigen matrices (their dimensions and each element)
+/// using Catch.
 #define REQUIRE_EIGEN(actual, expected, abs_error_tolerance)                 \
 do {                                                                         \
     REQUIRE(actual.rows() == expected.rows());                               \
