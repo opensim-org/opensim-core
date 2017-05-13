@@ -94,12 +94,12 @@ void testJointReactionDuringIterativeForwardSimulation() {
     model.buildSystem();
     auto s = model.initializeState();
 
-    double dt = 0.01;
+    double dt = 0.1;
     double t_start = 0;
     double t_end = 0.5;
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(t_start);
+    s.setTime(t_start);
 
     // iterative numerical integration  
     for (unsigned int i = 1; i*dt <= t_end; ++i) {
@@ -108,9 +108,8 @@ void testJointReactionDuringIterativeForwardSimulation() {
 
         // do something ...
 
-        manager.setFinalTime(tf);
-        manager.integrate(s);
-        manager.setInitialTime(tf);
+        manager.integrate(s, tf);
+        s.setTime(tf);
     }
     // if storage is reseted then it will not start from start time and the bug
     // is exposed
