@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
+#include <OpenSim/Common/CSVFileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
@@ -37,6 +38,8 @@ void testTutorialOne();
 // states are not provided. Note if default_activation is 1.0 it 
 // reproduces  the "skyscraper" bug issue #83 in OpenSim32 repo
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
+void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
+                                           const SimTK::State& state);
 
 
 int main()
@@ -47,18 +50,21 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testTutorialOne");
     }
+
     // produce passive force-length curve
     try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.01); }
     catch (const std::exception& e) {
         cout << e.what() << endl; 
         failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.01");
     }
-    //produced passive + active but before skyscraper bug appears (at 0.9)
-    try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.8); }
+
+    //produced passive + active but before skyscraper bug appears (at > 0.9)
+    try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 1.0); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.8");
+        failures.push_back("testTugOfWar CoordinatesOnly: default_act = 1.0");
     }
+
     // now supply activation states which should be used instead of the default
     try { testTugOfWar("Tug_of_War_ConstantVelocity_RampActivation.sto", 0.0); }
     catch (const std::exception& e) {
@@ -140,11 +146,14 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     size_t nstates = statesTraj.getSize();
 
     // muscle active, passive, total muscle and tendon force quantities
-    double af, pf, mf, tf;
-    af= pf = mf = tf = SimTK::NaN;
+    double af, pf, mf, tf, fl, fv;
+    af= pf = mf = tf = fl = fv = SimTK::NaN;
 
     // Tolerance for muscle equilibrium solution 
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
+
+    // The maximum acceptable change in force between two contiguous states
+    const double maxDelta = muscle.getMaxIsometricForce() / 2;
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
@@ -158,8 +167,25 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         // technically, fiber lengths could be supplied, but this test case
         // (a typical use case) does not and therefore set to its default.
         muscle.setFiberLength(s, muscle.get_default_fiber_length());
-        muscle.computeEquilibrium(s);
+        try {
+            muscle.computeEquilibrium(s);
+        }
+        catch (const std::exception& x) {
+            // Write out the muscle equilibrium error as a function of
+            // fiber lengths.
+            reportTendonAndFiberForcesAcrossFiberLengths(model, s);
+            throw x;
+        }
         model.realizeDynamics(s);
+
+        // Get the fiber-length
+        fl = muscle.getFiberLength(s);
+
+        cout << "t = " << s.getTime() << " | fiber_length = " << fl <<
+           " : default_fiber_length = " << muscle.get_default_fiber_length() << endl;
+
+        SimTK_ASSERT_ALWAYS(fl >= muscle.getMinimumFiberLengthAlongTendon(),
+            "Equilibrium failed to compute valid fiber length.");
 
         if (isCoordinatesOnly) {
             // check that activation is not reset to zero or other value
@@ -175,6 +201,10 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         // get active and passive forces given the default activation
         af = muscle.getActiveFiberForceAlongTendon(s);
         pf = muscle.getPassiveFiberForceAlongTendon(s);
+        fv = muscle.getFiberVelocityAlongTendon(s);
+
+        //assert(abs(fv) < SimTK::SqrtEps);
+
         // now the total muscle force is the active + passive
         mf = af + pf;
         tf = muscle.getTendonForce(s);
@@ -187,5 +217,67 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
             " Analyze reported force: " << forces[i] << endl;
         ASSERT_EQUAL<double>(mf, forces[i], equilTol, __FILE__, __LINE__,
             "Total fiber force failed to match reported muscle force.");
+
+        double delta = (i > 0) ? abs(forces[i]-forces[i-1]) : 0;
+
+        SimTK_ASSERT_ALWAYS(delta < maxDelta,
+            "Force trajectory has unexplained discontinuity.");
     }
+}
+
+void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
+                                           const SimTK::State& state) {
+    Millard2012EquilibriumMuscle& muscle =
+        static_cast<Millard2012EquilibriumMuscle&>(model.getMuscles()[0]);
+
+    SimTK::State s = state;
+
+    DataTable_<double, double> forcesVsFiberLengthTable;
+    std::vector<string> labels{ "fiber_length", "pathLength", 
+        "tendon_force", "fiber_force", "activation", "activeFiberForce",
+        "passiveFiberForce", "equilibriumError"};
+    forcesVsFiberLengthTable.setColumnLabels(labels);
+
+    const int N = 100;
+    const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
+    double fiberLength = muscle.getMinimumFiberLength();
+
+    const double dl = (maxFiberLength - fiberLength) / N;
+
+    double tendonForce = SimTK::NaN;
+    double activeFiberForce = SimTK::NaN;
+    double passiveFiberForce = SimTK::NaN;
+
+    assert(!muscle.get_ignore_tendon_compliance());
+
+    SimTK::RowVector row(labels.size(), SimTK::NaN);
+    for (int i = 0; i < N; ++i) {
+        fiberLength += dl;
+        s.setTime(fiberLength);
+        muscle.setFiberLength(s, fiberLength);
+        muscle.setActivation(s, muscle.get_default_activation());
+
+        model.realizeDynamics(s);
+
+        tendonForce = muscle.getTendonForce(s);
+        activeFiberForce = muscle.getMaxIsometricForce()*
+            muscle.getActiveForceLengthMultiplier(s);
+        passiveFiberForce = muscle.getPassiveFiberForceAlongTendon(s);
+
+        row[0] = fiberLength; // muscle.getFiberLength(s);
+        row[1] = muscle.getLength(s);
+        row[2] = tendonForce;
+        row[3] = activeFiberForce + passiveFiberForce;
+        row[4] = muscle.getActivation(s);
+        row[5] = activeFiberForce;
+        row[6] = passiveFiberForce;
+        row[7] = row[2] - row[3];
+
+        forcesVsFiberLengthTable.appendRow(s.getTime(), row);
+    }
+
+    std::string fileName = "forcesVsFiberLength_"
+        + std::to_string(muscle.get_default_activation()) + ".sto";
+
+    STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
 }
