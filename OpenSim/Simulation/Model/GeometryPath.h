@@ -68,15 +68,16 @@ OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
 //=============================================================================
 // DATA
 //=============================================================================
+public:
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance attributes for this GeometryPath");
+
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet,
         "The set of points defining the path");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet,
         "The wrap objects that are associated with this path");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance attributes for this GeometryPath");
 
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
