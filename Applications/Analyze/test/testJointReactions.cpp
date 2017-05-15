@@ -90,9 +90,7 @@ void testJointReactionDuringIterativeForwardSimulation() {
 
     // build model
     //model.setUseVisualizer(true);
-    model.finalizeFromProperties();
-    model.buildSystem();
-    auto s = model.initializeState();
+    auto s = model.initSystem();
 
     double dt = 0.1;
     double t_start = 0;
@@ -109,7 +107,6 @@ void testJointReactionDuringIterativeForwardSimulation() {
         // do something ...
 
         manager.integrate(s, tf);
-        s.setTime(tf);
     }
     // if storage is reseted then it will not start from start time and the bug
     // is exposed
