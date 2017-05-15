@@ -74,9 +74,9 @@ private:
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet,
         "The wrap objects that are associated with this path");
-    
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(default_color, SimTK::Vec3,
-        "Used to initialize the color cache variable");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance attributes for this GeometryPath");
 
     // used for scaling tendon and fiber lengths
     double _preScaleLength;
@@ -124,11 +124,11 @@ public:
     /** If you call this prior to extendAddToSystem() it will be used to initialize
     the color cache variable. Otherwise %GeometryPath will choose its own
     default which will be some boring shade of gray. **/
-    void setDefaultColor(const SimTK::Vec3& color) {set_default_color(color); };
+    void setDefaultColor(const SimTK::Vec3& color) {upd_Appearance().set_color(color); };
     /** Returns the color that will be used to initialize the color cache
     at the next extendAddToSystem() call. The actual color used to draw the path
     will be taken from the cache variable, so may have changed. **/
-    const SimTK::Vec3& getDefaultColor() const { return get_default_color(); }
+    const SimTK::Vec3& getDefaultColor() const { return get_Appearance().get_color(); }
 
     /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used

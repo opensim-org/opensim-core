@@ -92,7 +92,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
-    addCacheVariable<SimTK::Vec3>("color", get_default_color(), 
+    addCacheVariable<SimTK::Vec3>("color", get_Appearance().get_color(), 
                                   SimTK::Stage::Topology);
 }
 
@@ -185,7 +185,9 @@ void GeometryPath::constructProperties()
     constructProperty_PathWrapSet(PathWrapSet());
     
     Vec3 defaultColor = SimTK::Gray;
-    constructProperty_default_color(defaultColor);
+    Appearance appearance;
+    appearance.set_color(SimTK::Gray);
+    constructProperty_Appearance(appearance);
 }
 
 //_____________________________________________________________________________
