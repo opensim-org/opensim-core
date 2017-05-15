@@ -415,8 +415,8 @@ void testLiftingMassGlobalStaticOptimizationSolver(
     Model model = buildLiftingMassModel();
     model.finalizeFromProperties();
 
-    // Create the MuscleRedundancySolver.
-    // ----------------------------------
+    // Create the GlobalStaticOptimizationSolver.
+    // ------------------------------------------
     GlobalStaticOptimizationSolver gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);

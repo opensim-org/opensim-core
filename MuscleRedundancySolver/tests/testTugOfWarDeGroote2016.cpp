@@ -1,5 +1,4 @@
 #include <OpenSim/OpenSim.h>
-#include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
@@ -13,6 +12,8 @@ using namespace OpenSim;
 // multiple muscles that oppose each other.
 
 const double DISTANCE = 0.25;
+
+// TODO make displacements larger.
 
 /// Two muscles coordinate to move a mass on a table (no gravity) from one
 /// fixed state to another, with minimum effort.
@@ -31,11 +32,11 @@ const double DISTANCE = 0.25;
 ///              udot = 1/m (-f_tL + f_tR) dynamics
 ///              f_tL = (aL f_l(lmL) f_v(vmL) + f_p(lmL)) cos(alphaL)
 ///              f_tR = (aR f_l(lmR) f_v(vmR) + f_p(lmR)) cos(alphaR)
-///              q(0) = -0.15
+///              q(0) = -0.015
 ///              u(0) = 0
 ///              aL(0) = 0
 ///              aR(0) = 0
-///              q(t_f) = 0.15
+///              q(t_f) = 0.015
 ///              u(t_f) = 0
 /// @endverbatim
 template <typename T>
@@ -333,10 +334,8 @@ OpenSim::Model buildTugOfWarModel() {
         actuL->set_tendon_slack_length(0.05);
         // Pennation=0 speeds up convergence (126 iterations -> 52 iterations).
         actuL->set_pennation_angle_at_optimal(0.0);
-        // Attached the ground to the right of the pendulum.
         actuL->addNewPathPoint("origin", model.updGround(),
                                Vec3(-DISTANCE, 0, 0));
-        // Attached to the mass at the end of the pendulum.
         actuL->addNewPathPoint("insertion", *body, Vec3(0));
         model.addComponent(actuL);
     }
@@ -348,10 +347,8 @@ OpenSim::Model buildTugOfWarModel() {
         actuR->set_tendon_slack_length(0.10);
         // Pennation=0 speeds up convergence (126 iterations -> 52 iterations).
         actuR->set_pennation_angle_at_optimal(0.0);
-        // Attached the ground to the right of the pendulum.
         actuR->addNewPathPoint("origin", model.updGround(),
                                Vec3(DISTANCE, 0, 0));
-        // Attached to the mass at the end of the pendulum.
         actuR->addNewPathPoint("insertion", *body, Vec3(0));
         model.addComponent(actuR);
     }
@@ -536,15 +533,15 @@ void test2Muscles1DOFGlobalStaticOptimizationSolver(
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
-    // Create the MuscleRedundancySolver.
-    // ----------------------------------
-    GlobalStaticOptimizationSolver mrs;
-    mrs.setModel(model);
-    mrs.setKinematicsData(kinematics);
-    mrs.set_lowpass_cutoff_frequency_for_joint_moments(50);
+    // Create the GlobalStaticOptimizationSolver.
+    // ------------------------------------------
+    GlobalStaticOptimizationSolver gso;
+    gso.setModel(model);
+    gso.setKinematicsData(kinematics);
+    gso.set_lowpass_cutoff_frequency_for_joint_moments(50);
     double reserveOptimalForce = 0.001;
-    mrs.set_create_reserve_actuators(reserveOptimalForce);
-    GlobalStaticOptimizationSolver::Solution solution = mrs.solve();
+    gso.set_create_reserve_actuators(reserveOptimalForce);
+    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
     solution.write("testTugOfWarDeGroote2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
