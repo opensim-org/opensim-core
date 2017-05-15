@@ -211,16 +211,19 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // Assemble functions for coordinate values. Functions must be in the
     // same order as the joint moments (multibody tree order).
     auto coords = modelForID.getCoordinatesInMultibodyTreeOrder();
-    std::vector<std::string> columnLabels(coords.size());
+    std::vector<std::string> columnLabels;
     for (size_t i = 0; i < coords.size(); ++i) {
+        // We do not attempt to track constrained (e.g., locked) coordinates.
+        // TODO create a test case for this.
+        if (coords[i]->isConstrained(state)) continue;
         // The first state variable in the coordinate should be its value.
         // TODOosim make it easy to get the full name of a state variable
         // Perhaps expose the StateVariable class.
         //columnLabels[i] = coords[i]->getStateVariableNames()[0];
         // This will yield something like "knee/flexion/value".
-        columnLabels[i] = ComponentPath(coords[i]->getAbsolutePathName())
+        columnLabels.push_back(ComponentPath(coords[i]->getAbsolutePathName())
                 .formRelativePath(modelForID.getAbsolutePathName()).toString()
-                + "/value";
+                + "/value");
     }
     auto coordFunctions = createGCVSplineSet(kinematicsData, columnLabels);
 
