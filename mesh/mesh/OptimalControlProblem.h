@@ -206,6 +206,7 @@ public:
     // TODO make sure initial and final bounds are within the bounds.
     /// This returns an index that can be used to access this specific state
     /// variable within `dynamics()` , `path_constraints()`, etc.
+    /// TODO check if a state with the provided name already exists.
     int add_state(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
@@ -215,6 +216,7 @@ public:
     }
     /// This returns an index that can be used to access this specific control
     /// variable within `dynamics()` , `path_constraints()`, etc.
+    /// TODO check if a control with the provided name already exists.
     int add_control(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds())
@@ -229,6 +231,7 @@ public:
     }
     /// This returns an index that can be used to access this specific path
     /// constraint element within `path_constraints()`.
+    /// TODO check if a path constraint with the provided name already exists.
     int add_path_constraint(const std::string& name, const Bounds& bounds) {
         m_path_constraint_infos.push_back({name, bounds});
         return m_path_constraint_infos.size() - 1;
