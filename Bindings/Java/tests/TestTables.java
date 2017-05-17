@@ -106,6 +106,18 @@ class TestTables {
                table.getDependentColumn("3").get(1) == 40 &&
                table.getDependentColumn("3").get(2) == 40;
         System.out.println(table);
+        // Reorder columns of the table.
+        StdVectorInt newColumnIndices = new StdVectorInt();
+        newColumnIndices.add(3); newColumnIndices.add(1);
+        newColumnIndices.add(0); newColumnIndices.add(2);
+        table.reorderColumns(newColumnIndices);
+        assert table.getDependentColumnAtIndex(0).get(0) == 40 &&
+               table.getDependentColumnAtIndex(1).get(0) == 10 &&
+               table.getDependentColumnAtIndex(2).get(0) == 30 &&
+               table.getDependentColumnAtIndex(3).get(0) == 10;
+        newColumnIndices.set(0, 2); newColumnIndices.set(1, 1);
+        newColumnIndices.set(2, 3); newColumnIndices.set(3, 0);
+        table.reorderColumns(newColumnIndices);
         // Assert that clone was not edited due to above operations
         // on rows/columns.
         assert tableClone.getNumRows() == 3;

@@ -28,8 +28,6 @@
 #include "TimeSeriesTable.h"
 #include "Event.h"
 
-template<typename> class shrik;
-
 namespace OpenSim {
 
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
@@ -44,10 +42,13 @@ public:
     C3DFileAdapter& operator=(C3DFileAdapter&&)      = default;
     ~C3DFileAdapter()                                = default;
 
+    explicit C3DFileAdapter(const bool& useSIMMColumnOrdering);
+
     C3DFileAdapter* clone() const override;
     
     static
-    Tables read(const std::string& fileName);
+    Tables read(const std::string& fileName,
+                const bool& useSIMMColumnOrdering = false);
 
     static
     void write(const Tables& markerTable, const std::string& fileName);
@@ -63,7 +64,7 @@ protected:
 
 private:
     static const std::unordered_map<std::string, std::size_t> _unit_index;
-
+    bool _useSIMMColumnOrdering;
 };
 
 } // namespace OpenSim

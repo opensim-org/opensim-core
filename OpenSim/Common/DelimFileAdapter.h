@@ -544,7 +544,9 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
                            << table->
                               template getTableMetaData<std::string>(key) 
                            << "\n";
-        } catch(const InvalidTemplateArgument&) {}
+        } catch(const InvalidTemplateArgument&) {
+            out_stream << "\n";
+        }
     }
     // Write name of the data-type -- vec3, vec6, etc.
     out_stream << _dataTypeString << "=" << dataTypeName() << "\n";

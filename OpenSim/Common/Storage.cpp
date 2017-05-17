@@ -109,6 +109,7 @@ Storage::Storage(int aCapacity,const string &aName) :
 /**
  * Construct an Storage instance from file.
  * This constructor is far from bullet proof.
+ * This constructor also reads files written by STOFileAdapter with version 2.
  *
  * @param aFileName Name of the file from which the Storage is to be
  * constructed.
@@ -122,17 +123,29 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 
     // OPEN FILE
     std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
-    if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
+    if(fp==NULL)
+        throw Exception("Storage: ERROR- failed to open file " + aFileName,
+                        __FILE__,__LINE__);
 
     int nr=0,nc=0;
-    if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
-    cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
+    if (!parseHeaders(*fp, nr, nc))
+        throw Exception("Storage: ERROR- failed to parse headers of file " +
+                        aFileName, __FILE__,__LINE__);
+    cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc
+         << ")" << endl;
     // Motion files from SIMM are in degrees
-    if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
-    if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
-    if(_fileVersion > 1)
-      throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
-                      ") not supported. Use STOFileAdapter instead."};
+    if (_fileVersion < 1 &&
+        (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot")))
+        _inDegrees = true;
+    if (_fileVersion < 1)
+        cout << ".. assuming rotations in "
+             << (_inDegrees?"Degrees.":"Radians.") << endl;
+    if(_fileVersion > 1) {
+        TimeSeriesTable timeSeriesTable{aFileName};
+        createFromTimeSeriesTable(timeSeriesTable);
+        return;
+    }
+    
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();
@@ -155,11 +168,12 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     _storage.ensureCapacity(nr);
     _storage.setCapacityIncrement(-1);
 
-    // There are situations where we don't want to read the whole file in advance just header
+    // There are situations where we don't want to read the whole file in
+    // advance just header.
     if (readHeadersOnly) return;
 
-    //MM using the occurrence of time and range in the column labels to distinguish between
-    //SIMM and non SIMMOtion files.
+    //MM using the occurrence of time and range in the column labels to
+    // distinguish between SIMM and non SIMMOtion files.
     Array<std::string> currentLabels = getColumnLabels();
     int indexTime = currentLabels.findIndex("time");
     int indexRange = currentLabels.findIndex("range");
@@ -194,7 +208,8 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // If what we read was really a sIMM motion file, adjust the data 
     // to account for different assumptions between SIMM.mot OpenSim.sto
 
-    //MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
+    //MM if this is a SIMM Motion file, post process it as one. Else don't
+    // touch the data.
     size_t found = aFileName.find(".mot");
     if(indexTime == -1 && found!=string::npos){
         postProcessSIMMMotion();
@@ -1293,6 +1308,28 @@ TimeSeriesTable Storage::getAsTimeSeriesTable() const {
     }
 
     return table;
+}
+
+void Storage::createFromTimeSeriesTable(const TimeSeriesTable& table) {
+    _columnLabels.setSize(table.getNumColumns());
+    for(auto c = 0u; c < table.getNumColumns(); ++c)
+        _columnLabels.set(c, table.getColumnLabel(c));
+
+    _storage.setSize(table.getNumRows());
+    for(auto r = 0u; r < table.getNumRows(); ++r)
+        _storage.set(r, StateVector{table.getIndependentColumn().at(r),
+                    table.getRowAtIndex(r).transpose().getAsVector()});
+
+    _fileVersion = 1;
+    _inDegrees = true;
+    const auto& metadata = table.getTableMetaData();
+    for(const auto& key : metadata.getKeys()) {
+        if(key == "units")
+            _units = Units{metadata.getValueAsString(key)};
+        if(key == "inDegrees")
+            _inDegrees =
+                metadata.getValueAsString(key).find("yes") != std::string::npos;
+    }
 }
 
 
@@ -3133,6 +3170,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
             cout << "Old version storage/motion file encountered" << endl;
         }
     }
+    
     return true;
 }
 //_____________________________________________________________________________

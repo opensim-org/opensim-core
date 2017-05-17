@@ -38,14 +38,20 @@ C3DFileAdapter::_unit_index{{"marker", 0},
                             {"power" , 4},
                             {"scalar", 5}};
 
+C3DFileAdapter::C3DFileAdapter(const bool& useSIMMColumnOrdering) :
+    _useSIMMColumnOrdering{useSIMMColumnOrdering} {
+    // No operation.
+}
+    
 C3DFileAdapter*
 C3DFileAdapter::clone() const {
     return new C3DFileAdapter{*this};
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName) {
-    auto abstables = C3DFileAdapter{}.extendRead(fileName);
+C3DFileAdapter::read(const std::string& fileName,
+                     const bool& useSIMMColumnOrdering) {
+    auto abstables = C3DFileAdapter{useSIMMColumnOrdering}.extendRead(fileName);
     auto marker_table = 
         std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
     auto force_table = 
@@ -249,6 +255,19 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             }
             force_table.appendRow(0 + f * time_step, row);
         }
+    }
+
+    if(_useSIMMColumnOrdering) {
+        std::vector<int> newOrder{};
+        auto numTriples = force_table.getNumColumns() / 3;
+        for(auto i = 0u; i < numTriples; ++i) {
+            newOrder.push_back(i*3);
+            newOrder.push_back(i*3 + 2);
+        }
+        for(auto i = 0u; i < numTriples; ++i)
+            newOrder.push_back(i*3 + 1);
+
+        force_table.reorderColumns(newOrder);
     }
 
     EventTable event_table{};

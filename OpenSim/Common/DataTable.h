@@ -32,6 +32,7 @@ in-memory container for data access and manipulation.                         */
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
 
+#include <unordered_set>
 #include <iomanip>
 #include <numeric>
 
@@ -995,6 +996,82 @@ public:
 
         validateRow(rowIndex, value, _depData.row((int)rowIndex));
         _indData[rowIndex] = value;
+    }
+
+    /** Reorder columns of the DataTable by providing the new order of 
+    column indices. The new order is simply a permutation of column indices
+    0 to num-columns-1. For example:
+    \code
+    // Change order of last three columns only. Leave the first two columns 
+    // as is.
+    table.reorderColumns({0, 1, 4, 2, 3});
+    \endcode
+
+    \throws IncorrectNumColumns If the input array contains incorrect number of
+                                elements compared to number of columns in the
+                                DataTable.
+    \throws ColumnIndexOutOfRange If any index in the input array is out of
+                                  range.
+    \throws InvalidArgument If input array contains duplicates. A valid input
+                            array is a permutation of column indices.         */
+    void reorderColumns(const std::vector<int>& columnIndices) {
+        OPENSIM_THROW_IF(columnIndices.size() !=
+                         static_cast<size_t>(_depData.ncol()),
+                         IncorrectNumColumns,
+                         static_cast<size_t>(_depData.ncol()),
+                         columnIndices.size());
+
+        {
+            std::unordered_set<int> setOfInds{};
+            for(const auto& ind : columnIndices) {
+                OPENSIM_THROW_IF(ind < 0 || isColumnIndexOutOfRange(ind),
+                                 InvalidArgument,
+                                 "Index (" + std::to_string(ind) +
+                                 ") out of range [0," +
+                                 std::to_string(_depData.ncol() - 1) + "].");
+                OPENSIM_THROW_IF(setOfInds.find(ind) != setOfInds.end(),
+                                 InvalidArgument,
+                                 "Input array of indices cannot have "
+                                 "duplicates. Found duplicate = " +
+                                 std::to_string(ind));
+                setOfInds.emplace(ind);
+            }
+        }
+        
+        auto depDataCopy = _depData;
+        auto columnLabelsCopy = getColumnLabels();
+        for(auto c = 0; c < _depData.ncol(); ++c) {
+            if(c != columnIndices[c]) {
+                _depData.updCol(c) = depDataCopy.col(columnIndices[c]);
+                setColumnLabel(c, columnLabelsCopy[columnIndices[c]]);
+            }
+        }
+
+    }
+    
+    /** Reorder columns of the DataTable by providing the new order of 
+    column labels. The new order is simply a permutation of existing 
+    column labels. For example:
+    \code
+    // Change order of last three columns only. Leave the first two columns 
+    // as is. Here "col0", "col1", ... are existing column-labels.
+    table.reorderColumns({"col0", "col1", "col4", "col2", "col3"});
+    \endcode
+
+    \throws IncorrectNumColumns If the input array contains incorrect number of
+                                elements compared to number of columns in the
+                                DataTable.
+    \throws ColumnIndexOutOfRange If any index in the input array is out of
+                                  range.
+    \throws InvalidArgument If input array contains duplicates. A valid input
+                            array is a permutation of column indices.         
+    \throws KeyNotFound If any column-label specified in the input array does
+                        not exist in the table.                               */
+    void reorderColumns(const std::vector<std::string>& columnLabels) {
+        std::vector<int> columnIndices{};
+        for(const auto& label : columnLabels)
+            columnIndices.push_back(getColumnIndex(label));
+        reorderColumns(columnIndices);
     }
 
     /// @}
