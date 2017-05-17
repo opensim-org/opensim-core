@@ -384,9 +384,6 @@ SimTK::State& Model::initializeState() {
     for (int i=0; i<getProbeSet().getSize(); ++i)
         getProbeSet().get(i).reset(_workingState);
 
-    // Reset the controller's storage
-    upd_ControllerSet().constructStorage();
-    
     // Do the assembly
     createAssemblySolver(_workingState);
     assemble(_workingState);
@@ -579,6 +576,12 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+
+    // wipe-out the existing System 
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    _system.reset();
 
     if(getForceSet().getSize()>0)
     {
@@ -1932,8 +1935,12 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         cout << "Number of columns does not match in formStateStorage. Found "
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
+
+    // when the state value is not found in the storage use its default value in the State
+    SimTK::Vector defaultStateValues = getStateVariableValues(getWorkingState());
+
     // Create a list with entry for each desiredName telling which column in originalStorage has the data
-    int* mapColumns = new int[rStateNames.getSize()];
+    Array<int> mapColumns(-1, rStateNames.getSize());
     for(int i=0; i< rStateNames.getSize(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
@@ -1972,29 +1979,31 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         }
         mapColumns[i] = fix;
         if (fix==-1){
-            cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
+            cout << "Column "<< rStateNames[i] << 
+                " not found by Model::formStateStorage(). "
+                "Assuming its default value of "
+                << defaultStateValues[i] << endl;
         }
     }
-    // Now cycle through and shuffle each
-
+    // Now cycle through each state (row of Storage) and form the Model consistent
+    // order for the state values 
+    double assignedValue = SimTK::NaN;
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
         StateVector stateVec{originalVec->getTime()};
-        stateVec.getData().setSize(numStates);  // default value 0f 0.
-        for(int column=0; column< numStates; column++){
-            double valueInOriginalStorage=0.0;
-            if (mapColumns[column]!=-1)
-                originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
+        stateVec.getData().setSize(numStates); 
+        for(int column=0; column< numStates; column++) {
+            if (mapColumns[column] != -1)
+                originalVec->getDataValue(mapColumns[column] - 1, assignedValue);
+            else
+                assignedValue = defaultStateValues[column];
 
-            stateVec.setDataValue(column, valueInOriginalStorage);
-
+            stateVec.setDataValue(column, assignedValue);
         }
         statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
-
-    delete[] mapColumns;
 }
 
 /**
@@ -2124,14 +2133,7 @@ void Model::realizeReport(const SimTK::State& state) const
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-    try {
-        realizeAcceleration(s);
-    }
-    catch (const std::exception& e){
-        string exmsg = e.what();
-        throw Exception(
-            "Model::computeStateVariableDerivatives: failed. See: "+exmsg);
-    }
+    realizeAcceleration(s);
 }
 
 /**

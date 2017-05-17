@@ -13,7 +13,8 @@ endif()
 OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
-    LINKLIBS ${Simbody_LIBRARIES} ${BTK_LIBRARIES}
+    # Clients of osimCommon need not link to BTK.
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} PRIVATE ${BTK_LIBRARIES}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS "Test"

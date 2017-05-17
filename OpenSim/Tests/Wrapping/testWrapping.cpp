@@ -862,10 +862,8 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
 }// end of simulateModelWithCables()
 
-void simulate(Model& osimModel, State& si, double initialTime, double finalTime) {
-    // osimModel.finalizeFromProperties();
-    // osimModel.printBasicInfo();
-
+void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
+{
     // Dump model back out; no automated test provided here though.
     // osimModel.print(osimModel.getName() + "_out.osim");
 

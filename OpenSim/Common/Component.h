@@ -149,9 +149,9 @@ public:
                          const std::string& func,
                          const Object& obj) :
         Exception(file, line, func, obj) {
-        std::string msg = "This Component has not been added to a System.\n";
-        msg += "You must call initSystem on the top-level Component ";
-        msg += "(i.e., Model) first.";
+        std::string msg = "Component has no underlying System.\n";
+        msg += "You must call initSystem() on the top-level Component ";
+        msg += "(i.e. Model) first.";
         addMessage(msg);
     }
 };
@@ -414,13 +414,18 @@ public:
     /** Define a Component's internal data members and structure according to
         its properties. This includes its subcomponents as part of the component
         ownership tree and identifies its owner (if present) in the tree.
-        finalizeFromProperties propagates to all of the component's
-        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
-        on itself.*/
+        finalizeFromProperties propagates to all of the component's subcomponents
+        prior to invoking the virtual extendFinalizeFromProperties() on itself.
+        Note that if the Component has already been added to a System (result of
+        addToSystem(); e.g., Model::initSystem()) when finalizeFromProperties()
+        is called, then finalizeFromProperties() disassociates the component from
+        that System.*/
     void finalizeFromProperties();
 
-    /** Connect this Component to its aggregate component, which is the root
-        of a tree of components.*/
+    /** Satisfy the Component's connections specified by its Sockets and Inputs.
+        Locate Components and their Outputs to satisfy the connections in an
+        aggregate Component (e.g. Model), which is the root of a tree of
+        Components. */
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
@@ -582,6 +587,7 @@ public:
         static_assert(std::is_base_of<Component, T>::value,
                 "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
+        clearObjectIsUpToDateWithProperties();
         return ComponentList<T>(*this);
     }
 
@@ -704,7 +710,12 @@ public:
         return getComponent<Component>(pathname);
     }
 
-    /** Get a writable reference to a subcomponent.
+    /** Get a writable reference to a subcomponent. Use this method
+    * to edit the properties and connections of the subcomponent.
+    * Note: the method will mark this Component as out-of-date with
+    * its properties and will require finalizeFromProperties() to be
+    * invoked directly or indirectly (by finalizeConnections() or 
+    * Model::initSystem())
     * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
@@ -712,6 +723,7 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
@@ -1493,7 +1505,7 @@ public:
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. Also list the connectee names for inputs that are connected. */
+    connected. Also list the (desired) connectee names for the inputs.       */
     void printInputInfo() const;
 
     template<typename C>
@@ -2060,8 +2072,7 @@ protected:
      * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
-    SimTK::MultibodySystem& updSystem() const
-        { return *_system; } 
+    SimTK::MultibodySystem& updSystem() const;
 
     /** Get the index of a Component's continuous state variable in the Subsystem for
         allocations. This method is intended for derived Components that may need direct
@@ -2557,20 +2568,12 @@ private:
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
         {   return updSystem().updDefaultSubsystem(); }
 
-    void clearStateAllocations() {
-        _namedModelingOptionInfo.clear();
-        _namedStateVariableInfo.clear();
-        _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();    
-    }
+    // Clear all modeling options, continuous and discrete state variables,
+    // and cache variable allocated by this Component
+    void clearStateAllocations();
 
     // Reset by clearing underlying system indices.
-    void reset() {
-        _simTKcomponentIndex.invalidate();
-        clearStateAllocations();
-
-        resetSubcomponentOrder();
-    }
+    void reset();
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
@@ -2881,7 +2884,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     }
     // If processing a subtree under _root we stop when our successor is the same
     // as the successor of _root as this indicates we're leaving the _root's subtree.
-    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+    else if (_node->_nextComponent.get() == _root->_nextComponent.get())
         _node = nullptr;
     else // move on to the next component we computed earlier for the full tree
         _node = _node->_nextComponent.get();
@@ -2896,7 +2899,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Similar logic to operator++ but applies _filter->isMatch()
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
                                 !_filter.isMatch(*_node) || 
-                                (_node == &_root))){
+                                (_node == _root))){
         if (_node->_memberSubcomponents.size() > 0) {
             _node = _node->_memberSubcomponents[0].get();
         }
@@ -2907,7 +2910,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
             _node = _node->_adoptedSubcomponents[0].get();
         }
         else {
-            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+            if (_node->_nextComponent.get() == _root->_nextComponent.get()){ // end of subtree under _root
                 _node = nullptr;
                 continue;
             }
