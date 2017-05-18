@@ -60,6 +60,19 @@ int main(int argc, char **argv)
         osimModel.getVisualizer().show(si);
         getchar(); // Keep Visualizer from dying until we inspect the visualization window..
     }
+    // Add the muscle controller to the model
+    
+        osimModel.addController(muscleController);
+        IFs(NBMUSCLES);
+        const Set<Muscle> &muscleSet = osimModel.getMuscles();
+        if (muscleSet.getSize() != NBMUSCLES)
+            throw std::runtime_error("Number of muscles ");
+        for(int i=0; i< muscleSet.getSize(); i++ ){
+            double MIF = muscleSet[i].getMaxIsometricForce();
+            cout << "Isometric Force for muscle " << i << ": " << MIF << endl;
+            IFs(i) = IF;
+        IFs /= IFs.sum(); 
+            
     catch (OpenSim::Exception ex)
     {
         std::cout << ex.getMessage() << std::endl;
