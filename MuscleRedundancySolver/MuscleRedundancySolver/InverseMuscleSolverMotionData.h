@@ -36,7 +36,7 @@ public:
     /// @param[in,out] desiredMoments Inverse dynamics net joint moments
     ///     Dimensions: degrees of freedom x time.
     void interpolateNetMoments(const Eigen::VectorXd& times,
-                     Eigen::MatrixXd& desiredMoments) const;
+                               Eigen::MatrixXd& desiredMoments) const;
     /// Interpolate the muscle-tendon lengths at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
@@ -51,9 +51,14 @@ public:
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
                      Eigen::MatrixXd& muscleTendonVelocities) const;
-    /// TODO generalize
+    /// Interpolate the moment arms at the provided times.
+    /// @param times The times at which to interpolate; must be between the
+    ///     initial and final times.
+    /// @param[in,out] momentArms Elements of the std::vector correspond to
+    ///     times, and each element of the std::vectorhas dimensions
+    ///     (degrees of freedom) x muscles
     void interpolateMomentArms(const Eigen::VectorXd& times,
-                     Eigen::MatrixXd& momentArms) const;
+                     std::vector<Eigen::MatrixXd>& momentArms) const;
 private:
     void computeInverseDynamics(const OpenSim::Model& model,
                                 const TimeSeriesTable& kinematicsData,
@@ -61,14 +66,14 @@ private:
     // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
     double _initialTime;
     double _finalTime;
+    size_t _numDOFs;
     size_t _numActiveMuscles;
     GCVSplineSet _inverseDynamics;
     GCVSplineSet _muscleTendonLengths;
     GCVSplineSet _muscleTendonVelocities;
-    // The vector contains an entry for each muscle; the spline set is across
-    // coordinates.
-    GCVSplineSet _momentArms;
-    // std::vector<GCVSplineSet> _momentArms;
+    // The vector contains an entry for each coordinate; the spline set is
+    // across muscles.
+    std::vector<GCVSplineSet> _momentArms;
 };
 
 } // namespace OpenSim

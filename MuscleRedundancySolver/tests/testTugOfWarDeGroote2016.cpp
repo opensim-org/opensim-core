@@ -227,10 +227,6 @@ public:
         // Unpack variables.
         // -----------------
         const T& speed = states[m_i_speed];
-        const T& activationL = states[m_i_activation_l];
-        const T& activationR = states[m_i_activation_r];
-        const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
-        const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
 
         // Multibody kinematics.
         // ---------------------
@@ -244,15 +240,19 @@ public:
 
         // Activation dynamics.
         // --------------------
+        const T& activationL = states[m_i_activation_l];
         const T& excitationL = controls[m_i_excitation_l];
-        const T& excitationR = controls[m_i_excitation_r];
         m_muscleL.calcActivationDynamics(excitationL, activationL,
                                          derivatives[m_i_activation_l]);
+        const T& activationR = states[m_i_activation_r];
+        const T& excitationR = controls[m_i_excitation_r];
         m_muscleR.calcActivationDynamics(excitationR, activationR,
                                          derivatives[m_i_activation_r]);
 
         // Fiber dynamics.
         // ---------------
+        const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+        const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
         derivatives[m_i_norm_fiber_length_l] =
                 m_muscleL.get_max_contraction_velocity() * normFibVelL;
         derivatives[m_i_norm_fiber_length_r] =

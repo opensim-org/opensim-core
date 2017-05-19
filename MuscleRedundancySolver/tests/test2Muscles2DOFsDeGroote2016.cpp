@@ -16,7 +16,47 @@ using namespace OpenSim;
 const double WIDTH = 0.2;
 const double ACCEL_GRAVITY = 9.81;
 
-// TODO document
+// This allows us to print the value of adoubles, although ADOL-C is supposed
+// to provide this operator for us (I think Homebrew's version of ADOL-C is
+// missing some function definitions).
+std::ostream& operator<<(std::ostream& stream, const adouble& v) {
+    stream << v.value() << "(a)";
+    return stream;
+}
+
+/// Move a point mass from a fixed starting state to a fixed end
+/// position and velocity, in fixed time, with minimum effort. The point mass
+/// has 2 DOFs (x and y translation).
+///
+///                            |< d >|< d >|
+///                    ----------------------
+///                             \         /
+///                              .       .
+///                   left muscle \     / right muscle
+///                                .   .
+///                                 \ /
+///                                  O mass
+///
+/// Here's a sketch of the problem we solve (rigid tendon, no activ.dynamics)
+/// @verbatim
+///   minimize   int_t (aL^2 + aR^2) dt
+///   subject to xdot = vx                                        kinematics
+///              ydot = vy                                        kinematics
+///              vxdot = 1/m (-f_tL (d+x)/lmtL + f_tR (d-x)/lmtR) dynamics
+///              vydot = 1/m (-f_tL (-y)/lmtL + f_tR (-y)/lmtR)   dynamics
+///              f_tL = (aL f_l(lmL) f_v(vmL) + f_p(lmL)) cos(alphaL)
+///              f_tR = (aR f_l(lmR) f_v(vmR) + f_p(lmR)) cos(alphaR)
+///              x(0) = -0.03
+///              y(0) = -d
+///              vx(0) = 0
+///              vy(0) = 0
+///              aL(0) = 0
+///              aR(0) = 0
+///              x(0.5) = +0.03
+///              y(0.5) = -d + 0.05
+///              vx(0.5) = 0
+///              vy(0.5) = 0
+/// @endverbatim
 template <typename T>
 class OCPStatic : public mesh::OptimalControlProblemNamed<T> {
 public:
@@ -36,9 +76,9 @@ public:
     };
 
     OCPStatic(const Model& model) :
-            mesh::OptimalControlProblemNamed<T>("2musc2dof") {
+            mesh::OptimalControlProblemNamed<T>("2musc2dofstatic") {
         this->set_time(0, 0.2);
-        m_i_x = this->add_state("x", {-0.02, 0.02}, -0.02, 0.02);
+        m_i_x = this->add_state("x", {-0.03, 0.03}, -0.03, 0.03);
         m_i_y = this->add_state("y", {-2 * d, 0}, -d, -d + 0.05);
         m_i_vx = this->add_state("vx", {-15, 15}, 0, 0);
         m_i_vy = this->add_state("vy", {-15, 15}, 0, 0);
@@ -94,15 +134,15 @@ public:
 
         const T& activationL = controls[m_i_activation_l];
         const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
-        const T musTenVelL = ((d + x) * vx + pow(vy, 2)) / musTenLenL;
+        const T musTenVelL = ((d + x) * vx + y * vy) / musTenLenL;
         const T tensionL = m_muscleL.calcRigidTendonFiberForceAlongTendon(
                 activationL, musTenLenL, musTenVelL);
 
         const T& activationR = controls[m_i_activation_r];
         const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
-        const T musTenVelR = (-(d - x) * vx + pow(vy, 2)) / musTenLenR;
+        const T musTenVelR = (-(d - x) * vx + y * vy) / musTenLenR;
         const T tensionR = m_muscleR.calcRigidTendonFiberForceAlongTendon(
-                activationR, musTenLenR, -musTenVelR);
+                activationR, musTenLenR, musTenVelR);
 
         const T netForceX = -tensionL * (d + x) / musTenLenL
                             +tensionR * (d - x) / musTenLenR;
@@ -120,11 +160,215 @@ public:
     }
 };
 
+/// Move a point mass from a fixed starting state to a fixed end
+/// position and velocity, in fixed time, with minimum effort. The point mass
+/// has 2 DOFs (x and y translation).
+///
+///                            |< d >|< d >|
+///                    ----------------------
+///                             \         /
+///                              .       .
+///                   left muscle \     / right muscle
+///                                .   .
+///                                 \ /
+///                                  O mass
+///
+/// Here's a sketch of the problem we solve, with activation and fiber dynamics.
+/// @verbatim
+///   minimize   int_t (aL^2 + aR^2) dt
+///   subject to xdot = vx                                        kinematics
+///              ydot = vy                                        kinematics
+///              vxdot = 1/m (-f_tL (d+x)/lmtL + f_tR (d-x)/lmtR) dynamics
+///              vydot = 1/m (-f_tL (-y)/lmtL + f_tR (-y)/lmtR)   dynamics
+///              aLdot = f_a(eL, aL)       activation dynamics
+///              aRdot = f_a(eR, aR)
+///              lmLdot = vmLdot           fiber dynamics
+///              lmRdot = vmRdot
+///(for L and R) (a f_l(lm) f_v(vm) + f_p(lm)) cos(alpha) = f_t(lt) equilibrium
+///              x(0) = -0.03
+///              y(0) = -d
+///              vx(0) = 0
+///              vy(0) = 0
+///              aL(0) = 0
+///              aR(0) = 0
+///              vmL(0) = 0
+///              vmR(0) = 0
+///              x(0.5) = +0.03
+///              y(0.5) = -d + 0.05
+///              vx(0.5) = 0
+///              vy(0.5) = 0
+/// @endverbatim
+template <typename T>
+class OCPDynamic : public mesh::OptimalControlProblemNamed<T> {
+public:
+    const double d = WIDTH;
+    double mass = -1;
+    int m_i_x = -1;
+    int m_i_y = -1;
+    int m_i_vx = -1;
+    int m_i_vy = -1;
+    int m_i_activation_l = -1;
+    int m_i_activation_r = -1;
+    int m_i_norm_fiber_length_l = -1;
+    int m_i_norm_fiber_length_r = -1;
+    int m_i_excitation_l = -1;
+    int m_i_excitation_r = -1;
+    int m_i_norm_fiber_velocity_l = -1;
+    int m_i_fiber_equilibrium_l = -1;
+    int m_i_norm_fiber_velocity_r = -1;
+    int m_i_fiber_equilibrium_r = -1;
+    DeGroote2016Muscle<T> m_muscleL;
+    DeGroote2016Muscle<T> m_muscleR;
+    struct NetForce {
+        T x;
+        T y;
+    };
+    OCPDynamic(const Model& model) :
+            mesh::OptimalControlProblemNamed<T>("2musc2dofdynamic") {
+        this->set_time(0, 0.5);
+        m_i_x = this->add_state("x", {-0.03, 0.03}, -0.03, 0.03);
+        m_i_y = this->add_state("y", {-2 * d, 0}, -d, -d + 0.05);
+        m_i_vx = this->add_state("vx", {-15, 15}, 0, 0);
+        m_i_vy = this->add_state("vy", {-15, 15}, 0, 0);
+        m_i_activation_l = this->add_state("activation_l", {0, 1}, 0);
+        m_i_activation_r = this->add_state("activation_r", {0, 1}, 0);
+        m_i_norm_fiber_length_l =
+                this->add_state("norm_fiber_length_l", {0.2, 1.8});
+        m_i_norm_fiber_length_r =
+                this->add_state("norm_fiber_length_r", {0.2, 1.8});
+        m_i_excitation_l = this->add_control("excitation_l", {0, 1});
+        m_i_excitation_r = this->add_control("excitation_r", {0, 1});
+        m_i_norm_fiber_velocity_l =
+                this->add_control("norm_fiber_velocity_l", {-1, 1}, 0);
+        m_i_norm_fiber_velocity_r =
+                this->add_control("norm_fiber_velocity_r", {-1, 1}, 0);
+        m_i_fiber_equilibrium_l =
+                this->add_path_constraint("fiber_equilibrium_l", 0);
+        m_i_fiber_equilibrium_r =
+                this->add_path_constraint("fiber_equilibrium_r", 0);
+        mass = dynamic_cast<const Body&>(model.getComponent("body")).get_mass();
+        {
+            const auto& osimMuscleL =
+                    dynamic_cast<const Muscle&>(model.getComponent("left"));
+            m_muscleL = DeGroote2016Muscle<T>(
+                    osimMuscleL.get_max_isometric_force(),
+                    osimMuscleL.get_optimal_fiber_length(),
+                    osimMuscleL.get_tendon_slack_length(),
+                    osimMuscleL.get_pennation_angle_at_optimal(),
+                    osimMuscleL.get_max_contraction_velocity());
+        }
+        {
+            const auto& osimMuscleR =
+                    dynamic_cast<const Muscle&>(model.getComponent("right"));
+            m_muscleR = DeGroote2016Muscle<T>(
+                    osimMuscleR.get_max_isometric_force(),
+                    osimMuscleR.get_optimal_fiber_length(),
+                    osimMuscleR.get_tendon_slack_length(),
+                    osimMuscleR.get_pennation_angle_at_optimal(),
+                    osimMuscleR.get_max_contraction_velocity());
+        }
+    }
+    void dynamics(const mesh::VectorX<T>& states,
+                  const mesh::VectorX<T>& controls,
+                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+        // Unpack variables.
+        // -----------------
+        const T& vx = states[m_i_vx];
+        const T& vy = states[m_i_vy];
+
+        // Multibody kinematics.
+        // ---------------------
+        derivatives[m_i_x] = vx;
+        derivatives[m_i_y] = vy;
+
+        // Multibody dynamics.
+        // -------------------
+        const auto netForce = calcNetForce(states);
+        derivatives[m_i_vx] = netForce.x / mass;
+        derivatives[m_i_vy] = netForce.y / mass - ACCEL_GRAVITY;
+
+        // Activation dynamics.
+        // --------------------
+        const T& activationL = states[m_i_activation_l];
+        const T& excitationL = controls[m_i_excitation_l];
+        m_muscleL.calcActivationDynamics(excitationL, activationL,
+                                         derivatives[m_i_activation_l]);
+        const T& activationR = states[m_i_activation_r];
+        const T& excitationR = controls[m_i_excitation_r];
+        m_muscleR.calcActivationDynamics(excitationR, activationR,
+                                         derivatives[m_i_activation_r]);
+
+        // Fiber dynamics.
+        // ---------------
+        const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+        const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
+        derivatives[m_i_norm_fiber_length_l] =
+                m_muscleL.get_max_contraction_velocity() * normFibVelL;
+        derivatives[m_i_norm_fiber_length_r] =
+                m_muscleR.get_max_contraction_velocity() * normFibVelR;
+    }
+    NetForce calcNetForce(const mesh::VectorX<T>& states) const {
+        const T& x = states[m_i_x];
+        const T& y = states[m_i_y];
+
+        T tensionL;
+        const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
+        const T& normFibLenL = states[m_i_norm_fiber_length_l];
+        m_muscleL.calcTendonForce(musTenLenL, normFibLenL, tensionL);
+
+        T tensionR;
+        const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
+        const T& normFibLenR = states[m_i_norm_fiber_length_r];
+        m_muscleR.calcTendonForce(musTenLenR, normFibLenR, tensionR);
+
+        const T netForceX = -tensionL * (d + x) / musTenLenL
+                            +tensionR * (d - x) / musTenLenR;
+        const T netForceY = +tensionL * (-y) / musTenLenL
+                            +tensionR * (-y) / musTenLenR;
+        return {netForceX,  netForceY};
+    }
+    void path_constraints(unsigned /*i_mesh*/,
+                          const T& /*time*/,
+                          const mesh::VectorX<T>& states,
+                          const mesh::VectorX<T>& controls,
+                          Eigen::Ref<mesh::VectorX<T>> constraints)
+    const override {
+        const T& x = states[m_i_x];
+        const T& y = states[m_i_y];
+        {
+            const T& activationL = states[m_i_activation_l];
+            const T& normFibLenL = states[m_i_norm_fiber_length_l];
+            const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+            const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
+            m_muscleL.calcEquilibriumResidual(activationL, musTenLenL,
+                    normFibLenL, normFibVelL,
+                    constraints[m_i_fiber_equilibrium_l]);
+        }
+        {
+            const T& activationR = states[m_i_activation_r];
+            const T& normFibLenR = states[m_i_norm_fiber_length_r];
+            const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
+            const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
+            m_muscleR.calcEquilibriumResidual(activationR, musTenLenR,
+                    normFibLenR, normFibVelR,
+                    constraints[m_i_fiber_equilibrium_r]);
+        }
+    }
+    void integral_cost(const T& /*time*/,
+                       const mesh::VectorX<T>& /*states*/,
+                       const mesh::VectorX<T>& controls,
+                       T& integrand) const override {
+        const auto& controlL = controls[m_i_excitation_l];
+        const auto& controlR = controls[m_i_excitation_r];
+        integrand = controlL * controlL + controlR * controlR;
+    }
+};
+
 OpenSim::Model buildModel() {
     using SimTK::Vec3;
 
     Model model;
-    //model.setUseVisualizer(true);
+    // model.setUseVisualizer(true);
     model.setName("block2musc2dof");
     model.set_gravity(Vec3(0, -ACCEL_GRAVITY, 0));
 
@@ -136,18 +380,18 @@ OpenSim::Model buildModel() {
 
     // TODO GSO and MRS do not support locked coordinates yet.
     // Allow translation along x and y; disable rotation about z.
-    // TODO auto* joint = new PlanarJoint();
-    // TODO joint->setName("joint");
-    // TODO joint->connectSocket_parent_frame(model.getGround());
-    // TODO joint->connectSocket_child_frame(*body);
-    // TODO auto& coordTX = joint->updCoordinate(PlanarJoint::Coord::TranslationX);
-    // TODO coordTX.setName("tx");
-    // TODO auto& coordTY = joint->updCoordinate(PlanarJoint::Coord::TranslationY);
-    // TODO coordTY.setName("ty");
-    // TODO auto& coordRZ = joint->updCoordinate(PlanarJoint::Coord::RotationZ);
-    // TODO coordRZ.setName("rz");
-    // TODO coordRZ.setDefaultLocked(true);
-    // TODO model.addComponent(joint);
+    // auto* joint = new PlanarJoint();
+    // joint->setName("joint");
+    // joint->connectSocket_parent_frame(model.getGround());
+    // joint->connectSocket_child_frame(*body);
+    // auto& coordTX = joint->updCoordinate(PlanarJoint::Coord::TranslationX);
+    // coordTX.setName("tx");
+    // auto& coordTY = joint->updCoordinate(PlanarJoint::Coord::TranslationY);
+    // coordTY.setName("ty");
+    // auto& coordRZ = joint->updCoordinate(PlanarJoint::Coord::RotationZ);
+    // coordRZ.setName("rz");
+    // coordRZ.setDefaultLocked(true);
+    // model.addComponent(joint);
     auto* jointX = new SliderJoint();
     jointX->setName("tx");
     jointX->connectSocket_parent_frame(model.getGround());
@@ -156,10 +400,10 @@ OpenSim::Model buildModel() {
     coordX.setName("tx");
     model.addComponent(jointX);
 
-    // The joint's x axis must point in the global "-y" direction.
+    // The joint's x axis must point in the global "+y" direction.
     auto* jointY = new SliderJoint("ty",
-            *intermed, Vec3(0), Vec3(-0.5 * SimTK::Pi, 0, 0),
-            *body, Vec3(0), Vec3(-0.5 * SimTK::Pi, 0, 0));
+            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
+            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
     model.addComponent(jointY);
@@ -167,7 +411,7 @@ OpenSim::Model buildModel() {
     {
         auto* actuL = new Millard2012EquilibriumMuscle();
         actuL->setName("left");
-        actuL->set_max_isometric_force(20);
+        actuL->set_max_isometric_force(40);
         actuL->set_optimal_fiber_length(.20);
         actuL->set_tendon_slack_length(0.10);
         actuL->set_pennation_angle_at_optimal(0.0);
@@ -179,9 +423,9 @@ OpenSim::Model buildModel() {
     {
         auto* actuR = new Millard2012EquilibriumMuscle();
         actuR->setName("right");
-        actuR->set_max_isometric_force(20);
-        actuR->set_optimal_fiber_length(.20); // TODO change these properties.
-        actuR->set_tendon_slack_length(0.10);
+        actuR->set_max_isometric_force(40);
+        actuR->set_optimal_fiber_length(.21);
+        actuR->set_tendon_slack_length(0.09);
         actuR->set_pennation_angle_at_optimal(0.0);
         actuR->addNewPathPoint("origin", model.updGround(),
                                Vec3(+WIDTH, 0, 0));
@@ -189,15 +433,17 @@ OpenSim::Model buildModel() {
         model.addComponent(actuR);
     }
 
-    //SimTK::State s = model.initSystem();
-    //model.updMatterSubsystem().setShowDefaultGeometry(true);
-    //model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
-    //        SimTK::Visualizer::GroundAndSky);
-    //model.getVisualizer().show(s);
-    //std::cin.get();
-    //Manager manager(model);
-    //manager.integrate(s, 1.0);
-    //std::cin.get();
+    // SimTK::State s = model.initSystem();
+    // model.equilibrateMuscles(s);
+    // std::cout << "DEBUG states " << s.getZ() << std::endl;
+    // model.updMatterSubsystem().setShowDefaultGeometry(true);
+    // model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
+    //         SimTK::Visualizer::GroundAndSky);
+    // model.getVisualizer().show(s);
+    // std::cin.get();
+    // Manager manager(model);
+    // manager.integrate(s, 1.0);
+    // std::cin.get();
     return model;
 }
 
@@ -252,8 +498,92 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
-    // TODO
+    TimeSeriesTable actualInvDyn;
+    actualInvDyn.setColumnLabels({"x", "y"});
+    auto ocpd = std::make_shared<OCPStatic<double>>(model);
+    for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
+        auto netForce = ocpd->calcNetForce(ocp_solution.states.col(iTime),
+                                           ocp_solution.controls.col(iTime));
+        SimTK::RowVector row(2);
+        row[0] = netForce.x;
+        row[1] = netForce.y;
+        actualInvDyn.appendRow(ocp_solution.time(iTime), row);
+    }
+    CSVFileAdapter::write(actualInvDyn,
+                          "DEBUG_test2Muscles2DOFs_GSO_actualInvDyn.csv");
 
+    return {ocpSolution, kinematics};
+}
+
+std::pair<TimeSeriesTable, TimeSeriesTable>
+solveForTrajectoryMuscleRedundancySolver(const Model& model) {
+    // Solve a trajectory optimization problem.
+    // ----------------------------------------
+    auto ocp = std::make_shared<OCPDynamic<adouble>>(model);
+    ocp->print_description();
+    const int N = 100;
+    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+                                                  "ipopt", N);
+
+    mesh::OptimalControlIterate guess(
+            "test2Muscles2DOFsDeGroote2016_MRS_initial_guess.csv");
+    mesh::OptimalControlSolution ocp_solution = dircol.solve(guess);
+    //mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    dircol.print_constraint_values(ocp_solution);
+
+    std::string trajectoryFile =
+            "test2Muscles2DOFsDeGroote2016_MRS_trajectory.csv";
+    ocp_solution.write(trajectoryFile);
+
+    // Save the trajectory with a header so that OpenSim can read it.
+    // --------------------------------------------------------------
+    // CSVFileAdapter expects an "endheader" line in the file.
+    auto fRead = std::ifstream(trajectoryFile);
+    std::string trajFileWithHeader = trajectoryFile;
+    trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
+                               "_with_header.csv");
+    // Skip the "num_states=#" and "num_controls=#" lines.
+    std::string line;
+    std::getline(fRead, line);
+    std::getline(fRead, line);
+    auto fWrite = std::ofstream(trajFileWithHeader);
+    fWrite << "endheader" << std::endl;
+    while (std::getline(fRead, line)) fWrite << line << std::endl;
+    fRead.close();
+    fWrite.close();
+
+    // Create a table containing only the angle and speed of the pendulum.
+    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable kinematics;
+    kinematics.setColumnLabels(
+            {"tx/tx/value", "tx/tx/speed", "ty/ty/value", "ty/ty/speed"});
+    const auto& x = ocpSolution.getDependentColumn("x");
+    const auto& vx = ocpSolution.getDependentColumn("vx");
+    const auto& y = ocpSolution.getDependentColumn("y");
+    const auto& vy = ocpSolution.getDependentColumn("vy");
+    SimTK::RowVector row(4);
+    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+        row[0] = x[iRow];
+        row[1] = vx[iRow];
+        row[2] = y[iRow];
+        row[3] = vy[iRow];
+        kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
+    }
+
+    // Compute actual inverse dynamics moment, for debugging.
+    // ------------------------------------------------------
+    TimeSeriesTable actualInvDyn;
+    actualInvDyn.setColumnLabels({"x", "y"});
+    auto ocpd = std::make_shared<OCPDynamic<double>>(model);
+    for (Eigen::Index iTime = 0; iTime < ocp_solution.time.size(); ++iTime) {
+        auto netForce = ocpd->calcNetForce(ocp_solution.states.col(iTime));
+        SimTK::RowVector row(2);
+        row[0] = netForce.x;
+        row[1] = netForce.y;
+        actualInvDyn.appendRow(ocp_solution.time(iTime), row);
+    }
+    CSVFileAdapter::write(actualInvDyn,
+                          "DEBUG_test2Muscles2DOFs_MRS_actualInvDyn.csv");
     return {ocpSolution, kinematics};
 }
 
@@ -266,7 +596,7 @@ void test2Muscles2DOFsGlobalStaticOptimizationSolver(
     GlobalStaticOptimizationSolver gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);
-    gso.set_lowpass_cutoff_frequency_for_joint_moments(50);
+    gso.set_lowpass_cutoff_frequency_for_joint_moments(80);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
@@ -274,8 +604,82 @@ void test2Muscles2DOFsGlobalStaticOptimizationSolver(
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    // TODO
+    compare(solution.activation, "/block2musc2dof/left",
+            ocpSolution,         "activation_l",
+            0.01);
+    compare(solution.activation, "/block2musc2dof/right",
+            ocpSolution,         "activation_r",
+            0.05);
+    auto reserveForceXRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceXRMS < 0.01);
+    auto reserveForceYRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(1).normRMS();
+    SimTK_TEST(reserveForceYRMS < 0.01);
+}
 
+// Reproduce the trajectory (generated with muscle dynamics) using the
+// MuscleRedundancySolver.
+void test2Muscles2DOFsMuscleRedundancySolver(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
+        const Model& model) {
+    const auto& ocpSolution = data.first;
+    const auto& kinematics = data.second;
+
+    // Create the MuscleRedundancySolver.
+    // ----------------------------------
+    MuscleRedundancySolver mrs;
+    mrs.setModel(model);
+    mrs.setKinematicsData(kinematics);
+    mrs.set_lowpass_cutoff_frequency_for_joint_moments(20);
+    const double reserveOptimalForce = 0.01;
+    mrs.set_create_reserve_actuators(reserveOptimalForce);
+    // We constrain initial MRS activation to 0 because otherwise activation
+    // incorrectly starts at a large value (no penalty for large initial
+    // activation).
+    mrs.set_zero_initial_activation(true);
+    MuscleRedundancySolver::Solution solution = mrs.solve();
+    solution.write("test2Muscles2DOFsDeGroote2016_MRS");
+
+    // Compare the solution to the initial trajectory optimization solution.
+    // ---------------------------------------------------------------------
+    compare(solution.activation, "/block2musc2dof/left",
+            ocpSolution,         "activation_l",
+            0.05);
+    compare(solution.activation, "/block2musc2dof/right",
+            ocpSolution,         "activation_r",
+            0.05);
+
+    compare(solution.norm_fiber_length, "/block2musc2dof/left",
+            ocpSolution,                "norm_fiber_length_l",
+            0.01);
+    compare(solution.norm_fiber_length, "/block2musc2dof/right",
+            ocpSolution,                "norm_fiber_length_r",
+            0.01);
+
+    // We use a weaker check for the controls; they don't match as well.
+    // The excitations are fairly noisy across time, and the fiber velocity
+    // does not match well at the beginning of the trajectory.
+    rootMeanSquare(solution.excitation, "/block2musc2dof/left",
+                   ocpSolution,         "excitation_l",
+                   0.03);
+    rootMeanSquare(solution.excitation, "/block2musc2dof/right",
+                   ocpSolution,         "excitation_r",
+                   0.03);
+
+    rootMeanSquare(solution.norm_fiber_velocity, "/block2musc2dof/left",
+                   ocpSolution,                  "norm_fiber_velocity_l",
+                   0.02);
+    rootMeanSquare(solution.norm_fiber_velocity, "/block2musc2dof/right",
+                   ocpSolution,                  "norm_fiber_velocity_r",
+                   0.02);
+
+    auto reserveForceXRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceXRMS < 0.05);
+    auto reserveForceYRMS = reserveOptimalForce *
+            solution.other_controls.getDependentColumnAtIndex(1).normRMS();
+    SimTK_TEST(reserveForceYRMS < 0.15);
 }
 
 int main() {
@@ -283,10 +687,14 @@ int main() {
         Model model = buildModel();
         model.finalizeFromProperties();
         {
-            auto gsoData =
-                    solveForTrajectoryGlobalStaticOptimizationSolver(model);
+            auto data = solveForTrajectoryGlobalStaticOptimizationSolver(model);
             SimTK_SUBTEST2(test2Muscles2DOFsGlobalStaticOptimizationSolver,
-                           gsoData, model);
+                           data, model);
+        }
+        {
+            auto data = solveForTrajectoryMuscleRedundancySolver(model);
+            SimTK_SUBTEST2(test2Muscles2DOFsMuscleRedundancySolver,
+                           data, model);
         }
     SimTK_END_TEST();
 }

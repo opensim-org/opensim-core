@@ -15,7 +15,7 @@ else:
     include_zero = True
 
 
-data = np.genfromtxt(data_filepath, names=True, delimiter=',')
+data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
 fig = pl.figure()
 num_plots = len(data.dtype.names) - 1
 for i in range(num_plots):

@@ -62,6 +62,8 @@ public:
             }
         }
 
+        // CoordinateActuators.
+        // --------------------
         _numCoordActuators = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
@@ -75,15 +77,33 @@ public:
             _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
+        const auto coordsOrdered = _model.getCoordinatesInMultibodyTreeOrder();
         _optimalForce.resize(_numCoordActuators);
+        _coordActuatorDOFs.resize(_numCoordActuators);
         int i_act = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
             if (!actuator.get_appliesForce()) continue;
             _optimalForce[i_act] = actuator.getOptimalForce();
+            // Figure out which DOF each coordinate actuator is actuating.
+            const auto* coord = actuator.getCoordinate();
+            size_t i_coord = 0;
+            while (i_coord < coordsOrdered.size() &&
+                    coordsOrdered[i_coord].get() != coord) {
+                ++i_coord;
+            }
+            if (i_coord == coordsOrdered.size()) {
+                throw std::runtime_error("[GSO] Could not find Coordinate '" +
+                        coord->getAbsolutePathName() + "' used in "
+                        "CoordinateActuator '" + actuator.getAbsolutePathName()
+                        + "'.");
+            }
+            _coordActuatorDOFs[i_act] = i_coord;
+            ++i_act;
         }
 
-
+        // Muscles.
+        // --------
         _numMuscles = 0;
         for (const auto& actuator : _model.getComponentList<Muscle>()) {
             if (!actuator.get_appliesForce()) continue;
@@ -165,48 +185,44 @@ public:
         // model.calcImplicitResidual(state); (would handle muscles AND moments)
 
         // Assemble generalized forces to apply to the joints.
+        // TODO avoid reallocating this each time?
         mesh::VectorX<T> genForce(_numDOFs);
         genForce.setZero();
 
         // CoordinateActuators.
         // --------------------
         for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
-            // TODO fix this too.
-            // TODO generalize to multiple DOFs.
-            genForce[0] += _optimalForce[i_act] * controls[i_act];
+            genForce[_coordActuatorDOFs[i_act]]
+                    += _optimalForce[i_act] * controls[i_act];
         }
 
         // Muscles.
         // --------
-        for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
-            // Unpack variables.
-            const T& activation = controls[_numCoordActuators + i_act];
+        if (_numMuscles) {
+            mesh::VectorX<T> muscleForces(_numMuscles);
+            for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
+                // Unpack variables.
+                const T& activation = controls[_numCoordActuators + i_act];
 
-            // Get the total muscle-tendon length and velocity from the data.
-            const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
-            const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
+                // Get the total muscle-tendon length and velocity from the
+                // data.
+                const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
+                const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
 
-            const T muscleForce =
-                    _muscles[i_act].calcRigidTendonFiberForceAlongTendon(
-                            activation, musTenLen, musTenVel);
+                muscleForces[i_act] =
+                        _muscles[i_act].calcRigidTendonFiberForceAlongTendon(
+                                activation, musTenLen, musTenVel);
+            }
 
-            const T momArm = _momentArms(i_act, i_mesh);
-            // TODO const T momArm = _momentArms[i_mesh](i_act, i_coord);
-
-            // TODO generalize to multiple DOFs.
-            genForce[0] += momArm * muscleForce;
+            // Compute generalized forces from muscles.
+            const auto& momArms = _momentArms[i_mesh];
+            genForce += momArms.template cast<adouble>() * muscleForces;
         }
-        // const auto& momArm = _momentArms[i_mesh](i_act/* TODO, i_coord */);
-        // genForce += momArms * muscleForces;
 
         // Achieve the motion.
         // ===================
-        // /*const TODO*/ auto generatedMoments = _mrs.controlToMoment * controls;
-        // TODO constraints = _desiredMoments[index] - generatedMoments;
         constraints = _desiredMoments.col(i_mesh).template cast<adouble>()
                     - genForce;
-
-        // std::cout << "DEBUG constraints " << constraints << std::endl;
     }
     void integral_cost(const T& /*time*/,
                        const mesh::VectorX<T>& /*states*/,
@@ -294,13 +310,15 @@ private:
     int _numMuscles;
     std::vector<std::string> _muscleLabels;
     std::vector<std::string> _otherControlsLabels;
+    // The index of the DOF that is actuated by each CoordinateActuator.
+    std::vector<Eigen::Index> _coordActuatorDOFs;
 
     // Motion data to use during the optimization.
     Eigen::MatrixXd _desiredMoments;
     Eigen::MatrixXd _muscleTendonLengths;
     Eigen::MatrixXd _muscleTendonVelocities;
-    Eigen::MatrixXd _momentArms;
-    // TODO std::vector<Eigen::SparseMatrixXd> moment arms.
+    // TODO use Eigen::SparseMatrixXd
+    std::vector<Eigen::MatrixXd> _momentArms;
 
     // CoordinateActuator optimal forces.
     Eigen::VectorXd _optimalForce;

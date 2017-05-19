@@ -68,12 +68,11 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // ----------------------------------------------
     TimeSeriesTable muscleTendonLengths;
     TimeSeriesTable muscleTendonVelocities;
-    TimeSeriesTable momentArms;
-    //TODO std::vector<TimeSeriesTable> momentArms;
     // TODO get list of muscles from MuscleRedundancySolver.
     const auto muscleList = model.getComponentList<Muscle>();
     std::vector<const Muscle*> activeMuscles;
     auto coords = model.getCoordinatesInMultibodyTreeOrder();
+    _numDOFs = coords.size();
     std::vector<std::string> musclePathNames;
     for (const auto& muscle : muscleList) {
         if (muscle.get_appliesForce()) {
@@ -83,41 +82,61 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     }
     _numActiveMuscles = activeMuscles.size();
     if (!musclePathNames.empty()) {
-        // TODO actually check which muscles are active.
+
+        // Muscle-tendon lengths and velocities.
+        // `````````````````````````````````````
         muscleTendonLengths.setColumnLabels(musclePathNames);
         muscleTendonVelocities.setColumnLabels(musclePathNames);
-        momentArms.setColumnLabels(musclePathNames);
         SimTK::RowVector rowMTL(musclePathNames.size());
         SimTK::RowVector rowMTV(musclePathNames.size());
-        SimTK::RowVector rowMA(musclePathNames.size());
         for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
             const auto& state = statesTraj[i_time];
             model.realizeVelocity(state);
 
-            // TODO handle disabled muscles.
+            // TODO handle disabled muscles. (This might be outdated now).
             int i_muscle = 0;
             for (const auto* muscle : activeMuscles) {
                 rowMTL[i_muscle] = muscle->getLength(state);
                 rowMTV[i_muscle] = muscle->getLengtheningSpeed(state);
-                // TODO generalize across coordinates.
-                rowMA[i_muscle] = muscle->computeMomentArm(state,
-                        const_cast<Coordinate&>(*coords[0]));
                 i_muscle++;
             }
             muscleTendonLengths.appendRow(state.getTime(), rowMTL);
             muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
-            momentArms.appendRow(state.getTime(), rowMA);
         }
         _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
         // TODO Separately splining muscleTendonLengths and velocities might
         // lead to inconsistency.
         _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
-        _momentArms = createGCVSplineSet(momentArms);
+
+        // Moment arms.
+        // ````````````
+        // This member holds moment arms across time, DOFs, and muscles.
+        _momentArms.resize(_numDOFs);
+        // Working memory.
+        SimTK::RowVector rowMA(musclePathNames.size());
+        for (size_t i_dof = 0; i_dof < _numDOFs; ++i_dof) {
+            TimeSeriesTable momentArmsThisDOF;
+            momentArmsThisDOF.setColumnLabels(musclePathNames);
+            for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
+                const auto& state = statesTraj[i_time];
+                int i_muscle = 0;
+                for (const auto* muscle : activeMuscles) {
+                    rowMA[i_muscle] = muscle->computeMomentArm(state,
+                            const_cast<Coordinate&>(*coords[i_dof]));
+                    i_muscle++;
+                }
+                momentArmsThisDOF.appendRow(state.getTime(), rowMA);
+            }
+            CSVFileAdapter::write(momentArmsThisDOF,
+                                  "DEBUG_momentArmsThisDOF.csv");
+            _momentArms[i_dof] = createGCVSplineSet(momentArmsThisDOF);
+        }
     }
 }
 
 void InverseMuscleSolverMotionData::interpolateNetMoments(
-        const Eigen::VectorXd& times, Eigen::MatrixXd& desiredMoments) const {
+        const Eigen::VectorXd& times,
+        Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
@@ -174,18 +193,23 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
 }
 
 void InverseMuscleSolverMotionData::interpolateMomentArms(
-        const Eigen::VectorXd& times, Eigen::MatrixXd& momentArms) const {
+        const Eigen::VectorXd& times,
+        std::vector<Eigen::MatrixXd>& momentArms) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
                      "Initial time starts before the kinematics data.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
                      "Final time is beyond the end of the kinematics data.");
 
-    momentArms.resize(_numActiveMuscles, times.size());
-    // The matrix is in column-major format.
+    momentArms.resize(times.size());
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
+        momentArms[i_mesh].resize(_numDOFs, _numActiveMuscles);
         SimTK::Vector time(1, times[i_mesh]);
+        // The matrix is in column-major format.
         for (size_t i_mus = 0; i_mus < _numActiveMuscles; ++i_mus) {
-            momentArms(i_mus, i_mesh) = _momentArms.get(i_mus).calcValue(time);
+            for (size_t i_dof = 0; i_dof < _numDOFs; ++i_dof) {
+                momentArms[i_mesh](i_dof, i_mus) =
+                        _momentArms[i_dof].get(i_mus).calcValue(time);
+            }
         }
     }
 }
