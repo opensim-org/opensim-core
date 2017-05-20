@@ -1,7 +1,8 @@
 
 add_library(osimMuscleRedundancySolver
-        MuscleRedundancySolver.h MuscleRedundancySolver.cpp
+        InverseMuscleSolver.h           InverseMuscleSolver.cpp
         GlobalStaticOptimizationSolver.h GlobalStaticOptimizationSolver.cpp
+        MuscleRedundancySolver.h         MuscleRedundancySolver.cpp
         DeGroote2016Muscle.h
         InverseMuscleSolverMotionData.h InverseMuscleSolverMotionData.cpp
         )

@@ -594,8 +594,8 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
     return {ocpSolution, kinematics};
 }
 
-void compareSolution_GSO(const TimeSeriesTable& expected,
-                         const GlobalStaticOptimizationSolver::Solution& actual,
+void compareSolution_GSO(const GlobalStaticOptimizationSolver::Solution& actual,
+                         const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
     compare(actual.activation, "/block2musc2dof/left",
             expected,          "activation_l",
@@ -628,7 +628,7 @@ void test2Muscles2DOFsGlobalStaticOptimizationSolver(
     // solution.write("test2Muscles2DOFsDeGroote2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
-    compareSolution_GSO(ocpSolution, solution, reserveOptimalForce);
+    compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
 }
 
 // Load all settings from a setup file, and run the same tests as in the test
@@ -641,10 +641,51 @@ void test2Muscles2DOFs_GSO_Filebased(
             "test2Muscles2DOFsDeGroote2016_GSO_setup.xml");
     double reserveOptimalForce = gso.get_create_reserve_actuators();
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    // solution.write("test2Muscles2DOFsDeGroote2016_GSO_filebased");
 
     // Compare the solution to the initial trajectory optimization solution.
-    compareSolution_GSO(ocpSolution, solution, reserveOptimalForce);
+    compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
+}
+
+void compareSolution_MRS(const MuscleRedundancySolver::Solution& actual,
+                         const TimeSeriesTable& expected,
+                         const double& reserveOptimalForce) {
+    compare(actual.activation, "/block2musc2dof/left",
+            expected,         "activation_l",
+            0.05);
+    compare(actual.activation, "/block2musc2dof/right",
+            expected,         "activation_r",
+            0.05);
+
+    compare(actual.norm_fiber_length, "/block2musc2dof/left",
+            expected,                "norm_fiber_length_l",
+            0.01);
+    compare(actual.norm_fiber_length, "/block2musc2dof/right",
+            expected,                "norm_fiber_length_r",
+            0.01);
+
+    // We use a weaker check for the controls; they don't match as well.
+    // The excitations are fairly noisy across time, and the fiber velocity
+    // does not match well at the beginning of the trajectory.
+    rootMeanSquare(actual.excitation, "/block2musc2dof/left",
+            expected,                 "excitation_l",
+            0.03);
+    rootMeanSquare(actual.excitation, "/block2musc2dof/right",
+            expected,                 "excitation_r",
+            0.03);
+
+    rootMeanSquare(actual.norm_fiber_velocity, "/block2musc2dof/left",
+            expected,                          "norm_fiber_velocity_l",
+            0.02);
+    rootMeanSquare(actual.norm_fiber_velocity, "/block2musc2dof/right",
+            expected,                          "norm_fiber_velocity_r",
+            0.02);
+
+    auto reserveForceXRMS = reserveOptimalForce *
+            actual.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceXRMS < 0.05);
+    auto reserveForceYRMS = reserveOptimalForce *
+            actual.other_controls.getDependentColumnAtIndex(1).normRMS();
+    SimTK_TEST(reserveForceYRMS < 0.15);
 }
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
@@ -667,48 +708,28 @@ void test2Muscles2DOFsMuscleRedundancySolver(
     // incorrectly starts at a large value (no penalty for large initial
     // activation).
     mrs.set_zero_initial_activation(true);
+    // mrs.print("test2Muscles2DOFsDeGroote2016_MRS_setup.xml");
     MuscleRedundancySolver::Solution solution = mrs.solve();
     // solution.write("test2Muscles2DOFsDeGroote2016_MRS");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    compare(solution.activation, "/block2musc2dof/left",
-            ocpSolution,         "activation_l",
-            0.05);
-    compare(solution.activation, "/block2musc2dof/right",
-            ocpSolution,         "activation_r",
-            0.05);
+    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
+}
 
-    compare(solution.norm_fiber_length, "/block2musc2dof/left",
-            ocpSolution,                "norm_fiber_length_l",
-            0.01);
-    compare(solution.norm_fiber_length, "/block2musc2dof/right",
-            ocpSolution,                "norm_fiber_length_r",
-            0.01);
+void test2Muscles2DOFs_MRS_Filebased(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
+    const auto& ocpSolution = data.first;
 
-    // We use a weaker check for the controls; they don't match as well.
-    // The excitations are fairly noisy across time, and the fiber velocity
-    // does not match well at the beginning of the trajectory.
-    rootMeanSquare(solution.excitation, "/block2musc2dof/left",
-                   ocpSolution,         "excitation_l",
-                   0.03);
-    rootMeanSquare(solution.excitation, "/block2musc2dof/right",
-                   ocpSolution,         "excitation_r",
-                   0.03);
+    // Create the MuscleRedundancySolver.
+    // ----------------------------------
+    MuscleRedundancySolver mrs("test2Muscles2DOFsDeGroote2016_MRS_setup.xml");
+    double reserveOptimalForce = mrs.get_create_reserve_actuators();
+    MuscleRedundancySolver::Solution solution = mrs.solve();
 
-    rootMeanSquare(solution.norm_fiber_velocity, "/block2musc2dof/left",
-                   ocpSolution,                  "norm_fiber_velocity_l",
-                   0.02);
-    rootMeanSquare(solution.norm_fiber_velocity, "/block2musc2dof/right",
-                   ocpSolution,                  "norm_fiber_velocity_r",
-                   0.02);
-
-    auto reserveForceXRMS = reserveOptimalForce *
-            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
-    SimTK_TEST(reserveForceXRMS < 0.05);
-    auto reserveForceYRMS = reserveOptimalForce *
-            solution.other_controls.getDependentColumnAtIndex(1).normRMS();
-    SimTK_TEST(reserveForceYRMS < 0.15);
+    // Compare the solution to the initial trajectory optimization solution.
+    // ---------------------------------------------------------------------
+    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
 }
 
 int main() {
@@ -725,6 +746,7 @@ int main() {
             auto data = solveForTrajectoryMuscleRedundancySolver(model);
             SimTK_SUBTEST2(test2Muscles2DOFsMuscleRedundancySolver,
                            data, model);
+            SimTK_SUBTEST1(test2Muscles2DOFs_MRS_Filebased, data);
         }
     SimTK_END_TEST();
 }

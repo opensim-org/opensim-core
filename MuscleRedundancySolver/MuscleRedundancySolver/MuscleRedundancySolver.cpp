@@ -5,7 +5,6 @@
 #include "GlobalStaticOptimizationSolver.h"
 
 #include <mesh.h>
-#include <OpenSim/OpenSim.h>
 
 #include <algorithm>
 
@@ -98,7 +97,7 @@ public:
                 ++i_coord;
             }
             if (i_coord == coordsOrdered.size()) {
-                throw std::runtime_error("[GSO] Could not find Coordinate '" +
+                throw std::runtime_error("[MRS] Could not find Coordinate '" +
                         coord->getAbsolutePathName() + "' used in "
                         "CoordinateActuator '" + actuator.getAbsolutePathName()
                                                  + "'.");
@@ -481,12 +480,18 @@ private:
 };
 
 MuscleRedundancySolver::MuscleRedundancySolver() {
-    constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
-    constructProperty_create_reserve_actuators(-1);
+    constructProperties();
+}
+
+MuscleRedundancySolver::MuscleRedundancySolver(
+        const std::string& setupFilePath) : InverseMuscleSolver(setupFilePath) {
+    constructProperties();
+    updateFromXMLDocument();
+}
+
+void MuscleRedundancySolver::constructProperties() {
     constructProperty_initial_guess("static_optimization");
     constructProperty_zero_initial_activation(false);
-    //constructProperty_model_file("");
-    //constructProperty_kinematics_file("");
 }
 
 MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
@@ -494,9 +499,16 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // TODO make sure experimental data is available for all unconstrained
     // coordinates; throw exception otherwise!
 
+    // Load model and kinematics files.
+    // --------------------------------
+    Model origModel; // without reserve actuators.
+    TimeSeriesTable kinematics;
+    loadModelAndKinematicsData(origModel, kinematics);
+
     // Create reserve actuators.
     // -------------------------
-    Model model(_model);
+    // TODO move to InverseMuscleSolver
+    Model model(origModel);
     SimTK::State state = model.initSystem();
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
@@ -536,10 +548,11 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Process experimental data.
     // --------------------------
+    // TODO move to InverseMuscleSolver
     OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
             get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
                      "Invalid value for cutoff frequency for joint moments.");
-    InverseMuscleSolverMotionData motionData(model, getKinematicsData(),
+    InverseMuscleSolverMotionData motionData(model, kinematics,
                           get_lowpass_cutoff_frequency_for_joint_moments());
 
     // Create the optimal control problem.
@@ -561,8 +574,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
                   << std::endl;
         std::cout << std::string(79, '-') << std::endl;
         GlobalStaticOptimizationSolver gso;
-        gso.setModel(_model);
-        gso.setKinematicsData(getKinematicsData());
+        gso.setModel(origModel);
+        gso.setKinematicsData(kinematics);
         gso.set_lowpass_cutoff_frequency_for_joint_moments(
                 get_lowpass_cutoff_frequency_for_joint_moments());
         gso.set_create_reserve_actuators(get_create_reserve_actuators());
@@ -584,7 +597,6 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
                   << std::endl;
         std::cout << std::string(79, '-') << std::endl;
     }
-
 
     // TODO perhaps solve without pennation initially? Pennation slows down
     // convergence.
