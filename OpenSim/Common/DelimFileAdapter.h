@@ -365,7 +365,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     // container.
     auto column_labels = nextLine();
     OPENSIM_THROW_IF(column_labels.size() == 0, Exception,
-                     "No column labels detectedin file '" + fileName + "'.");
+                     "No column labels detected in file '" + fileName + "'.");
     ++line_num;
     // Column 0 is the time column. Check and get rid of it. The data in this
     // column is maintained separately from rest of the data.
