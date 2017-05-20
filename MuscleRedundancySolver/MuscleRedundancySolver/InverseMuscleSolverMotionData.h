@@ -18,14 +18,23 @@ class Model;
 /// This class also allows interpolating these data for use by solvers.
 class InverseMuscleSolverMotionData {
 public:
+    InverseMuscleSolverMotionData() = default;
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform inverse dynamics and a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
     /// The inverse dynamics moments are filtered with the provided lowpass
     /// cutoff frequency; use -1 to not filter.
+    InverseMuscleSolverMotionData(const Model& model,
+            const TimeSeriesTable& kinematicsData,
+            const double& lowpassCutoffJointMoments);
+    /// From the given kinematics trajectory (joint angles), this constructor
+    /// will perform a muscle analysis to provide net
+    /// joint moments, muscle-tendon lengths, and moment arms.
+    /// The inverse dynamics net generalized forces are taken from the provided
+    /// table rather than computed from the provided kinematics.
     InverseMuscleSolverMotionData(const OpenSim::Model& model,
-               const OpenSim::TimeSeriesTable& kinematicsData,
-               const double& lowpassCutoffJointMoments);
+            const TimeSeriesTable& kinematicsData,
+            const TimeSeriesTable& netGeneralizedForcesData);
     /// Get the first time in the kinematicsData table.
     double getInitialTime() const { return _initialTime; }
     /// Get the last time in the kinematicsData table.
@@ -33,24 +42,24 @@ public:
     /// Interpolate the desired net joint moments at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
-    /// @param[in,out] desiredMoments Inverse dynamics net joint moments
+    /// @param[in,out] desiredNetGenForces Inverse dynamics net joint moments
     ///     Dimensions: degrees of freedom x time.
-    void interpolateNetMoments(const Eigen::VectorXd& times,
-                               Eigen::MatrixXd& desiredMoments) const;
+    void interpolateNetGeneralizedForces(const Eigen::VectorXd& times,
+            Eigen::MatrixXd& desiredNetGenForces) const;
     /// Interpolate the muscle-tendon lengths at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
     /// @param[in,out] muscleTendonLengths Expressed in meters.
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
-                     Eigen::MatrixXd& muscleTendonLengths) const;
+            Eigen::MatrixXd& muscleTendonLengths) const;
     /// Interpolate the muscle-tendon velocities at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
     /// @param[in,out] muscleTendonVelocities Expressed in meters/second.
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
-                     Eigen::MatrixXd& muscleTendonVelocities) const;
+            Eigen::MatrixXd& muscleTendonVelocities) const;
     /// Interpolate the moment arms at the provided times.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
@@ -58,17 +67,19 @@ public:
     ///     times, and each element of the std::vectorhas dimensions
     ///     (degrees of freedom) x muscles
     void interpolateMomentArms(const Eigen::VectorXd& times,
-                     std::vector<Eigen::MatrixXd>& momentArms) const;
+            std::vector<Eigen::MatrixXd>& momentArms) const;
 private:
+    // This constructor performs the muscle analysis.
+    InverseMuscleSolverMotionData(const Model& model,
+                                  const TimeSeriesTable& kinematicsData);
     void computeInverseDynamics(const OpenSim::Model& model,
-                                const TimeSeriesTable& kinematicsData,
-                                const double& lowpassCutoffJointMoments);
-    // TODO const OpenSim::TimeSeriesTable& _kinematicsData;
+            const TimeSeriesTable& kinematicsData,
+            const double& lowpassCutoffJointMoments);
     double _initialTime;
     double _finalTime;
     size_t _numDOFs;
     size_t _numActiveMuscles;
-    GCVSplineSet _inverseDynamics;
+    GCVSplineSet _netGeneralizedForces;
     GCVSplineSet _muscleTendonLengths;
     GCVSplineSet _muscleTendonVelocities;
     // The vector contains an entry for each coordinate; the spline set is

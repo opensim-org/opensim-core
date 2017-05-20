@@ -53,10 +53,18 @@ public:
     "Path to a data file (CSV, STO) containing generalized coordinates "
     "to track. The path can be absolute or relative to the setup file.");
 
+    // TODO add ability to specify external loads, and update comment.
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(net_generalized_forces_file, std::string,
+    "(Optional) Path to a data file (CSV, STO) containing net generalized "
+    "forces (joint moments) to achieve. If not provided, inverse dynamics "
+    "will be performed internally.");
+
     OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_joint_moments, double,
     "The frequency (Hz) at which to filter inverse dynamics joint moments, "
-    "which are computed internally from the kinematics (default is -1, "
-    "which means no filtering; for walking, consider 6 Hz).");
+    "which are computed internally from the kinematics if "
+    "net generalized forces are not provided. "
+    "If net generalized forces are provided, this property is ignored."
+    "(default is -1, which means no filtering; for walking, consider 6 Hz).");
 
     OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
     "Create a reserve actuator (CoordinateActuator) for each unconstrained "
@@ -86,7 +94,7 @@ public:
     /// Set the generalized coordinate values to track. There should be a
     /// column in the table for each generalized coordinate, and the labels
     /// for the columns should be the absolute path names for the generalized
-    /// coordinate state variables (e.g., `/hip/flexion/value`).
+    /// coordinate state variables (e.g., `hip/flexion/value`).
     /// If you set kinematics this way, make sure to set the kinematics_file
     /// property to an empty string (`solver.set_kinematics_file ("")`).
     /// The function StatesTrajectory::exportToTable() may be helpful in
@@ -105,16 +113,31 @@ public:
         return *_kinematics.get();
     }
 
+    // TODO document
+    // TODO rename to remove "Data".
+    void setNetGeneralizedForcesData(const TimeSeriesTable& netGenForces)
+    { _netGeneralizedForces.reset(new TimeSeriesTable(netGenForces)); }
+
+    const TimeSeriesTable& getNetGeneralizedForcesData() const {
+        OPENSIM_THROW_IF_FRMOBJ(!_netGeneralizedForces, Exception,
+                "An attempt was made to dereference a null pointer.");
+        return *_netGeneralizedForces.get();
+    }
+
 protected:
-    /// This function provides the model and kinematics data to be used in
+    /// This function provides the model and data to be used in
     /// solving for actuator controls. This function decides whether to use
     /// programmatically-set quantities (e.g., via setModel()) or load
     /// objects from files. This function also checks for some errors.
-    void loadModelAndKinematicsData(Model& model,
-                                    TimeSeriesTable& kinematics) const;
+    /// The netGeneralizedForces table is set to an empty table if this data
+    /// table was not provided.
+    void loadModelAndData(Model& model,
+                          TimeSeriesTable& kinematics,
+                          TimeSeriesTable& netGeneralizedForces) const;
     SimTK::ResetOnCopy<std::unique_ptr<Model>> _model;
     // TODO make this a StatesTrajectory?
     SimTK::ResetOnCopy<std::unique_ptr<TimeSeriesTable>> _kinematics;
+    SimTK::ResetOnCopy<std::unique_ptr<TimeSeriesTable>> _netGeneralizedForces;
 
 private:
     void constructProperties();

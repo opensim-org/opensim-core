@@ -148,7 +148,8 @@ public:
         auto* mutableThis = const_cast<GSOProblemSeparate<T>*>(this);
 
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
-        _motionData.interpolateNetMoments(times, mutableThis->_desiredMoments);
+        _motionData.interpolateNetGeneralizedForces(times,
+                mutableThis->_desiredMoments);
         if (_numMuscles) {
             _motionData.interpolateMuscleTendonLengths(times,
                     mutableThis->_muscleTendonLengths);
@@ -339,7 +340,8 @@ GlobalStaticOptimizationSolver::solve() {
     // --------------------------------
     Model model;
     TimeSeriesTable kinematics;
-    loadModelAndKinematicsData(model, kinematics);
+    TimeSeriesTable netGeneralizedForces;
+    loadModelAndData(model, kinematics, netGeneralizedForces);
 
     // Create reserve actuators.
     // -------------------------
@@ -382,11 +384,21 @@ GlobalStaticOptimizationSolver::solve() {
 
     // Process experimental data.
     // --------------------------
-    OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-            get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
-                     "Invalid value for cutoff frequency for joint moments.");
-    InverseMuscleSolverMotionData motionData(model, kinematics,
-            get_lowpass_cutoff_frequency_for_joint_moments());
+    // TODO move to InverseMuscleSolver
+    InverseMuscleSolverMotionData motionData;
+    if (netGeneralizedForces.getNumRows()) {
+        motionData = InverseMuscleSolverMotionData(model, kinematics,
+                netGeneralizedForces);
+    } else {
+        // We must perform inverse dynamics.
+        OPENSIM_THROW_IF(
+                get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+                        get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+                Exception,
+                "Invalid value for cutoff frequency for joint moments.");
+        motionData = InverseMuscleSolverMotionData(model, kinematics,
+                get_lowpass_cutoff_frequency_for_joint_moments());
+    }
 
     // Solve the optimal control problem.
     // ----------------------------------

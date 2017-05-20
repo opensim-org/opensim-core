@@ -2,6 +2,7 @@
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
+#include <InverseMuscleSolverMotionData.h>
 #include <mesh.h>
 
 #include "testing.h"
@@ -449,7 +450,7 @@ OpenSim::Model buildModel() {
 }
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
+solveForTrajectory_GSO(const Model& model) {
 
     // Solve a trajectory optimization problem.
     auto ocp = std::make_shared<OCPStatic<adouble>>(model);
@@ -520,7 +521,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
 }
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryMuscleRedundancySolver(const Model& model) {
+solveForTrajectory_MRS(const Model& model) {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<OCPDynamic<adouble>>(model);
@@ -611,7 +612,7 @@ void compareSolution_GSO(const GlobalStaticOptimizationSolver::Solution& actual,
     SimTK_TEST(reserveForceYRMS < 0.01);
 }
 
-void test2Muscles2DOFsGlobalStaticOptimizationSolver(
+void test2Muscles2DOFs_GSO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
@@ -646,21 +647,59 @@ void test2Muscles2DOFs_GSO_Filebased(
     compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
 }
 
+void test2Muscles2DOFs_GSO_GenForces(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
+        const Model& model) {
+    const auto& ocpSolution = data.first;
+    const auto& kinematics = data.second;
+
+    // Run inverse dynamics.
+    Model modelForID = model;
+    modelForID.initSystem();
+    InverseMuscleSolverMotionData motionData(modelForID, kinematics, 80);
+    Eigen::VectorXd times = Eigen::VectorXd::LinSpaced(100, 0, 0.2);
+    Eigen::MatrixXd netGenForcesEigen;
+    motionData.interpolateNetGeneralizedForces(times, netGenForcesEigen);
+    // Convert Eigen Matrix to TimeSeriesTable.
+    // This constructor expects a row-major matrix layout, but the Eigen matrix
+    // is column-major. We can exploit this to transpose the data from
+    // "DOFs x time" to "time x DOFs".
+    SimTK::Matrix netGenForcesMatrix(
+            netGenForcesEigen.cols(), netGenForcesEigen.rows(),
+            netGenForcesEigen.data());
+    TimeSeriesTable netGenForces;
+    netGenForces.setColumnLabels({"tx/tx", "ty/ty"});
+    for (int iRow = 0; iRow < netGenForcesMatrix.nrow(); ++iRow) {
+        netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
+    }
+
+    GlobalStaticOptimizationSolver gso;
+    gso.setModel(model);
+    gso.setKinematicsData(kinematics);
+    gso.setNetGeneralizedForcesData(netGenForces);
+    double reserveOptimalForce = 0.001;
+    gso.set_create_reserve_actuators(reserveOptimalForce);
+    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+
+    // Compare the solution to the initial trajectory optimization solution.
+    compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
+}
+
 void compareSolution_MRS(const MuscleRedundancySolver::Solution& actual,
                          const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
     compare(actual.activation, "/block2musc2dof/left",
-            expected,         "activation_l",
+            expected,          "activation_l",
             0.05);
     compare(actual.activation, "/block2musc2dof/right",
-            expected,         "activation_r",
+            expected,          "activation_r",
             0.05);
 
     compare(actual.norm_fiber_length, "/block2musc2dof/left",
-            expected,                "norm_fiber_length_l",
+            expected,                 "norm_fiber_length_l",
             0.01);
     compare(actual.norm_fiber_length, "/block2musc2dof/right",
-            expected,                "norm_fiber_length_r",
+            expected,                 "norm_fiber_length_r",
             0.01);
 
     // We use a weaker check for the controls; they don't match as well.
@@ -690,7 +729,7 @@ void compareSolution_MRS(const MuscleRedundancySolver::Solution& actual,
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
 // MuscleRedundancySolver.
-void test2Muscles2DOFsMuscleRedundancySolver(
+void test2Muscles2DOFs_MRS(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
@@ -717,14 +756,58 @@ void test2Muscles2DOFsMuscleRedundancySolver(
     compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
 }
 
+// Load MRS from an XML file.
 void test2Muscles2DOFs_MRS_Filebased(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
     const auto& ocpSolution = data.first;
 
     // Create the MuscleRedundancySolver.
-    // ----------------------------------
     MuscleRedundancySolver mrs("test2Muscles2DOFsDeGroote2016_MRS_setup.xml");
     double reserveOptimalForce = mrs.get_create_reserve_actuators();
+    MuscleRedundancySolver::Solution solution = mrs.solve();
+
+    // Compare the solution to the initial trajectory optimization solution.
+    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
+}
+
+// Perform inverse dynamics outside of MRS.
+void test2Muscles2DOFs_MRS_GenForces(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
+        const Model& model) {
+    const auto& ocpSolution = data.first;
+    const auto& kinematics = data.second;
+
+    // Run inverse dynamics.
+    // ---------------------
+    // This constructor performs inverse dynamics:
+    Model modelForID = model;
+    modelForID.initSystem();
+    InverseMuscleSolverMotionData motionData(modelForID, kinematics, 20);
+    Eigen::VectorXd times = Eigen::VectorXd::LinSpaced(100, 0, 0.5);
+    Eigen::MatrixXd netGenForcesEigen;
+    motionData.interpolateNetGeneralizedForces(times, netGenForcesEigen);
+    // Convert Eigen Matrix to TimeSeriesTable.
+    // This constructor expects a row-major matrix layout, but the Eigen matrix
+    // is column-major. We can exploit this to transpose the data from
+    // "DOFs x time" to "time x DOFs".
+    SimTK::Matrix netGenForcesMatrix(
+            netGenForcesEigen.cols(), netGenForcesEigen.rows(),
+            netGenForcesEigen.data());
+    TimeSeriesTable netGenForces;
+    netGenForces.setColumnLabels({"tx/tx", "ty/ty"});
+    for (int iRow = 0; iRow < netGenForcesMatrix.nrow(); ++iRow) {
+        netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
+    }
+
+    // Create the MuscleRedundancySolver.
+    // ----------------------------------
+    MuscleRedundancySolver mrs;
+    mrs.setModel(model);
+    mrs.setKinematicsData(kinematics);
+    const double reserveOptimalForce = 0.01;
+    mrs.set_create_reserve_actuators(reserveOptimalForce);
+    mrs.set_zero_initial_activation(true);
+    mrs.setNetGeneralizedForcesData(netGenForces);
     MuscleRedundancySolver::Solution solution = mrs.solve();
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -737,16 +820,16 @@ int main() {
         Model model = buildModel();
         model.finalizeFromProperties();
         {
-            auto data = solveForTrajectoryGlobalStaticOptimizationSolver(model);
-            SimTK_SUBTEST2(test2Muscles2DOFsGlobalStaticOptimizationSolver,
-                           data, model);
+            auto data = solveForTrajectory_GSO(model);
+            SimTK_SUBTEST2(test2Muscles2DOFs_GSO, data, model);
             SimTK_SUBTEST1(test2Muscles2DOFs_GSO_Filebased, data);
+            SimTK_SUBTEST2(test2Muscles2DOFs_GSO_GenForces, data, model);
         }
         {
-            auto data = solveForTrajectoryMuscleRedundancySolver(model);
-            SimTK_SUBTEST2(test2Muscles2DOFsMuscleRedundancySolver,
-                           data, model);
+            auto data = solveForTrajectory_MRS(model);
+            SimTK_SUBTEST2(test2Muscles2DOFs_MRS, data, model);
             SimTK_SUBTEST1(test2Muscles2DOFs_MRS_Filebased, data);
+            SimTK_SUBTEST2(test2Muscles2DOFs_MRS_GenForces, data, model);
         }
     SimTK_END_TEST();
 }

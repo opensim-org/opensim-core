@@ -31,18 +31,11 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
-        const OpenSim::Model& model,
-        const OpenSim::TimeSeriesTable& kinematicsData,
-        const double& lowpassCutoffJointMoments) :
+        const Model& model,
+        const TimeSeriesTable& kinematicsData) :
         _initialTime(kinematicsData.getIndependentColumn().front()),
         _finalTime(kinematicsData.getIndependentColumn().back())
 {
-
-    // Inverse dynamics.
-    // =================
-    computeInverseDynamics(model, kinematicsData, lowpassCutoffJointMoments);
-
-
     // Muscle analysis.
     // ================
     // Form a StatesTrajectory.
@@ -60,8 +53,8 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         statesSto.append(time, row);
     }
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
-                                                                statesSto,
-                                                                true, false);
+            statesSto,
+            true, false);
     // TODO give an error if the states do not contain generalized speeds.
 
     // Compute muscle quantities and spline the data.
@@ -128,13 +121,32 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
                 momentArmsThisDOF.appendRow(state.getTime(), rowMA);
             }
             CSVFileAdapter::write(momentArmsThisDOF,
-                                  "DEBUG_momentArmsThisDOF.csv");
+                    "DEBUG_momentArmsThisDOF.csv");
             _momentArms[i_dof] = createGCVSplineSet(momentArmsThisDOF);
         }
     }
 }
 
-void InverseMuscleSolverMotionData::interpolateNetMoments(
+InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
+        const OpenSim::Model& model,
+        const OpenSim::TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffJointMoments) :
+        InverseMuscleSolverMotionData(model, kinematicsData) {
+    // Inverse dynamics.
+    computeInverseDynamics(model, kinematicsData, lowpassCutoffJointMoments);
+}
+
+InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
+        const OpenSim::Model& model,
+        const TimeSeriesTable& kinematicsData,
+        const TimeSeriesTable& netGeneralizedForcesData) :
+        InverseMuscleSolverMotionData(model, kinematicsData) {
+    // Inverse dynamics.
+    // TODO validate column labels.
+    _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData);
+}
+
+void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
@@ -142,11 +154,11 @@ void InverseMuscleSolverMotionData::interpolateNetMoments(
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
                      "Final time is beyond the end of the kinematics data.");
 
-    desiredMoments.resize(_inverseDynamics.getSize(), times.size());
+    desiredMoments.resize(_netGeneralizedForces.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
-        for (size_t i_dof = 0; i_dof < size_t(_inverseDynamics.getSize());
+        for (size_t i_dof = 0; i_dof < size_t(_netGeneralizedForces.getSize());
              ++i_dof) {
-            const double value = _inverseDynamics[i_dof].calcValue(
+            const double value = _netGeneralizedForces[i_dof].calcValue(
                     SimTK::Vector(1, times[i_time]));
             desiredMoments(i_dof, i_time) = value;
         }
@@ -272,7 +284,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     /* For debugging: use exact inverse dynamics solution.
     auto table = CSVFileAdapter::read(
             "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
-    _inverseDynamics = createGCVSplineSet(table);
+    _netGeneralizedForces = createGCVSplineSet(table);
      */
 
     // Perform Inverse Dynamics.
@@ -300,5 +312,5 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
         forceTrajectorySto.pad(forceTrajectorySto.getSize()/2);
         forceTrajectorySto.lowpassIIR(cutoffFrequency);
     }
-    _inverseDynamics = GCVSplineSet(5, &forceTrajectorySto);
+    _netGeneralizedForces = GCVSplineSet(5, &forceTrajectorySto);
 }

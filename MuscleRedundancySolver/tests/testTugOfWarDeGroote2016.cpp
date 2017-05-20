@@ -368,7 +368,7 @@ template <typename T>
 using TugOfWarStatic = DeGroote2016MuscleTugOfWarMinEffortStatic<T>;
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
+solveForTrajectory_GSO(const Model& model) {
 
     // Solve a trajectory optimization problem.
     // ----------------------------------------
@@ -435,7 +435,7 @@ template <typename T>
 using TugOfWarDynamic = DeGroote2016MuscleTugOfWarMinEffortDynamic<T>;
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryMuscleRedundancySolver(const Model& model) {
+solveForTrajectory_MRS(const Model& model) {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<TugOfWarDynamic<adouble>>(model);
@@ -636,12 +636,12 @@ int main() {
         model.finalizeFromProperties();
         {
             auto gsoData =
-                    solveForTrajectoryGlobalStaticOptimizationSolver(model);
+                    solveForTrajectory_GSO(model);
             SimTK_SUBTEST2(test2Muscles1DOFGlobalStaticOptimizationSolver,
                            gsoData, model);
         }
         {
-            auto mrsData = solveForTrajectoryMuscleRedundancySolver(model);
+            auto mrsData = solveForTrajectory_MRS(model);
             SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
                            model);
         }

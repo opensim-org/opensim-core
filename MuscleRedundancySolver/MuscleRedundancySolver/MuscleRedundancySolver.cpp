@@ -171,7 +171,8 @@ public:
         auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
 
         Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
-        _motionData.interpolateNetMoments(times, mutableThis->_desiredMoments);
+        _motionData.interpolateNetGeneralizedForces(times,
+                mutableThis->_desiredMoments);
         if (_numMuscles) {
             _motionData.interpolateMuscleTendonLengths(times,
                      mutableThis->_muscleTendonLengths);
@@ -503,7 +504,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // --------------------------------
     Model origModel; // without reserve actuators.
     TimeSeriesTable kinematics;
-    loadModelAndKinematicsData(origModel, kinematics);
+    TimeSeriesTable netGeneralizedForces;
+    loadModelAndData(origModel, kinematics, netGeneralizedForces);
 
     // Create reserve actuators.
     // -------------------------
@@ -549,11 +551,20 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // Process experimental data.
     // --------------------------
     // TODO move to InverseMuscleSolver
-    OPENSIM_THROW_IF(get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-            get_lowpass_cutoff_frequency_for_joint_moments() != -1, Exception,
-                     "Invalid value for cutoff frequency for joint moments.");
-    InverseMuscleSolverMotionData motionData(model, kinematics,
-                          get_lowpass_cutoff_frequency_for_joint_moments());
+    InverseMuscleSolverMotionData motionData;
+    if (netGeneralizedForces.getNumRows()) {
+        motionData = InverseMuscleSolverMotionData(model, kinematics,
+                netGeneralizedForces);
+    } else {
+        // We must perform inverse dynamics.
+        OPENSIM_THROW_IF(
+                get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+                        get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+                Exception,
+                "Invalid value for cutoff frequency for joint moments.");
+        motionData = InverseMuscleSolverMotionData(model, kinematics,
+                get_lowpass_cutoff_frequency_for_joint_moments());
+    }
 
     // Create the optimal control problem.
     // -----------------------------------
@@ -576,6 +587,9 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         GlobalStaticOptimizationSolver gso;
         gso.setModel(origModel);
         gso.setKinematicsData(kinematics);
+        if (netGeneralizedForces.getNumRows()) {
+            gso.setNetGeneralizedForcesData(netGeneralizedForces);
+        }
         gso.set_lowpass_cutoff_frequency_for_joint_moments(
                 get_lowpass_cutoff_frequency_for_joint_moments());
         gso.set_create_reserve_actuators(get_create_reserve_actuators());
