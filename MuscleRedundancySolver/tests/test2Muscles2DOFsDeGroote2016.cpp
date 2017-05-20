@@ -433,9 +433,10 @@ OpenSim::Model buildModel() {
         model.addComponent(actuR);
     }
 
+    // For use in "filebased" tests.
+    model.print("test2Muscles2DOFsDeGroote2016.osim");
     // SimTK::State s = model.initSystem();
     // model.equilibrateMuscles(s);
-    // std::cout << "DEBUG states " << s.getZ() << std::endl;
     // model.updMatterSubsystem().setShowDefaultGeometry(true);
     // model.updVisualizer().updSimbodyVisualizer().setBackgroundType(
     //         SimTK::Visualizer::GroundAndSky);
@@ -495,6 +496,9 @@ solveForTrajectoryGlobalStaticOptimizationSolver(const Model& model) {
         row[3] = vy[iRow];
         kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
     }
+    // For use in the "filebased" test.
+    CSVFileAdapter::write(kinematics,
+            "test2Muscles2DOFsDeGroote2016_GSO_kinematics.csv");
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
@@ -569,6 +573,9 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
         row[3] = vy[iRow];
         kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
     }
+    // For use in the "filebased" test.
+    CSVFileAdapter::write(kinematics,
+            "test2Muscles2DOFsDeGroote2016_MRS_kinematics.csv");
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
@@ -587,6 +594,23 @@ solveForTrajectoryMuscleRedundancySolver(const Model& model) {
     return {ocpSolution, kinematics};
 }
 
+void compareSolution_GSO(const TimeSeriesTable& expected,
+                         const GlobalStaticOptimizationSolver::Solution& actual,
+                         const double& reserveOptimalForce) {
+    compare(actual.activation, "/block2musc2dof/left",
+            expected,          "activation_l",
+            0.01);
+    compare(actual.activation, "/block2musc2dof/right",
+            expected,          "activation_r",
+            0.05);
+    auto reserveForceXRMS = reserveOptimalForce *
+            actual.other_controls.getDependentColumnAtIndex(0).normRMS();
+    SimTK_TEST(reserveForceXRMS < 0.01);
+    auto reserveForceYRMS = reserveOptimalForce *
+            actual.other_controls.getDependentColumnAtIndex(1).normRMS();
+    SimTK_TEST(reserveForceYRMS < 0.01);
+}
+
 void test2Muscles2DOFsGlobalStaticOptimizationSolver(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
@@ -599,23 +623,28 @@ void test2Muscles2DOFsGlobalStaticOptimizationSolver(
     gso.set_lowpass_cutoff_frequency_for_joint_moments(80);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
+    // gso.print("test2Muscles2DOFsDeGroote2016_GSO_setup.xml");
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    solution.write("test2Muscles2DOFsDeGroote2016_GSO");
+    // solution.write("test2Muscles2DOFsDeGroote2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
-    // ---------------------------------------------------------------------
-    compare(solution.activation, "/block2musc2dof/left",
-            ocpSolution,         "activation_l",
-            0.01);
-    compare(solution.activation, "/block2musc2dof/right",
-            ocpSolution,         "activation_r",
-            0.05);
-    auto reserveForceXRMS = reserveOptimalForce *
-            solution.other_controls.getDependentColumnAtIndex(0).normRMS();
-    SimTK_TEST(reserveForceXRMS < 0.01);
-    auto reserveForceYRMS = reserveOptimalForce *
-            solution.other_controls.getDependentColumnAtIndex(1).normRMS();
-    SimTK_TEST(reserveForceYRMS < 0.01);
+    compareSolution_GSO(ocpSolution, solution, reserveOptimalForce);
+}
+
+// Load all settings from a setup file, and run the same tests as in the test
+// above.
+void test2Muscles2DOFs_GSO_Filebased(
+        const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
+    const auto& ocpSolution = data.first;
+
+    GlobalStaticOptimizationSolver gso(
+            "test2Muscles2DOFsDeGroote2016_GSO_setup.xml");
+    double reserveOptimalForce = gso.get_create_reserve_actuators();
+    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    // solution.write("test2Muscles2DOFsDeGroote2016_GSO_filebased");
+
+    // Compare the solution to the initial trajectory optimization solution.
+    compareSolution_GSO(ocpSolution, solution, reserveOptimalForce);
 }
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
@@ -639,7 +668,7 @@ void test2Muscles2DOFsMuscleRedundancySolver(
     // activation).
     mrs.set_zero_initial_activation(true);
     MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("test2Muscles2DOFsDeGroote2016_MRS");
+    // solution.write("test2Muscles2DOFsDeGroote2016_MRS");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -690,6 +719,7 @@ int main() {
             auto data = solveForTrajectoryGlobalStaticOptimizationSolver(model);
             SimTK_SUBTEST2(test2Muscles2DOFsGlobalStaticOptimizationSolver,
                            data, model);
+            SimTK_SUBTEST1(test2Muscles2DOFs_GSO_Filebased, data);
         }
         {
             auto data = solveForTrajectoryMuscleRedundancySolver(model);

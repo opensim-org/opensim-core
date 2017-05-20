@@ -606,8 +606,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
 
     // Return the solution.
     // --------------------
-    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
     // TODO remove:
-    dircol.print_constraint_values(ocp_solution);
+    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
+    // dircol.print_constraint_values(ocp_solution);
     return ocp->deconstruct_iterate(ocp_solution);
 }

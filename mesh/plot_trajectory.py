@@ -28,5 +28,3 @@ for i in range(num_plots):
     if i == num_plots - 1:
         ax.set_xlabel('time')
 pl.show()
-
-

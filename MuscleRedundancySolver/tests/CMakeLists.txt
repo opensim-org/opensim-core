@@ -23,5 +23,6 @@ file(COPY testTugOfWarDeGroote2016_MRS_initial_guess.csv
 
 MRSAddTest(test2Muscles2DOFsDeGroote2016 osimMuscleRedundancySolver)
 file(COPY test2Muscles2DOFsDeGroote2016_MRS_initial_guess.csv
+          test2Muscles2DOFsDeGroote2016_GSO_setup.xml
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
