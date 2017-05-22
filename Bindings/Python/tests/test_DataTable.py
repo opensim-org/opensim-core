@@ -102,6 +102,13 @@ class TestDataTable(unittest.TestCase):
         assert table.hasColumn(0)
         assert table.hasColumn(2)
         # Edit rows of the table.
+        row = osim.RowVector([100, 200, 300, 400])
+        table.setRowAtIndex(0, row)
+        row = table.getRowAtIndex(0)
+        assert (row[0] == 100 and
+                row[1] == 200 and
+                row[2] == 300 and
+                row[3] == 400)
         row0 = table.getRowAtIndex(0)
         row0[0] = 10
         row0[1] = 10
@@ -141,6 +148,12 @@ class TestDataTable(unittest.TestCase):
                 col3[1] == 40 and
                 col3[2] == 40)
         print table
+        # Append columns to table.
+        col = osim.Vector([1, 2, 3])
+        table.appendColumn("4", col)
+        table.appendColumn("5", col)
+        assert (table.getNumRows()    == 3 and
+                table.getNumColumns() == 6)
         # Add table metadata.
         table.addTableMetaDataString('subject-name', 'Python')
         table.addTableMetaDataString('subject-yob' , '1991')
@@ -149,37 +162,37 @@ class TestDataTable(unittest.TestCase):
         print table
         # Access eleemnt with index out of bounds. Exception expected.
         try:
-            shouldThrow = row0[5]
-            assert false
+            shouldThrow = row0[6]
+            assert False
         except RuntimeError:
             pass
         try:
             shouldThrow = col1[5]
-            assert false
+            assert False
         except RuntimeError:
             pass
         # Access row with index out of bounds. Exception expected.
         try:
             shouldThrow = table.getRowAtIndex(5)
-            assert false
+            assert False
         except RuntimeError:
             pass
         # Access row with timestamp that does not exist. Exception expected.
         try:
             shouldThrow = table.getRow(5.5)
-            assert false
+            assert False
         except RuntimeError:
             pass
         # Access column with index out of bounds. Exception expected.
         try:
-            shouldThrow = table.getDependentColumnAtIndex(5)
-            assert false
+            shouldThrow = table.getDependentColumnAtIndex(6)
+            assert False
         except RuntimeError:
             pass
         # Access column with label that does not exist. Exception expected.
         try:
             shouldThrow = table.getDependentColumn('not-found')
-            assert false
+            assert False
         except RuntimeError:
             pass
         # Test pack-ing of columns of DataTable.

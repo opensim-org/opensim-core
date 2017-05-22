@@ -27,7 +27,7 @@
  * Author: Frank C. Anderson 
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
@@ -86,6 +86,9 @@ public:
 #ifndef SWIG
     PropertyDblArray& operator=(const PropertyDblArray &aProperty);
 #endif
+
+    void assign(const AbstractProperty& that) override;
+
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------

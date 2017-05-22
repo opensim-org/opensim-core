@@ -172,12 +172,27 @@ namespace SimTK {
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
-
 %include <SWIGSimTK/Rotation.h>
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
 }
+
+%extend SimTK::Rotation_<double> {
+    Vec3 multiply(const Vec3& v) {
+        return operator*(*$self, v);
+    }
+
+    RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+
+    RowVector_<Vec3> multiply(const RowVectorView_<Vec3>& row) {
+        return operator*(*$self, row);
+    }
+}
+
+
 // Transform
 %include <SWIGSimTK/Transform.h>
 namespace SimTK {
@@ -214,8 +229,8 @@ namespace SimTK {
 typedef int MobilizedBodyIndex;
 
 namespace SimTK {
-%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>; 
-%template(ArrayIndexInt) ArrayIndexTraits<int>; 
+%template(ArrayIndexUnsigned) ArrayIndexTraits<unsigned>;
+%template(ArrayIndexInt) ArrayIndexTraits<int>;
 }
 
 %include <SWIGSimTK/PolygonalMesh.h>
@@ -246,6 +261,11 @@ namespace SimTK {
 %include <simbody/internal/Visualizer_InputListener.h>
 // The following is necessary because the BackgroundType enum cannot be used
 // from MATLAB.
+// The new version of takeKeyHit() allows returning the value rather than using
+// an output variable as an argument, which is difficult to manage with SWIG.
+// The alternative `waitForKeyHit()` is not ideal for MATLAB, as MATLAB is not
+// able to interrupt native functions, and `waitForKeyHit()` will hang if the
+// simbody-visualizer is killed.
 namespace SimTK {
 %extend Visualizer {
     const Visualizer& setBackgroundTypeByInt(int index) {
@@ -255,10 +275,10 @@ namespace SimTK {
     }
 }
 %extend Visualizer::InputSilo {
-    unsigned waitForKeyHitKeyOnly() {
+    unsigned takeKeyHitKeyOnly() {
         unsigned key = 0;
         unsigned modifier = 0;
-        $self->waitForKeyHit(key, modifier);
+        $self->takeKeyHit(key, modifier);
         return key;
     }
 }

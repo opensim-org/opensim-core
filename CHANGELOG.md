@@ -4,7 +4,7 @@ GitHub issues or pull requests that
 are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
-This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim/opensim-core).
+This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
 **Note**: This document is currently under construction.
 
@@ -48,7 +48,13 @@ Converting from v3.x to v4.0
   owned by a Joint. Code like `myPlanarJoint.getCoordinateSet()[0]` now becomes
   `myPlanarJoint.getCoordinate(PlanarJoint::Coord::RotationZ)` (PRs #1116,
   #1210, and #1222).
-- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by 
+- The `reverse` property in Joint can no longer be set by the user; Model uses
+  SimTK::MultibodyGraphMaker to determine whether joints should be reversed when
+  building the multibody system. The joint's transform and coordinates maintain
+  a parent->child sense even if the joint has been reversed. For backwards
+  compatibility, a joint's parent and child PhysicalFrames are swapped when
+  opening a Model if the `reverse` element is set to `true`.
+- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
   `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
   (see the documentation in the `Manager` class for more details):
   - Before:
@@ -97,7 +103,7 @@ New Classes
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
 
 Removed Classes
---------------------------------
+---------------
 The following classes are no longer supported in OpenSim and are removed in OpenSim 4.0.
 - Muscle class `ContDerivMuscle_Depredated`.
 
@@ -107,6 +113,12 @@ MATLAB and Python interfaces
 matrix, Jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
 Python (PR #930).
 
+MATLAB interface
+----------------
+- The configureOpenSim.m function should no longer require administrator
+  privileges for most users, and gives more verbose output to assist with
+  troubleshooting.
+
 Python interface
 ----------------
 - Improved error handling. Now, OpenSim's error messages show up as exceptions
@@ -114,7 +126,8 @@ in Python.
 
 Other Changes
 -------------
-- There is now a formal CMake mechanism for using OpenSim in your own C++ project. See cmake/SampleCMakeLists.txt. (PR #187)
+- There is now a formal CMake mechanism for using OpenSim in your own C++
+  project. See cmake/SampleCMakeLists.txt. (PR #187)
 - Substantial cleanup of the internal CMake scripts.
 - Lepton was upgraded to the latest version (PR #349)
 - Made Object::print a const member function (PR #191)
@@ -126,6 +139,17 @@ programmatically in MATLAB or python.
 - Thelen2003Muscle, Millard2012EquilibriumMuscle, and
   Millard2012AccelerationMuscle now throw an exception if the force equilibrium
   calculation fails to converge (PR #1201).
+- Thelen2003Muscle and Millard2012EquilibriumMuscle no longer clamp excitations (i.e. controls)
+  internally. If controls are out of bounds an Exception is thrown. Also, the
+  `min_control` property now defaults to the `minimum_activation`. It is the
+  responsibility of the controller (or solver) to provide controls that are
+  within the valid ranges defined by the Actuators and that includes the
+  specific bounds of Muscle models. (PR #1548)
+- The `buildinfo.txt` file, which contains the name of the compiler used to
+  compile OpenSim and related information, is now named `OpenSim_buildinfo.txt`
+  and may be installed in a different location.
+- macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
+  `DYLD_LIBRARY_PATH` to use OpenSim libraries.
 
 Documentation
 --------------

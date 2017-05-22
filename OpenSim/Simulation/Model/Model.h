@@ -122,7 +122,7 @@ of the Model, called a System (SimTK::System), using Simbody. Creation of the
 System is initiated by a call to the Model's initSystem() method. The System and
 related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
-method, in which case it will allocate an maintain a ModelVisualizer.
+method, in which case it will allocate and maintain a ModelVisualizer.
 
 @authors Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman
 @see ModelComponent, ModelVisualizer, SimTK::System
@@ -220,18 +220,23 @@ public:
     //--------------------------------------------------------------------------
 public:
 
-    /** Default constructor creates a %Model containing only the ground Body
+    /** Default constructor creates a %Model containing only the Ground frame
     and a set of default properties. */
     Model();
 
     /** Constructor from an OpenSim XML model file. 
+    NOTE: The Model is read in (deserialized) from the model file, which means
+    the properties of the Model and its components are filled in from values in
+    the file. In order to evaluate the validity of the properties (e.g. Inertia
+    tensors, availability of Mesh files, ...) and to identify properties as
+    subcomponents of the Model, one must invoke Model::finalizeFromProperties() 
+    first. Model::initSystem() invokes finalizeFromProperties() on its way to
+    creating the System and initializing the State.
+
     @param filename     Name of a file containing an OpenSim model in XML
                         format; suffix is typically ".osim". 
-                        
-    @param finalize  whether to extendFinalizeFromProperties to create a valid OpenSim Model or not on exit, 
-                     defaults to true. If set to false only deserialization is performed.
     **/
-    explicit Model(const std::string& filename, bool finalize=true) SWIG_DECLARE_EXCEPTION;
+    explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
     /**
      * Perform some set up functions that happen after the
@@ -415,13 +420,13 @@ public:
 
     /** Get read-only access to the internal Simbody MultibodySystem that was
     created by this %Model at the last initSystem() call. **/    
-    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; }
+    const SimTK::MultibodySystem& getMultibodySystem() const {return getSystem(); }
     /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
     that was created by this %Model at the last initSystem() call. Be careful
     if you make modifications to the System because that will invalidate 
     initialization already performed by the Model. 
     @see initStateWithoutRecreatingSystem() **/    
-    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; }
+    SimTK::MultibodySystem& updMultibodySystem() const {return updSystem(); }
 
     /** Get read-only access to the internal DefaultSystemSubsystem allocated
     by this %Model's Simbody MultibodySystem. **/
@@ -922,15 +927,16 @@ public:
      *
      * @param aOStream Output stream.
      */
-    void printBasicInfo(std::ostream &aOStream) const;
+    void printBasicInfo(std::ostream& aOStream = std::cout) const;
 
     /**
      * Print detailed information about the model.
      *
-     * @param s   the system State.
+     * @param s        the system State.
      * @param aOStream Output stream.
      */
-    void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
+    void printDetailedInfo(const SimTK::State& s,
+                           std::ostream& aOStream = std::cout) const;
 
     /**
      * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 

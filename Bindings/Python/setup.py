@@ -15,7 +15,9 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      package_data={'opensim': ['_*.*']},
+      # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
+      # The asterisk after the extension is to handle version numbers on Linux.
+      package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*']},
       include_package_data=True,
       classifiers=[
           'Intended Audience :: Science/Research',

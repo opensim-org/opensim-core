@@ -28,11 +28,11 @@
 #include <OpenSim/Simulation/Model/Appearance.h>
 namespace OpenSim {
 
-class PathPoint;
 class PathWrap;
 class WrapResult;
 class Model;
 class PhysicalFrame;
+class AbstractPathPoint;
 
 //=============================================================================
 //=============================================================================
@@ -127,7 +127,7 @@ public:
 * @return The status, as a WrapAction enum
 */
     int wrapPathSegment( const SimTK::State& state, 
-                         PathPoint& aPoint1, PathPoint& aPoint2,
+                         AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult) const;
 
@@ -138,11 +138,18 @@ protected:
                          WrapResult& aWrapResult, bool& aFlag) const = 0;
 
     virtual void updateGeometry() {};
-
+    /**
+     * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
+     * it is attached to.
+     */
+    SimTK::Transform calcWrapGeometryTransformInBaseFrame() const;
    /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
      * based on the name of the quadrant. finalizeFromProperties() should be
      * called whenever the quadrant property changes. */
     void extendFinalizeFromProperties() override;
+
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+        override;
 
 private:
     void constructProperties();

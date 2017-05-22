@@ -70,7 +70,7 @@
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-#include <simbody/internal/MobilizedBody_BuiltIns.h>
+#include <OpenSim/Simulation/Test/SimulationComponentsForTesting.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -147,91 +147,6 @@ public:
 }; // End of MultidimensionalFunction
 
 
-//=============================================================================
-// CompoundJoint necessary for testing equivalent body force calculations
-// for joints comprised by more than one mobilized body.
-//=============================================================================
-class CompoundJoint : public Joint {
-OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
-
-public:
-    /** Indices of Coordinates. */
-    enum class Coord: unsigned {
-        Rotation1X,
-        Rotation2Y,
-        Rotation3Z
-    };
-
-private:
-    /** Specify the Coordinates of this CompoundJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation1X)) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation2Y)) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
-                                   static_cast<unsigned>(Coord::Rotation3Z)) };
-
-public:
-    // CONSTRUCTION
-    using Joint::Joint;
-
-protected:
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override
-    {
-        using namespace SimTK;
-
-        Super::extendAddToSystem(system);
-
-        // PARENT TRANSFORM
-        const SimTK::Transform& P_Po =
-            getParentFrame().findTransformInBaseFrame();
-        // CHILD TRANSFORM
-        const SimTK::Transform& B_Bo = getChildFrame().findTransformInBaseFrame();
-
-        int coordinateIndexForMobility = 0;
-
-        SimTK::Transform childTransform0(Rotation(), Vec3(0));
-
-        SimTK::Body::Massless massless;
-
-        // CREATE MOBILIZED BODY for body rotation about body Z
-        MobilizedBody simtkMasslessBody1 = createMobilizedBody<MobilizedBody::Pin>(
-            system.updMatterSubsystem().updMobilizedBody(getParentFrame().getMobilizedBodyIndex()),
-            P_Po,
-            massless,
-            childTransform0,
-            coordinateIndexForMobility);
-
-        // Find the joint frame with Z aligned to body X
-        Rotation rotToX(Pi/2, YAxis);
-        SimTK::Transform parentTransform1(rotToX, Vec3(0));
-        SimTK::Transform childTransform1(rotToX, Vec3(0));
-
-        // CREATE MOBILIZED BODY for body rotation about body X
-        MobilizedBody simtkMasslessBody2 = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody1,
-            parentTransform1,
-            massless,
-            childTransform1,
-            coordinateIndexForMobility);
-
-        // Now Find the joint frame with Z aligned to body Y
-        Rotation rotToY(-Pi/2, XAxis);
-        SimTK::Transform parentTransform2(rotToY, Vec3(0));
-        SimTK::Transform childTransform2(B_Bo.R()*rotToY, B_Bo.p());
-        
-        // CREATE MOBILIZED BODY for body rotation about body Y
-        MobilizedBody mobBod = createMobilizedBody<MobilizedBody::Pin>(
-            simtkMasslessBody2,
-            parentTransform2,
-            getChildInternalRigidBody(),
-            childTransform2,
-            coordinateIndexForMobility, &getChildFrame());
-    }
-//=============================================================================
-};  // END of class CompoundJoint
-//=============================================================================
-
 void testCustomVsUniversalPin();
 void testCustomJointVsFunctionBased();
 void testEllipsoidJoint();
@@ -254,6 +169,7 @@ void testNonzeroInterceptCustomJointVsPin();
 // Multibody tree constructions tests
 void testAddedFreeJointForBodyWithoutJoint();
 void testAutomaticJointReversal();
+void testUserJointReversal();
 void testAutomaticLoopJointBreaker();
 
 int main()
@@ -278,6 +194,14 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl;
         failures.push_back("testAutomaticJointReversal");
+    }
+
+    // The parent and child frames should be swapped if the "reverse" element
+    // has been set to "true" in an old model file.
+    try { ++itc; testUserJointReversal(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testUserJointReversal");
     }
 
     // test that kinematic loops are broken to form a tree with constraints
@@ -1440,12 +1364,14 @@ void testPinJoint()
     knee3.upd_coordinates(0).setName("knee_q");
 
     knee3.finalizeConnections(*osimModel);
-    knee3.dumpConnections();
-    knee3.dumpSubcomponents();
+    knee3.printSocketInfo();
+    knee3.printInputInfo();
+    knee3.printSubcomponentInfo();
 
     knee.finalizeConnections(*osimModel);
-    knee.dumpConnections();
-    knee.dumpSubcomponents();
+    knee.printSocketInfo();
+    knee.printInputInfo();
+    knee.printSubcomponentInfo();
 
     // once connected the two ways of constructing the knee joint should
     // yield identical definitions
@@ -1455,8 +1381,10 @@ void testPinJoint()
     // the resulting system and results
     osimModel->addJoint(&knee3);
 
-    knee3.dumpConnections();
-    knee.dumpConnections();
+    knee3.printSocketInfo();
+    knee3.printInputInfo();
+    knee.printSocketInfo();
+    knee.printInputInfo();
 
     // BAD: have to set memoryOwner to false or program will crash when this
     // test is complete.
@@ -2012,7 +1940,8 @@ void testEquivalentBodyForceFromGeneralizedForce()
     // Actuators that will fail to register and the model will not load.
     LoadOpenSimLibrary("osimActuators");
 
-    Model gaitModel("testJointConstraints.osim", true);
+    Model gaitModel("testJointConstraints.osim");
+    gaitModel.finalizeFromProperties();
     gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
@@ -2118,7 +2047,7 @@ void testAddedFreeJointForBodyWithoutJoint()
     model.initSystem();
 
     ASSERT_EQUAL(6, model.getNumCoordinates(), 0);
-    model.printBasicInfo(cout);
+    model.printBasicInfo();
 }
 
 void testAutomaticJointReversal()
@@ -2205,10 +2134,6 @@ void testAutomaticJointReversal()
     //model.setUseVisualizer(true);
     SimTK::State& s = model.initSystem();
 
-    ASSERT(hip->get_reverse() == true);
-    ASSERT(knee->get_reverse() == true);
-    ASSERT(ankle->get_reverse() == true);
-
     SimTK::Transform pelvisX = pelvis->getTransformInGround(s);
     cout << "Pelvis Transform (reverse): " << pelvisX << endl;
 
@@ -2261,7 +2186,7 @@ void testAutomaticJointReversal()
     auto relPathOff2 = cground.getRelativePathName(off2);
 
     //modelConstrained.setUseVisualizer(true);
-    modelConstrained.dumpSubcomponents();
+    modelConstrained.printSubcomponentInfo();
     SimTK::State& sc = modelConstrained.initSystem();
 
     SimTK::Transform pelvisXc = cpelvis.getTransformInGround(sc);
@@ -2304,6 +2229,43 @@ void testAutomaticJointReversal()
 
     double accErr = ((acom - acomc).norm())/(acom.norm()+SimTK::Eps);
     ASSERT_EQUAL(accErr, 0.0, sqrt(integ_accuracy));
+}
+
+void testUserJointReversal()
+{
+    using namespace OpenSim;
+
+    cout << "\n==========================================================="
+         << "\n Test joint reversal set by user in old model file"
+         << "\n==========================================================="
+         << endl;
+
+    // Open model.
+    auto model = Model("double_pendulum_testReverse.osim");
+    model.finalizeConnections(model); //calls finalizeFromProperties internally
+
+    // In this model file:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod1 and child is rod2
+    // but the "reverse" element of pin2 is set to "true" so, after
+    // deserialization, the following should be true:
+    // - pin1's parent is ground and child is rod1
+    // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
+    auto& pin1 = model.getComponent<Joint>("pin1");
+    ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
+        __FILE__, __LINE__,
+        "Incorrect parent frame when 'reverse' element is set to 'false'");
+    ASSERT(pin1.getChildFrame().findBaseFrame().getName() == "rod1",
+        __FILE__, __LINE__,
+        "Incorrect child frame when 'reverse' element is set to 'false'");
+
+    auto& pin2 = model.getComponent<Joint>("pin2");
+    ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2",
+        __FILE__, __LINE__,
+        "Incorrect parent frame when 'reverse' element is set to 'true'");
+    ASSERT(pin2.getChildFrame().findBaseFrame().getName() == "rod1",
+        __FILE__, __LINE__,
+        "Incorrect child frame when 'reverse' element is set to 'true'");
 }
 
 void testAutomaticLoopJointBreaker()

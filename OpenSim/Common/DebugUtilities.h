@@ -24,7 +24,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define OPENSIM_NORETURN(declaration) __declspec(noreturn) declaration
 #else
 #define OPENSIM_NORETURN(declaration) declaration __attribute__ ((noreturn))

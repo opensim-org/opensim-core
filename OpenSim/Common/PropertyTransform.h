@@ -22,7 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 

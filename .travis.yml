@@ -10,16 +10,16 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
     - os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no # (TEMP bintray not working) yes
+      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
       
 branches:
   except:
@@ -35,8 +35,7 @@ env:
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
     - SWIG_VER=3.0.6
-    - PATH="$PATH:$TRAVIS_BUILD_DIR/travis_scripts"
-    - secure: "kCMcG2eOIZvD/0o7IQaMlaizdSZNWQbujd6oX/rWJQkCf/BSUIzgJJB8Y0ldE5kC/olKHi0veds4ooem4DFmt+NEJoR7Gnp7I4ZiOOZ77h73tOlPBZWx6t5U6QerO2NC0LFmoa1bVkjlW6vgdR6eq8c8IfVoLWlwI64XKU/96TE="
+    - PATH="$PATH:$TRAVIS_BUILD_DIR/.github"
     - USE_CACHE=false
 
 cache: false
@@ -54,6 +53,10 @@ addons:
       - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
 
     packages:
+      # Must explicitly list cmake-data, otherwise the incorrect
+      # version of cmake-data will be sought to satisfy the dependencies
+      # of cmake.
+      - cmake-data
       - cmake
       # For Simbody.
       - liblapack-dev
@@ -65,8 +68,14 @@ addons:
       # TOO OLD; see below. - doxygen
       # To run the python tests.
       - python-nose
-      # To send a password to ssh.
-      - sshpass
+  # To avoid being prompted when ssh'ing into sourceforge.
+  ssh_known_hosts:
+      # For uploading doxygen.
+      - web.sourceforge.net
+      # For deleting old doxygen.
+      - shell.sourceforge.net
+      # For uploading binaries.
+      - frs.sourceforge.net
 
 before_install:
   - cd $TRAVIS_BUILD_DIR
@@ -121,9 +130,9 @@ before_install:
   - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
 
   ## Install Simbody.
-  # The Simbody travis script uploads the latestsimbody binaries to bintray.
+  # The Simbody travis script uploads the simbody binaries to sourceforge.
   - SIMBODYZIP=simbody-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
-  - wget https://dl.bintray.com/chrisdembia/opensim-testing/$SIMBODYZIP
+  - wget https://prdownloads.sourceforge.net/myosin/simbody/$SIMBODYZIP
   # Put Simbody in ~/simbody (-q: quiet).
   - unzip -q $SIMBODYZIP -d ~
 
@@ -222,19 +231,30 @@ script:
   - make -j8 install > /dev/null
 
   ## Test python wrapping.
+  # Since we use OPENSIM_COPY_DEPENDENCIES=ON, ensure the Python bindings are
+  # not relying on the original Simbody/BTK libraries but rather the copied
+  # ones. This should make sure we have the correct RPATH for Simbody/BTK on
+  # macOS.
+  - rm -r ~/simbody
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
+  ## Set up ssh for sourceforge.
+  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+  # Decrypt the private key stored in the repository to the tmp dir.
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+  # Start the ssh agent.
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
+  # Register this private key with this client (the travis machine).
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
+  - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
-  # The `-e "ssh...` is for providing the password andautomatically
-  # accepting the ssh key.
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  # MYOSIN_SOURCEFORGE_PASSWORD is a hidden environment variable that we set
-  # at https://travis-ci.org/opensim-org/opensim-core/settings.
-  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az -e "sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
   # If we're uploading doxygen, we also want to delete old
   # doxygen files from the server so they don't build up indefinitely.
   # However, ssh'ing into the server takes a while, so we only do this
@@ -242,39 +262,68 @@ script:
   - if [[ "$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then echo "This build is randomly selected to delete old folders from myosin.sourceforge.net."; fi
   # Creates an environment at sourceforge that we can ssh into.
-  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net create; fi
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then ssh opensim-bot,myosin@shell.sourceforge.net create; fi
   # Now that the environment is created, we can run a command on the server.
   # mindepth and maxdepth makes sure that we only look to delete folders
   # in the htdocs folder, and we don't look at subdirectories.
   # We only look for folders (`-type d`).
   # We delete folders older than 30 days (`-mtime +30`).
   # The "shutdown" command shuts down the ssh environment.
-  - if [ $CLEAN_UP_MYOSIN = "0" ]; then sshpass -p rectusfemoris ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
+  - if [ $CLEAN_UP_MYOSIN = "0" ]; then ssh opensim-bot,myosin@shell.sourceforge.net 'cd /home/project-web/myosin/htdocs && find . -mindepth 1 -maxdepth 1 -type d -mtime +30 | xargs rm -rf && shutdown'; fi
   
 before_deploy:
   # Zip up the installation using a file name that identifies where
   # the binaries were built.
-  - mkdir ~/binstar-packages
+  - mkdir ~/to_deploy
   - ZIPNAME=opensim-core-latest_${TRAVIS_OS_NAME}_${BTYPE}.zip
-  - # Zip up opensim relative to where it's installed.
+  # Zip up opensim relative to where it's installed.
   - cd $OPENSIM_HOME/../
-  - zip --recurse-paths --quiet ~/binstar-packages/$ZIPNAME opensim-core
+  # Leave symlinks intact.
+  - zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-core
 
-  # Paths in the .bintray.json file are relative to the current directory.
-  - cd ~
+  # SSH for sourceforge is already set up, in the `script:` section.
 
 deploy:
-  # Uploads to https://bintray.com/chrisdembia/opensim-testing/opensim-core/view
-  #            https://dl.bintray.com/chrisdembia/opensim-testing/
-  # See http://docs.travis-ci.com/user/deployment/bintray/ for help.
-  provider: bintray
-  file: $TRAVIS_BUILD_DIR/doc/.bintray.json
-  user: chrisdembia
+  # Uploads to sourceforge.net/projects/myosin
+  # See https://docs.travis-ci.com/user/deployment/custom/
+  # '--archive' preserves symlinks.
+  provider: script
   skip_cleanup: true
-  # API key is encrypted with travis.
-  key: $BINTRAY_API_KEY
+  script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    branch: master
+    branch: master 
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
+
+# Below is a description of the process for securely uploading files to
+# Sourceforge, taken from https://oncletom.io/2016/travis-ssh-deploy/.
+#
+# The following link is a great page to learn about SSH.
+# https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process
+#
+# Contact chrisdembia if you need the login information for opensim-bot at
+# sourceforge, to manage myosin.sourceforge.net.
+#
+# You must install the travis command-line tool: `gem install travis`
+# Locally, from the root of the opensim-core repository:
+# Create a 4096-bit RSA key, providing a comment.
+# $ ssh-keygen -t rsa -b 4096 -C 'opensim-bot@sourceforge.net' -f .github/.deploy_myosin_sourceforge_rsa
+# When prompted for a passphrase, just hit enter (twice).
+# First make a backup copy of .travis.yml.
+# $ cp .travis-ci.yml travis-ci-backup.yml
+# Encrypt the private key, add decryption line to .travis.yml. 
+# $ travis encrypt-file .github/.deploy_myosin_sourceforge_rsa --add
+# Manually edit the .travis.yml file to clean up the added lines and restore
+# comments to the file; move the decryption line to the before_deploy step.
+# Remove the unencrypted private key. DO NOT commmit the unencrypted private
+# key.
+# $ rm -f .github/.deploy_myosin_sourceforge_rsa
+# Move the encrypted key to the .github folder.
+# $ mv .deploy_myosin_sourceforge_rsa.enc .github/
+# Manually, log into the sourceforge website (user opensim-bot) and add the
+# public key (contents of .github/.deploy_myosin_sourceforge_rsa.pub) in
+# Profile > SSH Settings.
+# Now you can delete the public key file from your local machine.
+# Commit the encrypted private key and the changes to .travis.yml.
+# $ git commit .travis.yml .github/.deploy_myosin_sourceforge_rsa.enc

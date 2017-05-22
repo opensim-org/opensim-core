@@ -1,7 +1,8 @@
-OpenSim Core [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci]
+OpenSim Core
 ============
+ [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci] [![ZenHub][zenhub_image]][zenhub]
 
-**NOTE: This repository contains OpenSim 4.0 development and cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
+**NOTE: This repository cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
 
 OpenSim is software that lets users develop models of musculoskeletal
 structures and create dynamic simulations of movement, such as this one:
@@ -117,24 +118,23 @@ This code produces the following animation:
 ![Simulation of an arm actuated by a muscle][simple_example_gif]
 
 and prints the following information to the console:
-
-        [reporter]
-                    |           /m|             |
-                    | odel_/biceps|             |
-                time| /fiber_force|  elbow_angle|
-        ------------| ------------| ------------|
-                   0|     1.180969|    1.5707963|
-                   1|     57.27509|   0.77066412|
-                   2|    19.728411|    1.5680456|
-                   3|    56.090431|    1.4419861|
-                   4|     34.54835|     1.508348|
-                   5|    32.603721|    1.5180237|
-                   6|    37.136052|    1.5021235|
-                   7|    35.698502|    1.5071888|
-                   8|     34.18601|    1.5079186|
-                   9|    34.341649|     1.506727|
-                  10|    35.784713|     1.507164|
-
+```
+[reporter]
+              |   /model_/bice|               | 
+          time| ps|fiber_force|    elbow_angle| 
+--------------| --------------| --------------| 
+  0.000000e+00| 1.18096897e+00| 1.57079633e+00| 
+1.00000000e+00| 5.72750904e+01| 7.70664118e-01| 
+2.00000000e+00| 1.97284113e+01| 1.56804557e+00| 
+3.00000000e+00| 5.60904315e+01| 1.44198608e+00| 
+4.00000000e+00| 3.45483498e+01| 1.50834805e+00| 
+5.00000000e+00| 3.26037208e+01| 1.51802366e+00| 
+6.00000000e+00| 3.71360518e+01| 1.50212351e+00| 
+7.00000000e+00| 3.56985024e+01| 1.50718884e+00| 
+8.00000000e+00| 3.41860103e+01| 1.50791862e+00| 
+9.00000000e+00| 3.43416494e+01| 1.50672695e+00| 
+1.00000000e+01| 3.57847134e+01| 1.50716396e+00| 
+```
 ---
 
 Building from the source code
@@ -159,9 +159,6 @@ On Windows using Visual Studio
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
     * *Visual Studio Community 2015* is sufficient and is free for everyone.
-        If you want to use *Visual Studio Enterprise 2015*, you may be able
-        to get it for free at [Dreamspark](https://www.dreamspark.com) if
-        you are at an academic institution.
     * Visual Studio 2015 does not install C++
       support by default. During the installation you must select
       *Custom*, and check *Programming Languages > Visual C++ > Common Tools
@@ -253,17 +250,18 @@ On Windows using Visual Studio
         cmake --build . --config RelWithDebInfo
 
    Alternative values for `--config` in this command are:
-    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
-      Library names end with `_d`.
-    * **Release**: no debugger symbols; optimized.
-    * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
-      than Release; choose this if unsure.
-    * **MinSizeRel**: minimum size; optimized.
+   
+   * **Debug**: debugger symbols; no optimizations (more than 10x slower).
+     Library names end with `_d`.
+   * **Release**: no debugger symbols; optimized.
+   * **RelWithDebInfo**: debugger symbols; optimized. Bigger but not slower
+     than Release; choose this if unsure.
+   * **MinSizeRel**: minimum size; optimized.
 
-      You must run this command for each of the configurations you plan to use
-      with OpenSim (see below). You should run this command for the release
-      configuration *last* to ensure that you use the release version of the
-      command-line applications instead of the slow debug versions.
+   You must run this command for each of the configurations you plan to use
+   with OpenSim (see below). You should run this command for the release
+   configuration *last* to ensure that you use the release version of the
+   command-line applications instead of the slow debug versions.
 11. If you like, you can now remove the directory used for building
     dependencies (`c:/opensim-core-dependencies-build`).
 
@@ -275,8 +273,9 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
-       build as 64-bit, select *Visual Studio 14 Win64*. The choice between
+    1. Choose the *Visual Studio 14* or *Visual Studio 14 2015* generator. To
+       build as 64-bit, select *Visual Studio 14 Win64* or 
+       *Visual Studio 14 2015 Win64*. The choice between
        32-bit/64-bit must be the same across all dependencies.
     2. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
@@ -555,11 +554,7 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers. (If you installed Python
-      with Homebrew, [CMake will not find the Homebrew Python libraries on its
-      own](https://github.com/Homebrew/homebrew/issues/25118); you must set the
-      CMake variable `PYTHON_LIBRARIES` manually. Use `'$(python-config
-      --prefix)/lib/libpython2.7.dylib'` in bash to get the correct value.)
+      Python it will use for building the wrappers.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to create
    Xcode project files in the build directory.
@@ -599,24 +594,10 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
 #### Set environment variables
 
 1. **Executables**. If you want to run OpenSim-Core's executables from
-   anywhere on your computer, you must update your PATH. *Note* some of the
-   names of OpenSim-Core executables conflict with some UNIX commands (e.g.,
-   `id`). To give preference to OpenSim-Core's executables, we must *prepend*
-   OpenSim-Core's `bin/` directory to the path. Open a terminal and type:
+   anywhere on your computer, you must update your PATH. Open a terminal and
+   type:
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bash_profile
-
-2. **Libraries**. Hopefully you can skip this step. This step is required if:
-  1. You are using CMake version 2.8.11 or older.
-  2. You plan on building C++ executables or libraries on top of OpenSim, *and*
-     you plan to "install" them in the CMake sense of the word (that is, you're
-     not going to simply use them from your project's build directory).
-  3. You plan to use the Java or MATLAB scripting.
-
-  If any of these are true, then you must add OpenSim-Core libraries to your
-  linker path. Open a terminal and type:
-
-          $ echo 'export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bash_profile
 
 Your changes will only take effect in new terminal windows.
 
@@ -774,9 +755,9 @@ And you could get all the optional dependencies via:
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
-    * `OPENSIM_COPY_SIMBODY` to decide if Simbody headers and libraries should
-      be installed inside OpenSim; you want this off if you're installing
-      Simbody and OpenSim into `/usr/` or `/usr/local/`.
+    * `OPENSIM_COPY_DEPENDENCIES` to decide if Simbody and BTK are copied into
+      the OpenSim installation; you want this off if you're installing OpenSim
+      into `/usr/` or `/usr/local/`.
 9. Click the **Configure** button again. Then, click **Generate** to create
    Makefiles in the build directory.
 
@@ -806,19 +787,10 @@ And you could get all the optional dependencies via:
 
 #### Set environment variables
 
-1. **Executables**. Add OpenSim-Core's executables to the path so you can access them from any
-   directory on your computer. NOTE that some of the names of OpenSim-Core
-   executables conflict with some UNIX commands (e.g., `id`). To give
-   preference to OpenSim-Core's executables, we must *prepend* OpenSim-Core's
-   `bin/` directory to the path.
+1. **Executables**. Add OpenSim-Core's executables to the path so you can
+   access them from any directory on your computer.
 
         $ echo 'export PATH=~/opensim-core/bin:$PATH' >> ~/.bashrc
-
-2. **Libraries**. Allow executables to find OpenSim-Core libraries by
-  adding the OpenSim-Core
-   `lib/` directory to your linker path.
-
-        $ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/opensim-core/lib' >> ~/.bashrc
 
 Your changes will only take effect in new terminal windows.
 
@@ -921,6 +893,9 @@ ctest -j8
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
+[zenhub_image]: https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png
+[zenhub]: https://zenhub.com
+
 [running_gif]: doc/images/opensim_running.gif
 [simple_example_gif]: doc/images/opensim_double_pendulum_muscle.gif
 [java]: http://www.oracle.com/technetwork/java/javase/downloads/index.html

@@ -100,6 +100,13 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         "%s: F-v extrapolation threshold must be greater than 1.0/Flen",
         getName().c_str());
 
+
+    OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
+        InvalidPropertyValue, getProperty_minimum_activation().getName());
+
+    OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
+        InvalidPropertyValue, getProperty_min_control().getName());
+
     // Set properties of subcomponents.
     auto& pennMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
@@ -160,6 +167,8 @@ void Thelen2003Muscle::constructProperties()
     constructProperty_activation_time_constant(0.015);
     constructProperty_deactivation_time_constant(0.050);
     constructProperty_minimum_activation(0.01);
+
+    setMinControl(get_minimum_activation());
 }
 
 //=============================================================================
@@ -204,7 +213,7 @@ void Thelen2003Muscle::setMaximumPennationAngle(double maximumPennationAngle)
 {   set_maximum_pennation_angle(maximumPennationAngle); }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                             START OF DEPRECATED
 //==============================================================================
 double Thelen2003Muscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
@@ -288,7 +297,7 @@ double Thelen2003Muscle::
 }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                              END OF DEPRECATED
 //==============================================================================
 
 //==============================================================================
@@ -679,9 +688,6 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
     double dadt = getActivationModel().calcDerivative(activation,excitation);
     return dadt;
 }  
-
-
-
 
 
 //==============================================================================

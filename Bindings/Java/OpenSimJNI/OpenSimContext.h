@@ -45,7 +45,7 @@ class Model;
 class MovingPathPoint;
 class Muscle;
 class GeometryPath;
-class PathPoint;
+class AbstractPathPoint;
 class PathWrap;
 class ConditionalPathPoint;
 class WrapObject;
@@ -136,7 +136,7 @@ public:
     // Muscles
     double getActivation(Muscle& act);
     double getMuscleLength(Muscle& act);
-    const Array<PathPoint*>& getCurrentPath(Muscle& act);
+    const Array<AbstractPathPoint*>& getCurrentPath(Muscle& act);
     void copyMuscle(Muscle& from, Muscle& to);
     void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
 
@@ -147,16 +147,16 @@ public:
     void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setYCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setZCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setBody(PathPoint& pathPoint, PhysicalFrame& newBody);
+    void setBody(AbstractPathPoint& pathPoint, PhysicalFrame& newBody);
     void setCoordinate(ConditionalPathPoint& via, Coordinate& newCoord);
     void setRangeMin(ConditionalPathPoint& via, double d);
     void setRangeMax(ConditionalPathPoint& via, double d);
-    bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
+    bool replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
     void setEndPoint(PathWrap& mw, int newEndPt);
     void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
-    bool isActivePathPoint(PathPoint& mp) ; 
+    bool isActivePathPoint(AbstractPathPoint& mp) ; 
     // Muscle Wrapping
     void setStartPoint(PathWrap& mw, int newStartPt);
     void addPathWrap(GeometryPath& p, WrapObject& awo);

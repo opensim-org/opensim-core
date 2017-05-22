@@ -26,6 +26,7 @@
 #include "Component.h"
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
+#include <unordered_map>
 
 using namespace SimTK;
 
@@ -128,15 +129,18 @@ void Component::addComponent(Component* subcomponent)
 {
     //get to the root Component
     const Component* root = this;
-    while (root->hasParent()) {
-        root = &(root->getParent());
+    while (root->hasOwner()) {
+        root = &(root->getOwner());
     }
-
-    auto components = root->getComponentList<Component>();
-    for (auto& c : components) {
-        if (subcomponent == &c) {
-            OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
-                subcomponent->getName(), getName());
+    // if the root has no immediate subcomponents do not bother
+    // checking if the subcomponent is in the ownership tree
+    if ((root->getNumImmediateSubcomponents() > 0)) {
+        auto components = root->getComponentList<Component>();
+        for (auto& c : components) {
+            if (subcomponent == &c) {
+                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
+                    subcomponent->getName(), getName());
+            }
         }
     }
 
@@ -164,10 +168,10 @@ void Component::finalizeFromProperties()
                       getConcreteClassName() );
 
     for (auto& comp : _memberSubcomponents) {
-        comp->setParent(*this);
+        comp->setOwner(*this);
     }
     for (auto& comp : _adoptedSubcomponents) {
-        comp->setParent(*this);
+        comp->setOwner(*this);
     }
     
     // Provide sockets, inputs, and outputs with a pointer to its component
@@ -211,7 +215,7 @@ void Component::componentsFinalizeFromProperties() const
 }
 
 // Base class implementation of non-virtual finalizeConnections method.
-void Component::finalizeConnections(Component &root)
+void Component::finalizeConnections(Component& root)
 {
     if (!isObjectUpToDateWithProperties()){
         // if edits occur between construction and connect() this is
@@ -603,34 +607,35 @@ int Component::getNumStateVariables() const
 }
 
 
-const Component& Component::getParent() const 
+const Component& Component::getOwner() const 
 {
-    if (!hasParent()) {
-        std::string msg = "Component '" + getName() + "'::getParent(). " +
-            "Has no parent Component assigned.\n" +
-            "Make sure the component was added to the Model (or its parent).";
+    if (!hasOwner()) {
+        std::string msg = "Component '" + getName() + "'::getOwner(). " +
+            "Has no owner assigned.\n" +
+            "Make sure the component was added to the Model " +
+            "(or another component).";
         throw Exception(msg);
     }
-    return _parent.getRef();
+    return _owner.getRef();
 }
 
-bool Component::hasParent() const
+bool Component::hasOwner() const
 {
-    return !_parent.empty();
+    return !_owner.empty();
 }
 
-void Component::setParent(const Component& parent)
+void Component::setOwner(const Component& owner)
 {
-    if (&parent == this) {
-        std::string msg = "Component '" + getName() + "'::setParent(). " +
-            "Attempted to set itself as its parent.";
+    if (&owner == this) {
+        std::string msg = "Component '" + getName() + "'::setOwner(). " +
+            "Attempted to set itself as its owner.";
         throw Exception(msg);
     }
-    else if (_parent.get() == &parent) {
+    else if (_owner.get() == &owner) {
         return;
     }
 
-    _parent.reset(&parent);
+    _owner.reset(&owner);
 }
 
 std::string Component::getAbsolutePathName() const
@@ -640,8 +645,8 @@ std::string Component::getAbsolutePathName() const
 
     const Component* up = this;
 
-    while (up && up->hasParent()) {
-        up = &up->getParent();
+    while (up && up->hasOwner()) {
+        up = &up->getOwner();
         pathVec.insert(pathVec.begin(), up->getName());
     }
     // The root must have a leading '/' 
@@ -740,7 +745,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if (back > front) // have non-whitespace name
+        if (back >= front) // have non-whitespace name
             prefix = subCompName + "/";
         for (int j = 0; j<nsubs; ++j) {
             names.append(prefix + subnames[j]);
@@ -755,7 +760,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if(back > front) // have non-whitespace name
+        if(back >= front) // have non-whitespace name
             prefix = subCompName+"/";
         for(int j =0; j<nsubs; ++j){
             names.append(prefix+subnames[j]);
@@ -769,7 +774,7 @@ Array<std::string> Component::getStateVariableNames() const
         std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
         std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
         std::string prefix = "";
-        if (back > front) // have non-whitespace name
+        if (back >= front) // have non-whitespace name
             prefix = subCompName + "/";
         for (int j = 0; j<nsubs; ++j) {
             names.append(prefix + subnames[j]);
@@ -1139,31 +1144,31 @@ void Component::markAsPropertySubcomponent(const Component* component)
                        component->getName(), getName());
     }
 
-    compRef->setParent(*this);
+    compRef->setOwner(*this);
 }
 
 // Include another Component as a subcomponent of this one. If already a
 // subcomponent, it is not added to the list again.
 void Component::adoptSubcomponent(Component* subcomponent)
 {
-    OPENSIM_THROW_IF(subcomponent->hasParent(),
+    OPENSIM_THROW_IF(subcomponent->hasOwner(),
         ComponentAlreadyPartOfOwnershipTree,
         subcomponent->getName(), this->getName());
 
     //get the top-level component
     const Component* top = this;
-    while (top->hasParent())
-        top = &top->getParent();
+    while (top->hasOwner())
+        top = &top->getOwner();
 
     // cycle through all components from the top level component
     // down to verify the component is not already in the tree
     for (auto& comp : top->getComponentList<Component>()) {
-        OPENSIM_THROW_IF(subcomponent->hasParent(),
+        OPENSIM_THROW_IF(subcomponent->hasOwner(),
             ComponentAlreadyPartOfOwnershipTree,
             subcomponent->getName(), comp.getName());
     }
 
-    subcomponent->setParent(*this);
+    subcomponent->setOwner(*this);
     _adoptedSubcomponents.push_back(SimTK::ClonePtr<Component>(subcomponent));
 }
 
@@ -1393,13 +1398,13 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
 
 const SimTK::MultibodySystem& Component::getSystem() const
 {
-    if (!hasSystem()){
-        std::string msg = getConcreteClassName()+"::getSystem() ";
-        msg += getName() + " has no reference to a System.\n";
-        msg += "Make sure you added the Component to the Model and ";
-        msg += "called Model::initSystem(). ";
-        throw Exception(msg, __FILE__, __LINE__);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+    return _system.getRef();
+}
+
+SimTK::MultibodySystem& Component::updSystem() const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
     return _system.getRef();
 }
 
@@ -1464,35 +1469,31 @@ void Component::AddedStateVariable::
 }
 
 
-void Component::dumpSubcomponents(int depth) const
-{
-    std::string tabs;
-    for (int t = 0; t < depth; ++t) {
-        tabs += "\t";
-    }
-
-    std::cout << tabs << getConcreteClassName();
-    std::cout << " '" << getName() << "'" << std::endl;
-    for (size_t i = 0; i < _memberSubcomponents.size(); ++i) {
-        _memberSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _propertySubcomponents.size(); ++i) {
-        _propertySubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-    for (size_t i = 0; i < _adoptedSubcomponents.size(); ++i) {
-        _adoptedSubcomponents[int(i)]->dumpSubcomponents(depth + 1);
-    }
-}
-
-void Component::dumpConnections() const {
-    std::cout << "Sockets for " << getConcreteClassName() << " '"
-              << getName() << "':";
-    if (getNumSockets() == 0) std::cout << " none";
+void Component::printSocketInfo() const {
+    std::cout << "Sockets for component " << getName() << " of type ["
+              << getConcreteClassName() << "] along with connectee names:";
+    if (getNumSockets() == 0)
+        std::cout << " none";
     std::cout << std::endl;
+
+    size_t maxlenTypeName{}, maxlenSockName{};
+    for(const auto& sock : _socketsTable) {
+        maxlenTypeName = std::max(maxlenTypeName,
+                                  sock.second->getConnecteeTypeName().length());
+        maxlenSockName = std::max(maxlenSockName,
+                                  sock.second->getName().length());
+    }
+    maxlenTypeName += 4;
+    maxlenSockName += 1;
+    
     for (const auto& it : _socketsTable) {
         const auto& socket = it.second;
-        std::cout << "  " << socket->getConnecteeTypeName() << " '"
-                  << socket->getName() << "': ";
+        std::cout << std::string(maxlenTypeName -
+                                 socket->getConnecteeTypeName().length(), ' ')
+                  << "[" << socket->getConnecteeTypeName() << "]"
+                  << std::string(maxlenSockName -
+                                 socket->getName().length(), ' ')
+                  << socket->getName() << " : ";
         if (socket->getNumConnectees() == 0) {
             std::cout << "no connectees" << std::endl;
         } else {
@@ -1502,16 +1503,36 @@ void Component::dumpConnections() const {
             std::cout << std::endl;
         }
     }
-    
-    std::cout << "Inputs for " << getConcreteClassName() << " '"
-              << getName() << "':";
-    if (getNumInputs() == 0) std::cout << " none";
     std::cout << std::endl;
+}
+
+void Component::printInputInfo() const {
+    std::cout << "Inputs for component " << getName() << " of type ["
+              << getConcreteClassName() << "] along with connectee names:";
+    if (getNumInputs() == 0)
+        std::cout << " none";
+    std::cout << std::endl;
+
+    size_t maxlenTypeName{}, maxlenInputName{};
+    for(const auto& input : _inputsTable) {
+        maxlenTypeName = std::max(maxlenTypeName,
+                                input.second->getConnecteeTypeName().length());
+        maxlenInputName = std::max(maxlenInputName,
+                                input.second->getName().length());
+    }
+    maxlenTypeName += 4;
+    maxlenInputName += 1;
+
     for (const auto& it : _inputsTable) {
         const auto& input = it.second;
-        std::cout << "  " << input->getConnecteeTypeName() << " '"
-                  << input->getName() << "': ";
-        if (input->getNumConnectees() == 0) {
+        std::cout << std::string(maxlenTypeName -
+                                 input->getConnecteeTypeName().length(), ' ')
+                  << "[" << input->getConnecteeTypeName() << "]"
+                  << std::string(maxlenInputName -
+                                 input->getName().length(), ' ')
+                  << input->getName() << " : ";
+        if (input->getNumConnectees() == 0 || 
+            (input->getNumConnectees() == 1 && input->getConnecteeName().empty())) {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
@@ -1522,15 +1543,73 @@ void Component::dumpConnections() const {
             std::cout << std::endl;
         }
     }
+    std::cout << std::endl;
 }
 
+void Component::printSubcomponentInfo() const {
+    printSubcomponentInfo<Component>();
+}
+
+void Component::printOutputInfo(const bool includeDescendants) const {
+    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
+
+    // Do not display header for Components with no outputs.
+    if (getNumOutputs() > 0) {
+        const std::string msg = "Outputs from " + getAbsolutePathName() +
+            " [" + getConcreteClassName() + "]";
+        std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
+
+        const auto& outputs = getOutputs();
+        size_t maxlen{};
+        for(const auto& output : outputs)
+            maxlen = std::max(maxlen, output.second->getTypeName().length());
+        maxlen += 2;
+        
+        for(const auto& output : outputs) {
+            const auto& name = output.second->getTypeName();
+            std::cout << std::string(maxlen - name.length(), ' ');
+            std::cout << "[" << name  << "]  " << output.first << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    if (includeDescendants) {
+        for (const Component& thisComp : getComponentList<Component>()) {
+            // getComponentList() returns all descendants (i.e.,
+            // children, grandchildren, etc.) so set includeDescendants=false
+            // when calling on thisComp.
+            thisComp.printOutputInfo(false);
+        }
+    }
+}
 
 void Component::initComponentTreeTraversal(const Component &root) const {
-    // Going down the tree, node is followed by all its
-    // children in order, last child's successor is the parent's successor.
+    // Going down the tree, this node is followed by all its children.
+    // The last child's successor (next) is the parent's successor.
+
+    const size_t nmsc = _memberSubcomponents.size();
+    const size_t npsc = _propertySubcomponents.size();
+    const size_t nasc = _adoptedSubcomponents.size();
+
+    if (!hasOwner()) {
+        // If this isn't the root component and it has no owner, then
+        // this is an orphan component and we likely failed to call 
+        // finalizeFromProperties() on the root OR this is a clone that
+        // has not been added to the root (in which case would have an owner).
+        if (this != &root) {
+            OPENSIM_THROW(ComponentIsAnOrphan, getName(),
+                getConcreteClassName());
+        }
+        // if the root (have no owner) and have no components
+        else if (!(nmsc + npsc + nasc)) {
+            OPENSIM_THROW(ComponentIsRootWithNoSubcomponents,
+                getName(), getConcreteClassName());
+        }
+    }
+
     const Component* last = nullptr;
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
-        if (i == _memberSubcomponents.size() - 1) {
+    for (unsigned int i = 0; i < nmsc; i++) {
+        if (i == nmsc - 1) {
             _memberSubcomponents[i]->_nextComponent = _nextComponent.get();
             last = _memberSubcomponents[i].get();
         }
@@ -1540,7 +1619,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             last = _memberSubcomponents[i + 1].get();
         }
     }
-    if (size_t npsc = _propertySubcomponents.size()) {
+    if (npsc) {
         if (last)
             last->_nextComponent = _propertySubcomponents[0].get();
 
@@ -1557,7 +1636,7 @@ void Component::initComponentTreeTraversal(const Component &root) const {
             }
         }
     }
-    if (size_t nasc = _adoptedSubcomponents.size()) {
+    if (nasc) {
         if (last)
             last->_nextComponent = _adoptedSubcomponents[0].get();
 
@@ -1573,16 +1652,33 @@ void Component::initComponentTreeTraversal(const Component &root) const {
     }
 
     // recurse to handle children of subcomponents
-    for (unsigned int i = 0; i < _memberSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nmsc; ++i) {
         _memberSubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _propertySubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < npsc; ++i) {
         _propertySubcomponents[i]->initComponentTreeTraversal(root);
     }
-    for (unsigned int i = 0; i < _adoptedSubcomponents.size(); i++) {
+    for (unsigned int i = 0; i < nasc; ++i) {
         _adoptedSubcomponents[i]->initComponentTreeTraversal(root);
     }
 }
 
+
+void Component::clearStateAllocations()
+{
+    _namedModelingOptionInfo.clear();
+    _namedStateVariableInfo.clear();
+    _namedDiscreteVariableInfo.clear();
+    _namedCacheVariableInfo.clear();
+}
+
+void Component::reset()
+{
+    _system.reset();
+    _simTKcomponentIndex.invalidate();
+    clearStateAllocations();
+
+    resetSubcomponentOrder();
+}
 
 } // end of namespace OpenSim

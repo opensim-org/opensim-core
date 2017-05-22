@@ -106,6 +106,16 @@ public:
         return *this;
     }
 
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyObjPtr&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
+    }
+
     bool operator==(const Property_Deprecated& aProperty) const override {
         bool equal = Property_Deprecated::operator==(aProperty);
         if (equal){ 

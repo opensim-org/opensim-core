@@ -25,7 +25,7 @@
 
 // IMPORT AND EXPORT
 // UNIX
-#ifndef WIN32
+#ifndef _WIN32
     #define OSIMCOMMON_API
 
 // WINDOWS

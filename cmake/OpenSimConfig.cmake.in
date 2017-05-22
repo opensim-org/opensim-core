@@ -19,9 +19,11 @@
 #   @CMAKE_PROJECT_NAME@_JAVA_FILES_DIR -- Directory containing the Java source
 #                                          files.
 #                                            
-#
-# Note that these variables also contain the Simbody include directories
-# and libraries that OpenSim was built with.
+# This file will also find Simbody; you do not
+# need to use `find_package(Simbody)` in your own project. If OpenSim's
+# installation does *not* contain Simbody (and BTK), you might need to set
+# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that BTK
+# libraries are available during runtime.
 #
 # Adapted from SimbodyConfig.cmake
 #
@@ -35,29 +37,14 @@ set_and_check(@CMAKE_PROJECT_NAME@_ROOT_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
 # -------
 set_and_check(@CMAKE_PROJECT_NAME@_LIB_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 
-if(@WITH_BTK@)
-    list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@BTK_LIBRARY_DIRS@")
-endif()
-
-if(NOT @OPENSIM_COPY_SIMBODY@)
-    list(APPEND @CMAKE_PROJECT_NAME@_LIB_DIR "@Simbody_LIB_DIR@")
-endif()
-
 # INCLUDE_DIRS
 # ------------
 list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
     "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@"
+    # TODO change to CMAKE_INSTALL_INCLUDEDIR/OpenSim/lepton
     "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Vendors/lepton/include"
     )
 
-if(@OPENSIM_COPY_SIMBODY@)
-    # Simbody headers have been copied to OpenSim.
-    list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
-        "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@/Simbody")
-else()
-    # Refer to Simbody's own headers.
-    list(APPEND @CMAKE_PROJECT_NAME@_INCLUDE_DIRS "@Simbody_INCLUDE_DIR@")
-endif()
 
 # LIBRARIES
 # ---------
@@ -79,7 +66,16 @@ set(@CMAKE_PROJECT_NAME@_JAVA_FILES_DIR
 set(@CMAKE_PROJECT_NAME@_JAR_FILE 
     @PACKAGE_CMAKE_INSTALL_PREFIX@/@OPENSIM_INSTALL_JAVAJARDIR@/@SWIG_JAVA_JAR_NAME@)
 
-find_package(Simbody ${SIMBODY_VERSION_TO_USE}
-    PATHS "@SIMBODY_HOME@" NO_MODULE NO_DEFAULT_PATH)
+# Dependencies
+# ------------
+if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
+    # Find the copy of Simbody within the OpenSim installation.
+    find_package(Simbody @SIMBODY_VERSION_TO_USE@
+        PATHS "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@" NO_MODULE NO_DEFAULT_PATH)
+else()
+    # Find the correct version anywhere on the machine.
+    include(CMakeFindDependencyMacro)
+    find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
+endif()
 
 

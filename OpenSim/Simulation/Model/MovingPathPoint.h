@@ -24,22 +24,13 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
 
 namespace OpenSim {
 
+class Function;
 class Coordinate;
-class Model;
-class GeometryPath;
-class SimbodyEngine;
+class PhysicalFrame;
 
 //=============================================================================
 //=============================================================================
@@ -50,8 +41,8 @@ class SimbodyEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API MovingPathPoint : public PathPoint {
-OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, PathPoint);
+class OSIMSIMULATION_API MovingPathPoint : public AbstractPathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, AbstractPathPoint);
 public:
 //==============================================================================
 // PROPERTIES
@@ -108,7 +99,7 @@ public:
     bool isActive(const SimTK::State& s) const override { return true; }
 
     /** Get the local location of the MovingPathPoint in its Frame */
-    SimTK::Vec3 getLocation(const SimTK::State& s) const;
+    SimTK::Vec3 getLocation(const SimTK::State& s) const override;
     /** Get the local velocity of the MovingPathPoint w.r.t to and 
         expressed in its Frame. To get the velocity of the point w.r.t.
         and expressed in Ground, call getVelocityInGround(). */

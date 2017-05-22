@@ -1,5 +1,5 @@
-%module(directors="1") opensimModel
-%module opensimModel
+%module(directors="1") opensimActuatorsAnalysesTools
+%module opensimActuatorsAnalysesTools
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
@@ -17,6 +17,10 @@
 using namespace OpenSim;
 using namespace SimTK;
 %}
+
+%feature("director") OpenSim::AnalysisWrapper;
+%feature("director") OpenSim::SimtkLogCallback;
+
 
 %include "arrays_java.i";
 

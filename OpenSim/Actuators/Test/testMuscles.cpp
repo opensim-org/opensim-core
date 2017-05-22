@@ -868,6 +868,7 @@ void testThelen2003Muscle()
         myMcl->setActivationTimeConstant(actTimeConstant);
         myMcl->setDeactivationTimeConstant(deactTimeConstant);
         myMcl->setMinimumActivation(minimumActivation);
+        myMcl->setMinControl(minimumActivation);
 
         myMcl->finalizeFromProperties();
 
@@ -900,6 +901,7 @@ void testThelen2003Muscle()
         // Print model and read back in.
         myModel.print(filename);
         Model myModel2(filename);
+        myModel2.finalizeFromProperties();
 
         const Thelen2003Muscle& myMcl2 = dynamic_cast<const Thelen2003Muscle&>(
             myModel2.getMuscles().get("myMuscle") );

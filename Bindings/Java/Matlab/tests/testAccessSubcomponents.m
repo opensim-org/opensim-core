@@ -2,6 +2,7 @@
 import org.opensim.modeling.*
 
 model = Model('arm26.osim');
+model.finalizeFromProperties();
 
 % Individual components
 % =====================

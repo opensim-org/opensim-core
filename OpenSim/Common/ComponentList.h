@@ -143,7 +143,7 @@ public:
     descendants). ComponentFilterMatchAll is used internally. You can
     change the filter using setFilter() method. 
     */
-    ComponentList(const Component& root) : _root(root){
+    ComponentList(const Component& root) : _root(root) {
         setDefaultFilter();
     }
     /// Destructor of ComponentList.
@@ -349,7 +349,7 @@ private:
     // just before giving the node to the user (operator*() and operator->()).
     const Component* _node;
     // Root of subtree of Components that we're iterating over.
-    const Component& _root;
+    const Component* _root = nullptr;
     /** Optional filter to further select Components under _root, defaults to
     Filter by type. */
     const ComponentFilter& _filter;
@@ -361,7 +361,7 @@ private:
     ComponentListIterator(const Component* node,
                           const ComponentFilter& filter) :
         _node(node),
-        _root(*node),
+        _root(node),
         _filter(filter) {
         advanceToNextValidComponent(); // in case node is not a match.
     }

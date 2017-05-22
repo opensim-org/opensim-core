@@ -103,8 +103,9 @@ populateFromMarkerData(const TimeSeriesTable_<SimTK::Vec3>& markerTable,
     const auto& markerNames = markerTable.getColumnLabels();
     _markerNames.clear();
     _weights.clear();
-    _markerNames.assign(markerNames.size(), "");
-    _weights.assign(markerNames.size(), get_default_weight());
+    _markerNames.assign(static_cast<unsigned>(markerNames.size()), "");
+    _weights.assign(static_cast<unsigned>(markerNames.size()),
+                    get_default_weight());
 
     for(unsigned i = 0; i < markerNames.size(); ++i) {
         _markerNames[i] = markerNames[i];

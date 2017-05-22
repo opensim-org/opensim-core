@@ -93,6 +93,40 @@ public:
     }
 };
 
+class ComponentIsAnOrphan : public Exception {
+public:
+    ComponentIsAnOrphan(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " has no owner and is not the root.\n" +
+            "Verify that finalizeFromProperties() has been invoked on the " + 
+            "root Component or that this Component is not a clone, which has " +
+            "not been added to another Component.";
+        addMessage(msg);
+    }
+};
+
+class ComponentIsRootWithNoSubcomponents : public Exception {
+public:
+    ComponentIsRootWithNoSubcomponents(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " is the root but has no " + 
+            "subcomponents listed.\n" +
+            "Verify that finalizeFromProperties() was called on this "
+            "Component to identify its subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentAlreadyPartOfOwnershipTree : public Exception {
 public:
     ComponentAlreadyPartOfOwnershipTree(const std::string& file,
@@ -115,9 +149,9 @@ public:
                          const std::string& func,
                          const Object& obj) :
         Exception(file, line, func, obj) {
-        std::string msg = "This Component has not been added to a System.\n";
-        msg += "You must call initSystem on the top-level Component ";
-        msg += "(i.e., Model) first.";
+        std::string msg = "Component has no underlying System.\n";
+        msg += "You must call initSystem() on the top-level Component ";
+        msg += "(i.e. Model) first.";
         addMessage(msg);
     }
 };
@@ -379,14 +413,19 @@ public:
 
     /** Define a Component's internal data members and structure according to
         its properties. This includes its subcomponents as part of the component
-        ownership tree and identifies its parent (if present) in the tree.
-        finalizeFromProperties propagates to all of the component's
-        subcomponents prior to invoking the virtual extendFinalizeFromProperties()
-        on itself.*/
+        ownership tree and identifies its owner (if present) in the tree.
+        finalizeFromProperties propagates to all of the component's subcomponents
+        prior to invoking the virtual extendFinalizeFromProperties() on itself.
+        Note that if the Component has already been added to a System (result of
+        addToSystem(); e.g., Model::initSystem()) when finalizeFromProperties()
+        is called, then finalizeFromProperties() disassociates the component from
+        that System.*/
     void finalizeFromProperties();
 
-    /** Connect this Component to its aggregate component, which is the root
-        of a tree of components.*/
+    /** Satisfy the Component's connections specified by its Sockets and Inputs.
+        Locate Components and their Outputs to satisfy the connections in an
+        aggregate Component (e.g. Model), which is the root of a tree of
+        Components. */
     void finalizeConnections(Component& root);
 
     /** Disconnect/clear this Component from its aggregate component. Empties 
@@ -548,7 +587,22 @@ public:
         static_assert(std::is_base_of<Component, T>::value,
                 "Template argument must be Component or a derived class.");
         initComponentTreeTraversal(*this);
+        clearObjectIsUpToDateWithProperties();
         return ComponentList<T>(*this);
+    }
+
+    /**
+     * Uses getComponentList<T>() to count the number of underlying
+     * subcomponents of the specified type.
+     *
+     * @tparam T A subclass of Component (e.g., Body, Muscle).
+     */
+    template <typename T = Component>
+    unsigned countNumComponents() const {
+        unsigned count = 0u;
+        for (const auto& comp : getComponentList<T>())
+            ++count;
+        return count;
     }
 
     /** Class that permits iterating over components/subcomponents (but does
@@ -656,7 +710,12 @@ public:
         return getComponent<Component>(pathname);
     }
 
-    /** Get a writable reference to a subcomponent.
+    /** Get a writable reference to a subcomponent. Use this method
+    * to edit the properties and connections of the subcomponent.
+    * Note: the method will mark this Component as out-of-date with
+    * its properties and will require finalizeFromProperties() to be
+    * invoked directly or indirectly (by finalizeConnections() or 
+    * Model::initSystem())
     * @param name       the pathname of the Component of interest
     * @return Component the component of interest
     * @throws ComponentNotFoundOnSpecifiedPath if no component exists
@@ -664,6 +723,7 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
 
@@ -1434,14 +1494,61 @@ public:
     // End of Model Component State Accessors.
     //@} 
 
-    /** @name Dump debugging information to the console */
+    /** @name Print information to the console */
     /// @{
-    /** Debugging method to list all subcomponents by name and recurse
-        into these components to list their subcomponents, and so on. */
-    void dumpSubcomponents(int depth=0) const;
-    /** List all the Sockets and Inputs and whether or not they are
-     * connected. */
-    void dumpConnections() const;
+    /** List all subcomponents by name and recurse into these components to 
+    list their subcomponents, and so on.                                      */
+    void printSubcomponentInfo() const;
+    
+    /** List all the Sockets of this component and whether or not they are 
+    connected. Also list the connectee names for sockets that are connected. */
+    void printSocketInfo() const;
+
+    /** List all the inputs of this component and whether or not they are 
+    connected. Also list the (desired) connectee names for the inputs.       */
+    void printInputInfo() const;
+
+    template<typename C>
+    void printSubcomponentInfo() const {
+        std::string className = SimTK::NiceTypeName<C>::namestr();
+        const std::size_t colonPos = className.rfind(":");
+        if (colonPos != std::string::npos)
+            className = className.substr(colonPos+1,
+                                         className.length()-colonPos);
+
+        std::cout << "Class name and absolute path name for descendants of '"
+                  << getName() << "' that are of type " << className << ":\n"
+                  << std::endl;
+
+        ComponentList<const C> compList = getComponentList<C>();
+
+        // Step through compList once to find the longest concrete class name.
+        unsigned maxlen = 0;
+        for (const C& thisComp : compList) {
+            auto len = thisComp.getConcreteClassName().length();
+            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+        }
+        maxlen += 4; //padding
+
+        std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
+                  << "[" + getConcreteClassName() + "]"
+                  << "  " << getAbsolutePathName() << std::endl;
+
+        // Step through compList again to print.
+        for (const C& thisComp : compList) {
+            const std::string thisClass = thisComp.getConcreteClassName();
+            std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
+                      << thisClass << "]  ";
+            auto path = ComponentPath(thisComp.getAbsolutePathName());
+            std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
+                      << "/" << path.getComponentName() << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    /** Print outputs of this component and optionally, those of all 
+    subcomponents.                                                            */
+    void printOutputInfo(const bool includeDescendants = true) const;
     /// @}
 
 protected:
@@ -1461,7 +1568,7 @@ protected:
     MemberSubcomponentIndex constructSubcomponent(const std::string& name) {
         C* component = new C();
         component->setName(name);
-        component->setParent(*this);
+        component->setOwner(*this);
         _memberSubcomponents.push_back(SimTK::ClonePtr<Component>(component));
         return MemberSubcomponentIndex(_memberSubcomponents.size()-1);
     }
@@ -1561,20 +1668,22 @@ protected:
     @endcode   */
     virtual void extendAddComponent(Component* subcomponent) {};
 
-    /** Perform any time invariant calculation, data structure initializations or
-    other component configuration based on its properties necessary to form a  
-    functioning, yet not connected component. It also marks the Component
-    as up-to-date with its properties when complete. Do not perform any
-    configuration that depends on the SimTK::MultibodySystem; it is not
-    available at this point.
+    /** Perform any time-invariant calculations, data structure initializations,
+    or other configuration based on the component's properties to form a
+    functioning (but not yet connected) component. For example, each property
+    should be checked to ensure that its value is within an acceptable range.
+    When this method returns, the component will be marked as being up-to-date
+    with its properties. Do not perform any configuration that depends on the
+    SimTK::MultibodySystem; it is not available at this point.
 
     If you override this method, be sure to invoke the base class method first,
-        using code like this :
+    using code like this:
         @code
         void MyComponent::extendFinalizeFromProperties() {
             Super::extendFinalizeFromProperties(); // invoke parent class method
             // ... your code goes here
-            // ... initialize any internal data structures 
+            // ... catch invalid property values
+            // ... initialize any internal data structures
         }
         @endcode   */
     virtual void extendFinalizeFromProperties() {};
@@ -1603,12 +1712,15 @@ protected:
     @endcode   */
     virtual void extendConnect(Component& root) {};
 
-    /** Build the tree of Components from this component through its descendants. 
-    This method is invoked whenever a ComponentList<C> is requested. Note, all
-    components must been added to the model (or its subcomponents), otherwise it
-    will not be included in the tree and will not be found for iteration or for
-    connection. The implementation populates _nextComponent ReferencePtr with a
-    pointer to the next Component in tree pre-order traversal.
+    /** Build the tree of Components from this component through its descendants.
+    This method is invoked whenever a ComponentList<C> is requested. Note that
+    all components must have been added to the model (or its subcomponents),
+    otherwise it will not be included in the tree and will not be found for
+    iteration or for connection. The implementation populates the _nextComponent
+    ReferencePtr with a pointer to the next Component in tree pre-order traversal.
+    
+    @throws ComponentIsRootWithNoSubcomponents if the Component is the root and 
+            yet has no subcomponents.
     */
     void initComponentTreeTraversal(const Component &root) const;
 
@@ -1960,8 +2072,7 @@ protected:
      * Get writable reference to the MultibodySystem that this component is
      * connected to.
      */
-    SimTK::MultibodySystem& updSystem() const
-        { return *_system; } 
+    SimTK::MultibodySystem& updSystem() const;
 
     /** Get the index of a Component's continuous state variable in the Subsystem for
         allocations. This method is intended for derived Components that may need direct
@@ -1992,6 +2103,8 @@ protected:
     getCacheVariableIndex(const std::string& name) const;
 
     // End of System Creation and Access Methods.
+    //@} 
+
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunsupported-friend"
@@ -2105,30 +2218,6 @@ protected:
     }
 #endif
 
-public:
-#ifndef SWIG // StateVariable is protected.
-    /**
-     * Find a StateVariable of this Component (includes its subcomponents).
-     * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called)
-     */
-    const StateVariable* findStateVariable(const std::string& name) const;
-#endif
-
-    /** Access the parent of this Component.
-        An exception is thrown if the Component has no parent.
-        @see hasParent() */
-    const Component& getParent() const;
-
-    /** Check if this Component has a parent assigned or not.
-        A component may not have a parent assigned if it:
-        1) is the root component, or 2) has not been added to its parent. */
-    bool hasParent() const;
-
-protected:
-    /** %Set this Component's reference to its parent Component */
-    void setParent(const Component& parent);
-
     template<class C>
     const C* traversePathToComponent(const std::string& path) const
     {
@@ -2145,8 +2234,8 @@ protected:
             currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
             ComponentPath currentPathName(current->getName());
 
-            if (currentSubpath == upPath && current->hasParent())
-                current = &current->getParent();
+            if (currentSubpath == upPath && current->hasOwner())
+                current = &current->getOwner();
             // if currentPathName matches currentSubpath traversing the path
             else if (currentPathName == currentSubpath) {
                 ind++;
@@ -2154,9 +2243,13 @@ protected:
             }
             // if currentSubpath is empty we are at root or have a nameless 
             // comp
-            // if currentSubpath is '.' we are in the right parent, and loop
+            // if currentSubpath is '.' we are in the right owner, and loop
             // again so that currentSubpath is the name of the component we want
             else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
+                if (current->getNumImmediateSubcomponents() == 0) {
+                    current = nullptr;
+                    continue;
+                }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
                 ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
@@ -2193,7 +2286,35 @@ protected:
         return nullptr;
     }
 
-    //@} 
+public:
+#ifndef SWIG // StateVariable is protected.
+    /**
+     * Find a StateVariable of this Component (includes its subcomponents).
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    const StateVariable* findStateVariable(const std::string& name) const;
+#endif
+
+    /// @name Access to the owning component (advanced).
+    /// @{
+    /** Access the owner of this Component.
+     * An exception is thrown if the %Component has no owner; in this case, the
+     * component is the root component, or is orphaned.
+     * @see hasOwner() */
+    const Component& getOwner() const;
+
+    /** (For advanced users) Check if this %Component has an owner.
+     * A component may not have an owner if it:
+     * (1) is the root component, or
+     * (2) has not been added to another component */
+    bool hasOwner() const;
+
+protected:
+    /** %Set this %Component's reference to its owning %Component */
+    void setOwner(const Component& owner);
+
+    /// @}
 
     /** @name Internal methods for constructing Sockets, Outputs, Inputs
      * To declare Socket%s, Output%s, and Input%s for your component,
@@ -2447,20 +2568,12 @@ private:
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
         {   return updSystem().updDefaultSubsystem(); }
 
-    void clearStateAllocations() {
-        _namedModelingOptionInfo.clear();
-        _namedStateVariableInfo.clear();
-        _namedDiscreteVariableInfo.clear();
-        _namedCacheVariableInfo.clear();    
-    }
+    // Clear all modeling options, continuous and discrete state variables,
+    // and cache variable allocated by this Component
+    void clearStateAllocations();
 
     // Reset by clearing underlying system indices.
-    void reset() {
-        _simTKcomponentIndex.invalidate();
-        clearStateAllocations();
-
-        resetSubcomponentOrder();
-    }
+    void reset();
 
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
@@ -2566,9 +2679,10 @@ protected:
             override;
 
 private:
-    // Reference to the parent Component of this Component. It is not the previous
-    // in the tree, but is the Component one level up that owns this one.
-    SimTK::ReferencePtr<const Component> _parent;
+    // Reference to the owning Component of this Component. It is not the
+    // previous in the tree, but is the Component one level up that owns this
+    // one.
+    SimTK::ReferencePtr<const Component> _owner;
 
     // Reference pointer to the successor of the current Component in Pre-order traversal
     mutable SimTK::ReferencePtr<const Component> _nextComponent;
@@ -2595,7 +2709,8 @@ private:
     SimTK::ResetOnCopy<SimTK::MeasureIndex> _simTKcomponentIndex;
 
     // list of subcomponents that are contained in this Component's properties
-    SimTK::Array_<SimTK::ReferencePtr<Component> >  _propertySubcomponents;
+    SimTK::ResetOnCopy<SimTK::Array_<SimTK::ReferencePtr<Component>>>
+        _propertySubcomponents;
     // Keep fixed list of data member Components upon construction
     SimTK::Array_<SimTK::ClonePtr<Component> > _memberSubcomponents;
     // Hold onto adopted components
@@ -2769,7 +2884,7 @@ ComponentListIterator<T>& ComponentListIterator<T>::operator++() {
     }
     // If processing a subtree under _root we stop when our successor is the same
     // as the successor of _root as this indicates we're leaving the _root's subtree.
-    else if (_node->_nextComponent.get() == _root._nextComponent.get())
+    else if (_node->_nextComponent.get() == _root->_nextComponent.get())
         _node = nullptr;
     else // move on to the next component we computed earlier for the full tree
         _node = _node->_nextComponent.get();
@@ -2784,7 +2899,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     // Similar logic to operator++ but applies _filter->isMatch()
     while (_node != nullptr && (dynamic_cast<const T*>(_node) == nullptr || 
                                 !_filter.isMatch(*_node) || 
-                                (_node == &_root))){
+                                (_node == _root))){
         if (_node->_memberSubcomponents.size() > 0) {
             _node = _node->_memberSubcomponents[0].get();
         }
@@ -2795,7 +2910,7 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
             _node = _node->_adoptedSubcomponents[0].get();
         }
         else {
-            if (_node->_nextComponent.get() == _root._nextComponent.get()){ // end of subtree under _root
+            if (_node->_nextComponent.get() == _root->_nextComponent.get()){ // end of subtree under _root
                 _node = nullptr;
                 continue;
             }
@@ -2856,9 +2971,9 @@ void Input<T>::connect(const AbstractOutput& output,
     for (const auto& chan : outT->getChannels()) {
     
         // Record the number of pre-existing satisfied connections...
-        const int numPreexistingSatisfiedConnections(_connectees.size());
+        const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
-        const int idxThisConnectee = numPreexistingSatisfiedConnections;
+        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
 
@@ -2876,9 +2991,9 @@ void Input<T>::connect(const AbstractOutput& output,
     
         // set the connectee name so that the connection can be
         // serialized
-        int numDesiredConnections = getNumConnectees();
+        const unsigned numDesiredConnections = getNumConnectees();
         if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, idxThisConnectee);
+            setConnecteeName(pathStr, unsigned(idxThisConnectee));
         else
             appendConnecteeName(pathStr);
 
@@ -2906,9 +3021,9 @@ void Input<T>::connect(const AbstractChannel& channel,
     }
     
     // Record the number of pre-existing satisfied connections...
-    const int numPreexistingSatisfiedConnections(_connectees.size());
+    const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
-    const int idxThisConnectee = numPreexistingSatisfiedConnections;
+    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
     
     // Update the connectee name as
@@ -2924,9 +3039,11 @@ void Input<T>::connect(const AbstractChannel& channel,
                                         alias);
     
     // Set the connectee name so the connection can be serialized.
-    int numDesiredConnections = getNumConnectees();
-    if (idxThisConnectee < numDesiredConnections) // satisfied <= desired
-        setConnecteeName(pathStr, idxThisConnectee);
+    const unsigned numDesiredConnections = getNumConnectees();
+
+    if (idxThisConnectee < numDesiredConnections)
+        // satisifed <= desired
+        setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
     

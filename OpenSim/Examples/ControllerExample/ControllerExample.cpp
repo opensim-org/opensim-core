@@ -180,18 +180,20 @@ public:
         // If desired force is in direction of one muscle's pull
         // direction, then set that muscle's control based on desired
         // force.  Otherwise, set the muscle's control to zero.
-        double leftControl = 0.0, rightControl = 0.0;
+
+        double leftControl = leftMuscle->getMinControl(),
+            rightControl = rightMuscle->getMinControl();
         if( desFrc < 0 ) {
             leftControl = std::abs( desFrc ) / FoptL;
-            rightControl = 0.0;
         }
         else if( desFrc > 0 ) {
-            leftControl = 0.0;
             rightControl = std::abs( desFrc ) / FoptR;
         }
         // Don't allow any control value to be greater than one.
-        if( leftControl > 1.0 ) leftControl = 1.0;
-        if( rightControl > 1.0 ) rightControl = 1.0;
+        if( leftControl > leftMuscle->getMaxControl())
+            leftControl = leftMuscle->getMaxControl();
+        if( rightControl > rightMuscle->getMaxControl())
+            rightControl = rightMuscle->getMaxControl();
 
         // Thelen muscle has only one control
         Vector muscleControl(1, leftControl);

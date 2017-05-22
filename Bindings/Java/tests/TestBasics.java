@@ -3,6 +3,7 @@ import org.opensim.modeling.*;
 class TestBasics {
     public static void testBasics() {
         Model m = new Model();
+        m.finalizeFromProperties();
         m.print("empty_model.osim");
         Frame gnd = m.getGround();
         FrameList frames = m.getFrameList();
@@ -87,10 +88,15 @@ class TestBasics {
             assert count == 1;
         }
     }
+
+    public static void testToyReflexController() {
+        ToyReflexController controller = new ToyReflexController();
+    }
         
   public static void main(String[] args) {
       testBasics();
       testMuscleList();
+      testToyReflexController();
       
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);

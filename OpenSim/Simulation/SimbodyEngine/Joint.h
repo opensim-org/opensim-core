@@ -102,12 +102,6 @@ public:
         "List containing the generalized coordinates (q's) that parameterize "
         "this joint.");
 
-    OpenSim_DECLARE_PROPERTY(reverse, bool,
-        "Advanced option. Specify the direction of the joint in the multibody tree: "
-        "parent->child (forward, reverse is false) or child->parent (reverse is true) "
-        "NOTE: the Joint transform and its coordinates maintain a parent->child "
-        "sense, even if the Joint is reversed.");
-
     OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
         "Physical frames owned by the Joint that are used to satisfy the Joint's "
         "parent and child frame connections. For examples, PhysicalOffsetFrames "
@@ -123,89 +117,61 @@ public:
     OpenSim_DECLARE_SOCKET(child_frame, PhysicalFrame,
         "The child frame for the joint.");
 
-//=============================================================================
+//==============================================================================
 // OUTPUTS
-//=============================================================================
+//==============================================================================
     OpenSim_DECLARE_OUTPUT(power, double, calcPower, SimTK::Stage::Acceleration);
     OpenSim_DECLARE_OUTPUT(reaction_on_parent, SimTK::SpatialVec,
         calcReactionOnParentExpressedInGround, SimTK::Stage::Acceleration);
     OpenSim_DECLARE_OUTPUT(reaction_on_child, SimTK::SpatialVec,
         calcReactionOnChildExpressedInGround, SimTK::Stage::Acceleration);
 
-//=============================================================================
+//==============================================================================
 // METHODS
-//=============================================================================
-    /** Default Constructor. Create an unnamed Joint with parent and child
-        frame sockets that are unsatisfied. */
+//==============================================================================
+    /** Default constructor. Create an unnamed Joint with parent and child frame
+        sockets that are unsatisfied. */
     Joint();
 
-    /** Convenience Constructor */
-    /** Create a Joint by specifying the parent and child frames.
-        Also an advanced option to reverse the direction in the multibody tree,
-        that is child to parent, but the coordinates remain as if defined parent
-        to child. The model determines the multibody tree and can reverse the
-        joint when necessary.
+    /** Convenience constructor. Create a Joint by specifying the parent and
+        child frames.
 
-        @param[in] name     the name associated with this joint (should be
-                            unique from other joints in the same model)
-        @param[in] parent   the parent PhysicalFrame that joint connects to
-        @param[in] child    the child PhysicalFrame that joint connects to
-        @param[in] reverse  Advanced optional flag (bool) specifying the 
-                            direction of the Joint in the multibody tree. 
-                            Default is false (that is, parent to child).
-        */
-    Joint( const std::string& name,
-           const PhysicalFrame& parent,
-           const PhysicalFrame& child,
-           bool reverse = false);
-
-    /** Backwards compatible Convenience Constructor 
-    Construct a Joint where the parent and child are specified as well as the
-    location and orientation of parent and child joint frames in their
-    respective physical frames. Also an advanced option
-    to specify the tree structure to be constructed in the reverse direction,
-    that is child to parent, but the coordinates remain as if defined parent
-    to child. This can be useful for defining models from the ground up, yet
-    maintaining the convention of the knee, for example, of the relative
-    motion of the tibia (child) w.r.t. the femur (parent).
-
-    @param[in] name     the name associated with this joint (should be
-                        unique from other joints in the same model)
-    @param[in] parent   the parent PhysicalFrame that joint connects to
-    @param[in] locationInParent    Vec3 of the location of the joint in the
-                                   parent frame.
-    @param[in] orientationInParent Vec3 of the XYZ body-fixed Euler angles
-                                   of the joint frame orientation in the
-                                   parent frame.
-    @param[in] child    the child PhysicalFrame that joint connects to
-    @param[in] locationInChild     Vec3 of the location of the joint in the
-                                   child physical frame.
-    @param[in] orientationInChild  Vec3 of the XYZ body-fixed Euler angles
-                                   of the joint frame orientation in the
-                                   child physical frame.
-    @param[in] reverse  Advanced optional flag (bool) specifying the
-                        direction of the Joint in the multibody tree.
-                        Default is false (that is, forward).
+        @param[in] name    the name associated with this joint (should be unique
+                           from other joints in the same model)
+        @param[in] parent  the parent PhysicalFrame to which this joint connects
+        @param[in] child   the child PhysicalFrame to which this joint connects
     */
-    Joint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        bool reverse);
+    Joint(const std::string&    name,
+          const PhysicalFrame&  parent,
+          const PhysicalFrame&  child);
 
-    /** Same as above, without the option to reverse the joint. */
-    Joint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild) :
-            Joint(name, parent, locationInParent, orientationInParent,
-                        child, locationInChild, orientationInChild, false) {}
+    /** Backwards-compatible convenience constructor. Construct a Joint where
+        the parent and child frames are specified as well as the location and
+        orientation of the parent and child frames in their respective physical
+        frames.
+
+        @param[in] name    the name associated with this joint (should be unique
+                           from other joints in the same model)
+        @param[in] parent  the parent PhysicalFrame to which this joint connects
+        @param[in] locationInParent     Vec3 of the location of the joint in the
+                                        parent frame.
+        @param[in] orientationInParent  Vec3 of the XYZ body-fixed Euler angles
+                                        of the joint frame orientation in the
+                                        parent frame.
+        @param[in] child   the child PhysicalFrame to which this joint connects
+        @param[in] locationInChild      Vec3 of the location of the joint in the
+                                        child frame.
+        @param[in] orientationInChild   Vec3 of the XYZ body-fixed Euler angles
+                                        of the joint frame orientation in the
+                                        child frame.
+    */
+    Joint(const std::string&    name,
+          const PhysicalFrame&  parent,
+          const SimTK::Vec3&    locationInParent,
+          const SimTK::Vec3&    orientationInParent,
+          const PhysicalFrame&  child,
+          const SimTK::Vec3&    locationInChild,
+          const SimTK::Vec3&    orientationInChild);
 
     virtual ~Joint();
 
@@ -237,9 +203,7 @@ public:
         derived class. */
     Coordinate& updCoordinate();
 
-    bool getReverse() const { return get_reverse(); }
-
-    //Model building
+    // Model building
     int numCoordinates() const { return getProperty_coordinates().size(); }
 
     // Utility
@@ -408,7 +372,7 @@ protected:
         // if the joint is reversed then flip the underlying tree representation
         // of inboard and outboard bodies, although the joint direction will be
         // preserved, the inboard must exist first.
-        if (get_reverse()){
+        if (isReversed){
             inb = getChildFrame().getMobilizedBody();
             SimTK::Transform swap = inbX;
             inbX = outbX;
@@ -474,7 +438,7 @@ protected:
                           const PhysicalFrame* physicalFrame = nullptr) const {
         // CREATE MOBILIZED BODY
         SimTK::MobilizedBody::Direction dir =
-            SimTK::MobilizedBody::Direction(get_reverse());
+            SimTK::MobilizedBody::Direction(isReversed);
 
         T simtkBody(inboard, inboardTransform, outboard, outboardTransform, dir);
 
@@ -529,10 +493,17 @@ private:
         _slaveBodyForChild = slaveForChild;
     }
 
-private:
-    //=========================================================================
+    //==========================================================================
     // DATA
-    //=========================================================================
+    //==========================================================================
+protected:
+    // Specifies the direction of the Joint in the multibody tree: parent->child
+    // (isReversed is false; default) or child->parent (isReversed is true). The
+    // Joint's transform and coordinates maintain a parent->child sense even if
+    // the joint is reversed.
+    bool isReversed = false;
+
+private:
     SimTK::ReferencePtr<Body> _slaveBodyForParent;
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
@@ -540,10 +511,10 @@ private:
 
     friend class JointSet;
 
-//=============================================================================
+//==============================================================================
 };  // END of class Joint
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 // Specializations
 template <>
