@@ -67,7 +67,7 @@ void compareHeaders(std::ifstream& filenameA,
     std::string line{};
     while(std::getline(filenameA, line)) {
         // Get rid of the extra \r if parsing a file with CRLF line endings.
-        if (line.size() && line[line.size() - 1] == '\r')
+        if (!line.empty() && line.back() == '\r') 
             line.pop_back();
 
         if(line.find("endheader") != std::string::npos)
@@ -90,7 +90,7 @@ void compareHeaders(std::ifstream& filenameA,
     }
     while(std::getline(filenameB, line)) {
         // Get rid of the extra \r if parsing a file with CRLF line endings.
-        if (line.size() && line[line.size() - 1] == '\r')
+        if (!line.empty() && line.back() == '\r') 
             line.pop_back();
 
         if(line.find("endheader") != std::string::npos)
