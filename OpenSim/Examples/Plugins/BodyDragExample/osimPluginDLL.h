@@ -23,21 +23,20 @@
  * -------------------------------------------------------------------------- */
 
 // UNIX PLATFORM
-#ifndef WIN32
-
-#define OSIMPLUGIN_API
+#ifndef _WIN32
+    #define OSIMPLUGIN_API
 
 // WINDOWS PLATFORM
 #else
 
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
-#include <windows.h>
-#ifdef OSIMPLUGIN_EXPORTS
-#define OSIMPLUGIN_API __declspec(dllexport)
-#else
-#define OSIMPLUGIN_API __declspec(dllimport)
-#endif
+    #define WIN32_LEAN_AND_MEAN
+    #define NOMINMAX
+    #include <windows.h>
+    #ifdef OSIMPLUGIN_EXPORTS
+        #define OSIMPLUGIN_API __declspec(dllexport)
+    #else
+        #define OSIMPLUGIN_API __declspec(dllimport)
+    #endif
 
 #endif // PLATFORM
 

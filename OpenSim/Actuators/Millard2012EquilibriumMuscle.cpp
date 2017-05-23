@@ -1564,7 +1564,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
 }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED  XXXXXXXXXXXXXXXXXXXXXXXX
+//                             START OF DEPRECATED
 //==============================================================================
 double Millard2012EquilibriumMuscle::
 calcActiveFiberForceAlongTendon(double activation,
@@ -1776,5 +1776,5 @@ calcInextensibleTendonActiveFiberForce(SimTK::State& s,
 }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED  XXXXXXXXXXXXXXXXXXXXXXXXX
+//                              END OF DEPRECATED
 //==============================================================================
