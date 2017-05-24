@@ -39,8 +39,6 @@ using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
-static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray 
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
