@@ -37,6 +37,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
+static const Vec3 DefaultMuscleColor(.8, .1, .1); // Red for backward compatibility
 //static int counter=0;
 //=============================================================================
 // CONSTRUCTOR
@@ -143,6 +144,7 @@ void Muscle::constructProperties()
     // By default the min and max controls on muscle are 0.0 and 1.0
     setMinControl(0.0);
     setMaxControl(1.0);
+    upd_GeometryPath().setDefaultColor(DefaultMuscleColor);
 }
 
 
