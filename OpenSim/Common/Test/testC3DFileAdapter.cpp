@@ -61,7 +61,13 @@ void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
 
 void test(const std::string filename) {
     using namespace OpenSim;
+    
+    std::clock_t startTime = std::clock();
     auto tables = C3DFileAdapter::read(filename);
+
+    std::cout << "\nC3DFileAdapter '" << filename << "' read time = " 
+        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC 
+        << "ms\n" << std::endl;
 
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
