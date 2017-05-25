@@ -107,7 +107,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         double time_step{1.0 / acquisition->GetPointFrequency()};
-        for(int f = 0; f < marker_pts->GetFrontItem()->GetFrameNumber(); ++f) {
+        for(int f = 0; f < marker_nrow; ++f) {
             SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
             int m{0};
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
@@ -208,14 +208,14 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             units.upd().push_back(SimTK::Value<std::string>(position_unit));
         }
 
-        const size_t nf = fp_force_pts->GetFrontItem()->GetFrameNumber();
+        const int nf = fp_force_pts->GetFrontItem()->GetFrameNumber();
         
         std::vector<double> force_times(nf);
         SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, labels.size());
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
 
-        for(int f = 0; f <  static_cast<int>(nf);  ++f) {
+        for(int f = 0; f < nf;  ++f) {
             SimTK::RowVector_<SimTK::Vec3> 
                 row{fp_force_pts->GetItemNumber() * 3};
             int col{0};
