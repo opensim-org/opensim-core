@@ -144,7 +144,6 @@ void Muscle::constructProperties()
     // By default the min and max controls on muscle are 0.0 and 1.0
     setMinControl(0.0);
     setMaxControl(1.0);
-    upd_GeometryPath().setDefaultColor(DefaultMuscleColor);
 }
 
 
@@ -708,3 +707,8 @@ void Muscle::updateGeometry(const SimTK::State& s)
       return asin(value);
 }
 */
+void Muscle::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+    upd_GeometryPath().setDefaultColor(DefaultMuscleColor);
+}
