@@ -141,6 +141,29 @@ public:
     TimeSeriesTable_& operator=(const TimeSeriesTable_&) = default;
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
     ~TimeSeriesTable_()                                  = default;
+
+    /** Convenience Constructor to efficiently populate a time series table
+    from available data. This is primarily useful for constructing with large
+    data read in from file without having to reallocate and copy memory.*/
+    TimeSeriesTable_(const std::vector<double>& indVec,
+        const SimTK::Matrix_<ETY>& depData,
+        const std::vector<std::string>& labels) : 
+            DataTable_<double, ETY>(indVec, depData, labels) {
+        try {
+            // Perform the validation of the data a TimeSeriesTable
+            validateDependentsMetaData();
+            for (size_t i = 0; i < indVec.size(); ++i) {
+                validateRow(i, indVec[i], depData.row(i));
+            }
+        }
+        catch (std::exception& x) {
+            // wipe out the data loaded if any
+            _indData.clear();
+            _depData.clear();
+            removeDependentsMetaDataForKey("labels");
+        }
+    }
+
 #ifndef SWIG
     using DataTable_<double, ETY>::DataTable_;
     using DataTable_<double, ETY>::operator=;
