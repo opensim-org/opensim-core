@@ -153,7 +153,7 @@ public:
             // Perform the validation of the data of this TimeSeriesTable
             this->validateDependentsMetaData();
             for (size_t i = 0; i < indVec.size(); ++i) {
-                this->validateRow(i, indVec[i], depData.row(i));
+                this->validateRow(i, indVec[i], depData.row(int(i)));
             }
         }
         catch (std::exception& x) {
