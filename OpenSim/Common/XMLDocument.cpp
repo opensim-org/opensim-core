@@ -62,7 +62,8 @@ using namespace std;
 // 30513 for removing internal (silent) clamping of Muscle controls (excitations)
 // 30514 for removing "reverse" property from Joint
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
-const int XMLDocument::LatestVersion = 30515;
+// 30516 for GeometryPath default_color -> Appearance
+const int XMLDocument::LatestVersion = 30516;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
