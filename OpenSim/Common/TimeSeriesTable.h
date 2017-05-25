@@ -142,7 +142,7 @@ public:
     TimeSeriesTable_& operator=(TimeSeriesTable_&&)      = default;
     ~TimeSeriesTable_()                                  = default;
 
-    /** Convenience Constructor to efficiently populate a time series table
+    /** Convenience constructor to efficiently populate a time series table
     from available data. This is primarily useful for constructing with large
     data read in from file without having to reallocate and copy memory.*/
     TimeSeriesTable_(const std::vector<double>& indVec,
@@ -150,7 +150,7 @@ public:
         const std::vector<std::string>& labels) : 
             DataTable_<double, ETY>(indVec, depData, labels) {
         try {
-            // Perform the validation of the data a TimeSeriesTable
+            // Perform the validation of the data of this TimeSeriesTable
             this->validateDependentsMetaData();
             for (size_t i = 0; i < indVec.size(); ++i) {
                 this->validateRow(i, indVec[i], depData.row(i));
