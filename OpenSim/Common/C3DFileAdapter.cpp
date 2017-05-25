@@ -107,9 +107,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         double time_step{1.0 / acquisition->GetPointFrequency()};
-        for(int f = 0; 
-            f < marker_pts->GetFrontItem()->GetFrameNumber();
-            ++f) {
+        for(int f = 0; f < marker_pts->GetFrontItem()->GetFrameNumber(); ++f) {
             SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
             int m{0};
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
@@ -120,12 +118,12 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             }
 
             marker_matrix.updRow(f) = row;
-            marker_times[f] = 0 + f * time_step; // pt->GetValues();
+            marker_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
         }
 
         // Create the data
         auto& marker_table = *new 
-            TimeSeriesTableVec3 (marker_times, marker_matrix, marker_labels);
+            TimeSeriesTableVec3(marker_times, marker_matrix, marker_labels);
 
         marker_table.
             updTableMetaData().
@@ -216,8 +214,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, labels.size());
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
-        for(int f = 0; f < force_times.size();  ++f) {
-            SimTK::RowVector_<SimTK::Vec3>
+
+        for(int f = 0; f <  static_cast<int>(nf);  ++f) {
+            SimTK::RowVector_<SimTK::Vec3> 
                 row{fp_force_pts->GetItemNumber() * 3};
             int col{0};
             for(auto fit = fp_force_pts->Begin(),
@@ -241,7 +240,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 ++col;
             }
             force_matrix.updRow(f) = row;
-            force_times[f] = 0 + f * time_step;
+            force_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
         }
 
         auto&  force_table = 
