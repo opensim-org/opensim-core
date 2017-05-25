@@ -661,7 +661,8 @@ public:
                 // No "labels". So no operation.
             }
             _depData.resize(1, depRow.size());
-        } else
+        }
+        else 
             _depData.resizeKeep(_depData.nrow() + 1, _depData.ncol());
             
         _depData.updRow(_depData.nrow() - 1) = depRow;
@@ -1158,6 +1159,23 @@ public:
     }
 
 protected:
+    /** Convenience Constructor to efficiently populate a data table from
+    known data. This is primarily useful for reading in large data tables
+    without having to reallocate and copy memory. NOTE derived tables
+    must validate the table according to the needs of the concrete type.*/
+    DataTable_(const std::vector<ETX>& indVec,
+        const SimTK::Matrix_<ETY>& depData,
+        const std::vector<std::string>& labels) {
+        OPENSIM_THROW_IF(indVec.size() != depData.nrow(), InvalidArgument,
+            "Length of independent column does not match number of rows of dependent data.");
+        OPENSIM_THROW_IF(labels.size() != depData.ncol(), InvalidArgument,
+            "Number of labels does not match number of columns of dependent data.");
+
+        setColumnLabels(labels);
+        _indData = indVec;
+        _depData = depData;
+    }
+
     // Implement toString.
     std::string toString_impl(std::vector<int> rows         = {},
                               std::vector<int> cols         = {},
@@ -1452,11 +1470,9 @@ protected:
 
         for(const std::string& key : _dependentsMetaData.getKeys()) {
             OPENSIM_THROW_IF(numCols != 
-                             _dependentsMetaData.
-                             getValueArrayForKey(key).size(),
-                             IncorrectMetaDataLength, key, numCols,
-                             _dependentsMetaData.
-                             getValueArrayForKey(key).size());
+                        _dependentsMetaData.getValueArrayForKey(key).size(),
+                        IncorrectMetaDataLength, key, numCols,
+                        _dependentsMetaData.getValueArrayForKey(key).size());
         }
     }
 
