@@ -151,16 +151,17 @@ public:
             DataTable_<double, ETY>(indVec, depData, labels) {
         try {
             // Perform the validation of the data a TimeSeriesTable
-            validateDependentsMetaData();
+            this->validateDependentsMetaData();
             for (size_t i = 0; i < indVec.size(); ++i) {
-                validateRow(i, indVec[i], depData.row(i));
+                this->validateRow(i, indVec[i], depData.row(i));
             }
         }
         catch (std::exception& x) {
             // wipe out the data loaded if any
-            _indData.clear();
-            _depData.clear();
-            removeDependentsMetaDataForKey("labels");
+            this->_indData.clear();
+            this->_depData.clear();
+            this->removeDependentsMetaDataForKey("labels");
+            throw;
         }
     }
 
