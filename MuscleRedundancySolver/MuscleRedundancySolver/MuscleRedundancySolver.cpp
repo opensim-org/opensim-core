@@ -645,8 +645,12 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     mesh::OptimalControlSolution ocp_solution;
     if (get_initial_guess() == "static_optimization") {
         ocp_solution = dircol.solve(guess);
-    } else {
+    } else if (get_initial_guess() == "bounds") {
         ocp_solution = dircol.solve();
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception, "Expected 'initial_guess' property "
+                "to be 'static_optimization or 'bounds', but got '"
+                + get_initial_guess() + "'.");
     }
 
     // Return the solution.
