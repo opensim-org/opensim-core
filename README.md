@@ -198,6 +198,7 @@ On Windows using Visual Studio
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
     * **Python scripting** (optional): Python >= 2.7 (including Python 3)
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * Note: Python 3 requires SWIG 3.0.8.
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
 
@@ -459,6 +460,7 @@ ctest -j8
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * Note: Python 3 requires SWIG 3.0.8.
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
 
@@ -638,6 +640,8 @@ specific Ubuntu versions under 'For the impatient' below.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
     * **Python scripting** (optional):  Python >= 2.7 (including Python 3); `python-dev`.
+    * **Python scripting** (optional): Python >= 2.7 (including Python 3); `python-dev`.
+        * Note: Python 3 requires SWIG 3.0.8.
 
 For example, you could get the required dependencies (except Simbody) via:
 
