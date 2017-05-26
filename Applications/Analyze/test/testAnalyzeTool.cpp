@@ -223,7 +223,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     }
 }
 
-/* For the TugOWar model with a single muscle at a give state report 
+/* For the TugOfWar model with a single muscle at a give state report 
    how muscle (fiber) and tendon force varies with fiber-length. Also,
    report the difference, which represents the function that the muscle
    equilibrium solve is trying to find a root (zero) for. The intended
@@ -252,8 +252,6 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
     double tendonForce = SimTK::NaN;
     double activeFiberForce = SimTK::NaN;
     double passiveFiberForce = SimTK::NaN;
-
-    assert(!muscle.get_ignore_tendon_compliance());
 
     SimTK::RowVector row(labels.size(), SimTK::NaN);
     for (int i = 0; i <= N; ++i) {
