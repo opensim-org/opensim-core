@@ -1197,7 +1197,7 @@ void GeometryPath::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumb
         if (versionNumber < 30516) {
             // Create Appearance node under GeometryPath
             SimTK::Xml::Element appearanceElement("Appearance");
-            aNode.insertNodeAfter(aNode.node_end(), appearanceElement);
+            aNode.appendNode(appearanceElement);
             SimTK::Xml::element_iterator visObjectIter = aNode.element_begin("VisibleObject");
             if (visObjectIter != aNode.element_end()) {
                 SimTK::Xml::element_iterator oldPrefIter = visObjectIter->element_begin("display_preference");
@@ -1211,6 +1211,17 @@ void GeometryPath::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumb
                         appearanceElement.insertNodeAfter(appearanceElement.element_end(), visibleElement);
                     }
                 }
+            }
+            // If default_color existed, copy it to Appearance/color
+            SimTK::Xml::element_iterator defaultColorIter = aNode.element_begin("default_color");
+            if (defaultColorIter != aNode.element_end()) {
+                // Move default_color to Appearance/color
+                SimTK::Xml::Element colorElement("color");
+                std::string colorAsString = defaultColorIter->getValueAs<Vec3>().toString();
+                std::string colorAsStringTrim = colorAsString.substr(2, colorAsString.length()-3);
+                std::replace(colorAsStringTrim.begin(), colorAsStringTrim.end(), ',', ' ');
+                colorElement.setValue(colorAsStringTrim);
+                appearanceElement.appendNode(colorElement);
             }
         }
     }
