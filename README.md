@@ -639,7 +639,6 @@ specific Ubuntu versions under 'For the impatient' below.
       `openjdk-6-jdk` or `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional):  Python >= 2.7 (including Python 3); `python-dev`.
     * **Python scripting** (optional): Python >= 2.7 (including Python 3); `python-dev`.
         * Note: Python 3 requires SWIG 3.0.8.
 
