@@ -450,7 +450,6 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendSetPropertiesFromState(const SimTK::State &s) override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
-    void extendFinalizeFromProperties() override;
 
     // Update the geometry attached to the muscle (location of muscle points and connecting segments
     //  all in global/inertial frame)

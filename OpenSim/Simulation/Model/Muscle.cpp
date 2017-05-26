@@ -721,8 +721,3 @@ void Muscle::updateGeometry(const SimTK::State& s)
       return asin(value);
 }
 */
-void Muscle::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-    
-}
