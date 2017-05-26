@@ -61,7 +61,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // Compute muscle quantities and spline the data.
     // ----------------------------------------------
     TimeSeriesTable muscleTendonLengths;
-    TimeSeriesTable muscleTendonVelocities;
+    // TimeSeriesTable muscleTendonVelocities; using MTL spline now.
     // TODO get list of muscles from MuscleRedundancySolver.
     const auto muscleList = model.getComponentList<Muscle>();
     std::vector<const Muscle*> activeMuscles;
@@ -80,9 +80,9 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         // Muscle-tendon lengths and velocities.
         // `````````````````````````````````````
         muscleTendonLengths.setColumnLabels(musclePathNames);
-        muscleTendonVelocities.setColumnLabels(musclePathNames);
+        // muscleTendonVelocities.setColumnLabels(musclePathNames);
         SimTK::RowVector rowMTL(musclePathNames.size());
-        SimTK::RowVector rowMTV(musclePathNames.size());
+        // SimTK::RowVector rowMTV(musclePathNames.size());
         for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
             const auto& state = statesTraj[i_time];
             model.realizeVelocity(state);
@@ -91,16 +91,16 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             int i_muscle = 0;
             for (const auto* muscle : activeMuscles) {
                 rowMTL[i_muscle] = muscle->getLength(state);
-                rowMTV[i_muscle] = muscle->getLengtheningSpeed(state);
+                // rowMTV[i_muscle] = muscle->getLengtheningSpeed(state);
                 i_muscle++;
             }
             muscleTendonLengths.appendRow(state.getTime(), rowMTL);
-            muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
+            // muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
         }
         _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
         // TODO Separately splining muscleTendonLengths and velocities might
         // lead to inconsistency.
-        _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
+        // _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
 
         // Moment arms.
         // ````````````
@@ -203,8 +203,13 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
         SimTK::Vector time(1, times[i_mesh]);
         for (size_t i_mus = 0; i_mus < _numActiveMuscles; ++i_mus) {
+            // TODO should we use the spline derivative or what? it's helpful
+            // when we don't have generalized speeds data.
+            // The '{0}' means taking the first derivative w.r.t. time.
             muscleTendonVelocities(i_mus, i_mesh) =
-                    _muscleTendonVelocities.get(i_mus).calcValue(time);
+                    _muscleTendonLengths.get(i_mus).calcDerivative({0}, time);
+            // TODO muscleTendonVelocities(i_mus, i_mesh) =
+            // TODO         _muscleTendonVelocities.get(i_mus).calcValue(time);
         }
     }
 }

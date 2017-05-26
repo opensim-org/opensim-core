@@ -55,10 +55,13 @@ public:
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonLengths(const Eigen::VectorXd& times,
             Eigen::MatrixXd& muscleTendonLengths) const;
-    /// Interpolate the muscle-tendon velocities at the provided times.
+    /// Interpolate the muscle-tendon velocities at the provided times. These
+    /// are computed using the first derivative of the muscle-tendon length
+    /// splines.
     /// @param times The times at which to interpolate; must be between the
     ///     initial and final times.
-    /// @param[in,out] muscleTendonVelocities Expressed in meters/second.
+    /// @param[in,out] muscleTendonVelocities Expressed in meters/second,
+    ///     positive for lengthening.
     ///     Dimensions: muscles x time.
     void interpolateMuscleTendonVelocities(const Eigen::VectorXd& times,
             Eigen::MatrixXd& muscleTendonVelocities) const;
