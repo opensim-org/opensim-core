@@ -196,8 +196,7 @@ On Windows using Visual Studio
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional):
-        * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
+    * **Python scripting** (optional): Python >= 2.7 (including Python 3)
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
@@ -306,7 +305,9 @@ On Windows using Visual Studio
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers.
+      Python version used when building the wrappers.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
@@ -454,10 +455,9 @@ ctest -j8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional):
+    * **Python scripting** (optional): Python >= 2.7 (including Python 3)
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
-        * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
@@ -554,7 +554,9 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers.
+      Python version used when building the wrappers.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to create
    Xcode project files in the build directory.
@@ -635,7 +637,7 @@ specific Ubuntu versions under 'For the impatient' below.
       `openjdk-6-jdk` or `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional): `python-dev`.
+    * **Python scripting** (optional):  Python >= 2.7 (including Python 3); `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
@@ -754,6 +756,8 @@ And you could get all the optional dependencies via:
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
     * `OPENSIM_COPY_DEPENDENCIES` to decide if Simbody and BTK are copied into
       the OpenSim installation; you want this off if you're installing OpenSim
