@@ -35,12 +35,10 @@ using namespace std;
 void testTutorialOne();
 
 // Test different default activations are respected when activation
-// states are not provided. Note if default_activation is 1.0 it 
-// reproduces  the "skyscraper" bug issue #83 in OpenSim32 repo
+// states are not provided.
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
 void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
                                            const SimTK::State& state);
-
 
 int main()
 {
@@ -58,7 +56,7 @@ int main()
         failures.push_back("testTugOfWar CoordinatesOnly: default_act = 0.01");
     }
 
-    //produced passive + active but before skyscraper bug appears (at > 0.9)
+    // produced passive + active muscle force-length
     try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 1.0); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -184,7 +182,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         cout << "t = " << s.getTime() << " | fiber_length = " << fl <<
            " : default_fiber_length = " << muscle.get_default_fiber_length() << endl;
 
-        SimTK_ASSERT_ALWAYS(fl >= muscle.getMinimumFiberLengthAlongTendon(),
+        SimTK_ASSERT_ALWAYS(fl >= muscle.getMinimumFiberLength(),
             "Equilibrium failed to compute valid fiber length.");
 
         if (isCoordinatesOnly) {
@@ -225,6 +223,13 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     }
 }
 
+/* For the TugOWar model with a single muscle at a give state report 
+   how muscle (fiber) and tendon force varies with fiber-length. Also,
+   report the difference, which represents the function that the muscle
+   equilibrium solve is trying to find a root (zero) for. The intended
+   use is to invoke this method when the muscle fails to compute the
+   equilibrium fiber-length to help diagnose the cause of the failure.
+   */
 void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
                                            const SimTK::State& state) {
     Millard2012EquilibriumMuscle& muscle =
@@ -251,7 +256,7 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
     assert(!muscle.get_ignore_tendon_compliance());
 
     SimTK::RowVector row(labels.size(), SimTK::NaN);
-    for (int i = 0; i < N; ++i) {
+    for (int i = 0; i <= N; ++i) {
         fiberLength += dl;
         s.setTime(fiberLength);
         muscle.setFiberLength(s, fiberLength);
