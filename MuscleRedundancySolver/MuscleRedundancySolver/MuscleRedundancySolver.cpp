@@ -159,7 +159,7 @@ public:
         // Add a constraint for each joint moment.
         _numDOFs = 0;
         for (int i = 0; i < state.getNU(); ++i) {
-            this->add_path_constraint("joint_moment_" + std::to_string(i), 0);
+            this->add_path_constraint("net_gen_force" + std::to_string(i), 0);
             _numDOFs++;
         }
 
