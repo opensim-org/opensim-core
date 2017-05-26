@@ -73,6 +73,16 @@ public:
     "discourage the use of the reserve actuators. (default is -1, which "
     "means no reserves are created)");
 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
+    "The start of the time interval in which to solve for muscle activity. "
+    "All data must start at or before this time. "
+    "(default: earliest time available in all provided data)");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(final_time, double,
+    "The end of the time interval in which to solve for muscle activity. "
+    "All data must end at or after this time. "
+    "(default: latest time available in all provided data)");
+
     InverseMuscleSolver();
 
     explicit InverseMuscleSolver(const std::string& setupFilePath);
@@ -134,6 +144,10 @@ protected:
     void loadModelAndData(Model& model,
                           TimeSeriesTable& kinematics,
                           TimeSeriesTable& netGeneralizedForces) const;
+    void determineInitialAndFinalTimes(TimeSeriesTable& kinematics,
+                                       TimeSeriesTable& netGeneralizedForces,
+                                       double& initialTime,
+                                       double& finalTime) const;
     SimTK::ResetOnCopy<std::unique_ptr<Model>> _model;
     // TODO make this a StatesTrajectory?
     SimTK::ResetOnCopy<std::unique_ptr<TimeSeriesTable>> _kinematics;

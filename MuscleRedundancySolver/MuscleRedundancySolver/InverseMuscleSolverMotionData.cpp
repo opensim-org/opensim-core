@@ -31,11 +31,12 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
-        const Model& model,
-        const TimeSeriesTable& kinematicsData) :
-        _initialTime(kinematicsData.getIndependentColumn().front()),
-        _finalTime(kinematicsData.getIndependentColumn().back())
+        const Model& model, const TimeSeriesTable& kinematicsData,
+        const double& initialTime, const double& finalTime) :
+        _initialTime(initialTime), _finalTime(finalTime)
 {
+    // TODO spline/filter over only [initial_time, final_time]?
+
     // Muscle analysis.
     // ================
     // Form a StatesTrajectory.
@@ -130,8 +131,10 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const OpenSim::Model& model,
         const OpenSim::TimeSeriesTable& kinematicsData,
-        const double& lowpassCutoffJointMoments) :
-        InverseMuscleSolverMotionData(model, kinematicsData) {
+        const double& lowpassCutoffJointMoments,
+        const double& initialTime, const double& finalTime) :
+        InverseMuscleSolverMotionData(model, kinematicsData,
+                initialTime, finalTime) {
     // Inverse dynamics.
     computeInverseDynamics(model, kinematicsData, lowpassCutoffJointMoments);
 }
@@ -139,8 +142,10 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const OpenSim::Model& model,
         const TimeSeriesTable& kinematicsData,
-        const TimeSeriesTable& netGeneralizedForcesData) :
-        InverseMuscleSolverMotionData(model, kinematicsData) {
+        const TimeSeriesTable& netGeneralizedForcesData,
+        const double& initialTime, const double& finalTime) :
+        InverseMuscleSolverMotionData(model, kinematicsData,
+                initialTime, finalTime) {
     // Inverse dynamics.
     // TODO validate column labels.
     _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData);
@@ -150,9 +155,9 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-                     "Initial time starts before the kinematics data.");
+            "Requested initial time is lower than permitted.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-                     "Final time is beyond the end of the kinematics data.");
+            "Requested final time is greater than permitted.");
 
     desiredMoments.resize(_netGeneralizedForces.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
@@ -170,9 +175,9 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonLengths) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-                     "Initial time starts before the kinematics data.");
+            "Requested initial time is lower than permitted.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-                     "Final time is beyond the end of the kinematics data.");
+            "Requested final time is greater than permitted.");
 
     muscleTendonLengths.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -189,9 +194,9 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonVelocities) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-                     "Initial time starts before the kinematics data.");
+            "Requested initial time is lower than permitted.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-                     "Final time is beyond the end of the kinematics data.");
+            "Requested final time is greater than permitted.");
 
     muscleTendonVelocities.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -208,9 +213,9 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
         const Eigen::VectorXd& times,
         std::vector<Eigen::MatrixXd>& momentArms) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-                     "Initial time starts before the kinematics data.");
+            "Requested initial time is lower than permitted.");
     OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-                     "Final time is beyond the end of the kinematics data.");
+            "Requested final time is greater than permitted.");
 
     momentArms.resize(times.size());
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
@@ -278,8 +283,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // net joint moments.
     // TODO this variant ignores our data for generalized speeds.
     const auto& times = kinematicsData.getIndependentColumn();
-    // TODO avoid copy.
-    SimTK::Array_<double> simtkTimes(times); // , SimTK::DontCopy());
+    SimTK::Array_<double> simtkTimes(times);
 
     /* For debugging: use exact inverse dynamics solution.
     auto table = CSVFileAdapter::read(

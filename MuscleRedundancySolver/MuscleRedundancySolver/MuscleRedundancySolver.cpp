@@ -170,7 +170,10 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
 
-        Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
+        const auto duration = _finalTime - _initialTime;
+        // "array()" b/c Eigen matrix types do not support elementwise add.
+        Eigen::VectorXd times = _initialTime + (duration * mesh).array();
+
         _motionData.interpolateNetGeneralizedForces(times,
                 mutableThis->_desiredMoments);
         if (_numMuscles) {
@@ -548,13 +551,22 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         }
     }
 
+    // Determine initial and final times.
+    // ----------------------------------
+    // TODO create tests for initial_time and final_time.
+    // TODO check for errors in initial_time and final_time.
+    double initialTime;
+    double finalTime;
+    determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
+            initialTime, finalTime);
+
     // Process experimental data.
     // --------------------------
     // TODO move to InverseMuscleSolver
     InverseMuscleSolverMotionData motionData;
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, kinematics,
-                netGeneralizedForces);
+                netGeneralizedForces, initialTime, finalTime);
     } else {
         // We must perform inverse dynamics.
         OPENSIM_THROW_IF(
@@ -563,7 +575,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
                 Exception,
                 "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, kinematics,
-                get_lowpass_cutoff_frequency_for_joint_moments());
+                get_lowpass_cutoff_frequency_for_joint_moments(),
+                initialTime, finalTime);
     }
 
     // Create the optimal control problem.
@@ -593,6 +606,12 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         gso.set_lowpass_cutoff_frequency_for_joint_moments(
                 get_lowpass_cutoff_frequency_for_joint_moments());
         gso.set_create_reserve_actuators(get_create_reserve_actuators());
+        if (!getProperty_initial_time().empty()) {
+            gso.set_initial_time(get_initial_time());
+        }
+        if (!getProperty_final_time().empty()) {
+            gso.set_final_time(get_final_time());
+        }
         // Convert the static optimization solution into a guess.
         GlobalStaticOptimizationSolver::Solution gsoSolution = gso.solve();
         // gsoSolution.write("DEBUG_MuscleRedundancySolver_GSO_solution");

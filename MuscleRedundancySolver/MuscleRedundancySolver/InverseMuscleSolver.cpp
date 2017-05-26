@@ -18,6 +18,8 @@ void InverseMuscleSolver::constructProperties() {
     constructProperty_net_generalized_forces_file("");
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_create_reserve_actuators(-1);
+    constructProperty_initial_time();
+    constructProperty_final_time();
 }
 
 void InverseMuscleSolver::loadModelAndData(Model& model,
@@ -46,13 +48,13 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
                 Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                         setupDir, get_model_file());
         model = Model(modelFilePath);
-        model.finalizeFromProperties();
     } else if (_model) {
         // The user called setModel().
         model = Model(*_model.get());
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, "No model specified.");
     }
+    model.initSystem();
 
     // Kinematics.
     // -----------
@@ -130,4 +132,41 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
         // Set to an empty table to communicate that this was not provided.
         netGeneralizedForces = TimeSeriesTable();
     }
+}
+
+void InverseMuscleSolver::determineInitialAndFinalTimes(
+        TimeSeriesTable& kinematics, TimeSeriesTable& netGeneralizedForces,
+        double& initialTime, double& finalTime) const {
+
+    double initialTimeFromData = kinematics.getIndependentColumn().front();
+    double finalTimeFromData = kinematics.getIndependentColumn().back();
+    if (netGeneralizedForces.getNumRows()) {
+        initialTimeFromData = std::max(initialTimeFromData,
+                netGeneralizedForces.getIndependentColumn().front());
+        finalTimeFromData = std::min(finalTimeFromData,
+                netGeneralizedForces.getIndependentColumn().back());
+    }
+    if (!getProperty_initial_time().empty()) {
+        OPENSIM_THROW_IF_FRMOBJ(get_initial_time() < initialTimeFromData,
+                Exception, "Provided initial time of " +
+                std::to_string(get_initial_time()) + " is less than what "
+                "is available from data, " +
+                std::to_string(initialTimeFromData) + ".");
+        initialTime = get_initial_time();
+    } else {
+        initialTime = initialTimeFromData;
+    }
+    if (!getProperty_final_time().empty()) {
+        OPENSIM_THROW_IF_FRMOBJ(get_final_time() > finalTimeFromData,
+                Exception, "Provided final time of " +
+                std::to_string(get_final_time()) + " is greater than what "
+                "is available from data, " +
+                std::to_string(finalTimeFromData) + ".");
+        finalTime = get_final_time();
+    } else {
+        finalTime = finalTimeFromData;
+    }
+    OPENSIM_THROW_IF_FRMOBJ(finalTime < initialTime, Exception,
+            "Initial time of " + std::to_string(initialTime) + " is greater "
+            "than final time of " + std::to_string(finalTime) + ".");
 }

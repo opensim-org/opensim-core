@@ -26,7 +26,8 @@ public:
     /// cutoff frequency; use -1 to not filter.
     InverseMuscleSolverMotionData(const Model& model,
             const TimeSeriesTable& kinematicsData,
-            const double& lowpassCutoffJointMoments);
+            const double& lowpassCutoffJointMoments,
+            const double& initialTime, const double& finalTime);
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
@@ -34,10 +35,11 @@ public:
     /// table rather than computed from the provided kinematics.
     InverseMuscleSolverMotionData(const OpenSim::Model& model,
             const TimeSeriesTable& kinematicsData,
-            const TimeSeriesTable& netGeneralizedForcesData);
-    /// Get the first time in the kinematicsData table.
+            const TimeSeriesTable& netGeneralizedForcesData,
+            const double& initialTime, const double& finalTime);
+    /// Get the initial time to use in the solver.
     double getInitialTime() const { return _initialTime; }
-    /// Get the last time in the kinematicsData table.
+    /// Get the final time to use in the solver.
     double getFinalTime() const { return _finalTime; }
     /// Interpolate the desired net joint moments at the provided times.
     /// @param times The times at which to interpolate; must be between the
@@ -71,7 +73,8 @@ public:
 private:
     // This constructor performs the muscle analysis.
     InverseMuscleSolverMotionData(const Model& model,
-                                  const TimeSeriesTable& kinematicsData);
+            const TimeSeriesTable& kinematicsData,
+            const double& initialTime, const double& finalTime);
     void computeInverseDynamics(const OpenSim::Model& model,
             const TimeSeriesTable& kinematicsData,
             const double& lowpassCutoffJointMoments);

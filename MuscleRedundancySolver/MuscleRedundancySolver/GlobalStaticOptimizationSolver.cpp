@@ -134,6 +134,7 @@ public:
         }
 
         // Add a constraint for each joint moment.
+        // TODO use coordinate names.
         _numDOFs = 0;
         for (int i = 0; i < state.getNU(); ++i) {
             this->add_path_constraint("joint_moment_" + std::to_string(i), 0);
@@ -147,7 +148,10 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<GSOProblemSeparate<T>*>(this);
 
-        Eigen::VectorXd times = (_finalTime - _initialTime) * mesh;
+        const auto duration = _finalTime - _initialTime;
+        // "array()" b/c Eigen matrix types do not support elementwise add.
+        Eigen::VectorXd times = _initialTime + (duration * mesh).array();
+
         _motionData.interpolateNetGeneralizedForces(times,
                 mutableThis->_desiredMoments);
         if (_numMuscles) {
@@ -332,7 +336,6 @@ GlobalStaticOptimizationSolver::GlobalStaticOptimizationSolver(
     updateFromXMLDocument();
 }
 
-// TODO move this to a "InverseMuscleSolver" base class.
 GlobalStaticOptimizationSolver::Solution
 GlobalStaticOptimizationSolver::solve() {
 
@@ -382,22 +385,32 @@ GlobalStaticOptimizationSolver::solve() {
         }
     }
 
+    // Determine initial and final times.
+    // ----------------------------------
+    // TODO create tests for initial_time and final_time.
+    // TODO check for errors in initial_time and final_time.
+    double initialTime;
+    double finalTime;
+    determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
+            initialTime, finalTime);
+
     // Process experimental data.
     // --------------------------
     // TODO move to InverseMuscleSolver
     InverseMuscleSolverMotionData motionData;
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, kinematics,
-                netGeneralizedForces);
+                netGeneralizedForces, initialTime, finalTime);
     } else {
         // We must perform inverse dynamics.
         OPENSIM_THROW_IF(
                 get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-                        get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+                get_lowpass_cutoff_frequency_for_joint_moments() != -1,
                 Exception,
                 "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, kinematics,
-                get_lowpass_cutoff_frequency_for_joint_moments());
+                get_lowpass_cutoff_frequency_for_joint_moments(),
+                initialTime, finalTime);
     }
 
     // Solve the optimal control problem.
