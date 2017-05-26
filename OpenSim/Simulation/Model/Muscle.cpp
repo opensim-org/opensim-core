@@ -128,7 +128,7 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 SimTK::Xml::element_iterator  defaultColorIter = geomPathIter->element_begin("default_color");
                 if (defaultColorIter == geomPathIter->element_end()) {
                     SimTK::Xml::Element myDefaultColorEement("default_color");
-                    myDefaultColorEement.setValue(".8 .1 .1");
+                    myDefaultColorEement.setValue(".8 .1 .1"); // DefaultMuscleColor
                     geomPathIter->appendNode(myDefaultColorEement);
                 }
             }

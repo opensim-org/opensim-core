@@ -1217,10 +1217,8 @@ void GeometryPath::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumb
             if (defaultColorIter != aNode.element_end()) {
                 // Move default_color to Appearance/color
                 SimTK::Xml::Element colorElement("color");
-                std::string colorAsString = defaultColorIter->getValueAs<Vec3>().toString();
-                std::string colorAsStringTrim = colorAsString.substr(2, colorAsString.length()-3);
-                std::replace(colorAsStringTrim.begin(), colorAsStringTrim.end(), ',', ' ');
-                colorElement.setValue(colorAsStringTrim);
+                const SimTK::String& colorAsString = defaultColorIter->getValue();
+                colorElement.setValue(colorAsString);
                 appearanceElement.appendNode(colorElement);
             }
         }
