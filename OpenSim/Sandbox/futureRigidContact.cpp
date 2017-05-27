@@ -24,64 +24,66 @@ int main()
     const double simStepSize     = 1.e-2;
 
     // Create model with gravity.
-    Model *osimModel = new Model;
-    osimModel->setName("BallDrop");
-    osimModel->setGravity(Vec3(0, -9.81, 0));
+    auto osimModel = Model();
+    osimModel.setName("BallDrop");
+    osimModel.setGravity(Vec3(0, -9.81, 0));
 
     // Create unconstrained ball.
-    OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.scale(Vec3(radius), false);
-    FreeJoint free("", osimModel->getGround().getName(), "ball");
-    osimModel->addBody(&ball);
-    osimModel->addJoint(&free);
+    auto ball = new OpenSim::Body("ball", mass, Vec3(0),
+                                  mass*SimTK::Inertia::sphere(0.1));
+    ball->scale(Vec3(radius), false);
+    auto freeJoint = new FreeJoint("freeJoint", osimModel.getGround(), *ball);
+    osimModel.addBody(ball);
+    osimModel.addJoint(freeJoint);
 
     // Define contact geometry.
-    OpenSim::Ground& ground = osimModel->updGround();
-    ContactHalfSpace groundContact(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground,
-                                   "groundContact");
-    osimModel->addContactGeometry(&groundContact);
-    ContactSphere ballContact(radius, Vec3(0), ball, "ballContact");
-    osimModel->addContactGeometry(&ballContact);
+    auto ground = osimModel.updGround();
+    auto groundContact = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI),
+                                              ground, "groundContact");
+    osimModel.addContactGeometry(groundContact);
+    auto ballContact = new ContactSphere(radius, Vec3(0), *ball, "ballContact");
+    osimModel.addContactGeometry(ballContact);
 
     // Define contact forces.
 #ifdef USE_RIGID_CONTACT
-    OpenSim::RigidContactForce::ContactParameters
-        contactParams(restitution, mu_static, mu_dynamic, mu_viscous);
-    contactParams.addGeometry("groundContact");
-    contactParams.addGeometry("ballContact");
-    OpenSim::RigidContactForce contact(&contactParams);
+    auto contactParams = new OpenSim::RigidContactForce::ContactParameters(
+        restitution, mu_static, mu_dynamic, mu_viscous);
+    contactParams->addGeometry("groundContact");
+    contactParams->addGeometry("ballContact");
+    auto contact = new OpenSim::RigidContactForce(contactParams);
 #else
-    OpenSim::HuntCrossleyForce::ContactParameters
-        contactParams(stiffness, dissipation, mu_static, mu_dynamic, mu_viscous);
-    contactParams.addGeometry("groundContact");
-    contactParams.addGeometry("ballContact");
-    OpenSim::HuntCrossleyForce contact(&contactParams);
+    auto contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
+        stiffness, dissipation, mu_static, mu_dynamic, mu_viscous);
+    contactParams->addGeometry("groundContact");
+    contactParams->addGeometry("ballContact");
+    auto contact = new OpenSim::HuntCrossleyForce(contactParams);
 #endif
-    osimModel->addForce(&contact);
+    osimModel.addForce(contact);
 
     // Initialize the system.
-    SimTK::State& state = osimModel->initSystem();
-    CoordinateSet& modelCoordSet = osimModel->updCoordinateSet();
-    modelCoordSet[0].setValue(state, initialHorizVel); //velocity along X-axis
-    modelCoordSet[4].setValue(state, initialHeight); //displacement along Y-axis
+    auto& state = osimModel.initSystem();
+    freeJoint->getCoordinate(FreeJoint::Coord::TranslationY)
+        .setValue(state, initialHeight);
+    freeJoint->getCoordinate(FreeJoint::Coord::TranslationX)
+        .setSpeedValue(state, initialHorizVel);
 
     // Create integrator, manager, and force reporter.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
+    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
     integrator.setAccuracy(1.e-4);
-    Manager manager(*osimModel, integrator);
+    Manager manager(osimModel, integrator);
     manager.setInitialTime(0.);
 
     // Simulate.
+    std::cout << "Integrating...";
     double currTime = 0.;
     while (currTime < simDuration) {
         currTime += simStepSize;
         manager.setFinalTime(currTime);
         manager.integrate(state);
     }
+    std::cout << " done" << std::endl;
 
     // TODO: Check the results.
-
-    osimModel->disownAllComponents();
 
     return 0;
 }
