@@ -27,3 +27,10 @@ file(COPY test2Muscles2DOFsDeGroote2016_MRS_initial_guess.csv
           test2Muscles2DOFsDeGroote2016_MRS_setup.xml
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
+MRSAddTest(testGait10dof18musc osimMuscleRedundancySolver)
+file(COPY testGait10dof18musc_subject01.osim
+          testGait10dof18musc_kinematics.mot
+          testGait10dof18musc_netgeneralizedforces.mot
+          testGait10dof18musc_GSO_setup.xml
+          testGait10dof18musc_MRS_setup.xml
+        DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")

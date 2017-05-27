@@ -95,6 +95,12 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
     OPENSIM_THROW_IF_FRMOBJ(kinematics.getNumRows() == 0, Exception,
             "The provided kinematics table has no rows.");
 
+    // Convert rotational DOFs to radians.
+    if (kinematics.hasTableMetaDataKey("inDegrees") &&
+            kinematics.getTableMetaDataAsString("inDegrees") == "yes") {
+        model.getSimbodyEngine().convertDegreesToRadians(kinematics);
+    }
+
     // Net generalized forces (optional).
     // ----------------------------------
     OPENSIM_THROW_IF_FRMOBJ(!get_net_generalized_forces_file().empty()
