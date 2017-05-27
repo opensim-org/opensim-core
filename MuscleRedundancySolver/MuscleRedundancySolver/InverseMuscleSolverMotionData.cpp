@@ -66,6 +66,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     const auto muscleList = model.getComponentList<Muscle>();
     std::vector<const Muscle*> activeMuscles;
     auto coords = model.getCoordinatesInMultibodyTreeOrder();
+    // TODO this assumes no coordinates are locked.
     _numDOFs = coords.size();
     std::vector<std::string> musclePathNames;
     for (const auto& muscle : muscleList) {

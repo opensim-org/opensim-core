@@ -101,15 +101,15 @@ public:
                 "An attempt was made to dereference a null pointer.");
         return *_model.get();
     }
-    /// Set the generalized coordinate values to track. There should be a
-    /// column in the table for each generalized coordinate, and the labels
+    /// Set the generalized coordinate values and speeds to track. There should
+    /// be a column in the table for each generalized coordinate, and the labels
     /// for the columns should be the absolute path names for the generalized
-    /// coordinate state variables (e.g., `hip/flexion/value`).
-    /// If you set kinematics this way, make sure to set the kinematics_file
-    /// property to an empty string (`solver.set_kinematics_file ("")`).
-    /// The function StatesTrajectory::exportToTable() may be helpful in
-    /// creating this table.
-    // TODO allow specifying and using generalized speeds.
+    /// coordinate state variables (e.g., `hip/flexion/value`). If you set
+    /// kinematics this way, make sure to set the kinematics_file property to an
+    /// empty string (`solver.set_kinematics_file ("")`). The function
+    /// StatesTrajectory::exportToTable() may be helpful in creating this table.
+    // TODO allow not specifying generalized speeds (compute with splines),
+    // update docs.
     // TODO rename to states_file or coordinates_file to be consistent with
     // other tools? Take Storage files?
     void setKinematicsData(const TimeSeriesTable& kinematics)
