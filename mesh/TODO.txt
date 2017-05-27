@@ -172,3 +172,27 @@ https://www.coin-or.org/Ipopt/documentation/node15.html#CygwinInstall
 
 
 ADOL-C source code downloads: https://www.coin-or.org/download/source/ADOL-C/
+
+
+Hanging mass lift with minimum effort:
+TomuProblem p;
+p.setModel(pendulum);
+MuscleActivationCost cost;
+cost.setPower(2);
+p.addCost(cost);
+p.setTimeBounds(0, 1);
+p.setStateBounds("position", {-5, 5}, -2, 2);
+p.setStateBounds("speed", {-10, 10}, 0, 0);
+
+TomuGuess g(p);
+g.setStateGuess("position", Vector(
+
+TomuSolver solver(p);
+Solution solution = solver.solve();
+Solution solution = solver.solve(g);
+Result r = solver.solve(); // too many "s"s.
+
+
+
+
+
