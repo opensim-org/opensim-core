@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Jack Middleton                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <algorithm>
 #include "ForceSet.h"
-#include "Model.h"
-#include "Muscle.h"
-#include "SimTKsimbody.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -190,7 +185,7 @@ append(Force *aForce)
 {
     bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
 
-    if((success)&&(&updModel()!=NULL)) {
+    if (success && hasModel()) {
         updateActuators();
         updateMuscles();
     }
@@ -214,7 +209,7 @@ append(Force &aForce)
     bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
 
 
-    if ((success) && (&getModel() != NULL)) {
+    if (success && hasModel()) {
         updateActuators();
         updateMuscles();
     }

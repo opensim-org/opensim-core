@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -122,7 +122,7 @@ void PrescribedController::extendConnectToModel(Model& model)
         FunctionSet& controlFuncs = upd_ControlFunctions();
         const Set<Actuator>& modelActuators = getModel().getActuators();
 
-        Set<Actuator>& controllerActuators = updActuators();
+        Set<const Actuator>& controllerActuators = updActuators();
 
         for(int i=0; i<ncols; ++i){
             if(i == tcol) continue;
@@ -177,10 +177,13 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 void PrescribedController::
     prescribeControlForActuator(int index, Function *prescribedFunction)
 {
-    SimTK_ASSERT( index < getActuatorSet().getSize(), 
-        "PrescribedController::computeControl:  index > number of actuators" );
-    SimTK_ASSERT( index >= 0,  
-        "PrescribedController::computeControl:  index < 0" );
+    OPENSIM_THROW_IF_FRMOBJ(index < 0,  
+            Exception, "Index was " + std::to_string(index) +
+                       " but must be nonnegative." );
+    OPENSIM_THROW_IF(index >= getActuatorSet().getSize(),
+            IndexOutOfRange, (size_t)index, 0,
+            (size_t)getActuatorSet().getSize() - 1);
+
     if(index >= get_ControlFunctions().getSize())
         upd_ControlFunctions().setSize(index+1);
     upd_ControlFunctions().set(index, prescribedFunction);  

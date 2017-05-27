@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,10 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "DynamicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Storage.h>
 
@@ -175,21 +172,21 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
         //Check for keywords first starting with ALL
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ALL"){
             for(int i=0; i<modelForces.getSize(); i++){
-                modelForces[i].setDisabled(s, true);
+                modelForces[i].setAppliesForce(s, false);
             }
             return;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ACTUATORS"){
             Set<Actuator> &acts = model.updActuators();
             for(int i=0; i<acts.getSize(); i++){
-                acts[i].setDisabled(s, true);
+                acts[i].setAppliesForce(s, false);
             }
             continue;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "MUSCLES"){
             Set<Muscle> &muscles = model.updMuscles();
             for(int i=0; i<muscles.getSize(); i++){
-                muscles[i].setDisabled(s, true);
+                muscles[i].setAppliesForce(s, false);
             }
             continue;
         }
@@ -203,15 +200,15 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
             k = groupNames.findIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = modelForces.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
-                    ((Force *)(members[j]))->setDisabled(s, true);
+                    ((Force *)(members[j]))->setAppliesForce(s, false);
             }
         } //otherwise, check for individual forces
         else{
             k = modelForces.getIndex(forcesByNameOrGroup[i]);
             if(k > -1){ //found
-                modelForces[k].setDisabled(s, true);
+                modelForces[k].setAppliesForce(s, false);
             }
         }
         // No force or group was found
@@ -235,6 +232,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // Create external forces
     try {
         _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        aModel.finalizeFromProperties();
     }
      catch (const Exception& ex) {
         // Important to catch exceptions here so we can restore current working directory...

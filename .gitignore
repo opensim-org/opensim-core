@@ -1,0 +1,27 @@
+# Ignore backup files created by editors like emacs, vim.
+*~
+*.swp
+*.swo
+# Ignore cmake files.
+*CMakeCache.txt
+*CMakeFiles
+# Ignore tmp directory/file. We use it sometimes to write debug information.
+tmp
+# Ignore build trees.
+/build*
+# Ignore install dir.
+install
+# Ignore settings from the CLion IDE (from JetBrains).
+.idea
+
+# python
+*.pyc
+
+# Ignore directories under 'dependencies'
+dependencies/*
+
+# Ignore log files from OpenSim crashing
+*.log
+
+# MAC File System files
+.DS_Store

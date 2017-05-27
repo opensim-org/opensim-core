@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -33,6 +33,7 @@ using namespace std;
 void testRunningModel();
 
 int main() {
+
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
     //Object::renameType("Thelen2003Muscle", "Millard2012AccelerationMuscle");
     //Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
@@ -65,13 +66,14 @@ void testRunningModel()
 
     int nq = results.getColumnLabels().getSize()-1;
 
-    // Tracking kinematics angles in degrees should be within 3 degrees (see standard versus input)
-    Array<double> rms_tols(3.00, nq);
+    // Tracking kinematics angles in degrees should be within 3 degrees
+    std::vector<double> rms_tols(nq, 3.00);
     rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
     rms_tols[4] = 0.0025;
     rms_tols[5] = 0.0025;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testRunningModel tracking failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__,
+        "testRunningModel tracking failed");
 
     Storage results_states("runningModel_CMC_Results/runningModel_CMC_test_states.sto");
     Storage standard_states("std_runningModel_CMC_states.sto");
@@ -79,13 +81,14 @@ void testRunningModel()
     int nc = results_states.getColumnLabels().getSize()-1;
 
     // already passed tracking kinematics so focus on muscle states
-    Array<double> rms_states_tols(0.6, nc);
+    std::vector<double> rms_states_tols(nc, 0.6);
     for(int i = nq; i< 2*nq; ++i)
     {
         rms_states_tols[i] = 0.2; // velocities
     }
 
-    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, __FILE__, __LINE__, "testRunningModel activations failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols,
+        __FILE__, __LINE__, "testRunningModel activations failed");
 
     cout << "\n testRunningModel passed\n" << endl;
 }

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,13 +26,12 @@
 //=============================================================================
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include "PathWrap.h"
 #include "WrapResult.h"
+#include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 //=============================================================================
 // STATICS
@@ -184,9 +183,6 @@ void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
  */
 void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapTorus);
-
     _innerRadius = aWrapTorus._innerRadius;
     _outerRadius = aWrapTorus._outerRadius;
 }
@@ -273,8 +269,8 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
 {
     int i;
     SimTK::Vec3 closestPt;
-    bool constrained = (bool) (_wrapSign != 0);
-    bool far_side_wrap = false;
+    //bool constrained = (bool) (_wrapSign != 0);
+    //bool far_side_wrap = false;
     aFlag = true;
 
     if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
@@ -284,9 +280,9 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
     SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-    cyl.setRadius(_innerRadius);
-    cyl.setLength(CYL_LENGTH);
-    cyl.setQuadrantName("+x");
+    cyl.set_radius(_innerRadius);
+    cyl.set_length(CYL_LENGTH);
+    cyl.set_quadrant("+x");
 
     closestPt *= -1;
 
@@ -496,7 +492,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
                                             double resid[], int *flag2, void *ptr)
 {
    double mag, nx, ny, nz, u;
-   double c2, c3, c4, c5, c6;
+   double c2, c3, c4, c5/*, c6*/;
    CircleCallback *cb = (CircleCallback*)ptr;
 
    u = q[0];
@@ -512,7 +508,33 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
    c3 = cb->p1[0]*nx + cb->p1[1]*ny;
    c4 = nx*nx + ny*ny;
    c5 = cb->p1[0]*cb->p1[0] + cb->p1[1]*cb->p1[1];
-   c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
+   //c6 = sqrt (u * u * c4 + 2.0 * c3 * u + c5);
 
    resid[0] = c2 + 2.0 * u - 2.0 * cb->r * (2.0 * c4 * u + 2.0 * c3) / sqrt (u * u * c4 + 2.0 * c3 * u + c5);
+}
+
+
+// Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
+// in ModelVisualizer, not implemented yet in API visualizer
+void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
+
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        appendToThis.push_back(
+            SimTK::DecorativeTorus(getOuterRadius(),
+                getInnerRadius())
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
+    }
 }

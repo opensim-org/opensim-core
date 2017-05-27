@@ -24,8 +24,9 @@ endif(WIN32)
 
 add_executable(simmToOpenSim ${SOURCE_FILES} ${INCLUDE_FILES})
 
-set_target_properties(simmToOpenSim PROPERTIES PROJECT_LABEL "Utilities - simmToOpenSim")
+set_target_properties(simmToOpenSim PROPERTIES
+    PROJECT_LABEL "Utilities - simmToOpenSim")
 
-install_targets(/bin/ simmToOpenSim)
+install(TARGETS simmToOpenSim DESTINATION "${CMAKE_INSTALL_BINDIR}")
 
 subdirs(acpp)

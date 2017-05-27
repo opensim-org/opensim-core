@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,9 +31,8 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 
-
-//template class OSIMCOMMON_API Array<double>;
-
+#include "SimTKcommon.h"
+#include <vector>
 
 
 namespace OpenSim { 
@@ -70,13 +69,13 @@ private:
 // METHODS
 //=============================================================================
 public:
-    StateVector(double aT=0.0,int aN=0,const double *aData=NULL);
-    StateVector(const StateVector &aVector);
+    StateVector()                   = default;
+    StateVector(const StateVector&) = default;
     virtual ~StateVector();
 
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
+    StateVector(double aT);
+    StateVector(double aT, const SimTK::Vector_<double>& data);
+
 private:
     void setNull();
 
@@ -98,7 +97,7 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
-    void setStates(double aT,int aN,const double aY[]);
+    void setStates(double aT, const SimTK::Vector_<double>& data);
     int getSize() const;
     void setTime(double aT);
     double  getTime() const;
@@ -114,17 +113,17 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(int aN,double aY[]);
+    void add(const SimTK::Vector_<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void subtract(double aValue);
-    void subtract(int aN,double aY[]);
+    void subtract(const SimTK::Vector_<double>& values);
     void subtract(StateVector *aStateVector);
     void multiply(double aValue);
-    void multiply(int aN,double aY[]);
+    void multiply(const SimTK::Vector_<double>& values);
     void multiply(StateVector *aStateVector);
     void divide(double aValue);
-    void divide(int aN,double aY[]);
+    void divide(const SimTK::Vector_<double>& values);
     void divide(StateVector *aStateVector);
 
     //--------------------------------------------------------------------------

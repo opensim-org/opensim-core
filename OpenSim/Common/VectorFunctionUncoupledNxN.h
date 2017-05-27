@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Saryn R. Goldberg                            *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,14 +31,15 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "VectorFunction.h"
-#include "Array.h"
-#include "SimTKsimbody.h"
+//#include "Array.h"
 
-
+namespace SimTK { class State; }
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+template <class T> class Array;
 
 /**
  * An abstract class for representing a vector function.

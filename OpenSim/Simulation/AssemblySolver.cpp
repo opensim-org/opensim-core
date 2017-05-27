@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,20 +22,19 @@
  * -------------------------------------------------------------------------- */
 
 #include "AssemblySolver.h"
-#include "Model/Model.h"
+#include "OpenSim/Simulation/Model/Model.h"
 #include <OpenSim/Common/Constant.h>
+#include "simbody/internal/AssemblyCondition_QValue.h"
 
 using namespace std;
 using namespace SimTK;
 
 namespace OpenSim {
 
+class Coordinate;
+class CoordinateSet;
+
 //______________________________________________________________________________
-/**
- * An implementation of the AssemblySolver 
- *
- * @param model to assemble
- */
 AssemblySolver::AssemblySolver
    (const Model &model, const SimTK::Array_<CoordinateReference> &coordinateReferences,
     double constraintWeight) : Solver(model),
@@ -72,9 +71,11 @@ AssemblySolver::AssemblySolver
     }
 }
 
-AssemblySolver::~AssemblySolver()
+void AssemblySolver::setAccuracy(double accuracy)
 {
-    delete _assembler;
+    _accuracy = accuracy;
+    // Changing the accuracy invalidates the existing SimTK::Assembler
+    _assembler.reset();
 }
 
 /* Internal method to convert the CoordinateReferences into goals of the 
@@ -84,8 +85,7 @@ AssemblySolver::~AssemblySolver()
 void AssemblySolver::setupGoals(SimTK::State &s)
 {
     // wipe-out the previous SimTK::Assembler
-    delete _assembler;
-    _assembler = new SimTK::Assembler(getModel().getMultibodySystem());
+    _assembler.reset(new SimTK::Assembler(getModel().getMultibodySystem()));
     _assembler->setAccuracy(_accuracy);
 
     // Define weights on constraints. Note can be specified SimTK::Infinity to strictly enforce constraint
@@ -133,7 +133,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
                 // keep a handle to the goal so we can update
                 _coordinateAssemblyConditions.push_back(coordGoal);
                 // Add coordinate matching goal to the ik objective
-                SimTK::AssemblyConditionIndex acIx = _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
+                _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
             }
         }
     }
@@ -145,7 +145,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
         throw Exception("AsemblySolver::setupGoals() has a mismatch between number of references and goals.");
 }
 
-/** Once a set of coordinates has been specified its target value can
+/* Once a set of coordinates has been specified its target value can
     be updated directly */
 void AssemblySolver::updateCoordinateReference(const std::string &coordName, double value, double weight)
 {
@@ -163,7 +163,7 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 }
 
 
-/** Internal method to update the time, reference values and/or their 
+/* Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state. */
 void AssemblySolver::updateGoals(const SimTK::State &s)
 {
@@ -177,7 +177,7 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
 }
 
 //______________________________________________________________________________
-/**
+/*
  * Assemble the model such that it satisfies configuration goals and constraints
  * The input state is used to initialize the assembly and then is updated to 
  * return the resulting assembled configuration.
@@ -186,7 +186,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 {
     // Make a working copy of the state that will be used to set the internal 
     // state of the solver. This is necessary because we may wish to disable 
-    // redundant constraints, but do not want this  to effect the state of 
+    // redundant constraints, but do not want this to affect the state of 
     // constraints the user expects
     SimTK::State s = state;
     
@@ -240,7 +240,7 @@ void AssemblySolver::assemble(SimTK::State &state)
     }
 }
 
-/** Obtain a model configuration that meets the assembly conditions  
+/* Obtain a model configuration that meets the assembly conditions  
     (desired values and constraints) given a state that satisfies or
     is close to satisfying the constraints. Note there can be no change
     in the number of constraints or desired coordinates. Desired
@@ -248,7 +248,6 @@ void AssemblySolver::assemble(SimTK::State &state)
     to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)
 {
-
     // move the target locations or angles, etc... just do not change number of goals
     // and their type (constrained vs. weighted)
 
@@ -290,5 +289,22 @@ void AssemblySolver::track(SimTK::State &s)
         throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
+
+const SimTK::Assembler& AssemblySolver::getAssembler() const
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::getAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
+SimTK::Assembler& AssemblySolver::updAssembler()
+{
+    OPENSIM_THROW_IF(!_assembler, Exception,
+        "AssemblySolver::updAssembler() has no underlying Assembler to return.\n"
+        "AssemblySolver::setupGoals() must be called first.");
+    return *_assembler;
+}
+
 
 } // end of namespace OpenSim

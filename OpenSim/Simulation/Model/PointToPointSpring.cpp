@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -39,7 +39,7 @@ using namespace std;
 PointToPointSpring::PointToPointSpring()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 //_____________________________________________________________________________
 // Convenience constructor for API users.
@@ -49,7 +49,7 @@ PointToPointSpring::
                        double stiffness, double restlength )
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     // Set properties to the passed-in values.
     setBody1(body1);
@@ -60,12 +60,6 @@ PointToPointSpring::
 
     setStiffness(stiffness);
     setRestlength(restlength);
-}
-
-void PointToPointSpring::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("body1");
-    constructConnector<PhysicalFrame>("body2");
 }
 
 //=============================================================================
@@ -97,41 +91,31 @@ void PointToPointSpring::constructProperties()
 
 void PointToPointSpring::setBody1(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body1").connect(body);
+    connectSocket_body1(body);
 }
 
 void PointToPointSpring::setBody2(const PhysicalFrame& body)
 {
-    updConnector<PhysicalFrame>("body2").connect(body);
+    connectSocket_body2(body);
 }
 
 const PhysicalFrame& PointToPointSpring::getBody1() const
 {
-    return getConnector<PhysicalFrame>("body1").getConnectee();
+    return getConnectee<PhysicalFrame>("body1");
 }
 
 const PhysicalFrame& PointToPointSpring::getBody2() const
 {
-    return getConnector<PhysicalFrame>("body2").getConnectee();
-}
-
-//=============================================================================
-// Connect this force element to the rest of the model.
-//=============================================================================
-void PointToPointSpring::extendConnectToModel(Model& model)
-{
-    Super::extendConnectToModel(model); // Let base class connect first.
-
-    if(getName() == "")
-        setName("pointToPointSpring");
+    return getConnectee<PhysicalFrame>("body2");
 }
 
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::extendAddToSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::
+    extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const
 {
-    Super::extendAddToSystem(system);
+    Super::extendAddToSystemAfterSubcomponents(system);
 
     const PhysicalFrame& body1 = getBody1();
     const PhysicalFrame& body2 = getBody2();
@@ -203,14 +187,13 @@ getRecordValues(const SimTK::State& state) const
     SimTK::Vec3 forces = bodyForces(body1.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    SimTK::Vec3 gpoint(0);
-    _model->getSimbodyEngine().getPosition(state, body1, getPoint1(), gpoint);
+    SimTK::Vec3 gpoint = body1.findStationLocationInGround(state, getPoint1());
     values.append(3, &gpoint[0]);
 
     forces = bodyForces(body2.getMobilizedBodyIndex())[1];
     values.append(3, &forces[0]);
 
-    _model->getSimbodyEngine().getPosition(state, body2, getPoint2(), gpoint);
+    gpoint = body2.findStationLocationInGround(state, getPoint2());
     values.append(3, &gpoint[0]);
 
     return values;

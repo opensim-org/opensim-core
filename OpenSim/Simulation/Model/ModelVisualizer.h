@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Michael A. Sherman                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,6 +29,11 @@ that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <simbody/internal/Visualizer.h>
+
+namespace OpenSim {
+class Model;
+}
 
 #ifndef SWIG
 namespace SimTK {
@@ -49,7 +54,7 @@ public:
         _dispContactOpacity = 0.75;
         _dispContactResolution = 2.0;
     }
-     void generateDecorations(const SimTK::State& state, 
+    void generateDecorations(const SimTK::State& state, 
                              SimTK::Array_<SimTK::DecorativeGeometry>& geometry) override;
     double getDispMarkerRadius() {return _dispMarkerRadius;}
     void   setDispMarkerRadius(double a) {_dispMarkerRadius=a;}
@@ -88,8 +93,6 @@ private:
 
 namespace OpenSim {
 
-class Model;
-
 /** This class manages runtime visualization of a Model that is being 
 manipulated through the OpenSim API. You should not allocate one of these
 yourself; instead, call the Model's setUseVisualizer() method and let the
@@ -99,6 +102,18 @@ the Model's getVisualizer() method.
 
 The %ModelVisualizer consults the Model's ModelDisplayHints object for 
 instructions on what to display.
+
+The Simbody visualizer binary needs to be found at runtime to create a
+visualizer. The search proceeds in the following order:
+* Directory of the currently running executable/binary.
+* Directory referred to by the environment variable OPENSIM_HOME/bin
+  if it exists.
+* Directories referred to by the environment variable PATH.
+* Possible locations for simbody installations:
+  -- SIMBODY_HOME/bin if the environment variable SIMBODY_HOME exists.
+  -- SimTK_INSTALL_DIR/bin if the environment variable SIMBODY_HOME exists.
+  -- Platform specific default locations of binaries. For Linux/MacOS, this may
+     be /usr/bin, /usr/local/bin etc. For Windows, this set is empty.
 
 @author Michael Sherman
 
@@ -172,7 +187,8 @@ public:
     @param[out]     attempts
         On return, this is a list of the absolute path names that were tried.
         If \a geoFile was found, attempts.back() (the last entry) is the
-        absolute path name of \a geoFile.
+        absolute path name of \a geoFile. The last entry of this array will be
+        the path that succeeded in finding the geometry file.
     @returns \c true if \a geoFile was located and is readable.
         
     The search rule is as follows:
@@ -180,6 +196,9 @@ public:
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.
+      - Otherwise, try the search paths added through 
+        addDirToGeometrySearchPaths(). The paths are searched in 
+        reverse-chronological order -- the latest path added is searched first.
       - Finally, try installDir/geoFile where installDir is taken from
         the OPENSIM_HOME environment variable if it exists, otherwise
         a default installation directory. 
@@ -187,10 +206,15 @@ public:
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
     name that exists and is readable. **/
-    bool findGeometryFile(const Model& model,
-                          const std::string&          geoFile,
-                          bool&                       isAbsolute,
-                          SimTK::Array_<std::string>& attempts) const;
+    static bool findGeometryFile(const Model& model,
+                            const std::string&          geoFile,
+                            bool&                       isAbsolute,
+                            SimTK::Array_<std::string>& attempts);
+
+    /** Add a directory to the search path to be used by the function
+    findGeometryFile. The added paths are searched in the 
+    reverse-chronological order -- the latest path added is searched first. */
+    static void addDirToGeometrySearchPaths(const std::string& dir);
     /**@}**/
 
 
@@ -224,6 +248,9 @@ private:
     // This is just a reference -- it is owned by the Simbody Visualizer so 
     // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
+
+    // List of directories to search.
+    static SimTK::Array_<std::string> dirsToSearch;
 };
 
 

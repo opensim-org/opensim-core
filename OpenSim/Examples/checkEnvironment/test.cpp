@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -53,10 +53,10 @@ int main()
         // Get a reference to the model's ground frame
         Ground& ground = osimModel.updGround();
 
-        // Add display geometry to the ground to visualize in the GUI
-        ground.addMeshGeometry("ground.vtp");
-        ground.addMeshGeometry("anchor1.vtp");
-        ground.addMeshGeometry("anchor2.vtp");
+        // Attach geometry to the ground to visualize in the GUI
+        ground.attachGeometry(new Mesh("ground.vtp"));
+        ground.attachGeometry(new Mesh("anchor1.vtp"));
+        ground.attachGeometry(new Mesh("anchor2.vtp"));
 
         // BLOCK BODY
 
@@ -69,8 +69,7 @@ int main()
         OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
         // Add display geometry to the block to visualize in the GUI
-        Brick brick(SimTK::Vec3(0.05, 0.05, 0.05));
-        block->addGeometry(brick);
+        block->attachGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
 
         // FREE JOINT
 
@@ -78,18 +77,16 @@ int main()
         Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
         FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
         
-        // Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground frames
-        CoordinateSet& jointCoordinateSet = blockToGround->upd_CoordinateSet();
-
-        // Set the angle and position ranges for the coordinate set
+        // Set the angle and position ranges for the free (6-degree-of-freedom)
+        // joint between the block and ground frames.
         double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
         double positionRange[2] = {-1, 1};
-        jointCoordinateSet[0].setRange(angleRange);
-        jointCoordinateSet[1].setRange(angleRange);
-        jointCoordinateSet[2].setRange(angleRange);
-        jointCoordinateSet[3].setRange(positionRange);
-        jointCoordinateSet[4].setRange(positionRange);
-        jointCoordinateSet[5].setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation1X).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation2Y).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::Rotation3Z).setRange(angleRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationX).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationY).setRange(positionRange);
+        blockToGround->updCoordinate(FreeJoint::Coord::TranslationZ).setRange(positionRange);
 
         // Add the block body to the model
         osimModel.addBody(block);
@@ -149,8 +146,7 @@ int main()
 
         // PRESCRIBED FORCE
         // Create a new prescribed force to be applied to the block
-        PrescribedForce *prescribedForce = new PrescribedForce(block);
-        prescribedForce->setName("prescribedForce");
+        PrescribedForce *prescribedForce = new PrescribedForce("prescribedForce", *block);
 
         // Specify properties of the force function to be applied to the block
         double time[2] = {0, finalTime};                    // time nodes for linear function
@@ -225,8 +221,8 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        double mfv1 = muscle1->getFiberVelocity(si);
-        double mfv2 = muscle2->getFiberVelocity(si);
+        // double mfv1 = muscle1->getFiberVelocity(si);
+        // double mfv2 = muscle2->getFiberVelocity(si);
 
         // Create the force reporter for obtaining the forces applied to the model
         // during a forward simulation
@@ -241,10 +237,9 @@ int main()
         Manager manager(osimModel,  integrator);
 
         // Integrate from initial time to final time
-        manager.setInitialTime(initialTime);
-        manager.setFinalTime(finalTime);
+        si.setTime(initialTime);
         std::cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-        manager.integrate(si);
+        manager.integrate(si, finalTime);
 
     }
     catch (const std::exception& ex)

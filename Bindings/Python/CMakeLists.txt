@@ -1,8 +1,3 @@
-set(KIT opensim)
-
-# PythonInterp is supposed to come before PythonLibs.
-find_package(PythonInterp 2.7 REQUIRED)
-find_package(PythonLibs 2.7 REQUIRED)
 
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
@@ -14,104 +9,9 @@ else()
     set(OPENSIM_PYTHON_BINARY_DIR
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
-# Location of the opensim python package in the installation (relative).
-set(OPENSIM_PYTHON_INSTALL_DIR sdk/python)
 
-
-# Generate source code for wrapper using SWIG.
-# ============================================
-set(swig_output_cxx_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.cxx)
-set(swig_output_header_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/pyOpenSim_wrap.h)
-set(swig_interface_file_fullname
-    ${CMAKE_CURRENT_SOURCE_DIR}/swig/pyWrapOpenSim.i)
-
-# Using a custom command / custom target pair so that SWIG is only run when
-# it's out of date. Previously, we used a custom target only. But, custom
-# targets are always out of date.
-# TODO can use `swig -M` to detect file dependencies for CMake.
-add_custom_command(
-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/opensim.py"
-        ${swig_output_cxx_file_fullname} ${swig_output_header_file_fullname}
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -python
-        #-debug-tmused # Which typemaps were used?
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings/
-        -I${Simbody_INCLUDE_DIR}
-        -o ${swig_output_cxx_file_fullname}
-        -outdir "${CMAKE_CURRENT_BINARY_DIR}"
-        ${swig_interface_file_fullname}
-    DEPENDS ${swig_interface_file_fullname}
-        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-    COMMENT "Generating python bindings source code with SWIG."
-    )
-
-
-# Compile python wrapper files into _opensim.
-# ===========================================
-set(SOURCE_FILES "${swig_output_cxx_file_fullname}")
-set(INCLUDE_FILES "${swig_output_header_file_fullname}")
-
-if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    # Turn off optimization for SWIG wrapper code. Optimization slows down
-    # compiling and also requires lots of memory. Also, there's not much to gain
-    # from an optimized wrapper file. 
-    # Note that the last optimization flag is what counts for GCC. So an -O0
-    # later on the command line overrides a previous -O2.
-    set(_COMPILE_FLAGS "-O0")
-
-    set_source_files_properties("${swig_output_cxx_file_fullname}"
-        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
-endif()
-# TODO disable optimization on Windows.
-
-include_directories(${OpenSim_SOURCE_DIR} 
-                    ${OpenSim_SOURCE_DIR}/Vendors 
-                    ${PYTHON_INCLUDE_PATH}
-                    )
-
-
-add_library(_${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
-
-target_link_libraries(_${KIT} osimTools ${PYTHON_LIBRARIES})
-
-# Set target properties for various platforms.
-# --------------------------------------------
-# Resulting library must be named _opensim.so on Unix, _opensim.pyd on Windows.
-set_target_properties(_${KIT} PROPERTIES
-    PROJECT_LABEL "Python - _${KIT}"
-    FOLDER "Bindings"
-    PREFIX ""
-)
-if(WIN32)
-    set_target_properties(_${KIT} PROPERTIES SUFFIX ".pyd")
-elseif(APPLE)
-    # Defaults to .dylib; change to .so.
-    set_target_properties(_${KIT} PROPERTIES SUFFIX ".so")
-endif()
-
-if(${OPENSIM_USE_INSTALL_RPATH})
-    set_target_properties(_${KIT} PROPERTIES
-        INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}"
-        )
-endif()
-    
-# Copy _opensim to the python package in the build directory.
-# -----------------------------------------------------------
-add_custom_command(TARGET _${KIT} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:_${KIT}>"
-        "${OPENSIM_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:_${KIT}>"
-    COMMENT "Copying _opensim library to python package in build directory."
-    VERBATIM
-    )
-
-
-# Copy files to create complete package in the build tree.
-# ========================================================
-# This allows us to test the python package with ctest.
+# Helper macros.
+# ==============
 
 # Helper function to for copying files into the python package.
 macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
@@ -130,24 +30,201 @@ macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
         VERBATIM
         )
     # This list is used to specify dependencies for the PythonBindings target.
-    list(APPEND PYTHON_PACKAGE_FILES "${binary_dest_full_path}")
+    list(APPEND OPENSIM_PYTHON_PACKAGE_FILES "${binary_dest_full_path}")
 
     # Python package in the installation.
     # -----------------------------------
     install(FILES "${source_full_path}"
-        DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/${relative_dest_dir}")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/${relative_dest_dir}")
 
 endmacro()
 
-# Copy the generated opensim.py file to the per-config python package dir.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/opensim.py" opensim)
+# Generates source code for python module and then compiles it.
+# Here are the arguments:
+# MODULE: Name of python module. The module is build with the interface file
+#       named ${MODULE}_python.i.
+# DEPENDS: Names of other python modules on which this module depends. 
+macro(OpenSimAddPythonModule)
+    # Parse arguments.
+    # ----------------
+    # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
+    set(options)
+    set(oneValueArgs MODULE)
+    set(multiValueArgs DEPENDS)
+    cmake_parse_arguments(
+        OSIMSWIGPY "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-# Configure setup.py
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
-    "${CMAKE_CURRENT_BINARY_DIR}/setup.py" @ONLY)
+    # Generate source code for wrapper using SWIG.
+    # --------------------------------------------
+    set(_output_file_prefix
+        "${CMAKE_CURRENT_BINARY_DIR}/python_${OSIMSWIGPY_MODULE}_wrap")
+    set(_output_cxx_file "${_output_file_prefix}.cxx")
+    set(_output_header_file "${_output_file_prefix}.h")
+    set(_interface_file
+        "${CMAKE_CURRENT_SOURCE_DIR}/swig/python_${OSIMSWIGPY_MODULE}.i")
 
-# Copy the configured setup.py for each build configuration.
-OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/setup.py" ".")
+    # We run swig once to get dependencies and then again to actually generate
+    # the wrappers. This variable holds the parts of the swig command that
+    # are shared between both invocations.
+    set(_swig_common_args -c++ -python
+            -I${OpenSim_SOURCE_DIR}
+            -I${OpenSim_SOURCE_DIR}/Bindings/
+            -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
+            ${_interface_file}
+            )
+
+    # Assemble dependencies. This macro runs a command during CMake's
+    # configure step and fills the first argument with a list of the
+    # dependencies.
+    OpenSimFindSwigFileDependencies(_${OSIMSWIGPY_MODULE}_dependencies
+        ${OSIMSWIGPY_MODULE} "${_swig_common_args}")
+
+    # Run swig.
+    add_custom_command(
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
+            ${_output_cxx_file} ${_output_header_file}
+        COMMAND ${SWIG_EXECUTABLE}
+            #-debug-tmused # Which typemaps were used?
+            -v # verbose
+            -o ${_output_cxx_file}
+            -outdir "${CMAKE_CURRENT_BINARY_DIR}"
+            ${_swig_common_args}
+        DEPENDS ${_${OSIMSWIGPY_MODULE}_dependencies}
+            COMMENT "Generating python bindings source code with SWIG: ${OSIMSWIGPY_MODULE} module."
+        )
+
+    # Compile python wrapper files into a library.
+    # --------------------------------------------
+    set(_libname _${OSIMSWIGPY_MODULE}) 
+
+    # Used for specifying dependencies for PythonBindings.
+    list(APPEND OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS ${_libname})
+
+    # We purposefully wrap deprecated functions, so no need to see such
+    # warnings.
+    if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+            ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        # Turn off optimization for SWIG wrapper code. Optimization slows down
+        # compiling and also requires lots of memory. Also, there's not much to
+        # gain from an optimized wrapper file. 
+        # Note that the last optimization flag is what counts for GCC. So an -O0
+        # later on the command line overrides a previous -O2.
+        set(_COMPILE_FLAGS "-O0 -Wno-deprecated-declarations")
+    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+        # TODO disable optimization on Windows.
+        # Don't warn about:
+        # 4996: deprecated functions.
+        # 4114: "const const T"
+        set(_COMPILE_FLAGS "/wd4996 /wd4114")
+    endif()
+    set_source_files_properties("${_output_cxx_file}"
+        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
+    
+    include_directories(${OpenSim_SOURCE_DIR} 
+                        ${OpenSim_SOURCE_DIR}/Vendors 
+                        ${PYTHON_INCLUDE_PATH}
+                        )
+
+    add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
+    
+    target_link_libraries(${_libname}
+        osimTools osimExampleComponents ${PYTHON_LIBRARIES})
+    
+    # Set target properties for various platforms.
+    # --------------------------------------------
+    # Resulting library must be named with .so on Unix, .pyd on Windows.
+    set_target_properties(${_libname} PROPERTIES
+        PROJECT_LABEL "Python - ${_libname}"
+        FOLDER "Bindings"
+        PREFIX ""
+    )
+    if(WIN32)
+        set_target_properties(${_libname} PROPERTIES SUFFIX ".pyd")
+    elseif(APPLE)
+        # Defaults to .dylib; change to .so.
+        set_target_properties(${_libname} PROPERTIES SUFFIX ".so")
+    endif()
+    
+    if(${OPENSIM_USE_INSTALL_RPATH})
+        # We always set a relative RPATH but only use an absolute RPATH if the
+        # python package is not standalone, as the libraries are not copied
+        # into the python package.
+        if(APPLE)
+            set(rpath_macro "\@loader_path")
+        elseif(UNIX)
+            set(rpath_macro "\$ORIGIN")
+        endif()
+
+        set(run_path_list "${rpath_macro}/")
+
+        # Locate osim libraries, etc in the lib dir.
+        file(RELATIVE_PATH py_dir_to_install_dir
+            "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_PYTHONDIR}/opensim"
+            "${CMAKE_INSTALL_PREFIX}")
+        set(py_dir_to_lib_dir
+            "${py_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
+        list(APPEND run_path_list "${rpath_macro}/${py_dir_to_lib_dir}")
+
+        # Absolute RPATH.
+        if(NOT OPENSIM_PYTHON_STANDALONE)
+            list(APPEND run_path_list
+                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+        endif()
+        set_property(TARGET ${_libname} APPEND PROPERTY
+            INSTALL_RPATH "${run_path_list}")
+    endif()
+
+    # Copy files into the build tree python package.
+    # ----------------------------------------------
+    # Copy the library file.
+    add_custom_command(TARGET ${_libname} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${_libname}>"
+            "${OPENSIM_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:${_libname}>"
+        COMMENT "Copying ${_libname} library to python package in build directory."
+        VERBATIM
+        )
+
+    # Copy the generated .py file to the per-config python package dir.
+    OpenSimPutFileInPythonPackage(
+        "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py" opensim)
+
+    # Install the library.
+    # --------------------
+    # It's important that we use install(TARGETS) 
+    # because this causes CMake to remove the build-tree RPATH from the library
+    # (which is set temporarily for libraries in the build tree).
+    install(TARGETS ${_libname} DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+endmacro()
+
+
+# Build python modules (generate binding source code and compile it).
+# ===================================================================
+OpenSimAddPythonModule(MODULE simbody)
+OpenSimAddPythonModule(MODULE common)
+OpenSimAddPythonModule(MODULE simulation)
+OpenSimAddPythonModule(MODULE actuators)
+OpenSimAddPythonModule(MODULE analyses)
+OpenSimAddPythonModule(MODULE tools)
+OpenSimAddPythonModule(MODULE examplecomponents)
+
+
+# Copy files to create complete package in the build tree.
+# ========================================================
+# This allows us to test the python package with ctest.
+# Note: some of the commands to do this copying (for the swig-generated py
+# files) appear above.
+
+# Configure version.py.
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in
+    "${CMAKE_CURRENT_BINARY_DIR}/version.py" @ONLY)
+
+# Copy the configured version.py for each build configuration.
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/version.py" opensim)
+
+# Copy setup.py for each build configuration.
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 
 # __init__.py.
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
@@ -157,6 +234,12 @@ foreach(test_file
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/TRCFileWithNANs.trc"
+        "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
+        "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
@@ -166,17 +249,15 @@ endforeach()
 
 # Umbrella target for assembling the python bindings in the build tree.
 # =====================================================================
-add_custom_target(PythonBindings ALL
-    DEPENDS "${OPENSIM_PYTHON_BINARY_DIR}/opensim/opensim.py"
-        ${swig_output_cxx_file_fullname}
-        ${swig_output_header_file_fullname}
-        ${PYTHON_PACKAGE_FILES}
-        )
-# Require the _opensim library to be built.
-add_dependencies(PythonBindings _${KIT})
+# This command must come *after* all calls to OpenSimPutFileInPythonPackage, as
+# that macro assembles the OPENSIM_PYTHON_PACKAGE_FILES list.
+add_custom_target(PythonBindings ALL DEPENDS ${OPENSIM_PYTHON_PACKAGE_FILES})
+
+# Require the libraries to be built.
+add_dependencies(PythonBindings ${OPENSIM_PYTHON_PACKAGE_LIBRARY_TARGETS})
 
 set_target_properties(PythonBindings PROPERTIES
-    PROJECT_LABEL "Python - assemble package"
+    PROJECT_LABEL "Python - umbrella target"
     FOLDER "Bindings")
 
 
@@ -186,32 +267,23 @@ set_target_properties(PythonBindings PROPERTIES
 # source tree. It's important to run the tests in the source tree so that
 # one can edit the tests and immediately re-run the tests without any
 # intermediate file copying.
-# TODO when minimum cmake is v3.0.0 and add_test WORKING_DIRECTORY supports
-# generator expressions, use the following instead:
-#   add_test(NAME python
-#       WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-#       COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-#                   --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-#                   --verbose
-#       )
-if(MSVC OR XCODE)
-    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-        add_test(NAME python_${cfg}
-            WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${cfg}"
-            COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+# It so happens that ${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG> is the same as
+# ${OPENSIM_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
+add_test(NAME python_tests
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
                 --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
                 --verbose
-            CONFIGURATIONS ${cfg}
-            )
-    endforeach()
-else()
-    add_test(NAME python
-        WORKING_DIRECTORY "${OPENSIM_PYTHON_BINARY_DIR}"
-        COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
-            --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-            --verbose
-        )
-endif()
+    )
+# Similar as above, but for the example files. These files aren't named as
+# test_*.py, so we must specify a more general search pattern.
+add_test(NAME python_examples
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+                --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/examples"
+                --pattern *.py
+                --verbose
+    )
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
@@ -220,12 +292,9 @@ if(WIN32)
     # build configuration, which is filled in for `$<CONFIG>`. We also don't
     # want to accidentally use a different OpenSim build/installation somewhere
     # on the machine.
-    # TODO use the commented-out version when moving to CMake 3.0.
-    #set_tests_properties(python PROPERTIES ENVIRONMENT
-    #    "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
-    foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
-        set_tests_properties(python_${cfg} PROPERTIES ENVIRONMENT
-            "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+    foreach(folder tests examples)
+        set_tests_properties(python_${folder} PROPERTIES ENVIRONMENT
+            "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>")
     endforeach()
 endif()
 
@@ -236,19 +305,21 @@ endif()
 add_custom_target(RunPythonTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex python
                                    ${OPENSIM_TEST_BUILD_CONFIG}
-                                   --extra-verbose
+                                   --extra-verbose)
+set_target_properties(RunPythonTests PROPERTIES
     PROJECT_LABEL "Python - run tests"
-    FOLDER "Bindings"
-    )
+    FOLDER "Bindings")
+
+add_dependencies(RunPythonTests PythonBindings)
 
 
 # Install python package.
 # =======================
-# Most of the files are installed via OpenSimPutFileInPythonPackage.
-# It's important that we use install(TARGETS) to install the _opensim library
-# because this causes CMake to remove the build-tree RPATH from the library
-# (which is set temporarily for libraries in the build tree).
-install(TARGETS _${KIT} DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/opensim")
+# Most of the files are installed via the above macros.
 # Install the test scripts.
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
-        DESTINATION "${OPENSIM_PYTHON_INSTALL_DIR}/opensim")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+# Install example files (not installed next to the python package).
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")

@@ -1,7 +1,7 @@
 
 subdirs(Common Simulation Actuators Analyses Utilities Tools Examples
-    Tests)
+    Tests ExampleComponents)
 
 add_subdirectory(Sandbox)
 
-install_files(/sdk/include/OpenSim OpenSim.h)
+install(FILES OpenSim.h DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/OpenSim")

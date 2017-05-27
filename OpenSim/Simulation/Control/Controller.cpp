@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,6 @@
 //=============================================================================
 #include "Controller.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Common/IO.h>
 
@@ -62,13 +61,36 @@ Controller::Controller()
 void Controller::constructProperties()
 {
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
-    constructProperty_isDisabled(false);
+    constructProperty_enabled(true);
     constructProperty_actuator_list();
 
     // Set is only a reference list, not ownership
     _actuatorSet.setMemoryOwner(false);
 }
 
+void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
+                                   int versionNumber) {
+    if(versionNumber < XMLDocument::getLatestVersion()) {
+        if(versionNumber < 30509) {
+            // Rename property 'isDisabled' to 'enabled' and
+            // negate the contained value.
+            std::string oldName{"isDisabled"};
+            std::string newName{"enabled"};
+            if(node.hasElement(oldName)) {
+                auto elem = node.getRequiredElement(oldName);
+                bool isDisabled = false;
+                elem.getValue().tryConvertToBool(isDisabled);
+
+                // now update tag name to 'enabled'
+                elem.setElementTag(newName);
+                // update its value to be the opposite of 'isDisabled'
+                elem.setValue(SimTK::String(!isDisabled));
+            }
+        }
+    }
+
+    Super::updateFromXMLNode(node, versionNumber);
+}
 
 //=============================================================================
 // GET AND SET
@@ -79,23 +101,23 @@ void Controller::constructProperties()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get whether or not this controller is disabled.
+ * Get whether or not this controller is enabled.
  */
-bool Controller::isDisabled() const
+bool Controller::isEnabled() const
 {
     if( getModel().getAllControllersEnabled() ) {
-       return( get_isDisabled() );
+       return( get_enabled() );
     } else {
-       return( true );
+       return( false );
     }
 }
 //_____________________________________________________________________________
 /**
  * Turn this controller on or off.
  */
-void Controller::setDisabled(bool aTrueFalse)
+void Controller::setEnabled(bool aTrueFalse)
 {
-    upd_isDisabled()=aTrueFalse;
+    upd_enabled() = aTrueFalse;
 }
 
 // for any post XML deserialization initialization
@@ -103,23 +125,39 @@ void Controller::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
-    if (getProperty_actuator_list().size() > 0){
-        if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
-            setActuators(model.getActuators());
-            // setup actuators to ensure actuators added by controllers are also setup properly
-            // TODO: Adopt the controls (discrete state variables) of the Actuator
-            return;
+    // TODO this custom connection code can all disappear
+    // if we use a list Socket<Actuator> 
+
+    // make sure controller does not take ownership
+    _actuatorSet.setMemoryOwner(false);
+    _actuatorSet.setSize(0);
+
+    int nac = getProperty_actuator_list().size();
+    if (nac == 0)
+        return;
+    
+    auto actuators = model.getComponentList<Actuator>();
+    if (IO::Uppercase(get_actuator_list(0)) == "ALL"){
+        for (auto& actuator : actuators) {
+            _actuatorSet.adoptAndAppend(&actuator);
         }
-        else{
-            Set<Actuator> actuatorsByName;
-            for (int i = 0; i < getProperty_actuator_list().size(); i++){
-                if (model.updActuators().contains(get_actuator_list(i)))
-                    actuatorsByName.adoptAndAppend(&model.updActuators().get(get_actuator_list(i)));
-                else
-                    cerr << "WARN: Controller::connectToModel : Actuator " << get_actuator_list(i) << " was not found and will be ignored." << endl;
+        return;
+    }
+    else{
+         for (int i = 0; i < nac; ++i) {
+             bool found = false;
+             for (auto& actuator : actuators) {
+                if (get_actuator_list(i) == actuator.getName()) {
+                    _actuatorSet.adoptAndAppend(&actuator);
+                    found = true;
+                    break;
+                }
+             }
+            if (!found) {
+                cerr << "WARN: Controller::connectToModel : Actuator "
+                    << get_actuator_list(i) <<
+                    " was not found and will be ignored." << endl;
             }
-            actuatorsByName.setMemoryOwner(false);
-            setActuators(actuatorsByName);
         }
     }
 }
@@ -135,31 +173,28 @@ void Controller::extendAddToSystem(SimTK::MultibodySystem& system) const
 // makes a request for which actuators a controller will control
 void Controller::setActuators(const Set<Actuator>& actuators)
 {
+    //TODO this needs to be setting a Socket list of Actuators
+
+    // make sure controller does NOT assume ownership
+    _actuatorSet.setMemoryOwner(false);
     //Rebuild consistent set of actuator lists
     _actuatorSet.setSize(0);
     updProperty_actuator_list().clear();
     for (int i = 0; i< actuators.getSize(); i++){
         addActuator(actuators[i]);
     }
-    // make sure controller does not take ownership
-    _actuatorSet.setMemoryOwner(false);
 }
 
 
 void Controller::addActuator(const Actuator& actuator)
 {
-    // want to keep a reference not make a clone
-    // but set interface does not take const pointer
-    // just const ref that forces a copy
-    // const_cast only to add to the private set of actuators
-    Actuator* mutable_act = const_cast<Actuator *>(&actuator);
-    _actuatorSet.adoptAndAppend(mutable_act);
+    _actuatorSet.adoptAndAppend(&actuator);
 
     int found = updProperty_actuator_list().findIndex(actuator.getName());
     if (found < 0) //add if the actuator isn't already in the list
         updProperty_actuator_list().appendValue(actuator.getName());
 }
 
-Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
+Set<const Actuator>& Controller::updActuators() { return _actuatorSet; }
 
-const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }
+const Set<const Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }

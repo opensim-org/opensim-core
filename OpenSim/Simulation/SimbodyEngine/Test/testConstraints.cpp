@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Samuel R. Hamner                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,21 +21,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testConstraints builds OpenSim models using the OpenSim API and builds an equivalent
-//  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivalent (norm-err
-//  less than 10x integration error tolerance)
+//==============================================================================
+// testConstraints builds OpenSim models using the OpenSim API and builds an 
+// equivalent Simbody system using the Simbody API for each test case. A test 
+// fails if the OpenSim and Simbody final states of the simulation are not 
+// equivalent (norm-err less than 10x integration error tolerance)
 //
 //  Tests Include:
 //      1. Test locking (constraint) mechanism on coordinates
 //      2. Test WelConstraint against Simbody Constraint::Weld
-//      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
+//      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint
 //      4. CoordinateCouplerConstraint as a custom knee 
 //      5. RollingOnSurfaceConstraint as foot on floor against SimTK NoSlip1D
 //     Add tests here as new constraint types are added to OpenSim
 //
-//==========================================================================================================
+//==============================================================================
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/ForceReporter.h>
@@ -69,7 +69,7 @@
 using namespace OpenSim;
 using namespace std;
 
-//==========================================================================================================
+//===============================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.00;
@@ -93,7 +93,7 @@ const SimTK::Vec3 ankleInTibia(0.0, -0.243800, 0);
 const SimTK::Vec3 ankleInFoot(-0.035902, 0.051347, 0);
 const SimTK::Vec3 mtpInFoot(0.098032, -0.038000, 0);
 const SimTK::Vec3 mtpInToes(-0.035902, 0.051347, 0);
-//==========================================================================================================
+//================================================================================
 
 class MultidimensionalFunction : public OpenSim::Function {
 OpenSim_DECLARE_CONCRETE_OBJECT(MultidimensionalFunction, OpenSim::Function);
@@ -138,6 +138,7 @@ void testPointOnLineConstraint();
 void testCoordinateCouplerConstraint();
 void testPointConstraint();
 void testConstantDistanceConstraint();
+void testSerializeDeserialize();
 
 int main()
 {
@@ -152,6 +153,7 @@ int main()
         testCoordinateCouplerConstraint();
         // test OpenSim roll constraint against a composite of Simbody constraints
         testRollingOnSurfaceConstraint();
+        testSerializeDeserialize();
     }
     catch(const OpenSim::Exception& e) {
         e.print(cerr);
@@ -161,9 +163,9 @@ int main()
     return 0;
 }
 
-//==========================================================================================================
+//==============================================================================
 // Common Functions 
-//==========================================================================================================
+//==============================================================================
 int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
 {
     using namespace SimTK;
@@ -171,7 +173,8 @@ int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
     Random::Uniform randomAngle(-Pi/4, Pi/4);
     Random::Uniform randomSpeed(-1.0, 1.0);
 
-    // Provide initial states as random angles and speeds for OpenSim and Simbody models
+    // Provide initial states as random angles and speeds for OpenSim and 
+    // Simbody models
     for(int i = 0; i<qi.size(); i++)
         qi[i] = randomAngle.getValue();
 
@@ -212,20 +215,13 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     // In this case, the initial and final times are set based on
     // the range of times over which the controls are available.
     //Control *control;
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-
-    // Integrate
-    const SimbodyMatterSubsystem& matter2 = osimModel->getMultibodySystem().getMatterSubsystem();
-    //for (int i = 0; i < matter2.getNumConstraints(); i++)
-    //    printf("%d: %d\n", i, matter2.isConstraintDisabled(osim_state, SimTK::ConstraintIndex(i)));
-    //cout << osim_state.getQ()<<endl;
-    //cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
-
-    manager.integrate(osim_state);
+    osim_state.setTime(0.0);
+    manager.integrate(osim_state, duration);
 }
 
-void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb, SimTK::Vector q_osim, SimTK::Vector u_osim, string errorMessagePrefix = "")
+void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
+    SimTK::Vector q_osim, SimTK::Vector u_osim,
+    string errorMessagePrefix = "")
 {
     using namespace SimTK;
     
@@ -237,8 +233,9 @@ void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb, SimTK::Vect
 
         q_sb.dump("Simbody q's:");
         q_osim.dump("OpenSim q's:");
-        //This is a hack knowing the free and ball joint tests have the quaternion q's first
-        // And that the q's are packed as qqqq or aaa* for a ball and qqqqxyz or aaaxyz* for a free joint
+        //This is a hack knowing the free and ball joint tests have the
+        // quaternion q's first and that the q's are packed as qqqq or aaa*
+        // for a ball and qqqqxyz or aaaxyz* for a free joint
         int quat_ind = ((nq > 6) ? 6 : 3);
         int j = 0;
         for(int i=0; i< q_sb.size(); i++){
@@ -491,7 +488,7 @@ void testCoordinateLocking()
     // create hip as a pin joint
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
 
     // Add the thigh body 
     osimModel->addBody(&osim_thigh);
@@ -551,10 +548,9 @@ void testCoordinateLocking()
     Vector qi = si2.getQ();
 
     // Integrate from initial time to final time
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(duration);
-    cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
-    manager.integrate(si2);
+    si2.setTime(0.0);
+    cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
+    manager.integrate(si2, duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();
@@ -611,34 +607,41 @@ void testWeldConstraint()
     OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
 
     // create Pin hip joint
-    PinJoint hip("hip", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
+    PinJoint hip("hip", ground, hipInGround, Vec3(0), 
+                        osim_thigh, hipInFemur, Vec3(0));
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_thigh);
     osimModel->addJoint(&hip);
 
     //OpenSim shank
-    OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+    OpenSim::Body osim_shank("shank", tibiaMass.getMass(),
+        tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
     // create Pin knee joint
-    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0));
+    PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), 
+                          osim_shank, kneeInTibia, Vec3(0));
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_shank);
     osimModel->addJoint(&knee);
 
     //OpenSim foot
-    OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+    OpenSim::Body osim_foot("foot", footMass.getMass(), 
+        footMass.getMassCenter(), footMass.getInertia());
 
     // create Pin ankle joint
-    PinJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
+    PinJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0),
+                             osim_foot, ankleInFoot, Vec3(0));
 
     // Add the foot body which now also contains the hip joint to the model
     osimModel->addBody(&osim_foot);
     osimModel->addJoint(&ankle);
 
     // add a point on line constraint
-    WeldConstraint footConstraint("footConstraint", ground, SimTK::Transform(weldInGround), osim_foot, SimTK::Transform(weldInFoot));
+    WeldConstraint footConstraint( "footConstraint", 
+                                   ground, SimTK::Transform(weldInGround), 
+                                   osim_foot, SimTK::Transform(weldInFoot) );
     osimModel->addConstraint(&footConstraint);
 
     // BAD: but if model maintains ownership, it will attempt to delete stack allocated objects
@@ -651,13 +654,17 @@ void testWeldConstraint()
     kinAnalysis->setInDegrees(false);
     osimModel->addAnalysis(kinAnalysis);
 
+    osimModel->setup();
+    osimModel->print("testWeldConstraint.osim");
+
     // Need to setup model before adding an analysis since it creates the AnalysisSet
     // for the model if it does not exist.
     State& osim_state = osimModel->initSystem();
 
-    //==========================================================================================================
+    //=========================================================================
     // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state, "testWeldConstraint FAILED\n");
+    compareSimulations(system, state, osimModel, osim_state, 
+        "testWeldConstraint FAILED\n");
 }
 
 void testPointOnLineConstraint()
@@ -666,11 +673,12 @@ void testPointOnLineConstraint()
 
     cout << endl;
     cout << "==================================================================" << endl;
-    cout << " OpenSim PointOnLineConstraint vs. Simbody Constraint::PointOnLine " << endl;
+    cout << "OpenSim PointOnLineConstraint vs. Simbody Constraint::PointOnLine " << endl;
     cout << "==================================================================" << endl;
 
     Random::Uniform randomDirection(-1, 1);
-    Vec3 lineDirection(randomDirection.getValue(), randomDirection.getValue(), randomDirection.getValue());
+    Vec3 lineDirection(randomDirection.getValue(), randomDirection.getValue(),
+        randomDirection.getValue());
     UnitVec3 normLineDirection(lineDirection.normalize());
     Vec3 pointOnLine(0,0,0);
     Vec3 pointOnFollower(0,0,0);
@@ -686,7 +694,8 @@ void testPointOnLineConstraint()
         SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
     
     // Constrain foot to line on ground
-    SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), normLineDirection, pointOnLine, foot, pointOnFollower);
+    SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), 
+        normLineDirection, pointOnLine, foot, pointOnFollower);
 
     // Simbody model state setup
     system.realizeTopology();
@@ -694,24 +703,27 @@ void testPointOnLineConstraint()
     matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
-    //==========================================================================================================
+    //=========================================================================
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
     const Ground& ground = osimModel->getGround();;
 
     //OpenSim foot
-    OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+    OpenSim::Body osim_foot("foot", footMass.getMass(),
+        footMass.getMassCenter(), footMass.getInertia());
 
     // create foot as a free joint
-    FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
+    FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0),
+                                     osim_foot, Vec3(0), Vec3(0));
     
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_foot);
     osimModel->addJoint(&footJoint);
 
     // add a point on line constraint
-    PointOnLineConstraint lineConstraint(ground, normLineDirection, pointOnLine, osim_foot, pointOnFollower);
+    PointOnLineConstraint lineConstraint(ground, normLineDirection, pointOnLine,
+        osim_foot, pointOnFollower);
     osimModel->addConstraint(&lineConstraint);
 
     // BAD: have to set memoryOwner to false or program will crash when this test is complete.
@@ -825,7 +837,7 @@ void testCoordinateCouplerConstraint()
     PinJoint hip("hip",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
     // Rename hip coordinates for a pin joint
-    hip.getCoordinateSet()[0].setName("hip_flex");
+    hip.updCoordinate().setName("hip_flex");
     
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(&osim_thigh);
@@ -995,21 +1007,21 @@ void testRollingOnSurfaceConstraint()
     Ground& ground = osimModel->updGround();;
     Mesh arrowGeom("arrow.vtp");
     arrowGeom.setColor(Vec3(1, 0, 0));
-    arrowGeom.setFrameName("ground");
-    ground.addGeometry(arrowGeom);
+    ground.attachGeometry(arrowGeom.clone());
+
+    osimModel->finalizeFromProperties();
 
     //OpenSim rod
     auto osim_rod = new OpenSim::Body("rod", mass, comInRod, inertiaAboutCom);
     OpenSim::PhysicalOffsetFrame* cylFrame = new PhysicalOffsetFrame(*osim_rod, Transform(comInRod));
     cylFrame->setName("comInRod");
-    osimModel->addFrame(cylFrame);
+    osimModel->addComponent(cylFrame);
     Mesh cylGeom("cylinder.vtp");
     cylGeom.set_scale_factors(2 * halfRodLength*Vec3(0.1, 1, 0.1));
-    cylGeom.setFrameName("comInRod");
-    osim_rod->addGeometry(cylGeom);
+    cylFrame->attachGeometry(cylGeom.clone());
 
     // create rod as a free joint
-    auto rodJoint = new PlanarJoint("rodToGround", ground.getName(), osim_rod->getName());
+    auto rodJoint = new PlanarJoint("rodToGround", ground, *osim_rod);
 
     // Add the thigh body which now also contains the hip joint to the model
     osimModel->addBody(osim_rod);
@@ -1020,7 +1032,7 @@ void testRollingOnSurfaceConstraint()
     roll->setRollingBodyByName("rod");
     roll->setSurfaceBodyByName("ground");
 
-    double h = roll->get_surface_height();
+    /*double h = */roll->get_surface_height();
     
     osimModel->addConstraint(roll);
     osimModel->setGravity(gravity_vec);
@@ -1034,7 +1046,7 @@ void testRollingOnSurfaceConstraint()
     // for the model if it does not exist.
     //osimModel->setUseVisualizer(true);
     State osim_state = osimModel->initSystem();
-    roll->setDisabled(osim_state, false);
+    roll->setIsEnforced(osim_state, true);
     osim_state.updY() = state.getY();
 
     // compute model accelerations
@@ -1058,4 +1070,56 @@ void testRollingOnSurfaceConstraint()
     //==========================================================================================================
     // Compare Simbody system and OpenSim model simulations
     compareSimulations(system, state, osimModel, osim_state, "testRollingOnSurfaceConstraint FAILED\n");
+}
+
+void testSerializeDeserialize() {
+    std::cout << "Test serialize & deserialize." << std::endl;
+
+    std::string origModelFile{"testJointConstraints.osim"};
+    std::string oldModelFile{"testConstraints_SerializeDeserialize_old.osim"};
+    std::string newModelFile{"testConstraints_SerializeDeserialize_new.osim"};
+
+    // Toggle of 'isDisabled' property for some muscles in model file.
+    std::set<std::string> flippedConstraints{"tib_pat_r_r3_con",
+                                             "tib_pat_r_tx_con",
+                                             "tib_pat_r_ty_con"};
+    {
+        auto xml = SimTK::Xml::Document{origModelFile};
+        auto constraints = xml.getRootElement().
+                               getRequiredElement("Model").
+                               getRequiredElement("ConstraintSet").
+                               getRequiredElement("objects").
+                               getAllElements("CoordinateCouplerConstraint");
+        for(unsigned i = 0; i < constraints.size(); ++i) {
+            const auto& constraintName =
+                constraints[i].getRequiredAttributeValue("name");
+            if(flippedConstraints.find(constraintName) !=
+               flippedConstraints.end()) {
+                auto elem = constraints[i].getRequiredElement("isDisabled");
+                elem.setValue("true");
+            }
+        }
+        xml.writeToFile(oldModelFile);
+    }
+
+    // Model with Force::isDisabled (version < 30508)
+    Model oldModel{oldModelFile};
+    oldModel.print(newModelFile);
+    Model newModel{newModelFile};
+
+    const auto& oldConstraintSet = oldModel.getConstraintSet();
+    const auto& newConstraintSet = newModel.getConstraintSet();
+
+    ASSERT(oldConstraintSet.getSize() == newConstraintSet.getSize());
+    for(int i = 0; i < oldConstraintSet.getSize(); ++i) {
+        ASSERT(oldConstraintSet.get(i).get_isEnforced() ==
+               newConstraintSet.get(i).get_isEnforced());
+
+        if(flippedConstraints.find(newConstraintSet.get(i).getName()) !=
+           flippedConstraints.end())
+            ASSERT(newConstraintSet.get(i).get_isEnforced() == false);
+    }
+
+    std::remove(oldModelFile.c_str());
+    std::remove(newModelFile.c_str());
 }

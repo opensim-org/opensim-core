@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -47,10 +47,46 @@ position (\f$\vec{u} \neq \dot{\vec{q}}\f$)
 class OSIMSIMULATION_API EllipsoidJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
+public:
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rx = myEllipsoidJoint.
+                         getCoordinate(EllipsoidJoint::Coord::Rotation1X);
+        \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myEllipsoidJoint.getCoordinate(opensim.EllipsoidJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java example</b>
+        \code{.java}
+        rx = myEllipsoidJoint.getCoordinate(EllipsoidJoint.Coord.Rotation1X);
+        \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myEllipsoidJoint.get_coordinates(0);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
+    };
+
+private:
     /** Specify the Coordinates of the EllipsoidJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
 
 public:
 //==============================================================================
@@ -66,25 +102,43 @@ public:
     // CONSTRUCTION
     EllipsoidJoint();
     /** Convenience Joint like Constructor */
-    EllipsoidJoint( const std::string& name,
-                    const std::string& parentName,
-                    const std::string& child,
-                    const SimTK::Vec3& ellipsoidRadii,
-                    bool reverse = false);
+    EllipsoidJoint(const std::string&    name,
+                   const PhysicalFrame&  parent,
+                   const PhysicalFrame&  child,
+                   const SimTK::Vec3&    ellipsoidRadii);
 
     /** Deprecated Joint Constructor*/
-    EllipsoidJoint(const std::string& name,
-        const PhysicalFrame& parent,
-        const SimTK::Vec3& locationInParent,
-        const SimTK::Vec3& orientationInParent,
-        const PhysicalFrame& child,
-        const SimTK::Vec3& locationInChild,
-        const SimTK::Vec3& orientationInChild,
-        const SimTK::Vec3& ellipsoidRadii,
-        bool reverse=false);
+    EllipsoidJoint(const std::string&    name,
+                   const PhysicalFrame&  parent,
+                   const SimTK::Vec3&    locationInParent,
+                   const SimTK::Vec3&    orientationInParent,
+                   const PhysicalFrame&  child,
+                   const SimTK::Vec3&    locationInChild,
+                   const SimTK::Vec3&    orientationInChild,
+                   const SimTK::Vec3&    ellipsoidRadii);
 
     //Set properties
     void setEllipsoidRadii(const SimTK::Vec3& radii);
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
+    }
 
     // SCALE
     void scale(const ScaleSet& aScaleSet) override;

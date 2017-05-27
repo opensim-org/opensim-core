@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,9 +30,6 @@
 // C++ INCLUDES
 #include "GCVSpline.h"
 #include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
 #include "gcvspl.h"
 #include "XYFunctionInterface.h"
 
@@ -294,8 +291,8 @@ init(Function* aFunction)
                     y[i] = 1.0;
             }
             *this = GCVSpline(degree, order, x, y);
-            delete x;
-            delete y;
+            delete [] x;
+            delete [] y;
         } else if (xyFunc.getNumberOfPoints() < order) {
             // A GCVSpline must have at least getOrder() data points.
             // Use as many data points as aFunction has, and then fill
@@ -316,8 +313,8 @@ init(Function* aFunction)
                 y[i] = y[i-1];
             }
             *this = GCVSpline(degree, order, x, y);
-            delete x;
-            delete y;
+            delete [] x;
+            delete [] y;
         } else {
             *this = GCVSpline(degree, xyFunc.getNumberOfPoints(),
                 xyFunc.getXValues(), xyFunc.getYValues());

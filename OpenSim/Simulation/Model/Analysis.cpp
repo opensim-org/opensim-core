@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,7 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "Analysis.h"
-#include "Model.h"
+#include "OpenSim/Common/XMLDocument.h"
 
 
 
@@ -46,12 +46,12 @@ using namespace std;
  * param: aModel Model on which the analysis is to be performed.
  */
 Analysis::Analysis(Model *aModel):
+    _statesStore(NULL),
+    _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _stepInterval(_stepIntervalProp.getValueInt()),
-    _inDegrees(_inDegreesProp.getValueBool()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     
     _model = aModel;
@@ -89,12 +89,12 @@ Analysis::~Analysis()
  */
 Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     Object(aFileName, false),
-    _stepInterval(_stepIntervalProp.getValueInt()),
+    _statesStore(NULL),
     _inDegrees(_inDegreesProp.getValueBool()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
     _on(_onProp.getValueBool()),
     _startTime(_startTimeProp.getValueDbl()),
-    _endTime(_endTimeProp.getValueDbl()),
-    _statesStore(NULL)
+    _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
@@ -138,12 +138,12 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
  */
 Analysis::Analysis(const Analysis &aAnalysis):
    Object(aAnalysis),
+   _statesStore(NULL),
+   _inDegrees(_inDegreesProp.getValueBool()),
+   _stepInterval(_stepIntervalProp.getValueInt()),
    _on(_onProp.getValueBool()),
    _startTime(_startTimeProp.getValueDbl()),
-   _endTime(_endTimeProp.getValueDbl()),
-   _stepInterval(_stepIntervalProp.getValueInt()),
-   _inDegrees(_inDegreesProp.getValueBool()),
-   _statesStore(NULL)
+   _endTime(_endTimeProp.getValueDbl())
 {
     setNull();
     *this = aAnalysis;

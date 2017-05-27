@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include <time.h>
 #include <math.h>
 #include <string>
@@ -108,7 +107,7 @@ FixSlashesInFilePath(const std::string &path)
 {
     std::string fixedPath = path;
     for(unsigned int i=0;i<fixedPath.length();i++) {
-#ifdef WIN32
+#ifdef _WIN32
         if(fixedPath[i] == '/') fixedPath[i] = '\\';
 #else
         if(fixedPath[i] == '\\') fixedPath[i] = '/';
@@ -505,7 +504,7 @@ getCwd()
 {
     char buffer[PATH_MAX];
 #if defined __linux__ || defined __APPLE__
-    char* ptr = getcwd(buffer, PATH_MAX); 
+    auto ptr = getcwd(buffer, PATH_MAX); (void)ptr;
 #else
     _getcwd(buffer, PATH_MAX);
 #endif

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,8 +25,6 @@
 #include "Marker.h"
 #include "Model.h"
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -110,12 +108,13 @@ MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 /**
  * Get names of markers in the marker set
  */
-void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
+void MarkerSet::getMarkerNames(Array<string>& markerNamesArray) const
 {
+    markerNamesArray.setSize(0);
     for (int i = 0; i < getSize(); i++)
     {
         Marker& nextMarker = get(i);
-        aMarkerNamesArray.append(nextMarker.getName());
+        markerNamesArray.append(nextMarker.getName());
     }
 }
 

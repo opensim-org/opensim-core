@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -184,7 +184,7 @@ void ActivationFiberLengthMuscle_Deprecated::
 {
     double adot = 0;
     double ldot = 0;
-    if (!isDisabled(s)) {
+    if (appliesForce(s)) {
         adot = getActivationDeriv(s);
         ldot = getFiberVelocity(s);
     }
@@ -417,7 +417,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
  */
 void ActivationFiberLengthMuscle_Deprecated::computeInitialFiberEquilibrium(SimTK::State& s) const
 {
-    double force = computeIsometricForce(s, getActivation(s));
+    /*double force = */computeIsometricForce(s, getActivation(s));
 
     //cout<<getName()<<": isometric force = "<<force<<endl;
     //cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
@@ -433,7 +433,7 @@ double ActivationFiberLengthMuscle_Deprecated::
     const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
     const double &maxContractionVelocity = get_max_contraction_velocity();
 
-    double normalizedLength = getFiberLength(s) / optimalFiberLength;
+    //double normalizedLength = getFiberLength(s) / optimalFiberLength;
     double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
     double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 

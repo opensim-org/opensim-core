@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,21 +29,15 @@
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
-#include <OpenSim/Common/ArrayPtrs.h>
 #include "ControllerSet.h"
 #include "AnalysisSet.h"
-#include "SimTKsimbody.h"
 #include "ForceSet.h"
 #include "ExternalLoads.h"
 
 namespace OpenSim { 
 
-class PrescribedForce;
-class GCVSpline;
-
 class Model;
 class ForceSet;
-class Body;
 
 
 //=============================================================================
@@ -74,7 +68,7 @@ protected:
     PropertyBool _replaceForceSetProp;
     bool &_replaceForceSet;
     
-    /** Names of the xml files used to construct an force set for the
+    /** Names of the xml files used to construct a force set for the
     model. */
     PropertyStrArray _forceSetFilesProp;
     Array<std::string> &_forceSetFiles;
@@ -96,8 +90,8 @@ protected:
     double &_tf;
     
     /** A flag used to specify whether or not equilibrium is solved for
-    the auxiliary states.  This often needs to be done auxiliary sates whose
-    starting values are unknown (e.g., muscle fiber lengths). */
+    the auxiliary states.  This often needs to be done for auxiliary states
+    whose starting values are unknown (e.g., muscle fiber lengths). */
     OpenSim::PropertyBool _solveForEquilibriumForAuxiliaryStatesProp;
     bool &_solveForEquilibriumForAuxiliaryStates;
     

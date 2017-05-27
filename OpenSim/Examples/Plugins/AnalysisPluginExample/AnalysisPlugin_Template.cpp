@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth, Tim Dorn                          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -54,8 +54,8 @@ AnalysisPlugin_Template::AnalysisPlugin_Template() : Analysis()
 void AnalysisPlugin_Template::
 setNull()
 {
-    _bodyIndices = NULL;
-    _bodypos = NULL;
+    _bodyIndices = 0;
+    _bodypos = 0;
 }
 
 
@@ -224,7 +224,7 @@ record(const SimTK::State& s)
     double Mass = 0.0;
 
     // GROUND BODY
-    const Body& ground = _model->getGroundBody();
+    const Ground& ground = _model->getGround();
 
     // POSITION
     const BodySet& bodySet = _model->getBodySet();
@@ -235,10 +235,12 @@ record(const SimTK::State& s)
         SimTK::Vec3 com = body.getMassCenter();
 
         // GET POSITIONS AND EULER ANGLES
-        _model->getSimbodyEngine().getPosition(s,body,com,vec);
-        _model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
-        _model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
-            &angVec[0],&angVec[1],&angVec[2]);
+        vec = body.getPositionInGround(s);
+        angVec = body.getTransformInGround(s).R()
+            .convertThreeAxesRotationToThreeAngles(SimTK::BodyRotationSequence,
+                                                   SimTK::XAxis,
+                                                   SimTK::YAxis,
+                                                   SimTK::ZAxis);
 
         // CONVERT TO DEGREES?
         if(getInDegrees()) {

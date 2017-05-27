@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matt S. DeMers                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -216,14 +216,15 @@ int main()
         manager.integrate(si);
 
         // Save results
-        osimModel.printControlStorage("SpringActuatedLeg_controls.sto");
-        Storage statesDegrees(manager.getStateStorage());
-        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-        //statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-        statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+        auto controlsTable = osimModel.getControlsTable();
+        STOFileAdapter::write(controlsTable, "SpringActuatedLeg_controls.sto");
 
-        forces->getForceStorage().print("actuator_forces.mot");
-        
+        auto statesTable = manager.getStatesTable();
+        osimModel.updSimbodyEngine().convertRadiansToDegrees(statesTable);
+        STOFileAdapter::write(statesTable, "SpringActuatedLeg_states.sto");
+
+        auto forcesTable = forces->getForcesTable();
+        STOFileAdapter::write(forcesTable, "SpringActuatedLeg_forces.sto");
     }
     catch (const std::exception& ex)
     {

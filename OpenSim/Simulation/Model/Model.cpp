@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth,          *
  *            Michael Sherman                                                 *
  *                                                                            *
@@ -30,43 +30,33 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlLinearNode.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 
 #include "SimTKcommon/internal/SystemGuts.h"
 
 #include "Model.h"
 
-#include "Muscle.h"
-#include "Ligament.h"
-#include "CoordinateSet.h"
-#include "FrameSet.h"
-#include "BodySet.h"
-#include "AnalysisSet.h"
-#include "ForceSet.h"
-#include "ControllerSet.h"
-#include "Analysis.h"
-#include "ForceAdapter.h"
 #include "Actuator.h"
-#include "MarkerSet.h"
-#include "ContactGeometrySet.h"
-#include "ProbeSet.h"
+#include "AnalysisSet.h"
+#include "BodySet.h"
 #include "ComponentSet.h"
+#include "ContactGeometrySet.h"
+#include "ControllerSet.h"
+#include "CoordinateSet.h"
+#include "ForceSet.h"
+#include "Ligament.h"
+#include "MarkerSet.h"
+#include "ProbeSet.h"
+
 #include <iostream>
 #include <string>
-#include <cmath>
+
+#include <OpenSim/Simulation/AssemblySolver.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -85,38 +75,33 @@ using namespace SimTK;
 /**
  * Default constructor.
  */
-Model::Model() :
+Model::Model() : ModelComponent(),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {
-    constructInfrastructure();
+    constructProperties();
     setNull();
-    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML file
  */
-Model::Model(const string &aFileName, const bool finalize) :
+Model::Model(const string &aFileName) :
     ModelComponent(aFileName, false),
     _fileName("Unassigned"),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
+    _workingState(),
     _useVisualizer(false),
-    _allControllersEnabled(true),
-    _workingState()
+    _allControllersEnabled(true)
 {   
-    constructInfrastructure();
+    constructProperties();
     setNull();
     updateFromXMLDocument();
-
-    if (finalize) {
-        finalizeFromProperties();
-    }
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
@@ -130,22 +115,26 @@ Model::Model(const string &aFileName, const bool finalize) :
 /*virtual*/
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-    
     if (versionNumber < XMLDocument::getLatestVersion()){
-        cout << "Updating Model file from " << versionNumber << " to latest format..." << endl;
+        cout << "Updating Model file from " << versionNumber 
+            << " to latest format..." << endl;
         // Version has to be 1.6 or later, otherwise assert
         if (versionNumber == 10600){
             // Get node for DynamicsEngine
-            SimTK::Xml::element_iterator engIter = aNode.element_begin("DynamicsEngine");
+            SimTK::Xml::element_iterator engIter = 
+                aNode.element_begin("DynamicsEngine");
             //Get node for SimbodyEngine
             if (engIter != aNode.element_end()){
-                SimTK::Xml::element_iterator simbodyEngIter = engIter->element_begin("SimbodyEngine");
+                SimTK::Xml::element_iterator simbodyEngIter = 
+                    engIter->element_begin("SimbodyEngine");
                 // Move all Children of simbodyEngineNode to be children of _node
                 // we'll keep inserting before enginesNode then remove it;
-                SimTK::Array_<SimTK::Xml::Element> elts = simbodyEngIter->getAllElements();
+                SimTK::Array_<SimTK::Xml::Element> elts =
+                    simbodyEngIter->getAllElements();
                 while (elts.size() != 0){
                     // get first child and move it to Model
-                    aNode.insertNodeAfter(aNode.element_end(), simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
+                    aNode.insertNodeAfter(aNode.element_end(),
+                        simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
                     elts = simbodyEngIter->getAllElements();
                 }
                 engIter->eraseNode(simbodyEngIter);
@@ -153,7 +142,7 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // Now handling the rename of ActuatorSet to ForceSet
             XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
         }
-        if (versionNumber < 30500) {
+        if (versionNumber < 30501) {
             // Create JointSet node after BodySet under <OpenSimDocument>/<Model>
             SimTK::Xml::Element jointSetElement("JointSet");
             SimTK::Xml::Element jointObjects("objects");
@@ -161,27 +150,107 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             SimTK::Xml::element_iterator bodySetNode = aNode.element_begin("BodySet");
             aNode.insertNodeAfter(bodySetNode, jointSetElement);
             // Cycle through Bodies and move their Joint nodes under the Model's JointSet
-            SimTK::Xml::element_iterator  objects_node = bodySetNode->element_begin("objects");
-            SimTK::Xml::element_iterator bodyIter = objects_node->element_begin("Body");
+            SimTK::Xml::element_iterator  objects_node =
+                bodySetNode->element_begin("objects");
+            SimTK::Xml::element_iterator bodyIter =
+                objects_node->element_begin("Body");
             for (; bodyIter != objects_node->element_end(); ++bodyIter) {
                 std::string body_name = bodyIter->getOptionalAttributeValue("name");
-                //cout << "Processing body " <<  body_name << std::endl;
-                SimTK::Xml::element_iterator  joint_node = bodyIter->element_begin("Joint");
+                if (body_name == "ground") {
+                    SimTK::Xml::Element newGroundElement("Ground");
+                    newGroundElement.setAttributeValue("name", "ground");
+
+                    SimTK::Xml::element_iterator geometryIter = 
+                        bodyIter->element_begin("geometry");
+                    if (geometryIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfGeomety = geometryIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(), 
+                            cloneOfGeomety);
+                    }
+
+                    SimTK::Xml::element_iterator visObjIter = 
+                        bodyIter->element_begin("VisibleObject");
+                    if (visObjIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfVisObj = visObjIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(),
+                            cloneOfVisObj);
+                    }
+
+                    SimTK::Xml::element_iterator wrapSetIter = 
+                        bodyIter->element_begin("WrapObjectSet");
+                    if (wrapSetIter != bodyIter->element_end()) {
+                        SimTK::Xml::Element cloneOfWrapSet = wrapSetIter->clone();
+                        newGroundElement.insertNodeAfter(newGroundElement.node_end(),
+                            cloneOfWrapSet);
+                    }
+
+                    String test;
+                    newGroundElement.writeToString(test);
+
+                    objects_node->eraseNode(bodyIter);
+
+                    aNode.insertNodeBefore(bodySetNode, newGroundElement);
+                    break;
+                }
+            }
+            bodyIter = objects_node->element_begin("Body");
+            for (; bodyIter != objects_node->element_end(); ++bodyIter) {
+                std::string body_name = bodyIter->getOptionalAttributeValue("name");
+                SimTK::Xml::element_iterator  joint_node =
+                    bodyIter->element_begin("Joint");
                 if (joint_node->element_begin() != joint_node->element_end()){
                     SimTK::Xml::Element detach_joint_node = joint_node->clone();
-                    SimTK::Xml::element_iterator concreteJointNode = detach_joint_node.element_begin();
+                    SimTK::Xml::element_iterator concreteJointNode = 
+                        detach_joint_node.element_begin();
                     detach_joint_node.removeNode(concreteJointNode);
-                    SimTK::Xml::element_iterator parentBodyElement = concreteJointNode->element_begin("parent_body");
+                    SimTK::Xml::element_iterator parentBodyElement = 
+                        concreteJointNode->element_begin("parent_body");
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
-                    //cout << "Processing Joint " << concreteJointNode->getElementTag() << "Parent body " << parent_name << std::endl;
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "parent_frame", parent_name);
-                    XMLDocument::addConnector(*concreteJointNode, "Connector_PhysicalFrame_", "child_frame", body_name);
+
+                    XMLDocument::addConnector(*concreteJointNode, 
+                        "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                    XMLDocument::addConnector(*concreteJointNode, 
+                        "Connector_PhysicalFrame_", "child_frame", body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
-                    jointObjects.insertNodeAfter(jointObjects.node_end(), *concreteJointNode);
+                    jointObjects.insertNodeAfter(jointObjects.node_end(),
+                        *concreteJointNode);
                     detach_joint_node.clearOrphan();
                 }
                 bodyIter->eraseNode(joint_node);
+            }
+        }
+        if (versionNumber < 30512) {
+            // FrameSet was removed from Model as of 30512 and this update
+            // is responsible for moving the Frames in the FrameSet to
+            // the Model's list of components.
+            SimTK::Xml::element_iterator componentsNode =
+                aNode.element_begin("components");
+            SimTK::Xml::element_iterator framesNode =
+                aNode.element_begin("FrameSet");
+
+            // If no FrameSet nothing to be done
+            if (framesNode != aNode.element_end()) {
+                if (componentsNode == aNode.element_end()) {
+                    // if no 'components' list element, create one and insert it
+                    SimTK::Xml::Element componentsElement("components");
+                    aNode.insertNodeBefore(framesNode, componentsElement);
+                }
+
+                componentsNode = aNode.element_begin("components");
+
+                SimTK::Xml::element_iterator  objects_node =
+                    framesNode->element_begin("objects");
+
+                SimTK::Xml::element_iterator frameIter =
+                    objects_node->element_begin();
+                for (; frameIter != objects_node->element_end(); ++frameIter) {
+                    SimTK::Xml::Element cloneOfFrame = frameIter->clone();
+                    componentsNode->insertNodeAfter(componentsNode->node_end(),
+                        cloneOfFrame);
+                }
+                // now delete the FrameSet
+                framesNode->getParentElement().eraseNode(framesNode);
             }
         }
     }
@@ -228,9 +297,6 @@ void Model::constructProperties()
 
     BodySet bodies;
     constructProperty_BodySet(bodies);
-
-    FrameSet frames;
-    constructProperty_FrameSet(frames);
 
     JointSet joints;
     constructProperty_JointSet(joints);
@@ -284,7 +350,7 @@ void Model::buildSystem() {
 //------------------------------------------------------------------------------
 // Requires that buildSystem() has already been called.
 SimTK::State& Model::initializeState() {
-    if (!_system) 
+    if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     // This tells Simbody to finalize the System.
@@ -318,9 +384,6 @@ SimTK::State& Model::initializeState() {
     for (int i=0; i<getProbeSet().getSize(); ++i)
         getProbeSet().get(i).reset(_workingState);
 
-    // Reset the controller's storage
-    upd_ControllerSet().constructStorage();
-    
     // Do the assembly
     createAssemblySolver(_workingState);
     assemble(_workingState);
@@ -444,7 +507,6 @@ bool Model::isValidSystem() const
  */
 void Model::createMultibodySystem()
 {
-
     // We must reset these unique_ptr's before deleting the System (through
     // reset()), since deleting the System puts a null handle pointer inside
     // the subsystems (since System deletes the subsystems).
@@ -468,10 +530,78 @@ void Model::createMultibodySystem()
 }
 
 
+std::vector<SimTK::ReferencePtr<const Coordinate>> 
+    Model::getCoordinatesInMultibodyTreeOrder() const
+{
+    OPENSIM_THROW_IF_FRMOBJ(!isValidSystem(), Exception,
+        "Cannot order Coordinates without a valid MultibodySystem.");
+
+    int nc = getNumCoordinates();
+    auto coordinates = getComponentList<Coordinate>();
+
+    std::vector<SimTK::ReferencePtr<const Coordinate>> 
+        coordinatesInTreeOrder(nc, 
+            SimTK::ReferencePtr<const Coordinate>(*coordinates.begin()));
+
+    // We have a valid MultibodySystem underlying the Coordinates
+    const SimTK::State& s = getWorkingState();
+    SimTK_ASSERT_ALWAYS(nc <= s.getNQ(),
+        "Number of Coordinates exceeds the number of generalized coordinates in "
+        "the underlying MultibodySystem.");
+
+    auto& matter = getSystem().getMatterSubsystem();
+
+    int cnt = 0;
+
+    for (auto& coord : coordinates) {
+        auto mbix = coord.getBodyIndex();
+        auto mqix = coord.getMobilizerQIndex();
+
+        int cix = matter.getMobilizedBody(mbix).getFirstUIndex(s) + mqix;
+
+        SimTK_ASSERT_ALWAYS(cix < nc, "Index exceeds the number of Coordinates "
+            "in this Model.");
+
+        coordinatesInTreeOrder.at(cix).reset(&coord);
+        cnt++;
+    }
+
+    SimTK_ASSERT_ALWAYS(cnt == nc,
+        "The number of ordered Coordinates does not correspond to the number of "
+        "Coordinates in the Model's CoordinateSet.");
+
+    return coordinatesInTreeOrder;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // wipe-out the existing System 
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    _system.reset();
+
+    if(getForceSet().getSize()>0)
+    {
+        ForceSet &fs = updForceSet();
+        // Update internal subsets of the ForceSet
+        fs.updActuators();
+        fs.updMuscles();
+    }
+
+    if (getValidationLog().size() > 0) {
+        cout << "The following Errors/Warnings were encountered ";
+        cout << "interpreting properties of the model. " <<
+            getValidationLog() << endl;
+    }
+
+    updCoordinateSet().populate(*this);
+}
+
+void Model::createMultibodyTree()
+{
     // building the system for the first time, need to tell
     // multibodyTree builder what joints are available
     _multibodyTree.clearGraph();
@@ -480,162 +610,71 @@ void Model::extendFinalizeFromProperties()
 
     ArrayPtrs<OpenSim::Joint> availablJointTypes;
     Object::getRegisteredObjectsOfGivenType<OpenSim::Joint>(availablJointTypes);
-    for (int i = 0; i< availablJointTypes.getSize(); i++){
+    for (int i = 0; i< availablJointTypes.getSize(); i++) {
         OpenSim::Joint* jt = availablJointTypes[i];
         if ((jt->getConcreteClassName() == "WeldJoint") ||
             (jt->getConcreteClassName() == "FreeJoint")) {
             continue;
         }
-        else{
+        else {
             _multibodyTree.addJointType(
                 availablJointTypes[i]->getConcreteClassName(),
                 availablJointTypes[i]->numCoordinates(), false);
         }
     }
 
-    // clear all subcomponent designations since they will be specified here.
-    // Note addBody and addJoint call addComponent.
-    clearComponents();
-
     Ground& ground = updGround();
-    // The Ground frame is a subcomponent of the model.
-    addComponent(&ground);
 
-    // Construct a multibody tree according to the PhysicalFrames in the
+    // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(ground.getName(), 0, false, &ground);
+    _multibodyTree.addBody(ground.getAbsolutePathName(),
+                           0, false, &ground);
 
-    if(getBodySet().getSize()>0)
-    {
-        BodySet& bs = updBodySet();
-        for (int i = 0; i<bs.getSize(); ++i){
-            //handle deprecated models with ground as a Body
-            if (bs[i].getName() == "ground"){
-                ground.upd_WrapObjectSet() = bs[i].get_WrapObjectSet();
-                int geomSize = bs[i].getNumGeometry();
-                for (int g = 0; g < geomSize-1; ++g){ 
-                    // geomSize-1 since last geometry is a FrameGeometry for 
-                    // what used to be GroundBody. ground has one already
-                    ground.addGeometry(bs[i].upd_geometry(g));
-                }
-                // remove and then decrement the counter
-                bs.remove(i--);
-                continue;
-            }
-            // add the Body to the list of subcomponents for this Model
-            addComponent(&bs[i]);
-
-            _multibodyTree.addBody(bs[i].getName(), 
-                                   bs[i].getMass(), 
-                                   false, 
-                                   &bs[i]); 
-        }
+    auto bodies = getComponentList<Body>();
+    for (auto& body : bodies) {
+        _multibodyTree.addBody( body.getAbsolutePathName(),
+                                body.getMass(), false,
+                                const_cast<Body*>(&body) );
     }
 
-    FrameSet& fs = updFrameSet();
-    int nf = fs.getSize();
-    for (int i = 0; i<nf; ++i) {
-        addComponent(&fs[i]);
+    std::vector<SimTK::ReferencePtr<Joint>> joints;
+    for (auto& joint : updComponentList<Joint>()) {
+        joints.push_back(SimTK::ReferencePtr<Joint>(&joint));
     }
 
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
-    if(getJointSet().getSize()>0)
-    {
-        JointSet &js = updJointSet();
+    for (auto& joint : joints) {
+        std::string name = joint->getAbsolutePathName();
+        IO::TrimWhitespace(name);
 
-        int nj = js.getSize();
-        for (int i = 0; i<nj; ++i){
-            std::string name = js[i].getName();
-            IO::TrimWhitespace(name);
+        // Currently we need to take a first pass at connecting the joints
+        // in order to ask the joint for the frames that they attach to and
+        // to determine their underlying base (physical) frames.
+        joint->finalizeConnections(*this);
 
-            if (name.empty()){
-                name = js[i].getParentFrameName() + "_to_" + js[i].getChildFrameName();
-            }
+        // hack to make sure underlying Frame is also connected so it can 
+        // traverse to the base frame and get its name. This allows the
+        // (offset) frames to satisfy the sockets of Joint to be added
+        // to a Body, for example, and not just joint itself.
+        // TODO: try to create the multibody tree later when components
+        // can already be expected to be connected then traverse those
+        // relationships to create the multibody tree. -aseth
+        const_cast<PhysicalFrame&>(joint->getParentFrame()).
+            finalizeConnections(*this);
+        const_cast<PhysicalFrame&>(joint->getChildFrame()).
+            finalizeConnections(*this);
 
-            // TODO Remove this when subcomponents can be iterated upon construction.
-            // We are only calling finalizeFromProperties so that any offset frames
-            // belonging to the Joint are marked as subcomponents and can be found.
-            js[i].finalizeFromProperties();
-            addComponent(&js[i]);
-            // TODO Remove this when subcomponents can be iterated upon construction.
-            // Currently we need to take a first pass at connecting the joints in 
-            // order to find the frames that they attach to and their underlying bodies.
-            js[i].connect(*this);
-
-            // Use joints to define the underlying multibody tree
-            _multibodyTree.addJoint(name,
-                js[i].getConcreteClassName(),
-                // Multibody tree builder only cares about bodies not intermediate
-                // frames that joints actually connect to.
-                js[i].getParentFrame().findBaseFrame().getName(),
-                js[i].getChildFrame().findBaseFrame().getName(),
-                false,
-                &js[i]);
-        }
+        // Use joints to define the underlying multibody tree
+        _multibodyTree.addJoint(name,
+            joint->getConcreteClassName(),
+            // Multibody tree builder only cares about bodies not intermediate
+            // frames that joints actually connect to.
+            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
+            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
+            false,
+            joint.get());
     }
-
-    if(getConstraintSet().getSize()>0)
-    {
-        ConstraintSet &cs = updConstraintSet();
-        int nc = cs.getSize();
-        for (int i = 0; i<nc; ++i){
-            addComponent(&cs[i]);
-        }
-    }
-
-    if(getForceSet().getSize()>0)
-    {
-        ForceSet &fs = updForceSet();
-        int nf = fs.getSize();
-        for (int i = 0; i<nf; ++i){
-            addComponent(&fs[i]);
-        }
-        // Update internal subsets of the ForceSet
-        fs.updActuators();
-        fs.updMuscles();
-    }
-
-    if(getControllerSet().getSize()>0)
-    {
-        ControllerSet &clrs = updControllerSet();
-        int nclr = clrs.getSize();
-        for (int i = 0; i<nclr; ++i){
-            addComponent(&clrs[i]);
-        }
-    }
-
-    if(get_ComponentSet().getSize()>0)
-    {
-        int nc = get_ComponentSet().getSize();
-        for (int i = 0; i<nc; ++i){
-            addComponent(&get_ComponentSet()[i]);
-        }
-    }
-
-    if(getProbeSet().getSize()>0)
-    {
-        ProbeSet &ps = updProbeSet();
-        int np = ps.getSize();
-        for (int i = 0; i<np; ++i){
-            addComponent(&ps[i]);
-        }
-    }
-
-    if (getMarkerSet().getSize() > 0)
-    {
-        MarkerSet& ms = updMarkerSet();
-        int nf = ms.getSize();
-        for (int i = 0; i<nf; ++i)
-            addComponent(&ms[i]);
-    }
-
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered while building the model. " <<
-            getValidationLog() << endl;
-    }
-
-    updCoordinateSet().populate(*this);
 }
 
 void Model::extendConnectToModel(Model &model)
@@ -646,17 +685,29 @@ void Model::extendConnectToModel(Model &model)
         cout << "Model::" << getName() <<
             " is being connected to model " <<
             model.getName() << "." << endl;
+        // if part of another Model, that Model is in charge
+        // of creating a valid Multibody tree that includes
+        // Components of this Model. 
+        return;
     }
 
-    // Model is connected so build the Multibody tree to represent it
+    // Create the Multibody tree according to the components that
+    // form this model.
+    createMultibodyTree();
+
+    // generate the graph of the Multibody tree to determine the order in
+    // which subcomponents will be added to the MultibodySystem (in addToSystem)
     _multibodyTree.generateGraph();
     //_multibodyTree.dumpGraph(cout);
     //cout << endl;
 
-    SimTK::Array_<Component *>::iterator it = nullptr;
+    // Ground is the first component of any MultibodySystem
+    Ground& ground = updGround();
+    setNextSubcomponentInSystem(ground);
+
+    // The JointSet of the Model is only being manipulated for consistency with 
+    // Tool expectations. TODO fix Tools and remove
     JointSet& joints = upd_JointSet();
-    BodySet& bodies = upd_BodySet();
-    int nb = bodies.getSize();
 
     bool isMemoryOwner = joints.getMemoryOwner();
     //Temporarily set owner ship to false so we 
@@ -675,9 +726,11 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
             Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
-            Body* inb = static_cast<Body*>(mob.getInboardBodyRef());
             Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
             Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
+
+            // the joint must be added to the system next
+            setNextSubcomponentInSystem(*useJoint);
 
             if (!outb) {
                 outb = outbMaster->addSlave();
@@ -685,11 +738,13 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
+                std::string pathName = outb->getAbsolutePathName();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
-                // Add to list of subcomponents but not serialize ConstraintSet
-                updModel().addComponent(weld);
+                // include within adopted list of owned components
+                adoptSubcomponent(weld);
+                setNextSubcomponentInSystem(*weld);
             }
         }
 
@@ -705,35 +760,27 @@ void Model::extendConnectToModel(Model &model)
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
-            Joint* free = new FreeJoint(jname, ground->getName(), child->getName());
-            free->finalizeFromProperties();
+            Joint* free = new FreeJoint(jname, *ground, *child);
+            free->isReversed = mob.isReversedFromJoint();
+            // TODO: Joints are currently required to be in the JointSet
+            // When the reordering of Joints is eliminated (see following else block)
+            // this limitation can be removed and the free joint adopted as in 
+            // internal subcomponent (similar to the weld constraint above)
             addJoint(free);
+            setNextSubcomponentInSystem(*free);
         }
         else{
-            Component* compToMoveOut = _components.at(m+nb);
-            // reorder the joint components in the order of the multibody tree
-            Joint* jointToSwap = static_cast<Joint*>(mob.getJointRef());
-            it = std::find(_components.begin(), _components.end(), jointToSwap);
-            if (it != _components.end()){
-                // Only if the joint is not in the correct sequence the swap
-                if (compToMoveOut != jointToSwap){
-                    _components[m + nb] = jointToSwap;
-                    *it = compToMoveOut;
-                }
-            }
-            //(static_cast<Component*>(jointToSwap));
-            int jx = joints.getIndex(jointToSwap, m);
-            //if in the set but not already in the right order
-            if ((jx >= 0) && (jx != m)){
-                // perform a move to put the joint in correct order
-                jointToSwap = &joints.get(jx);
-                joints.set(jx, &joints.get(m));
-                joints.set(m, jointToSwap);
-            }
+            // Update the directionality of the joint according to tree's
+            // preferential direction
+            static_cast<Joint*>(mob.getJointRef())->isReversed =
+                mob.isReversedFromJoint();
+
+            // order the joint components in the order of the multibody tree
+            Joint* joint = static_cast<Joint*>(mob.getJointRef());
+            setNextSubcomponentInSystem(*joint);
+
+
         }
-        // Update the directionality of the joint to tree's preferential direction
-        joints[m].upd_reverse() = mob.isReversedFromJoint();
-    
     }
     joints.setMemoryOwner(isMemoryOwner);
 
@@ -750,15 +797,16 @@ void Model::extendConnectToModel(Model &model)
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
                 parent, joint.getParentFrame().findTransformInBaseFrame(),
                 child, joint.getChildFrame().findTransformInBaseFrame());
-            addConstraint(weld);
-
+            adoptSubcomponent(weld);
+            setNextSubcomponentInSystem(*weld);
         }
         else if (joint.getConcreteClassName() == "BallJoint") {
             PointConstraint* point = new PointConstraint(
                 parent, joint.getParentFrame().findTransformInBaseFrame().p(),
                 child, joint.getChildFrame().findTransformInBaseFrame().p());
             point->setName(joint.getName() + "_Loop");
-            addConstraint(point);
+            adoptSubcomponent(point);
+            setNextSubcomponentInSystem(*point);
         }
         else if (joint.getConcreteClassName() == "FreeJoint") {
             // A "free" loop constraint is no constraint at all so we can
@@ -771,27 +819,64 @@ void Model::extendConnectToModel(Model &model)
             "Unrecognized loop constraint type '" + joint.getConcreteClassName() + "'.");
     }
 
-    // Create iterator here to include newly added components
-    initComponentTreeTraversal(*this);
+    // Now include all remaining Components beginning with PhysicalOffsetFrames
+    // since Constraints, Forces and other components can only be applied to
+    // PhyicalFrames, which include PhysicalOffsetFrames.
+    // PhysicalOffsetFrames require that their parent frame (a PhysicalFrame)
+    // be added to the System first. So for each PhysicalOffsetFrame locate its
+    // parent and verify its presence in the _orderedList otherwise add it first.
+    auto poFrames = updComponentList<PhysicalOffsetFrame>();
+    for (auto& pof : poFrames) {
+        // Ground and Body type PhysicalFrames are included in the Multibody graph
+        // PhysicalOffsetFrame can be listed in any order and may be attached
+        // to any other PhysicalOffsetFrame, so we need to find their parent(s)
+        // in the tree and add them first.
+        pof.finalizeConnections(*this);
+        const PhysicalOffsetFrame* parentPof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&pof.getParentFrame());
+        std::vector<const PhysicalOffsetFrame*> parentPofs;
+        while (parentPof) {
+            const auto found =
+                std::find(parentPofs.begin(), parentPofs.end(), parentPof);
+            OPENSIM_THROW_IF_FRMOBJ(found != parentPofs.end(),
+                PhysicalOffsetFramesFormLoop, (*found)->getName());
+            parentPofs.push_back(parentPof);
+            // Given a chain of offsets, the most proximal must have Ground or 
+            // Body as its parent. When that happens we can stop.
+            parentPof =
+                dynamic_cast<const PhysicalOffsetFrame*>(&parentPof->getParentFrame());
+        }
+        while (parentPofs.size()) {
+            setNextSubcomponentInSystem(*parentPofs.back());
+            parentPofs.pop_back();
+        }
+        setNextSubcomponentInSystem(pof);
+    }
 
-    // Reorder coordinates in order of the underlying mobilities
+    // and everything else including Forces, Controllers, etc...
+    // belonging to the model
+    auto components = getImmediateSubcomponents();
+    for (const auto& comp : components) {
+        setNextSubcomponentInSystem(comp.getRef());
+    }
+
+    // Populate the model's list of Coordinates as references into
+    // the individual Joints.
     updCoordinateSet().populate(*this);
-    updFrameSet().invokeConnectToModel(*this);
-    updMarkerSet().invokeConnectToModel(*this);
-    updContactGeometrySet().invokeConnectToModel(*this);
     updForceSet().setupGroups();
     updControllerSet().setActuators(updActuators());
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
-
 }
 
 
-// ModelComponent interface enables this model to be treated as a subcomponent of another model by 
-// creating components in its system.
+// ModelComponent interface enables this model to be a subcomponent of another
+// model. In that case, it adds itself to the parent model's system.
 void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
+    Super::extendAddToSystem(system);
+
     Model *mutableThis = const_cast<Model *>(this);
 
     //Analyses are not Components so add them after legit 
@@ -802,11 +887,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
     mutableThis->_defaultControls.resize(0);
 
     // Create the shared cache that will hold all model controls
-    // This must be created before Actuator.extendAddToSystem() since Actuator will append 
-    // its "slots" and retain its index by accessing this cached Vector
-    // value depends on velocity and invalidates dynamics BUT should not trigger
+    // This must be created before Actuator.extendAddToSystem() since Actuator
+    // will append its "slots" and retain its index by accessing this cached Vector.
+    // Value depends on velocity and invalidates dynamics BUT should not trigger
     // re-computation of the controls which are necessary for dynamics
-    Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(),
+    Measure_<Vector>::Result modelControls(system.updDefaultSubsystem(),
         Stage::Velocity, Stage::Acceleration);
 
     mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
@@ -817,11 +902,11 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 /**
  * Add any Component derived from ModelComponent to the Model.
  */
-void Model::addModelComponent(ModelComponent* aComponent)
+void Model::addModelComponent(ModelComponent* component)
 {
-    if(aComponent){
-        addComponent(aComponent);
-        upd_ComponentSet().adoptAndAppend(aComponent);
+    if(component){
+        upd_ComponentSet().adoptAndAppend(component);
+        finalizeFromProperties();
     }
 }
 
@@ -833,21 +918,10 @@ void Model::addBody(OpenSim::Body* body)
 {
     if (body){
         updBodySet().adoptAndAppend(body);
-        addComponent(body);
+        finalizeFromProperties();
     }
 }
 
-//_____________________________________________________________________________
-/*
-* Add a Frame to the Model.
-*/
-void Model::addFrame(OpenSim::Frame* frame)
-{
-    if (frame){
-        updFrameSet().adoptAndAppend(frame);
-        addComponent(frame);
-    }
-}
 //_____________________________________________________________________________
 /*
 * Add a Marker to the Model.
@@ -856,7 +930,7 @@ void Model::addMarker(OpenSim::Marker* marker)
 {
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
-        addComponent(marker);
+        finalizeFromProperties();
     }
 }
 
@@ -868,7 +942,7 @@ void Model::addJoint(Joint* joint)
 {
     if (joint){
         updJointSet().adoptAndAppend(joint);
-        addComponent(joint);
+        finalizeFromProperties();
         updCoordinateSet().populate(*this);
     }
 }
@@ -877,11 +951,11 @@ void Model::addJoint(Joint* joint)
 /**
  * Add a constraint to the Model.
  */
-void Model::addConstraint(OpenSim::Constraint *aConstraint)
+void Model::addConstraint(OpenSim::Constraint *constraint)
 {
-    if(aConstraint){
-        addComponent(aConstraint);
-        updConstraintSet().adoptAndAppend(aConstraint);
+    if(constraint){
+        updConstraintSet().adoptAndAppend(constraint);
+        finalizeFromProperties();
     }
 }
 
@@ -889,11 +963,11 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 /**
  * Add a force to the Model.
  */
-void Model::addForce(OpenSim::Force *aForce)
+void Model::addForce(OpenSim::Force *force)
 {
-    if(aForce){
-        addComponent(aForce);
-        updForceSet().adoptAndAppend(aForce);
+    if(force){
+        updForceSet().adoptAndAppend(force);
+        finalizeFromProperties();
     }
 }
 
@@ -901,11 +975,11 @@ void Model::addForce(OpenSim::Force *aForce)
 /**
  * Add a probe to the Model.
  */
-void Model::addProbe(OpenSim::Probe *aProbe)
+void Model::addProbe(OpenSim::Probe *probe)
 {
-    if(aProbe){
-        addComponent(aProbe);
-        updProbeSet().adoptAndAppend(aProbe);
+    if(probe){
+        updProbeSet().adoptAndAppend(probe);
+        finalizeFromProperties();
     }
 }
 
@@ -915,19 +989,21 @@ void Model::addProbe(OpenSim::Probe *aProbe)
  */
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
-    disconnect();
-    clearComponents();
+    clearConnections();
     updProbeSet().remove(aProbe);
+    finalizeFromProperties();
 }
 
 //_____________________________________________________________________________
 /**
  * Add a contact geometry to the Model.
  */
-void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
+void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
 {
-    addComponent(aContactGeometry);
-    updContactGeometrySet().adoptAndAppend(aContactGeometry);
+    if (contactGeometry) {
+        updContactGeometrySet().adoptAndAppend(contactGeometry);
+        finalizeFromProperties();
+    }
 }
 
 //_____________________________________________________________________________
@@ -937,8 +1013,8 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 void Model::addController(Controller *aController)
 {
     if (aController) {
-        addComponent(aController);
         updControllerSet().adoptAndAppend(aController);
+        finalizeFromProperties();
     }
 }
 //_____________________________________________________________________________
@@ -950,12 +1026,11 @@ void Model::addController(Controller *aController)
  */
 void Model::setup()
 {
+    // finalize the model and its subcomponents from its properties
+    // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
-    
     //now connect the Model and all its subcomponents all up
-    connect(*this);
-
-    populatePathName("");
+    finalizeConnections(*this);
 }
 
 //_____________________________________________________________________________
@@ -966,7 +1041,7 @@ void Model::setup()
  */
 void Model::cleanup()
 {
-    disconnect();
+    clearConnections();
     upd_ForceSet().setSize(0);
 }
 
@@ -983,7 +1058,8 @@ void Model::extendInitStateFromProperties(SimTK::State& state) const
     Super::extendInitStateFromProperties(state);
     // Allocate the size and default values for controls
     // Actuators will have a const view into the cache
-    Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
+    Measure_<Vector>::Result controlsCache = 
+        Measure_<Vector>::Result::getAs(updSystem().updDefaultSubsystem().getMeasure(_modelControlsIndex));
     controlsCache.updValue(state).resize(_defaultControls.size());
     controlsCache.updValue(state) = _defaultControls;
 }
@@ -999,7 +1075,7 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    ComponentList<Component> allComps = getComponentList();
+    ComponentList<const Component> allComps = getComponentList();
     ComponentList<Component>::const_iterator iter = allComps.begin();
     while (iter != allComps.end()){
         //std::string cn = iter->getConcreteClassName();
@@ -1016,12 +1092,12 @@ void Model::equilibrateMuscles(SimTK::State& state)
     bool failed = false;
     string errorMsg = "";
 
-    for (int i = 0; i < get_ForceSet().getSize(); i++)
-    {
-        Muscle* muscle = dynamic_cast<Muscle*>(&get_ForceSet().get(i));
-        if (muscle != NULL && !muscle->isDisabled(state)){
+    auto muscles = getComponentList<Muscle>();
+
+    for (auto& muscle : muscles) {
+        if (muscle.appliesForce(state)){
             try{
-                muscle->equilibrate(state);
+                muscle.equilibrate(state);
             }
             catch (const std::exception& e) {
                 if(!failed){ // haven't failed to equilibrate other muscles yet
@@ -1143,17 +1219,6 @@ int Model::getNumProbeStates() const {
 int Model::getNumBodies() const
 {
     return  getBodySet().getSize();
-}
-
-//_____________________________________________________________________________
-/**
-* Get the total number of frames in the model (not including Bodies).
-*
-* @return Number of frames.
-*/
-int Model::getNumFrames() const
-{
-    return  getFrameSet().getSize();
 }
 
 //_____________________________________________________________________________
@@ -1409,81 +1474,78 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 //=============================================================================
 // PRINT
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Print some basic information about the model.
- *
- * @param aOStream Output stream.
- */
-void Model::printBasicInfo(std::ostream &aOStream) const
+void Model::printBasicInfo(std::ostream& aOStream) const
 {
-    aOStream<<"               MODEL: "<<getName()<<std::endl;
-    aOStream<<"         coordinates: "<<getCoordinateSet().getSize()<<std::endl;
-    aOStream<<"              forces: "<<getForceSet().getSize()<<std::endl;
-    aOStream<<"           actuators: "<<getActuators().getSize()<<std::endl;
-    aOStream<<"             muscles: "<<getMuscles().getSize()<<std::endl;
-    aOStream<<"            analyses: "<<getNumAnalyses()<<std::endl;
-    aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
-    aOStream<<"              bodies: "<<getBodySet().getSize()<<std::endl;
-    aOStream<<"              joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
-    aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
-    aOStream<<"             markers: "<<getMarkerSet().getSize()<<std::endl;
-    aOStream<<"         controllers: "<<getControllerSet().getSize()<<std::endl;
-    aOStream<<"  contact geometries: "<< getContactGeometrySet().getSize() << std::endl;
-    aOStream<<"              frames: "<< getFrameSet().getSize() << std::endl;
-    aOStream<<"misc modelcomponents: "<< getMiscModelComponentSet().getSize() << std::endl;
+    OPENSIM_THROW_IF_FRMOBJ(!isObjectUpToDateWithProperties(), Exception,
+        "Model::finalizeFromProperties() must be called first.");
 
+    aOStream
+        << "\n               MODEL: " << getName()
+        << "\n         coordinates: " << countNumComponents<Coordinate>()
+        << "\n              forces: " << countNumComponents<Force>()
+        << "\n           actuators: " << countNumComponents<Actuator>()
+        << "\n             muscles: " << countNumComponents<Muscle>()
+        << "\n            analyses: " << getNumAnalyses()
+        << "\n              probes: " << countNumComponents<Probe>()
+        << "\n              bodies: " << countNumComponents<Body>()
+        << "\n              joints: " << countNumComponents<Joint>()
+        << "\n         constraints: " << countNumComponents<Constraint>()
+        << "\n             markers: " << countNumComponents<Marker>()
+        << "\n         controllers: " << countNumComponents<Controller>()
+        << "\n  contact geometries: " << countNumComponents<ContactGeometry>()
+        << "\nmisc modelcomponents: " << getMiscModelComponentSet().getSize()
+        << std::endl;
 }
-//_____________________________________________________________________________
-/**
- * Print detailed information about the model.
- *
- * @param aOStream Output stream.
- */
-void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const
-{
-    //int i;
 
+void Model::printDetailedInfo(const SimTK::State& s, std::ostream& aOStream) const
+{
     aOStream << "MODEL: " << getName() << std::endl;
 
-    aOStream << std::endl;
-    aOStream << "numStates = " << s.getNY() << std::endl;
-    aOStream << "numCoordinates = " << getNumCoordinates() << std::endl;
-    aOStream << "numSpeeds = " << getNumSpeeds() << std::endl;
-    aOStream << "numActuators = " << getActuators().getSize() << std::endl;
-    aOStream << "numBodies = " << getNumBodies() << std::endl;
-    aOStream << "numConstraints = " << getConstraintSet().getSize() << std::endl;
-    aOStream << "numProbes = " << getProbeSet().getSize() << std::endl;
+    aOStream
+        << "\nnumStates = "      << s.getNY()
+        << "\nnumCoordinates = " << countNumComponents<Coordinate>()
+        << "\nnumSpeeds = "      << countNumComponents<Coordinate>()
+        << "\nnumActuators = "   << countNumComponents<Actuator>()
+        << "\nnumBodies = "      << countNumComponents<Body>()
+        << "\nnumConstraints = " << countNumComponents<Constraint>()
+        << "\nnumProbes = "      << countNumComponents<Probe>()
+        << std::endl;
 
     aOStream << "\nANALYSES (total: " << getNumAnalyses() << ")" << std::endl;
-    for (int i = 0; i < _analysisSet.getSize(); i++)
-        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName() << std::endl;
+    for (int i = 0; i < _analysisSet.getSize(); ++i)
+        aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName()
+                 << std::endl;
 
-    aOStream << "\nBODIES (total: " << getNumBodies() << ")" << std::endl;
-    const BodySet& bodySet = getBodySet();
-    for(int i=0; i < bodySet.getSize(); i++) {
-        const OpenSim::Body& body = bodySet.get(i);
-        aOStream << "body[" + std::to_string(i) + "] = " + body.getName() + ". ";
-        aOStream << "mass: " << body.get_mass() << std::endl;
-        const SimTK::Inertia& inertia = body.getInertia();
-        aOStream << "              moments of inertia:  " << inertia.getMoments()
+    aOStream << "\nBODIES (total: " << countNumComponents<Body>() << ")"
+             << std::endl;
+    unsigned bodyNum = 0u;
+    for (const auto& body : getComponentList<Body>()) {
+        const auto inertia = body.getInertia();
+        aOStream << "body[" << bodyNum << "] = " << body.getName() << ". "
+            << "mass: " << body.get_mass()
+            << "\n              moments of inertia:  " << inertia.getMoments()
+            << "\n              products of inertia: " << inertia.getProducts()
             << std::endl;
-        aOStream << "              products of inertia: " << inertia.getProducts()
-            << std::endl;
+        ++bodyNum;
     }
 
-    aOStream << "\nJOINTS (total: " << getNumJoints() << ")" << std::endl;
-    const JointSet& jointSet = getJointSet();
-    for (int i = 0; i < jointSet.getSize(); i++) {
-        const OpenSim::Joint& joint = get_JointSet().get(i);
-        aOStream << "joint[" << i << "] = " << joint.getName() << ".";
-        aOStream << " parent: " << joint.getParentFrameName() <<
-            ", child: " << joint.getChildFrameName() << std::endl;
+    aOStream << "\nJOINTS (total: " << countNumComponents<Joint>() << ")"
+             << std::endl;
+    unsigned jointNum = 0u;
+    for (const auto& joint : getComponentList<Joint>()) {
+        aOStream << "joint[" << jointNum << "] = " << joint.getName() << "."
+                 << " parent: " << joint.getParentFrame().getName()
+                 << ", child: " << joint.getChildFrame().getName() << std::endl;
+        ++jointNum;
     }
 
-    aOStream << "\nACTUATORS (total: " << getActuators().getSize() << ")" << std::endl;
-    for (int i = 0; i < getActuators().getSize(); i++) {
-         aOStream << "actuator[" << i << "] = " << getActuators().get(i).getName() << std::endl;
+    aOStream << "\nACTUATORS (total: " << countNumComponents<Actuator>() << ")"
+             << std::endl;
+    unsigned actuatorNum = 0u;
+    for (const auto& actuator : getComponentList<Actuator>()) {
+        aOStream << "actuator[" << actuatorNum << "] = " << actuator.getName()
+                 << std::endl;
+        ++actuatorNum;
     }
 
     /*
@@ -1508,11 +1570,12 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
     n = getNP();
     aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
+    */
 
-*/
     Array<string> stateNames = getStateVariableNames();
-    aOStream<<"\nSTATES (total: "<<stateNames.getSize()<<")"<<std::endl;
-    for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
+    aOStream << "\nSTATES (total: " << stateNames.getSize() << ")" << std::endl;
+    for (int i = 0; i < stateNames.getSize(); ++i)
+        aOStream << "y[" << i << "] = " << stateNames[i] << std::endl;
 }
 
 //--------------------------------------------------------------------------
@@ -1591,10 +1654,10 @@ void Model::writeMarkerFile(const string& aFileName)
 /**
  * Replace all markers in the model with the ones in the passed-in marker set.
  *
- * @param aMarkerSet The new marker set.
+ * @param aMarkerSet The new marker set to copy.
  * @return Number of markers that were successfully added to the model.
  */
-int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
+int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
 {
     int i, numAdded = 0;
 
@@ -1604,16 +1667,9 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
     // Now add the markers from aMarkerSet whose body names match bodies in the engine.
     for (i = 0; i < aMarkerSet.getSize(); i++)
     {
-        // Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-        Marker* marker = aMarkerSet.get(i).clone();
-        const string& frameName = marker->getFrameName();
-        if (getFrameSet().contains(frameName))
-        {
-            const OpenSim::PhysicalFrame* frame = dynamic_cast<const PhysicalFrame*>(&getFrameSet().get(frameName));
-            if(frame) marker->changeFrame(*frame);
-            upd_MarkerSet().adoptAndAppend(marker);
-            numAdded++;
-        }
+        Marker* marker = aMarkerSet[i].clone();
+        upd_MarkerSet().adoptAndAppend(marker);
+        ++numAdded;
     }
 
     cout << "Replaced marker set in model " << getName() << endl;
@@ -1823,7 +1879,11 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    getControllerSet().computeControls(s, controls);
+    for (auto& controller : getComponentList<Controller>()) {
+        if (controller.isEnabled()) {
+            controller.computeControls(s, controls);
+        }
+    }
 }
 
 
@@ -1848,6 +1908,11 @@ void Model::storeControls( const SimTK::State& s, int step ) {
 void Model::printControlStorage(const string& fileName ) const {
     get_ControllerSet().printControlStorage(fileName);
 }
+
+TimeSeriesTable Model::getControlsTable() const {
+    return get_ControllerSet().getControlTable();
+}
+
 bool Model::getAllControllersEnabled() const{
   return( _allControllersEnabled );
 }
@@ -1870,8 +1935,12 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         cout << "Number of columns does not match in formStateStorage. Found "
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
+
+    // when the state value is not found in the storage use its default value in the State
+    SimTK::Vector defaultStateValues = getStateVariableValues(getWorkingState());
+
     // Create a list with entry for each desiredName telling which column in originalStorage has the data
-    int* mapColumns = new int[rStateNames.getSize()];
+    Array<int> mapColumns(-1, rStateNames.getSize());
     for(int i=0; i< rStateNames.getSize(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
@@ -1910,29 +1979,31 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         }
         mapColumns[i] = fix;
         if (fix==-1){
-            cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
+            cout << "Column "<< rStateNames[i] << 
+                " not found by Model::formStateStorage(). "
+                "Assuming its default value of "
+                << defaultStateValues[i] << endl;
         }
     }
-    // Now cycle through and shuffle each
-
+    // Now cycle through each state (row of Storage) and form the Model consistent
+    // order for the state values 
+    double assignedValue = SimTK::NaN;
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
-        StateVector* stateVec = new StateVector(originalVec->getTime());
-        stateVec->getData().setSize(numStates);  // default value 0f 0.
-        for(int column=0; column< numStates; column++){
-            double valueInOriginalStorage=0.0;
-            if (mapColumns[column]!=-1)
-                originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
+        StateVector stateVec{originalVec->getTime()};
+        stateVec.getData().setSize(numStates); 
+        for(int column=0; column< numStates; column++) {
+            if (mapColumns[column] != -1)
+                originalVec->getDataValue(mapColumns[column] - 1, assignedValue);
+            else
+                assignedValue = defaultStateValues[column];
 
-            stateVec->setDataValue(column, valueInOriginalStorage);
-
+            stateVec.setDataValue(column, assignedValue);
         }
-        statesStorage.append(*stateVec);
+        statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
-
-    delete mapColumns;
 }
 
 /**
@@ -1989,7 +2060,6 @@ void Model::disownAllComponents()
     updAnalysisSet().setMemoryOwner(false);
     updMarkerSet().setMemoryOwner(false);
     updProbeSet().setMemoryOwner(false);
-    updFrameSet().setMemoryOwner(false);
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
@@ -2019,8 +2089,6 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
         return getControllerSet().get(nameString);
     else if (typeString == "Probe")
         return getProbeSet().get(nameString);
-    else if (typeString == "Frame")
-        return getFrameSet().get(nameString);
     throw Exception("Model::getObjectByTypeAndName: no object of type " + typeString +
         " and name "+nameString+" was found in the model.");
 
@@ -2065,14 +2133,7 @@ void Model::realizeReport(const SimTK::State& state) const
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-    try {
-        realizeAcceleration(s);
-    }
-    catch (const std::exception& e){
-        string exmsg = e.what();
-        throw Exception(
-            "Model::computeStateVariableDerivatives: failed. See: "+exmsg);
-    }
+    realizeAcceleration(s);
 }
 
 /**
@@ -2126,18 +2187,4 @@ SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 * Construct outputs
 *
 **/
-
-void Model::constructOutputs()
-{
-    //return the position of the center of mass
-   constructOutput<SimTK::Vec3>("com_position",
-       std::bind(&Model::calcMassCenterPosition,this,std::placeholders::_1), SimTK::Stage::Position);
-   //return the velocity of the center of mass 
-   constructOutput<SimTK::Vec3>("com_velocity",
-       std::bind(&Model::calcMassCenterVelocity,this,std::placeholders::_1), SimTK::Stage::Velocity);
-   //return the acceleration of the center of mass
-   constructOutput<SimTK::Vec3>("com_acceleration",
-       std::bind(&Model::calcMassCenterAcceleration,this,std::placeholders::_1), SimTK::Stage::Acceleration);
-    
-}
 

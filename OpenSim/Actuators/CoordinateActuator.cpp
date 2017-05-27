@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
@@ -160,12 +160,13 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 {
     ForceSet& as = aModel.updForceSet();
     as.setSize(0);
-    const CoordinateSet& cs = aModel.getCoordinateSet();
-    for(int i=0; i<cs.getSize(); i++) {
-        if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
+    auto coordinates = aModel.getCoordinatesInMultibodyTreeOrder();
+    for(size_t i=0u; i < coordinates.size(); ++i) {
+        const Coordinate& coord = *coordinates[i];
+        if(!aIncludeLockedAndConstrainedCoordinates && (coord.isConstrained(s))) continue;
         CoordinateActuator *actuator = new CoordinateActuator();
-        actuator->setCoordinate(&cs.get(i));
-        actuator->setName(cs.get(i).getName()+"_actuator");
+        actuator->setCoordinate(const_cast<Coordinate*>(&coord));
+        actuator->setName(coord.getName()+"_actuator");
         actuator->setOptimalForce(aOptimalForce);
         as.append(actuator);
     }

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,11 +29,18 @@
 
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
-#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+
+namespace SimTK {
+class Integrator;
+class System;
+}
 
 //=============================================================================
 //=============================================================================
 namespace OpenSim { 
+
+class CMCActuatorSubsystem;
+class Model;
 
 /**
  * An abstract class for representing a vector function.

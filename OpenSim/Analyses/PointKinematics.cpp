@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,6 @@
 //=============================================================================
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include "PointKinematics.h"
 
 
@@ -51,7 +50,6 @@ const int PointKinematics::BUFFER_LENGTH = PointKinematicsBUFFER_LENGTH;
  */
 PointKinematics::~PointKinematics()
 {
-    if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
     deleteStorage();
 }
 //_____________________________________________________________________________
@@ -66,9 +64,9 @@ Analysis(aModel),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     // NULL
     setNull();
@@ -102,9 +100,9 @@ Analysis(aFileName, false),
 _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -132,9 +130,9 @@ Analysis(aPointKinematics),
 _body(aPointKinematics._body),
 _relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
-_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec()),
-_pointName(_pointNameProp.getValueStr())
+_pointName(_pointNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr())
 {
     setNull();
 
@@ -150,7 +148,6 @@ void PointKinematics::
 setNull()
 {
     // POINTERS
-    _dy = NULL;
     _kin = NULL;
     _pStore = NULL;
     _vStore = NULL;
@@ -314,12 +311,6 @@ setModel(Model& aModel)
     _body = &aModel.updBodySet().get(_bodyName);
     if (aModel.updBodySet().contains(_relativeToBodyName))
         _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
-
-    // ALLOCATIONS
-    if (_dy != 0)
-        delete[] _dy;
-
-    _dy = new double[_model->getNumStateVariables()];
 
     // DESCRIPTION AND LABELS
     constructDescription();
@@ -522,34 +513,33 @@ setStorageCapacityIncrements(int aIncrement)
 int PointKinematics::
 record(const SimTK::State& s)
 {
-    const SimbodyEngine& de = _model->getSimbodyEngine();
-
     // VARIABLES
     SimTK::Vec3 vec;
 
     const double& time = s.getTime();
+    Ground ground = _model->getGround();
 
     // POSITION
-    de.getPosition(s, *_body,_point,vec);
+    vec = _body->findStationLocationInGround(s, _point);
     if(_relativeToBody){
-        de.transformPosition(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.findStationLocationInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _pStore->append(time, vec);
 
     // VELOCITY
-    de.getVelocity(s, *_body,_point,vec);
+    vec = _body->findStationVelocityInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _vStore->append(time, vec);
 
     // ACCELERATIONS
     _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-    de.getAcceleration(s, *_body,_point,vec);
+    vec = _body->findStationAccelerationInGround(s, _point);
     if(_relativeToBody){
-        de.transform(s, _model->getGround(), vec, *_relativeToBody, vec);
+        vec = ground.expressVectorInAnotherFrame(s, vec, *_relativeToBody);
     }
 
     _aStore->append(time, vec);

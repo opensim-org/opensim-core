@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,16 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/ScaleSet.h>
 #include "ModelScaler.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 
 //=============================================================================
 // STATICS
@@ -226,7 +220,8 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
+        double aSubjectMass) const
 {
     if (!getApply()) return false;
 
@@ -236,16 +231,12 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 
     cout << endl << "Step 2: Scaling generic model" << endl;
 
-    ComponentList<PhysicalFrame> segments
-        = aModel->getComponentList<PhysicalFrame>();
-    ComponentList<PhysicalFrame>::const_iterator it = segments.begin();
-
     /* Make a scale set with a Scale for each physical frame.
      * Initialize all factors to 1.0.
      */
-    for (; it != segments.end(); ++it) {
+    for (const auto& segment : aModel->getComponentList<PhysicalFrame>()) {
         Scale* segmentScale = new Scale();
-        segmentScale->setSegmentName(it->getName());
+        segmentScale->setSegmentName(segment.getName());
         segmentScale->setScaleFactors(unity);
         segmentScale->setApply(true);
         theScaleSet.adoptAndAppend(segmentScale);
@@ -269,9 +260,9 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
             {
                 /* Load the static pose marker file, and convert units.
                 */
-                MarkerData *markerData = 0;
+                std::unique_ptr<MarkerData> markerData{};
                 if(!_markerFileName.empty() && _markerFileName!=PropertyStr::getDefaultStr()) {
-                    markerData = new MarkerData(aPathToSubject + _markerFileName);
+                    markerData.reset(new MarkerData(aPathToSubject + _markerFileName));
                     markerData->convertToUnits(aModel->getLengthUnits());
                 }
 
@@ -392,7 +383,7 @@ double ModelScaler::takeModelMeasurement(const SimTK::State& s, const Model& aMo
     }
     const Marker& marker1 = aModel.getMarkerSet().get(aName1);
     const Marker& marker2 = aModel.getMarkerSet().get(aName2);
-    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getReferenceFrame());
+    Vec3 difference = marker1.get_location() - marker2.findLocationInFrame(s, marker1.getParentFrame());
     return difference.norm();
 }
 

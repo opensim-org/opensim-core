@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Samuel R. Hamner                                                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,15 +24,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
-#include <OpenSim/Simulation/Model/Model.h>
-
 #include "PointOnLineConstraint.h"
-#include "SimbodyEngine.h"
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <simbody/internal/MobilizedBody.h>
+#include <simbody/internal/Constraint.h>
 
 //=============================================================================
 // STATICS
@@ -59,7 +54,7 @@ PointOnLineConstraint::PointOnLineConstraint() :
     Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -72,7 +67,7 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
         Constraint()
 {
     setNull();
-    constructInfrastructure();
+    constructProperties();
 
     setLineBodyByName(lineBody.getName());
     setFollowerBodyByName(followerBody.getName());
@@ -113,21 +108,15 @@ void PointOnLineConstraint::constructProperties()
     constructProperty_point_on_follower(origin);
 }
 
-void PointOnLineConstraint::constructConnectors()
-{
-    constructConnector<PhysicalFrame>("line_body");
-    constructConnector<PhysicalFrame>("follower_body");
-}
-
 void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
     // Get underlying mobilized bodies
     // Get underlying mobilized bodies
     const PhysicalFrame& fl =
-        getConnector<PhysicalFrame>("line_body").getConnectee();
+        getSocket<PhysicalFrame>("line_body").getConnectee();
     const PhysicalFrame& ff =
-        getConnector<PhysicalFrame>("follower_body").getConnectee();
+        getSocket<PhysicalFrame>("follower_body").getConnectee();
 
     SimTK::MobilizedBody bl = fl.getMobilizedBody();
     SimTK::MobilizedBody bf = ff.getMobilizedBody();
@@ -151,12 +140,12 @@ void PointOnLineConstraint::extendAddToSystem(SimTK::MultibodySystem& system) co
  * Following methods set attributes of the point on line constraint */
 void PointOnLineConstraint::setLineBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("line_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("line_body").setConnecteeName(aBodyName);
 }
 
 void PointOnLineConstraint::setFollowerBodyByName(const std::string& aBodyName)
 {
-    updConnector<PhysicalFrame>("follower_body").set_connectee_name(aBodyName);
+    updSocket<PhysicalFrame>("follower_body").setConnecteeName(aBodyName);
 
 }
 
@@ -184,7 +173,7 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()){
         if (documentVersion<30500){
-            // replace old properties with latest use of Connectors
+            // replace old properties with latest use of Sockets
             SimTK::Xml::element_iterator body1Element = aNode.element_begin("line_body");
             SimTK::Xml::element_iterator body2Element = aNode.element_begin("follower_body");
             std::string body1_name(""), body2_name("");

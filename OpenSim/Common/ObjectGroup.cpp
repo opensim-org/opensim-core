@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -156,7 +156,7 @@ bool ObjectGroup::contains(const string& aName) const
  *
  * @param aObject pointer to the object.
  */
-void ObjectGroup::add(Object* aObject)
+void ObjectGroup::add(const Object* aObject)
 {
     if (aObject != NULL) {
         // check if object is already a member of this group
@@ -192,7 +192,7 @@ void ObjectGroup::remove(const Object* aObject)
  * @param aOldObject pointer to the old object.
  * @param aNewObject pointer to the new object.
  */
-void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
+void ObjectGroup::replace(const Object* aOldObject, const Object* aNewObject)
 {
     if (aOldObject != NULL && aNewObject != NULL)
     {

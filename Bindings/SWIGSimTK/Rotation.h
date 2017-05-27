@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-12 Stanford University and the Authors.        *
+ * Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
  * Authors: Paul Mitiguy, Michael Sherman                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -101,7 +101,7 @@ typedef InverseRotation_<double>   dInverseRotation;
  */
 //------------------------------------------------------------------------------
 template <class P=double> // templatized by precision
-class Rotation_ : public Mat33 {
+class Rotation_ : public Mat<3, 3, P> {
 #ifndef SWIG
     typedef P               P;
     typedef Mat<2,2,P>      Mat22P;
@@ -303,8 +303,8 @@ public:
     /// Conversion from Rotation to its base class Mat33.
     /// Note: asMat33 is more efficient than toMat33() (no copy), but you have to know the internal layout.
     //@{
-    const Mat33&  asMat33() const  { return *static_cast<const Mat33*>(this); }
-    Mat33         toMat33() const  { return asMat33(); }
+    const Mat<3, 3, P>&  asMat33() const  { return *static_cast<const Mat33*>(this); }
+    Mat<3, 3, P>         toMat33() const  { return asMat33(); }
     //@}
 #ifndef SWIG
     /// The column and row unit vector types do not necessarily have unit spacing.

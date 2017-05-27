@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
             timeV(i) = ((double)i)/((double)pts-1.0);
             xM(i,0) = amin;
             if( timeV(i)<=stepStart || timeV(i)>=stepEnd ){
-                xM(i,1) = 0;
+                xM(i,1) = amin;
             }else{
                 xM(i,1) = 1;
             }                 

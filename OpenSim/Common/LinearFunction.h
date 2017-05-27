@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,7 +25,6 @@
 
 
 // INCLUDES
-#include <string>
 #include "Function.h"
 #include "PropertyDblArray.h"
 
@@ -92,12 +91,11 @@ public:
     /** %Set intercept */
     void setIntercept(double intercept) {_coefficients[1] = intercept; }
     /** Get Coefficients */
-    const Array<double> getCoefficients() const
-    { return _coefficients; }
+    const Array<double> getCoefficients() const { return _coefficients; }
     /** Get Slope */
-    double getSlope() { return _coefficients[0]; }
+    double getSlope() const { return _coefficients[0]; }
     /** Get Intercept */ 
-    double getIntercept() { return _coefficients[1]; }
+    double getIntercept() const { return _coefficients[1]; }
     
 
     //--------------------------------------------------------------------------

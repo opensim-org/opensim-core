@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,9 +28,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include "CMC_Task.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include "CMC_Joint.h"
 
 using namespace std;
@@ -254,8 +252,8 @@ computeErrors(const SimTK::State& s, double aT)
 {
     // COMPUTE ERRORS
     //std::cout<<_coordinateName<<std::endl;
-    //std::cout<<"_pTrk[0]->evaluate(0,aT) = "<<_pTrk[0]->evaluate(0,aT)<<std::endl;
-    //std::cout<<"_q->getValue() = "<<_q->getValue()<<std::endl;
+    //std::cout<<"_pTrk[0]->calcValue(aT) = "<< _pTrk[0]->calcValue(SimTK::Vector(1, aT)) <<std::endl;
+    //std::cout<<"_q->getValue(s) = "<<_q->getValue(s)<<std::endl;
     _pErr[0] = _pTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getValue(s);
     if(_vTrk[0]==NULL) {
         std::vector<int> derivComponents(1);

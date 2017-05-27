@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Cassidy Kelly, Ajay Seth, Michael A. Sherman *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,14 +24,36 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDES
+#include <assert.h>
+#include <string>
+#include <typeinfo>
 #include "osimCommonDLL.h"
-#include "Simbody.h"
+#include "Exception.h"
+#include "SimTKcommon/internal/Xml.h"
 
 
 namespace OpenSim {
 
 class Object;
 template <class T> class Property;
+
+//==============================================================================
+/// Property Exceptions
+//==============================================================================
+class InvalidPropertyValue : public Exception {
+public:
+    InvalidPropertyValue(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& propertName) :
+        Exception(file, line, func, obj) {
+        std::string msg = "Property '" + propertName;
+        msg += "' has an invalid value.";
+        addMessage(msg);
+    }
+};
+
 
 //==============================================================================
 //                            ABSTRACT PROPERTY
@@ -116,7 +138,7 @@ public:
         if (getComment() != other.getComment()) return false;
         if (getMinListSize() != other.getMinListSize()) return false;
         if (getMaxListSize() != other.getMaxListSize()) return false;
-     
+
         if (size() != other.size()) return false;
         // Note: we're delegating comparison of the "use default" flags
         // because only the new Property system copies them correctly, so
@@ -192,6 +214,9 @@ public:
     list isn't already of maximum size. 
     @returns The index assigned to this value in the list. **/
     template <class T> int appendValue(const T& value);
+
+    /** Assign (copy) property *that* to this object. */
+    virtual void assign(const AbstractProperty& that) = 0;
     /**@}**/
 
     /** This method sets the "use default" flag for this property and the 
@@ -274,6 +299,10 @@ protected:
     AbstractProperty();
     AbstractProperty(const std::string& name, 
                      const std::string& comment);
+    AbstractProperty(const AbstractProperty&)            = default;
+    AbstractProperty(AbstractProperty&&)                 = default;
+    AbstractProperty& operator=(const AbstractProperty&) = default;
+    AbstractProperty& operator=(AbstractProperty&&)      = default;
 
     // This is the remainder of the interface that a concrete Property class
     // must implement, hidden from AbstractProperty users.

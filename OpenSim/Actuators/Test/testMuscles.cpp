@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -233,7 +233,6 @@ void simulateMuscle(
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
-    ground.addMeshGeometry("box.vtp");
     //ground.updDisplayer()->setScaleFactors(Vec3(anchorWidth, anchorWidth, 2*anchorWidth));
 
     OpenSim::Body * ball = new OpenSim::Body("ball", 
@@ -241,7 +240,7 @@ void simulateMuscle(
                         Vec3(0),  
                         ballMass*SimTK::Inertia::sphere(ballRadius));
     
-    ball->addMeshGeometry("sphere.vtp");
+    ball->attachGeometry(new Sphere(ballRadius));
     //ball->updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
     // ball connected  to ground via a slider along X
     double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
@@ -254,15 +253,15 @@ void simulateMuscle(
                         Vec3(0), 
                         Vec3(0));
 
-    CoordinateSet& jointCoordinateSet = slider->upd_CoordinateSet();
-        jointCoordinateSet[0].setName("tx");
-        jointCoordinateSet[0].setDefaultValue(1.0);
-        jointCoordinateSet[0].setRangeMin(0); 
-        jointCoordinateSet[0].setRangeMax(1.0);
-    
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("tx");
+    sliderCoord.setDefaultValue(1.0);
+    sliderCoord.setRangeMin(0); 
+    sliderCoord.setRangeMax(1.0);
+
     if(motion != NULL){
-        jointCoordinateSet[0].setPrescribedFunction(*motion);
-        jointCoordinateSet[0].setDefaultIsPrescribed(true);
+        sliderCoord.setPrescribedFunction(*motion);
+        sliderCoord.setDefaultIsPrescribed(true);
     }
     // add ball to model
     model.addBody(ball);
@@ -301,7 +300,8 @@ void simulateMuscle(
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
-    PrescribedController * muscleController = new PrescribedController();
+    std::unique_ptr<PrescribedController> 
+        muscleController{new PrescribedController{}};
     if(control != NULL){
         muscleController->setActuators(model.updActuators());
         // Set the individual muscle control functions 
@@ -309,7 +309,7 @@ void simulateMuscle(
         muscleController->prescribeControlForActuator("muscle",control->clone());
 
         // Add the control set controller to the model
-        model.addController(muscleController);
+        model.addController(muscleController.release());
     }
 
     // Set names for muscles / joints.
@@ -397,7 +397,7 @@ void simulateMuscle(
     //cout << "Muscle initial energy = " << Emuscle0 << endl;
     double Esys0 = model.getMultibodySystem().calcEnergy(si);
     Esys0 += (Emuscle0 + jointWorkProbe->getProbeOutputs(si)(0));
-    double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
+    /*double PEsys0 = */model.getMultibodySystem().calcPotentialEnergy(si);
     //cout << "Total initial system energy = " << Esys0 << endl; 
 
 //==========================================================================
@@ -412,14 +412,13 @@ void simulateMuscle(
     Manager manager(model, integrator);
 
     // Integrate from initial time to final time
-    manager.setInitialTime(initialTime);
-    manager.setFinalTime(finalTime);
+    si.setTime(initialTime);
     cout<<"\nIntegrating from " << initialTime<< " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si);
+    manager.integrate(si, finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;
@@ -494,10 +493,10 @@ void simulateMuscle(
     if(false){
         model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
         double Esys = model.getMultibodySystem().calcEnergy(si);
-        double KEsys =  model.getMultibodySystem().calcKineticEnergy(si);
-        double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
-        double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
-        double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
+        /*double KEsys =  */model.getMultibodySystem().calcKineticEnergy(si);
+        /*double xSpeed = */modelCoordinateSet[0].getSpeedValue(si);
+        // double KEsysCheck = 0.5*ballMass*xSpeed*xSpeed;
+        /*double PEsys =  */model.getMultibodySystem().calcPotentialEnergy(si);
         double jointWork = jointWorkProbe->computeProbeInputs(si)(0);
         double ESysMinusWork = Esys 
                                 - muscWorkProbe->computeProbeInputs(si)(0)
@@ -542,6 +541,10 @@ void simulateMuscle(
         fiberPassivePwrSto->getDataColumn(  "#1",fiberPassivePwrDat);
         tendonPwrSto->getDataColumn("#1", tendonPwrDat);
         musclePwrSto->getDataColumn("#1",musclePwrDat);
+        std::unique_ptr<double[]>  fiberActivePwrDat_ptr{fiberActivePwrDat};
+        std::unique_ptr<double[]> fiberPassivePwrDat_ptr{fiberPassivePwrDat};
+        std::unique_ptr<double[]>       tendonPwrDat_ptr{tendonPwrDat};
+        std::unique_ptr<double[]>       musclePwrDat_ptr{musclePwrDat};
 
         double dKEPEW_dt = 0;
         
@@ -836,6 +839,116 @@ void testThelen2003Muscle()
         musc.set_fv_linear_extrap_threshold(1.001 / 3.0);
         musc.finalizeFromProperties();
     }
+
+    // Ensure the properties of MuscleFixedWidthPennationModel and
+    // MuscleFirstOrderActivationDynamicModel are being set by Thelen2003Muscle
+    // when they are subcomponents of the Muscle. Here, we set the properties
+    // of Thelen2003Muscle and then check the properties of its subcomponents.
+    // Also ensures properties survive serialization/deserialization.
+    {
+        const string& filename = "testSettingMuscleSubcomponentProperties.osim";
+        const double optimalFiberLength = 1234.56;
+        const double pennAngAtOptimal   = 0.123456;
+        const double maximumPennation   = 1.23456;
+        const double actTimeConstant    = 0.0123;
+        const double deactTimeConstant  = 0.0246;
+        const double minimumActivation  = 0.0357;
+
+        // Create muscle and add to model.
+        Model myModel;
+        Thelen2003Muscle* myMcl = new Thelen2003Muscle("myMuscle",
+            MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
+            PennationAngle0);
+        myModel.addForce(myMcl);
+
+        // Set properties of Thelen2003Muscle.
+        myMcl->setOptimalFiberLength(optimalFiberLength);
+        myMcl->setPennationAngleAtOptimalFiberLength(pennAngAtOptimal);
+        myMcl->setMaximumPennationAngle(maximumPennation);
+        myMcl->setActivationTimeConstant(actTimeConstant);
+        myMcl->setDeactivationTimeConstant(deactTimeConstant);
+        myMcl->setMinimumActivation(minimumActivation);
+        myMcl->setMinControl(minimumActivation);
+
+        myMcl->finalizeFromProperties();
+
+        // Check properties of MuscleFixedWidthPennationModel.
+        const MuscleFixedWidthPennationModel& pennMdl =
+            myMcl->getPennationModel();
+        ASSERT_EQUAL(optimalFiberLength, pennMdl.get_optimal_fiber_length(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "optimal_fiber_length was not set in pennation model");
+        ASSERT_EQUAL(pennAngAtOptimal, pennMdl.get_pennation_angle_at_optimal(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "pennation_angle_at_optimal was not set in pennation model");
+        ASSERT_EQUAL(maximumPennation, pennMdl.get_maximum_pennation_angle(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "maximum_pennation_angle was not set in pennation model");
+
+        // Check properties of MuscleFirstOrderActivationDynamicModel.
+        const MuscleFirstOrderActivationDynamicModel& actMdl =
+            myMcl->getActivationModel();
+        ASSERT_EQUAL(actTimeConstant, actMdl.get_activation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "activation_time_constant was not set in activation model");
+        ASSERT_EQUAL(deactTimeConstant, actMdl.get_deactivation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "deactivation_time_constant was not set in activation model");
+        ASSERT_EQUAL(minimumActivation, actMdl.get_minimum_activation(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "minimum_activation was not set in activation model");
+
+        // Print model and read back in.
+        myModel.print(filename);
+        Model myModel2(filename);
+        myModel2.finalizeFromProperties();
+
+        const Thelen2003Muscle& myMcl2 = dynamic_cast<const Thelen2003Muscle&>(
+            myModel2.getMuscles().get("myMuscle") );
+
+        // Check properties of MuscleFixedWidthPennationModel.
+        const MuscleFixedWidthPennationModel& pennMdl2 =
+            myMcl2.getPennationModel();
+        ASSERT_EQUAL(optimalFiberLength, pennMdl2.get_optimal_fiber_length(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "optimal_fiber_length was not set in pennation model");
+        ASSERT_EQUAL(pennAngAtOptimal, pennMdl2.get_pennation_angle_at_optimal(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "pennation_angle_at_optimal was not set in pennation model");
+        ASSERT_EQUAL(maximumPennation, pennMdl2.get_maximum_pennation_angle(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "maximum_pennation_angle was not set in pennation model");
+
+        // Check properties of MuscleFirstOrderActivationDynamicModel.
+        const MuscleFirstOrderActivationDynamicModel& actMdl2 =
+            myMcl2.getActivationModel();
+        ASSERT_EQUAL(actTimeConstant, actMdl2.get_activation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "activation_time_constant was not set in activation model");
+        ASSERT_EQUAL(deactTimeConstant, actMdl2.get_deactivation_time_constant(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "deactivation_time_constant was not set in activation model");
+        ASSERT_EQUAL(minimumActivation, actMdl2.get_minimum_activation(),
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "minimum_activation was not set in activation model");
+    }
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.001; //short fiber and tendon
+        const double tendonSlackLength  = 0.001;
+        auto muscle = new Thelen2003Muscle("muscle", 1., optimalFiberLength,
+                                           tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 
@@ -876,6 +989,25 @@ void testMillard2012EquilibriumMuscle()
         CorrectnessTest,
         CorrectnessTestTolerance,
         false);
+
+    // Test exception when muscle cannot be initialized.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.01; //short fiber, long tendon
+        const double tendonSlackLength  = 100.;
+        auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
+                          optimalFiberLength, tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        muscle->setActivation(state, 1.);
+        model.realizeVelocity(state);
+        ASSERT_THROW( MuscleCannotEquilibrate,
+                      muscle->computeInitialFiberEquilibrium(state) );
+    }
 }
 
 void testMillard2012AccelerationMuscle()

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,14 +23,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include "CorrectionController.h"
 
@@ -229,8 +224,8 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     SimTK::Vector actControls(1, 0.0);
 
     for(int i=0; i< getActuatorSet().getSize(); i++){
-        CoordinateActuator* act = 
-            dynamic_cast<CoordinateActuator*>(&getActuatorSet().get(i));
+        auto act = 
+            dynamic_cast<const CoordinateActuator*>(&getActuatorSet().get(i));
         SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
         Coordinate *aCoord = act->getCoordinate();
@@ -250,8 +245,6 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
             double vErrTerm = _kv*oneOverFmax*vErr;
             actControls = -vErrTerm - pErrTerm;
         }
-
-        
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 }
@@ -277,7 +270,11 @@ void CorrectionController::extendConnectToModel(Model& model)
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
-            _model->addForce(actuator);
+            // Since CorrectionController is creating these actuators for its
+            // own devices, it should take ownership of them, so that when
+            // the controller is removed, so are all the actuators it added.
+            adoptSubcomponent(actuator);
+            setNextSubcomponentInSystem(*actuator);
         }
             
         actuator->setOptimalForce(1.0);

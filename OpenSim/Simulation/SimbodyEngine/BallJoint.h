@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,16 +49,71 @@ of position (\f$\vec{u} \neq \dot{\vec{q}}\f$).
 */
 
 class OSIMSIMULATION_API BallJoint : public Joint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
+OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
-    /** Specify the Coordinates of the BallJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+public:
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rx = myBallJoint.getCoordinate(BallJoint::Coord::Rotation1X);
+        \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myBallJoint.getCoordinate(opensim.BallJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java example</b>
+        \code{.java}
+        rx = myBallJoint.getCoordinate(BallJoint.Coord.Rotation1X);
+        \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myBallJoint.get_coordinates(0);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
+    };
+
+private:
+    /** Specify the Coordinates of the BallJoint. */
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
+    }
 
 protected:
     // ModelComponent interface.

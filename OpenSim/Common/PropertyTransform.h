@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,15 +22,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property_Deprecated.h"
 #include "PropertyDblArray.h"
-#include "SimTKcommon.h"
+#include "SimTKcommon/Orientation.h"
 
 //=============================================================================
 //=============================================================================

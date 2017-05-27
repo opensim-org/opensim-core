@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  * Contributor(s): Thomas Uchida                                              *
  *                                                                            *
@@ -27,7 +27,7 @@
 // INCLUDES and STATICS
 //=============================================================================
 #include "Bhargava2004MuscleMetabolicsProbe.h"
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/Model.h>
 //#define DEBUG_METABOLICS
 
 using namespace std;
@@ -129,7 +129,7 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
 void Bhargava2004MuscleMetabolicsProbe::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    if (isDisabled()) return;   // Nothing to connect
+    if (!isEnabled()) return;   // Nothing to connect
 
     const int nM = 
         get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
@@ -159,7 +159,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     if( k < 0 ) {
         cout << "WARNING: Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter: "
             "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
-        setDisabled(true);
+        setEnabled(false);
         return;
 
     }
@@ -181,7 +181,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
              std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
-             setDisabled(true);
+             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
         else if (isNaN(mm.get_provided_muscle_mass())) {
@@ -189,7 +189,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
              std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
-             setDisabled(true);
+             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
     }
@@ -202,7 +202,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
                 << mm.getName() 
                 << ". <specific_tension> must be a positive number (N/m^2)." << endl;
             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
 
         }
@@ -211,7 +211,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
                 << mm.getName() 
                 << ". <density> must be a positive number (kg/m^3)." << endl;
             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
-            setDisabled(true);
+            setEnabled(false);
         }
     }
 
@@ -223,7 +223,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
         errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
             << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
         std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
-        setDisabled(true);
+        setEnabled(false);
     }
 
 
@@ -285,7 +285,7 @@ computeProbeInputs(const State& s) const
 
         // Get important muscle values at the current time state
         const double max_isometric_force = m->getMaxIsometricForce();
-        const double max_shortening_velocity = m->getMaxContractionVelocity();
+        //const double max_shortening_velocity = m->getMaxContractionVelocity();
         const double activation = get_muscle_effort_scaling_factor()
                                   * m->getActivation(s);
         const double excitation = get_muscle_effort_scaling_factor()
@@ -297,7 +297,7 @@ computeProbeInputs(const State& s) const
                                          + fiber_force_passive;
         const double fiber_length_normalized = m->getNormalizedFiberLength(s);
         const double fiber_velocity = m->getFiberVelocity(s);
-        const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
+        //const double fiber_velocity_normalized = m->getNormalizedFiberVelocity(s);
         const double slow_twitch_excitation = mm.get_ratio_slow_twitch_fibers() * sin(Pi/2 * excitation);
         const double fast_twitch_excitation = (1 - mm.get_ratio_slow_twitch_fibers()) * (1 - cos(Pi/2 * excitation));
         double alpha, fiber_length_dependence;

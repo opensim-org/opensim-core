@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <fstream>
 #include "ExternalLoads.h"
 #include "Model.h"
 #include "BodySet.h"
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Common/IO.h>
 
@@ -233,7 +231,7 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storag
 
 ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
 {
-    if(!&getModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
+    if(!hasModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
         throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
 
     if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
@@ -350,7 +348,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
         
         // get the untransformed point expressed in ground in the ExternalForce specified in  ground (check made above)
         pGround = exForce.getPointAtTime(time);
-        getModel().getSimbodyEngine().transformPosition(s, ground, pGround, appliedToBody, pAppliedBody);
+        pAppliedBody = ground.findStationLocationInAnotherFrame(s, pGround, appliedToBody);
 
         // populate the force data for this instant in time
         for(int j =0; j<3; ++j){

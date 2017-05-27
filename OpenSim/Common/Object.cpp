@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,21 +34,13 @@
 #include "XMLDocument.h"
 #include "Exception.h"
 #include "Property_Deprecated.h"
-#include "PropertyObj.h"
-#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "IO.h"
 
-#include "Simbody.h"
-
 #include <fstream>
-#include <vector>
-#include <map>
-#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;
-using SimTK::Xml;
 using SimTK::Vec3;
 using SimTK::Transform;
 
@@ -103,16 +95,13 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // This maybe slower than we like but definitely faster than 
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
-    if(aFileName.empty()) {
-        string msg =
-            "Object: ERR- Empty filename encountered.";
-        throw Exception(msg,__FILE__,__LINE__);
-    } else 
-        if(!ifstream(aFileName.c_str(), ios_base::in).good()) {
-        string msg =
-            "Object: ERR- Could not open file " + aFileName+ ". It may not exist or you don't have permission to read it.";
-        throw Exception(msg,__FILE__,__LINE__);
-    }   
+    OPENSIM_THROW_IF(aFileName.empty(), Exception,
+        "Object: Cannot construct from empty filename. No filename specified.");
+
+    OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
+        Exception,
+        "Object: Cannot not open file " + aFileName +
+        ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
 
@@ -201,8 +190,7 @@ Object::Object(SimTK::Xml::Element& aNode)
  * @return Reference to this object.
  * @see updateXMLNode()
  */
-Object& Object::
-operator=(const Object& source)
+Object& Object::operator=(const Object& source)
 {
     if (&source != this) {
         _name           = source._name;
@@ -225,50 +213,19 @@ operator=(const Object& source)
 /**
  * Set all non-static member variables to their null or default values.
  */
-void Object::
-setNull()
+void Object::setNull()
 {
     _propertySet.clear();
     _propertyTable.clear();
     _objectIsUpToDate = false;
 
-    _name           = "";
-    _description    = "";
-    _authors        = "";
-    _references     = "";
+    _name = "";
+    _description = "";
+    _authors = "";
+    _references = "";
 
-    _document       = NULL;
-    _inlined        = true;
-
-    // In case there are properties allocated at the Object base class level,
-    // they need to be reallocated now. Derived objects will get a chance to
-    // do this later.
-    setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.  This involves both generating
- * the properties and connecting them to the local pointers used to access
- * the serialized member variables.
- */
-void Object::
-setupProperties()
-{
-
-    // CURRENTLY THERE ARE NO SERIALIZED MEMBERS IN Object
-
-}
-
-//_____________________________________________________________________________
-/**
- * Perform any initializations that should occur upon instantiation.
- */
-void Object::
-init()
-{
-
-    // CURRENTLY THERE ARE NO INITIALIZATIONS NEEDED.
-
+    _document = NULL;
+    _inlined = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -277,8 +234,7 @@ init()
 // Compare the base class mundane data members, and the properties. Concrete
 // Objects should override this but they must make sure to invoke the base
 // operator.
-bool Object::
-operator==(const Object& other) const
+bool Object::operator==(const Object& other) const
 {
     if (getConcreteClassName()  != other.getConcreteClassName()) return false;
     if (getName()               != other.getName())         return false;
@@ -1178,7 +1134,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
             //UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name); BoolArray Handling on Write
             stringValue = "";
             {
-                int n = prop->getArraySize();
+                //int n = prop->getArraySize();
                 const Array<bool> &valueBs = prop->getValueArray<bool>();
                 for (int i=0; i<valueBs.size(); ++i) 
                     stringValue += (valueBs[i]?"true ":"false ");
@@ -1210,7 +1166,7 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
 
         // Obj
         case(Property_Deprecated::Obj) : {
-            PropertyObj *propObj = (PropertyObj*)prop;
+            //PropertyObj *propObj = (PropertyObj*)prop;
             const Object &object = prop->getValueObj();
             object.updateXMLNode(myObjectElement);
             break; }
@@ -1402,9 +1358,10 @@ print(const string &aFileName) const
 
 // This signature accepts "className.propertyName", splits out the individual
 // segments and calls the other signature.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                        const string &aClassNameDotPropertyName)
+                  const string &aClassNameDotPropertyName,
+                  bool printFlagInfo)
 {
     // PARSE NAMES
     string compoundName = aClassNameDotPropertyName;
@@ -1416,13 +1373,14 @@ PrintPropertyInfo(ostream &aOStream,
         propertyName = compoundName.substr(delimPos+1);
     }
 
-    PrintPropertyInfo(aOStream,className,propertyName);
+    return PrintPropertyInfo(aOStream, className, propertyName, printFlagInfo);
 }
 
 // This is the real method.
-void Object::
+bool Object::
 PrintPropertyInfo(ostream &aOStream,
-                  const string &aClassName,const string &aPropertyName)
+                  const string &aClassName, const string &aPropertyName,
+                  bool printFlagInfo)
 {
     if(aClassName=="") {
         // NO CLASS
@@ -1434,16 +1392,20 @@ PrintPropertyInfo(ostream &aOStream,
             if(obj==NULL) continue;
             aOStream<<obj->getConcreteClassName()<<endl;
         }
-        aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+        }
+        return true;
     }
 
     // FIND CLASS
     const Object* object = getDefaultInstanceOfType(aClassName);
     if(object==NULL) {
-        aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
-        aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
-        return;
+        if (printFlagInfo) {
+            aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+            aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+        }
+        return false;
     }
 
     PropertySet propertySet = object->getPropertySet();
@@ -1488,13 +1450,15 @@ PrintPropertyInfo(ostream &aOStream,
             }
         }
 
-        aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
-                    "info for a particular property.\n";
-        if(aPropertyName!="*") {
-            aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
-                        "properties in a class.\n";
+        if (printFlagInfo) {
+            aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+                "info for a particular property.\n";
+            if(aPropertyName!="*") {
+                aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                    "properties in a class.\n";
+            }
         }
-        return;
+        return true;
     }
 
     // FIND PROPERTY
@@ -1504,20 +1468,28 @@ PrintPropertyInfo(ostream &aOStream,
         //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
         aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
                  << prop->getComment() << "\n";
+        return true;
     } catch(...) {
         try {
             abstractProperty = object->_propertyTable.getPropertyPtr(aPropertyName);
+            if (abstractProperty == nullptr) {
+                throw Exception("No property '" + aPropertyName +
+                        "' class '" + aClassName + "'.");
+            }
             // OUTPUT
             //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
             aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
                      << abstractProperty->getComment()<<"\n";
+            return true;
         } catch (...) {
-            aOStream << "\nPrintPropertyInfo: no property with the name "
-                     << aPropertyName;
-            aOStream << " was found in class " << aClassName << ".\n";
-            aOStream << "Omit the property name to get a listing of all "
-                        "properties in a class.\n";
-            return;
+            if (printFlagInfo) {
+                aOStream << "\nPrintPropertyInfo: no property with the name "
+                    << aPropertyName;
+                aOStream << " was found in class " << aClassName << ".\n";
+                aOStream << "Omit the property name to get a listing of all "
+                    "properties in a class.\n";
+            }
+            return false;
         }
     }
 }
@@ -1569,6 +1541,7 @@ makeObjectFromFile(const std::string &aFileName)
             IO::chDir(saveWorkingDirectory);
             throw; // re-issue the exception
         }
+        IO::chDir(saveWorkingDirectory);
         return (newObject);
     }
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,16 +21,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapDoubleCylinderObst.h"
-#include <SimTKcommon.h>
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
 
 //=============================================================================
 // STATICS
@@ -41,7 +33,7 @@ using SimTK::Vec3;
 
 static const char* wrapTypeName = "doubleCylinderObst";
 
-static const double TwoPi = 2.0*SimTK::Pi;
+//static const double TwoPi = 2.0*SimTK::Pi;
 // static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
 
@@ -119,8 +111,6 @@ void WrapDoubleCylinderObst::setNull()
 */
 void WrapDoubleCylinderObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
 
     _radiusUcylProp.setName("radiusUcyl");  _radiusUcylProp.setValue(-1.0);     _propertySet.append(&_radiusUcylProp);
     _radiusVcylProp.setName("radiusVcyl");  _radiusVcylProp.setValue(-1.0);     _propertySet.append(&_radiusVcylProp);
@@ -217,9 +207,6 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
 */
 void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapDoubleCylinderObst);
-
     _radiusUcyl = aWrapDoubleCylinderObst._radiusUcyl;
     _radiusVcyl = aWrapDoubleCylinderObst._radiusVcyl;
     _wrapUcylDirectionName = aWrapDoubleCylinderObst._wrapUcylDirectionName;
@@ -499,7 +486,7 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
                         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 
-    double U[3];    U[0]=_translation[0];       U[1]=_translation[1];       U[2]=_translation[2];
+    double U[3];    U[0]=get_translation()[0];       U[1]= get_translation()[1];       U[2]= get_translation()[2];
     double V[3];    V[0]=_translationVcyl[0];   V[1]=_translationVcyl[1];   V[2]=_translationVcyl[2];
     double Ru = ( _wrapUcylDirection==righthand ? _radiusUcyl : -_radiusUcyl );
     double Rv = ( _wrapVcylDirection==righthand ? _radiusVcyl : -_radiusVcyl );
@@ -509,30 +496,30 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     
     // CONSTRUCT SOME ROTATION MATRICES
     double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cylinder Frame
-    double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
+    double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylObstToUcylBody[9];   load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
     double VcylObstToVcylBody[9];   load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
-    double UcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
-    double VcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
+    double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
+    double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
     double VcylObstToUcylBody[9];   quick_mul_mtx_by_mtx(VcylBodyToUcylBody,VcylObstToVcylBody,VcylObstToUcylBody);
     quick_mul_mtxT_by_mtx(UcylObstToUcylBody,VcylObstToUcylBody,VcylObstToUcylObst);
 
     double u[3];    // Position of Ucyl center in Vcyl frame;   NOTE:  U is Posn of Ucyl center in Ucyl body frame
-    _model->getSimbodyEngine().transformPosition(s, *_wrapUcylHomeBody, U, *_wrapVcylHomeBody, u);
+    SimTK::Vec3::updAs(u) = _wrapUcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(U), *_wrapVcylHomeBody);
     quick_sub_vec_fm_vec( u, V, u );                    // Translate u from Vcyl body to Vcyl obstacle
     quick_mul_vec_by_mtxT( u, VcylObstToVcylBody, u );  // Rotate u into Vcyl obstacle frame
 
     double v[3];    // Position of Vcyl center in Ucyl frame;   NOTE:  V is Posn of Vcyl center in Vcyl body frame
-    _model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, V, *_wrapUcylHomeBody, v);
+    SimTK::Vec3::updAs(v) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(V), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( v, U, v );                    // Translate v from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( v, UcylObstToUcylBody, v );  // Rotate v into Ucyl obstacle frame
 
     double vs[3],ss[3]; // Position of S in Vcyl obstacle frame;    NOTE:  S is Posn of S in Ucyl obstacle frame
     quick_mul_vec_by_mtx( S, UcylObstToUcylBody, vs );  // Rotate S into Ucyl body frame
     quick_add_vec_to_vec( vs, U, vs );                  // Translate s into Ucyl body frame
-    _model->getSimbodyEngine().transformPosition(s, *_wrapUcylHomeBody, vs, *_wrapVcylHomeBody, ss);
+    SimTK::Vec3::updAs(ss) = _wrapUcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(vs), *_wrapVcylHomeBody);
     quick_sub_vec_fm_vec( ss, V, vs );                  // Translate s from Vcyl body to Vcyl obstacle
     quick_mul_vec_by_mtxT( vs, VcylObstToVcylBody, vs );    // Rotate s into Vcyl obstacle frame
 
@@ -545,14 +532,14 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // Transform T back into Ucylinder frame
     quick_mul_vec_by_mtx( T, VcylObstToVcylBody, T );
     quick_add_vec_to_vec( T, V, T );
-    _model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, T, *_wrapUcylHomeBody, T);
+    SimTK::Vec3::updAs(T) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(T), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( T, U, T );                    // Translate T from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( T, UcylObstToUcylBody, T );  // Rotate T into Ucyl obstacle frame
 
     // Transform t back into Ucylinder frame
     quick_mul_vec_by_mtx( t, VcylObstToVcylBody, t );
     quick_add_vec_to_vec( t, V, t );
-    _model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, t, *_wrapUcylHomeBody, t);
+    SimTK::Vec3::updAs(t) = _wrapVcylHomeBody->findStationLocationInAnotherFrame(s, SimTK::Vec3(t), *_wrapUcylHomeBody);
     quick_sub_vec_fm_vec( t, U, t );                    // Translate t from Ucyl body to Ucyl obstacle
     quick_mul_vec_by_mtxT( t, UcylObstToUcylBody, t );  // Rotate t into Ucyl obstacle frame
 
@@ -585,12 +572,12 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 /*============================================================================*/
 void WrapDoubleCylinderObst::
 getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9]) const {
-    double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
+    double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
     double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
     double UcylBodyToUcylObst[9];   load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
     double VcylBodyToVcylObst[9];   load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
-    double UcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
-    double VcylBodyToGround[9];     _model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
+    double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
+    double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
     double VcylObstToUcylBody[9];   quick_mul_mtx_by_mtxT(VcylBodyToUcylBody,VcylBodyToVcylObst,VcylObstToUcylBody);
     quick_mul_mtx_by_mtx(UcylBodyToUcylObst,VcylObstToUcylBody,VcylObstToUcylObst);

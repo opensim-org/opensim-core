@@ -1,4 +1,5 @@
-install_files(/sdk/doc FILES "BuildOpenSimPluginSteps.pdf")
+install(FILES "BuildOpenSimPluginSteps.pdf"
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
 find_package(Doxygen)
 
@@ -97,7 +98,7 @@ if(${DOXYGEN_FOUND})
         *and* install Simbody Doxygen documentation. By default,
         OpenSim's Doxygen documentation will link to your *local* Simbody
         Doxygen documentation, and this variable is automatically populated 
-        with the location of Simbody's Doyxgen files.
+        with the location of Simbody's Doxygen files.
         However, when the OpenSim Doxygen documentation is put online, 
         there is no 'local' Simbody Doxygen documentation. In this case, 
         set this variable to a URL where one can find the correct 
@@ -210,14 +211,14 @@ if(${DOXYGEN_FOUND})
     
         # Installation
         # ------------
-        install(DIRECTORY "${PROJECT_BINARY_DIR}/html_${audience}/"
-                DESTINATION "sdk/doc/html_${audience}"
+        install(DIRECTORY   "${PROJECT_BINARY_DIR}/html_${audience}/"
+                DESTINATION "${CMAKE_INSTALL_DOCDIR}/html_${audience}"
                 )
 
     endforeach()
 
     # This is just a shortcut to the Doxygen index.html, for the user
     # documentation.
-    install(FILES "OpenSimAPI.html" DESTINATION "sdk/doc")
+    install(FILES "OpenSimAPI.html" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 
 endif()

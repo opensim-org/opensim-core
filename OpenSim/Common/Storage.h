@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,12 +27,10 @@
  * Author: Frank C. Anderson 
  */
 
-#include "osimCommonDLL.h"
-#include "Object.h"
 #include "StateVector.h"
 #include "Units.h"
-#include "SimTKcommon.h"
 #include "StorageInterface.h"
+#include "TimeSeriesTable.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
 //=============================================================================
@@ -192,6 +190,10 @@ public:
     void setDataColumn(int aStateIndex,const Array<double> &aData);
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
+
+    /** Get a TimeSeriesTable out of the Storage.                             */
+    TimeSeriesTable getAsTimeSeriesTable() const;
+
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"
         It is desirable to access the block as a single entity provided an identifier that is common 
@@ -202,9 +204,12 @@ public:
     void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
 #endif
     /**
-     * Get indices of columns corresponding to identifier, empty array if identifier is not found in labels
+     * Get indices of columns whose labels begin with the specified "identifier"
+     * (prefix). Returns an empty Array if none of the column labels begin with
+     * the identifier.
      */
-    OpenSim::Array<int>  getColumnIndicesForIdentifier(const std::string& identifier) const;
+    OpenSim::Array<int>
+        getColumnIndicesForIdentifier(const std::string& identifier) const;
 
     // STEP INTERVAL
     void setStepInterval(int aStepInterval);
@@ -218,9 +223,19 @@ public:
     void setHeaderToken(const std::string &aToken);
     const std::string& getHeaderToken() const;
     // COLUMN LABELS
+    /** Get the column index corresponding to specified column name. This
+     * function attempts to handle the change in state variable names that
+     * occurred in OpenSim version 4.0; for example, if you search for
+     * `<coord-name>/speed` and it is not found, then this function looks for
+     * `<coord-name>_u`.
+     *
+     * @return State index of column or -1.  Note that the returned index is
+     * equivalent to the state index.  For example, for the first column in a
+     * storage (usually time) -1 would be returned.  For the second column in a
+     * storage (the first state) 0 would be returned. */
     const int getStateIndex(const std::string &aColumnName, int startIndex=0) const;
-    void setColumnLabels(const Array<std::string> &aColumnLabels);
-    const Array<std::string> &getColumnLabels() const;
+    void setColumnLabels(const Array<std::string>& aColumnLabels);
+    const Array<std::string>& getColumnLabels() const;
     //--------------------------------------------------------------------------
     // RESET
     //--------------------------------------------------------------------------
@@ -247,21 +262,21 @@ public:
     void shiftTime(double aValue);
     void scaleTime(double aValue);
     void add(double aValue);
-    void add(int aN,double aY[]);
+    void add(const SimTK::Vector_<double>& values);
     void add(int aN,double aValue);
     void add(StateVector *aStateVector);
     void add(Storage *aStorage);
     void subtract(double aValue);
-    void subtract(int aN,double aY[]);
+    void subtract(const SimTK::Vector_<double>& values);
     void subtract(StateVector *aStateVector);
     void subtract(Storage *aStorage);
     void multiply(double aValue);
     void multiplyColumn(int aIndex, double aValue);
-    void multiply(int aN,double aY[]);
+    void multiply(const SimTK::Vector_<double>& values);
     void multiply(StateVector *aStateVector);
     void multiply(Storage *aStorage);
     void divide(double aValue);
-    void divide(int aN,double aY[]);
+    void divide(const SimTK::Vector_<double>& values);
     void divide(StateVector *aStateVector);
     void divide(Storage *aStorage);
     Storage* integrate(int aI1=-2,int aI2=-1) const;
@@ -287,12 +302,20 @@ public:
     double compareColumn(Storage& aOtherStorage, 
                          const std::string& aColumnName,
                          double startTime, double endTime=-1.0);
-    double compareColumnRMS(Storage& aOtherStorage, 
-                         const std::string& aColumnName,
-                         double startTime=SimTK::NaN, double endTime=SimTK::NaN);
+    double compareColumnRMS(const Storage& aOtherStorage, 
+                            const std::string& aColumnName,
+                            double startTime=SimTK::NaN, double endTime=SimTK::NaN) const;
     //void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-    void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+    void compareWithStandard(const Storage& standard, 
+                             std::vector<std::string>& columnsUsed, 
+                             std::vector<double>& comparisons) const;
+    /** Force column labels for a Storage object to become unique. This is done
+     * by prepending the string (n_) as needed where n=1, 2, ...
+     *
+     * @returns true if labels were already unique.
+     **/
     bool makeStorageLabelsUnique();
+    bool storageLabelsAreUnique() const;
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------

@@ -1,5 +1,5 @@
-/* -------------------------------------------------------------------------- *
-*                       OpenSim:  BodyActuator.cpp                        *
+/* ------------------------------------------------------------------------- *
+*                       OpenSim:  BodyActuator.cpp                           *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2014 Stanford University and the Authors                     *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Soha Pouya, Michael Sherman                                     *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,9 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 #include "BodyActuator.h"
 
@@ -47,7 +45,7 @@ using SimTK::Vec3;
 BodyActuator::BodyActuator()
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
 }
 //_____________________________________________________________________________
@@ -60,9 +58,9 @@ BodyActuator::BodyActuator(const Body& body,
                            bool spatialForceIsGlobal)
 {
     setAuthors("Soha Pouya, Michael Sherman");
-    constructInfrastructure();
+    constructProperties();
 
-    updConnector<Body>("body").set_connectee_name(body.getName());
+    updSocket<Body>("body").setConnecteeName(body.getName());
 
     set_point(point); // origin
     set_point_is_global(pointIsGlobal);
@@ -75,22 +73,15 @@ void BodyActuator::constructProperties()
     constructProperty_point_is_global(false);
     constructProperty_spatial_force_is_global(true);
 }
-//_____________________________________________________________________________
-/**
-* Construct Structural Connectors
-*/
-void BodyActuator::constructConnectors() {
-    constructConnector<Body>("body");
-}
 
 void BodyActuator::setBodyName(const std::string& name)
 {
-    updConnector<Body>("body").set_connectee_name(name);
+    updSocket<Body>("body").setConnecteeName(name);
 }
 
 const std::string& BodyActuator::getBodyName() const
 {
-    return getConnector<Body>("body").get_connectee_name();
+    return getSocket<Body>("body").getConnecteeName();
 }
 
 //=============================================================================
@@ -102,7 +93,7 @@ const std::string& BodyActuator::getBodyName() const
 */
 void BodyActuator::setBody(const Body& body)
 {
-    updConnector<Body>("body").connect(body);
+    connectSocket_body(body);
 }
 
 /**
@@ -110,7 +101,7 @@ void BodyActuator::setBody(const Body& body)
 */
 const Body& BodyActuator::getBody() const
 {
-    return getConnector<Body>("body").getConnectee();
+    return getConnectee<Body>("body");
 }
 
 //==============================================================================
@@ -126,11 +117,10 @@ void BodyActuator::computeForce(const SimTK::State& s,
 {
     if (!_model) return;
 
-    const SimbodyEngine& engine = getModel().getSimbodyEngine();
     const bool spatialForceIsGlobal = getSpatialForceIsGlobal();
     
-    const Body& body = getConnector<Body>("body").getConnectee();
-    const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
+    const Body& body = getBody();
+    // const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
 
     Vec3 pointOfApplication = get_point(); 
 
@@ -146,15 +136,15 @@ void BodyActuator::computeForce(const SimTK::State& s,
     // if the user has given the spatialForces in body frame, transform them to
     // global (ground) frame
     if (!spatialForceIsGlobal){
-        engine.transform(s, body, torqueVec, getModel().getGround(), torqueVec);
-        engine.transform(s, body, forceVec, getModel().getGround(), forceVec);
+        torqueVec = body.expressVectorInGround(s, torqueVec);
+        forceVec = body.expressVectorInGround(s, forceVec);
     }
 
     // if the point of applying force is not in body frame (which is the default 
     // case) transform it to body frame
     if (get_point_is_global())
-        engine.transformPosition(s, getModel().getGround(), pointOfApplication,
-                                 body, pointOfApplication);
+        pointOfApplication = getModel().getGround().
+            findStationLocationInAnotherFrame(s, pointOfApplication, body);
 
     applyTorque(s, body, torqueVec, bodyForces);
     applyForceToPoint(s, body, pointOfApplication, forceVec, bodyForces);
@@ -169,7 +159,7 @@ void BodyActuator::computeForce(const SimTK::State& s,
 */
 double BodyActuator::getPower(const SimTK::State& s) const
 {
-    const Body& body = getConnector<Body>("body").getConnectee();
+    const Body& body = getBody();
 
     const SimTK::MobilizedBody& body_mb = body.getMobilizedBody();
     SimTK::SpatialVec bodySpatialVelocities = body_mb.getBodyVelocity(s);

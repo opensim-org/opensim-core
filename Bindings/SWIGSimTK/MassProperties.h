@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org/home/simbody.  *
  *                                                                            *
- * Portions copyright (c) 2005-12 Stanford University and the Authors.        *
+ * Portions Copyright (c) 2005-2017 Stanford University and the Authors.      *
  * Authors: Michael Sherman                                                   *
  * Contributors: Paul Mitiguy                                                 *
  *                                                                            *
@@ -804,7 +804,7 @@ UnitInertia_ shiftFromCentroid(const Vec3& p) const
 /// G' = G + Gp where Gp is the inertia of a fictitious, unit-mass point located 
 /// at p, taken about CF. Cost is 17 flops.
 /// @see shiftFromCentroid() if you want to leave this object unmolested.
-/// @see shitToCentroidInPlace()
+/// @see shiftToCentroidInPlace()
 UnitInertia_& shiftFromCentroidInPlace(const Vec3& p)
 {   InertiaP::operator+=(pointMassAt(p));
     return *this; }

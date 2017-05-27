@@ -1,5 +1,5 @@
-#ifndef _osimCommon_h_
-#define _osimCommon_h_
+#ifndef OPENSIM_OSIMCOMMON_H_
+#define OPENSIM_OSIMCOMMON_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  osimCommon.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,10 +43,23 @@
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
 
+#include "SignalGenerator.h"
+
 #include "ObjectGroup.h"
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
 #include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
 #include "SmoothSegmentedFunctionFactory.h"
 
-#endif // _osimCommon_h_
+#include "DataTable.h"
+#include "TimeSeriesTable.h"
+
+#include "Adapters.h"
+
+#include "TableSource.h"
+
+#include "Reporter.h"
+
+#include "ModelDisplayHints.h"
+
+#endif // OPENSIM_OSIMCOMMON_H_

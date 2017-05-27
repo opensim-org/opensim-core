@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib, Ajay Seth, Michael A. Sherman   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,7 +27,7 @@
  * Author: Frank C. Anderson 
  */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #pragma warning( disable : 4786 )
 #pragma warning( disable : 4660 )
@@ -36,20 +36,18 @@
 // INCLUDES
 
 #include "osimCommonDLL.h"
-#include "XMLDocument.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property.h"
 
 #include <cstring>
 #include <cassert>
-#include <map>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
 
 // EXPORT LINE FOR MICROSOFT VISUAL C++
-#ifdef WIN32
+#ifdef _WIN32
 #ifndef SWIG
 template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif
@@ -71,6 +69,11 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
     #define SWIG_DECLARE_EXCEPTION
 #endif
 
+// Forward-declare SimTK types.
+namespace SimTK {
+    // Needed for Object_GetClassName<SimTK::SpatialVec>, defined in this file.
+    typedef Vec<2, Vec3> SpatialVec;
+}
 
 namespace OpenSim { 
 
@@ -221,6 +224,11 @@ public:
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
 
+    /// @cond
+    // This is an assignment operator for use in Java.
+    virtual void assign(Object &aObject) = 0;
+    /// @endcond
+
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
@@ -357,14 +365,23 @@ public:
         PropertyName is empty or "*", the information for all properties in the 
         class is printed. If ClassName is empty, the information for the 
         properties of all registered classes is printed.
-    **/
-    static void PrintPropertyInfo(std::ostream&      os,
-                                  const std::string& classNameDotPropertyName);
+    @param           printFlagInfo 
+        Print to the ostream some instructions for using the -PropertyInfo
+        command line flag.
+
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&      os,
+                                  const std::string& classNameDotPropertyName,
+                                  bool printFlagInfo = true);
     /** Same as the other signature but the class name and property name are
-    provided as two separate strings. **/
-    static void PrintPropertyInfo(std::ostream&         os,
+    provided as two separate strings. 
+    Returns false if the provided names do not match known classes or
+    properties; otherwise, returns true. **/
+    static bool PrintPropertyInfo(std::ostream&         os,
                                   const std::string&    className,
-                                  const std::string&    propertyName);
+                                  const std::string&    propertyName,
+                                  bool printFlagInfo = true);
     /**@}**/
     //--------------------------------------------------------------------------
 
@@ -766,8 +783,6 @@ protected:
 //--------------------------------------------------------------------------
 private:
     void setNull();
-    void setupProperties();
-    void init();
 
     // Functions to support deserialization. 
     void generateXMLDocument();
@@ -821,8 +836,8 @@ private:
     //  1: Shows illegal tags 
     //  2: level 1 + registration troubleshooting
     //  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
-    //     used from ava wrapping in GUI/Matlab this catches all exceptions 
-    //     thrown by the low level libraries which is slower but helpful in 
+    //     used from Java wrapping in GUI/Matlab this catches all exceptions 
+    //     thrown by the low-level libraries which is slower but helpful in 
     //     troubleshooting.
     static int      _debugLevel;
 
@@ -1062,50 +1077,115 @@ OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass);
 // Hide helper macros from Doxygen -- they do not appear in code anywhere
 // but right here. They are used to construct the macros that are used in
 // various circumstances without duplicating any definitions.
-/** @cond **/ 
 
 // This class allows us to get the class name for template arguments using
 // getClassName() when it is available, otherwise a specialization.
 template <class T> struct Object_GetClassName 
 {   static const std::string& name() {return T::getClassName();} };
-template <> struct Object_GetClassName<double> 
-{   static const std::string name() {return "double";} };
-template <> struct Object_GetClassName<int> 
-{   static const std::string name() {return "int";} };
 template <> struct Object_GetClassName<bool> 
 {   static const std::string name() {return "bool";} };
+template <> struct Object_GetClassName<signed char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<unsigned char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<char> 
+{   static const std::string name() {return "char";} };
+template <> struct Object_GetClassName<short int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned short int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<long long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<unsigned long long int> 
+{   static const std::string name() {return "int";} };
+template <> struct Object_GetClassName<float> 
+{   static const std::string name() {return "float";} };
+template <> struct Object_GetClassName<double> 
+{   static const std::string name() {return "double";} };
+template <> struct Object_GetClassName<long double> 
+{   static const std::string name() {return "double";} };
 template <> struct Object_GetClassName<std::string> 
 {   static const std::string name() {return "string";} };
+template <> struct Object_GetClassName<SimTK::Vec2> 
+{   static const std::string name() {return "Vec2";} };
 template <> struct Object_GetClassName<SimTK::Vec3> 
 {   static const std::string name() {return "Vec3";} };
+template <> struct Object_GetClassName<SimTK::Vec6> 
+{   static const std::string name() {return "Vec6";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Real>>
+{   static const std::string name() {return "Vector"; } };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec3>>
+{   static const std::string name() {return "Vector_<Vec3>";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::Vec6>>
+{   static const std::string name() {return "Vector_<Vec6>";} };
+template <> struct Object_GetClassName<SimTK::Vector_<SimTK::SpatialVec>>
+{   static const std::string name() {return "Vector_<SpatialVec>";} };
+template <> struct Object_GetClassName<SimTK::SpatialVec>
+{   static const std::string name() {return "SpatialVec";} };
+template <> struct Object_GetClassName<SimTK::Transform>
+{   static const std::string name() {return "Transform";} };
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
+/** @cond developer **/                                                        \
+/** This typedef might be useful within the member functions of this class. */ \
+/** \internal This is generated by the `OpenSim_DECLARE_*_OBJECT` macros.   */ \
 typedef ConcreteClass Self;                                                    \
+/** Use this typedef to refer to the superclass of this class.              */ \
+/** Avoid using the explicit type name of the superclass; this would        */ \
+/** introduce bugs if the superclass is changed.                            */ \
+/** \internal This is generated by the `OpenSim_DECLARE_*_OBJECT` macros.   */ \
 typedef SuperClass    Super;                                                   \
+/** @endcond **/                                                               \
 OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 
 // For non-template classes, the class name is identical to the supplied
 // ConcreteClass argument.
 #define OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass)             \
-static const std::string& getClassName()                                             \
-{   static std::string name(#ConcreteClass); return name; }
+/** @name Auto-generated functions                                          */ \
+/** @{                                                                      */ \
+/** This returns "##ConcreteClass##"                                        */ \
+/** See getConcreteClassName() if you want the class name of the underlying */ \
+/** concrete object instead.                                                */ \
+/** \internal This is generated by the `OpenSim_DECLARE_*_OBJECT` macros.   */ \
+static const std::string& getClassName()                                       \
+{   static std::string name(#ConcreteClass); return name; }                    \
+/** @}*/
 
 // For template classes ConcreteClass<TemplateArg>, we construct the class
 // name by assembling the pieces.
 #define OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass)          \
-static const std::string& getClassName()                                             \
+/** @name Auto-generated functions                                          */ \
+/** @{                                                                      */ \
+/** This returns "##ConcreteClass##_<T>_".                                  */ \
+/** T is the template argument for this class.                              */ \
+/** See getConcreteClassName() if you want the class name of the underlying */ \
+/** concrete object instead.                                                */ \
+/** \internal This is generated by the `OpenSim_DECLARE_*_OBJECT` macros.   */ \
+static const std::string& getClassName()                                       \
 {   static std::string name = #ConcreteClass "_"                               \
                               + Object_GetClassName<TArg>::name()              \
                               + "_";                                           \
-    return name; }
+    return name; }                                                             \
+/** @}*/
 
 // This provides definitions for the two Object pure virtuals clone() and
 // getConcreteClassName().
 #define OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override {return new ConcreteClass(*this);}    \
-const std::string& getConcreteClassName() const override                    \
+/** @name Auto-generated functions                                          */ \
+/** @{                                                                      */ \
+ConcreteClass* clone() const override {return new ConcreteClass(*this);}       \
+const std::string& getConcreteClassName() const override                       \
 {   return getClassName(); }                                                   \
+/** @}*/                                                                       \
 private:
 
 // This leaves the two Object pure virtuals clone() and getConcreteClassName()
@@ -1113,19 +1193,30 @@ private:
 // which allows it to be invoked ConcreteClass::clone() and return the correct
 // pointer type.
 #define OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass)                            \
-ConcreteClass* clone() const override = 0;                                  \
-const std::string& getConcreteClassName() const override = 0;               \
+/** @name Auto-generated functions                                          */ \
+/** @{                                                                      */ \
+ConcreteClass* clone() const override = 0;                                     \
+const std::string& getConcreteClassName() const override = 0;                  \
+/** @}*/                                                                       \
 private:
 
-// Add public static method declaration in class to assist in downcasting arbitrary objects 
-// to the new type to support dynamic casting across JNI.
+// Add public static method declaration in class to assist in downcasting
+// arbitrary objects to the new type to support dynamic casting across JNI.
 #define OpenSim_OBJECT_JAVA_DEFS(thisClass) \
   public: \
+  /** @name Auto-generated functions */ \
+  /** @{ */ \
+  /** For use in MATLAB and Python to access the concrete class. */ \
+  /** Example: `cObj = %##thisClass##.safeDownCast(obj)`. */ \
+  /** This is equivalent to `dynamic_cast<##thisClass##*>(obj)` in C++. */ \
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
   } \
-  virtual void assign(Object &aObject) \
+  /** @cond developer */ \
+  /** This allows copy assignment in the Java GUI. */ \
+  /** @throws Exception if the argument is not of type thisClass##. */ \
+  void assign(Object &aObject) override \
   { \
       if (safeDownCast(&aObject)!=0) { \
           *this = *((thisClass*)(&aObject)); \
@@ -1135,8 +1226,9 @@ private:
               + ", type = " + aObject.getConcreteClassName()+").", \
               __FILE__,__LINE__); \
      } \
-  }
-/** @endcond **/
+  } \
+  /** @endcond */ \
+  /** @}*/
 
 //==============================================================================
 //                        OBJECT PROPERTY IMPLEMENTATION

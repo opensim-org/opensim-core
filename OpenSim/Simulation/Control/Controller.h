@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -44,6 +44,11 @@ class Actuator;
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *
+ * @note Controllers currently do not use the Socket mechanism to locate 
+ * and connect to the Actuators that Controllers depend on. As a result,
+ * for now, Controllers do not support controlling multiple actuators with 
+ * the same name.
+ *
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API Controller : public ModelComponent {
@@ -53,13 +58,18 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-
-    OpenSim_DECLARE_PROPERTY(isDisabled, bool, 
-        "Flag (true or false) indicating whether or not the controller is disabled." );
+    /** Controller is enabled (active) by default.
+    NOTE: Prior to OpenSim 4.0, this property was named **isDisabled**.
+          If **isDisabled** is **true**, **enabled** is **false**.
+          If **isDisabled** is **false**, **enabled** is **true**.            */
+    OpenSim_DECLARE_PROPERTY(enabled, bool, 
+        "Flag (true or false) indicating whether or not the controller is "
+        "enabled." );
 
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
         "The list of model actuators that this controller will control."
-        "The keyword ALL indicates the controller will control all the actuators in the model" );
+        "The keyword ALL indicates the controller will control all the "
+        "actuators in the model" );
 
 //=============================================================================
 // METHODS
@@ -78,24 +88,24 @@ public:
     //--------------------------------------------------------------------------
     // Controller Interface
     //--------------------------------------------------------------------------
-    /** Get whether or not this controller is disabled.
-     * @return true when controller is disabled.
+    /** Get whether or not this controller is enabled.
+     * @return true when controller is enabled.
      */
-    bool isDisabled() const;
+    bool isEnabled() const;
 
-    /** Disable this controller.
-     * @param disableFlag Disable if true.
+    /** Enable this controller.
+     * @param enableFlag Enable the controller if true.
      */
-    void setDisabled(bool disableFlag);
+    void setEnabled(bool enableFlag);
 
     /** replace the current set of actuators with the provided set */
     void setActuators(const Set<Actuator>& actuators );
     /** add to the current set of actuators */
     void addActuator(const Actuator& actuator);
-    /** get a const reference to the current set of actuators */
-    const Set<Actuator>& getActuatorSet() const;
-    /** get a writable reference to the set of actuators for this controller */
-    Set<Actuator>& updActuators();
+    /** get a const reference to the current set of const actuators */
+    const Set<const Actuator>& getActuatorSet() const;
+    /** get a writable reference to the set of const actuators for this controller */
+    Set<const Actuator>& updActuators();
 
     /** Compute the control for actuator
      *  This method defines the behavior for any concrete controller 
@@ -123,12 +133,15 @@ protected:
     /** Only a Controller can set its number of controls based on its actuators */
     void setNumControls(int numControls) {_numControls = numControls; }
 
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+                           int versionNumber) override;
+
 private:
     // number of controls this controller computes 
     int _numControls;
 
     // the (sub)set of Model actuators that this controller controls */ 
-    Set<Actuator> _actuatorSet;
+    Set<const Actuator> _actuatorSet;
 
     // construct and initialize properties
     void constructProperties();

@@ -1,5 +1,5 @@
-#ifndef __WrapResult_h__
-#define __WrapResult_h__
+#ifndef OPENSIM_WRAP_RESULT_H
+#define OPENSIM_WRAP_RESULT_H
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapResult.h                           *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
-#include "SimTKcommon.h"
+#include "SimTKcommon/SmallMatrix.h"
 
 namespace OpenSim {
 
@@ -77,6 +75,6 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __WrapResult_h__
+#endif // OPENSIM_WRAP_RESULT_H
 
 

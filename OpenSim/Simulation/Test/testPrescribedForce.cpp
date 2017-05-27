@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -108,22 +108,20 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     ball.setName("ball");
 
     // Add joints
-    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
+    FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 
     // Rename coordinates for a free joint
-    CoordinateSet free_coords = free.getCoordinateSet();
-    for(int i=0; i<free_coords.getSize(); i++){
+    for(int i=0; i<free.numCoordinates(); i++){
         std::stringstream coord_name;
         coord_name << "free_q" << i;
-        free_coords.get(i).setName(coord_name.str());
-        free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
+        free.upd_coordinates(i).setName(coord_name.str());
     }
 
     osimModel->addBody(&ball);
     osimModel->addJoint(&free);
 
     // Add a PrescribedForce.
-    PrescribedForce force(&ball);
+    PrescribedForce force("forceOnBall", ball);
     if (forceX != NULL)
         force.setForceFunctions(forceX, forceY, forceZ);
     if (pointX != NULL)
@@ -158,15 +156,13 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel,  integrator);
-    manager.setInitialTime(0.0);
+    osim_state.setTime(0.0);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
-        manager.setFinalTime(times[i]);
-        manager.integrate(osim_state);
+        manager.integrate(osim_state, times[i]);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 accel, angularAccel;
-        osimModel->updSimbodyEngine().getAcceleration(osim_state, body, Vec3(0), accel);
-        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, body, angularAccel);
+        Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
+        Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
         ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
         ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
         ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);

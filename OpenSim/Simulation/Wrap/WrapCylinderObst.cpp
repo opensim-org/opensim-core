@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,12 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapCylinderObst.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
-#include <sstream>
 
 //=============================================================================
 // STATICS
@@ -117,9 +112,6 @@ void WrapCylinderObst::initCircleWrapPts()
 */
 void WrapCylinderObst::setupProperties()
 {
-    // BASE CLASS
-    WrapObject::setupProperties();
-
     _radiusProp.setName("radius");
     _radiusProp.setValue(-1.0);
     _propertySet.append(&_radiusProp);
@@ -178,9 +170,6 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
 */
 void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapCylinderObst);
-
     _radius = aWrapCylinderObst._radius;
     _length = aWrapCylinderObst._length;
     _wrapDirectionName = aWrapCylinderObst._wrapDirectionName;

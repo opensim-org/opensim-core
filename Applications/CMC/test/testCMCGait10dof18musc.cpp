@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -36,12 +36,12 @@ int main() {
 
     SimTK::Array_<std::string> failures;
 
-    // redo with the Millard2012EquilibriumMuscle 
-    Object::renameType("Thelen2003Muscle", "Millard2012EquilibriumMuscle");
-
-    try {testGait10dof18musc();}
-    catch (const std::exception& e)
-        {  cout << e.what() <<endl; failures.push_back("testGait10dof18musc_Millard"); }
+    // Model uses Millard2012EquilibriumMuscle type muscles
+    try { testGait10dof18musc(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testGait10dof18musc");
+    }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -53,12 +53,18 @@ int main() {
     return 0;
 }
 
+// Perform regression test with standard generated from Gait10dof18musc
+// example in OpenSim 3.2
 void testGait10dof18musc() {
     cout<<"\n******************************************************************" << endl;
     cout << "*                      testGait10dof18musc                       *" << endl;
     cout << "******************************************************************\n" << endl;
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
-    cmc.run();
+    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+
+    if (!cmc.run())
+        OPENSIM_THROW(Exception, "testGait10dof18musc " + muscleType +
+            " failed to complete.");
 
     Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     Storage temp("gait10dof18musc_std_walk_subject_states.sto");
@@ -66,13 +72,16 @@ void testGait10dof18musc() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    Array<double> rms_tols(0.02, 2*10+2*18); // activations within 2%
-    for(int i=0; i<20; ++i){
-        rms_tols[i] = 0.01;  // angles and speeds within .6 degrees .6 degs/s 
-    }
+    int nstates = standard->getColumnLabels().size() - 1;
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
+    // angles and speeds within 0.01 rads and 0.01 rad/s;
+    // and activations to within 1%
+    std::vector<double> rms_tols(nstates, 0.01);
 
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestGait10dof18musc "+muscleType+" passed\n" << endl;
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+        __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");
+
+    cout << "\ntestGait10dof18musc "+ muscleType +" passed\n" << endl;
 }
+
+

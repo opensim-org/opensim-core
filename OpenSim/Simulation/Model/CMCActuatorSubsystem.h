@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -22,16 +22,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 //
-#include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "SimTKsimbody.h"
-#include "SimTKcommon/internal/SubsystemGuts.h"
-#include "SimTKcommon/internal/SystemGuts.h"
-
-using namespace SimTK;
+#include <OpenSim/Common/Array.h>
+#include <SimTKcommon/internal/System.h>
+#include <SimTKcommon/internal/SystemGuts.h>
 
 namespace OpenSim {
 
+class FunctionSet;
 class Model;
 
 #ifdef SWIG
@@ -43,7 +41,7 @@ class Model;
 
 // Excluding this from Doxygen. -Sam Hamner
     /// @cond
-class CMCActuatorSystemRep : public System::Guts {
+class CMCActuatorSystemRep : public SimTK::System::Guts {
     public:
     CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") {}
     
@@ -54,20 +52,20 @@ class CMCActuatorSystemRep : public System::Guts {
     // This system doesn't have constraints, prescribed motion, or events so
     // we don't need to implement any of the related System::Guts methods.
 
-    SimTK_DOWNCAST( CMCActuatorSystemRep, System::Guts );
+    SimTK_DOWNCAST( CMCActuatorSystemRep, SimTK::System::Guts );
 };
 
-class CMCActuatorSystem : public System {
+class CMCActuatorSystem : public SimTK::System {
    public:
    explicit CMCActuatorSystem() {
        adoptSystemGuts( new CMCActuatorSystemRep() );
-       DefaultSystemSubsystem defsub(*this);
+       SimTK::DefaultSystemSubsystem defsub(*this);
    }
 
    SimTK_PIMPL_DOWNCAST( CMCActuatorSystem, System );
 };
 
-class CMCActuatorSubsystemRep : public Subsystem::Guts {
+class CMCActuatorSubsystemRep : public SimTK::Subsystem::Guts {
 
   public:
   CMCActuatorSubsystemRep( Model* model);
@@ -78,8 +76,8 @@ class CMCActuatorSubsystemRep : public Subsystem::Guts {
   void setCompleteState(const SimTK::State& s);
   const SimTK::State& getCompleteState() const;
 
-  int realizeSubsystemTopologyImpl(State& s) const override;
-  int realizeSubsystemDynamicsImpl(const State& s) const override;
+  int realizeSubsystemTopologyImpl(SimTK::State& s) const override;
+  int realizeSubsystemDynamicsImpl(const SimTK::State& s) const override;
   void setSpeedCorrections(const double corrections[] );
   void setCoordinateCorrections(const double corrections[] );
   void setSpeedTrajectories(FunctionSet *aSet);
@@ -106,10 +104,10 @@ class CMCActuatorSubsystemRep : public Subsystem::Guts {
   /** Prescribed trajectories of the generalized speeds. */
   FunctionSet *_uSet;
 
-  SimTK_DOWNCAST( CMCActuatorSubsystemRep, Subsystem::Guts );
+  SimTK_DOWNCAST( CMCActuatorSubsystemRep, SimTK::Subsystem::Guts );
 };
 
-class OSIMSIMULATION_API CMCActuatorSubsystem : public Subsystem {
+class OSIMSIMULATION_API CMCActuatorSubsystem : public SimTK::Subsystem {
     public:
     explicit CMCActuatorSubsystem( CMCActuatorSystem& sys, Model* model);
 

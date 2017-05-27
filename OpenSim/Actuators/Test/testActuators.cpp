@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Soha Pouya                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -118,10 +118,9 @@ void testMcKibbenActuator()
     Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
     SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);
 
-    auto& coords = ballToGround->upd_CoordinateSet();
-    coords[0].setName("ball_d");
-    coords[0].setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
-    coords[0].set_prescribed(true);
+    ballToGround->updCoordinate().setName("ball_d");
+    ballToGround->updCoordinate().setPrescribedFunction(LinearFunction(20 * 10e-4, 0.5 * 264.1 * 10e-4));
+    ballToGround->updCoordinate().set_prescribed(true);
 
     model->addBody(ball);
     model->addJoint(ballToGround);
@@ -147,22 +146,18 @@ void testMcKibbenActuator()
     RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
     integrator.setAccuracy(1e-7);
     Manager manager(*model, integrator);
-    manager.setInitialTime(0.0);
+    si.setTime(0.0);
 
     for (int i = 1; i <= nsteps; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(si);
+        manager.integrate(si, dt*i);
         model->getMultibodySystem().realize(si, Stage::Velocity);
-        Vec3 pos;
-        model->updSimbodyEngine().getPosition(si, *ball, Vec3(0), pos);
+        Vec3 pos = ball->findStationLocationInGround(si, Vec3(0));
 
         double applied = actuator->computeActuation(si);;
 
         double theoretical = (pressure / (4* pow(num_turns,2) * SimTK::Pi)) * (3*pow(pos(0), 2) - pow(B, 2));
 
         ASSERT_EQUAL(applied, theoretical, 10.0);
-
-        manager.setInitialTime(dt*i);
     }
 
 
@@ -307,22 +302,20 @@ void testTorqueActuator()
     }
 
     // determine the initial kinetic energy of the system
-    double iKE = model->getMatterSubsystem().calcKineticEnergy(state);
+    /*double iKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
     RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model,  integrator);
 
-    manager.setInitialTime(0.0);
+    state.setTime(0.0);
 
     double final_t = 1.00;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     model->computeStateVariableDerivatives(state);
 
-    double fKE = model->getMatterSubsystem().calcKineticEnergy(state);
+    /*double fKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
     // Change in system kinetic energy can only be attributable to actuator work
     //double actuatorWork = (powerProbe->getProbeOutputs(state))[0];
@@ -354,9 +347,9 @@ void testClutchedPathSpring()
     double stiffness = 100;
     double dissipation = 0.3;
     double start_h = 0.5;
-    double ball_radius = 0.25;
+    //double ball_radius = 0.25;
 
-    double omega = sqrt(stiffness/mass);
+    //double omega = sqrt(stiffness/mass);
 
     // Setup OpenSim model
     Model* model = new Model;
@@ -373,14 +366,14 @@ void testClutchedPathSpring()
     // body the path spring is connected to at both ends
     OpenSim::Body* block =
         new OpenSim::Body("block", mass ,Vec3(0),  mass*Inertia::brick(0.2, 0.1, 0.1));
-    block->addMeshGeometry("box.vtp");
+    block->attachGeometry(new Brick(Vec3(0.2, 0.1, 0.1)));
     block->scale(Vec3(0.2, 0.1, 0.1), false);
 
-    double dh = mass*gravity_vec(1)/stiffness;
+    //double dh = mass*gravity_vec(1)/stiffness;
     
     WrapCylinder* pulley = new WrapCylinder();
-    pulley->setRadius(0.1);
-    pulley->setLength(0.05);
+    pulley->set_radius(0.1);
+    pulley->set_length(0.05);
 
     // Add the wrap object to the body, which takes ownership of it
     pulleyBody->addWrapObject(pulley);
@@ -394,10 +387,8 @@ void testClutchedPathSpring()
 
     double positionRange[2] = {-10, 10};
     // Rename coordinates for a slider joint
-    CoordinateSet &slider_coords = slider->upd_CoordinateSet();
-    slider_coords[0].setName("block_h");
-    slider_coords[0].setRange(positionRange);
-    slider_coords[0].setMotionType(Coordinate::Translational);
+    slider->updCoordinate().setName("block_h");
+    slider->updCoordinate().setRange(positionRange);
 
     model->addBody(pulleyBody);
     model->addJoint(weld);
@@ -442,6 +433,7 @@ void testClutchedPathSpring()
     //Test deserialization
     delete model;
     model = new Model("ClutchedPathSpringModel.osim");
+    model->finalizeFromProperties();
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(model);
@@ -462,12 +454,10 @@ void testClutchedPathSpring()
     Manager manager(*model,  integrator);
     manager.setWriteToStorage(true);
 
-    manager.setInitialTime(0.0);
+    state.setTime(0.0);
 
     double final_t = 4.99999;
-
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -487,10 +477,8 @@ void testClutchedPathSpring()
     ASSERT_EQUAL(model_force, analytical_force, 10*integ_accuracy);
 
     // unclamp and continue integrating
-    manager.setInitialTime(final_t);
     final_t = 5.99999;
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -503,10 +491,8 @@ void testClutchedPathSpring()
     ASSERT_EQUAL(model_force, 0.0, 10*integ_accuracy);
 
     // spring is reclamped at 7s so keep integrating
-    manager.setInitialTime(final_t);
     final_t = 10.0;
-    manager.setFinalTime(final_t);
-    manager.integrate(state);
+    manager.integrate(state, final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -574,7 +560,9 @@ void testBodyActuator()
                                              blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addMeshGeometry("block.vtp");
+    block->attachGeometry(new Brick(Vec3(blockSideLength/2,
+                                     blockSideLength/2, 
+                                     blockSideLength/2)));
 
     Vec3 locationInParent(0, blockSideLength / 2, 0), orientationInParent(0), 
         locationInBody(0), orientationInBody(0);
@@ -652,12 +640,12 @@ void testBodyActuator()
     BodyActuator* actuator = new BodyActuator(*block);
     actuator->setName("BodyAct");
     model->addForce(actuator);
-
-    model->print("TestBodyActuatorModel.osim");
     model->setUseVisualizer(false);
 
     // get a new system and state to reflect additions to the model
     State& state1 = model->initSystem();
+
+    model->print("TestBodyActuatorModel.osim");
 
     // -------------- Provide control signals for bodyActuator ----------
     // Get the default control vector of the model
@@ -695,10 +683,9 @@ void testBodyActuator()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model, integrator);
 
-    manager.setInitialTime(0.0);
+    state1.setTime(0.0);
     double final_t = 1.00;
-    manager.setFinalTime(final_t);
-    manager.integrate(state1);
+    manager.integrate(state1, final_t);
 
     // ----------------- Test Copying the model -------------------
     // Before exiting lets see if copying the actuator works
@@ -757,7 +744,9 @@ void testActuatorsCombination()
                                     blockMassCenter, blockInertia);
 
     // Add display geometry to the block to visualize in the GUI
-    block->addMeshGeometry("block.vtp");
+    block->attachGeometry(new Brick(Vec3(blockSideLength/2, 
+                                     blockSideLength/2, 
+                                     blockSideLength/2)));
 
     // Make a FreeJoint from block to ground
     Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), //locationInParent(0, blockSideLength, 0)
@@ -782,7 +771,7 @@ void testActuatorsCombination()
     Vec3 torqueInG = torqueMag*torqueUnitAxis;
 
     // needed to be called here once to build controller for body actuator
-    State& state = model->initSystem();
+    /*State& state = */model->initSystem();
     
     // ---------------------------------------------------------------------------
     // Add a set of PointActuator, TorqueActuator and BodyActuator to the model
@@ -920,10 +909,9 @@ void testActuatorsCombination()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*model, integrator);
 
-    manager.setInitialTime(0.0);
+    state2.setTime(0.0);
     double final_t = 1.00;
-    manager.setFinalTime(final_t);
-    manager.integrate(state2);
+    manager.integrate(state2, final_t);
 
 
     std::cout << " ********** Test Actuator Combination time = ********** " <<

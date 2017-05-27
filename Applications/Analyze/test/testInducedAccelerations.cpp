@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -52,7 +52,9 @@ int main()
         AnalyzeTool analyze("subject02_Setup_IAA_02_232.xml");
         analyze.run();
         Storage result1("ResultsInducedAccelerations/subject02_running_arms_InducedAccelerations_center_of_mass.sto"), standard1("std_subject02_running_arms_InducedAccelerations_CENTER_OF_MASS.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.15, result1.getSmallestNumberOfStates()), __FILE__, __LINE__, "Induced Accelerations of Running failed");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
+            std::vector<double>(result1.getSmallestNumberOfStates(), 0.15),
+            __FILE__, __LINE__, "Induced Accelerations of Running failed");
         cout << "Induced Accelerations of Running passed\n" << endl;
     }
     catch (const OpenSim::Exception& e) {
@@ -78,7 +80,8 @@ void testDoublePendulumWithSolver()
     int nt = statesStore.getTimeColumn(time);
     statesStore.getDataForIdentifier("q", states);
 
-    Model pendulum("double_pendulum.osim", true);
+    Model pendulum("double_pendulum.osim");
+    pendulum.finalizeFromProperties();
     
     PrescribedController* controller=
         new PrescribedController();
@@ -133,7 +136,7 @@ void testDoublePendulumWithSolver()
         ASSERT_EQUAL(udot[0], udot_grav[0], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q1 FAILED");
         ASSERT_EQUAL(udot[1], udot_grav[1], 1e-5, __FILE__, __LINE__, "Induced Accelerations of gravity for double pendulum q2 FAILED");
 
-        Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
+        // Vec3 comAcc = iaaSolver.getInducedMassCenterAcceleration(s);
         //cout << "CoM Acceleration due to gravity: " << comAcc << endl;
 
         // Compute Torq1 contribution

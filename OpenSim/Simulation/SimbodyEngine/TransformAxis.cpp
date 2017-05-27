@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth,  *
  *            Michael Sherman                                                 *
  *                                                                            *
@@ -26,21 +26,18 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 #include "TransformAxis.h"
 #include "Joint.h"
 #include "Coordinate.h"
-#include "SimbodyEngine.h"
 
 //=============================================================================
 // USING
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-using SimTK::Vec3; using SimTK::State; using SimTK::Vector; using SimTK::Xml;
+using SimTK::Vec3; using SimTK::State; using SimTK::Vector;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -62,7 +59,7 @@ TransformAxis::TransformAxis(const Array<string>& coordNames,
     setAxis(axis);
 }
 // Constructor from XML node.
-TransformAxis::TransformAxis(Xml::Element& aNode) {
+TransformAxis::TransformAxis(SimTK::Xml::Element& aNode) {
     setNull();
     constructProperties();
     updateFromXMLNode(aNode);
@@ -84,7 +81,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     // Look up the coordinates by name.
     const Property<string>& coordNames = getProperty_coordinates();
     int nc = coordNames.size();
-    const CoordinateSet& coords = _joint->getCoordinateSet();
+    const auto& coords = _joint->getProperty_coordinates();
 
     if (!hasFunction()) {
         SimTK_ASSERT2_ALWAYS(coordNames.size() == 0,
@@ -94,7 +91,7 @@ void TransformAxis::connectToJoint(const Joint& aJoint)
     }
 
     for(int i=0; i< nc; ++i) {
-        if (!coords.contains(coordNames[i])) {
+        if (coords.findIndexForName( coordNames[i] ) < 0) {
             errorMessage += "Invalid coordinate (" 
                             + coordNames[i] 
                             + ") specified for TransformAxis " 
@@ -139,11 +136,13 @@ double TransformAxis::getValue(const State& s )
 {
     const Property<string>& coordNames = getCoordinateNames();
     const int nc = coordNames.size();
-    const CoordinateSet& coords = _joint->getCoordinateSet();
+    const auto& coords = _joint->getProperty_coordinates();
 
     Vector workX(nc, 0.0);
-    for (int i=0; i < nc; ++i)
-        workX[i] = coords.get(coordNames[i]).getValue(s);
+    for (int i=0; i < nc; ++i) {
+        const int idx = coords.findIndexForName( coordNames[i] );
+        workX[i] = _joint->get_coordinates(idx).getValue(s);
+    }
 
     return getFunction().calcValue(workX);
 }
@@ -182,7 +181,7 @@ void TransformAxis::setFunction(const OpenSim::Function& func)
 
 
 void TransformAxis::updateFromXMLNode
-   (Xml::Element& node, int versionNumber)
+   (SimTK::Xml::Element& node, int versionNumber)
 {
     // Version before refactoring spatialTransform.
     // TODO: this is handled in CustomJoint's updateFromXMLNode() method

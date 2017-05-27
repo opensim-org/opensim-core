@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,14 +26,8 @@
 //=============================================================================
 #include "Muscle.h"
 
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "ConditionalPathPoint.h"
-#include "PointForceDirection.h"
 #include "GeometryPath.h"
-
 #include "Model.h"
-
 #include <OpenSim/Common/XMLDocument.h>
 
 //=============================================================================
@@ -43,7 +37,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static int counter=0;
+//static int counter=0;
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
@@ -51,10 +45,7 @@ static int counter=0;
 // Default constructor.
 Muscle::Muscle()
 {
-    constructInfrastructure();
-    // override the value of default _minControl, _maxControl
-    setMinControl(0.0);
-    setMaxControl(1.0);
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -102,6 +93,33 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             }
             XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
         }
+        if (versionNumber < 30513) {
+            SimTK::Xml::element_iterator minControlElt =
+                aNode.element_begin("min_control");
+            double minControl = 0;
+            if (minControlElt != aNode.element_end()) {
+                minControlElt->getValueAs<double>(minControl);
+                // If the min_control value is 0, then remove the min_control
+                // property in XML since it is likely a result of a mistake. In
+                // previous versions, the min_control property was no updated
+                // to reflect the Muscle's min_activation. Removing it allows
+                // the Muscle to use the appropriate default specified by the
+                // derived concrete Muscle.
+                if (SimTK::isNumericallyEqual(minControl, 0.0)) {
+                    aNode.removeNode(minControlElt);
+                }
+            }
+            SimTK::Xml::element_iterator maxControlElt =
+                aNode.element_begin("max_control");
+            double maxControl = 0;
+            if (maxControlElt != aNode.element_end()) {
+                maxControlElt->getValueAs<double>(maxControl);
+                // allow Muscle to use its default
+                if (SimTK::isNumericallyEqual(maxControl, 1.0)) {
+                    aNode.removeNode(maxControlElt);
+                }
+            }
+        }
     }
     // Call base class now assuming aNode has been corrected for current version
     Super::updateFromXMLNode(aNode, versionNumber);
@@ -121,86 +139,10 @@ void Muscle::constructProperties()
     constructProperty_max_contraction_velocity(10.0);
     constructProperty_ignore_tendon_compliance(false);
     constructProperty_ignore_activation_dynamics(false);
-}
 
-void Muscle::constructOutputs()
-{
-    constructOutput<double>("excitation", &Muscle::getExcitation,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("activation", &Muscle::getActivation,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_length", &Muscle::getFiberLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("pennation_angle", &Muscle::getPennationAngle,
-                            SimTK::Stage::Position);
-    constructOutput<double>("cos_pennation_angle", &Muscle::getCosPennationAngle,
-                            SimTK::Stage::Position);
-    constructOutput<double>("tendon_length", &Muscle::getTendonLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("normalized_fiber_length",
-                            &Muscle::getNormalizedFiberLength,
-                            SimTK::Stage::Position);
-    constructOutput<double>("fiber_length_along_tendon",
-                            &Muscle::getFiberLengthAlongTendon,
-                            SimTK::Stage::Position);
-    constructOutput<double>("tendon_strain", &Muscle::getTendonStrain,
-                            SimTK::Stage::Position);
-    constructOutput<double>("passive_force_multiplier",
-                            &Muscle::getPassiveForceMultiplier,
-                            SimTK::Stage::Position);
-    constructOutput<double>("active_force_length_multiplier",
-                            &Muscle::getActiveForceLengthMultiplier,
-                            SimTK::Stage::Position);
-    constructOutput<double>("fiber_velocity", &Muscle::getFiberVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("normalized_fiber_velocity",
-                            &Muscle::getNormalizedFiberVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("fiber_velocity_along_tendon",
-                            &Muscle::getFiberVelocityAlongTendon,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("tendon_velocity", &Muscle::getTendonVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("force_velocity_multiplier",
-                            &Muscle::getForceVelocityMultiplier,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("pennation_angular_velocity",
-                            &Muscle::getPennationAngularVelocity,
-                            SimTK::Stage::Velocity);
-    constructOutput<double>("fiber_force", &Muscle::getFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_force_along_tendon",
-                            &Muscle::getFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("active_fiber_force", &Muscle::getActiveFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("passive_fiber_force", &Muscle::getPassiveFiberForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("active_fiber_force_along_tendon",
-                            &Muscle::getActiveFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("passive_fiber_force_along_tendon",
-                            &Muscle::getPassiveFiberForceAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_force", &Muscle::getTendonForce,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_stiffness", &Muscle::getFiberStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_stiffness_along_tendon",
-                            &Muscle::getFiberStiffnessAlongTendon,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_stiffness", &Muscle::getTendonStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("muscle_stiffness", &Muscle::getMuscleStiffness,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_active_power", &Muscle::getFiberActivePower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("fiber_passive_power", &Muscle::getFiberPassivePower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("tendon_power", &Muscle::getTendonPower,
-                            SimTK::Stage::Dynamics);
-    constructOutput<double>("muscle_power", &Muscle::getMusclePower,
-                            SimTK::Stage::Dynamics);
+    // By default the min and max controls on muscle are 0.0 and 1.0
+    setMinControl(0.0);
+    setMaxControl(1.0);
 }
 
 
@@ -467,7 +409,7 @@ double Muscle::getActiveFiberForce(const SimTK::State& s) const
     return getMuscleDynamicsInfo(s).activeFiberForce;
 }
 
-/* get the current passive fiber force (N) passive_force_length relationship */
+/* get the total force applied by all passive elements in the fiber (N) */
 double Muscle::getPassiveFiberForce(const SimTK::State& s) const 
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce;
@@ -479,7 +421,8 @@ double Muscle::getActiveFiberForceAlongTendon(const SimTK::State& s) const
     return getMuscleDynamicsInfo(s).activeFiberForce * getMuscleLengthInfo(s).cosPennationAngle;
 }
 
-/* get the current passive fiber force (N) projected onto the tendon direction */
+/* get the total force applied by all passive elements in the fiber (N)
+   projected onto the tendon direction */
 double Muscle::getPassiveFiberForceAlongTendon(const SimTK::State& s) const 
 {
     return getMuscleDynamicsInfo(s).passiveFiberForce * getMuscleLengthInfo(s).cosPennationAngle;

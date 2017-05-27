@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  * Contributor(s): Frank C. Anderson                                          *
  *                                                                            *
@@ -26,8 +26,6 @@
 
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 
 namespace OpenSim { 

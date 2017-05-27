@@ -1,78 +1,92 @@
 set(KIT JavaJNI)
 set(UKIT JAVAJNI)
 
-include(${CMAKE_ROOT}/Modules/FindJava.cmake)
-include(${CMAKE_ROOT}/Modules/FindJNI.cmake)
+# For building C++ wrapper.
+find_package(JNI 1.7 REQUIRED)
 
-if(JAVA_INCLUDE_PATH)
+function(OpenSimGenerateJavaWrapper
+        NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 
-# Run command to generate OpenSimJNI_wrap.cxx
-set(swig_generated_file_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.cxx)
-set(swig_generated_header_fullname
-    ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI_wrap.h)
-set(swig_interface_file_fullname
-    ${OpenSim_SOURCE_DIR}/Bindings/Java/swig/javaWrapOpenSim.i)
-set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
-    CACHE STRING
-    "The wrapping is built as the Java package specified in this variable.")
+    set(_swig_common_args -c++ -java
+            -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
+            -I${OpenSim_SOURCE_DIR}
+            -I${OpenSim_SOURCE_DIR}/Bindings
+            -I${Simbody_INCLUDE_DIR}
+            ${SWIG_FLAGS}
+            ${INPUT_INTERFACE_FILE}
+            )
 
-# Replace periods with slashes (to make a path).
-# Syntax for find-replace:
-# string(REGEX REPLACE <pattern> <replacement string>
-#                      <target variable> <source string>)
-string(REGEX REPLACE "\\." "/"
-       SWIG_JAVA_PACKAGE_PATH ${OPENSIM_JAVA_WRAPPING_PACKAGE})
+    OpenSimFindSwigFileDependencies(_${NAME}_dependencies ${NAME}
+        "${_swig_common_args}"
+        )
 
-set(SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR
-    ${CMAKE_CURRENT_BINARY_DIR}/src/${SWIG_JAVA_PACKAGE_PATH})
+    # This directory will hold the SWIG-generated .java files, but SWIG won't
+    # create this directory for us.
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
+        ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME})
+    add_custom_command(
+        # This target actually creates a lot more (all the produced .java files)
+        # but we will just use these two files as a proxy for all of those.
+        OUTPUT ${OUTPUT_CXX_FILE} ${OUTPUT_H_FILE}
+        # To avoid compiling stale .java files, delete any existing .java files.
+        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}/*
+        COMMAND ${SWIG_EXECUTABLE}
+            -v # verbose
+            -o ${OUTPUT_CXX_FILE}
+            -outdir ${CMAKE_CURRENT_BINARY_DIR}/src/${NAME}
+            ${_swig_common_args}
+        DEPENDS ${_${NAME}_dependencies}
+        COMMENT "Generating Java bindings source code with SWIG: ${NAME}")
+endfunction()
 
-# We place the .java files in this folder.
-execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
-    ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR})
+OpenSimGenerateJavaWrapper(simbody
+    ${SWIG_JAVA_SIMBODY_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMBODY_CXX_FILE}
+    ${SWIG_JAVA_SIMBODY_H_FILE})
 
-add_custom_command(
-    OUTPUT "${swig_generated_file_fullname}" "${swig_generated_header_fullname}"
-    COMMAND ${SWIG_EXECUTABLE} -v -c++ -java
-        -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-        -I${OpenSim_SOURCE_DIR}
-        -I${OpenSim_SOURCE_DIR}/Bindings
-        -I${Simbody_INCLUDE_DIR}
-        -o ${swig_generated_file_fullname}
-        -outdir ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-        ${swig_interface_file_fullname}
-    DEPENDS "${swig_interface_file_fullname}"
-        "${OpenSim_SOURCE_DIR}/Bindings/opensim.i"
-        "${OpenSim_SOURCE_DIR}/Bindings/OpenSimHeaders.h"
-    )
-    
-# This target actually depends on a lot more (all the produced .java files); 
-# but we will just use these two files as a proxy for all of those. All we need
-# is for this target to depend on outputs of the command above.
-add_custom_target(JavaWrap
-    DEPENDS "${swig_generated_file_fullname}"
-            "${swig_generated_header_fullname}")
+OpenSimGenerateJavaWrapper(common
+    ${SWIG_JAVA_COMMON_INTERFACE_FILE}
+    ${SWIG_JAVA_COMMON_CXX_FILE}
+    ${SWIG_JAVA_COMMON_H_FILE})
 
-set_target_properties(JavaWrap PROPERTIES
-    PROJECT_LABEL "Java - Generate source code"
-    FOLDER "Bindings"
-    )
+OpenSimGenerateJavaWrapper(simulation
+    ${SWIG_JAVA_SIMULATION_INTERFACE_FILE}
+    ${SWIG_JAVA_SIMULATION_CXX_FILE}
+    ${SWIG_JAVA_SIMULATION_H_FILE})
 
+OpenSimGenerateJavaWrapper(actuators-analysis-tools
+    ${SWIG_JAVA_ACTUATORS_INTERFACE_FILE}
+    ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+    ${SWIG_JAVA_ACTUATORS_H_FILE})
 
-set(SOURCE_FILES "${swig_generated_file_fullname}" OpenSimContext.cpp)
-set(INCLUDE_FILES "${swig_generated_header_fullname}" OpenSimContext.h)
+OpenSimGenerateJavaWrapper(examplecomponents
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_INTERFACE_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE})
 
 include_directories(${OpenSim_SOURCE_DIR} 
                     ${OpenSim_SOURCE_DIR}/Vendors 
                     ${JAVA_INCLUDE_PATH}
-                    ${JAVA_INCLUDE_PATH2}
-)
+                    ${JAVA_INCLUDE_PATH2})
 
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-add_library(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+add_library(osim${KIT} 
+    SHARED 
+    ${SWIG_JAVA_SIMBODY_CXX_FILE} 
+    ${SWIG_JAVA_SIMBODY_H_FILE}
+    ${SWIG_JAVA_COMMON_CXX_FILE} 
+    ${SWIG_JAVA_COMMON_H_FILE}
+    ${SWIG_JAVA_SIMULATION_CXX_FILE} 
+    ${SWIG_JAVA_SIMULATION_H_FILE}
+    ${SWIG_JAVA_ACTUATORS_CXX_FILE} 
+    ${SWIG_JAVA_ACTUATORS_H_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+    ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
+    OpenSimContext.cpp
+    OpenSimContext.h)
 
-target_link_libraries(osim${KIT} osimTools osimSimmFileWriter)
+target_link_libraries(osim${KIT} osimTools osimSimmFileWriter osimExampleComponents)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
@@ -80,30 +94,56 @@ set_target_properties(osim${KIT} PROPERTIES
    FOLDER "Bindings"
 )
 
-add_dependencies(osim${KIT} JavaWrap)
+# Compiler flags.
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    # We purposefully wrap deprecated functions, so no need to see such warnings.
+    set(COMPILE_FLAGS "-Wno-deprecated-declarations")
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "MSVC")
+    # Don't warn about:
+    # 4996: deprecated functions.
+    # 4114: "const const T"
+    set(COMPILE_FLAGS "/wd4996 /wd4114")
+endif()
+set_source_files_properties(
+        ${SWIG_JAVA_SIMBODY_CXX_FILE}
+        ${SWIG_JAVA_COMMON_CXX_FILE}
+        ${SWIG_JAVA_SIMULATION_CXX_FILE}
+        ${SWIG_JAVA_ACTUATORS_CXX_FILE}
+        ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+        PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
+
+if(${OPENSIM_USE_INSTALL_RPATH})
+    # The osim libraries that osimJavaJNI needs are in the same folder as
+    # osimJavaJNI.
+    if(APPLE)
+        # Adding @loader_rpath (the \ is to escape the @) to the run-path list
+        # will let osimJavaJNI find osimTools, etc. 
+        set(install_rpath "\@loader_path/")
+    elseif(UNIX)
+        # $ORIGIN is the equivalent mechanism on Linux.
+        set(install_rpath "\$ORIGIN/")
+    endif()
+    set_property(TARGET osim${KIT} APPEND PROPERTY
+        INSTALL_RPATH "${install_rpath}"
+        )
+endif()
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
 # archives are only needed at link time so go in sdk/lib.
-if(WIN32)
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION sdk/lib
-            ARCHIVE DESTINATION sdk/lib)
-else()
-    install(TARGETS osim${KIT}
-            RUNTIME DESTINATION bin
-            LIBRARY DESTINATION lib
-            ARCHIVE DESTINATION sdk/lib)
-endif()
+install(TARGETS osim${KIT}
+    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+    ARCHIVE DESTINATION "${OPENSIM_INSTALL_ARCHIVEDIR}")
 
+# Don't install .class files.
 install(DIRECTORY ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/
-    DESTINATION sdk/Java/${SWIG_JAVA_PACKAGE_PATH})
+    DESTINATION "${OPENSIM_INSTALL_JAVASRCDIR}/${SWIG_JAVA_PACKAGE_PATH}"
+    PATTERN "*.class" EXCLUDE
+    )
 
 if(BUILD_TESTING)
     subdirs(Test)
-endif(BUILD_TESTING)
-
-
-endif(JAVA_INCLUDE_PATH)
+endif()

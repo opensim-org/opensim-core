@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Michael A. Sherman, Ayman Habib                      *
  * Contributor(s): Frank C. Anderson, Jeffrey A. Reinbolt                     *
  *                                                                            *
@@ -56,10 +56,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(motion_type, std::string, 
-        "Coordinate can describe rotational, translational, or coupled motion. "
-        "Defaults to rotational.");
-
     OpenSim_DECLARE_PROPERTY(default_value, double, 
         "The value of this coordinate before any value has been set. "
         "Rotational coordinate value is in radians and Translational in meters.");
@@ -97,10 +93,23 @@ public:
         "this flag set to false, to dictate the value of unimportant coordinates " 
         "if they are linked via constraints."); 
 
+//==============================================================================
+// OUTPUTS
+//==============================================================================
+    OpenSim_DECLARE_OUTPUT(value, double, getValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(speed, double, getSpeedValue, SimTK::Stage::Model);
+    OpenSim_DECLARE_OUTPUT(acceleration, double, getAccelerationValue,
+            SimTK::Stage::Acceleration);
+
     /** Motion type that describes the motion dictated by the coordinate.
-        Types include: Rotational, Translational and Coupled (both) */
+        Specifically it describes how the coordinate can be interpreted.
+        A coordinate can be interpreted as Rotational or Translational if
+        the displacement about or along an axis is the coordinate value.
+        If the Coordinate cannot be interpreted as being either of these
+        it is flagged as Coupled. */
     enum MotionType
     {
+        Undefined,
         Rotational,
         Translational,
         Coupled
@@ -119,8 +128,7 @@ public:
 
     /** access to the generalized Coordinate's motion type
         This can be Rotational, Translational, or Coupled (both) */
-    MotionType getMotionType() const { return _motionType; }
-    void setMotionType(MotionType aMotionType);
+    MotionType getMotionType() const;
 
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
@@ -273,7 +281,7 @@ private:
 
     // All coordinates (Simbody mobility) have associated constraints that
     // perform joint locking, prescribed motion and range of motion.
-    // Constraints are created upon setup: locked, precribedFunction
+    // Constraints are created upon setup: locked, prescribed Function
     // and range must be set.
     // NOTE: Changing the prescribed motion function requires topology to be realized
     //       so state is invalidated
@@ -295,9 +303,6 @@ private:
     Constraint, so we can change the value at which to lock the joint. */
     SimTK::ReferencePtr<ModifiableConstant> _lockFunction;
 
-    /* Motion type (translational, rotational or combination). */
-    MotionType _motionType;
-
     /* Label for the related state that is the generalized speed of
        this coordinate. */
     std::string _speedName;
@@ -308,8 +313,7 @@ private:
     mutable bool _lockedWarningGiven;
 
     // PRIVATE METHODS implementing the Component interface
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
     void extendFinalizeFromProperties() override;
 
     friend class CoordinateCouplerConstraint; 

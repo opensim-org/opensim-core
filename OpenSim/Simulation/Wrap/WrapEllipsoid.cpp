@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,11 @@
 // INCLUDES
 //=============================================================================
 #include "WrapEllipsoid.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
 #include "WrapResult.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include <OpenSim/Common/ModelDisplayHints.h>
 
 //=============================================================================
 // STATICS
@@ -174,9 +173,6 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapEllipsoid);
-
     _dimensions = aWrapEllipsoid._dimensions;
 }
 
@@ -1134,12 +1130,14 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             t = max*sqrt(u*u+v*v+w*w);
         }
 
+        double P{ 0 }, P2{ 0 }, Q{ 0 }, Q2{ 0 }, R{ 0 }, _R2{ 0 };
+        double PQ{ 0 }, PR{ 0 }, QR{ 0 }, PQR{ 0 }, fp{ 0 };
+
         for (i = 0; i < 64; i++)
         {
-            double P = t+a2, P2 = P*P;
-            double Q = t+b2, Q2 = Q*Q;
-            double R = t+c2, _R2 = R*R;
-            double PQ, PR, QR, PQR, fp;
+            P = t+a2, P2 = P*P;
+            Q = t+b2, Q2 = Q*Q;
+            R = t+c2, _R2 = R*R;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
         
@@ -1198,7 +1196,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     double u2 = u*u, v2 = v*v;
     double a2u2 = a2*u2, b2v2 = b2*v2;
     double dx, dy, xda, ydb;
-    int i, which;
+    int i/*, which*/;
     double t, P, Q, P2, Q2, f, fp;
 
     bool nearXOrigin = (bool) EQUAL_WITHIN_ERROR(0.0,u);
@@ -1260,15 +1258,15 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     // initial guess
     if ( (u/a)*(u/a) + (v/b)*(v/b) < 1.0 )
     {
-        which = 0;
+        //which = 0;
         t = 0.0;
     }
     else
     {
         double max = a;
 
-        which = 1;
-
+        //which = 1;
+        
         if ( b > max )
             max = b;
 
@@ -1296,4 +1294,28 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
     dy = *y - v;
 
     return sqrt(dx*dx + dy*dy);
+}
+// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+        
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        appendToThis.push_back(
+            SimTK::DecorativeEllipsoid(getRadii())
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
+    }
+
 }

@@ -18,6 +18,9 @@ import opensim as osim
 test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
                         'tests')
 
+# Silence warning messages if mesh (.vtp) files cannot be found.
+osim.Model.setDebugLevel(0)
+
 class TestSwigAddtlInterface(unittest.TestCase):
     def test_markAdopted1(self):
         """Ensures that we can tell an object that some other object is managing
@@ -81,7 +84,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setConstantDistance(1)
         a.addConstraint(constr)
     
-        f = osim.BushingForce("ground", "body",
+        f = osim.BushingForce("bushing", "ground", "body",
                 osim.Vec3(2, 2, 2), osim.Vec3(1, 1, 1),
                 osim.Vec3(0, 0, 0), osim.Vec3(0, 0, 0))
         a.addForce(f)
@@ -223,13 +226,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         s.adoptAndAppend(o)
         del s
         del o
-
-        s = osim.FrameSet()
-        o = osim.Body()
-        s.adoptAndAppend(o)
-        del s
-        del o
-    
+   
         s = osim.ForceSet()
         o = osim.CoordinateLimitForce()
         s.adoptAndAppend(o)
@@ -272,6 +269,30 @@ class TestSwigAddtlInterface(unittest.TestCase):
         constr.setBody2PointLocation(osim.Vec3(1, 0, 0))
         constr.setConstantDistance(1)
         a.addConstraint(constr)
+
+    def test_PrescribedController_prescribeControlForActuator(self):
+        # Test memory management for
+        # PrescribedController::prescribeControlForActuator().
+        model = osim.Model()
+        # Body.
+        body = osim.Body('b1', 1.0, osim.Vec3(0, 0, 0), osim.Inertia(0, 0, 0))
+        model.addBody(body)
+        # Joint.
+        joint = osim.PinJoint('j1', model.getGround(), body)
+        model.addJoint(joint)
+        # Actuator.
+        actu = osim.CoordinateActuator()
+        actu.setName('actu')
+        actu.setCoordinate(joint.get_coordinates(0))
+        model.addForce(actu)
+        # Controller.
+        contr = osim.PrescribedController()
+        contr.addActuator(actu)
+        self.assertRaises(RuntimeError,
+                contr.prescribeControlForActuator, 1, osim.Constant(3))
+        # The following calls should not cause a memory leak:
+        contr.prescribeControlForActuator(0, osim.Constant(2))
+        contr.prescribeControlForActuator('actu', osim.Constant(4))
     
     def test_vec3_operators(self):
         v1 = osim.Vec3(1, 2, 3)

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -212,14 +212,17 @@ get(const string &aName) const
  * @return Pointer to the property.
  */
 const Property_Deprecated* PropertySet::
-contains(const string& aName) const
+contains(const string& name) const
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 //_____________________________________________________________________________
 /**
@@ -229,14 +232,17 @@ contains(const string& aName) const
  * @return Pointer to the property.
  */
 Property_Deprecated* PropertySet::
-contains(const string& aName)
+contains(const string& name)
 {
-    int i;
-    PropertyInt prop(aName,0);
-    for(i=0;i<_array.getSize();i++) {
-        if((*_array[i]) == prop) return(_array[i]);
-    }
-    return NULL;
+    int i  = _array.getIndex(name);
+    //PropertyInt prop(aName,0);
+    //for(i=0;i<_array.getSize();i++) {
+    //    if((*_array[i]) == prop) return(_array[i]);
+    //}
+
+    if (i >= 0) return _array.get(i);
+
+    return nullptr;
 }
 
 

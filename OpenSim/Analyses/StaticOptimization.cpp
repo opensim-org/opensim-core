@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jeffrey A. Reinbolt                                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <SimTKmath.h>
-#include <SimTKlapack.h>
 #include "StaticOptimization.h"
 #include "StaticOptimizationTarget.h"
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
@@ -65,13 +55,13 @@ StaticOptimization::~StaticOptimization()
  */
 StaticOptimization::StaticOptimization(Model *aModel) :
     Analysis(aModel),
+    _numCoordinateActuators(0),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
     _activationExponent(_activationExponentProp.getValueDbl()),
     _useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
     _convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
     _maximumIterations(_maximumIterationsProp.getValueInt()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(0)
+    _modelWorkingCopy(NULL)
 {
     setNull();
 
@@ -86,13 +76,13 @@ StaticOptimization::StaticOptimization(Model *aModel) :
  */
 StaticOptimization::StaticOptimization(const StaticOptimization &aStaticOptimization):
     Analysis(aStaticOptimization),
+    _numCoordinateActuators(aStaticOptimization._numCoordinateActuators),
     _useModelForceSet(_useModelForceSetProp.getValueBool()),
     _activationExponent(_activationExponentProp.getValueDbl()),
     _useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
     _convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
     _maximumIterations(_maximumIterationsProp.getValueInt()),
-    _modelWorkingCopy(NULL),
-    _numCoordinateActuators(aStaticOptimization._numCoordinateActuators)
+    _modelWorkingCopy(NULL)
 {
     setNull();
     // COPY TYPE AND NAME
@@ -458,10 +448,12 @@ record(const SimTK::State& s)
             string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
             SimTK::Vector constraints;
             target.constraintFunc(_parameters,true,constraints);
-            const CoordinateSet& coordSet = _modelWorkingCopy->getCoordinateSet();
+
+            auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+
             for(int acc=0;acc<nacc;acc++) {
                 if(fabs(constraints(acc)) > tolConstraints) {
-                    const Coordinate& coord = coordSet.get(_accelerationIndices[acc]);
+                    const Coordinate& coord = *coordinates[_accelerationIndices[acc]];
                     msgIncomplete += "   ";
                     msgIncomplete += coord.getName();
                     msgIncomplete += ": constraint violation = ";
@@ -544,14 +536,14 @@ begin(SimTK::State& s )
             // Copy whatever forces that are not muscles back into the model
             
             for(int i=0; i<saveForces->getSize(); i++){
-                const Force& f=saveForces->get(i);
+                // const Force& f=saveForces->get(i);
                 if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
                     as.append(saveForces->get(i).clone());
             }
         }
 
         SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
-        // Set modeling options for Actuators to be overriden
+        // Set modeling options for Actuators to be overridden
         for(int i=0; i<_forceSet->getSize(); i++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
             if( act ) {
@@ -568,9 +560,9 @@ begin(SimTK::State& s )
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom 
         // (for which we will set acceleration constraints)
         _accelerationIndices.setSize(0);
-        const CoordinateSet& coordSet = _model->getCoordinateSet();
-        for(int i=0; i<coordSet.getSize(); i++) {
-            const Coordinate& coord = coordSet.get(i);
+        auto coordinates = _modelWorkingCopy->getCoordinatesInMultibodyTreeOrder();
+        for(size_t i=0u; i<coordinates.size(); ++i) {
+            const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
                 Array<int> inds = _statesStore->
                     getColumnIndicesForIdentifier(coord.getName()) ;

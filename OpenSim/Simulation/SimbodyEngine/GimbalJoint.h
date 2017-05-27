@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,14 +43,70 @@ Generalized speeds are equal to the Euler angle derivatives  (\f$\vec{u} = \dot{
 class OSIMSIMULATION_API GimbalJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(GimbalJoint, Joint);
 
+public:
+    /** Indices of Coordinates for use as arguments to getCoordinate() and
+        updCoordinate().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        const auto& rx = myGimbalJoint.
+                         getCoordinate(GimbalJoint::Coord::Rotation1X);
+        \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        rx = myGimbalJoint.getCoordinate(opensim.GimbalJoint.Coord_Rotation1X)
+        \endcode
+
+        <b>Java example</b>
+        \code{.java}
+        rx = myGimbalJoint.getCoordinate(GimbalJoint.Coord.Rotation1X);
+        \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        rx = myGimbalJoint.get_coordinates(0);
+        \endcode
+    */
+    enum class Coord: unsigned {
+        Rotation1X = 0u, ///< 0
+        Rotation2Y = 1u, ///< 1
+        Rotation3Z = 2u  ///< 2
+    };
+
+private:
     /** Specify the Coordinates of the GimbalJoint */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational) };
+    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation1X)) };
+    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation2Y)) };
+    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
+                                   static_cast<unsigned>(Coord::Rotation3Z)) };
 
 public:
     /** Use Joint's constructors. @see Joint */
     using Joint::Joint;
+
+    /** Exposes getCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::getCoordinate;
+
+    /** Exposes updCoordinate() method defined in base class (overloaded below).
+        @see Joint */
+    using Joint::updCoordinate;
+
+    /** Get a const reference to a Coordinate associated with this Joint.
+        @see Coord */
+    const Coordinate& getCoordinate(Coord idx) const {
+        return get_coordinates( static_cast<unsigned>(idx) );
+    }
+
+    /** Get a writable reference to a Coordinate associated with this Joint.
+        @see Coord */
+    Coordinate& updCoordinate(Coord idx) {
+        return upd_coordinates( static_cast<unsigned>(idx) );
+    }
 
 protected:
     // ModelComponent interface.

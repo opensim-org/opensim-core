@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,7 +28,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <string>
 #include "CMC_TaskSet.h"
 #include "StateTrackingTask.h"
 
@@ -63,11 +62,20 @@ CMC_TaskSet::~CMC_TaskSet()
  * @param aModel Model for which tasks will be set.
  */
 CMC_TaskSet::CMC_TaskSet() :
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _pTask(0.0),_vTask(0.0),_aTask(0.0),
-    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-    _kp(0.0),_kv(0.0),_ka(0.0),
-    _w(0.0),_aDes(0.0),_a(0.0)
+    _pTask(0.0), 
+    _vTask(0.0),
+    _aTask(0.0),
+    _pErrLast(0.0),
+    _pErr(0.0),
+    _vErrLast(0.0),
+    _vErr(0.0),
+    _kp(0.0),
+    _kv(0.0),
+    _ka(0.0),
+    _w(0.0),
+    _aDes(0.0),
+    _a(0.0),
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
 }
@@ -78,12 +86,21 @@ CMC_TaskSet::CMC_TaskSet() :
  * @param aFileName Name of the file.
  */
 CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
-    _dataFileName(_dataFileNameProp.getValueStr()),
     Set<TrackingTask>(aFileName, false),
-    _pTask(0.0),_vTask(0.0),_aTask(0.0),
-    _pErrLast(0.0),_pErr(0.0),_vErrLast(0.0),_vErr(0.0),
-    _kp(0.0),_kv(0.0),_ka(0.0),
-    _w(0.0),_aDes(0.0),_a(0.0)
+    _pTask(0.0),
+    _vTask(0.0),
+    _aTask(0.0),
+    _pErrLast(0.0),
+    _pErr(0.0),
+    _vErrLast(0.0),
+    _vErr(0.0),
+    _kp(0.0),
+    _kv(0.0),
+    _ka(0.0),
+    _w(0.0),
+    _aDes(0.0),
+    _a(0.0),
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
     updateFromXMLDocument();

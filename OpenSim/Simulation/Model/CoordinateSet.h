@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan, Ajay Seth                                           *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -52,8 +52,8 @@ public:
     ~CoordinateSet(void);
 
     /**
-     * Populate this flat list of Coordinates given a Model that has already
-     * been setup.
+     * Populate this %Set as a flat list of all Model Coordinates given 
+     * the a Model with Joints, which owns the Coordinates.
      */
     void populate(Model& model);
 
@@ -63,17 +63,8 @@ public:
 #ifndef SWIG
     CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
 #endif
-    void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
-{
-    for(int i=0;i<_objects.getSize();i++) {
-        Coordinate *obj = _objects[i];
-        if(obj==NULL) {
-            rNames.append("NULL");
-        } else {
-            rNames.append(obj->getSpeedName());
-        }
-    }
-}
+    void getSpeedNames(OpenSim::Array<std::string> &rNames) const;
+
 //=============================================================================
 };  // END of class CoordinateSet
 //=============================================================================

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,7 +35,6 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/ForceSet.h"
-#include "Model/FrameSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
 #include "Model/BodySet.h"
@@ -85,7 +84,6 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
-#include "Control/ToyReflexController.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
@@ -122,6 +120,8 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 
+#include "StatesTrajectoryReporter.h"
+
 #include <string>
 #include <iostream>
 #include <exception>
@@ -141,11 +141,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
   try {
 
     Object::registerType( AnalysisSet() );
-    Object::registerType( ModelDisplayHints());
     Object::registerType( Model() );
     Object::registerType( BodyScale() );
     Object::registerType( BodyScaleSet());
-    Object::registerType( FrameSet());
     Object::registerType( BodySet());
     Object::registerType( ComponentSet() );
     Object::registerType( ControllerSet() );
@@ -162,9 +160,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathPointSet() );
     Object::registerType( ConditionalPathPoint() );
     Object::registerType( MovingPathPoint() );
-    Object::registerType( BaseAppearance());
+    Object::registerType( SurfaceProperties());
     Object::registerType( Appearance());
-    Object::registerType( LineAppearance());
     Object::registerType( ModelVisualPreferences());
 
     Object::registerType( Brick());
@@ -246,7 +243,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
-    Object::registerType( ToyReflexController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
@@ -259,10 +255,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
-    // Register commonly used Connectors for de/serialization
-    Object::registerType(Connector<Frame>());
-    Object::registerType(Connector<PhysicalFrame>());
-    Object::registerType(Connector<Body>());
+    Object::registerType( StatesTrajectoryReporter() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

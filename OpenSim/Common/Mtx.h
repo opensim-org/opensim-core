@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,9 +31,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <math.h>
-#include <stdio.h>
-#include "SimTKcommon.h"
-
+#include "SimTKcommon/Orientation.h"
 
 namespace OpenSim { 
 
@@ -97,7 +95,10 @@ public:
     */
     inline static double Normalize(int aN,const SimTK::Vec3& aV,SimTK::Vec3& rV){
         double mag = aV.norm();
-        if (mag ==0) rV = 0.0; else rV = 1/mag * aV;
+        if (mag >= SimTK::Eps)
+            rV = aV.scalarMultiply(1.0/mag);
+        else
+            rV.setToZero();
         return mag;
     }
     /**

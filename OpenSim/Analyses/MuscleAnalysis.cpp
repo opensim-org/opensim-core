@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Katherine R. S. Holzbaur, Frank C. Anderson, Ajay Seth,         *
  *            Matthew Millard                                                 *
  *                                                                            *
@@ -28,11 +28,6 @@
 //=============================================================================
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include "MuscleAnalysis.h"
 
 using namespace OpenSim;
@@ -658,7 +653,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
             maStore = _momentArmStorageArray[i]->momentArmStore;
             mStore = _momentArmStorageArray[i]->momentStore;
            
-            bool locked = q->getLocked(s);
+            // bool locked = q->getLocked(s);
 
             _model->getMultibodySystem().realize(s, s.getSystemStage());
             // LOOP OVER MUSCLES
@@ -739,7 +734,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
 {
     if(!proceed(stepNumber)) return 0;
 
-    int status = record(s);
+    /*int status = */record(s);
 
     return 0;
 }

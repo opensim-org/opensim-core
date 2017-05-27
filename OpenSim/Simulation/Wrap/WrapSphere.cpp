@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,13 +25,12 @@
 // INCLUDES
 //=============================================================================
 #include "WrapSphere.h"
-#include <OpenSim/Simulation/Model/PathPoint.h>
 #include "PathWrap.h"
 #include "WrapResult.h"
 #include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
-#include <sstream>
+#include <OpenSim/Common/ModelDisplayHints.h>
 
 //=============================================================================
 // STATICS
@@ -151,9 +150,6 @@ void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
  */
 void WrapSphere::copyData(const WrapSphere& aWrapSphere)
 {
-    // BASE CLASS
-    WrapObject::copyData(aWrapSphere);
-
     _radius = aWrapSphere._radius;
 }
 
@@ -235,7 +231,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
             
-   int i, j, maxit, return_code = wrapped;
+   int i, j,/* maxit, */ return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
@@ -252,7 +248,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         aWrapResult.sv[i] = previousWrap.sv[i];
     }
 
-   maxit = 50;
+   //maxit = 50;
    aFlag = true;
 
     aWrapResult.wrap_pts.setSize(0);
@@ -591,4 +587,29 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     aWrapResult.wrap_pts.append(aWrapResult.r2);
 
    return return_code;
+}
+
+// Implement generateDecorations by WrapSphere to replace the previous out of place implementation 
+// in ModelVisualizer
+void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+{
+
+    Super::generateDecorations(fixed, hints, state, appendToThis);
+    if (!fixed) return;
+
+    if (hints.get_show_wrap_geometry()) {
+        const Appearance& defaultAppearance = get_Appearance();
+        if (!defaultAppearance.get_visible()) return;
+        const Vec3 color = defaultAppearance.get_color();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
+        appendToThis.push_back(
+            SimTK::DecorativeSphere(getRadius())
+            .setTransform(X_BP).setResolution(2.0)
+            .setColor(color).setOpacity(defaultAppearance.get_opacity())
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
+    }
+
+
 }

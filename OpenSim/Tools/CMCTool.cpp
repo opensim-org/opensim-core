@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Contributor(s): Frank C. Anderson, Eran Guendelman, Chand T. John          *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -20,26 +20,21 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <time.h>
 #include "CMCTool.h"
-#include "AnalyzeTool.h"
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include "ForwardTool.h"
-#include <OpenSim/Common/DebugUtilities.h>
-#include "CMC.h" 
+#include "CMC.h"
 #include "CMC_TaskSet.h"
 #include "ActuatorForceTarget.h"
 #include "ActuatorForceTargetFast.h"
+#include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/Actuation.h>
+#include <OpenSim/Common/DebugUtilities.h>
+
 
 using namespace std;
 using namespace SimTK;
@@ -408,7 +403,7 @@ bool CMCTool::run()
     // SET OUTPUT PRECISION
     IO::SetPrecision(_outputPrecision);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+    /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
     //taskSet.print("cmcTasksRT.xml");
@@ -423,7 +418,7 @@ bool CMCTool::run()
 
     controller->setActuators(getActuatorsForCMC(_excludedActuators));
     _model->addController(controller );
-    controller->setDisabled(false);
+    controller->setEnabled(true);
     controller->setUseCurvatureFilter(false);
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);
@@ -650,8 +645,16 @@ bool CMCTool::run()
         cout<<" to set the initial configuration.\n" << endl;
     }
 
-    for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
-    for(int i=0;i<nu;i++) s.updU()[i] = u[i];
+    // formCompleteStorages ensures qSet is in order of model Coordinates
+    // but we cannot assume order of coordinates is the same in the State,
+    // so set each Coordinate value and speed individually.
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (int i = 0; i < nq; ++i) {
+        // The last argument to setValue is a bool to enforce kinematic constraints
+        // or not. It is being set to true when we set the last coordinate value.
+        coords[i].setValue(s, q[i], i==(nq-1));
+        coords[i].setSpeedValue(s, u[i]);
+    }
 
     // Actuator force predictor
     // This requires the trajectories of the generalized coordinates
@@ -669,10 +672,10 @@ bool CMCTool::run()
     const SimTK::Vector &modelZ = _model->getMultibodySystem()
                                             .getDefaultSubsystem().getZ(s);
     
-    int nra = actSysZ.size();
-    int nrm = modelZ.size();
+    // int nra = actSysZ.size();
+    // int nrm = modelZ.size();
 
-    assert(nra == nrm);
+    assert(actSysZ.size() == modelZ.size());
     actSysZ = modelZ;
 
     VectorFunctionForActuators *predictor =
@@ -744,8 +747,8 @@ bool CMCTool::run()
     _model->setAllControllersEnabled( true );
 
     manager.setSessionName(getName());
-    manager.setInitialTime(_ti);
-    manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
+    s.setTime(_ti);
+    double finalTime = _tf - _targetDT - SimTK::Zero;
 
     // Initialize integrand controls using controls read in from file (which specify min/max control values)
     initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
@@ -802,7 +805,6 @@ bool CMCTool::run()
         controller->computeControls( s, controller->updControlSet() );
         controller->setTargetDT(_targetDT);
     }
-    manager.setInitialTime(_ti);
 
     // ---- INTEGRATE ----
     cout<<"\n\n\n";
@@ -827,7 +829,7 @@ bool CMCTool::run()
     IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
-        manager.integrate(s);
+        manager.integrate(s, finalTime);
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
@@ -1100,7 +1102,7 @@ Set<Actuator> CMCTool::
 {   
     Set<Actuator> actuatorsForCMC = _model->getActuators();
     for (int i=actuatorsForCMC.getSize()-1; i>0; i--){
-        if (actuatorsForCMC.get(i).get_isDisabled())
+        if(!actuatorsForCMC.get(i).get_appliesForce())
             actuatorsForCMC.remove(i);
     }
     Array<string> groupNames;
@@ -1116,7 +1118,7 @@ Set<Actuator> CMCTool::
             k = groupNames.findIndex(actuatorsByNameOrGroup[i]);
             if(k > -1){ //found
                 const ObjectGroup* group = actuatorsForCMC.getGroup(k);
-                Array<Object*> members = group->getMembers();
+                Array<const Object*> members = group->getMembers();
                 for(int j=0; j<members.getSize(); j++)
                     actuatorsForCMC.remove((Actuator *)members[j]);
                 actuatorsForCMC.removeGroup(actuatorsByNameOrGroup[i]);

@@ -47,7 +47,7 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 2. Make sure that your request conforms to our [coding standards](#coding-standards).
 
-3. Make sure that tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) mentions how to run the tests.
+3. Make sure that your code executes as intended and that *all* tests pass on your local machine before making a pull request. The [README.md](https://github.com/opensim-org/opensim-core) explains how to run the tests. If your changes introduce runtime options or branching in the code, please ensure that all options or branches are being tested and that exceptions are being thrown in invalid scenarios.
 
 4. Typo fixes can be merged by any member of the Development (Dev) Team.
 
@@ -58,6 +58,8 @@ When you are ready to make a PR, please adhere to the following guidelines:
 7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
+
+It is important that reviewers also review the effect that your PR has on the doxygen documentation. To facilitate this, we automatically upload the doxygen documentation for each PR to [myosin.sourceforge.net](http://myosin.sourceforge.net); you can view the documentation for a specific PR at `myosin.sourceforge.net/<issue-number>`.
 
 
 Writing tests
@@ -173,7 +175,7 @@ shows protected members, nested classes, etc. When writing doxygen comments,
 you can use `\internal` or `\if developer ... \endif`
 for documentation that is only intended for developers.
 
-Read more about doxygen on this page: Guide to Building Doxygen
+Read more about doxygen on this page: [Guide to Building Doxygen](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Guide+to+Building+Doxygen)
 
 ### Each line of text should be at most 80 characters
 
@@ -222,7 +224,9 @@ We have some conventional starting verbs; you should use the same ones when they
 `realize` | Initiate state-dependent computations and cache results internally; no result returned.
 `add`     | Add the object (Component) to an internal list of references. Should not take over ownership. 
 `adopt`   | Take over ownership (e.g., `Set::adoptAndAppend()`).
-`extend`  | A virtual method intended to extend a defining capability of a Base class. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`extend`  | A virtual method intended to extend a defining capability of a Base class; can either be pure virtual or not. The first line of the derived class implementation must be `Super::extend<DoSomething>()`. For example, a ModelComponent knows how to ``connectToModel``, but the details of how each concrete ModelComponent type does this is implemented by the derived class.
+`implement` | A virtual method intended to implement a *pure* virtual function of a Base class. The derived class's implementation does *not* call any method on `Super`.
+`express` | Express a vector in a different basis (i.e., without translation). Typically used as `Frame::expressVectorIn*()`.
 
 ### ``throw`` and ``return`` are not functions
 
@@ -234,9 +238,9 @@ Both pre-increment i and post-increment i are available. When you don’t look a
 
 
 ```cpp
-/*YES*/ for (int i; i < limit; ++i);
+/*YES*/ for (int i = 0; i < limit; ++i);
 
-/*NO*/ for (int i; i < limit; i++);
+/*NO*/ for (int i = 0; i < limit; i++);
 ```
 
 This will prevent you from using the wrong operator in the expensive cases, which are not always obvious.
@@ -310,7 +314,9 @@ Peter Loan         |              |Original code base; SIMM Translator; WrapObje
 Kate Saul          |              |Original MuscleAnalysis
 Jack Middleton     |              |Initial Simbody integration
 Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeletal modeling
-
+Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
+Andrew LaPre       |@ankela       |IK error output to file
+Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
 
 Contributor License Agreement
 -----------------------------

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -564,7 +564,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     int i;
     double tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
     double cos_factor, fiber_stiffness;
-    double old_fiber_length, length_change, tendon_stiffness, percent;
+    double old_fiber_length{SimTK::NaN}, length_change, tendon_stiffness, percent;
     double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
    
     // If the muscle has no fibers, then treat it as a ligament.

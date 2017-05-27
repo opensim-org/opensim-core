@@ -26,12 +26,9 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-
-#include <memory>
+#include "simbody/internal/Constraint.h"
 
 //=============================================================================
 // STATICS
@@ -47,7 +44,7 @@ using namespace OpenSim;
 class ModifiableConstant : public SimTK::Function_<SimTK::Real>{
 public:
     ModifiableConstant(const SimTK::Real& value, int argumentSize) : 
-      value(value), argumentSize(argumentSize) { }
+        argumentSize(argumentSize), value(value) { }
 
     ModifiableConstant* clone() const override {
         return new ModifiableConstant(this->value, this->argumentSize);
@@ -92,7 +89,7 @@ private:
  */
 Coordinate::Coordinate() 
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -104,7 +101,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
     Coordinate()
 {
     setName(aName);
-    setMotionType(aMotionType);
+    //setMotionType(aMotionType);
     setDefaultValue(defaultValue);
     setRangeMin(aRangeMin);
     setRangeMax(aRangeMax);
@@ -117,12 +114,11 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,
 void Coordinate::constructProperties(void)
 {
     setAuthors("Ajay Seth, Ayman Habib, Michael Sherman");
-    constructProperty_motion_type("rotational");
-    
+
     constructProperty_default_value(0.0);
     constructProperty_default_speed_value(0.0);
 
-    Array<double> defaultRange(-10.0, 2); //twp values in range
+    Array<double> defaultRange(-10.0, 2); //two values in range
     defaultRange[1] = 10.0; // second value in range is 10.0
     constructProperty_range(defaultRange);
 
@@ -145,32 +141,22 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate(" + getName() + ")::connectToModel: ";
-
-    if((IO::Lowercase(get_motion_type()) == "rotational") || get_motion_type() == "")
-        _motionType = Rotational;
-    else if(IO::Lowercase(get_motion_type()) == "translational")
-        _motionType = Translational;
-    else if(IO::Lowercase(get_motion_type()) == "coupled")
-        _motionType = Coupled;
-    else
-        throw Exception(prefix+"Unknown motion type. Use rotational, translational, or coupled.");
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
         // Make sure the range is min to max.
-        if (get_range(1) < get_range(0)){
-            throw Exception(prefix+"Maximum coordinate range less than minimum.");
-        }
+        SimTK_ERRCHK_ALWAYS(get_range(0) <= get_range(1), prefix.c_str(),
+            "Maximum coordinate range less than minimum.");
+
         double dv = get_default_value();
-        if (dv < (get_range(0) - SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is less than range minimum." << endl;
-            cerr << "Default value = " << dv << "  < min = " << get_range(0) << endl;
-        }
-        else if (dv >(get_range(1) + SimTK::SqrtEps)){
-            cerr << prefix + "Default coordinate value is greater than range maximum." << endl;
-            cerr << "Default value = " << dv << "  > max = " << get_range(1) << endl;
-        }       
+        SimTK_ERRCHK2_ALWAYS(dv > (get_range(0) - SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is less than range minimum.\n" 
+            "Default value = %g  < min = %g.", dv,  get_range(0));
+
+        SimTK_ERRCHK2_ALWAYS(dv < (get_range(1) + SimTK::SqrtEps), prefix.c_str(),
+            "Default coordinate value is greater than range maximum.\n"
+            "Default value = %g > max = %g.", dv, get_range(1));    
     }
 
     _lockedWarningGiven=false;
@@ -213,13 +199,13 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
                 SimTK::MobilizerQIndex(_mobilizerQIndex));
         mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
     }
-    else{
-        // even if prescribed is set to true, if there is no prescribed 
-        // function defined, then it cannot be prescribed.
+    else if(get_prescribed()){
+        // if prescribed is set to true, and there is no prescribed 
+        // function defined, then it cannot be prescribed (set to false).
         mutableThis->upd_prescribed() = false;
     }
 
-    //TODO add clamping
+    //Now add clamping
     addModelingOption("is_clamped", 1);
 
     SimTK::SubsystemIndex sbsix =
@@ -239,10 +225,10 @@ void Coordinate::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 void Coordinate::extendRealizeInstance(const SimTK::State& state) const
 {
-    const MobilizedBody& mb
-        = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
+    //const MobilizedBody& mb
+    //    = getModel().getMatterSubsystem().getMobilizedBody(_bodyIndex);
 
-    int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
+    //int uix = state.getUStart() + mb.getFirstUIndex(state) + _mobilizerQIndex;
 
     /* Set the YIndex on the StateVariable */
 }
@@ -302,6 +288,13 @@ const Joint& Coordinate::getJoint() const
 {
     return(_joint.getRef());
 }
+
+Coordinate::MotionType Coordinate::getMotionType() const
+{
+    int ix = getJoint().getProperty_coordinates().findIndexForName(getName());
+    return getJoint().getMotionType(Joint::CoordinateIndex(ix));
+}
+
 
 //-----------------------------------------------------------------------------
 // VALUE
@@ -426,31 +419,6 @@ void Coordinate::setRangeMax(double aMax)
 
 //_____________________________________________________________________________
 /**
- * Set coordinate's motion type.
- *
- */
- void Coordinate::setMotionType(MotionType aMotionType)
- {
-     _motionType = aMotionType;
-     updProperty_motion_type().setValueIsDefault(false);
-     //Also update the motionTypeName so that it is serialized with the model
-     switch(aMotionType){
-        case(Rotational) :  
-            upd_motion_type() = "rotational";
-            break;
-        case(Translational) :
-            upd_motion_type() = "translational";
-            break;
-        case(Coupled) :
-            upd_motion_type() = "coupled";
-            break;
-        default :
-            throw(Exception("Coordinate: Attempting to specify an undefined motion type."));
-     }
- } 
-
-//_____________________________________________________________________________
-/**
  * Set the default value.
  *
  * @param aDefaultValue new default value to change to.
@@ -501,7 +469,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
             dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
             if (couplerp->getDependentCoordinateName() == getName())
-                return !couplerp->isDisabled(s);
+                return couplerp->isEnforced(s);
         }
     }
     return false;
@@ -641,17 +609,6 @@ bool Coordinate::getClamped(const SimTK::State& s) const
 void Coordinate::setClamped(SimTK::State& s, bool aLocked) const
 {
     setModelingOption(s, "is_clamped", (int)aLocked);
-}
-
-void Coordinate::constructOutputs()
-{
-    //return the coordinate value
-    constructOutput<double>("value", &Coordinate::getValue, Stage::Model);
-    //return the speed value;
-    constructOutput<double>("speed", &Coordinate::getSpeedValue, Stage::Model);
-    //return the acceleration value;
-    constructOutput<double>("acceleration", &Coordinate::getAccelerationValue,
-                             Stage::Acceleration);
 }
 
 //-----------------------------------------------------------------------------

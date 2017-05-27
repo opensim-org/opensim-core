@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,6 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "FiberForceLengthCurve.h"
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -289,7 +290,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0,   double e1,
     double prevErr  = 0;
     double errStart = err;
     double errMin   = 0;
-    double solMin   = 0;
+    // double solMin   = 0;
 
     bool flag_improvement = false;
     bool flag_Newton      = false;

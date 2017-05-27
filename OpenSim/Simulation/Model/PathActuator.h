@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -49,9 +49,12 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the muscle.");
+        "The set of points defining the path of the actuator.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
+
+    OpenSim_DECLARE_OUTPUT(tension, double, computeActuation,
+                           SimTK::Stage::Acceleration);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -104,11 +107,6 @@ public:
     //--------------------------------------------------------------------------
     double computeActuation( const SimTK::State& s) const override;
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
-
-    //--------------------------------------------------------------------------
-    // XML
-    //--------------------------------------------------------------------------
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     //--------------------------------------------------------------------------
     // SCALING

@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan, Jack Middleton, Ajay Seth        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,9 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "OpenSim/Common/TimeSeriesTable.h"
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
-#include "SimTKsimbody.h"
-
 #include <memory>
 
 namespace OpenSim {
@@ -72,17 +70,11 @@ public:
 #ifndef SWIG
     ControllerSet& operator=(const ControllerSet &aSet);
 #endif
-    //--------------------------------------------------------------------------
-    // GET AND SET
-    //--------------------------------------------------------------------------
-
-    bool set(int aIndex, Controller *aController);
-    bool addController(Controller *aController);
-
 
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );
     void printControlStorage( const std::string& fileName) const;
+    TimeSeriesTable getControlTable() const;
     void setActuators(Set<Actuator>& actuators);
 
     void setDesiredStates( Storage* yStore); 

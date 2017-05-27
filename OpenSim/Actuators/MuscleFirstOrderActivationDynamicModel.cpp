@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -77,18 +77,13 @@ clampActivation(double activation) const
 double MuscleFirstOrderActivationDynamicModel::
 calcDerivative(double activation, double excitation) const
 {
-    // This model respects a lower bound on activation while preserving the
-    // expected steady-state value.
-    double clampedExcitation = clamp(get_minimum_activation(), excitation, 1.0);
-    double clampedActivation = clamp(get_minimum_activation(), activation, 1.0);
-    double tau = SimTK::NaN;
+    activation = clamp(get_minimum_activation(), activation, 1.0);
 
-    if(clampedExcitation > clampedActivation) {
-        tau = get_activation_time_constant() * (0.5 + 1.5*clampedActivation);
-    } else {
-        tau = get_deactivation_time_constant() / (0.5 + 1.5*clampedActivation);
-    }
-    return (clampedExcitation - clampedActivation) / tau;
+    double tau = (excitation > activation) ?
+        get_activation_time_constant() * (0.5 + 1.5*activation) : 
+        get_deactivation_time_constant() / (0.5 + 1.5*activation);
+
+    return (excitation - activation) / tau;
 }
 
 //==============================================================================

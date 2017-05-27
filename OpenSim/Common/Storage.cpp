@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,16 +27,15 @@
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
-#include <sstream>
 #include <iostream>
 #include "IO.h"
 #include "Signal.h"
 #include "Storage.h"
 #include "GCVSplineSet.h"
-#include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
+#include "GCVSpline.h"
+#include "StateVector.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -122,7 +121,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     setNull();
 
     // OPEN FILE
-    ifstream *fp = IO::OpenInputFile(aFileName);
+    std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
     if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
 
     int nr=0,nc=0;
@@ -131,6 +130,9 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
     if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
+    if(_fileVersion > 1)
+      throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
+                      ") not supported. Use STOFileAdapter instead."};
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();
@@ -175,8 +177,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }else{  //MM the modifications below are to make the Storage class
             //well behaved when it is given data that does not contain a 
             //time or a range column
@@ -190,8 +190,6 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
                 append(time,ny,y);
         }
         delete[] y;
-        // CLOSE FILE
-        delete fp;
     }
     // If what we read was really a sIMM motion file, adjust the data 
     // to account for different assumptions between SIMM.mot OpenSim.sto
@@ -414,61 +412,66 @@ getHeaderToken() const
 // COLUMN LABELS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the column index corresponding to specified column name.
- *
- * @return State index of column or -1.  Note that the returned index is equivalent
- * to the state index.  For example, for the first column in a storage (usually
- * time) -1 would be returned.  For the second column in a storage (the first
- * state) 0 would be returned.
- * @todo Rename this method getStateIndex()
- * 
- * added a default Parameter for startIndex. -Ayman
- */
+// added a default Parameter for startIndex. -Ayman
+// TODO startIndex is being ignored.
 const int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex = _columnLabels.findIndex(aColumnName);
-    if (thisColumnIndex >= 0)
-        // subtract 1 because time is included in the labels but not 
-        // in the "state vector"
-        return thisColumnIndex-1;
+    int thisColumnIndex = -1;
 
-    // Assume a mismatch between earlier and the latest component state variable 
-    // labeling mechanism and redo find with the just the ending substring instead
-    // of its full path name
-    std::string::size_type back = aColumnName.rfind("/");
-    std::string prefix = aColumnName.substr(0, back);
-    std::string shortName = aColumnName.substr(back + 1, aColumnName.length() - back);
-    thisColumnIndex = _columnLabels.findIndex(shortName);
+    // This uses the `do while(false)` idiom to run common code if one of a
+    // number of conditions succeeds (much like what a goto would be used for).
+    do {
+        thisColumnIndex = _columnLabels.findIndex(aColumnName);
+        if (thisColumnIndex != -1) break;
 
-    // additional checking for old coordinate state names that have been renamed
-    // <coord_name>/value and <coord_name>/speed
-    if (thisColumnIndex < 0){
-        if (shortName == "value"){
-            // old formats did not have "/value" so remove it if here
+        // Assume column labels follow pre-v4.0 state variable labeling.
+        // Redo search with what the pre-v4.0 label might have been.
+
+        // First, try just the last element of the path.
+        std::string::size_type back = aColumnName.rfind("/");
+        std::string prefix = aColumnName.substr(0, back);
+        std::string shortName = aColumnName.substr(back + 1,
+                                                   aColumnName.length() - back);
+        thisColumnIndex = _columnLabels.findIndex(shortName);
+        if (thisColumnIndex != -1) break;
+
+        // If that didn't work, specifically check for coordinate state names
+        // (<coord_name>/value and <coord_name>/speed) and muscle state names
+        // (<muscle_name>/activation <muscle_name>/fiber_length).
+        if (shortName == "value") {
+            // pre-v4.0 did not have "/value" so remove it if here
             back = prefix.rfind("/");
             shortName = prefix.substr(back + 1, prefix.length());
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-        else if (shortName == "speed"){
-            // replace "/speed" (the latest labeling for speeds) with "_u"
+        else if (shortName == "speed") {
+            // replace "/speed" (the v4.0 labeling for speeds) with "_u"
             back = prefix.rfind("/");
-            shortName = prefix.substr(back + 1, prefix.length() - back) + "_u";
+            shortName =
+                    prefix.substr(back + 1, prefix.length() - back) + "_u";
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
         else if (back < aColumnName.length()) {
-            // try replacing the '/' with '.' in the last connection
+            // try replacing the '/' with '.' in the last segment
             shortName = aColumnName;
             shortName.replace(back, 1, ".");
             back = shortName.rfind("/");
-            shortName = shortName.substr(back + 1, shortName.length() - back);
+            shortName = shortName.substr(back + 1,
+                                         shortName.length() - back);
             thisColumnIndex = _columnLabels.findIndex(shortName);
         }
-    }
-    // subtract 1 because time is included in the labels but not 
-    // in the "state vector"
-    return thisColumnIndex-1;
+        if (thisColumnIndex != -1) break;
+
+        // If all of the above checks failed, return -1.
+        return -1;
+
+    } while (false);
+
+    // If we get here, we successfully found a column.
+    // Subtract 1 because time is included in the labels but not
+    // in the "state vector".
+    return thisColumnIndex - 1;
 }
 
 
@@ -1243,31 +1246,56 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 
 
     for(int i=0; i<found.getSize(); ++i){
-        Array<double> data = *new Array<double>;
+        Array<double> data{};
         getDataColumn(found[i]-off, data);
         rData.append(data);
     }
 }
-/**
- * Get the list of indices of columns corresponding to passed in identifier
- * Normally you provide a prefix and all column numbers that share this suffix in their header are passed back
- */
-OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
+
+OpenSim::Array<int>
+Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
 {
     Array<int> found;
-    int lid = (int)identifier.length();
+    const size_t lid = identifier.length();
 
-    if(lid < 1) // an empty identifier should not expect data back
+    if (lid < 1)  // Identifier is empty; return empty Array.
         return found;
 
-    int startIndex = 0;
-    int size = _columnLabels.getSize();
-    for(int i=startIndex;i<size;++i){
-        if(_columnLabels[i].compare(0,lid, identifier)==0)
+    for (int i = 0; i < _columnLabels.getSize(); ++i) {
+        if (_columnLabels[i].compare(0,lid, identifier) == 0)
             found.append(i);
     }
     return found;
 }
+
+TimeSeriesTable Storage::getAsTimeSeriesTable() const {
+    TimeSeriesTable table{};
+
+    table.addTableMetaData("header", getName());
+    table.addTableMetaData("version", std::to_string(LatestVersion));
+    table.addTableMetaData("inDegrees", std::string{_inDegrees ? "yes" : "no"});
+    table.addTableMetaData("nRows", std::to_string(_storage.getSize()));
+    table.addTableMetaData("nColumns", std::to_string(_columnLabels.getSize()));
+    if(!getDescription().empty())
+        table.addTableMetaData("description", getDescription());
+
+    // Exclude the first column label. It is 'time'. Time is a separate column
+    // in TimeSeriesTable and column label is optional.
+    table.setColumnLabels(_columnLabels.get() + 1, 
+                          _columnLabels.get() + _columnLabels.getSize());
+
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        const auto& row = getStateVector(i)->getData();
+        const auto time = getStateVector(i)->getTime();
+        // Exclude the first column. It is 'time'. Time is a separate column in
+        // TimeSeriesTable.
+        table.appendRow(time, row.get(), row.get() + row.getSize());
+    }
+
+    return table;
+}
+
+
 //=============================================================================
 // RESET
 //=============================================================================
@@ -1396,7 +1424,7 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
     if(aN<0) return(_storage.getSize());
 
     // APPEND
-    StateVector vec(aT,aN,aY);
+    StateVector vec(aT, SimTK::Vector_<double>(aN, aY));
     append(vec,aCheckForDuplicateTime);
     // TODO: use some tolerance when checking for duplicate time?
     /*
@@ -1531,15 +1559,12 @@ add(int aN, double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to add to the state vectors.
+ * @param values Array of values to add to the state vectors.
  * @see StateVector::add(int,double[])
  */
-void Storage::
-add(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].add(aN,aY);
+void Storage::add(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].add(values);
     }
 }
 //_____________________________________________________________________________
@@ -1586,7 +1611,7 @@ add(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // ADD
-        _storage[i].add(nN,Y);
+        _storage[i].add(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1616,15 +1641,12 @@ subtract(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values to subtract from the state vectors.
+ * @param values Array of values to subtract from the state vectors.
  * @see StateVector::subtract(int,double[])
  */
-void Storage::
-subtract(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].subtract(aN,aY);
+void Storage::subtract(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].subtract(values);
     }
 }
 //_____________________________________________________________________________
@@ -1671,7 +1693,7 @@ subtract(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // SUBTRACT
-        _storage[i].subtract(nN,Y);
+        _storage[i].subtract(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1701,15 +1723,12 @@ multiply(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be multiplied by.
+ * @param values Array of values the states are to be multiplied by.
  * @see StateVector::multiply(int,double[])
  */
-void Storage::
-multiply(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].multiply(aN,aY);
+void Storage::multiply(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].multiply(values);
     }
 }
 
@@ -1757,7 +1776,7 @@ multiply(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // MULTIPLY
-        _storage[i].multiply(nN,Y);
+        _storage[i].multiply(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -1803,14 +1822,11 @@ divide(double aValue)
  *
  * Only the first aN states of each state vector are altered.
  *
- * @param aN Length of aY
- * @param aY Array of values the states are to be divided by.
+ * @param values Array of values the states are to be divided by.
  */
-void Storage::
-divide(int aN,double aY[])
-{
-    for(int i=0;i<_storage.getSize();i++) {
-        _storage[i].divide(aN,aY);
+void Storage::divide(const SimTK::Vector_<double>& values) {
+    for(int i = 0; i < _storage.getSize(); ++i) {
+        _storage[i].divide(values);
     }
 }
 //_____________________________________________________________________________
@@ -1857,7 +1873,7 @@ divide(Storage *aStorage)
         nN = (n<N) ? n : N;
 
         // DIVIDE
-        _storage[i].divide(nN,Y);
+        _storage[i].divide(SimTK::Vector_<double>(nN, Y));
     }
 
     // CLEANUP
@@ -2467,11 +2483,7 @@ findIndex(double aT) const
  */
 void Storage::findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const
 {
-    if(aStartTime > aEndTime) {
-        double tmp = aStartTime;
-        aStartTime = aEndTime;
-        aEndTime = tmp;
-    }
+    SimTK_ASSERT_ALWAYS(aStartTime <= aEndTime, "Start time must be <= end time");
 
     oStartFrame = findIndex(0, aStartTime);
     oEndFrame = findIndex(getSize()-1, aEndTime);
@@ -2591,7 +2603,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
         StateVector vec;
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         _storage.insert(tIndex+1, vec);
     }
@@ -2615,11 +2627,10 @@ setOutputFileName(const std::string& aFileName)
     _fp = IO::OpenFile(aFileName,"w");
     if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
     // WRITE THE HEADER
-    int n=0,nTotal=0;
-    n = writeHeader(_fp);
-    n = writeDescription(_fp);
+    writeHeader(_fp);
+    writeDescription(_fp);
     // WRITE THE COLUMN LABELS
-    n = writeColumnLabels(_fp);
+    writeColumnLabels(_fp);
 }
 //_____________________________________________________________________________
 /**
@@ -2773,7 +2784,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 
         // INTERPOLATE THE STATES
         ny = getDataAtTime(t,ny,&y);
-        vec.setStates(t,ny,y);
+        vec.setStates(t, SimTK::Vector_<double>(ny, y));
 
         // PRINT
         n = vec.print(fp);
@@ -2945,14 +2956,18 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
     for (i = startIndex; i <= endIndex; i++)
     {
         rStorage.getTime(i, stateTime);
-        for (j = 0; j < getSize(); j++)
-        {
+        for (j = 0; j < getSize(); j++) {
             /* Assume that the first column is 'time'. */
             time = getStateVector(j)->getTime();
-            if (EQUAL_WITHIN_TOLERANCE(time, stateTime, 0.0001))
-            {
+            // The following tolerance is a hack. Previously, it used 0.0001
+            // which caused values to be duplicated in cases where time
+            // steps were within the tolerance. This method should only be
+            // used to concatenate data columns from the same simulation
+            // or analysis results.
+            if (EQUAL_WITHIN_TOLERANCE(time, stateTime, SimTK::SignificantReal)) {
                 Array<double>& states = rStorage.getStateVector(i)->getData();
-                for (int k = 1; k < numColumns; k++)    // Start at 1 to avoid duplicate time column
+                // Start at 1 to avoid duplicate time column
+                for (int k = 1; k < numColumns; k++)
                 {
                     if (_columnLabels[k] != "Unassigned")
                     {
@@ -2963,10 +2978,10 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
                 break;
             }
         }
-        if (j == getSize())
-        {
+        if (j == getSize()) {
             stringstream errorMessage;
-            errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << _fileName;
+            errorMessage << "Error: no data found at time " << stateTime 
+                << " in " << _fileName;
             throw (Exception(errorMessage.str()));
         }
     }
@@ -3250,7 +3265,7 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
  * If endTime is not specified the comparison goes to the end of the file
  * @returns the root mean square, using a spline to calculate values where the times do not match up.
  */
-double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
+double Storage::compareColumnRMS(const Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime) const
 {
     int thisColumnIndex = getStateIndex(aColumnName);
     int otherColumnIndex = aOtherStorage.getStateIndex(aColumnName);
@@ -3296,52 +3311,51 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
  * errors for columns occurring in both storage objects, and record the
  * values and column names in the comparisons and columnsUsed Arrays.
  */
-void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed, Array<double> &comparisons)
+void Storage::compareWithStandard(const Storage& standard, std::vector<string>& columnsUsed, std::vector<double>& comparisons) const
 {
     int maxColumns = _columnLabels.getSize();
-    columnsUsed.ensureCapacity(maxColumns);
-    comparisons.ensureCapacity(maxColumns);
 
-    int columns = 0;
     for (int i = 1; i < maxColumns; ++i) {
         double comparison = compareColumnRMS(standard, _columnLabels[i]);
         if (!SimTK::isNaN(comparison)) {
-            comparisons[columns] = comparison;
-            columnsUsed[columns++] = _columnLabels[i];
+            comparisons.push_back(comparison);
+            columnsUsed.push_back(_columnLabels[i]);
         }
     }
-
-    columnsUsed.setSize(columns);
-    comparisons.setSize(columns);
 }
-/**
- * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
- * as needed where n=1, 2, ...
- *
- * @returns true if labels were changed false otherwise.
- **/
+
 bool Storage::makeStorageLabelsUnique() {
     Array<std::string> lbls = getColumnLabels();
-    std::string offending="";
-    bool changedLabels=false;
-    for(int i=0; i< lbls.getSize(); i++){
-        bool isUnique= (lbls.findIndex(lbls[i])==i);
-        if (!isUnique){ // Make new names
-            offending =lbls[i];
-            bool exist=true;
-            std::string newName =offending;
+    std::string offending = "";
+    bool changedLabels = false;
+    for(int i = 0; i < lbls.getSize(); i++){
+        bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) { // Make new names
+            offending = lbls[i];
+            bool exist = true;
+            std::string newName = offending;
             changedLabels = true;
-            int c=1;
-            while(exist){
+            int c = 1;
+            while (exist) {
                 char cString[20];
                 sprintf(cString,"%d", c);
-                newName = std::string(cString)+"_"+offending;
-                exist= (lbls.findIndex(newName)!=-1);
+                newName = std::string(cString) + "_" + offending;
+                exist = (lbls.findIndex(newName) != -1);
                 c++;
             }
-            lbls[i]= newName;
+            lbls[i] = newName;
         }
     }
     if (changedLabels) setColumnLabels(lbls);
-    return (!changedLabels);
+    const bool labelsWereUnique = (!changedLabels);
+    return labelsWereUnique;
+}
+
+bool Storage::storageLabelsAreUnique() const {
+    const auto& lbls = getColumnLabels();
+    for(int i = 0; i < lbls.getSize(); i++) {
+        const bool isUnique = (lbls.findIndex(lbls[i]) == i);
+        if (!isUnique) return false;
+    }
+    return true;
 }

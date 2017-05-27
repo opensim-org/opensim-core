@@ -1,5 +1,5 @@
-#ifndef __ScaleTool_h__
-#define __ScaleTool_h__
+#ifndef OPENSIM_SCALE_TOOL_H_ 
+#define OPENSIM_SCALE_TOOL_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  ScaleTool.h                            *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,20 +25,17 @@
 
 
 // INCLUDE
-#include <iostream>
-
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include "GenericModelMaker.h"
 #include "ModelScaler.h"
 #include "MarkerPlacer.h"
 
 namespace OpenSim {
+
+class GenericModelMaker;
+class Model;
 
 //=============================================================================
 //=============================================================================
@@ -101,34 +98,37 @@ public:
 #endif
     void copyData(const ScaleTool &aSubject);
 
-    Model* createModel();
+    Model* createModel() const;
     /* Query the subject for different parameters */
-    GenericModelMaker& getGenericModelMaker()
-    {
-        return _genericModelMaker;
-    }
+    const GenericModelMaker& getGenericModelMaker() const
+    { return _genericModelMaker; }
 
-    ModelScaler& getModelScaler()
-    {
-        return _modelScaler;
-    }
+    const ModelScaler& getModelScaler() const
+    { return _modelScaler; }
 
-    MarkerPlacer& getMarkerPlacer()
-    {
-        return _markerPlacer;
-    }
+    const MarkerPlacer& getMarkerPlacer() const
+    { return _markerPlacer; }
 
-    bool isDefaultGenericModelMaker() { return _genericModelMakerProp.getValueIsDefault(); }
-    bool isDefaultModelScaler() { return _modelScalerProp.getValueIsDefault(); }
-    bool isDefaultMarkerPlacer() { return _markerPlacerProp.getValueIsDefault(); }
+    /** Run the scale tool. This first runs the ModelScaler, then runs the
+     * MarkerPlacer. This is the method called by the command line `scale`
+     * executable. 
+     * @returns whether or not the scale procedure was successful. */
+    bool run() const;
+
+    bool isDefaultGenericModelMaker() const
+    { return _genericModelMakerProp.getValueIsDefault(); }
+    bool isDefaultModelScaler() const
+    { return _modelScalerProp.getValueIsDefault(); }
+    bool isDefaultMarkerPlacer() const
+    { return _markerPlacerProp.getValueIsDefault(); }
 
     /* Register types to be used when reading a ScaleTool object from xml file. */
     static void registerTypes();
 
     /** Accessor methods to obtain model attributes */
-    double getSubjectMass() { return _mass; }
-    double getSubjectAge() { return _age; }
-    double getSubjectHeight() { return _height; }
+    double getSubjectMass() const { return _mass; }
+    double getSubjectAge() const { return _age; }
+    double getSubjectHeight() const { return _height; }
     void setSubjectMass(double mass) { _mass = mass; }
     void setSubjectAge(double age) { _age = age; }
     void setSubjectHeight(double height) { _height = height; }
@@ -137,7 +137,7 @@ public:
      * since all file names referred to in the subject file are relative
      * to the subject file.
      */
-    const std::string& getPathToSubject()
+    const std::string& getPathToSubject() const
     {
         return _pathToSubject;
     }
@@ -164,4 +164,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ScaleTool_h__
+#endif // OPENSIM_SCALE_TOOL_H_

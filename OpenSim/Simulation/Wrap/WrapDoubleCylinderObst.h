@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Brian Garner, Peter Loan                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,18 +22,16 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <iostream>
 #include <string>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 namespace OpenSim {
 
 class Body;
 class Model;
-class PathPoint;
 class PathWrap;
 class WrapResult;
 
@@ -122,11 +120,9 @@ public:
     std::string getDimensionsString() const override;
     void scale(const SimTK::Vec3& aScaleFactors) override { }
     virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
-#ifndef SWIG
+protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-#endif
-protected:
     void setupProperties();
 
 private:

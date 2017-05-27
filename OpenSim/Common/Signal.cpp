@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -27,12 +27,15 @@
 
 
 // INCLUDES
-#include <iostream>
-#include <string>
 #include <math.h>
 #include "Signal.h"
 #include "Array.h"
-#include "SimTKsimbody.h"
+#include "SimTKcommon/Constants.h"
+#include "SimTKcommon/Orientation.h"
+#include "SimTKcommon/Scalar.h"
+#include "SimTKcommon/SmallMatrix.h"
+#include "simmath/internal/Spline.h"
+#include "simmath/internal/SplineFitter.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -157,7 +160,7 @@ int Signal::
 LowpassIIR(double T,double fc,int N,double *sig,double *sigf)
 {
 int i,j;
-double fs,ws,wc,wa,wa2,wa3;
+double fs/*,ws*/,wc,wa,wa2,wa3;
 double a[4],b[4],denom;
 double *sigr;
 
@@ -177,7 +180,7 @@ double *sigr;
     }
 
     // INITIALIZE SOME VARIABLES
-    ws = 2*SimTK_PI*fs;
+    //ws = 2*SimTK_PI*fs;
     wc = 2*SimTK_PI*fc;
 
     // CALCULATE THE FREQUENCY WARPING
@@ -232,7 +235,7 @@ double *sigr;
     for (i=0;i<N;i++)  sigf[i] = sigr[i];
 
     // CLEANUP
-    if(sigr!=NULL)  delete sigr;
+    if(sigr!=NULL)  delete[] sigr;
 
   return(0);
 }

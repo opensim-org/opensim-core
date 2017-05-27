@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -86,8 +86,6 @@ void Ligament::extendFinalizeFromProperties()
 
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(DefaultLigamentColor);
-    addComponent(&path);
-    path.setOwner(this);
 }
 
 
@@ -98,7 +96,7 @@ void Ligament::extendFinalizeFromProperties()
 void Ligament::extendRealizeDynamics(const SimTK::State& state) const {
     Super::extendRealizeDynamics(state); // Mandatory first line
 
-    if(!isDisabled(state)){
+    if(appliesForce(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
             getGeometryPath().setColor(state, color);
@@ -285,7 +283,7 @@ void Ligament::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
                           force*PFDs[i]->direction(), bodyForces);
     }
     for(int i=0; i < PFDs.getSize(); i++)

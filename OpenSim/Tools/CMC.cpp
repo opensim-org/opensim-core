@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,29 +29,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <iostream>
-#include <string>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/RootSolver.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
+#include "CMC.h"
 #include "VectorFunctionForActuators.h"
+#include <OpenSim/Common/RootSolver.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Common/OptimizationTarget.h>
-#include <simmath/Optimizer.h>
-#include "CMC.h"
-#include  <OpenSim/Tools/CMC_Point.h>
 #include <OpenSim/Tools/CMC_Joint.h>
 #include <OpenSim/Tools/CMC_TaskSet.h>
 #include <OpenSim/Tools/ActuatorForceTarget.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include "SimTKcommon.h" 
-#include "MuscleStateTrackingTask.h"
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using SimTK::Vector;
@@ -98,9 +86,9 @@ public:
  */
 CMC::CMC() :
     TrackingController(),
-    _paramList(-1) , 
-    _f(0.0),
-    _controlSet()
+    _controlSet(),
+    _paramList(-1),
+    _f(0.0)
 {
     setNull();
     setupProperties();
@@ -145,11 +133,11 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
             labels.append(_taskSet->get(i).getName());
         }
     }
-    _pErrStore = new Storage(1000,"PositionErrors");
+    _pErrStore.reset(new Storage(1000,"PositionErrors"));
     _pErrStore->setColumnLabels(labels);
-    _vErrStore = new Storage(1000,"VelocityErrors");
+    _vErrStore.reset(new Storage(1000,"VelocityErrors"));
     _pErrStore->setColumnLabels(labels);
-    _stressTermWeightStore = new Storage(1000,"StressTermWeight");
+    _stressTermWeightStore.reset(new Storage(1000,"StressTermWeight"));
 }
 
 void CMC::copyData( const CMC &aCmc ) 
@@ -210,9 +198,9 @@ setNull()
     _tf = 1.0e12;
     _targetDT = 1.0e-3;
     _checkTargetTime = false;
-    _pErrStore = NULL;
-    _vErrStore = NULL;
-    _stressTermWeightStore = NULL;
+    _pErrStore.reset();
+    _vErrStore.reset();
+    _stressTermWeightStore.reset();
     _useCurvatureFilter = false;
     _verbose = false;
     _paramList.setSize(0);
@@ -474,7 +462,7 @@ getActuatorForcePredictor()
 Storage* CMC::
 getPositionErrorStorage() const
 {
-    return(_pErrStore);
+    return(_pErrStore.get());
 }
 //_____________________________________________________________________________
 /**
@@ -485,7 +473,7 @@ getPositionErrorStorage() const
 Storage* CMC::
 getVelocityErrorStorage() const
 {
-    return(_vErrStore);
+    return(_vErrStore.get());
 }
 //_____________________________________________________________________________
 /**
@@ -496,7 +484,7 @@ getVelocityErrorStorage() const
 Storage* CMC::
 getStressTermWeightStorage() const
 {
-    return(_stressTermWeightStore);
+    return(_stressTermWeightStore.get());
 }
 
 
@@ -737,11 +725,12 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         qSet->evaluate(uDesired,1,tiReal);
     }
     Array<double> qCorrection(0.0,nq),uCorrection(0.0,nu);
-       const Vector& q = s.getQ();
-       const Vector& u = s.getU();
 
-    for(i=0;i<nq;i++) qCorrection[i] = q[i] - qDesired[i];
-    for(i=0;i<nu;i++) uCorrection[i] = u[i] - uDesired[i];
+    const CoordinateSet& coords = _model->getCoordinateSet();
+    for (i = 0; i < nq; ++i) {
+        qCorrection[i] = coords[i].getValue(s) - qDesired[i];
+        uCorrection[i] = coords[i].getSpeedValue(s) - uDesired[i];
+    }
 
     _predictor->getCMCActSubsys()->setCoordinateCorrections(&qCorrection[0]);
     _predictor->getCMCActSubsys()->setSpeedCorrections(&uCorrection[0]);
@@ -782,11 +771,11 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         }
     }
 
-    double *err = new double[pErr.getSize()];
+    std::unique_ptr<double[]> err{new double[pErr.getSize()]};
     for(i=0;i<pErr.getSize();i++) err[i] = pErr[i];
-    _pErrStore->append(tiReal,pErr.getSize(),err);
+    _pErrStore->append(tiReal,pErr.getSize(),err.get());
     for(i=0;i<vErr.getSize();i++) err[i] = vErr[i];
-    _vErrStore->append(tiReal,vErr.getSize(),err);
+    _vErrStore->append(tiReal,vErr.getSize(),err.get());
 
     
     // COMPUTE DESIRED ACCELERATIONS
@@ -1024,8 +1013,8 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     Array<double> x0(0.0,size),x1(0.0,size),x2(0.0,size);
 
     // SET TIMES
-    double t0,t1,t2;
-    t2 = s.getTime();
+    double t0,t1/*,t2*/;
+    // t2 = s.getTime();
     t1 = s.getTime() - aDT;
     t0 = t1 - aDT;
 
@@ -1080,7 +1069,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
         getActuatorSet()[i].addInControls(actControls, controls);
     }
 
-    double *val = &controls[0];
+    // double *val = &controls[0];
 }
 
 // for any post XML deserialization initialization
@@ -1096,11 +1085,11 @@ void CMC::extendConnectToModel(Model& model)
             labels.append(_taskSet->get(i).getName());
         }
     }
-    _pErrStore = new Storage(1000,"PositionErrors");
+    _pErrStore.reset(new Storage(1000,"PositionErrors"));
     _pErrStore->setColumnLabels(labels);
-    _vErrStore = new Storage(1000,"VelocityErrors");
+    _vErrStore.reset(new Storage(1000,"VelocityErrors"));
     _pErrStore->setColumnLabels(labels);
-    _stressTermWeightStore = new Storage(1000,"StressTermWeight");
+    _stressTermWeightStore.reset(new Storage(1000,"StressTermWeight"));
 
 }
 // for adding any components to the model
@@ -1115,7 +1104,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
 
     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-    const Set<Actuator>& fSet = getActuatorSet();
+    const Set<const Actuator>& fSet = getActuatorSet();
     int nActs = fSet.getSize();
 
     mutableThis->_controlSetIndices.setSize(nActs);
@@ -1132,7 +1121,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
     
     for(int i=0; i < nActs; ++i ) {
 
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto* act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         //Actuator& act = getActuatorSet().get(i);
 
         ControlLinear *control = new ControlLinear();
@@ -1146,7 +1135,7 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
         if (xmax ==SimTK::Infinity)
             xmax =MAX_CONTROLS_FOR_RRA;
 
-        Muscle *musc = dynamic_cast<Muscle *>(act);
+        auto *musc = dynamic_cast<const Muscle *>(act);
         // if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
         // since it uses this assumption to rootsolve for the required controls over the CMC time-window.
         if(musc){

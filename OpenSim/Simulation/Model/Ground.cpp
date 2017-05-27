@@ -7,7 +7,7 @@
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
 * through the Warrior Web program.                                           *
 *                                                                            *
-* Copyright (c) 2005-2015 Stanford University and the Authors                *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
 * Author(s): Ajay Seth                                                       *
 *                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -43,17 +43,25 @@ Ground::Ground() : PhysicalFrame()
 {
     setName("ground");
     setAuthors("Ajay Seth");
-    upd_geometry(0).setFrameName("ground");
 }
 
 /*
 * Implementation of Frame interface by Ground.
-* 
 */
-SimTK::Transform Ground::
-    calcGroundTransform(const SimTK::State& s) const
+SimTK::Transform Ground::calcTransformInGround(const SimTK::State& s) const
 {
     return SimTK::Transform();
+}
+
+SimTK::SpatialVec Ground::calcVelocityInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
+}
+
+/** The spatial acceleration {alpha; a} for this Frame in ground */
+SimTK::SpatialVec Ground::calcAccelerationInGround(const SimTK::State& s) const
+{
+    return SimTK::SpatialVec(0);
 }
 
 void Ground::extendAddToSystem(SimTK::MultibodySystem& system) const

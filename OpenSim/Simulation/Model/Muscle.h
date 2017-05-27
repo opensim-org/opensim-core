@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Matthew Millard                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -36,8 +36,28 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                              Muscle Exceptions
+//==============================================================================
+class MuscleCannotEquilibrate : public Exception {
+public:
+    MuscleCannotEquilibrate(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const Object& obj,
+                            const std::string& detail) :
+        Exception(file, line, func, obj, detail) {
+        std::string msg = "Unable to compute equilibrium for this muscle.\n";
+        msg += "Please verify that the initial activation is valid and that ";
+        msg += "the length of the musculotendon actuator doesn't produce a ";
+        msg += "pennation angle of 90 degrees or a negative fiber length.";
+        addMessage(msg);
+    }
+};
+
+//==============================================================================
+//                                    Muscle
+//==============================================================================
 /**
  * A base class for modeling a muscle-tendon actuator. It defines muscle parameters
  * and methods to PathActuator, but does not implement all of the necessary methods,
@@ -76,6 +96,74 @@ public:
         "Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.");
     OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
         "Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
+
+//=============================================================================
+// OUTPUTS
+//=============================================================================
+    OpenSim_DECLARE_OUTPUT(excitation, double, getExcitation,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(activation, double, getActivation,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_length, double, getFiberLength,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(pennation_angle, double, getPennationAngle,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(cos_pennation_angle, double, getCosPennationAngle,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(tendon_length, double, getTendonLength,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(normalized_fiber_length, double,
+            getNormalizedFiberLength, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(fiber_length_along_tendon, double,
+            getFiberLengthAlongTendon, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(tendon_strain, double, getTendonStrain,
+            SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(passive_force_multiplier, double,
+            getPassiveForceMultiplier, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(active_force_length_multiplier, double,
+            getActiveForceLengthMultiplier, SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(fiber_velocity, double, getFiberVelocity,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(normalized_fiber_velocity, double,
+            getNormalizedFiberVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(fiber_velocity_along_tendon, double,
+            getFiberVelocityAlongTendon, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(tendon_velocity, double, getTendonVelocity,
+            SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(force_velocity_multiplier, double,
+            getForceVelocityMultiplier, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(pennation_angular_velocity, double,
+            getPennationAngularVelocity, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(fiber_force, double, getFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_force_along_tendon, double,
+            getFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(active_fiber_force, double, getActiveFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_force, double, getPassiveFiberForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(active_fiber_force_along_tendon, double,
+            getActiveFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(passive_fiber_force_along_tendon, double,
+            getPassiveFiberForceAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_force, double, getTendonForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_stiffness, double, getFiberStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_stiffness_along_tendon, double,
+            getFiberStiffnessAlongTendon, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_stiffness, double, getTendonStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(muscle_stiffness, double, getMuscleStiffness,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_active_power, double, getFiberActivePower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(fiber_passive_power, double, getFiberPassivePower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(tendon_power, double, getTendonPower,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(muscle_power, double, getMusclePower,
+            SimTK::Stage::Dynamics);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -188,11 +276,12 @@ public:
     double getFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current active fiber force (N) due to activation*force_length*force_velocity relationships */
     double getActiveFiberForce(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) passive_force_length relationship */
+    /** get the total force applied by all passive elements in the fiber (N) */
     double getPassiveFiberForce(const SimTK::State& s) const;
     /** get the current active fiber force (N) projected onto the tendon direction */
     double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-    /** get the current passive fiber force (N) projected onto the tendon direction */
+    /** get the total force applied by all passive elements in the fiber (N)
+        projected onto the tendon direction */
     double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
     /** get the current tendon force (N) applied to bones */
     double getTendonForce(const SimTK::State& s) const;
@@ -240,7 +329,7 @@ public:
 
     /** Actuator interface for a muscle computes the tension in the muscle
         and applied by the tendon to bones (i.e. not the fiber force) */
-    double computeActuation(const SimTK::State& s) const = 0;
+    double computeActuation(const SimTK::State& s) const override = 0;
 
 
     /** @name Muscle initialization 
@@ -248,6 +337,10 @@ public:
     //@{
     /** Find and set the equilibrium state of the muscle (if any) */
     void equilibrate(SimTK::State& s) const { return computeFiberEquilibriumAtZeroVelocity(s); }
+    /// Equivalent to equilibrate for a Muscle
+    void computeEquilibrium(SimTK::State& s) const override final {
+        equilibrate(s);
+    }
     // End of Muscle's State Dependent Accessors.
     //@} 
 
@@ -367,8 +460,7 @@ protected:
 
 private:
     void setNull();
-    void constructProperties() override;
-    void constructOutputs() override;
+    void constructProperties();
     void copyData(const Muscle &aMuscle);
 
     //--------------------------------------------------------------------------
@@ -737,7 +829,7 @@ protected:
         MusclePotentialEnergyInfo contains quantities related to the potential
         energy of the muscle (fiber + tendon) complex.
         
-        The function that populates this struct, calcMusclePotentialEnrgyInfo, can
+        The function that populates this struct, calcMusclePotentialEnergyInfo, can
         be called when position information is known. This function is
         dependent on calcMuscleLengthInfo.
 
@@ -750,7 +842,7 @@ protected:
 
         [4] This vector is left for the muscle modeler to populate with any
             computationally expensive quantities that are computed in 
-            calcMusclePotentialEnrgyInfo, that might be useful for others to
+            calcMusclePotentialEnergyInfo, that might be useful for others to
             access.
 
     */

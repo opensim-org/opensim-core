@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -21,13 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==========================================================================================================
-//  testAssemblySolver loads models with constraints to verify that constraints are
-//  adequately satisfied or that an appropriate exception is thrown.
+//=============================================================================
+// testAssemblySolver loads models with constraints to verify that constraints
+// are adequately satisfied or that an appropriate exception is thrown.
 //
-//==========================================================================================================
+//=============================================================================
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -58,7 +59,7 @@ int main()
 //==========================================================================================================
 void testAssembleModelWithConstraints(string modelFile)
 {
-    double accuracy = 1e-6;
+    double accuracy = 1e-5;
     using namespace SimTK;
 
     cout << "\n****************************************************************************" << endl;
@@ -137,9 +138,9 @@ void testAssembleModelWithConstraints(string modelFile)
     // They should sum to body-weight (more or less)
     model.getMultibodySystem().realize(state, Stage::Acceleration);
 
-    Vec3 comVel = model.calcMassCenterVelocity(state);
+    /*Vec3 comVel = */model.calcMassCenterVelocity(state);
     Vec3 comAcc = model.calcMassCenterAcceleration(state);
-    SpatialVec momentum = model.getMatterSubsystem().calcSystemCentralMomentum(state);
+    /*SpatialVec momentum = */model.getMatterSubsystem().calcSystemCentralMomentum(state);
 
     const ConstraintSet &constraints = model.getConstraintSet();
 
@@ -176,26 +177,26 @@ void testAssembleModelWithConstraints(string modelFile)
 
     model.equilibrateMuscles(state);
 
-    //==========================================================================================================
-    // Integrate forward and init the state and update defaults to make sure
-    // assembler is not effecting anything more than the pose.
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.1);
-
     // set default (properties) which capture an accurate snapshot of the model
     // prior to simulation.
     model.setPropertiesFromState(state);
+    state = model.initSystem();
+
+    //==========================================================================================================
+    // Integrate forward and init the state and update defaults to make sure
+    // assembler is not affecting anything more than the pose.
+    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    integrator.setAccuracy(accuracy);
+    Manager manager(model, integrator);
+    state.setTime(0.0);
 
     // Simulate forward in time
-    manager.integrate(state);
+    manager.integrate(state, 0.05);
     model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     Vector positionErr = state.getQErr();
-    int nPerr = positionErr.size();
-    double pErrMag = positionErr.norm();
+    // int nPerr = positionErr.size();
+    // double pErrMag = positionErr.norm();
 
     // get the configuration at the end of the simulation
     Vector q1 = state.getQ();
@@ -227,8 +228,8 @@ void testAssembleModelWithConstraints(string modelFile)
     // get the configuration from post simulation defaults (properties)
     Vector q1_2 = state1.getQ();
 
-    double q0Err = (q0_2 - q0_1).norm();
-    double q1Err_1 = (q1_2 - q1_1).norm();
+    // double q0Err = (q0_2 - q0_1).norm();
+    // double q1Err_1 = (q1_2 - q1_1).norm();
 
     //cout << "******************* Init System Initial State *******************" << endl;
     for (int i = 0; i < q0_1.size(); i++) {
@@ -289,14 +290,14 @@ void testAssemblySatisfiesConstraints(string modelFile)
     double lower = -2*Pi/3, upper = Pi/18;
     double delta = (upper-lower)/N;
 
-    double qerr = 0;
+    // double qerr = 0;
     
     for(int i=0; i<N; ++i){
         kneeAngle = upper-i*delta;
         coords[0].setValue(state, kneeAngle, true);
 //        model.getVisualizer().show(state);
         cerr = calcLigamentLengthError(state, model);
-        qerr = coords[0].getValue(state)-kneeAngle;
+        // qerr = coords[0].getValue(state)-kneeAngle;
 //        cout << "Assembly errors:: cerr = " << cerr << " m,  qerr = " 
 //          << convertRadiansToDegrees(qerr) << " degrees" << endl;
         ASSERT_EQUAL(0.0, cerr, model.get_assembly_accuracy(),
@@ -320,8 +321,8 @@ double calcLigamentLengthError(const SimTK::State &s, const Model &model)
         const PhysicalFrame& b1 = constraint->getBody1();
         const PhysicalFrame& b2 = constraint->getBody2();
 
-        p1inG = b1.getGroundTransform(s)*p1inB1;
-        p2inG = b2.getGroundTransform(s)*p2inB2;
+        p1inG = b1.getTransformInGround(s)*p1inB1;
+        p2inG = b2.getTransformInGround(s)*p2inB2;
 
         double length = (p2inG-p1inG).norm();
         error = length - constraint->get_constant_distance();

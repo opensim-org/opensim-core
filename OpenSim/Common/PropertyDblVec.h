@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Ajay Seth, Michael A. Sherman                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,14 +23,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifdef WIN32
+#ifdef _WIN32
 #pragma warning( disable : 4251 )
 #endif
 
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property_Deprecated.h"
-#include "SimTKcommon.h"
+#include "OpenSim/Common/Array.h"
 
 //=============================================================================
 //=============================================================================
@@ -87,6 +87,16 @@ public:
     PropertyDblVec_* clone() const override {
         PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
         return prop;
+    }
+    
+    void assign(const AbstractProperty& that) override {
+        try {
+            *this = dynamic_cast<const PropertyDblVec_&>(that);
+        } catch(const std::bad_cast&) {
+            OPENSIM_THROW(InvalidArgument,
+                          "Unsupported type. Expected: " + this->getTypeName() +
+                          " | Received: " + that.getTypeName());
+        }
     }
 
 public:

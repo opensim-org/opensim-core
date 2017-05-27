@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,12 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "InverseKinematicsTool.h"
-#include <string>
-#include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 #include <OpenSim/Common/IO.h>
@@ -44,8 +39,6 @@
 #include "IKTaskSet.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
-
-#include "SimTKsimbody.h"
 
 
 using namespace OpenSim;
@@ -261,13 +254,16 @@ bool InverseKinematicsTool::run()
     bool modelFromFile=true;
     try{
         //Load and create the indicated model
-        if (!_model) 
+        if (!_model) {
+            OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
+                "No model filename was provided.");
             _model = new Model(_modelFileName);
+        }
         else
             modelFromFile = false;
 
-        _model->printBasicInfo(cout);
-
+        _model->finalizeFromProperties();
+        _model->printBasicInfo();
 
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
@@ -283,70 +279,17 @@ bool InverseKinematicsTool::run()
 
         cout<<"Running tool "<<getName()<<".\n";
 
+        // Get the trial name to label data written to files
+        string trialName = getName();
+
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
         //Convert old Tasks to references for assembly and tracking
         MarkersReference markersReference;
-        Set<MarkerWeight> markerWeights;
         SimTK::Array_<CoordinateReference> coordinateReferences;
-
-        FunctionSet *coordFunctions = NULL;
-        // Load the coordinate data
-        bool haveCoordinateFile = false;
-        if(_coordinateFileName != "" && _coordinateFileName != "Unassigned"){
-            Storage coordinateValues(_coordinateFileName);
-            // Convert degrees to radian (TODO: this needs to have a check that the storage is, in fact, in degrees!)
-            _model->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
-            haveCoordinateFile = true;
-            coordFunctions = new GCVSplineSet(5,&coordinateValues);
-        }
-
-        // Loop through old "IKTaskSet" and assign weights to the coordinate and marker references
-        // For coordinates, create the functions for coordinate reference values
-        int index = 0;
-        for(int i=0; i < _ikTaskSet.getSize(); i++){
-            if (!_ikTaskSet[i].getApply()) continue;
-            if(IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])){
-                CoordinateReference *coordRef = NULL;
-                if(coordTask->getValueType() == IKCoordinateTask::FromFile){
-                     if (!coordFunctions)
-                        throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
-
-                     index = coordFunctions->getIndex(coordTask->getName(), index);
-                     if(index >= 0){
-                         coordRef = new CoordinateReference(coordTask->getName(),coordFunctions->get(index));
-                     }
-                }
-                else if((coordTask->getValueType() == IKCoordinateTask::ManualValue)){
-                        Constant reference(Constant(coordTask->getValue()));
-                        coordRef = new CoordinateReference(coordTask->getName(), reference);
-                }
-                else{ // assume it should be held at its default value
-                    double value = _model->getCoordinateSet().get(coordTask->getName()).getDefaultValue();
-                    Constant reference = Constant(value);
-                    coordRef = new CoordinateReference(coordTask->getName(), reference);
-                }
-
-                if(coordRef == NULL)
-                    throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
-                else
-                    coordRef->setWeight(coordTask->getWeight());
-
-                coordinateReferences.push_back(*coordRef);
-            }
-            else if(IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])){
-                if(markerTask->getApply()){
-                    markerWeights.adoptAndAppend(
-                        new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
-                }
-            }
-        }
-
-        //Set the weights for markers
-        markersReference.setMarkerWeightSet(markerWeights);
-        //Load the makers
-        markersReference.loadMarkersFile(_markerFileName);
+        // populate the references according to the setting of this Tool
+        populateReferences(markersReference, coordinateReferences);
 
         // Determine the start time, if the provided time range is not specified then use time from marker reference
         // also adjust the time range for the tool if the provided range exceeds that of the marker data
@@ -367,17 +310,19 @@ bool InverseKinematicsTool::run()
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
         // number of markers
-        int nm = markerWeights.getSize();
+        int nm = markersReference.getNumRefs();
         SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
         
         Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
+        Storage *modelMarkerErrors = _reportErrors ? new Storage(Nframes, "ModelMarkerErrors") : NULL;
 
         for (int i = 0; i < Nframes; i++) {
             s.updTime() = start_time + i*dt;
             ikSolver.track(s);
             
             if(_reportErrors){
+                Array<double> markerErrors(0.0, 3);
                 double totalSquaredMarkerError = 0.0;
                 double maxSquaredMarkerError = 0.0;
                 int worst = -1;
@@ -390,9 +335,16 @@ bool InverseKinematicsTool::run()
                         worst = j;
                     }
                 }
+
+                double rms = sqrt(totalSquaredMarkerError / nm);
+                markerErrors.set(0, totalSquaredMarkerError); 
+                markerErrors.set(1, rms);
+                markerErrors.set(2, sqrt(maxSquaredMarkerError));
+                modelMarkerErrors->append(s.getTime(), 3, &markerErrors[0]);
+
                 cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
                 cout << "total squared error = " << totalSquaredMarkerError;
-                cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
+                cout << ", marker error: RMS=" << rms;
                 cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSolver.getMarkerNameForIndex(worst) << ")" << endl;
             }
 
@@ -417,6 +369,25 @@ bool InverseKinematicsTool::run()
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
+        // Once done, remove the analysis we added
+        _model->removeAnalysis(&kinematicsReporter);
+
+        if (modelMarkerErrors) {
+            Array<string> labels("", 4);
+            labels[0] = "time";
+            labels[1] = "total_squared_error";
+            labels[2] = "marker_error_RMS";
+            labels[3] = "marker_error_max";
+
+            modelMarkerErrors->setColumnLabels(labels);
+            modelMarkerErrors->setName("Model Marker Errors from IK");
+
+            IO::makeDir(getResultsDir());
+            string errorFileName = trialName + "_ik_marker_errors";
+            Storage::printResult(modelMarkerErrors, errorFileName, getResultsDir(), -1, ".sto");
+
+            delete modelMarkerErrors;
+        }
 
         if(modelMarkerLocations){
             Array<string> labels("", 3*nm+1);
@@ -432,7 +403,8 @@ bool InverseKinematicsTool::run()
             modelMarkerLocations->setName("Model Marker Locations from IK");
     
             IO::makeDir(getResultsDir());
-            Storage::printResult(modelMarkerLocations, "ik_model_marker_locations", getResultsDir(), -1, ".sto");
+            string markerFileName = trialName + "_ik_model_marker_locations";
+            Storage::printResult(modelMarkerLocations, markerFileName, getResultsDir(), -1, ".sto");
 
             delete modelMarkerLocations;
         }
@@ -467,7 +439,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
         }
         if (versionNumber <= 20201){
             // get filename and use SimTK::Xml to parse it
-            SimTK::Xml doc = SimTK::Xml(newFileName);
+            SimTK::Xml::Document doc = SimTK::Xml::Document(newFileName);
             Xml::Element root = doc.getRootElement();
             if (root.getElementTag()=="OpenSimDocument"){
                 int curVersion = root.getRequiredAttributeValueAs<int>("Version");
@@ -486,8 +458,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                 Xml::node_iterator p = trialIter->node_begin();
                 for (; p!= trialIter->node_end(); ++p) {
                     iter->insertNodeAfter( iter->node_end(), p->clone());
-            }
-                // Append constraint_weight of 100 and accuracy of 1e-5
+                }
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                 iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
                 iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
@@ -522,7 +493,6 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     for (; p!= trialIter->node_end(); ++p) {
                         root.insertNodeAfter( root.node_end(), p->clone());
                     }
-                    // Append constraint_weight of 100 and accuracy of 1e-5
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_constraintWeightProp.getComment()));
                     root.insertNodeAfter( root.node_end(), Xml::Element("constraint_weight", "20.0"));
                     root.insertNodeAfter( root.node_end(), Xml::Comment(_accuracyProp.getComment()));
@@ -548,3 +518,71 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
     }
     Object::updateFromXMLNode(aNode, versionNumber);
 }
+
+void InverseKinematicsTool::populateReferences(MarkersReference& markersReference,
+    SimTK::Array_<CoordinateReference>&coordinateReferences) const
+{
+    FunctionSet *coordFunctions = NULL;
+    // Load the coordinate data
+    // bool haveCoordinateFile = false;
+    if (_coordinateFileName != "" && _coordinateFileName != "Unassigned") {
+        Storage coordinateValues(_coordinateFileName);
+        // Convert degrees to radian (TODO: this needs to have a check that the storage is, in fact, in degrees!)
+        _model->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
+        // haveCoordinateFile = true;
+        coordFunctions = new GCVSplineSet(5, &coordinateValues);
+    }
+
+    Set<MarkerWeight> markerWeights;
+    // Loop through old "IKTaskSet" and assign weights to the coordinate and marker references
+    // For coordinates, create the functions for coordinate reference values
+    int index = 0;
+    for (int i = 0; i < _ikTaskSet.getSize(); i++) {
+        if (!_ikTaskSet[i].getApply()) continue;
+        if (IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])) {
+            CoordinateReference *coordRef = NULL;
+            if (coordTask->getValueType() == IKCoordinateTask::FromFile) {
+                if (!coordFunctions)
+                    throw Exception("InverseKinematicsTool: value for coordinate " + coordTask->getName() + " not found.");
+
+                index = coordFunctions->getIndex(coordTask->getName(), index);
+                if (index >= 0) {
+                    coordRef = new CoordinateReference(coordTask->getName(), coordFunctions->get(index));
+                }
+            }
+            else if ((coordTask->getValueType() == IKCoordinateTask::ManualValue)) {
+                Constant reference(Constant(coordTask->getValue()));
+                coordRef = new CoordinateReference(coordTask->getName(), reference);
+            }
+            else { // assume it should be held at its default value
+                double value = _model->getCoordinateSet().get(coordTask->getName()).getDefaultValue();
+                Constant reference = Constant(value);
+                coordRef = new CoordinateReference(coordTask->getName(), reference);
+            }
+
+            if (coordRef == NULL)
+                throw Exception("InverseKinematicsTool: value for coordinate " + coordTask->getName() + " not found.");
+            else
+                coordRef->setWeight(coordTask->getWeight());
+
+            coordinateReferences.push_back(*coordRef);
+        }
+        else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])) {
+            if (markerTask->getApply()) {
+                markerWeights.adoptAndAppend(
+                    new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
+            }
+        }
+    }
+
+    // Set the default weight for markers
+    markersReference.setDefaultWeight(1.0);
+    // Set the weights for markers (markers in the model and the marker file
+    // but not assigned a weight in the markerWeightSet will use the default
+    // weight
+    markersReference.setMarkerWeightSet(markerWeights);
+    //Load the makers
+    markersReference.loadMarkersFile(_markerFileName);
+}
+
+

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Tim Dorn                                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,7 +26,7 @@
 //=============================================================================
 #include "GimbalJoint.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "simbody/internal/MobilizedBody_Gimbal.h"
 
 //=============================================================================
 // STATICS
@@ -54,14 +54,12 @@ void GimbalJoint::extendInitStateFromProperties(SimTK::State& s) const
     if (matter.getUseEulerAngles(s))
         return;
 
-    const CoordinateSet& coordinateSet = get_CoordinateSet();
-
-    double xangle = coordinateSet[0].getDefaultValue();
-    double yangle = coordinateSet[1].getDefaultValue();
-    double zangle = coordinateSet[2].getDefaultValue();
+    double xangle = getCoordinate(GimbalJoint::Coord::Rotation1X).getDefaultValue();
+    double yangle = getCoordinate(GimbalJoint::Coord::Rotation2Y).getDefaultValue();
+    double zangle = getCoordinate(GimbalJoint::Coord::Rotation3Z).getDefaultValue();
     Rotation r(BodyRotationSequence, xangle, XAxis, yangle, YAxis, zangle, ZAxis);
 
-    GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
+    //GimbalJoint* mutableThis = const_cast<GimbalJoint*>(this);
     getChildFrame().getMobilizedBody().setQToFitRotation(s, r);
 }
 
@@ -74,12 +72,10 @@ void GimbalJoint::extendSetPropertiesFromState(const SimTK::State& state)
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (!matter.getUseEulerAngles(state)) {
         Rotation r = getChildFrame().getMobilizedBody().getBodyRotation(state);
-        Vec3 angles = r.convertRotationToBodyFixedXYZ();
-    
-        const CoordinateSet& coordinateSet = get_CoordinateSet();
 
-        coordinateSet[0].setDefaultValue(angles[0]);
-        coordinateSet[1].setDefaultValue(angles[1]);
-        coordinateSet[2].setDefaultValue(angles[2]);
+        Vec3 angles = r.convertRotationToBodyFixedXYZ();
+        updCoordinate(GimbalJoint::Coord::Rotation1X).setDefaultValue(angles[0]);
+        updCoordinate(GimbalJoint::Coord::Rotation2Y).setDefaultValue(angles[1]);
+        updCoordinate(GimbalJoint::Coord::Rotation3Z).setDefaultValue(angles[2]);
     }
 }

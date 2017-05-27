@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -48,48 +48,57 @@ namespace OpenSim {
     static const char *OpenSimVersion = GET_OSIM_VERSION;
 
 #if defined(__cplusplus) || defined(SWIG)
-    std::string GetVersionAndDate() { 
+    inline std::string GetVersionAndDate() { 
         char buffer[256];
         sprintf(buffer,"version %s, build date %s %s", OpenSimVersion, __TIME__, __DATE__);
         return std::string(buffer);
     }
 
-    std::string GetVersion() {
+    inline std::string GetVersion() {
         return OpenSimVersion;
     }
 
-    std::string GetOSInfoVerbose() {
+    inline std::string GetOSInfoVerbose() {
         const char * str = GET_SYSTEM_INFO;
         return str;
     }
-    std::string GetOSInfo() {
+    inline std::string GetOSInfo() {
         const char * str = GET_OS_NAME;
         return str;
     }
-    std::string GetCompilerVersion() {
+    inline std::string GetCompilerVersion() {
         std::string os = GetOSInfo();
         std::string str;
 
         if( 0 == os.compare("Windows")) {
             switch( atoi(GET_COMPILER_INFO) ) {
-                case 1700:
-                    str = "Visual Studio 2011";
-                    break;
-                case 1600:
-                    str = "Visual Studio 2010";
-                    break;
-                case 1500:
-                    str = "Visual Studio 2008";
-                    break;
-                case 1400:
-                    str = "Visual Studio 2005";
-                    break;
-                case 1310:
-                    str = "Visual Studio 2003";
-                    break;
-                case 1300:
-                    str = "Visual Studio 2002";
-                    break;
+            case 1910:
+                str = "Visual Studio 2017";
+                break;
+            case 1900:
+                str = "Visual Studio 2015";
+                break;
+            case 1800:
+                str = "Visual Studio 2013";
+                break;
+            case 1700:
+                str = "Visual Studio 2011";
+                break;
+            case 1600:
+                str = "Visual Studio 2010";
+                break;
+            case 1500:
+                str = "Visual Studio 2008";
+                break;
+            case 1400:
+                str = "Visual Studio 2005";
+                break;
+            case 1310:
+                str = "Visual Studio 2003";
+                break;
+            case 1300:
+                str = "Visual Studio 2002";
+                break;
             }
         } else if( 0 == os.compare("Darwin")) {
             str = "Mac OS X :";

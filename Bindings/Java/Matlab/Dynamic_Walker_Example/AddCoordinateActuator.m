@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
-% Copyright (c) 2005-2013 Stanford University and the Authors
+% Copyright (c) 2005-2017 Stanford University and the Authors
 % Author(s): Daniel A. Jacobs, Tom Uchida
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,10 +26,10 @@
 import org.opensim.modeling.*
 
 % Open the model.
-walkerModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Change the name.
-walkerModel.setName('DW2013_WalkerModelTerrain_CoordAct');
+walkerModel.setName('WalkerModelTerrain_CoordAct');
 
 % Display all coordinates in the model.
 numCoords = walkerModel.getNumCoordinates();
@@ -51,6 +51,6 @@ coordAct.setMaxControl(inf);                % Maximum control signal allowed
 walkerModel.addForce(coordAct);
 
 % Save the new model file.
-modelFile_new = '../Model/DW2013_WalkerModelTerrain_CoordAct.osim';
+modelFile_new = '../Model/WalkerModelTerrain_CoordAct.osim';
 walkerModel.print(modelFile_new);
 fprintf('Model saved to %s\n',modelFile_new);

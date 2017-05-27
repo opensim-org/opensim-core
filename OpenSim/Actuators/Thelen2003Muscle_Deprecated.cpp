@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -25,7 +25,6 @@
 //==============================================================================
 #include "Thelen2003Muscle_Deprecated.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 //==============================================================================
@@ -364,7 +363,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    int i;
    double length,tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
-   double old_fiber_length, length_change, tendon_stiffness, percent;
+   double old_fiber_length{}, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, norm_tendon_length;
    double passiveForce;
    double fiberLength;

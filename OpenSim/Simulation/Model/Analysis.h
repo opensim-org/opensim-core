@@ -1,5 +1,5 @@
-#ifndef _Analysis_h_
-#define _Analysis_h_
+#ifndef OPENSIM_ANALYSIS_H
+#define OPENSIM_ANALYSIS_H
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  Analysis.h                            *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ajay Seth                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -30,18 +30,20 @@
 //============================================================================
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/Storage.h>
+
+namespace SimTK {
+class State;
+}
 
 namespace OpenSim { 
 
 class Model;
-
 
 //=============================================================================
 //=============================================================================
@@ -239,6 +241,6 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __Analysis_h__
+#endif // OPENSIM_ANALYSIS_H
 
 

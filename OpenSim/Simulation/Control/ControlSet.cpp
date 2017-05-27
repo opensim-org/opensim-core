@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,14 +29,10 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
 #include "ControlLinear.h"
-#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
-
-
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/XMLDocument.h>
 
 
 using namespace OpenSim;
@@ -1059,12 +1055,13 @@ ControlSet::ExtractControl(const Storage& storage,int index)
     // TIME
     double *times = NULL;
     int nTimes = storage.getTimeColumn(times);
+    std::unique_ptr<double[]> times_ptr{times};
 
     // VALUE
     int nValues = nTimes;
-    int rValue;
     double *values = NULL;
-    rValue = storage.getDataColumn(index,values);
+    storage.getDataColumn(index,values);
+    std::unique_ptr<double[]> values_ptr{values};
 
     // CONSTRUCT LINEAR CONTROL NODE
     ControlLinear *control = new ControlLinear;

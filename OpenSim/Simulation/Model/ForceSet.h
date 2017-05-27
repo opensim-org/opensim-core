@@ -1,5 +1,5 @@
-#ifndef __ForceSet_h__
-#define __ForceSet_h__
+#ifndef OPENSIM_FORCE_SET_H_
+#define OPENSIM_FORCE_SET_H_
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  ForceSet.h                            *
  * -------------------------------------------------------------------------- *
@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth, Jack Middleton                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,15 +25,14 @@
 
 
 // INCLUDES
-#include "Force.h"
-#include "Muscle.h"
 #include "ModelComponentSet.h"
+#include "Muscle.h"
 
 namespace OpenSim {
 
+class Actuator;
+class Force;
 class Model;
-class ScalarActuator;
-class Muscle;
 
 //=============================================================================
 //=============================================================================
@@ -126,6 +125,6 @@ public:
 } // end of namespace OpenSim
 
 
-#endif // __ForceSet_h__
+#endif // OPENSIM_FORCE_SET_H_
 
 

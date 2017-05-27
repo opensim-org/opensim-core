@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Peter Eastman, Ajay Seth                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -86,7 +86,7 @@ void testStates(const string& modelFile)
     // hold on to original default continuous state variables
     Vector y1 = state.getY();
     y1 = state.getY();
-    y1.dump("y1: Initial state:");
+    //y1.dump("y1: Initial state:");
 
     // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state);
@@ -96,15 +96,14 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.05);
+    state.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager.integrate(state);
+    manager.integrate(state, 0.05);
 
     // continuous state variables after simulation
     Vector y2 = state.getY();
-    y2.dump("y2: State after integration:");
+    //y2.dump("y2: State after integration:");
 
     // reset model working state to default state
     State& state2 = model.initializeState();
@@ -112,7 +111,7 @@ void testStates(const string& modelFile)
     // another version of default continuous state variables 
     // should be unaffected by simulation of the system
     Vector y3 = state2.getY();
-    y3.dump("y3: Model reset to Initial state:");
+    //y3.dump("y3: Model reset to Initial state:");
 
     // update state to contain muscle states that yield muscle equilibrium
     model.equilibrateMuscles(state2);
@@ -122,17 +121,16 @@ void testStates(const string& modelFile)
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
     Manager manager2(model, integrator);
-    manager2.setInitialTime(0.0);
-    manager2.setFinalTime(0.05);
+    state2.setTime(0.0);
 
     // update state after a short simulation forward in time
-    manager2.integrate(state2);
+    manager2.integrate(state2, 0.05);
 
     // get the default continuous state variables updated
     // from the state after the simulation
     Vector y4 = state2.getY();
     
-    y4.dump("y4: Default State after second simulation:");
+    //y4.dump("y4: Default State after second simulation:");
 
     for (int i = 0; i < y1.size(); i++) 
     {
@@ -150,77 +148,44 @@ void testMemoryUsage(const string& modelFile)
 {
     using namespace SimTK;
 
+    // Throw an exception if we cannot validate estimates
+    // of memory with current instrumentation
+    validateMemoryUseEstimates();
+
     //=========================================================================
-    // Setup OpenSim model
-    // base footprint
-    size_t mem0 = getCurrentRSS( );
-    size_t model_size{ 0 };
+    // Estimate the size of the model when loaded into memory
+    auto creator = [modelFile]() { 
+        Model* model = new Model(modelFile);
+        model->finalizeFromProperties();
+        return model;
+    };
 
-    Model model;
+    size_t model_size = 
+        estimateMemoryChangeForCreator<Model>(creator, 5);
 
-    // getCurrentRSS( ) can be unreliable at evaluating the memory usage of a
-    // current process because of caching, shared memory and a litany of 
-    // other reason including some platform specific details.
-    // When this occurs, the model_size is determined to be zero, which is not
-    // possible. This was leading to an invalid (NaN) leak % and the test was
-    // failing. Redoing the test (or restarting the CI tests) often remedies
-    // the issue (see #473) but it is a waste of time and CI resources.
-    // The following code was added to retry loading the model until a nonzero
-    // value is registered so that the test can proceed without requiring 
-    // to be rerun. It is not 100% that it will work, but it should be an
-    // improvement.
-    int ntries = 0;
-    while ((model_size == 0) && (ntries++ < 10)) {
-        model = Model(modelFile);
-        model_size = getCurrentRSS() - mem0;
-    }
+    OPENSIM_THROW_IF(model_size == 0, OpenSim::Exception,
+        "Model size was estimated to be zero.");
 
-    if (ntries > 1) {
-        cout << "testMemoryUsage: required " << to_string(ntries);
-        cout << " load attempts to record a nonzero model_size." << endl;
-    }
-
-    cout << "*********************** testMemoryUsage ***********************" << endl;
-    cout << "MODEL: " << modelFile << " uses " << model_size / 1024.0 << "KB" << endl;
-
-    ASSERT(model_size > 0, __FILE__, __LINE__,
-        "testMemoryUsage: model size was found to be zero.\n"
-        "Memory instrumentation code failed to estimate model size correctly.");
-
-    State state = model.initSystem();
-
-    // initial footprint
-    size_t mem1 = getCurrentRSS( );
+    Model model(modelFile);
+    State& state = model.initSystem();
 
     // also time how long initializing the state takes
     clock_t startTime = clock();
 
-    for(int i=0; i< MAX_N_TRIES; ++i){
-        state = model.initializeState();
-    }
+    // determine the change in memory usage due to invoking model.initialiState
+    auto command = [&model, state]() mutable { state = model.initializeState(); };
+    const size_t leak = estimateMemoryChangeForCommand(command, MAX_N_TRIES);
 
-    // new footprint after MAX_N_TRIES
-    size_t mem2 = getCurrentRSS( );
-    // change
-    int64_t delta = mem2-mem1;
-    int64_t leak = delta/MAX_N_TRIES;
+    long double leak_percent = 100.0 * double(leak) / model_size;
 
-    long double leak_percent = 100.0 * double(leak)/model_size;
+    long double dT = (long double)(clock() - startTime) / CLOCKS_PER_SEC;
+    long double meanT = 1.0e3 * dT / MAX_N_TRIES; // in ms
 
-    long double dT = (long double)(clock()-startTime) / CLOCKS_PER_SEC;
-    long double meanT = 1.0e3 * dT/MAX_N_TRIES; // in ms
-    
-    cout << delta/1024 << "KB change in memory use after " << MAX_N_TRIES
-         << " state initializations." << endl;
-    cout << "Approximate leak size: " << leak/1024.0 << "KB or " << 
-             leak_percent << "% of model size." << endl;
+    cout << "Approximate leak size: " << leak / 1024.0 << "KB or " <<
+        leak_percent << "% of model size." << endl;
     cout << "Average initialization time: " << meanT << "ms" << endl;
 
-    // If we are leaking more than 1/2% of the model's footprint that is significant
-    ASSERT( (leak_percent) < 0.5, __FILE__, __LINE__, 
+    // If we are leaking more than 0.5% of the model's footprint that is significant
+    ASSERT((leak_percent) < 0.5, __FILE__, __LINE__,
         "testMemoryUsage: state initialization leak > 0.5% of model memory footprint.");
-
-    // If we ever leak over 100MB total we should know about it.
-    ASSERT( delta < 1e8, __FILE__, __LINE__, 
-        "testMemoryUsage: total estimated memory leaked > 100MB.");
 }

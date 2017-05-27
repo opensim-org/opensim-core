@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,10 +24,10 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
+#include "RigidTendonMuscle.h"
 #include <OpenSim/Common/SimmSpline.h>
 
-#include "RigidTendonMuscle.h"
+
 
 //==============================================================================
 // STATICS
@@ -37,7 +37,7 @@ using namespace OpenSim;
 using SimTK::Vec3; using SimTK::square; using SimTK::Eps; using SimTK::State;
 using SimTK::Vector;
 
-static int counter=0;
+// static int counter=0;
 //==============================================================================
 // CONSTRUCTOR
 //==============================================================================
@@ -155,7 +155,7 @@ void RigidTendonMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
     normalized velocities, pennation angular velocity, etc... */
 void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo& fvi) const
 {
-    const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+    /*const MuscleLengthInfo &mli = */getMuscleLengthInfo(s);
     fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
     fvi.normFiberVelocity = fvi.fiberVelocity / 
                             (getOptimalFiberLength()*getMaxContractionVelocity());

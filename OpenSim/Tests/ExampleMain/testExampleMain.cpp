@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Cassidy Kelly                                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,17 +35,33 @@ using namespace std;
 int main()
 {
     try {
-        Storage result1("tugOfWar_states.sto"), standard1("std_tugOfWar_states.sto");
-        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.1, 16), __FILE__, __LINE__, "tugOfWar states failed");
+        const std::string result1Filename{"tugOfWar_states.sto"};
+        const std::string result1FilenameV1{"tugOfWar_states_V1.sto"};
+        revertToVersionNumber1(result1Filename, result1FilenameV1);
+        Storage result1(result1FilenameV1), 
+                standard1("std_tugOfWar_states.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
+                                       std::vector<double>(16, 0.1),
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar states failed");
         cout << "tugOfWar states passed\n";
 
-        Storage result3("tugOfWar_forces.mot"), standard3("std_tugOfWar_forces.mot");
+        const std::string result3Filename{"tugOfWar_forces.sto"};
+        const std::string result3FilenameV1{"tugOfWar_forces_V1.sto"};
+        revertToVersionNumber1(result3Filename, result3FilenameV1);
+        Storage result3(result3FilenameV1), 
+                standard3("std_tugOfWar_forces.mot");
         
-        Array<double> tols(1.0, 20);
+        std::vector<double> tols(20, 1.0);
         // 10N is 1% of the muscles maximum isometric force
         tols[0] = tols[1] = 10;
 
-        CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, tols, __FILE__, __LINE__, "tugOfWar forces failed");
+        CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, 
+                                       tols, 
+                                       __FILE__, 
+                                       __LINE__, 
+                                       "tugOfWar forces failed");
         cout << "tugOfWar forces passed\n";
     }
     catch (const Exception& e) {

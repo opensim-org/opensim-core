@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -28,14 +28,9 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <iostream>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "CMC.h"
 #include "ActuatorForceTarget.h"
+#include "CMC.h"
 #include "CMC_TaskSet.h"
-#include <SimTKmath.h>
 #include <SimTKlapack.h>
 #include "StateTrackingTask.h"
 
@@ -127,9 +122,9 @@ prepareToOptimize(SimTK::State& s, double *x)
     // in cases where we're tracking states
     _saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
-    int nu = _controller->getModel().getNumSpeeds();
+    // int nu = _controller->getModel().getNumSpeeds();
     int nf = _controller->getActuatorSet().getSize();
-    int ny = _controller->getModel().getNumStateVariables();
+    // int ny = _controller->getModel().getNumStateVariables();
     int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
     _accelPerformanceMatrix.resize(nacc,nf);
@@ -233,10 +228,10 @@ prepareToOptimize(SimTK::State& s, double *x)
 void ActuatorForceTarget::
 computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
-    const Set<Actuator> &fSet = _controller->getActuatorSet();
+    const Set<const Actuator> &fSet = _controller->getActuatorSet();
 
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         act->setOverrideActuation(s, aF[i]);
         act->overrideActuation(s, true);
     }
@@ -252,7 +247,7 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
     // PERFORMANCE
     double sqrtStressTermWeight = sqrt(_stressTermWeight);
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         rForcePerformanceVector[i] = sqrtStressTermWeight * act->getStress(s);
      }
 
@@ -261,11 +256,9 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
     // reset the actuator control
     for(int i=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
+        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
         act->overrideActuation(s, false);
     }
-
-
 }
 
 //______________________________________________________________________________

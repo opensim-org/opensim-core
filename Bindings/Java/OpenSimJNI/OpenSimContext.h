@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Jack Middleton, Ayman Habib                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -45,7 +45,7 @@ class Model;
 class MovingPathPoint;
 class Muscle;
 class GeometryPath;
-class PathPoint;
+class AbstractPathPoint;
 class PathWrap;
 class ConditionalPathPoint;
 class WrapObject;
@@ -117,26 +117,26 @@ public:
     bool isPrescribed(const Coordinate& coord) const;
     bool isConstrained(const Coordinate& coord) const;
     // Constraints
-    bool isDisabled(const Constraint& constraint) const {
-        return  constraint.isDisabled(*_configState);
+    bool isEnforced(const Constraint& constraint) const {
+        return constraint.isEnforced(*_configState);
     }
-    void setDisabled(Constraint& constraint, bool disable) {
-        constraint.setDisabled(*_configState, disable);
+    void setIsEnforced(Constraint& constraint, bool isEnforced) {
+        constraint.setIsEnforced(*_configState, isEnforced);
         _model->assemble(*_configState);
     }
     // Forces
-    bool isDisabled(const Force& force) const {
-        return  force.isDisabled(*_configState);
+    bool appliesForce(const Force& force) const {
+        return  force.appliesForce(*_configState);
     }
-    void setDisabled(Force& force, bool disable) const {
-        force.setDisabled(*_configState, disable);
-        _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    void setAppliesForce(Force& force, bool applyForce) const {
+        force.setAppliesForce(*_configState, applyForce);
+        _model->getMultibodySystem().realize(*_configState,
+                                             SimTK::Stage::Position);
     }
     // Muscles
     double getActivation(Muscle& act);
     double getMuscleLength(Muscle& act);
-    const Array<PathPoint*>& getCurrentPath(Muscle& act);
-    const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
+    const Array<AbstractPathPoint*>& getCurrentPath(Muscle& act);
     void copyMuscle(Muscle& from, Muscle& to);
     void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
 
@@ -147,16 +147,16 @@ public:
     void setXCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setYCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
     void setZCoordinate(MovingPathPoint& mmp, Coordinate& newCoord);
-    void setBody(PathPoint& pathPoint, PhysicalFrame& newBody);
+    void setBody(AbstractPathPoint& pathPoint, PhysicalFrame& newBody);
     void setCoordinate(ConditionalPathPoint& via, Coordinate& newCoord);
     void setRangeMin(ConditionalPathPoint& via, double d);
     void setRangeMax(ConditionalPathPoint& via, double d);
-    bool replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint);
+    bool replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
     void setEndPoint(PathWrap& mw, int newEndPt);
     void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
-    bool isActivePathPoint(PathPoint& mp) ; 
+    bool isActivePathPoint(AbstractPathPoint& mp) ; 
     // Muscle Wrapping
     void setStartPoint(PathWrap& mw, int newStartPt);
     void addPathWrap(GeometryPath& p, WrapObject& awo);

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -68,7 +68,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
             data[i] = torque[i-6];
     }
 
-    dataRow.setStates(0, 9, data);
+    dataRow.setStates(0, SimTK::Vector_<double>(9, data));
 
     Storage *forces = NULL;
     Storage tempStore;
@@ -114,14 +114,12 @@ void testExternalLoad()
     double integ_accuracy = 1e-6;
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
     integrator.setAccuracy(integ_accuracy);
-    Manager manager(model,  integrator);
-    manager.setInitialTime(init_t);
+    Manager manager(model, integrator);
+    s.setTime(init_t);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager.setFinalTime(dt*i);
-        manager.integrate(s);
+        manager.integrate(s, dt*i);
         q_grav[i] = model.updCoordinateSet()[0].getValue(s);
-        manager.setInitialTime(dt*i);
     }
 
     //q_grav.dump("Coords due to gravity.");
@@ -174,17 +172,15 @@ void testExternalLoad()
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem() );
     integrator2.setAccuracy(integ_accuracy);
     Manager manager2(model,  integrator2);
-    manager2.setInitialTime(init_t);
+    s2.setTime(init_t);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf(nsteps+1);
     Vector_<Vec3> pcom_xf(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager2.setFinalTime(dt*i);
-        manager2.integrate(s2);
+        manager2.integrate(s2, dt*i);
         q_xf[i] = model.updCoordinateSet()[0].getValue(s2);
-        manager2.setInitialTime(dt*i);
     }
 
     //q_xf.dump("Coords due to external force point expressed in pendulum.");
@@ -249,16 +245,14 @@ void testExternalLoad()
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem() );
     integrator3.setAccuracy(integ_accuracy);
     Manager manager3(model,  integrator3);
-    manager3.setInitialTime(init_t);
+    s3.setTime(init_t);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf2(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager3.setFinalTime(dt*i);
-        manager3.integrate(s3);
+        manager3.integrate(s3, dt*i);
         q_xf2[i] = model.updCoordinateSet()[0].getValue(s3);
-        manager3.setInitialTime(dt*i);
     }
 
     //q_xf2.dump("Coords due to external force point expressed in ground.");

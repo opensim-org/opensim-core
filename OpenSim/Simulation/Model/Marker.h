@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2014 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,11 +25,7 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
-#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "Station.h"
-#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -49,7 +45,15 @@ class OSIMSIMULATION_API Marker : public Station {
     OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Station);
 
 class Body;
-
+public:
+    //==============================================================================
+    // PROPERTIES
+    //==============================================================================
+    OpenSim_DECLARE_PROPERTY(fixed, bool,
+        "Flag (true or false) specifying whether the marker is fixed in its "
+        "parent frame during the marker placement step of scaling.  If false, "
+        "the marker is free to move within its parent Frame to match its "
+        "experimental counterpart.");
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -75,7 +79,7 @@ public:
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
 //=============================================================================
 };  // END of class Marker
 //=============================================================================

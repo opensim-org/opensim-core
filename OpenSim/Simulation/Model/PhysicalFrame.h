@@ -1,33 +1,38 @@
 #ifndef OPENSIM_PHYSICAL_FRAME_H_
 #define OPENSIM_PHYSICAL_FRAME_H_
-/* -------------------------------------------------------------------------- *
-*                              OpenSim:  PhysicalFrame.h                        
+/* --------------------------------------------------------------------------*
+*                              OpenSim:  PhysicalFrame.h                     *   
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
-* OpenSim is developed at Stanford University and supported by the US   
+* OpenSim is developed at Stanford University and supported by the US        *
 * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
-* through the Warrior Web program.                                      
-*                                                                       
-* Copyright (c) 2005-2015 Stanford University and the Authors           
-* Author(s): Matt DeMers, Ajay Seth, Ayman Habib                        
-*                                                                       
+* through the Warrior Web program.                                           *
+*                                                                            *
+* Copyright (c) 2005-2017 Stanford University and the Authors                *
+* Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
+*                                                                            *
 * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
 * not use this file except in compliance with the License. You may obtain a  *
-* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.    
-*                                                                       
-* Unless required by applicable law or agreed to in writing, software   
-* distributed under the License is distributed on an "AS IS" BASIS,     
+* copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+*                                                                            *
+* Unless required by applicable law or agreed to in writing, software        *
+* distributed under the License is distributed on an "AS IS" BASIS,          *
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
-* See the License for the specific language governing permissions and   
-* limitations under the License.                                        
+* See the License for the specific language governing permissions and        *
+* limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+#include "simbody/internal/Body.h"
 
 // TODO remove these when corresponding properties are removed
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+
+namespace SimTK {
+class MobilizedBody;
+}
 
 namespace OpenSim {
 
@@ -60,7 +65,7 @@ public:
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
-    Connectors to the PhysicalFrames they attach to. This must be addressed prior
+    Sockets to the PhysicalFrames they attach to. This must be addressed prior
     to OpenSim 4.0 release. - aseth
 
     Note: VisibleObject was removed from this class by @aymanhab via PR #417.
@@ -121,7 +126,7 @@ public:
     const SimTK::MobilizedBody& getMobilizedBody() const;
 
     /**
-    Access a writeable SimTK::MobilizedBody that backs this PhysicalFrame.
+    Access a writable SimTK::MobilizedBody that backs this PhysicalFrame.
     The MobilizedBody is only available after Model::initSystem() has been
     invoked.
     @see getMobilizedBodyIndex
@@ -154,10 +159,6 @@ public:
     ///@} 
 
 protected:
-    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
-    SimTK::Transform
-        calcGroundTransform(const SimTK::State& state) const override;
-
     /** @name Advanced: PhysicalFrame Developer Interface
     These methods are intended for PhysicalFrame builders. */
     ///@{
@@ -166,9 +167,7 @@ protected:
     underlying MultibodySystem. The PhysicalFrame's MobilizedBodyIndex must be
     set by the end of PhysicalFrame::addToSystem()
         */
-    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const {
-        const_cast<Self*>(this)->_mbIndex = mbix; 
-    }
+    void setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix) const;
 
     /** Extend how PhysicalFrame determines its base Frame. */
     const Frame& extendFindBaseFrame() const override {
@@ -182,13 +181,43 @@ protected:
     /** @name Component Extension methods.
     PhysicalFrame extension of Component interface. */
     /**@{**/
-    void extendConnectToModel(Model& aModel) override;
+    /// Associate a FrameGeometry (visualization) with the this PhysicalFrame
+    void extendFinalizeFromProperties() override;
+    /// Connect bound WrapObjects
+    void extendConnectToModel(Model& model) override;
     /**@}**/
 
+    /** Override to account for version updates in the XML format. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
 private:
+    /** The transform X_GF for this PhysicalFrame, F, in ground, G. */
+    SimTK::Transform
+        calcTransformInGround(const SimTK::State& state) const override;
+
+    /** The spatial velocity {omega; v} for this PhysicalFrame in ground. */
+    SimTK::SpatialVec
+        calcVelocityInGround(const SimTK::State& state) const override;
+    /** The spatial acceleration {alpha; a} for this PhysicalFrame in ground */
+    SimTK::SpatialVec
+        calcAccelerationInGround(const SimTK::State& state) const override;
 
     /* Component construction interface */
-    void constructProperties() override;
+    void constructProperties();
+
+    /* Utility to convert Geometry version 3.2 to recent 4.0 format */
+    static void convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& aNode,
+        const SimTK::Vec3& outerScaleFactors,
+        const SimTK::Vec6& outerTransform,
+        SimTK::Xml::Element& geomSetElement);
+
+    /* Utility to construct a PhysicalOffsetFrame from properties of an
+       offset transform. */
+    static void createFrameForXform(const SimTK::Xml::element_iterator&,
+        const std::string& frameName,
+        const SimTK::Vec6& localXform, const std::string& bodyName);
+
 
     /* ID for the underlying mobilized body in Simbody system.
     Only Joint can set, since it defines the mobilized body type and
@@ -207,7 +236,7 @@ private:
     // counter-part in the underlying system
     friend class Joint;
 
-    //==========================================================================
+    //=========================================================================
 };  // END of class PhysicalFrame
 
 //=============================================================================

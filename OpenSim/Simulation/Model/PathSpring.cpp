@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  PathSpring.cpp                           *
+ *                           OpenSim:  PathSpring.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
- * Author(s): Ajay Seth                                                     *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -44,13 +44,13 @@ static const Vec3 DefaultPathSpringColor(.9,.9,.9); // mostly white
 // Default constructor.
 PathSpring::PathSpring()
 {
-    constructInfrastructure();
+    constructProperties();
 }
 
 PathSpring::PathSpring(const string& name, double restLength, 
                        double stiffness, double dissipation)
 {
-    constructInfrastructure();
+    constructProperties();
     setName(name);
     set_resting_length(restLength);
     set_stiffness(stiffness);
@@ -68,13 +68,6 @@ void PathSpring::constructProperties()
     constructProperty_resting_length(SimTK::NaN);
     constructProperty_stiffness(SimTK::NaN);
     constructProperty_dissipation(SimTK::NaN);
-}
-
-void PathSpring::constructOutputs()
-{
-    constructOutput<double>("stretch", 
-           std::bind(&PathSpring::getStretch, this, std::placeholders::_1),
-                      SimTK::Stage::Position);
 }
 
 //_____________________________________________________________________________
@@ -114,13 +107,17 @@ void PathSpring::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     GeometryPath& path = upd_GeometryPath();
-    path.setName("path");
     path.setDefaultColor(DefaultPathSpringColor);
-    addComponent(&path);
 
-    // Resting length must be greater than 0.0.
-    assert(get_resting_length() > 0.0);
-    path.setOwner(this);
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
+        InvalidPropertyValue, getProperty_resting_length().getName());
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
+        InvalidPropertyValue, getProperty_stiffness().getName());
+    OPENSIM_THROW_IF_FRMOBJ(
+        (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
+        InvalidPropertyValue, getProperty_dissipation().getName());
 }
 
 
@@ -238,7 +235,7 @@ void PathSpring::computeForce(const SimTK::State& s,
     path.getPointForceDirections(s, &PFDs);
 
     for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
                           tension*PFDs[i]->direction(), bodyForces);
     }
 

@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Ayman Habib                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -48,6 +48,17 @@ int main(int argc,char **argv)
     // Surrounding try block
     //----------------------
     try {
+
+    // DEPRECATION NOTICE
+    const std::string deprecationNotice = R"(
+    THIS EXECUTABLE IS DEPRECATED AND WILL BE REMOVED IN A FUTURE RELEASE.
+
+    Use opensim-cmd instead, which can do everything that this executable can.
+
+      analyze -S SetupFileName -> opensim-cmd run-tool SetupFileName
+      analyze -PS              -> opensim-cmd print-xml analyze
+    )";
+    std::cout << deprecationNotice << std::endl;
 
     // PARSE COMMAND LINE
     int i;
@@ -120,7 +131,7 @@ int main(int argc,char **argv)
     AnalyzeTool analyze(setupFileName);
 
     // PRINT MODEL INFORMATION
-    Model& model = analyze.getModel();
+    // Model& model = analyze.getModel();
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";

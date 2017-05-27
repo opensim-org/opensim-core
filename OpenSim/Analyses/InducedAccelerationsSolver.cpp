@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -25,12 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include "InducedAccelerationsSolver.h"
 
 using namespace OpenSim;
@@ -111,7 +106,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         //Make sure all the actuators are on!
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, false);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, true);
         }
 
         // Get to  the point where we can evaluate unilateral constraint conditions
@@ -165,7 +160,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // ******************************* end ERROR CHECKING *******************************/
     
         for(int i=0; i<constraintOn.getSize(); i++) {
-            _replacementConstraints[i].setDisabled(s_solver, !constraintOn[i]);
+            _replacementConstraints[i].setIsEnforced(s_solver, constraintOn[i]);
             // Make sure we stay at Dynamics so each constraint can evaluate its conditions
             _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
         }
@@ -183,7 +178,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // disable other forces
         for(int f=0; f<_modelCopy.getForceSet().getSize(); f++){
-            _modelCopy.updForceSet()[f].setDisabled(s_solver, true);
+            _modelCopy.updForceSet()[f].setAppliesForce(s_solver, false);
         }
     }
     else if(forceName == "velocity"){       
@@ -195,7 +190,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
             
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
         // Set the configuration (gen. coords and speeds) of the model.
         _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Velocity);
@@ -206,7 +201,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         // zero actuator forces
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
-            _modelCopy.updActuators().get(f).setDisabled(s_solver, true);
+            _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
 
         // zero velocity
@@ -220,7 +215,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
                 _modelCopy.getName() << "'." << endl;
         }
         Force &force = _modelCopy.getForceSet().get(ai);
-        force.setDisabled(s_solver, false);
+        force.setAppliesForce(s_solver, true);
 
         ScalarActuator *actuator = dynamic_cast<ScalarActuator*>(&force);
         if(actuator){
@@ -244,7 +239,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
     _modelCopy.getMultibodySystem().realize(s_solver, SimTK::Stage::Acceleration);
 
     // Sanity check that constraints hasn't totally changed the configuration of the model
-    double error = (s.getQ()-s_solver.getQ()).norm();
+    // double error = (s.getQ()-s_solver.getQ()).norm();
 
     // Report reaction forces for debugging
     /*
@@ -364,20 +359,20 @@ Array<bool> InducedAccelerationsSolver::
                 const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
 
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                getModel().getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);
 
             // turn on the constraint
-            _replacementConstraints[i].setDisabled(s, false);
+            _replacementConstraints[i].setIsEnforced(s, true);
             // return the state of the constraint
             constraintOn[i] = true;
 
         }
         else{
             // turn off the constraint
-            _replacementConstraints[i].setDisabled(s, true);
+            _replacementConstraints[i].setIsEnforced(s, false);
             // return the state of the constraint
             constraintOn[i] = false;
         }

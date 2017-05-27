@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
+ * Copyright (c) 2005-2017 Stanford University and the Authors                *
  * Author(s): Matthew Millard                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,6 +24,8 @@
 // INCLUDES
 //=============================================================================
 #include "SmoothSegmentedFunction.h"
+#include <fstream>
+#include "simmath/internal/SplineFitter.h"
 
 //=============================================================================
 // STATICS
@@ -32,7 +34,7 @@ using namespace SimTK;
 using namespace OpenSim;
 using namespace std;
 
-static bool DEBUG=false;
+//static bool DEBUG=false;
 static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
