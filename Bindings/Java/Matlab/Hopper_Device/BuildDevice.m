@@ -150,6 +150,7 @@ switch deviceType
         
         controller = PrescribedController();
         controller.setName('controller');
+        controller.addActuator(clutchedPathSpring);
         controlFunction = PiecewiseConstantFunction();
         clutchControl = [0.0 2.5 5.0;
                          1.0 1.0 1.0];
