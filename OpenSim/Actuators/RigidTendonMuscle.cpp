@@ -127,7 +127,7 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
 
     if (_muscleWidth > SimTK::SqrtEps) {
         mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth));
-        mli.cosPennationAngle = zeroPennateLength / mli.fiberLength;
+    mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
     }
     else { 
         mli.fiberLength = zeroPennateLength;
