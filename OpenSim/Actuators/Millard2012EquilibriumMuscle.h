@@ -433,8 +433,9 @@ public:
 
     /** Computes the fiber length such that the fiber and tendon are developing
         the same force, either assuming muscle-tendon velocity as provided
-        by the state or zero as designitated by the useZeroVelocity flag.
-        @param[in,out] s The state of the system.
+        by the state or zero as designated by the useZeroVelocity flag.
+        @param[in,out] s        The state of the system.
+        @param useZeroVelocity  Flag indicating to assume zero fiber velocity
         @throws MuscleCannotEquilibrate
     */
     void computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity = true) const;
