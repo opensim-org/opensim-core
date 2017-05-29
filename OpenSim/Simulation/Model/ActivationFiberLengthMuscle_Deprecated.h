@@ -70,8 +70,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    virtual void equilibrate(SimTK::State& state) const;
-
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
@@ -111,7 +109,13 @@ public:
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    void computeInitialFiberEquilibrium(SimTK::State& s ) const override;
+    // Muscle interface
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override;
+    /// Deprecated interface method
+    virtual void equilibrate(SimTK::State& s) const {
+        computeInitialFiberEquilibrium(s);
+    }
+
     virtual double computeActuation( const SimTK::State& s ) const override = 0;
     virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
     //virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;

@@ -395,81 +395,9 @@ computeActuation(const SimTK::State& s) const
     return mdi.tendonForce;
 }
 
-//==============================================================================
-// OTHER PUBLIC METHODS
-//==============================================================================
-void Millard2012EquilibriumMuscle::
-computeInitialFiberEquilibrium(SimTK::State& s) const
-{
-    if(get_ignore_tendon_compliance()) {                    // rigid tendon
-        return;
-    }
-
-    // Elastic tendon initialization routine.
-
-    // Initialize activation as specified by the user.
-    double clampedActivation =
-        getActivationModel().clampActivation(getActivation(s));
-    setActivation(s,clampedActivation);
-
-    // Initialize the multibody system to the initial state vector.
-    setFiberLength(s, getOptimalFiberLength());
-    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-
-    // Compute an initial muscle state that develops the desired force and
-    // shares the muscle stretch between the muscle fiber and the tendon
-    // according to their relative stiffnesses.
-
-    // tol is the desired tolerance in Newtons.
-    double tol = 1e-8*getMaxIsometricForce();
-    if(tol < SimTK::SignificantReal*10) {
-        tol = SimTK::SignificantReal*10;
-    }
-    int maxIter = 200;
-    double pathLength = getLength(s);
-    double pathLengtheningSpeed = getLengtheningSpeed(s);
-
-    try {
-        std::pair<StatusFromEstimateMuscleFiberState,
-                  ValuesFromEstimateMuscleFiberState> result =
-            estimateMuscleFiberState(clampedActivation, pathLength,
-                                     pathLengtheningSpeed, tol, maxIter);
-
-        switch(result.first) {
-
-        case StatusFromEstimateMuscleFiberState::Success_Converged:
-            setActuation(s, result.second["tendon_force"]);
-            setFiberLength(s, result.second["fiber_length"]);
-            break;
-
-        case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
-            printf("\n\nMillard2012EquilibriumMuscle initialization:"
-                   " %s is at its minimum fiber length of %f\n",
-                   getName().c_str(), result.second["fiber_length"]);
-            setActuation(s, result.second["tendon_force"]);
-            setFiberLength(s, result.second["fiber_length"]);
-            break;
-
-        case StatusFromEstimateMuscleFiberState::Failure_MaxIterationsReached:
-            // Report internal variables and throw exception.
-            std::ostringstream ss;
-            ss << "\n  Solution error " << abs(result.second["solution_error"])
-               << " exceeds tolerance of " << tol << "\n"
-               << "  Newton iterations reached limit of " << maxIter << "\n"
-               << "  Clamped activation is " << clampedActivation << "\n"
-               << "  Fiber length is " << result.second["fiber_length"] << "\n";
-            OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, ss.str());
-            break;
-        }
-
-    } catch (const std::exception& x) {
-        OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate,
-            "Internal exception encountered.\n" + std::string{x.what()});
-    }
-}
 
 void Millard2012EquilibriumMuscle::
-computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
+computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity) const
 {
     if(get_ignore_tendon_compliance()) {                    // rigid tendon
         return;
@@ -484,21 +412,18 @@ computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const
     // equilibrium. Fiber and tendon velocity are set to zero.
 
     // tol is the desired tolerance in Newtons.
-    double tol = 1e-8*getMaxIsometricForce();
-    if(tol < SimTK::SignificantReal*10) {
-        tol = SimTK::SignificantReal*10;
-    }
+    const double tol = max(1e-8*getMaxIsometricForce(), SimTK::SignificantReal*10);
+
     int maxIter = 200;
     double pathLength = getLength(s);
-    double pathLengtheningSpeed = 0.0;
-
+    double pathSpeed = useZeroVelocity ? 0 : getLengtheningSpeed(s);
     double activation = getActivation(s);
 
     try {
         std::pair<StatusFromEstimateMuscleFiberState,
                   ValuesFromEstimateMuscleFiberState> result =
-            estimateMuscleFiberState(activation, pathLength, pathLengtheningSpeed,
-                                     tol, maxIter, true);
+            estimateMuscleFiberState(activation, pathLength, pathSpeed,
+                tol, maxIter, true);
 
         switch(result.first) {
 
@@ -1287,7 +1212,9 @@ isFiberStateClamped(double lce, double dlceN) const
 }
 
 double Millard2012EquilibriumMuscle::clampFiberLength(double lce) const
-{   return max(lce, getMinimumFiberLength()); }
+{   
+    return max(lce, getMinimumFiberLength());
+}
 
 std::pair<Millard2012EquilibriumMuscle::StatusFromEstimateMuscleFiberState,
           Millard2012EquilibriumMuscle::ValuesFromEstimateMuscleFiberState>
@@ -1339,19 +1266,12 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
 
     // Velocity level
     double dtl    = 0.0;
-    double dlce   = (staticSolution) ? 0.0 :
-                        getPennationModel().calcFiberVelocity(cosphi,dml,dtl);
-    double dlceN  = (staticSolution) ? 0.0 :
-                        dlce/(vmax*ofl);
-    //double dphi   = (staticSolution) ? 0.0 :
-    //                    penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
-    //double dlceAT = (staticSolution) ? 0.0 :
-    //                    penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
-    //                                                        cosphi,dphi);
+
+    // first guess assume static
+    double dlce = 0.0;
+    double dlceN  = 0.0;
 
     // Internal variables for the loop
-    //double dphi_d_lce   = 0.0;
-    //double dtl_d_lce    = 0.0;
     double Fm           = 0.0;   // fiber force
     double FmAT         = 0.0;   // fiber force along tendon
     double Ft           = 0.0;   // tendon force
@@ -1364,7 +1284,6 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     double dFt_d_tl     = 0.0;   // partial of tendon force w.r.t. tl
     double dferr_d_lce  = 0.0;   // partial of solution error w.r.t lce
     double delta_lce    = 0.0;   // change in lce
-    double Ke           = 0.0;   // linearized local stiffness of the muscle
 
     // Initialize the loop
     int iter = 0;
@@ -1374,9 +1293,38 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     fal = falCurve.calcValue(lceN);
     fpe = fpeCurve.calcValue(lceN);
     fse = fseCurve.calcValue(tlN);
-    fv = (staticSolution) ? 1.0
-        : get_ForceVelocityCurve().calcValue(dlceN);
+    fv = 1.0;
 
+    fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
+    Fm = fiberForceV[0];
+
+    // Compute the partial derivative of the force error w.r.t. lce
+    dFm_dlce = calcFiberStiffness(fiso, ma, fv, lceN, ofl);
+    dFmAT_dlce = calc_DFiberForceAT_DFiberLength(Fm, dFm_dlce, lce,
+        sinphi, cosphi);
+    dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce, sinphi,
+        cosphi, lce);
+    dFt_d_tl = fseCurve.calcDerivative(tlN, 1)*fiso / tsl;
+    dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
+        sinphi, cosphi);
+
+    // if not static (0 velocity) solution, then distribute velocity to 
+    // fiber and tendon according to relative stiffness
+    if (!staticSolution) {
+        if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
+            && tlN > 1.0) {
+            //Ke = (dFmAT_dlceAT*dFt_d_tl) / (dFmAT_dlceAT + dFt_d_tl);
+            //dtl = (1 / dFt_d_tl)*Ke*dml;
+            dtl = dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl) * dml;
+        }
+        else {
+            dtl = dml;
+        }
+
+        dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
+        dlceN = dlce / (vmax*ofl);
+        fv = get_ForceVelocityCurve().calcValue(dlceN);
+    }
     // Compute the force error
     fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
     Fm = fiberForceV[0];
@@ -1386,48 +1334,31 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
 
     double ferrPrev = ferr;
     double lcePrev = lce;
-    int line_search_cnt = 0;
 
     double h =1.0;
     while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations)) {
         // Compute search direction
-        // Compute the partial derivative of the force error w.r.t. lce
-        dFm_dlce = calcFiberStiffness(fiso, ma, fv, lceN, ofl);
-        dFmAT_dlce = calc_DFiberForceAT_DFiberLength(Fm, dFm_dlce, lce,
-            sinphi, cosphi);
-        dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce, sinphi,
-            cosphi, lce);
-        dFt_d_tl = fseCurve.calcDerivative(tlN, 1)*fiso / tsl;
-        dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
-            sinphi, cosphi);
-
-        // Error derivative
         dferr_d_lce = dFmAT_dlce - dFt_d_lce;
-
         h = 1.0;
-        line_search_cnt = 0;
+
         while (abs(ferr) >= abs(ferrPrev)) {
-            if ((abs(dferr_d_lce) > SimTK::SignificantReal) && 
-                (h > SimTK::SqrtEps)) {
-                // Take a Newton Step if the derivative is nonzero
-                delta_lce = -h*ferrPrev / dferr_d_lce;
-                lce = clampFiberLength(lcePrev + delta_lce);
-                h = 0.5*h;
-            }
+            // Compute the Newton step
+            delta_lce = -h*ferrPrev / dferr_d_lce;
+            // Take a Newton Step if the step is nonzero
+            if (abs(delta_lce) > SimTK::SignificantReal)
+                lce = lcePrev + delta_lce;
             else {
                 // We've stagnated or hit a limit; assume we are hitting local
-                // minimum attempt to jump to the other side of the force-length
+                // minimum, attempt to jump to the other side of the force-length
                 // curve over the optimal fiber-length assuming we're stuck on one
                 // side of the curve.
-                double perturbation = lceN < 1.0 ? 1.5 : 0.5;
-                lce = perturbation*getOptimalFiberLength();
-                h = 1.0;
+                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                h = 0;
+            }
 
-                line_search_cnt++;
-
-                OPENSIM_THROW_IF_FRMOBJ(line_search_cnt > 20, Exception,
-                    "Unable to decrease ferr along line search. ferr = " +
-                    std::to_string(ferr));
+            if (lce < getMinimumFiberLength()) {
+                lce = 0.1*getOptimalFiberLength();
+                h = 0; // force a break
             }
 
             // Update position level quantities only if they won't go singular
@@ -1442,8 +1373,6 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
             fal = falCurve.calcValue(lceN);
             fpe = fpeCurve.calcValue(lceN);
             fse = fseCurve.calcValue(tlN);
-            fv = (staticSolution) ? 1.0
-                : get_ForceVelocityCurve().calcValue(dlceN);
 
             // Compute the force error
             fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
@@ -1451,10 +1380,27 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
             FmAT = Fm * cosphi;
             Ft = fse*fiso;
             ferr = FmAT - Ft;
+
+            if (h <= SimTK::SqrtEps) {
+                break;
+            }
+            else
+                h = 0.5*h;;
         }
 
         ferrPrev = ferr;
         lcePrev = lce;
+        
+        // Update the partial derivative of the force error w.r.t. lce
+        dFm_dlce = calcFiberStiffness(fiso, ma, fv, lceN, ofl);
+        dFmAT_dlce = calc_DFiberForceAT_DFiberLength(Fm, dFm_dlce, lce,
+            sinphi, cosphi);
+        dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce, sinphi,
+            cosphi, lce);
+        dFt_d_tl = fseCurve.calcDerivative(tlN, 1)*fiso / tsl;
+        dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
+            sinphi, cosphi);
+        
         /* Update velocity-level quantities. Share the muscle velocity
         between the tendon and the fiber according to their relative
         stiffnesses:
@@ -1483,27 +1429,22 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         level knowledge, which is not available in general.
 
         Stiffness of the muscle is the stiffness of the tendon and the fiber
-        (along the tendon) in series.
+        (along the tendon) in series. */
 
-        The "if" statement here is to handle the special case where the
-        negative stiffness of the fiber (which happens in this model) is
-        equal to the positive stiffness of the tendon. */
         if(!staticSolution) {
-            // Keep velocities set to zero if seeking a static solution.
-
-            if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
-                && tlN > 1.0) {
-                    Ke  = (dFmAT_dlceAT*dFt_d_tl)/(dFmAT_dlceAT + dFt_d_tl);
-                    dtl = (1/dFt_d_tl)*Ke*dml;
-            } else {
+            /* The "if" statement here is to handle the special case where the
+            negative stiffness of the fiber (which happens in this model) is
+            equal to the positive stiffness of the tendon. */
+            if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal 
+                    && tlN > 1.0) {
+                dtl = dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl) * dml;
+            }
+            else {
                 dtl = dml;
             }
-
             dlce   = getPennationModel().calcFiberVelocity(cosphi,dml,dtl);
             dlceN  = dlce/(vmax*ofl);
-            //dphi   = penMdl.calcPennationAngularVelocity(tan(phi),lce,dlce);
-            //dlceAT = penMdl.calcFiberVelocityAlongTendon(lce,dlce,sinphi,
-            //                                             cosphi,dphi);
+            fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
 
         iter++;

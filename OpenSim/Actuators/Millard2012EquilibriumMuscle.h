@@ -427,18 +427,17 @@ public:
         @param[in,out] s The state of the system.
         @throws MuscleCannotEquilibrate
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const override;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override {
+        computeFiberEquilibrium(s, true);
+    }
 
     /** Computes the fiber length such that the fiber and tendon are developing
-    the same force, assuming velocities are zero. This is a static equilibrium
-    version of computeInitialFiberEquilibrium(). By setting velocities to zero,
-    we obtain a reasonable and robust solution that provides a rough solution
-    for fiber length.
+        the same force, either assuming muscle-tendon velocity as provided
+        by the state or zero as designitated by the useZeroVelocity flag.
         @param[in,out] s The state of the system.
         @throws MuscleCannotEquilibrate
     */
-    void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
-        override;
+    void computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity = true) const;
 
 //==============================================================================
 // DEPRECATED

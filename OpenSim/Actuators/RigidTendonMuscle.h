@@ -110,8 +110,7 @@ protected:
     //--------------------------------------------------------------------------
     double computeActuation( const SimTK::State& s ) const override;
     double computeIsometricForce(SimTK::State& s, double activation) const;
-    void equilibrate(SimTK::State& s) const {}
-    
+
 
 private:
     void setNull();

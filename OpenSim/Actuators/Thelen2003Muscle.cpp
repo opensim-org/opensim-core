@@ -314,10 +314,9 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     double activation = getActivation(s);
 
     //Tolerance, in Newtons, of the desired equilibrium
-    double tol = 1e-8*getMaxIsometricForce();  //Should this be user settable?
-    if (tol < SimTK::SignificantReal * 10) {
-        tol = SimTK::SignificantReal * 10;
-    }
+    const double tol = max( 1e-8*getMaxIsometricForce(), 
+                            SimTK::SignificantReal * 10 );
+
     int maxIter = 20;  //Should this be user settable?
 
     std::pair<StatusFromInitMuscleState, ValuesFromInitMuscleState> result;
@@ -842,8 +841,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                 h = 0; // force a break
             }
 
-            //Update position level quantities, only if they won't go 
-            //singular
+            //Update position level quantities, only if they won't go singular
             phi = getPennationModel().calcPennationAngle(lce);
             cosphi = cos(phi);
             tl = ml - lce*cosphi;

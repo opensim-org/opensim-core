@@ -119,7 +119,7 @@ int main()
         cout << "Delp1990Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
         { e.print(cerr); failures.push_back("testDelp1990Muscle"); }
-*/    
+*/
     try { testRigidTendonMuscle();
         cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
@@ -129,7 +129,7 @@ int main()
         cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
         { e.print(cerr); failures.push_back("testThelen2003Muscle"); }
-    
+ 
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
     }catch (const Exception& e){ 
@@ -870,7 +870,7 @@ void testMillard2012EquilibriumMuscle()
         model.realizeVelocity(state);
         //ASSERT_THROW( MuscleCannotEquilibrate,
         // Doesn't throw because a slack tendon is fine as long as muscle force is zero
-        // At min fiber length the friber produces 0 force and it finds equilibrium at
+        // At min fiber length the fiber produces 0 force and it finds equilibrium at
         // that point.
         muscle->computeInitialFiberEquilibrium(state);
     }
