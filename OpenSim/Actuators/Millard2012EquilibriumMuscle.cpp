@@ -1398,9 +1398,9 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
             sinphi, cosphi);
         
-        /* Update velocity-level quantities. Share the muscle velocity
-        between the tendon and the fiber according to their relative
-        stiffnesses:
+        /* Update velocity-level quantities if not staticSolution.
+        Share the muscle velocity between the tendon and the fiber
+        according to their relative stiffnesses:
 
         Fm-Ft = 0                     Equilibrium equation   [1]
         d/dt Fm - d/dt Ft = 0         Time derivative        [2]
@@ -1429,9 +1429,9 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         (along the tendon) in series. */
 
         if(!staticSolution) {
-            /* The "if" statement here is to handle the special case where the
-            negative stiffness of the fiber (which happens in this model) is
-            equal to the positive stiffness of the tendon. */
+            // The "if" statement here is to handle the special case where the
+            // negative stiffness of the fiber (which happens in this model) is
+            // equal to the positive stiffness of the tendon.
             if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal 
                     && tlN > 1.0) {
                 dtl = dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl) * dml;
