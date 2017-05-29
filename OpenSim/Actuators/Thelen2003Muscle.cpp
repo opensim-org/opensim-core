@@ -1656,9 +1656,6 @@ double Thelen2003Muscle::
     double aFalFv = fv*aAct*aFal;
     double delta_aFalFv = 0;
 
-    double h = 1.0;
-
-
     while(abs(ferr) >= tolerance && iter < maxIterations)
     {
         dlceN1 = calcdlceN(aAct,aFal, aFalFv);
