@@ -43,12 +43,12 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
 int main()
 {
     SimTK::Array_<std::string> failures;
-/*
+
     try { testTutorialOne(); }
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testTutorialOne");
     }
-*/
+
     // produce passive force-length curve
     try { testTugOfWar("Tug_of_War_ConstantVelocity.sto", 0.01); }
     catch (const std::exception& e) {
