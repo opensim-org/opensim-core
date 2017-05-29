@@ -1349,9 +1349,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
                 lce = lcePrev + delta_lce;
             else {
                 // We've stagnated or hit a limit; assume we are hitting local
-                // minimum, attempt to jump to the other side of the force-length
-                // curve over the optimal fiber-length assuming we're stuck on one
-                // side of the curve.
+                // minimum and attempt to approach from the other direction.
                 lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
                 h = 0;
             }

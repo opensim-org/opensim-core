@@ -829,16 +829,13 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                 lce = lcePrev + delta_lce;
             else {
                 // We've stagnated or hit a limit; assume we are hitting local
-                // minimum, attempt to jump to the other side of the force-length
-                // curve over the optimal fiber-length assuming we're stuck on one
-                // side of the curve.
+                // minimum and attempt to approach from the other direction.
                 lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
                 h = 0;
             }
 
             if (lce < getMinimumFiberLength()) {
-                lce = 0.1*getOptimalFiberLength();
-                h = 0; // force a break
+                lce = getMinimumFiberLength();
             }
 
             //Update position level quantities, only if they won't go singular
