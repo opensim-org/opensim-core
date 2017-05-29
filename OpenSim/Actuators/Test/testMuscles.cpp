@@ -129,7 +129,7 @@ int main()
         cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
         { e.print(cerr); failures.push_back("testThelen2003Muscle"); }
- 
+    
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
     }catch (const Exception& e){ 
@@ -437,7 +437,6 @@ void simulateMuscle(
 // 6. SIMULATION Tests
 //==========================================================================
     testMuscleEquilibriumSolve(model, states);
-
 
 /*==========================================================================
     7. Initialization test: dF/dt ?= K*dl/dt for t = 0
@@ -1099,9 +1098,9 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
                         reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
                     }
                 }
-
                 throw;
             }
+
             model.realizeDynamics(s);
 
             // Get the fiber-length
@@ -1125,5 +1124,3 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
         }
     }
 }
-
-
