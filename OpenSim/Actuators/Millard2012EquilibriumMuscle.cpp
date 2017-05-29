@@ -1357,8 +1357,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
             }
 
             if (lce < getMinimumFiberLength()) {
-                lce = 0.1*getOptimalFiberLength();
-                h = 0; // force a break
+                lce = getMinimumFiberLength();
             }
 
             // Update position level quantities only if they won't go singular
