@@ -1097,7 +1097,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     for (auto& muscle : muscles) {
         if (muscle.appliesForce(state)){
             try{
-                muscle.equilibrate(state);
+                muscle.computeEquilibrium(state);
             }
             catch (const std::exception& e) {
                 if(!failed){ // haven't failed to equilibrate other muscles yet
