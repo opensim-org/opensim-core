@@ -455,39 +455,7 @@ void simulateMuscle(
 
 
 /*==========================================================================
-    8a. Correctness test:  KE+PE-W = const ?
-    
-    Check that system energy less work is conserved
-    *This test of correctness is not being used because I've been unable
-    to successfully wire the MuscleFiberActivePowerProbe into the model, 
-    nor have I generalized the MuscleDynamicInfo interface enough to permit
-    an explicit KE+PE-W test.
-============================================================================
-*/    
-
-    if(false){
-        model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-        double Esys = model.getMultibodySystem().calcEnergy(si);
-        /*double KEsys =  */model.getMultibodySystem().calcKineticEnergy(si);
-        /*double xSpeed = */modelCoordinateSet[0].getSpeedValue(si);
-        // double KEsysCheck = 0.5*ballMass*xSpeed*xSpeed;
-        /*double PEsys =  */model.getMultibodySystem().calcPotentialEnergy(si);
-        double jointWork = jointWorkProbe->getProbeOutputs(si)(0);
-        double muscleWork = muscWorkProbe->getProbeOutputs(si)(0);
-        
-        double ESysMinusWork = Esys - muscleWork - jointWork; 
-
-        muscWorkProbe->computeProbeInputs(si);
-        cout << "Muscle work = " << muscleWork << endl;  
-        cout << "Esys - Work = " << ESysMinusWork 
-             << " :: Esys0 = " << Esys0 << endl; 
-        ASSERT_EQUAL(ESysMinusWork, Esys0, SimulationTestTolerance,
-            __FILE__, __LINE__,
-            "testMuscles: System energy-work -not conserved.");
-    }
-
-/*==========================================================================
-    8b. Correctness test:  d/dt(KE+PE-W) = 0 ?
+    8. Correctness test:  d/dt(KE+PE-W) = 0 ?
     
     Check that the derivative of system energy less work is conserved
 ============================================================================
