@@ -22,17 +22,17 @@
  * -------------------------------------------------------------------------- */
 
 //=============================================================================
-//  testMuscles simulates various OpenSim models using the OpenSim API and 
-//  compares muscle behavior for varying physical parameters (fiber-to-tendon 
-//  ratio, tendon stiffness, etc...)
+//  testMuscles simulates OpenSim Muscles using the OpenSim API and 
+//  tests that muscles can compute equilibrium under varying conditions, 
+//  including the full range of activations. Simulations are also tested
+//  for energy conservation by comparing changes in system power to muscle
+//  power.
 //
 //  Models tested include:
-//      1. PathActuator (Base of Muscle, is controlled tension along a GeometryPath)
-//      2. RigidTendonMuscle (Stateless muscle with user-defined fiber f-l, f-v splines)
-//      3. Thelen2003Muscle_Deprecated (Simm implementation)
-//      4. Thelen2003Muscle (Uses the Muscle interface)
-//      5. Schutte1993Muscle(_Deprecated)
-//      6. Delp1990Muscle(_Deprecated)
+//      1. RigidTendonMuscle (Stateless, with user-defined f-l, f-v splines)
+//      2. Thelen2003Muscle (Uses the Muscle interface)
+//      3. Millard2012EquilibriumMuscle
+//      4. Millard2012AccelerationMuscle
 //      
 //     Add more test cases to address specific problems with muscle models
 //
