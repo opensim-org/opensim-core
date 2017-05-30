@@ -243,19 +243,23 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
         "passiveFiberForce", "equilibriumError"};
     forcesVsFiberLengthTable.setColumnLabels(labels);
 
+    // For the provided state, compute the muscle equilibrium error
+    // over a range of fiber-lengths. This should produce the function
+    // (curve), for which the equilibrium solve is finding the root.
     const int N = 100;
+    const double minFiberLength = muscle.getMinimumFiberLength();
     const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
-    double fiberLength = muscle.getMinimumFiberLength();
 
-    const double dl = (maxFiberLength - fiberLength) / N;
+    const double dl = (maxFiberLength - minFiberLength) / N;
 
+    double fiberLength = SimTK::NaN;
     double tendonForce = SimTK::NaN;
     double activeFiberForce = SimTK::NaN;
     double passiveFiberForce = SimTK::NaN;
 
     SimTK::RowVector row(int(labels.size()), SimTK::NaN);
     for (int i = 0; i <= N; ++i) {
-        fiberLength += dl;
+        fiberLength = minFiberLength + i*dl;
         s.setTime(fiberLength);
         muscle.setFiberLength(s, fiberLength);
         muscle.setActivation(s, muscle.get_default_activation());
