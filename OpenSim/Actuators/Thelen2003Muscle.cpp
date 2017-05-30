@@ -861,7 +861,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                 break;
             }
             else
-                h = 0.5*h;;
+                h = 0.5*h;
         }
 
         ferrPrev = ferr;
