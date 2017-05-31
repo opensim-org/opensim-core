@@ -1368,8 +1368,11 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
             else {
                 dtl = dml;
             }
+
+            // Update fiber velocity
             dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
             dlceN = dlce / (vmax*ofl);
+            // Update the force-velocity multiplier
             fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
     };

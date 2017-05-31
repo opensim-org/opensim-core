@@ -830,14 +830,10 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
             dtl = dml;
         }
 
-        // update fiber velocity
+        // Update fiber velocity
         dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
         dlceN = dlce / (vmax*ofl);
-
-        // Update the force-velocity multiplier based on new length
-        // NOTE: updating the force-multiplier during the Newton solve
-        // can make the algorithm unstable and unable to converge to
-        // a stationary value 
+        // Update the force-velocity multiplier
         fv = calcfvInv(ma, fal, dlceN, aSolTolerance, 100);
     };
 
