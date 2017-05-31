@@ -249,11 +249,6 @@ public:
         const override final;
     ///@endcond
 
-    /** Estimate the fiber velocity achieved for an estimate of the fiber 
-        length and the force velocity multiplier, fv, */
-    double estimateFiberVelocityFromStiffness(double lce, double fv,
-        const SimTK::State& s) const;
-
 protected:
 //==============================================================================
 // Protected Computations

@@ -1679,34 +1679,3 @@ double Thelen2003Muscle::
 
     OPENSIM_THROW_FRMOBJ(Exception, "Failed to calculate fiber-velocity.");
 }
-
-double Thelen2003Muscle::estimateFiberVelocityFromStiffness(double lce, double fv,
-                                                        const SimTK::State& s) const
-{
-    /*
-    if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
-        && tl > getTendonSlackLength()) {
-        //Ke = (dFmAT_dlceAT*dFt_d_tl) / (dFmAT_dlceAT + dFt_d_tl);
-        // resultant stiffness = k1/(k1+k2)
-        dtl = (dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl)) * dml;
-    }
-    else {
-        dtl = dml;
-    }
-
-    dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
-    */
-    double fiso = getMaxIsometricForce();
-    double tsl = getTendonSlackLength();
-
-    double phi = getPennationAngle(s);
-    double cosphi = getCosPennationAngle(s);
-    double vol = getPennationModel().getParallelogramHeight();
-
-    double tl = getPennationModel().calcTendonLength(
-                    getCosPennationAngle(s), lce, getLength(s));
-
-    double dFtdl = calcDFseDlce(tl, lce, phi, cosphi, fiso, tsl, vol);
-
-    return 0;
-}
