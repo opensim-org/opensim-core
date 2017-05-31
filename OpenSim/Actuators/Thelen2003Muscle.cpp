@@ -822,6 +822,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
         // model) is equal to the positive stiffness of the tendon.
         if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
             && tl > getTendonSlackLength()) {
+
             //Ke = (dFmAT_dlceAT*dFt_d_tl) / (dFmAT_dlceAT + dFt_d_tl);
             // resultant stiffness = k1/(k1+k2)
             dtl = (dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl)) * dml;

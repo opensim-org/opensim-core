@@ -37,8 +37,6 @@ void testTutorialOne();
 // Test different default activations are respected when activation
 // states are not provided.
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
-void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
-                                           const SimTK::State& state);
 
 int main()
 {
@@ -168,10 +166,10 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         try {
             muscle.computeEquilibrium(s);
         }
-        catch (const std::exception& x) {
-            // Write out the muscle equilibrium error as a function of
-            // fiber lengths.
-            reportTendonAndFiberForcesAcrossFiberLengths(model, s);
+        catch (const MuscleCannotEquilibrate& x) {
+            // Write out the muscle equilibrium for error as a function of
+            // fiber-length.
+            reportTendonAndFiberForcesAcrossFiberLengths(muscle, s);
             throw x;
         }
         model.realizeDynamics(s);
@@ -221,70 +219,4 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         SimTK_ASSERT_ALWAYS(delta < maxDelta,
             "Force trajectory has unexplained discontinuity.");
     }
-}
-
-/* For the TugOfWar model with a single muscle at a give state report 
-   how muscle (fiber) and tendon force varies with fiber-length. Also,
-   report the difference, which represents the function that the muscle
-   equilibrium solve is trying to find a root (zero) for. The intended
-   use is to invoke this method when the muscle fails to compute the
-   equilibrium fiber-length to help diagnose the cause of the failure.
-   */
-void reportTendonAndFiberForcesAcrossFiberLengths(const Model& model,
-                                           const SimTK::State& state) {
-    Millard2012EquilibriumMuscle& muscle =
-        static_cast<Millard2012EquilibriumMuscle&>(model.getMuscles()[0]);
-
-    SimTK::State s = state;
-
-    DataTable_<double, double> forcesVsFiberLengthTable;
-    std::vector<string> labels{ "fiber_length", "pathLength", 
-        "tendon_force", "fiber_force", "activation", "activeFiberForce",
-        "passiveFiberForce", "equilibriumError"};
-    forcesVsFiberLengthTable.setColumnLabels(labels);
-
-    // For the provided state, compute the muscle equilibrium error
-    // over a range of fiber-lengths. This should produce the function
-    // (curve), for which the equilibrium solve is finding the root.
-    const int N = 100;
-    const double minFiberLength = muscle.getMinimumFiberLength();
-    const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
-
-    const double dl = (maxFiberLength - minFiberLength) / N;
-
-    double fiberLength = SimTK::NaN;
-    double tendonForce = SimTK::NaN;
-    double activeFiberForce = SimTK::NaN;
-    double passiveFiberForce = SimTK::NaN;
-
-    SimTK::RowVector row(int(labels.size()), SimTK::NaN);
-    for (int i = 0; i <= N; ++i) {
-        fiberLength = minFiberLength + i*dl;
-        s.setTime(fiberLength);
-        muscle.setFiberLength(s, fiberLength);
-        muscle.setActivation(s, muscle.get_default_activation());
-
-        model.realizeDynamics(s);
-
-        tendonForce = muscle.getTendonForce(s);
-        activeFiberForce = muscle.getMaxIsometricForce()*
-            muscle.getActiveForceLengthMultiplier(s);
-        passiveFiberForce = muscle.getPassiveFiberForceAlongTendon(s);
-
-        row[0] = fiberLength; // muscle.getFiberLength(s);
-        row[1] = muscle.getLength(s);
-        row[2] = tendonForce;
-        row[3] = activeFiberForce + passiveFiberForce;
-        row[4] = muscle.getActivation(s);
-        row[5] = activeFiberForce;
-        row[6] = passiveFiberForce;
-        row[7] = row[2] - row[3];
-
-        forcesVsFiberLengthTable.appendRow(s.getTime(), row);
-    }
-
-    std::string fileName = "forcesVsFiberLength_"
-        + std::to_string(muscle.get_default_activation()) + ".sto";
-
-    STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
 }

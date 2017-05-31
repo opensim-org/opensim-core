@@ -930,83 +930,7 @@ void testDelp1990Muscle()
         false);
 }
 
-template <typename T = ActivationFiberLengthMuscle>
-void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
-    const SimTK::State& state)
-{
-    SimTK::State s = state;
 
-    DataTable_<double, double> forcesVsFiberLengthTable;
-    std::vector<string> labels{ "fiber_length", "pathLength",
-        "tendon_force", "fiber_force", "activation", "activeFiberForce",
-        "passiveFiberForce", "equilibriumError" };
-    forcesVsFiberLengthTable.setColumnLabels(labels);
-
-    const int N = 100;
-    const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
-    double fiberLength = 0.1*muscle.getOptimalFiberLength();
-
-    const double dl = (maxFiberLength - fiberLength) / N;
-
-    const double fiso = muscle.getMaxIsometricForce();
-
-
-    double vmt = SimTK::NaN;
-    //double vm = SimTK::NaN;
-    double tendonForce = SimTK::NaN;
-    double activeFiberForce = SimTK::NaN;
-    double passiveFiberForce = SimTK::NaN;
-    double cosphi = SimTK::NaN;
-    double flm = SimTK::NaN;
-    double a = SimTK::NaN;
-
-    double fvm = 1.5;
-
-    assert(!muscle.get_ignore_tendon_compliance());
-
-    SimTK::RowVector row(labels.size(), SimTK::NaN);
-    for (int i = 0; i < N; ++i) {
-        fiberLength += dl;
-        s.setTime(fiberLength);
-        muscle.setFiberLength(s, fiberLength);
-        muscle.getModel().realizeDynamics(s);
-
-        vmt = muscle.getSpeed(s);
-
-        tendonForce = muscle.getTendonForce(s);
-
-        a = muscle.getActivation(s);
-        
-        
-        flm = muscle.getActiveForceLengthMultiplier(s);
-        //fvm = muscle.getForceVelocityMultiplier(s);
-
-        cosphi = muscle.getCosPennationAngle(s);
-
-        //vm = (vmt-muscle.getPennationModel().calcTendonVelocity(s))*cosphi;
-
-
-        activeFiberForce = a*fiso*flm*fvm;
-            
-        passiveFiberForce = muscle.getPassiveFiberForce(s);
-
-        row[0] = fiberLength; // muscle.getFiberLength(s);
-        row[1] = muscle.getLength(s);
-        row[2] = tendonForce;
-        row[3] = (activeFiberForce + passiveFiberForce)*cosphi;
-        row[4] = muscle.getActivation(s);
-        row[5] = activeFiberForce;
-        row[6] = passiveFiberForce;
-        row[7] = row[3] - row[2];
-
-        forcesVsFiberLengthTable.appendRow(s.getTime(), row);
-    }
-
-    std::string fileName = "forcesVsFiberLength_"
-        + std::to_string(a) + ".sto";
-
-    STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
-}
 
 void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
 {
@@ -1051,7 +975,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
             try {
                 muscle.computeEquilibrium(s);
             }
-            catch (const std::exception& x) {
+            catch (const MuscleCannotEquilibrate& x) {
                 // Write out the muscle equilibrium error as a function of
                 // fiber lengths.
                 const Thelen2003Muscle* thelen =

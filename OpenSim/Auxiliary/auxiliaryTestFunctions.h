@@ -388,5 +388,85 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
     return deltas[nmedian];
 }
 
+/** A debugging utility for investigating muscle equilibrium failures.
+    For a given muscle at a given state report how the muscle fiber and
+    tendon force varies with fiber-length. Also, report the difference, 
+    which represents the function that the muscle equilibrium solver is
+    trying to find a root (zero) for. The intended use is to invoke this
+    method when the muscle fails to compute the equilibrium fiber-length,
+    so that one can plot the equilibrium force error vs. fiber-length
+    to help diagnose the cause of the failure. The force-velocity 
+    multiplier is assumed to be 1.0 (e.g. static fiber) unless otherwise
+    specified.*/
+template <typename T = ActivationFiberLengthMuscle>
+void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
+    const SimTK::State& state, const double fiberVelocityMultiplier = 1.0)
+{
+    // should only be using this utility for equilibrium muscles 
+    // with a compliant tendon
+    assert(!muscle.get_ignore_tendon_compliance());
+
+    SimTK::State s = state;
+
+    DataTable_<double, double> forcesVsFiberLengthTable;
+    std::vector<string> labels{ "fiber_length", "pathLength",
+        "tendon_force", "fiber_force", "activation", "activeFiberForce",
+        "passiveFiberForce", "equilibriumError" };
+    forcesVsFiberLengthTable.setColumnLabels(labels);
+
+    // Constants
+    const int N = 100;
+    const double maxFiberLength = 2.0*muscle.getOptimalFiberLength();
+    const double minFiberLength = muscle.getMinimumFiberLength();
+    const double dl = (maxFiberLength - minFiberLength) / N;
+    const double fiso = muscle.getMaxIsometricForce();
+
+    // Variables
+    double fiberLength = SimTK::NaN;
+    double vmt = SimTK::NaN;
+    double tendonForce = SimTK::NaN;
+    double activeFiberForce = SimTK::NaN;
+    double passiveFiberForce = SimTK::NaN;
+    double cosphi = SimTK::NaN;
+    double flm = SimTK::NaN;
+    double a = SimTK::NaN;
+
+    SimTK::RowVector row(labels.size(), SimTK::NaN);
+    for (int i = 0; i <= N; ++i) {
+        fiberLength = minFiberLength + i*dl;
+        s.setTime(fiberLength);
+        muscle.setFiberLength(s, fiberLength);
+        muscle.getModel().realizeDynamics(s);
+
+        vmt = muscle.getSpeed(s);
+
+        tendonForce = muscle.getTendonForce(s);
+
+        a = muscle.getActivation(s);
+
+        flm = muscle.getActiveForceLengthMultiplier(s);
+        cosphi = muscle.getCosPennationAngle(s);
+
+        activeFiberForce = a*fiso*flm*fiberVelocityMultiplier;
+
+        passiveFiberForce = muscle.getPassiveFiberForce(s);
+
+        row[0] = fiberLength; // muscle.getFiberLength(s);
+        row[1] = muscle.getLength(s);
+        row[2] = tendonForce;
+        row[3] = (activeFiberForce + passiveFiberForce)*cosphi;
+        row[4] = muscle.getActivation(s);
+        row[5] = activeFiberForce;
+        row[6] = passiveFiberForce;
+        row[7] = row[3] - row[2];
+
+        forcesVsFiberLengthTable.appendRow(s.getTime(), row);
+    }
+
+    std::string fileName = "forcesVsFiberLength_"
+        + std::to_string(a) + ".sto";
+
+    STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
+}
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
