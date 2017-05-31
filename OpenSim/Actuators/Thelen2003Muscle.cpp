@@ -938,9 +938,10 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
             (StatusFromInitMuscleState::Success_Converged, resultValues);
     }
 
-    if (iter < aMaxIterations) {  // Fiber length is at its lower bound.
+    // Fiber length is at or exceeds its lower bound.
+    if (lce <= getMinimumFiberLength()) {
 
-        lce = getPennationModel().getMinimumFiberLength();
+        lce = getMinimumFiberLength();
         phi = getPennationModel().calcPennationAngle(lce);
         cosphi = cos(phi);
         tl  = getPennationModel().calcTendonLength(cosphi,lce,ml);
