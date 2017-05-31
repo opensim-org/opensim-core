@@ -438,24 +438,9 @@ void simulateMuscle(
 //==========================================================================
     testMuscleEquilibriumSolve(model, states);
 
-/*==========================================================================
-    7. Initialization test: dF/dt ?= K*dl/dt for t = 0
-
-    dF/dt : the rate change of muscle force
-    K     : the stiffness of the whole muscle
-    dl/dt : the length change of the whole muscle
-
-    Here we compute dF/dt numerically, while at time zero we have the analytical
-    values for K and dl/dt
-============================================================================
-*/    
-    if(false){
-      cout << "CREATE THE INITIALIZATION TEST" << endl;    
-    }
-
 
 /*==========================================================================
-    8. Correctness test:  d/dt(KE+PE-W) = 0 ?
+    7. Correctness test:  d/dt(KE+PE-W) = 0 ?
     
     Check that the derivative of system energy less work is conserved
 ============================================================================
@@ -1032,18 +1017,19 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
     // The maximum acceptable change in force between two contiguous states
     const double maxDelta = muscle.getMaxIsometricForce() / 2;
 
-    const double dAct = 0.05;
-    double activation = 0.01;
+    const int N = 20;
+    const double minActivation = muscle.getMinControl();
+    const double dAct = (1.0 - minActivation) / N;
+    double activation = 0;
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
     for (int i = 0; i < nstates; ++i) {
         s = statesTraj[i];
 
-        activation = 0.01;
         // test a full sweep of default activations at each state
-        for (int j = 0; j*dAct <= 1.0; ++j) {
-            activation = (!j)*activation + j*dAct;
+        for (int j = 0; j <= N; ++j) {
+            activation = minActivation + j*dAct;
             muscle.setActivation(s, activation);
 
             try {
