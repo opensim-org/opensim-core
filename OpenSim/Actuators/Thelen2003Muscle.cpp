@@ -745,7 +745,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     double Fm = 0;          // Muscle force
     double FmAT=0;          // Muscle force along tendon
     double Ft = 0;          // Tendon force
-    double ferr = 1;        // Solution error
+    double ferr = SimTK::MostPositiveReal;        // Solution error
     
     double dFm_dlce     = 0;  // Partial derivative of muscle force w.r.t. lce
     double dFmAT_dlce   = 0;  // Partial derivative of muscle force along 
@@ -780,7 +780,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
         fpe = calcfpe(lceN);
     };
 
-    // Functional to compute the force error
+    // Functional to compute the equilibrium force error
     auto ferrFunc = [&] {
         Fm = (ma*fal*fv + fpe)*fiso;
         FmAT = Fm*cosphi;
