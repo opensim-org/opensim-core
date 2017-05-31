@@ -1234,15 +1234,14 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     }
 
     // Using short variable names to facilitate writing out long equations
-    double ma        = aActivation;
-    double ml        = pathLength;
-    double dml       = pathLengtheningSpeed;
-    double tsl       = getTendonSlackLength();
-    double ofl       = getOptimalFiberLength();
-    //double ophi      = getPennationAngleAtOptimalFiberLength();
-    //double penHeight = penMdl.getParallelogramHeight();
-    double fiso      = getMaxIsometricForce();
-    double vmax      = getMaxContractionVelocity();
+    const double ma        = aActivation;
+    const double ml        = pathLength;
+    const double dml       = pathLengtheningSpeed;
+    //Shorter version of the constants
+    const double tsl       = getTendonSlackLength();
+    const double ofl       = getOptimalFiberLength();
+    const double fiso      = getMaxIsometricForce();
+    const double vmax      = getMaxContractionVelocity();
 
     const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
     const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve();
@@ -1253,21 +1252,18 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     double fpe = 0.0;  // normalized parallel element force
 
     // Position level
-    double lce = 0.0;
     double tl  = getTendonSlackLength()*1.01;  // begin with small tendon force
+    double lce = clampFiberLength(getPennationModel().calcFiberLength(ml,tl));
 
-    lce = clampFiberLength(getPennationModel().calcFiberLength(ml,tl));
+    double phi = 0.0;
+    double cosphi = 1.0;
+    double sinphi = 0.0;
 
-    double phi    = getPennationModel().calcPennationAngle(lce);
-    double cosphi = cos(phi);
-    double sinphi = sin(phi);
+    //Normalized quantities
     double tlN    = tl/tsl;
     double lceN   = lce/ofl;
-
-    // Velocity level
+    // Velocity level first guess assume static
     double dtl    = 0.0;
-
-    // first guess assume static
     double dlce = 0.0;
     double dlceN  = 0.0;
 
@@ -1276,6 +1272,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     double FmAT         = 0.0;   // fiber force along tendon
     double Ft           = 0.0;   // tendon force
     double ferr         = SimTK::MostPositiveReal;  // solution error
+
     double dFm_dlce     = 0.0;   // partial of muscle force w.r.t. lce
     double dFmAT_dlce   = 0.0;   // partial of muscle force along tl w.r.t. lce
     double dFmAT_dlceAT = 0.0;   // partial of muscle force along tl w.r.t. lce
@@ -1285,110 +1282,38 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
     double dferr_d_lce  = 0.0;   // partial of solution error w.r.t lce
     double delta_lce    = 0.0;   // change in lce
 
-    // Initialize the loop
-    int iter = 0;
-    SimTK::Vec4 fiberForceV;
+    SimTK::Vec4 fiberForceV(SimTK::NaN);
 
-    // Update the multipliers and their partial derivatives
-    fal = falCurve.calcValue(lceN);
-    fpe = fpeCurve.calcValue(lceN);
-    fse = fseCurve.calcValue(tlN);
-    fv = 1.0;
+    //*******************************
+    // Helper functions
+    //Update position level quantities, only if they won't go singular
+    auto positionFunc = [&] {
+        phi = getPennationModel().calcPennationAngle(lce);
+        cosphi = cos(phi);
+        sinphi = sin(phi);
+        tl = ml - lce*cosphi;
+        lceN = lce / ofl;
+        tlN = tl / tsl;
+    };
 
-    fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
-    Fm = fiberForceV[0];
+    // Functional to update the force multipliers
+    auto multipliersFunc = [&] {
+        fal = falCurve.calcValue(lceN);
+        fpe = fpeCurve.calcValue(lceN);
+        fse = fseCurve.calcValue(tlN);
+    };
 
-    // Compute the partial derivative of the force error w.r.t. lce
-    dFm_dlce = calcFiberStiffness(fiso, ma, fv, lceN, ofl);
-    dFmAT_dlce = calc_DFiberForceAT_DFiberLength(Fm, dFm_dlce, lce,
-        sinphi, cosphi);
-    dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce, sinphi,
-        cosphi, lce);
-    dFt_d_tl = fseCurve.calcDerivative(tlN, 1)*fiso / tsl;
-    dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
-        sinphi, cosphi);
+    // Functional to compute the equilibrium force error
+    auto ferrFunc = [&] {
+        fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
+        Fm = fiberForceV[0];
+        FmAT = Fm * cosphi;
+        Ft = fse*fiso;
+        ferr = FmAT - Ft;
+    };
 
-    // if not static (0 velocity) solution, then distribute velocity to 
-    // fiber and tendon according to relative stiffness
-    if (!staticSolution) {
-        if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
-            && tlN > 1.0) {
-            //Ke = (dFmAT_dlceAT*dFt_d_tl) / (dFmAT_dlceAT + dFt_d_tl);
-            //dtl = (1 / dFt_d_tl)*Ke*dml;
-            dtl = dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl) * dml;
-        }
-        else {
-            dtl = dml;
-        }
-
-        dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
-        dlceN = dlce / (vmax*ofl);
-        fv = get_ForceVelocityCurve().calcValue(dlceN);
-    }
-    // Compute the force error
-    fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
-    Fm = fiberForceV[0];
-    FmAT = Fm * cosphi;
-    Ft = fse*fiso;
-    ferr = FmAT - Ft;
-
-    double ferrPrev = ferr;
-    double lcePrev = lce;
-
-    double h =1.0;
-    while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations)) {
-        // Compute search direction
-        dferr_d_lce = dFmAT_dlce - dFt_d_lce;
-        h = 1.0;
-
-        while (abs(ferr) >= abs(ferrPrev)) {
-            // Compute the Newton step
-            delta_lce = -h*ferrPrev / dferr_d_lce;
-            // Take a Newton Step if the step is nonzero
-            if (abs(delta_lce) > SimTK::SignificantReal)
-                lce = lcePrev + delta_lce;
-            else {
-                // We've stagnated or hit a limit; assume we are hitting local
-                // minimum and attempt to approach from the other direction.
-                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
-                h = 0;
-            }
-
-            if (lce < getMinimumFiberLength()) {
-                lce = getMinimumFiberLength();
-            }
-
-            // Update position level quantities only if they won't go singular
-            phi = getPennationModel().calcPennationAngle(lce);
-            sinphi = sin(phi);
-            cosphi = cos(phi);
-            tl = getPennationModel().calcTendonLength(cosphi, lce, ml);
-            lceN = lce / ofl;
-            tlN = tl / tsl;
-
-            // Update the multipliers and their partial derivatives
-            fal = falCurve.calcValue(lceN);
-            fpe = fpeCurve.calcValue(lceN);
-            fse = fseCurve.calcValue(tlN);
-
-            // Compute the force error
-            fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
-            Fm = fiberForceV[0];
-            FmAT = Fm * cosphi;
-            Ft = fse*fiso;
-            ferr = FmAT - Ft;
-
-            if (h <= SimTK::SqrtEps) {
-                break;
-            }
-            else
-                h = 0.5*h;;
-        }
-
-        ferrPrev = ferr;
-        lcePrev = lce;
-        
-        // Update the partial derivative of the force error w.r.t. lce
+    // Functional to compute the partial derivative of muscle force w.r.t. lce
+    auto partialsFunc = [&] {
         dFm_dlce = calcFiberStiffness(fiso, ma, fv, lceN, ofl);
         dFmAT_dlce = calc_DFiberForceAT_DFiberLength(Fm, dFm_dlce, lce,
             sinphi, cosphi);
@@ -1397,7 +1322,11 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         dFt_d_tl = fseCurve.calcDerivative(tlN, 1)*fiso / tsl;
         dFt_d_lce = calc_DTendonForce_DFiberLength(dFt_d_tl, lce,
             sinphi, cosphi);
-        
+    };
+
+    // Functional to estimate fiber velocity and force-velocity multiplier
+    // from the relative fiber and tendon stiffnesses from above partials 
+    auto velocityFunc = [&] {
         /* Update velocity-level quantities if not staticSolution.
         Share the muscle velocity between the tendon and the fiber
         according to their relative stiffnesses:
@@ -1428,21 +1357,101 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         Stiffness of the muscle is the stiffness of the tendon and the fiber
         (along the tendon) in series. */
 
-        if(!staticSolution) {
+        if (!staticSolution) {
             // The "if" statement here is to handle the special case where the
             // negative stiffness of the fiber (which happens in this model) is
             // equal to the positive stiffness of the tendon.
-            if( abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal 
-                    && tlN > 1.0) {
+            if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
+                && tlN > 1.0) {
                 dtl = dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl) * dml;
             }
             else {
                 dtl = dml;
             }
-            dlce   = getPennationModel().calcFiberVelocity(cosphi,dml,dtl);
-            dlceN  = dlce/(vmax*ofl);
+            dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
+            dlceN = dlce / (vmax*ofl);
             fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
+    };
+
+    //*******************************
+    //Initialize the loop
+    int iter = 0;
+
+    // Estimate the position level quantities (lengths, angles) of the muscle
+    positionFunc();
+
+    // Multipliers based on initial fiber-length estimate
+    multipliersFunc();
+
+    // Starting guess at the force-velocity multiplier is static
+    fv = 1.0;
+
+    fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
+    Fm = fiberForceV[0];
+
+    // Compute the partial derivative of the force error w.r.t. lce
+    partialsFunc();
+
+    // update fiber and tendon velocity and velocity multiplier
+    velocityFunc();
+
+    // Compute the force error
+    ferrFunc();
+
+    // Update the partial derivatives of the force error w.r.t. lce with 
+    // newly estimated fv
+    partialsFunc();
+
+    double ferrPrev = ferr;
+    double lcePrev = lce;
+
+    double h =1.0;
+    while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations)) {
+        // Compute search direction
+        dferr_d_lce = dFmAT_dlce - dFt_d_lce;
+        h = 1.0;
+
+        while (abs(ferr) >= abs(ferrPrev)) {
+            // Compute the Newton step
+            delta_lce = -h*ferrPrev / dferr_d_lce;
+            // Take a Newton Step if the step is nonzero
+            if (abs(delta_lce) > SimTK::SignificantReal)
+                lce = lcePrev + delta_lce;
+            else {
+                // We've stagnated or hit a limit; assume we are hitting local
+                // minimum and attempt to approach from the other direction.
+                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                h = 0;
+            }
+
+            if (lce < getMinimumFiberLength()) {
+                lce = getMinimumFiberLength();
+            }
+
+            // Update position level quantities only if they won't go singular
+            positionFunc();
+
+            // Update the multipliers and their partial derivatives
+            multipliersFunc();
+
+            // Compute the force error
+            ferrFunc();
+
+            if (h <= SimTK::SqrtEps) {
+                break;
+            }
+            else
+                h = 0.5*h;;
+        }
+
+        ferrPrev = ferr;
+        lcePrev = lce;
+        
+        // Update the partial derivative of the force error w.r.t. lce
+        partialsFunc();
+        // Update velocity estimate and velocity multiplier
+        velocityFunc();
 
         iter++;
     }
@@ -1467,9 +1476,10 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
           (StatusFromEstimateMuscleFiberState::Success_Converged, resultValues);
     }
 
-    if(iter < aMaxIterations) {  // Fiber length is at its lower bound.
+    // Fiber length is at or exceeds its lower bound.
+    if (lce <= getMinimumFiberLength()) {
 
-        lce    = getMinimumFiberLength();
+        lce = getMinimumFiberLength();
         phi    = getPennationModel().calcPennationAngle(lce);
         cosphi = cos(phi);
         tl     = getPennationModel().calcTendonLength(cosphi,lce,ml);
