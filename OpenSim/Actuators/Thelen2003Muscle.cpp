@@ -708,12 +708,12 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     double dml= getLengtheningSpeed(s);
 
     //Shorter version of the constants
-    double tsl = getTendonSlackLength();
-    double ofl = getOptimalFiberLength();
-    double ophi= getPennationAngleAtOptimalFiberLength();
-    double vol = ofl * sin(ophi);
-    double fiso= getMaxIsometricForce();
-    double vmax = getMaxContractionVelocity();//getPropertyValue<double>(VmaxName);
+    const double tsl = getTendonSlackLength();
+    const double ofl = getOptimalFiberLength();
+    const double ophi= getPennationAngleAtOptimalFiberLength();
+    const double vol = ofl * sin(ophi);
+    const double fiso= getMaxIsometricForce();
+    const double vmax = getMaxContractionVelocity();
 
     //Shorter version of normalized muscle multipliers
     double fse = 0; //Normalized tendon (series element) force
@@ -723,14 +723,12 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
 
     //*******************************
     //Position level
-    double lce = 0;
     double tl  = getTendonSlackLength()*1.01;
-
-    lce = getPennationModel().calcFiberLength( ml, tl);
+    double lce = getPennationModel().calcFiberLength(ml, tl);
     
-    double phi      = getPennationModel().calcPennationAngle(lce);
-    double cosphi   = cos(phi);
-    double sinphi   = sin(phi);  
+    double phi    = 0.0; 
+    double cosphi = 1.0; 
+    double sinphi = 0.0;  
 
     //Normalized quantities
     double tlN  = tl/tsl;
@@ -765,116 +763,44 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     double Ke          = 0;  // Linearized local stiffness of the muscle
 
     //*******************************
-    //Initialize the loop
-    
-    int iter = 0;
+    // Helper functions
+    //Update position level quantities, only if they won't go singular
+    auto positionFunc = [&] {
+        phi = getPennationModel().calcPennationAngle(lce);
+        cosphi = cos(phi);
+        tl = ml - lce*cosphi;
+        lceN = lce / ofl;
+        tlN = tl / tsl;
+    };
 
-    //Update the multipliers and their partial derivatives
-    fse = calcfse(tlN);
-    fal = calcfal(lceN);
-    fpe = calcfpe(lceN);
+    // Functional to update the force multipliers 
+    auto multipliersFunc = [&] {
+        fse = calcfse(tlN);
+        fal = calcfal(lceN);
+        fpe = calcfpe(lceN);
+    };
 
-    // Starting guess at the force-velocity multiplier
-    fv = 1.0;
+    // Functional to compute the force error
+    auto ferrFunc = [&] {
+        Fm = (ma*fal*fv + fpe)*fiso;
+        FmAT = Fm*cosphi;
+        Ft = fse*fiso;
+        ferr = FmAT - Ft;
+    };
 
-    //Compute the partial derivative of the force error w.r.t. lce
-    dFm_dlce = calcDFmDlce(lce, ma, fv, fiso, ofl);
-    dFmAT_dlce = calcDFmATDlce(lce, phi, cosphi, Fm, dFm_dlce, vol);
-    dFmAT_dlceAT = dFmAT_dlce*cosphi;
-
-    dFt_d_tl = calcDFseDtl(tl, fiso, tsl);
-    dFt_d_lce = calcDFseDlce(tl, lce, phi, cosphi, fiso, tsl, vol);
-
-    if (abs(dFmAT_dlceAT + dFt_d_tl) > SimTK::SignificantReal
-        && tl > getTendonSlackLength()) {
-        //Ke = (dFmAT_dlceAT*dFt_d_tl) / (dFmAT_dlceAT + dFt_d_tl);
-        // resultant stiffness = k1/(k1+k2)
-        dtl = (dFmAT_dlceAT / (dFmAT_dlceAT + dFt_d_tl)) * dml;
-    }
-    else {
-        dtl = dml;
-    }
-
-    dlce = getPennationModel().calcFiberVelocity(cosphi, dml, dtl);
-    dlceN = dlce / (vmax*ofl);
-
-    // Update the force-velocity multiplier based on new length
-    fv = calcfvInv(ma, fal, dlceN, aSolTolerance, 100);
-
-    // Update the partial derivative of the force error w.r.t. lce with 
-    // newly estimated fv
-    dFm_dlce = calcDFmDlce(lce, ma, fv, fiso, ofl);
-    dFmAT_dlce = calcDFmATDlce(lce, phi, cosphi, Fm, dFm_dlce, vol);
-    dFmAT_dlceAT = dFmAT_dlce*cosphi;
-
-    //Compute the force error
-    Fm = (ma*fal*fv + fpe)*fiso;
-    FmAT = Fm*cosphi;
-    Ft = fse*fiso;
-    ferr = FmAT - Ft;
-
-    double ferrPrev = ferr;
-    double lcePrev = lce;
-
-    double h = 1.0;
-    while( (abs(ferr) > aSolTolerance)  && (iter < aMaxIterations)) {
-        dferr_d_lce = dFmAT_dlce - dFt_d_lce;
-        h = 1.0;
-
-        while (abs(ferr) >= abs(ferrPrev)) {
-             // Compute the Newton step
-            delta_lce = -h*ferrPrev / dferr_d_lce;
-            // Take a Newton Step if the step is nonzero
-            if (abs(delta_lce) > SimTK::SignificantReal)
-                lce = lcePrev + delta_lce;
-            else {
-                // We've stagnated or hit a limit; assume we are hitting local
-                // minimum and attempt to approach from the other direction.
-                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
-                h = 0;
-            }
-
-            if (lce < getMinimumFiberLength()) {
-                lce = getMinimumFiberLength();
-            }
-
-            //Update position level quantities, only if they won't go singular
-            phi = getPennationModel().calcPennationAngle(lce);
-            cosphi = cos(phi);
-            tl = ml - lce*cosphi;
-            lceN = lce / ofl;
-            tlN = tl / tsl;
-
-            //Update the multipliers and their partial derivatives
-            fse = calcfse(tlN);
-            fal = calcfal(lceN);
-            fpe = calcfpe(lceN);
-
-            // Compute the force error assuming fiber-velocity estimated is
-            // unchanged
-            Fm = (ma*fal*fv + fpe)*fiso;
-            FmAT = Fm*cosphi;
-            Ft = fse*fiso;
-            ferr = FmAT - Ft;
-
-            if (h <= SimTK::SqrtEps ) {
-                break;
-            }
-            else
-                h = 0.5*h;
-        }
-
-        ferrPrev = ferr;
-        lcePrev = lce;
-
-        //Update the partial derivative of the force error w.r.t. lce
+    // Functional to compute the partial derivative of muscle force w.r.t. lce
+    auto partialsFunc = [&] {
         dFm_dlce = calcDFmDlce(lce, ma, fv, fiso, ofl);
         dFmAT_dlce = calcDFmATDlce(lce, phi, cosphi, Fm, dFm_dlce, vol);
         dFmAT_dlceAT = dFmAT_dlce*cosphi;
 
         dFt_d_tl = calcDFseDtl(tl, fiso, tsl);
         dFt_d_lce = calcDFseDlce(tl, lce, phi, cosphi, fiso, tsl, vol);
+    };
 
+    // Functional to estimate fiber velocity and force-velocity multiplier
+    // from the relative fiber and tendon stiffnesses from above partials 
+    auto velocityFunc = [&] {
         //Update velocity level quantities: share the muscle velocity 
         //between the tendon and the fiber according to their relative 
         //stiffness:
@@ -915,6 +841,84 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
         // can make the algorithm unstable and unable to converge to
         // a stationary value 
         fv = calcfvInv(ma, fal, dlceN, aSolTolerance, 100);
+    };
+
+    //*******************************
+    //Initialize the loop
+    
+    int iter = 0;
+
+    // Estimate the position level quantities (lengths, angles) of the muscle
+    positionFunc();
+
+    // Multipliers based on initial fiber-length estimate
+    multipliersFunc();
+
+    // Starting guess at the force-velocity multiplier
+    fv = 1.0;
+
+    // Estimate partial derivatives of muscle forces
+    partialsFunc();
+
+    // Update the velocity (and multiplier) estimate from partials
+    velocityFunc();
+
+    // Compute the equilibrium error with velocity estimate
+    ferrFunc();
+
+    // Update the partial derivatives of the force error w.r.t. lce with 
+    // newly estimated fv
+    partialsFunc();
+
+    double ferrPrev = ferr;
+    double lcePrev = lce;
+
+    double h = 1.0;
+    while( (abs(ferr) > aSolTolerance)  && (iter < aMaxIterations)) {
+        dferr_d_lce = dFmAT_dlce - dFt_d_lce;
+        h = 1.0;
+
+        while (abs(ferr) >= abs(ferrPrev)) {
+             // Compute the Newton step
+            delta_lce = -h*ferrPrev / dferr_d_lce;
+            // Take a Newton Step if the step is nonzero
+            if (abs(delta_lce) > SimTK::SignificantReal)
+                lce = lcePrev + delta_lce;
+            else {
+                // We've stagnated or hit a limit; assume we are hitting local
+                // minimum and attempt to approach from the other direction.
+                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                h = 0;
+            }
+
+            if (lce < getMinimumFiberLength()) {
+                lce = getMinimumFiberLength();
+            }
+
+            // Update the position level quantities (lengths, angles) of the muscle
+            positionFunc();
+
+            //Update the multipliers and their partial derivatives
+            multipliersFunc();
+
+            // Compute the force error assuming fiber-velocity estimated is
+            // unchanged
+            ferrFunc();
+
+            if (h <= SimTK::SqrtEps ) {
+                break;
+            }
+            else
+                h = 0.5*h;
+        }
+
+        ferrPrev = ferr;
+        lcePrev = lce;
+
+        // Update the partial derivative of the force error w.r.t. lce
+        partialsFunc();
+        // Update velocity estimate and velocity multiplier
+        velocityFunc();
 
         iter++;
     }
