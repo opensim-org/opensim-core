@@ -867,6 +867,9 @@ void testMillard2012AccelerationMuscle()
 
     Sine motion(0.1, SimTK::Pi, 0);
 
+    // Note that simulateMuscle will call testMuscleEquilibriumSolve() but it
+    // will ignore the Millard2012AccelerationMuscle because it is not an
+    // equilibrium-based muscle model.
     simulateMuscle(muscle, 
         x0, 
         act0, 
