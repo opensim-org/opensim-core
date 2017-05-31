@@ -806,7 +806,7 @@ void testMillard2012EquilibriumMuscle()
         &control,
         false);
 
-    // Test exception when muscle cannot be initialized.
+    // Test extremely short fiber where muscle should still initialize.
     {
         auto model = Model();
 
@@ -821,12 +821,27 @@ void testMillard2012EquilibriumMuscle()
         SimTK::State& state = model.initSystem();
         muscle->setActivation(state, 1.);
         model.realizeVelocity(state);
-        //ASSERT_THROW( MuscleCannotEquilibrate,
-        // Doesn't throw because a slack tendon is fine as long as muscle force is zero
-        // At min fiber length the fiber produces 0 force and it finds equilibrium at
-        // that point.
         muscle->computeInitialFiberEquilibrium(state);
     }
+
+    // Test extremely short (but stretched) fiber, which should still initialize.
+    {
+        auto model = Model();
+
+        const double optimalFiberLength = 0.01; //short fiber and
+        const double tendonSlackLength =  0.1; //short tendon
+        auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
+            optimalFiberLength, tendonSlackLength, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0, 0, 1));
+        model.addForce(muscle);
+
+        SimTK::State& state = model.initSystem();
+        muscle->setActivation(state, 0.01);
+        model.realizeVelocity(state);
+        muscle->computeInitialFiberEquilibrium(state);
+    }
+
 }
 
 void testMillard2012AccelerationMuscle()
