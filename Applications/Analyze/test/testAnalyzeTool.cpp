@@ -151,7 +151,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
 
     // The maximum acceptable change in force between two contiguous states
-    const double maxDelta = muscle.getMaxIsometricForce() / 2;
+    const double maxDelta = muscle.getMaxIsometricForce() / 10;
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
