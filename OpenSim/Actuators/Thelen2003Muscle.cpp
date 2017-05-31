@@ -701,11 +701,10 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                                   const double aSolTolerance,
                                   const int aMaxIterations) const
 {
-    //I'm using smaller variable names here to make it possible to write out 
-    //lengthy equations
-    double ma = aActivation;
-    double ml = getLength(s);
-    double dml= getLengtheningSpeed(s);
+    // Using short variable names to facilitate writing out long equations
+    const double ma = aActivation;
+    const double ml = getLength(s);
+    const double dml= getLengtheningSpeed(s);
 
     //Shorter version of the constants
     const double tsl = getTendonSlackLength();
@@ -728,7 +727,6 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     
     double phi    = 0.0; 
     double cosphi = 1.0; 
-    double sinphi = 0.0;  
 
     //Normalized quantities
     double tlN  = tl/tsl;
@@ -845,7 +843,6 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
 
     //*******************************
     //Initialize the loop
-    
     int iter = 0;
 
     // Estimate the position level quantities (lengths, angles) of the muscle
