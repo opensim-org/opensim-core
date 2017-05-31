@@ -362,8 +362,9 @@ void simulateMuscle(
     double length = muscle.getLength(si);
     double trueLength = startX + xSinG - anchorWidth/2;
     
-    //ASSERT_EQUAL(length/trueLength, 1.0, testTolerance, __FILE__, __LINE__, 
-    //    "testMuscles: path failed to initialize to correct length." );
+    ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance,
+                __FILE__, __LINE__,
+                "testMuscles: path failed to initialize to correct length." );
 
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
