@@ -1072,7 +1072,7 @@ void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
             const Coordinate& coord = coordinateSet.get(index);
             if (coord.getMotionType() == Coordinate::Rotational) {
                 // assumes first data column is 0 whereas labels has time as 0
-                table.updDependentColumnAtIndex(i) *= SimTK_RADIAN_TO_DEGREE;
+                table.updDependentColumnAtIndex(i) *= factor;
             }
         }
     }
@@ -1114,6 +1114,16 @@ void SimbodyEngine::convertRadiansToDegrees(TimeSeriesTable& table) const {
     scaleRotationalDofColumns(table, SimTK_RADIAN_TO_DEGREE);
     table.removeTableMetaDataKey("inDegrees");
     table.addTableMetaData("inDegrees", std::string{"yes"});
+}
+
+void SimbodyEngine::convertDegreesToRadians(TimeSeriesTable& table) const {
+    OPENSIM_THROW_IF(table.getTableMetaData<std::string>("inDegrees") == "no",
+                     Exception,
+                     "Columns of the table provided are already in radians.");
+
+    scaleRotationalDofColumns(table, SimTK_DEGREE_TO_RADIAN);
+    table.removeTableMetaDataKey("inDegrees");
+    table.addTableMetaData("inDegrees", std::string{"no"});
 }
 
 //_____________________________________________________________________________

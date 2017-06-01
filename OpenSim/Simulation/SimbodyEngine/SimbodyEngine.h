@@ -146,6 +146,7 @@ public:
     void convertRadiansToDegrees(Storage &rStorage) const;
     void convertRadiansToDegrees(TimeSeriesTable& table) const;
     void convertDegreesToRadians(Storage &rStorage) const;
+    void convertDegreesToRadians(TimeSeriesTable& table) const;
     void convertDegreesToRadians(double *aQDeg, double *rQRad) const;
     void convertRadiansToDegrees(double *aQRad, double *rQDeg) const;
 
