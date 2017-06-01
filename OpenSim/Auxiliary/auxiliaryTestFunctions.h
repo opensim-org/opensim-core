@@ -28,6 +28,7 @@
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include "OpenSim/Common/STOFileAdapter.h"
+#include "OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h"
 #include "getRSS.h"
 
 #include <fstream>
@@ -408,8 +409,8 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 
     SimTK::State s = state;
 
-    DataTable_<double, double> forcesVsFiberLengthTable;
-    std::vector<string> labels{ "fiber_length", "pathLength",
+    OpenSim::DataTable_<double, double> forcesVsFiberLengthTable;
+    std::vector<std::string> labels{ "fiber_length", "pathLength",
         "tendon_force", "fiber_force", "activation", "activeFiberForce",
         "passiveFiberForce", "equilibriumError" };
     forcesVsFiberLengthTable.setColumnLabels(labels);
@@ -466,7 +467,7 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
     std::string fileName = "forcesVsFiberLength_"
         + std::to_string(a) + ".sto";
 
-    STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
+    OpenSim::STOFileAdapter::write(forcesVsFiberLengthTable, fileName);
 }
 
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_
