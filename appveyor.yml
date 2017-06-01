@@ -73,7 +73,7 @@ install:
 
   ## Use Chocolatey to install SWIG.
   # Only install swig if it isn't present (as a result of AppVeyor's caching).
-  - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.6 --yes --limit-output #> $null
+  - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.8 --yes --limit-output #> $null
   
   ## Install python-nose for python testing.
   - "%PYTHON_DIR%\\Scripts\\pip install nose"

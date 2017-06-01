@@ -1,11 +1,7 @@
 if(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
-    if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        set(required_swig_version 3.0.6)
-    elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
-        # https://github.com/tensorflow/tensorflow/issues/830
-        set(required_swig_version 3.0.8)
-    endif()
-    find_package(SWIG ${required_swig_version} REQUIRED)
+    # We require 3.0.8 for the reason mentioned here (for Yython 3):
+    # https://github.com/tensorflow/tensorflow/issues/830
+    find_package(SWIG 3.0.8 REQUIRED)
 endif()
 
 # Flags are both Python and Java bindings will use.

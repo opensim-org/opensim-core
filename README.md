@@ -192,13 +192,12 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
     * **Python scripting** (optional): Python >= 2.7 (including Python 3)
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
-        * Note: Python 3 requires SWIG 3.0.8.
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
 
@@ -452,7 +451,7 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
@@ -460,7 +459,6 @@ ctest -j8
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
-        * Note: Python 3 requires SWIG 3.0.8.
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
 
@@ -612,7 +610,7 @@ On Ubuntu using Unix Makefiles
 #### Get the dependencies
 
 Most dependencies can be obtained via the Ubuntu software repositories;
-especially if you are using Ubuntu 15.10 or later. On each line below, we show
+especially if you are using Ubuntu 16.04 or later. On each line below, we show
 the Ubuntu package names for the dependencies. You can find instructions for
 specific Ubuntu versions under 'For the impatient' below.
 
@@ -634,13 +632,12 @@ specific Ubuntu versions under 'For the impatient' below.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8; `swig`.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
     * **Python scripting** (optional): Python >= 2.7 (including Python 3); `python-dev`.
-        * Note: Python 3 requires SWIG 3.0.8.
 
 For example, you could get the required dependencies (except Simbody) via:
 
