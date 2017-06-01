@@ -321,6 +321,13 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     std::string line{};
     while(std::getline(in_stream, line)) {
         ++line_num;
+
+        // We might be parsing a file with CRLF (\r\n) line endings on a
+        // platform that uses only LF (\n) line endings, in which case the \r
+        // is part of `line` and we must remove it manually.
+        if (!line.empty() && line.back() == '\r') 
+            line.pop_back();
+
         if(std::regex_match(line, endheader))
             break;
 
