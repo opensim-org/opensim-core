@@ -306,6 +306,10 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     OPENSIM_THROW_IF(!in_stream.good(),
                      FileDoesNotExist,
                      fileName);
+    
+    OPENSIM_THROW_IF(in_stream.peek() == std::ifstream::traits_type::eof(),
+                     FileIsEmpty,
+                     fileName);
 
     auto table = std::make_shared<TimeSeriesTable_<T>>();
 
@@ -360,6 +364,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     // Read the line containing column labels and fill up the column labels
     // container.
     auto column_labels = nextLine();
+    OPENSIM_THROW_IF(column_labels.size() == 0, Exception,
+                     "No column labels detected in file '" + fileName + "'.");
     ++line_num;
     // Column 0 is the time column. Check and get rid of it. The data in this
     // column is maintained separately from rest of the data.
