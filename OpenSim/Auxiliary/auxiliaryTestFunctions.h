@@ -399,7 +399,7 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
     to help diagnose the cause of the failure. The force-velocity 
     multiplier is assumed to be 1.0 (e.g. static fiber) unless otherwise
     specified.*/
-template <typename T = ActivationFiberLengthMuscle>
+template <typename T = OpenSim::ActivationFiberLengthMuscle>
 void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
     const SimTK::State& state, const double fiberVelocityMultiplier = 1.0)
 {
