@@ -213,7 +213,7 @@ void Thelen2003Muscle::setMaximumPennationAngle(double maximumPennationAngle)
 {   set_maximum_pennation_angle(maximumPennationAngle); }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                             START OF DEPRECATED
 //==============================================================================
 double Thelen2003Muscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
@@ -297,7 +297,7 @@ double Thelen2003Muscle::
 }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                              END OF DEPRECATED
 //==============================================================================
 
 //==============================================================================

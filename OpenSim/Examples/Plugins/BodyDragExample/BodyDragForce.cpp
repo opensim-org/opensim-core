@@ -115,12 +115,15 @@ void BodyDragForce::computeForce(const SimTK::State& s,
 
     SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
     BodySet &bs = _model->updBodySet();                                     // get body set
-    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
+    const Ground &ground = _model->getGround(); // get ground body
     Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
 
-    bodyCoMPosBody = aBody.getMassCenter();                                                 // get CoM position of body in the BODY coordinate system
-    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
-    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
+    // get CoM position of body in the BODY coordinate system
+    bodyCoMPosBody = aBody.getMassCenter();
+    // get CoM position of body in the GROUND coordinate system
+    bodyCoMPosGround = aBody.getPositionInGround(s);
+    // get CoM velocity of body in the GROUND coordinate system
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
 
     for (int i=0; i<3;i++)
     {
@@ -131,8 +134,10 @@ void BodyDragForce::computeForce(const SimTK::State& s,
         dragForceGround[i] = oppVelSign[i] * get_coefficient() * std::pow(bodyCoMVelGround[i], get_exponent()); // calculate drag force in the GROUND coordinate system
     }
 
-    _model->getSimbodyEngine().transform(s, ground, dragForceGround, aBody, dragForceBody);         // transform drag force into the BODY coordinate system
-
+    // transform drag force into the BODY coordinate system
+    dragForceBody = ground.expressVectorInAnotherFrame(s,
+                                                       dragForceGround,
+                                                       aBody);
 
     // Apply drag force to the body
     // ------------------------------
@@ -157,7 +162,7 @@ void BodyDragForce::computeForce(const SimTK::State& s,
         cout << "Drag coefficient = " << get_coefficient() << "\tDrag exponent = " << get_exponent() << endl;
         cout << "dragForce (ground) = " << dragForceGround << endl;
         cout << "dragForce (body frame) = " << dragForceBody << endl;
-        system("pause");
+        auto res = system("pause");
     }
 
     return;
@@ -194,12 +199,15 @@ OpenSim::Array<double> BodyDragForce::getRecordValues(const SimTK::State& s) con
 
     SimTK::Vec3 bodyCoMPosBody, bodyCoMPosGround, bodyCoMVelGround, bodyCoMVelGroundRaisedPower, dragForceGround, dragForceBody, oppVelSign;
     BodySet &bs = _model->updBodySet();                                     // get body set
-    Body &ground = _model->getSimbodyEngine().getGroundBody();              // get ground body
+    const Ground &ground = _model->getGround();              // get ground body
     Body &aBody = bs.get(get_body_name());                                      // get the body to apply the force to
 
-    bodyCoMPosBody = aBody.getMassCenter();                                                 // get CoM position of body in the BODY coordinate system
-    _model->getSimbodyEngine().getPosition(s, aBody, bodyCoMPosBody, bodyCoMPosGround);     // get CoM position of body in the GROUND coordinate system
-    _model->getSimbodyEngine().getVelocity(s, aBody, bodyCoMPosBody, bodyCoMVelGround);     // get CoM velocity of body in the GROUND coordinate system
+    // get CoM position of body in the BODY coordinate system
+    bodyCoMPosBody = aBody.getMassCenter();
+    // get CoM position of body in the GROUND coordinate system
+    bodyCoMPosGround = aBody.getPositionInGround(s);
+    // get CoM velocity of body in the GROUND coordinate system
+    bodyCoMVelGround = aBody.findStationVelocityInGround(s, bodyCoMPosBody);
 
     for (int i=0; i<3;i++)
     {

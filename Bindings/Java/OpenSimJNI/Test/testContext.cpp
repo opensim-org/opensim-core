@@ -187,6 +187,41 @@ int main()
     context->cacheModelAndState();
     PropertyHelper::setValueDouble(v, massProp);
     context->restoreStateFromCachedModel();
+
+    // Exercise PathPoint operations used to edit Path in GUI
+    PathPointSet& pathPoints = dTRIlong->updGeometryPath().updPathPointSet();
+    std::string pathBeforeInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathBeforeInXML << endl;
+    int origSize = pathPoints.getSize();
+    AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
+    const std::string& saveFrameName = savePoint.getParentFrame().getName();
+    AbstractPathPoint* clonedPoint = savePoint.clone();
+
+    // Test delete second PathPoint from TRIlong muscle
+    context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
+    assert(pathPoints.getSize() == origSize - 1);
+    std::string pathAfterDeletionInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterDeletionInXML << endl;
+    
+    // Test adding PathPoint to TRIlong muscle (Stationary)
+    Component& frame = model->updComponent(saveFrameName);
+    PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
+    context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
+    assert(pathPoints.getSize() == origSize);
+    std::string pathAfterReinsertionInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterReinsertionInXML << endl;
+
+    // Test changing type to ConditionalPathPoint
+    ConditionalPathPoint* newPoint = new ConditionalPathPoint();
+    AbstractPathPoint& oldPoint = pathPoints.get(2);
+    newPoint->setCoordinate(model->getCoordinateSet().get(0));
+    newPoint->setParentFrame(oldPoint.getParentFrame());
+    context->replacePathPoint(dTRIlong->updGeometryPath(), oldPoint, *newPoint);
+    assert(pathPoints.getSize() == origSize);
+
+    std::string pathAfterTypeChangeToViaInXML = dTRIlong->updGeometryPath().dump();
+    std::cout << pathAfterTypeChangeToViaInXML << endl;
+ 
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;

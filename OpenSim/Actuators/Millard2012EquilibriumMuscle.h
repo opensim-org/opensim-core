@@ -441,9 +441,9 @@ public:
         override;
 
 //==============================================================================
-// TO BE DEPRECATED
+// DEPRECATED
 //==============================================================================
-    ///@cond TO BE DEPRECATED
+    ///@cond DEPRECATED
     /*  Once the ignore_tendon_compliance flag is implemented correctly, get rid
     of this method as it duplicates code in calcMuscleLengthInfo,
     calcFiberVelocityInfo, and calcMuscleDynamicsInfo.
