@@ -85,6 +85,7 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
+    finalizeFromProperties();
 }
 //_____________________________________________________________________________
 /*
@@ -102,6 +103,7 @@ Model::Model(const string &aFileName) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
+    finalizeFromProperties();
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
