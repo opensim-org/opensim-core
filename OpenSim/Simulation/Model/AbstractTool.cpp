@@ -383,9 +383,9 @@ void AbstractTool::
 loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 {
     OPENSIM_THROW_IF_FRMOBJ(_modelFile.empty(), Exception,
-            "No model file was specified (<model_file> tag is empty) in the "
-            "Tool's Setup file. Consider passing `false` for the constructor's "
-            "`aLoadModel` parameter");
+            "No model file was specified (<model_file> element is empty) in "
+            "the Tool's Setup file. Consider passing `false` for the "
+            "constructor's `aLoadModel` parameter");
     string saveWorkingDirectory = IO::getCwd();
     string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
     IO::chDir(directoryOfSetupFile);

@@ -105,10 +105,9 @@ class TestBasics(unittest.TestCase):
                     'std_subject01_walk1_ik.mot')), [], 5, 0)
 
     def test_deserialize_tool_with_empty_model_file(self):
-        # Previously, there was a bug where loading an AbstractTool (e.g.,
-        # ForwardTool) setup file with an empty model_file but with some
-        # force_set_files would cause a segfault. Now, we make sure to throw an
-        # exception if trying to construct the tool with an empty model_file.
+        # Ensure an exception is thrown when loading an AbstractTool (e.g.,
+        # ForwardTool) setup file with an empty model_file. In particular, we
+        # want to check the case where force_set_files is not empty.
         with self.assertRaises(RuntimeError):
             rra = osim.ForwardTool(os.path.join(test_dir,
                 'gait2392_setup_forward_empty_model.xml'))
