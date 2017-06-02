@@ -98,5 +98,26 @@ class TestBasics(unittest.TestCase):
         controller = osim.ToyReflexController()
         
     def test_GCVSplineSet(self):
-        splineset = osim.GCVSplineSet(os.path.join(test_dir, 'std_subject01_walk1_ik.mot'))
-        splineset = osim.GCVSplineSet(osim.TimeSeriesTable(os.path.join(test_dir, 'std_subject01_walk1_ik.mot')), [], 5, 0)
+        splineset = osim.GCVSplineSet(os.path.join(test_dir,
+            'std_subject01_walk1_ik.mot'))
+        splineset = osim.GCVSplineSet(
+                osim.TimeSeriesTable(os.path.join(test_dir,
+                    'std_subject01_walk1_ik.mot')), [], 5, 0)
+
+    def test_deserialize_tool_with_empty_model_file(self):
+        # Previously, there was a bug where loading an AbstractTool (e.g.,
+        # ForwardTool) setup file with an empty model_file but with some
+        # force_set_files would cause a segfault. Now, we make sure to throw an
+        # exception if trying to construct the tool with an empty model_file.
+        with self.assertRaises(RuntimeError):
+            rra = osim.ForwardTool(os.path.join(test_dir,
+                'gait2392_setup_forward_empty_model.xml'))
+
+        # No exception if we pass loadModel=False
+        rra = osim.ForwardTool(
+                os.path.join(test_dir,
+                    'gait2392_setup_forward_empty_model.xml'),
+                True, # updateFromXMLNode
+                False, # loadModel
+                )
+

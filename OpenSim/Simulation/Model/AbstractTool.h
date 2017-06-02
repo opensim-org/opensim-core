@@ -313,7 +313,8 @@ public:
     * Load and construct a model based on the property settings of
     * this investigation.
     */
-    void loadModel(const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 );
+    void loadModel(const std::string &aToolSetupFileName,
+            ForceSet *rOriginalForceSet = 0 ) SWIG_DECLARE_EXCEPTION;
     
     /**
     * Update the forces applied to a model.
