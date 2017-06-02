@@ -125,7 +125,7 @@ void WrapCylinder::extendFinalizeFromProperties()
     {
         string errorMessage = "Error: radius for WrapCylinder " + getName() +
             " was either not specified, or is negative.";
-        throw Exception(errorMessage);
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, errorMessage);
     }
 }
 

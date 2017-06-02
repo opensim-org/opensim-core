@@ -103,17 +103,37 @@ Model::Model(const string &aFileName) :
     constructProperties();
     setNull();
     updateFromXMLDocument();
-    finalizeFromProperties();
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
+
+    try {
+        finalizeFromProperties();
+    }
+    catch(const InvalidPropertyValue& err) {
+        std::cout << "WARNING: Model was unable to finalizeFromProperties "
+            "due to: " << err.what() <<
+            "\nUpdate the model file and reload OR update the property and call "
+            "finalizeFromProperties() on the model." << endl;
+    }
 }
 
 Model* Model::clone() const
 {
     // Invoke default copy constructor.
     Model* clone = new Model(*this);
-    clone->finalizeFromProperties();
+
+    try {
+        clone->finalizeFromProperties();
+    }
+    catch (const InvalidPropertyValue& err) {
+        std::cout << "WARNING: clone() was unable to finalizeFromProperties "
+            "due to: " << err.what() <<
+            "\nUpdate the model and call clone() again OR update the "
+            "clone's property and call finalizeFromProperties() on it."
+            << endl;
+    }
+
     return clone;
 }
 

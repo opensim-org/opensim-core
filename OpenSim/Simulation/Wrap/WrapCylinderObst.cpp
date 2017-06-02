@@ -140,8 +140,9 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
     // maybe set a parent pointer, _body = aBody;
     if (_radius < 0.0)
     {
-        string errorMessage = "Error: radius for WrapCylinderObst " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
+        string errorMessage = "Error: radius for WrapCylinderObst " + getName()
+            + " was either not specified, or is negative.";
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, errorMessage);
     }
 /*
     Cylinder* cyl = new Cylinder(_radius, _length);
@@ -157,7 +158,7 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
         { _wrapDirection = righthand;   _wrapDirectionName = "righthand";   }
     else {  // wrapDirection was specified incorrectly in obstacle object definition; throw an exception
         string errorMessage = "Error: wrapDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
-        throw Exception(errorMessage);
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, errorMessage);
     }
 
 }
