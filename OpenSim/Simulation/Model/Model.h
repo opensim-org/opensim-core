@@ -129,7 +129,9 @@ method, in which case it will allocate and maintain a ModelVisualizer.
 **/
 
 class OSIMSIMULATION_API Model  : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Model, ModelComponent);
+OpenSim_OBJECT_ANY_DEFS(Model, ModelComponent);
+OpenSim_OBJECT_NONTEMPLATE_DEFS(Model, ModelComponent);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -254,6 +256,12 @@ public:
      */
     void cleanup();
 
+    /** Model clone() override that invokes finalizeFromProperties 
+        on defualt copy constructed Model */
+    Model* clone() const override;
+    
+    const std::string& getConcreteClassName() const override
+    {   return getClassName(); }
 
     //--------------------------------------------------------------------------
     // VISUALIZATION

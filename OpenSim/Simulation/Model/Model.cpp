@@ -72,7 +72,7 @@ using namespace SimTK;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 Model::Model() : ModelComponent(),
@@ -87,7 +87,7 @@ Model::Model() : ModelComponent(),
     setNull();
 }
 //_____________________________________________________________________________
-/**
+/*
  * Constructor from an XML file
  */
 Model::Model(const string &aFileName) :
@@ -107,8 +107,16 @@ Model::Model(const string &aFileName) :
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
 
+Model* Model::clone() const
+{
+    // Invoke default copy constructor.
+    Model* clone = new Model(*this);
+    clone->finalizeFromProperties();
+    return clone;
+}
+
 //_____________________________________________________________________________
-/**
+/*
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
