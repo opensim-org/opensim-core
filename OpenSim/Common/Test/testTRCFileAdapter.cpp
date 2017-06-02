@@ -59,8 +59,8 @@ void testFailed(const std::string& filename,
 
 void compareFiles(const std::string& filenameA, 
                   const std::string& filenameB) {
-    // Delimiters include newline.
-    const std::string delims{" \t\n"};
+    // Delimiters include carriage return and newline.
+    const std::string delims{" \t\r\n"};
 
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
@@ -96,6 +96,7 @@ int main() {
     filenames.push_back("subject01_synthetic_marker_data.trc");
     filenames.push_back("constraintTest.trc");
     filenames.push_back("subject01_static.trc");
+    filenames.push_back("gait10dof18musc_walk_CRLF_line_ending.trc");
     std::string tmpfile{"testtrcfileadapter.trc"};
 
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"

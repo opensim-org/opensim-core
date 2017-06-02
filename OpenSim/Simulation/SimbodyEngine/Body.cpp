@@ -127,15 +127,16 @@ const SimTK::Inertia& Body::getInertia() const
     if (_inertia.isNaN()){
         // initialize from properties
         const double& m = getMass();
+        const SimTK::Vec6& Ivec = get_inertia();
         // if mass is zero, non-zero inertia makes no sense
-        if (-SimTK::SignificantReal <= m && m <= SimTK::SignificantReal){
+        if (std::abs(m) <= SimTK::SignificantReal &&
+                Ivec.norm() > SimTK::SignificantReal) {
             // force zero inertia
             cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
             cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
             _inertia = SimTK::Inertia(0);
         }
         else{
-            const SimTK::Vec6& Ivec = get_inertia();
             try {
                 _inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
             } 
@@ -195,7 +196,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
         upd_mass_center()[i] *= aScaleFactors[i];
     }
 
-        scaleInertialProperties(aScaleFactors, aScaleMass);
+    scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 
 //_____________________________________________________________________________
