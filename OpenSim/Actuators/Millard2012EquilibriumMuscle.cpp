@@ -1447,7 +1447,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
                 break;
             }
             else
-                h = 0.5*h;;
+                h = 0.5*h;
         }
 
         ferrPrev = ferr;
