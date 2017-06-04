@@ -797,8 +797,6 @@ void testMillard2012EquilibriumMuscle()
 
     Sine motion(2.0*OptimalFiberLength0, 2*SimTK::Pi, 0);
 
-    //LinearFunction motion(-4.0*OptimalFiberLength0, 2.0*OptimalFiberLength0);
-
     simulateMuscle(muscle, 
         x0, 
         act0, 
@@ -958,7 +956,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
 
     // The maximum acceptable change in force between two contiguous states
-    const double maxDelta = muscle.getMaxIsometricForce() / 2;
+    const double maxDelta = muscle.getMaxIsometricForce() / 10;
 
     const int N = 20;
     const double minActivation = muscle.getMinControl();
