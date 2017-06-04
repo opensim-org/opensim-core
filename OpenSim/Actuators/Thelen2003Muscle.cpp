@@ -869,6 +869,7 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
 
     double h = 1.0;
     while( (abs(ferr) > aSolTolerance)  && (iter < aMaxIterations)) {
+        // Compute the search direction
         dferr_d_lce = dFmAT_dlce - dFt_d_lce;
         h = 1.0;
 
@@ -882,6 +883,8 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                 // We've stagnated or hit a limit; assume we are hitting local
                 // minimum and attempt to approach from the other direction.
                 lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                // Force a break, which will update the derivatives of
+                // the muscle force and estimate of the fiber-velocity 
                 h = 0;
             }
 
@@ -889,14 +892,13 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
                 lce = getMinimumFiberLength();
             }
 
-            // Update the position level quantities (lengths, angles) of the muscle
+            // Update the muscles's position level quantities (lengths, angles)
             positionFunc();
 
-            //Update the multipliers and their partial derivatives
+            // Update the muscle force multipliers
             multipliersFunc();
 
-            // Compute the force error assuming fiber-velocity estimated is
-            // unchanged
+            // Compute the force error assuming fiber-velocity is unchanged
             ferrFunc();
 
             if (h <= SimTK::SqrtEps ) {

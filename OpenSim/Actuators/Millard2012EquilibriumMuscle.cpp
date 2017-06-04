@@ -1411,7 +1411,7 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
 
     double h =1.0;
     while( (abs(ferr) > aSolTolerance) && (iter < aMaxIterations)) {
-        // Compute search direction
+        // Compute the search direction
         dferr_d_lce = dFmAT_dlce - dFt_d_lce;
         h = 1.0;
 
@@ -1425,6 +1425,8 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
                 // We've stagnated or hit a limit; assume we are hitting local
                 // minimum and attempt to approach from the other direction.
                 lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
+                // Force a break, which will update the derivatives of
+                // the muscle force and estimate of the fiber-velocity
                 h = 0;
             }
 
@@ -1432,13 +1434,13 @@ Millard2012EquilibriumMuscle::estimateMuscleFiberState(
                 lce = getMinimumFiberLength();
             }
 
-            // Update position level quantities only if they won't go singular
+            // Update the muscles's position level quantities (lengths, angles)
             positionFunc();
 
-            // Update the multipliers and their partial derivatives
+            // Update the muscle force multipliers
             multipliersFunc();
 
-            // Compute the force error
+            // Compute the force error assuming fiber-velocity is unchanged
             ferrFunc();
 
             if (h <= SimTK::SqrtEps) {
