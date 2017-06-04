@@ -520,7 +520,7 @@ void testRigidTendonMuscle()
         act0, 
         NULL, 
         &control, 
-        true);
+        false);
 
     // eccentric 
     simulateMuscle(muscle, 
@@ -979,20 +979,17 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
             catch (const MuscleCannotEquilibrate& x) {
                 // Write out the muscle equilibrium error as a function of
                 // fiber lengths.
-                const Thelen2003Muscle* thelen =
-                    dynamic_cast<const Thelen2003Muscle*>(&muscle);
-                if (thelen) {
+                if (const auto* thelen =
+                    dynamic_cast<const Thelen2003Muscle*>(&muscle)) {
                     thelen->printCurveToCSVFile(
                         Thelen2003Muscle::CurveType::FiberForceVelocity, "");
                     reportTendonAndFiberForcesAcrossFiberLengths(*thelen, s);
                 }
-                else {
-                    const Millard2012EquilibriumMuscle* millard =
-                        dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle);
-                    if (millard) {
-                        reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
-                    }
+                else if (const auto* millard =
+                    dynamic_cast<const Millard2012EquilibriumMuscle*>(&muscle)) {
+                    reportTendonAndFiberForcesAcrossFiberLengths(*millard, s);
                 }
+
                 throw;
             }
 
