@@ -54,14 +54,15 @@ and forcing the user to specify an annotation for each Output may not be practic
 - The TableReporter should use a default column name that is very likely to be meaningful.
 
 ### Architecture
-The selected design involves four main changes:
+The selected design involves six main changes:
 
 1. Rename "annotation" to "alias" (e.g., `AbstractInput::getAnnotation()` becomes `AbstractInput::getAlias()`).
 2. If the user provides the optional second argument when connecting an Output to an Input, store the string as the Input's alias; otherwise, the alias remains null.
-3. Create `getShortLabel()` and `getLongLabel()` methods on Input:
-  - `getShortLabel()` will be called by ConsoleReporter and will return `isNull(alias) ? output_name : alias`.
-  - `getLongLabel()` will be called by TableReporter and will return `isNull(alias) ? full_path_name : alias`.
-4. Create `setAlias()` methods analogous to the current `getAnnotation()` methods so the user can change the alias after (but not before) connecting.
+3. Create `getReportedLabel()` on Input, which returns the alias value if one has been provided:
+  - `getReportedLabel()` will be called by a Reporter and will return `isNull(alias) ? full_path_name : alias`.
+4. Create `setAlias()` methods analogous to the current `getAnnotation()` methods so the user can change the alias after (but not before) connecting. Connecting without an alias has the effect of clearing any previous alias.
+5. The ConsoleReporter has to truncate the ReportedLabel() because the label (either alias or the full_path_name) may exceed the colum width. For the time being, this can be the last `_width` characters of the label and a future PR can address more informative truncation approaches. For the time being, the users and testers of the ConsoleReporter can provide short aliases.
+6. The TableReporter will provide the full_path_name for its Outputs as additional column meta data (in addition to labels) so that an Output can always be traced back to a specific Component, regardless of its alias.
 
 Several other designs would satisfy the requirements; four rejected proposals are listed below.
 All these designs could benefit from a `setAnnotation()` method (e.g., if a fully connected model was loaded from file).
