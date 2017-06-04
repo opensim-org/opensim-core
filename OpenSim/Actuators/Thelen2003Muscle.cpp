@@ -1640,9 +1640,11 @@ double Thelen2003Muscle::calcDdlceDaFalFv(double aAct,
         return dlcedFm;
 }
 
-//This is here because it is non-trivial to correctly invert the piece wise
-//continuous force velocity curve specified by the modified Thelen2003Muscle
-//force velocity curve. This converges quickly and is well tested.
+// Compute the force-velocity multiplier by inverting Thelen 2003' f-v
+// equations for fiber-velocity given the active fiber force (see calcdlceN()).
+// This is here because it is non-trivial to correctly invert the piece-wise
+// continuous force velocity curve specified by the modified Thelen2003Muscle
+// force velocity curve. This converges quickly and is well tested.
 double Thelen2003Muscle::
         calcfvInv(double aAct,double aFal,double dlceN,
                   double tolerance, int maxIterations) const
@@ -1676,5 +1678,6 @@ double Thelen2003Muscle::
         return result;
     }
 
-    OPENSIM_THROW_FRMOBJ(Exception, "Failed to calculate fiber-velocity.");
+    OPENSIM_THROW_FRMOBJ(Exception, 
+        "Solver for force-velocity multiplier failed to converge.");
 }
