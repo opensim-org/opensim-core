@@ -397,7 +397,7 @@ computeActuation(const SimTK::State& s) const
 
 
 void Millard2012EquilibriumMuscle::
-computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity) const
+computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
 {
     if(get_ignore_tendon_compliance()) {                    // rigid tendon
         return;
@@ -416,14 +416,14 @@ computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity) const
 
     int maxIter = 200;
     double pathLength = getLength(s);
-    double pathSpeed = useZeroVelocity ? 0 : getLengtheningSpeed(s);
+    double pathSpeed = solveForVelocity ? getLengtheningSpeed(s) : 0;
     double activation = getActivation(s);
 
     try {
         std::pair<StatusFromEstimateMuscleFiberState,
                   ValuesFromEstimateMuscleFiberState> result =
             estimateMuscleFiberState(activation, pathLength, pathSpeed,
-                tol, maxIter, true);
+                tol, maxIter, solveForVelocity);
 
         switch(result.first) {
 

@@ -428,17 +428,19 @@ public:
         @throws MuscleCannotEquilibrate
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override {
-        computeFiberEquilibrium(s, true);
+        computeFiberEquilibrium(s, false);
     }
 
     /** Computes the fiber length such that the fiber and tendon are developing
         the same force, either assuming muscle-tendon velocity as provided
         by the state or zero as designated by the useZeroVelocity flag.
-        @param[in,out] s        The state of the system.
-        @param useZeroVelocity  Flag indicating to assume zero fiber velocity
+        @param[in,out] s         The state of the system.
+        @param solveForVelocity  Flag indicating to solve for fiber velocity,
+                                 which by default is false (zero fiber-velocity)
         @throws MuscleCannotEquilibrate
     */
-    void computeFiberEquilibrium(SimTK::State& s, bool useZeroVelocity = true) const;
+    void computeFiberEquilibrium(SimTK::State& s, 
+                                 bool solveForVelocity = false) const;
 
 //==============================================================================
 // DEPRECATED
