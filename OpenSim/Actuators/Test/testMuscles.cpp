@@ -42,6 +42,7 @@
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 
 using namespace OpenSim;
 using namespace std;

@@ -28,6 +28,7 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
