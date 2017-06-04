@@ -142,8 +142,8 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     size_t nstates = statesTraj.getSize();
 
     // muscle active, passive, total muscle and tendon force quantities
-    double af, pf, mf, tf, fl, fv;
-    af= pf = mf = tf = fl = fv = SimTK::NaN;
+    double af, pf, mf, tf, fl;
+    af= pf = mf = tf = fl = SimTK::NaN;
 
     // Tolerance for muscle equilibrium solution 
     const double equilTol = muscle.getMaxIsometricForce()*SimTK::SqrtEps;
@@ -197,9 +197,6 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         // get active and passive forces given the default activation
         af = muscle.getActiveFiberForceAlongTendon(s);
         pf = muscle.getPassiveFiberForceAlongTendon(s);
-        fv = muscle.getFiberVelocityAlongTendon(s);
-
-        //assert(abs(fv) < SimTK::SqrtEps);
 
         // now the total muscle force is the active + passive
         mf = af + pf;
