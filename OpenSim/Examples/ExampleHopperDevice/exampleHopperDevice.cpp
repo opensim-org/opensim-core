@@ -218,9 +218,6 @@ void run(bool showVisualizer, bool simulateOnce)
     {
         // Build the hopper.
         auto hopper = buildHopper(showVisualizer);
-        // Update the hopper model's internal data members, which includes
-        // identifying its subcomponents from its properties.
-        hopper.finalizeFromProperties();
 
         // Show all Components in the model.
         hopper.printSubcomponentInfo();
@@ -255,7 +252,6 @@ void run(bool showVisualizer, bool simulateOnce)
     {
         // Build the testbed and device.
         auto testbed = buildTestbed(showVisualizer);
-        testbed.finalizeFromProperties();
 
         // Step 2, Task A
         // ==============
@@ -271,7 +267,6 @@ void run(bool showVisualizer, bool simulateOnce)
         // ==============
         // Go to buildDeviceModel.cpp and complete the "TODO"s in buildDevice().
         auto device = buildDevice();
-        device->finalizeFromProperties();
 
         // Show all Components in the device and testbed.
         device->printSubcomponentInfo();
@@ -313,9 +308,7 @@ void run(bool showVisualizer, bool simulateOnce)
     {
         // Build the hopper and device.
         auto assistedHopper = buildHopper(showVisualizer);
-        assistedHopper.finalizeFromProperties();
         auto kneeDevice = buildDevice();
-        kneeDevice->finalizeFromProperties();
 
         // Step 3, Task A
         // ==============
