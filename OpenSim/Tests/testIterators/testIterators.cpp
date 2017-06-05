@@ -128,11 +128,6 @@ void testNestedComponentListConsistency() {
 void testComponentListConst() {
 
     Model model(modelFilename);
-
-    ASSERT_THROW( ComponentIsRootWithNoSubcomponents,
-                    model.getComponentList());
-
-    model.finalizeFromProperties();
     model.printSubcomponentInfo();
 
     ComponentList<const Component> componentsList = model.getComponentList();
