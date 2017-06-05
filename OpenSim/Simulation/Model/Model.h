@@ -256,8 +256,8 @@ public:
      */
     void cleanup();
 
-    /** Model clone() override that invokes finalizeFromProperties 
-        on defualt copy constructed Model */
+    /** Model clone() override that invokes finalizeFromProperties() 
+        on a default copy constructed Model, prior to returning the Model. */
     Model* clone() const override;
     
     const std::string& getConcreteClassName() const override
