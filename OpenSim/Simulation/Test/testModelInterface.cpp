@@ -36,7 +36,8 @@ int main() {
     try {
         Model model("arm26.osim");
 
-        // all subcomponents are now accounted for.
+        // all subcomponents are accounted for since Model constructor invokes
+        // finalizeFromProperties().
         ASSERT(model.countNumComponents() > 0);
 
         // model must be up-to-date with its properties
