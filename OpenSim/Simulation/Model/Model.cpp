@@ -111,10 +111,10 @@ Model::Model(const string &aFileName) :
         finalizeFromProperties();
     }
     catch(const InvalidPropertyValue& err) {
-        cout << "WARNING: Model was unable to finalizeFromProperties "
-            "due to: " << err.what() <<
-            "\nUpdate the model file and reload OR update the property and call "
-            "finalizeFromProperties() on the model." << endl;
+        cout << "WARNING: Model was unable to finalizeFromProperties.\n" <<
+            "Update the model file and reload OR update the property and call "
+            "finalizeFromProperties() on the model.\n" <<
+            "(details: " << err.what() << ")." << endl;
     }
 }
 
@@ -127,11 +127,10 @@ Model* Model::clone() const
         clone->finalizeFromProperties();
     }
     catch (const InvalidPropertyValue& err) {
-        cout << "WARNING: clone() was unable to finalizeFromProperties "
-            "due to: " << err.what() <<
-            "\nUpdate the model and call clone() again OR update the "
-            "clone's property and call finalizeFromProperties() on it."
-            << endl;
+        cout << "WARNING: clone() was unable to finalizeFromProperties.\n" <<
+            "Update the model and call clone() again OR update the clone's "
+            "property and call finalizeFromProperties() on it.\n"
+            "(details: " << err.what() << ")." << endl;
     }
 
     return clone;
