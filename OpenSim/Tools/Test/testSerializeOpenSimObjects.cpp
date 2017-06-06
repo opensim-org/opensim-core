@@ -83,8 +83,6 @@ int main()
             try {
                 testModel.addModelComponent(ModelComponent::safeDownCast(randClone));
             } //Ignore the validity of the property values
-            // TODO this should specifically handle "InvalidPropertyValue" exceptions
-            // once we have that in place.
             catch (const InvalidPropertyValue&) {
                 // const string& errMsg = err.getMessage();
                 //std::cout << errMsg << std::endl;
