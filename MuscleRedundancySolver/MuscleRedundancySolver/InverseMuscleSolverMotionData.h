@@ -9,6 +9,7 @@
 namespace OpenSim {
 
 class Model;
+class Coordinate;
 
 /// This class contains the motion data required to solve inverse problems
 /// for muscle activity:
@@ -22,21 +23,29 @@ public:
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform inverse dynamics and a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
+    /// The coordsToActuate must be listed in multibody tree order.
     /// The inverse dynamics moments are filtered with the provided lowpass
     /// cutoff frequency; use -1 to not filter.
     InverseMuscleSolverMotionData(const Model& model,
+            const std::vector<const Coordinate*>& coordsToActuate,
+            const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
-            const double& lowpassCutoffJointMoments,
-            const double& initialTime, const double& finalTime);
+            const double& lowpassCutoffJointMoments);
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform a muscle analysis to provide net
     /// joint moments, muscle-tendon lengths, and moment arms.
+    /// The coordsToActuate must be listed in multibody tree order.
     /// The inverse dynamics net generalized forces are taken from the provided
     /// table rather than computed from the provided kinematics.
-    InverseMuscleSolverMotionData(const OpenSim::Model& model,
+    InverseMuscleSolverMotionData(const Model& model,
+            const std::vector<const Coordinate*>& coordsToActuate,
+            const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
-            const TimeSeriesTable& netGeneralizedForcesData,
-            const double& initialTime, const double& finalTime);
+            const TimeSeriesTable& netGeneralizedForcesData);
+    /// Get the paths (relative to the model) of the coordinates that are to be
+    /// actuated by an InverseMuscleSolver.
+    const std::vector<std::string>& getCoordinatesToActuate() const
+    { return _coordPathsToActuate; }
     /// Get the initial time to use in the solver.
     double getInitialTime() const { return _initialTime; }
     /// Get the final time to use in the solver.
@@ -74,20 +83,27 @@ public:
     void interpolateMomentArms(const Eigen::VectorXd& times,
             std::vector<Eigen::MatrixXd>& momentArms) const;
 private:
-    // This constructor performs the muscle analysis.
+    /// This constructor performs the muscle analysis.
+    /// The coordsToActuate must be listed in multibody tree order.
     InverseMuscleSolverMotionData(const Model& model,
-            const TimeSeriesTable& kinematicsData,
-            const double& initialTime, const double& finalTime);
+            const std::vector<const Coordinate*>& coordsToActuate,
+            const double& initialTime, const double& finalTime,
+            const TimeSeriesTable& kinematicsData);
+    std::vector<std::string> createCoordPathsToActuate(const Model& model,
+            const std::vector<const Coordinate*>& coordsToActuate) const;
+    /// The coordPathsToActuate must be listed in multibody tree order.
     void computeInverseDynamics(const OpenSim::Model& model,
+            const std::vector<std::string>& coordPathsToActuate,
             const TimeSeriesTable& kinematicsData,
             const double& lowpassCutoffJointMoments);
+    std::vector<std::string> _coordPathsToActuate;
     double _initialTime;
     double _finalTime;
-    size_t _numDOFs;
+    size_t _numCoordsToActuate;
     size_t _numActiveMuscles;
     GCVSplineSet _netGeneralizedForces;
     GCVSplineSet _muscleTendonLengths;
-    GCVSplineSet _muscleTendonVelocities;
+    // GCVSplineSet _muscleTendonVelocities;
     // The vector contains an entry for each coordinate; the spline set is
     // across muscles.
     std::vector<GCVSplineSet> _momentArms;

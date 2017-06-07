@@ -22,7 +22,7 @@ void testGait10dof18musc_MRS() {
 
 int main() {
     SimTK_START_TEST("testGait10dof18musc");
-        // TODO SimTK_SUBTEST(testGait10dof18musc_GSO);
+        SimTK_SUBTEST(testGait10dof18musc_GSO);
         SimTK_SUBTEST(testGait10dof18musc_MRS);
     SimTK_END_TEST();
 }

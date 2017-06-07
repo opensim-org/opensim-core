@@ -656,8 +656,11 @@ void test2Muscles2DOFs_GSO_GenForces(
     // Run inverse dynamics.
     Model modelForID = model;
     modelForID.initSystem();
-    InverseMuscleSolverMotionData motionData(modelForID, kinematics, 80,
-            0, 0.2);
+    std::vector<const Coordinate*> coordsToActuate;
+    for (auto& coord : modelForID.getCoordinatesInMultibodyTreeOrder())
+        coordsToActuate.push_back(coord.get());
+    InverseMuscleSolverMotionData motionData(modelForID, coordsToActuate,
+            0, 0.2, kinematics, 80);
     Eigen::VectorXd times = Eigen::VectorXd::LinSpaced(100, 0, 0.2);
     Eigen::MatrixXd netGenForcesEigen;
     motionData.interpolateNetGeneralizedForces(times, netGenForcesEigen);
@@ -783,8 +786,11 @@ void test2Muscles2DOFs_MRS_GenForces(
     // This constructor performs inverse dynamics:
     Model modelForID = model;
     modelForID.initSystem();
-    InverseMuscleSolverMotionData motionData(modelForID, kinematics, 20,
-            0, 0.5);
+    std::vector<const Coordinate*> coordsToActuate;
+    for (auto& coord : modelForID.getCoordinatesInMultibodyTreeOrder())
+        coordsToActuate.push_back(coord.get());
+    InverseMuscleSolverMotionData motionData(modelForID, coordsToActuate,
+            0, 0.5, kinematics, 20);
     Eigen::VectorXd times = Eigen::VectorXd::LinSpaced(100, 0, 0.5);
     Eigen::MatrixXd netGenForcesEigen;
     motionData.interpolateNetGeneralizedForces(times, netGenForcesEigen);

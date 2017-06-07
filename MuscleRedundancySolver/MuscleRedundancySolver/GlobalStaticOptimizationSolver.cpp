@@ -75,9 +75,10 @@ public:
             _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
-        const auto coordsOrdered = _model.getCoordinatesInMultibodyTreeOrder();
+        const auto& coordPathsToActuate = motionData.getCoordinatesToActuate();
         _optimalForce.resize(_numCoordActuators);
         _coordActuatorDOFs.resize(_numCoordActuators);
+        const ComponentPath modelPath = model.getAbsolutePathName();
         int i_act = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
@@ -85,16 +86,20 @@ public:
             _optimalForce[i_act] = actuator.getOptimalForce();
             // Figure out which DOF each coordinate actuator is actuating.
             const auto* coord = actuator.getCoordinate();
+            const auto coordPath =
+                    ComponentPath(coord->getAbsolutePathName())
+                            .formRelativePath(modelPath).toString();
             size_t i_coord = 0;
-            while (i_coord < coordsOrdered.size() &&
-                    coordsOrdered[i_coord].get() != coord) {
+            while (i_coord < coordPathsToActuate.size() &&
+                    coordPathsToActuate[i_coord] != coordPath) {
                 ++i_coord;
             }
-            if (i_coord == coordsOrdered.size()) {
+            // TODO move this into InverseMuscleSolver.
+            if (i_coord == coordPathsToActuate.size()) {
                 throw std::runtime_error("[GSO] Could not find Coordinate '" +
                         coord->getAbsolutePathName() + "' used in "
                         "CoordinateActuator '" + actuator.getAbsolutePathName()
-                        + "'.");
+                        + "'. Is the coordinate locked?");
             }
             _coordActuatorDOFs[i_act] = i_coord;
             ++i_act;
@@ -103,7 +108,8 @@ public:
         // Muscles.
         // --------
         _numMuscles = 0;
-        for (const auto& actuator : _model.getComponentList<Muscle>()) {
+        const auto muscleList = _model.getComponentList<Muscle>();
+        for (const auto& actuator : muscleList) {
             if (!actuator.get_appliesForce()) continue;
 
             const auto& actuPath = actuator.getAbsolutePathName();
@@ -120,7 +126,7 @@ public:
         // Create De Groote muscles.
         _muscles.resize(_numMuscles);
         int i_mus = 0;
-        for (const auto& osimMus : _model.getComponentList<Muscle>()) {
+        for (const auto& osimMus : muscleList) {
             if (!osimMus.get_appliesForce()) continue;
 
             _muscles[i_mus] = DeGroote2016Muscle<T>(
@@ -133,14 +139,11 @@ public:
             i_mus++;
         }
 
-        // Add a constraint for each joint moment.
-        // TODO use coordinate names.
-        _numDOFs = 0;
-        for (int i = 0; i < state.getNU(); ++i) {
-            this->add_path_constraint("net_gen_force" + std::to_string(i), 0);
-            _numDOFs++;
+        // Add a constraint for each coordinate we want to actuate.
+        _numCoordsToActuate = coordPathsToActuate.size();
+        for (const auto& coordPath : coordPathsToActuate) {
+            this->add_path_constraint("net_gen_force_" + coordPath, 0);
         }
-
     }
 
     void initialize_on_mesh(const Eigen::VectorXd& mesh) const override {
@@ -189,7 +192,7 @@ public:
 
         // Assemble generalized forces to apply to the joints.
         // TODO avoid reallocating this each time?
-        mesh::VectorX<T> genForce(_numDOFs);
+        mesh::VectorX<T> genForce(_numCoordsToActuate);
         genForce.setZero();
 
         // CoordinateActuators.
@@ -308,7 +311,7 @@ private:
     double _finalTime = SimTK::NaN;
 
     // Bookkeeping.
-    int _numDOFs;
+    int _numCoordsToActuate;
     int _numCoordActuators;
     int _numMuscles;
     std::vector<std::string> _muscleLabels;
@@ -346,9 +349,66 @@ GlobalStaticOptimizationSolver::solve() {
     TimeSeriesTable netGeneralizedForces;
     loadModelAndData(model, kinematics, netGeneralizedForces);
 
+    // Decide the coordinates for which net generalized forces will be achieved.
+    // -------------------------------------------------------------------------
+    SimTK::State state = model.initSystem();
+    std::vector<const Coordinate*> coordsToActuate;
+    const auto coordsInOrder = model.getCoordinatesInMultibodyTreeOrder();
+    const ComponentPath modelPath = model.getAbsolutePathName();
+    if (!getProperty_coordinates_to_include().empty()) {
+        // Our goal is to create a list of Coordinate* in multibody tree order.
+        // We will keep track of which requested coordinates we actually find.
+        std::set<std::string> coordsToInclude;
+        auto numCoordsToInclude = getProperty_coordinates_to_include().size();
+        for (int iInclude = 0; iInclude < numCoordsToInclude; ++iInclude) {
+            coordsToInclude.insert(get_coordinates_to_include(iInclude));
+        }
+        // Go through coordinates in order.
+        for (auto& coord : coordsInOrder) {
+            // Remove the model name from the coordinate path.
+            const auto coordPath = ComponentPath(coord->getAbsolutePathName())
+                            .formRelativePath(modelPath).toString();
+            // Should this coordinate be included?
+            const auto foundCoordPath = coordsToInclude.find(coordPath);
+            if (foundCoordPath != coordsToInclude.end()) {
+                OPENSIM_THROW_IF_FRMOBJ(coord->isConstrained(state), Exception,
+                        "Coordinate '" + coordPath + "' is constrained and "
+                        "thus cannot be listed under "
+                        "'coordinates_to_include'.");
+                coordsToActuate.push_back(coord.get());
+                // No longer need to search for this coordinate.
+                coordsToInclude.erase(foundCoordPath);
+            }
+        }
+        // Any remaining "coordsToInclude" are not in the model.
+        if (!coordsToInclude.empty()) {
+            std::string msg = "Could not find the following coordinates "
+                    "listed under 'coordinates_to_include' (make sure to "
+                    "use the *path* to the coordinate):\n";
+            for (const auto& coordPath : coordsToInclude) {
+                msg += "  " + coordPath + "\n";
+            }
+            OPENSIM_THROW_FRMOBJ(Exception, msg);
+        }
+    } else {
+        // User did not specify coords to include, so include all of them.
+        for (auto& coord : model.getCoordinatesInMultibodyTreeOrder()) {
+            if (!coord->isConstrained(state)) {
+                coordsToActuate.push_back(coord.get());
+            }
+        }
+    }
+    std::cout << "The following Coordinates will be actuated:" << std::endl;
+    for (const auto* coord : coordsToActuate) {
+        std::cout << "  " << coord->getAbsolutePathName() << std::endl;
+    }
+
+    // Process which actuators are included.
+    // -------------------------------------
+    processActuatorsToInclude(model);
+
     // Create reserve actuators.
     // -------------------------
-    SimTK::State state = model.initSystem();
     if (get_create_reserve_actuators() != -1) {
         const auto& optimalForce = get_create_reserve_actuators();
         OPENSIM_THROW_IF(optimalForce <= 0, Exception,
@@ -358,30 +418,28 @@ GlobalStaticOptimizationSolver::solve() {
         std::cout << "Adding reserve actuators with an optimal force of "
                 << optimalForce << "..." << std::endl;
 
-        std::vector<std::string> coordNames;
+        std::vector<std::string> coordPaths;
         // Borrowed from CoordinateActuator::CreateForceSetOfCoordinateAct...
-        for (auto& coord : model.getCoordinatesInMultibodyTreeOrder()) {
-            if (!coord->isConstrained(state)) {
-                auto* actu = new CoordinateActuator();
-                actu->setCoordinate(const_cast<Coordinate*>(coord.get()));
-                auto path = coord->getAbsolutePathName();
-                coordNames.push_back(path);
-                // Get rid of model name.
-                path = ComponentPath(path).formRelativePath(
-                        model.getAbsolutePathName()).toString();
-                // Get rid of slashes in the path; slashes not allowed in names.
-                std::replace(path.begin(), path.end(), '/', '_');
-                actu->setName("reserve_" + path);
-                actu->setOptimalForce(optimalForce);
-                model.addComponent(actu);
-            }
+        for (const auto* coord : coordsToActuate) {
+            auto* actu = new CoordinateActuator();
+            actu->setCoordinate(const_cast<Coordinate*>(coord));
+            auto path = coord->getAbsolutePathName();
+            coordPaths.push_back(path);
+            // Get rid of model name.
+            path = ComponentPath(path).formRelativePath(
+                    model.getAbsolutePathName()).toString();
+            // Get rid of slashes in the path; slashes not allowed in names.
+            std::replace(path.begin(), path.end(), '/', '_');
+            actu->setName("reserve_" + path);
+            actu->setOptimalForce(optimalForce);
+            model.addComponent(actu);
         }
         // Re-make the system, since there are new actuators.
         model.initSystem();
-        std::cout << "Added " << coordNames.size() << " reserve actuator(s), "
+        std::cout << "Added " << coordPaths.size() << " reserve actuator(s), "
                 "for each of the following coordinates:" << std::endl;
-        for (const auto& name : coordNames) {
-            std::cout << "    " << name << std::endl;
+        for (const auto& name : coordPaths) {
+            std::cout << "  " << name << std::endl;
         }
     }
 
@@ -399,8 +457,8 @@ GlobalStaticOptimizationSolver::solve() {
     // TODO move to InverseMuscleSolver
     InverseMuscleSolverMotionData motionData;
     if (netGeneralizedForces.getNumRows()) {
-        motionData = InverseMuscleSolverMotionData(model, kinematics,
-                netGeneralizedForces, initialTime, finalTime);
+        motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
+                initialTime, finalTime, kinematics, netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
         OPENSIM_THROW_IF(
@@ -408,15 +466,15 @@ GlobalStaticOptimizationSolver::solve() {
                 get_lowpass_cutoff_frequency_for_joint_moments() != -1,
                 Exception,
                 "Invalid value for cutoff frequency for joint moments.");
-        motionData = InverseMuscleSolverMotionData(model, kinematics,
-                get_lowpass_cutoff_frequency_for_joint_moments(),
-                initialTime, finalTime);
+        motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
+                initialTime, finalTime, kinematics,
+                get_lowpass_cutoff_frequency_for_joint_moments());
     }
 
     // Solve the optimal control problem.
     // ----------------------------------
-    auto ocp = std::make_shared<GSOProblemSeparate<adouble>>(*this,
-                                                             model, motionData);
+    auto ocp = std::make_shared<GSOProblemSeparate<adouble>>(*this, model,
+            motionData);
     ocp->print_description();
     mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
                                                   100);

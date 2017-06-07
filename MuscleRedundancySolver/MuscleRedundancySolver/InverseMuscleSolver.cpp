@@ -17,9 +17,11 @@ void InverseMuscleSolver::constructProperties() {
     constructProperty_kinematics_file("");
     constructProperty_net_generalized_forces_file("");
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
-    constructProperty_create_reserve_actuators(-1);
     constructProperty_initial_time();
     constructProperty_final_time();
+    constructProperty_create_reserve_actuators(-1);
+    constructProperty_coordinates_to_include();
+    constructProperty_actuators_to_include();
 }
 
 void InverseMuscleSolver::loadModelAndData(Model& model,
@@ -137,6 +139,51 @@ void InverseMuscleSolver::loadModelAndData(Model& model,
         // This data table is optional, so this is not an error.
         // Set to an empty table to communicate that this was not provided.
         netGeneralizedForces = TimeSeriesTable();
+    }
+}
+
+void InverseMuscleSolver::processActuatorsToInclude(Model& model) const {
+    if (!getProperty_actuators_to_include().empty()) {
+        // Keep track of which requested actuators we actually find.
+        std::set<std::string> actuToInclude;
+        auto numActuToInclude = getProperty_actuators_to_include().size();
+        for (int iInclude = 0; iInclude < numActuToInclude; ++iInclude) {
+            actuToInclude.insert(get_actuators_to_include(iInclude));
+        }
+        // Check each actuator to see if it should be included.
+        const ComponentPath modelPath = model.getAbsolutePathName();
+        auto actuList = model.updComponentList<Actuator>();
+        for (auto& actu : actuList) {
+            const auto actuPath = ComponentPath(actu.getAbsolutePathName())
+                    .formRelativePath(modelPath).toString();
+            const auto foundActuPath = actuToInclude.find(actuPath);
+            if (foundActuPath == actuToInclude.end()) {
+                // Could not find in the set; do not include.
+                actu.set_appliesForce(false);
+            } else {
+                // Found this actuator in the set; make sure it is enabled.
+                actu.set_appliesForce(true);
+                actuToInclude.erase(foundActuPath);
+            }
+        }
+        // Any remaining paths are not in the model.
+        if (!actuToInclude.empty()) {
+            std::string msg = "Could not find the following actuators "
+                    "listed under 'actuators_to_include' (make sure to "
+                    "use the *path* to the actuator):\n";
+            for (const auto& actuPath : actuToInclude) {
+                msg += "  " + actuPath + "\n";
+            }
+            OPENSIM_THROW_FRMOBJ(Exception, msg);
+        }
+        std::cout << "The following Actuators will apply force (excluding "
+                "those from 'create_reserve_actuators'):"
+                << std::endl;
+        for (const auto& actu : actuList) {
+            if (actu.get_appliesForce()) {
+                std::cout << "  " << actu.getAbsolutePathName() << std::endl;
+            }
+        }
     }
 }
 

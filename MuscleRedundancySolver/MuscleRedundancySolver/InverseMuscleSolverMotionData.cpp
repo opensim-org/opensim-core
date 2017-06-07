@@ -31,10 +31,12 @@ GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
-        const Model& model, const TimeSeriesTable& kinematicsData,
-        const double& initialTime, const double& finalTime) :
-        _initialTime(initialTime), _finalTime(finalTime)
-{
+        const Model& model,
+        const std::vector<const Coordinate*>& coordsToActuate,
+        const double& initialTime, const double& finalTime,
+        const TimeSeriesTable& kinematicsData) :
+        _coordPathsToActuate(createCoordPathsToActuate(model, coordsToActuate)),
+        _initialTime(initialTime), _finalTime(finalTime) {
     // TODO spline/filter over only [initial_time, final_time]?
 
     // Muscle analysis.
@@ -65,9 +67,6 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // TODO get list of muscles from MuscleRedundancySolver.
     const auto muscleList = model.getComponentList<Muscle>();
     std::vector<const Muscle*> activeMuscles;
-    auto coords = model.getCoordinatesInMultibodyTreeOrder();
-    // TODO this assumes no coordinates are locked.
-    _numDOFs = coords.size();
     std::vector<std::string> musclePathNames;
     for (const auto& muscle : muscleList) {
         if (muscle.get_appliesForce()) {
@@ -105,11 +104,14 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 
         // Moment arms.
         // ````````````
+        // TODO this assumes no coordinates are locked.
+        // auto coords = model.getCoordinatesInMultibodyTreeOrder();
+        _numCoordsToActuate = coordsToActuate.size();
         // This member holds moment arms across time, DOFs, and muscles.
-        _momentArms.resize(_numDOFs);
+        _momentArms.resize(_numCoordsToActuate);
         // Working memory.
         SimTK::RowVector rowMA(musclePathNames.size());
-        for (size_t i_dof = 0; i_dof < _numDOFs; ++i_dof) {
+        for (size_t i_dof = 0; i_dof < _numCoordsToActuate; ++i_dof) {
             TimeSeriesTable momentArmsThisDOF;
             momentArmsThisDOF.setColumnLabels(musclePathNames);
             for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
@@ -117,7 +119,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
                 int i_muscle = 0;
                 for (const auto* muscle : activeMuscles) {
                     rowMA[i_muscle] = muscle->computeMomentArm(state,
-                            const_cast<Coordinate&>(*coords[i_dof]));
+                            const_cast<Coordinate&>(*coordsToActuate[i_dof]));
                     i_muscle++;
                 }
                 momentArmsThisDOF.appendRow(state.getTime(), rowMA);
@@ -130,26 +132,56 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
-        const OpenSim::Model& model,
-        const OpenSim::TimeSeriesTable& kinematicsData,
-        const double& lowpassCutoffJointMoments,
-        const double& initialTime, const double& finalTime) :
-        InverseMuscleSolverMotionData(model, kinematicsData,
-                initialTime, finalTime) {
+        const Model& model,
+        const std::vector<const Coordinate*>& coordsToActuate,
+        const double& initialTime, const double& finalTime,
+        const TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffJointMoments) :
+        InverseMuscleSolverMotionData(model, coordsToActuate,
+                initialTime, finalTime, kinematicsData) {
     // Inverse dynamics.
-    computeInverseDynamics(model, kinematicsData, lowpassCutoffJointMoments);
+
+    // All that computeInverseDynamics needs is the paths of the coordinates.
+    // Furthermore, computeInverseDynamics uses a copy of the model, so it does
+    // not make sense to pass in the Coordinate* from the original model.
+    computeInverseDynamics(model, _coordPathsToActuate, kinematicsData,
+            lowpassCutoffJointMoments);
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
-        const OpenSim::Model& model,
+        const Model& model,
+        const std::vector<const Coordinate*>& coordsToActuate,
+        const double& initialTime, const double& finalTime,
         const TimeSeriesTable& kinematicsData,
-        const TimeSeriesTable& netGeneralizedForcesData,
-        const double& initialTime, const double& finalTime) :
-        InverseMuscleSolverMotionData(model, kinematicsData,
-                initialTime, finalTime) {
+        const TimeSeriesTable& netGeneralizedForcesData) :
+        InverseMuscleSolverMotionData(model, coordsToActuate,
+                initialTime, finalTime, kinematicsData) {
     // Inverse dynamics.
-    // TODO validate column labels.
-    _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData);
+    // Only store the columns corresponding to coordsToActuate, and store
+    // them in multibody tree order.
+    // TODO better error handling for invalid column labels.
+    try {
+        _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData,
+                _coordPathsToActuate);
+    } catch (KeyNotFound& ex) {
+        // The net generalized forces file's column labels do not seem to
+        // be coordinate paths. Try using the column label format produced
+        // by inverse dynamics (e.g., "knee_flexion_r_moment").
+        std::cout << "Column labels of net generalized forces file do not "
+                "match paths of coordinates to include. Trying to parse "
+                "column labels using Inverse Dynamics Tool format...";
+        std::vector<std::string> invDynFormat(coordsToActuate.size());
+        size_t iCoord = 0;
+        for (const auto* coord : coordsToActuate) {
+            invDynFormat[iCoord] = coord->getName() + (
+                    coord->getMotionType() == Coordinate::Rotational ?
+                    "_moment" : "_force");
+            ++iCoord;
+        }
+        _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData,
+                invDynFormat);
+        std::cout << "success!" << std::endl;
+    }
 }
 
 void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
@@ -225,11 +257,11 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
 
     momentArms.resize(times.size());
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {
-        momentArms[i_mesh].resize(_numDOFs, _numActiveMuscles);
+        momentArms[i_mesh].resize(_numCoordsToActuate, _numActiveMuscles);
         SimTK::Vector time(1, times[i_mesh]);
         // The matrix is in column-major format.
         for (size_t i_mus = 0; i_mus < _numActiveMuscles; ++i_mus) {
-            for (size_t i_dof = 0; i_dof < _numDOFs; ++i_dof) {
+            for (size_t i_dof = 0; i_dof < _numCoordsToActuate; ++i_dof) {
                 momentArms[i_mesh](i_dof, i_mus) =
                         _momentArms[i_dof].get(i_mus).calcValue(time);
             }
@@ -237,8 +269,22 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
     }
 }
 
+std::vector<std::string>
+InverseMuscleSolverMotionData::createCoordPathsToActuate(const Model& model,
+        const std::vector<const Coordinate*>& coordsToActuate) const {
+    std::vector<std::string> coordPathsToActuate(coordsToActuate.size());
+    const ComponentPath modelPath = model.getAbsolutePathName();
+    for (size_t iCoord = 0; iCoord < coordsToActuate.size(); ++iCoord) {
+        ComponentPath absPath(coordsToActuate[iCoord]->getAbsolutePathName());
+        coordPathsToActuate[iCoord] =
+                absPath.formRelativePath(modelPath).toString();
+    }
+    return coordPathsToActuate;
+}
+
 void InverseMuscleSolverMotionData::computeInverseDynamics(
         const OpenSim::Model& model,
+        const std::vector<std::string>& coordPathsToActuate,
         const TimeSeriesTable& kinematicsData,
         const double& lowpassCutoffJointMoments) {
 
@@ -255,24 +301,51 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     InverseDynamicsSolver invdyn(modelForID);
     SimTK::State state = modelForID.initSystem();
 
-    // Assemble functions for coordinate values. Functions must be in the
-    // same order as the joint moments (multibody tree order).
-    auto coords = modelForID.getCoordinatesInMultibodyTreeOrder();
-    std::vector<std::string> columnLabels;
-    for (size_t i = 0; i < coords.size(); ++i) {
-        // We do not attempt to track constrained (e.g., locked) coordinates.
-        // TODO create a test case for this.
-        if (coords[i]->isConstrained(state)) continue;
-        // The first state variable in the coordinate should be its value.
-        // TODOosim make it easy to get the full name of a state variable
-        // Perhaps expose the StateVariable class.
-        //columnLabels[i] = coords[i]->getStateVariableNames()[0];
+    // Assemble functions for coordinate values.
+    // -----------------------------------------
+    // Functions must be in the same order as the joint moments (multibody tree
+    // order); that's why it's important that coordPathsToActuate is in
+    // multibody tree order.
+    // TODO uh oh separate list of coordinates.
+    // To specify which columns of the kinematics table we want:
+    std::vector<std::string> coordValLabels(coordPathsToActuate.size());
+    for (size_t i = 0; i < coordValLabels.size(); ++i) {
         // This will yield something like "knee/flexion/value".
-        columnLabels.push_back(ComponentPath(coords[i]->getAbsolutePathName())
-                .formRelativePath(modelForID.getAbsolutePathName()).toString()
-                + "/value");
+        coordValLabels[i] = coordPathsToActuate[i] + "/value";
     }
-    auto coordFunctions = createGCVSplineSet(kinematicsData, columnLabels);
+
+    // Indices of actuated coordinates in the list of all coordinates.
+    // TODO do something correct here.
+    std::vector<size_t> coordActIndices;
+    auto coordsInOrder = modelForID.getCoordinatesInMultibodyTreeOrder();
+    const ComponentPath modelPath = model.getAbsolutePathName();
+    for (const auto& coordPathAct : coordPathsToActuate) {
+        // Find the index of the coordinate with path coordPathAct.
+        size_t iCoordAct = 0;
+        for (auto& coord : coordsInOrder) {
+            const auto thisCoordPath =
+                    ComponentPath(coord->getAbsolutePathName())
+                            .formRelativePath(modelPath).toString();
+            if (coordPathAct == thisCoordPath) {
+                coordActIndices.push_back(iCoordAct);
+                break;
+            }
+            ++iCoordAct;
+            // The first state variable in the coordinate should be its value.
+            // TODOosim make it easy to get the full name of a state variable
+            // Perhaps expose the StateVariable class.
+            //coordValLabels[i] = coords[i]->getStateVariableNames()[0];
+            // This will yield something like "knee/flexion/value".
+            //coordActPaths.push_back(ComponentPath
+            //// (coords[i]->getAbsolutePathName())//
+            //        .formRelativePath(modelForID.// getAbsolutePathName()).toString());
+            //coordValLabels.push_back(coordActPaths.back() + "/value");
+        }
+    }
+    OPENSIM_THROW_IF(coordActIndices.size() != coordPathsToActuate.size(),
+            Exception, "Internal bug detected: inconsistent number of "
+            "actuated coordinates.");
+    auto coordFunctions = createGCVSplineSet(kinematicsData, coordValLabels);
 
     // For debugging, print the splined coordinates, speeds, and accelerations.
     // auto coordSto = std::unique_ptr<Storage>(
@@ -301,19 +374,31 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // -------------------------
     SimTK::Array_<SimTK::Vector> forceTrajectory;
     invdyn.solve(state, coordFunctions, simtkTimes, forceTrajectory);
+    if (!forceTrajectory.empty()) {
+        // If this exception is ever thrown, then it means we made the wrong
+        // assumption constrained coordinates do not have an entry in
+        // forceTrajectory.
+        OPENSIM_THROW_IF(forceTrajectory[0].size() != coordFunctions.getSize(),
+                Exception, "Internal bug detected: unexpected number of net "
+                "generalized forces.");
+    }
 
     // Post-process Inverse Dynamics results.
     // --------------------------------------
     Storage forceTrajectorySto;
-    const size_t numDOFs = forceTrajectory[0].size();
-    OpenSim::Array<std::string> labels("", numDOFs + 1);
+    // TODO only store the columns corresponding to coordsToActuate.
+    OpenSim::Array<std::string> labels("", coordPathsToActuate.size() + 1);
     labels[0] = "time";
-    for (size_t i = 0; i < numDOFs; ++i) {
-        labels[i + 1] = "force" + std::to_string(i);
+    for (size_t i = 0; i < coordPathsToActuate.size(); ++i) {
+        labels[i + 1] = coordPathsToActuate[i];
     }
     forceTrajectorySto.setColumnLabels(labels);
+    SimTK::Vector row(_numCoordsToActuate);
     for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
-        forceTrajectorySto.append(times[i_time], forceTrajectory[i_time]);
+        for (size_t i_coord = 0; i_coord < _numCoordsToActuate; ++i_coord) {
+            row[i_coord] = forceTrajectory[i_time][coordActIndices[i_coord]];
+        }
+        forceTrajectorySto.append(times[i_time], row);
     }
     // forceTrajectorySto.print("DEBUG_desiredMoments_unfiltered.sto");
     const double& cutoffFrequency = lowpassCutoffJointMoments;

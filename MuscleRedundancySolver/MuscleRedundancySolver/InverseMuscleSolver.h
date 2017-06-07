@@ -56,22 +56,18 @@ public:
     // TODO add ability to specify external loads, and update comment.
     OpenSim_DECLARE_OPTIONAL_PROPERTY(net_generalized_forces_file, std::string,
     "(Optional) Path to a data file (CSV, STO) containing net generalized "
-    "forces (joint moments) to achieve. If not provided, inverse dynamics "
-    "will be performed internally.");
+    "forces (joint moments) to achieve. Column labels should be coordinate "
+    "paths (e.g., 'knee/knee_angle_r') or use the Inverse Dynamics Tool "
+    "format (e.g., 'knee_angle_r_moment'). "
+    "If not provided, inverse dynamics will be performed internally.");
 
+    // TODO this should be used even if net_generalized_forces_file is provided.
     OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_joint_moments, double,
     "The frequency (Hz) at which to filter inverse dynamics joint moments, "
     "which are computed internally from the kinematics if "
     "net generalized forces are not provided. "
     "If net generalized forces are provided, this property is ignored."
     "(default is -1, which means no filtering; for walking, consider 6 Hz).");
-
-    OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
-    "Create a reserve actuator (CoordinateActuator) for each unconstrained "
-    "coordinate in the model, and add each to the model. Each actuator "
-    "will have the specified `optimal_force`, which should be set low to "
-    "discourage the use of the reserve actuators. (default is -1, which "
-    "means no reserves are created)");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,
     "The start of the time interval in which to solve for muscle activity. "
@@ -82,6 +78,25 @@ public:
     "The end of the time interval in which to solve for muscle activity. "
     "All data must end at or after this time. "
     "(default: latest time available in all provided data)");
+
+    OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
+    "Create a reserve actuator (CoordinateActuator) for each unconstrained "
+    "coordinate in the model, and add each to the model. Each actuator "
+    "will have the specified `optimal_force`, which should be set low to "
+    "discourage the use of the reserve actuators. (default is -1, which "
+    "means no reserves are created)");
+
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates_to_include, std::string,
+    "A list of coordinates (absolute paths) whose net generalized force should "
+    "be achieved. Other coordinates still affect muscle-tendon length, but "
+    "there is no attempt to achieve their net generalized force. (default: "
+    "emtpy, which means all non-constrained coordinates are included.)");
+
+    OpenSim_DECLARE_LIST_PROPERTY(actuators_to_include, std::string,
+    "A list of actuators (absolute paths) that should apply force. This "
+    "setting overrides the appliesForce property of the actuator. "
+    "(default: empty, which means all actuators' appliesForce property are "
+    "obeyed.)");
 
     InverseMuscleSolver();
 
@@ -144,6 +159,7 @@ protected:
     void loadModelAndData(Model& model,
                           TimeSeriesTable& kinematics,
                           TimeSeriesTable& netGeneralizedForces) const;
+    void processActuatorsToInclude(Model& model) const;
     void determineInitialAndFinalTimes(TimeSeriesTable& kinematics,
                                        TimeSeriesTable& netGeneralizedForces,
                                        double& initialTime,
