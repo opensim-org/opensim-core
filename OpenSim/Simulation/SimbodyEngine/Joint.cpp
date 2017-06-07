@@ -579,6 +579,8 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 }
                 ++connectorElement;
             }
+            parentFrameName = parentFrameName.substr(parentFrameName.rfind("/") + 1);
+            childFrameName = childFrameName.substr(childFrameName.rfind("/") + 1);
 
             SimTK::Xml::element_iterator locParentElt =
                 aNode.element_begin("location_in_parent");

@@ -208,10 +208,18 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
 
+                    // TODO adding "../" here makes things worse but leaving it
+                    // out causes a weird assymetry. Probably has to do with
+                    // parsing of the parentFrameName in Joint.
+                    // TODO probably not necessary b/c an offset frame is
+                    // always introduced.
                     XMLDocument::addConnector(*concreteJointNode, 
-                        "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                        "Connector_PhysicalFrame_", "parent_frame",
+                        "../" + parent_name);
+                    // TODO what if the body did not have a name?
                     XMLDocument::addConnector(*concreteJointNode, 
-                        "Connector_PhysicalFrame_", "child_frame", body_name);
+                        "Connector_PhysicalFrame_", "child_frame", 
+                        "../" + body_name);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(),
                         *concreteJointNode);

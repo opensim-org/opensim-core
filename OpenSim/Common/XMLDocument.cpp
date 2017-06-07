@@ -469,6 +469,39 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
     componentElt.eraseNode(connectors_node);
 }
 
+SimTK::Xml::Element XMLDocument::findElementWithName(
+        SimTK::Xml::Element& element, const std::string& name) {
+    using namespace SimTK;
+    // First, get to the root of the XML document.
+    Xml::Element current = element;
+    while (current.hasParentElement())
+        current = current.getParentElement();
+    Xml::Element root = current;
+
+    // This is a recursive lambda function.
+    std::function<Xml::Element(Xml::Element&, const std::string&)>
+        searchForElement;
+    // For recursion, Must capture the function itself.
+    // Returns an invalid Element if no element with `name` could be found.
+    searchForElement = [&searchForElement](
+            Xml::Element& elem, const std::string& name) -> Xml::Element {
+        // This is a depth-first search.
+        for (auto it = elem.element_begin(); it != elem.element_end();
+                ++it) {
+            std::string elemName = it->getOptionalAttributeValue("name");
+            if (elemName == name)
+                return elem;
+            Xml::Element foundElem = searchForElement(*it, name);
+            if (foundElem.isValid())
+                return foundElem;
+            // Keep searching other branches.
+        }
+        return Xml::Element(); // Did not find
+    };
+    return searchForElement(root, name);
+}
+
+// TODO add 30505 to the function name
 void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
@@ -487,7 +520,9 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     newFrameElement.setAttributeValue("name", frameName);
     //newFrameElement.writeToString(debug);
 
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+    // TODO document the "../../"
+    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_",
+            "parent", "../../" + parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];

@@ -2935,8 +2935,8 @@ void Socket<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path.toString());
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath&) {
-        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
+    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+        std::cout << ex.getMessage() << std::endl;
         comp =  root.template findComponent<C>(path.toString());
     }
     if (comp)
