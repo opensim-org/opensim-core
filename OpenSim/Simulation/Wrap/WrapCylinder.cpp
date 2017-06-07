@@ -123,9 +123,10 @@ void WrapCylinder::extendFinalizeFromProperties()
     // maybe set a parent pointer, _body = aBody;
     if (get_radius() < 0.0)
     {
-        string errorMessage = "Error: radius for WrapCylinder " + getName() +
-            " was either not specified, or is negative.";
-        throw Exception(errorMessage);
+        string errorMessage = getProperty_radius().getName()
+            + " is not specified or is negative.";
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue,
+            getProperty_radius().getName(), errorMessage);
     }
 }
 

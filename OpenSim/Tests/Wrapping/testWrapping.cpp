@@ -903,7 +903,6 @@ void testWrapObjectUpdateFromXMLNode30515() {
     // updated.
     SimTK_TEST(doc.getDocumentVersion() == 20302);
     Model model("testWrapObject_updateFromXMLNode30515.osim");
-    model.finalizeFromProperties();
     model.print("testWrapObject_updateFromXMLNode30515_updated.osim");
     const auto& wrapObjSet = model.getGround().getWrapObjectSet();
 

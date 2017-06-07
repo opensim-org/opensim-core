@@ -64,7 +64,6 @@ void testPendulumModelWithNestedJoints()
 
     // Load the pendulum model
     Model* pendulum = new Model("double_pendulum.osim");
-    pendulum->finalizeFromProperties();
     
     // Create a new empty device;
     C* device = new C();
