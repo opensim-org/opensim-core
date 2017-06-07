@@ -463,7 +463,6 @@ addAnalysisSetToModel()
     int size = _analysisSet.getSize();
     _analysisCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_analysisSet.get(i)) continue;
         Analysis *analysis = _analysisSet.get(i).clone();
         _model->addAnalysis(analysis);
         _analysisCopies.adoptAndAppend(analysis);
@@ -492,7 +491,6 @@ addControllerSetToModel()
     int size = _controllerSet.getSize();
     _controllerCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_controllerSet.get(i)) continue;
         Controller *controller = _controllerSet.get(i).clone();
         _model->addController(controller);
         _controllerCopies.adoptAndAppend(controller);
