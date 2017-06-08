@@ -56,7 +56,7 @@ void testCMCEMGDrivenArm() {
                                     "testCMCEMGDrivenArm_Thelen failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\testCMCEMGDrivenArm_Thelen "+muscleType+ " passed\n" << endl;
+    cout << "\ntestCMCEMGDrivenArm_"+muscleType+ " passed\n" << endl;
 }
 
 int main() {
