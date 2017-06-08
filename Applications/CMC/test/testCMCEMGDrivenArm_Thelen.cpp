@@ -42,17 +42,21 @@ void testCMCEMGDrivenArm() {
     Storage *standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
-    std::vector<double> rms_tols(2*2+2*6, 0.02);
+    std::vector<double> rms_tols(2*2+2*6, 0.01);
+    rms_tols[1] = 0.05;  // shoulder speed
+    rms_tols[3] = 0.05;  // elbow speed
     rms_tols[4] = 0.10;  // trilong
     rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
     rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
     rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
     rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
+                                    __FILE__, __LINE__,
+                                    "testCMCEMGDrivenArm_Thelen failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    cout << "\testCMCEMGDrivenArm_Thelen "+muscleType+ " passed\n" << endl;
 }
 
 int main() {
