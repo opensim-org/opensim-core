@@ -14,9 +14,9 @@
 		<!--Output precision.  It is 8 by default.-->
 		<output_precision> 8 </output_precision>
 		<!--Initial time for the simulation.-->
-		<initial_time>       0.00000000 </initial_time>
+		<initial_time>       0.40000000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>       1.00000000 </final_time>
+		<final_time>       0.65000000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for
 		    states other than the coordinates or speeds.  For example, equilibrium
 		    muscle fiber lengths or muscle forces.-->
@@ -29,7 +29,7 @@
 		<minimum_integrator_step_size>      1e-8 </minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator
 		    step size is decreased.-->
-		<integrator_error_tolerance>  1e-6 </integrator_error_tolerance>
+		<integrator_error_tolerance>  1e-5 </integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 			<objects/>
