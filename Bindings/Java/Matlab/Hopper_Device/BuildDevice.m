@@ -1,3 +1,32 @@
+function device = BuildDevice(varargin)
+% Build an OpenSim model of an assistive device.
+%
+% Optional parameters
+% -------------------
+% deviceType: 'active' for a PathActuator, 'passive' for a path spring.
+% isPropMyo: Control the active device using a PropMyoController
+%   (proportional myoelectric). If false, a PrescribedController is used
+%   instead. This parameter only applies if deviceType'active'.
+% control: For deviceType=='active' and isPropMyo==false, this variable
+%   specifies a prescribed control signal to use for the device. This should be
+%   a matrix where the first row contains time and the second row contains the
+%   control signal.
+% springStiffness: For deviceType=='passive', this is the stiffness of the
+%   spring in the passive device (in units of N/m).
+% passivePatellaWrap:  TODO remove, it is not used.
+% maxTension: For deviceType=='active', this is the optimal force (in units of
+%   Newtons) for the device. Note that the control signal bound between 0 and
+%   1, so maxTension is also the max torque that the device can apply.
+% gain: FOr deviceType=='active' and isPropMyo==true, this is the gain used in
+%   the PropMyoController for converting the muscle activation input into a
+%   control signal.
+% 
+% The arguments must be passed as key-value pairs; for example:
+%
+%   BuildDevice('deviceType', 'passive', 'springStiffness', 1000);
+%
+% Consult the code for this function to learn the parameters' default values.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,7 +49,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function device = BuildDevice(varargin)
 
 p = inputParser();
 
@@ -38,7 +66,6 @@ addOptional(p, 'deviceType', defaultDeviceType, ...
 addOptional(p, 'isPropMyo', defaultIsPropMyo)
 addOptional(p, 'control', defaultControl)
 addOptional(p, 'springStiffness', defaultSpringStiffness)
-addOptional(p, 'passivePatellaWrap', defaultPassivePatellaWrap)
 addOptional(p, 'maxTension', defaultMaxTension)
 addOptional(p, 'gain', defaultGain)
 
@@ -48,7 +75,6 @@ deviceType = p.Results.deviceType;
 isPropMyo = p.Results.isPropMyo;
 control = p.Results.control;
 springStiffness = p.Results.springStiffness;
-passivePatellaWrap = p.Results.passivePatellaWrap;
 maxTension = p.Results.maxTension;
 gain = p.Results.gain;
 

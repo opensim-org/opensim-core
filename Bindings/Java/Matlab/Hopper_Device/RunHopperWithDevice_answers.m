@@ -39,8 +39,6 @@ device = BuildDevice();
 %       the hopper's subcomponents, and locate the two subcomponents named
 %       'deviceAttach'.
 % [Step 2, Task A]
-
-
 % ANSWER{
 device.printSubcomponentInfo();
 hopper.printSubcomponentInfo();

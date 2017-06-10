@@ -1,3 +1,6 @@
+function [hopper] = ModifyInteractiveHopperSolution(hopper, varargin)
+% This function is used to modify an InteractiveHopper GUI solution.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -6,8 +9,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.           %
 %                                                                       %
 % Copyright (c) 2017 Stanford University and the Authors                %
-% Author(s): Thomas Uchida, Chris Dembia, Carmichael Ong, Nick Bianco,  %
-%            Shrinidhi K. Lakshmikanth, Ajay Seth, James Dunne          %
+% Author(s): Nick Bianco                                                %
 %                                                                       %
 % Licensed under the Apache License, Version 2.0 (the "License");       %
 % you may not use this file except in compliance with the License.      %
@@ -20,9 +22,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-
-function [hopper] = ModifyInteractiveHopperSolution(hopper, varargin)
-% This function is used to modify an InteractiveHopper GUI solution
 
 %% INPUT PARSING 
 
