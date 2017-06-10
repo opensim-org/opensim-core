@@ -382,28 +382,29 @@ getAnalysisSet() const
 void AbstractTool::
 loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 {
-    if (_modelFile != "") {
-        string saveWorkingDirectory = IO::getCwd();
-        string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
-        IO::chDir(directoryOfSetupFile);
+    OPENSIM_THROW_IF_FRMOBJ(_modelFile.empty(), Exception,
+            "No model file was specified (<model_file> element is empty) in "
+            "the Tool's Setup file. Consider passing `false` for the "
+            "constructor's `aLoadModel` parameter");
+    string saveWorkingDirectory = IO::getCwd();
+    string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
+    IO::chDir(directoryOfSetupFile);
 
-        cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
+    cout<<"AbstractTool "<<getName()<<" loading model '"<<_modelFile<<"'"<<endl;
 
-        Model *model = 0;
+    Model *model = 0;
 
-        try {
-            model = new Model(_modelFile);
-            model->finalizeFromProperties();
-            if (rOriginalForceSet!=NULL)
-                *rOriginalForceSet = model->getForceSet();
-        } catch(...) { // Properly restore current directory if an exception is thrown
-            IO::chDir(saveWorkingDirectory);
-            throw;
-        }
-        _model = model;
+    try {
+        model = new Model(_modelFile);
+        model->finalizeFromProperties();
+        if (rOriginalForceSet!=NULL)
+            *rOriginalForceSet = model->getForceSet();
+    } catch(...) { // Properly restore current directory if an exception is thrown
         IO::chDir(saveWorkingDirectory);
-
+        throw;
     }
+    _model = model;
+    IO::chDir(saveWorkingDirectory);
 }
 
 void AbstractTool::
@@ -462,7 +463,6 @@ addAnalysisSetToModel()
     int size = _analysisSet.getSize();
     _analysisCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_analysisSet.get(i)) continue;
         Analysis *analysis = _analysisSet.get(i).clone();
         _model->addAnalysis(analysis);
         _analysisCopies.adoptAndAppend(analysis);
@@ -491,7 +491,6 @@ addControllerSetToModel()
     int size = _controllerSet.getSize();
     _controllerCopies.setMemoryOwner(false);
     for(int i=0;i<size;i++) {
-        if(!&_controllerSet.get(i)) continue;
         Controller *controller = _controllerSet.get(i).clone();
         _model->addController(controller);
         _controllerCopies.adoptAndAppend(controller);

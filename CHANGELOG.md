@@ -65,6 +65,12 @@ Converting from v3.x to v4.0
     - state.setTime(0.0);
 	- manager.integrate(state, 1.0);
 
+- `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
+- `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
+`Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
+where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
+- `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
+
 Composing a Component from other components
 -------------------------------------------
 Component now maintains a list property of *components* which it owns. You add
@@ -88,8 +94,9 @@ Bug Fixes
 - Fixed bug where Body VisibleObject was not serialized when writing a model to XML (PR #139)
 - Fixed memory leaks in AssemblySolver and using Simtk::XML (PR #176)
 - Fixed model mass scaling. When 'preserve mass distribution' is unchecked (GUI) the input mass was previously not respected and the resulting scaled model mass does not equal the input mass. The modelscaler() now alters the body masses and inertias to match the input mass. (PR #230)
-- Fixed a bug in the equilibrium solution of Millard and Thelen muscles, where the initial activation and fiber-length values (for solving for equilibrium) were always coming from the default values. This was unnecessary, because unless specified otherwise, the state automatically contains the default values. This fixes an issue where inital states activations from a file were not respected by the Forward Tool and instead, the initial activations would revert to the model defaults. (PR #272)
+- Fixed a bug in the equilibrium solution of Millard and Thelen muscles, where the initial activation and fiber-length values (for solving for equilibrium) were always coming from the default values. This was unnecessary, because unless specified otherwise, the state automatically contains the default values. This fixes an issue where initial states activations from a file were not respected by the Forward Tool and instead, the initial activations would revert to the model defaults. (PR #272)
 - Fixed a bug where MuscleAnalysis was producing empty moment arm files. We now avoid creating empty Moment and MomentArm storage files when `_computeMoments` is False. (PR #324)
+- Fixed bug causing the muscle equilibrium solve routine in both Thelen2003Muscle and Millard2012EquilibriumMuscle to fail to converge and erroneously return the minimum fiber length. The fix added a proper reduction in step-size when errors increase and limiting the fiber-length to its minimum. (PR #1728)
 
 New Classes
 -----------

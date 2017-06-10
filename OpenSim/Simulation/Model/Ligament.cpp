@@ -36,7 +36,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static const Vec3 DefaultLigamentColor(.9,.9,.9); // mostly white 
+static const Vec3 DefaultLigamentColor(0, 1, 0); // Green for backward compatibility 
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
