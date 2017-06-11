@@ -36,7 +36,6 @@ The following files are used by the InteractiveHopper GUI:
   - BuildInteractiveHopperSolution.m
   - InteractiveHopperParameters.m
   - InteractiveHopperSettings.m
-  - ModifyInteractiveHopperSolution.m
 
 
 
