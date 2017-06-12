@@ -72,7 +72,7 @@ using namespace SimTK;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 Model::Model() : ModelComponent(),
@@ -85,9 +85,10 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
+    finalizeFromProperties();
 }
 //_____________________________________________________________________________
-/**
+/*
  * Constructor from an XML file
  */
 Model::Model(const string &aFileName) :
@@ -105,10 +106,38 @@ Model::Model(const string &aFileName) :
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
+
+    try {
+        finalizeFromProperties();
+    }
+    catch(const InvalidPropertyValue& err) {
+        cout << "WARNING: Model was unable to finalizeFromProperties.\n" <<
+            "Update the model file and reload OR update the property and call "
+            "finalizeFromProperties() on the model.\n" <<
+            "(details: " << err.what() << ")." << endl;
+    }
+}
+
+Model* Model::clone() const
+{
+    // Invoke default copy constructor.
+    Model* clone = new Model(*this);
+
+    try {
+        clone->finalizeFromProperties();
+    }
+    catch (const InvalidPropertyValue& err) {
+        cout << "WARNING: clone() was unable to finalizeFromProperties.\n" <<
+            "Update the model and call clone() again OR update the clone's "
+            "property and call finalizeFromProperties() on it.\n"
+            "(details: " << err.what() << ")." << endl;
+    }
+
+    return clone;
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
@@ -1105,7 +1134,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     for (auto& muscle : muscles) {
         if (muscle.appliesForce(state)){
             try{
-                muscle.equilibrate(state);
+                muscle.computeEquilibrium(state);
             }
             catch (const std::exception& e) {
                 if(!failed){ // haven't failed to equilibrate other muscles yet

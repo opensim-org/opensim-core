@@ -81,7 +81,6 @@ void testDoublePendulumWithSolver()
     statesStore.getDataForIdentifier("q", states);
 
     Model pendulum("double_pendulum.osim");
-    pendulum.finalizeFromProperties();
     
     PrescribedController* controller=
         new PrescribedController();

@@ -61,8 +61,8 @@ int main()
 
     try{
         testWrapCylinder();
-        // performance with multiple muscles and wrapping in upper-extremity
-        simulateModelWithMusclesNoViz("TestShoulderModel.osim", 0.02);}
+        // performance of multiple paths with wrapping in upper-extremity
+        simulateModelWithMusclesNoViz("TestShoulderWrapping.osim", 0.1);}
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
         failures.push_back("TestShoulderModel (multiple wrap)"); }
@@ -903,7 +903,6 @@ void testWrapObjectUpdateFromXMLNode30515() {
     // updated.
     SimTK_TEST(doc.getDocumentVersion() == 20302);
     Model model("testWrapObject_updateFromXMLNode30515.osim");
-    model.finalizeFromProperties();
     model.print("testWrapObject_updateFromXMLNode30515_updated.osim");
     const auto& wrapObjSet = model.getGround().getWrapObjectSet();
 

@@ -241,11 +241,11 @@ On Windows using Visual Studio
    configured and built.
 7. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
-9. Go to the build directory you specified in step 3 using the command:
+8. Go to the build directory you specified in step 3 using the command:
 
         cd C:/opensim-core-dependencies-build
 
-10. Use CMake to download, compile and install the dependencies:
+9. Use CMake to download, compile and install the dependencies:
 
         cmake --build . --config RelWithDebInfo
 
@@ -262,7 +262,7 @@ On Windows using Visual Studio
    with OpenSim (see below). You should run this command for the release
    configuration *last* to ensure that you use the release version of the
    command-line applications instead of the slow debug versions.
-11. If you like, you can now remove the directory used for building
+10. If you like, you can now remove the directory used for building
     dependencies (`c:/opensim-core-dependencies-build`).
 
 #### Configure and generate project files
