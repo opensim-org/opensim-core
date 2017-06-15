@@ -22,6 +22,28 @@ function varargout = InteractiveHopper(varargin)
 
 % Edit the above text to modify the response to help InteractiveHopper
 
+%-----------------------------------------------------------------------%
+% The OpenSim API is a toolkit for musculoskeletal modeling and         %
+% simulation. See http://opensim.stanford.edu and the NOTICE file       %
+% for more information. OpenSim is developed at Stanford University     %
+% and supported by the US National Institutes of Health (U54 GM072970,  %
+% R24 HD065690) and by DARPA through the Warrior Web program.           %
+%                                                                       %
+% Copyright (c) 2017 Stanford University and the Authors                %
+% Author(s): Nick Bianco, Carmichael Ong                                %
+%                                                                       %
+% Licensed under the Apache License, Version 2.0 (the "License");       %
+% you may not use this file except in compliance with the License.      %
+% You may obtain a copy of the License at                               %
+% http://www.apache.org/licenses/LICENSE-2.0.                           %
+%                                                                       %
+% Unless required by applicable law or agreed to in writing, software   %
+% distributed under the License is distributed on an "AS IS" BASIS,     %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or       %
+% implied. See the License for the specific language governing          %
+% permissions and limitations under the License.                        %
+%-----------------------------------------------------------------------%
+
 % Last Modified by GUIDE v2.5 02-Apr-2017 19:26:45
 
 % Begin initialization code - DO NOT EDIT
@@ -150,6 +172,7 @@ visualize = handles.visualize.Value;
              'isActivePropMyo', isActivePropMyo, ...
              'activeParameter', activeParameter, ...
              'deviceControl',deviceControl);
+
 % else
 %    hopper = ModifyInteractiveHopperSolution('muscle', muscle, ...
 %              'muscleExcitation', muscleExcitation, ...
@@ -163,33 +186,12 @@ visualize = handles.visualize.Value;
 %              'deviceControl',deviceControl);    
 % end
          
-
-% Create table reporter and add hop height and vastus activation to report
-import org.opensim.modeling.*
-reporter = TableReporter();
-reporter.setName('hopper_device_results');
-reporter.set_report_time_interval(0.2); % seconds.
-reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
-reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'))
-hopper.addComponent(reporter);
-
-% Initialize system
-sHD = hopper.initSystem();
-
-% Simulate hopper
-Simulate(hopper, sHD, visualize);
-
-% Get table reporter
-if exist('reporter') == 1
-    table = reporter.getTable();
-    disp(table.toString());
-    results = osimTableToStruct(table);
-end
+% EvaluateHopper's second and third args are bools for visualizing and
+% for printing EvaluateHopper info to console
+[peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, false);
 
 % Update max jump height value
-maxHeight = max(results.height);
+maxHeight = peakHeight;
 maxHeightBest = get(handles.max_jump_best,'Value');
 
 setField(handles.max_jump_recent,maxHeight(1))
@@ -200,11 +202,9 @@ end
 
 % Plot results
 axes(handles.results_axes)
-if isfield(results, 'height')
-    plot(results.time, results.height);
-    xlabel('time');
-    ylabel('height');
-end
+plot(heightStruct.time, heightStruct.height);
+xlabel('time');
+ylabel('height');
        
 % WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel.
 function without_device_Callback(hObject, eventdata, handles)

@@ -70,8 +70,6 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    virtual void equilibrate(SimTK::State& state) const;
-
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------

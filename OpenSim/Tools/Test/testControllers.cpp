@@ -219,11 +219,10 @@ void testPrescribedControllerOnBlock(bool enabled)
     osimModel.addController(&actuatorController);
     
     osimModel.print("blockWithPrescribedController.osim");
-    Model modelfileFromFile("blockWithPrescribedController.osim");
-    modelfileFromFile.finalizeFromProperties();
+    Model modelFromFile("blockWithPrescribedController.osim");
 
     // Verify that serialization and then deserialization is correct
-    ASSERT(osimModel == modelfileFromFile);
+    ASSERT(osimModel == modelFromFile);
 
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();

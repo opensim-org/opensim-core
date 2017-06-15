@@ -1,3 +1,29 @@
+function hopper = BuildHopper(varargin)
+% Build a model of a one-leg hopper, with one muscle.
+%
+% Optional parameters
+% -------------------
+% maxIsometricForce: The max isometric force of the muscle (in Newtons).
+% MillardTendonParameters: An array of 5 numbers defining tendon properties:
+%     strain at one norm force
+%     stiffness at one norm force
+%     norm force at end of the toe region
+%     curviness
+%     lTs (tendon slack length)
+%   Consult the Doxygen for the TendonForceLengthCurve class to learn more
+%   about these parameters.
+% excitation: The excitation control signal for the muscle. This should be
+%   a matrix where the first row contains time and the second row contains the
+%   excitation signal.
+% printModel (bool): Print the resulting model to 'hopper.osim'?
+% additionalMass: Add additional mass (in units of kg) to the pelvis.
+%
+% The arguments must be passed as key-value pairs; for example:
+%
+%   BuildDevice('maxIsometricForce', 3000.0, 'printModel', true);
+%
+% Consult the code for this function to learn the parameters' default values.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,11 +46,8 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function hopper = BuildHopper(varargin)
-% Build a model of a one-leg hopper, with one muscle.
 
 p = inputParser();
-defaultMuscleModel = 'Millard2012Equilibrium';
 defaultMaxIsometricForce = 4000.0;
 defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
 defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
@@ -32,7 +55,6 @@ defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
 defaultPrintModel = false;
 defaultAdditionalMass = 0;
 
-addOptional(p, 'muscleModel', defaultMuscleModel)
 addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
 addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
 addOptional(p, 'excitation', defaultExcitation)
@@ -41,7 +63,6 @@ addOptional(p, 'additionalMass', defaultAdditionalMass)
 
 parse(p,varargin{:});
 
-muscleModel = p.Results.muscleModel;
 maxIsometricForce = p.Results.maxIsometricForce;
 MillardTendonParams = p.Results.MillardTendonParams;
 excitation = p.Results.excitation;
@@ -56,12 +77,12 @@ hopper.setName('Dennis')
 %% Bodies and joints.
 % -------------------
 % Create the pelvis, thigh, and shank bodies.
-pelvisMass = 50.0 + additionalMass;
+pelvisMass = 25.0 + additionalMass;
 pelvisHalfLength = 0.1;
 pelvisInertia = Inertia(Vec3(pelvisMass * 2/3*pelvisHalfLength^2));
 pelvis = Body('pelvis', pelvisMass, Vec3(0), pelvisInertia);
 
-linkMass = 1; linkHalfLength = 0.25; linkRadius = 0.035;
+linkMass = 2.5; linkHalfLength = 0.25; linkRadius = 0.035;
 linkIxx = linkMass * (linkRadius^2 / 4 + linkHalfLength^2 / 3);
 linkInertia = Inertia(Vec3(linkIxx, linkMass * linkRadius^2 / 2, linkIxx));
 thigh = Body('thigh', linkMass, Vec3(0), linkInertia);
@@ -80,12 +101,22 @@ sliderToGround = SliderJoint('slider', ...
         pelvis,             Vec3(0), sliderOrientation);
 linkDistalPoint = Vec3(0, -linkHalfLength, 0);
 linkProximalPoint = Vec3(0, linkHalfLength, 0);
-% Define the pelvis as the parent so the reported value is hip flexion.
-hip = PinJoint('hip', pelvis, Vec3(0),           Vec3(0), ...
-                      thigh,  linkProximalPoint, Vec3(0));
-% Define the shank as the parent so the reported value is knee flexion.
-knee = PinJoint('knee', shank, linkProximalPoint, Vec3(0), ...
-                        thigh, linkDistalPoint,   Vec3(0));
+% Hip. Define the pelvis as the parent so the reported value is hip flexion.
+hipThighOffset = PhysicalOffsetFrame('hip_thigh_offset', thigh, ...
+        Transform(linkProximalPoint));
+hip = PinJoint();
+hip.setName('hip');
+hip.connectSocket_parent_frame(pelvis);
+hip.connectSocket_child_frame(hipThighOffset);
+hip.addComponent(hipThighOffset);
+% Knee. Define the shank as the parent so the reported value is knee flexion.
+kneeShankOffset = PhysicalOffsetFrame('knee_shank_offset', shank, ...
+        Transform(linkProximalPoint));
+kneeThighOffset = PhysicalOffsetFrame('knee_thigh_offset', thigh, ...
+        Transform(linkDistalPoint));
+knee = PinJoint('knee', kneeShankOffset, kneeThighOffset);
+knee.addComponent(kneeShankOffset);
+knee.addComponent(kneeThighOffset);
 
 %/ Add the joints to the model.
 hopper.addJoint(sliderToGround);
@@ -105,6 +136,14 @@ kneeCoord = knee.upd_coordinates(0);
 kneeCoord.setName('kneeFlexion');
 kneeCoord.setDefaultValue(0.75);
 
+%% Constraint.
+% ------------
+% Create a constraint to keep the foot (distal end of the shank) directly
+% beneath the pelvis (the Y-axis points upwards).
+constraint = PointOnLineConstraint(hopper.getGround(), Vec3(0, 1 ,0), ...
+        Vec3(0), shank, linkDistalPoint);
+shank.addComponent(constraint);
+
 
 %% Passive force components.
 % --------------------------
@@ -120,12 +159,6 @@ kneeStiff = [50., 40.]; kneeDamping = 2.; kneeTransition = 10.;
 kneeLimitForce = CoordinateLimitForce('kneeFlexion', kneeRange(1), ...
     kneeStiff(1), kneeRange(2), kneeStiff(2), kneeDamping, kneeTransition);
 knee.addComponent(kneeLimitForce);
-
-% Create a constraint to keep the foot (distal end of the shank) directly
-% beneath the pelvis (the Y-axis points upwards).
-constraint = PointOnLineConstraint(hopper.getGround(), Vec3(0, 1 ,0), ...
-        Vec3(0), shank, linkDistalPoint);
-shank.addComponent(constraint);
 
 % Use a contact model to prevent the foot (ContactSphere) from passing
 % through the floor (ContactHalfSpace).
@@ -154,25 +187,18 @@ hopper.addForce(contactForce);
 % Create the vastus muscle and set its origin and insertion points.
 mclFmax = maxIsometricForce; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
 mclPennAng = 0.;
-switch muscleModel
-    case 'Thelen2003'
-        vastus = Thelen2003Muscle('vastus', mclFmax, mclOptFibLen, ...
-            mclTendonSlackLen, mclPennAng);
+vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
+    mclTendonSlackLen, mclPennAng);
 
-    case 'Millard2012Equilibrium'
-        vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
-            mclTendonSlackLen, mclPennAng);
-        
-        eIso = MillardTendonParams(1);
-        kIso = MillardTendonParams(2);
-        fToe = MillardTendonParams(3);
-        curviness = MillardTendonParams(4);
-        tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
-        vastus.setTendonForceLengthCurve(tendonFL);
-        
-        lTs = MillardTendonParams(5);
-        vastus.setTendonSlackLength(lTs);     
-end
+eIso = MillardTendonParams(1);
+kIso = MillardTendonParams(2);
+fToe = MillardTendonParams(3);
+curviness = MillardTendonParams(4);
+tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
+vastus.setTendonForceLengthCurve(tendonFL);
+
+lTs = MillardTendonParams(5);
+vastus.setTendonSlackLength(lTs);     
     
 vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
 vastus.addNewPathPoint('insertion', shank, Vec3(linkRadius, 0.15, 0));
@@ -210,9 +236,9 @@ hopper.addController(brain);
 % Device attachment frames.
 % -------------------------
 % Create frames on the thigh and shank segments for attaching the device.
-thighAttachment = PhysicalOffsetFrame('deviceAttachmentPoint', thigh, ...
+thighAttachment = PhysicalOffsetFrame('deviceAttach', thigh, ...
         Transform(Vec3(linkRadius, 0.15, 0)));
-shankAttachment = PhysicalOffsetFrame('deviceAttachmentPoint', shank, ...
+shankAttachment = PhysicalOffsetFrame('deviceAttach', shank, ...
         Transform(Vec3(linkRadius, 0, 0)));
 thigh.addComponent(thighAttachment);
 shank.addComponent(shankAttachment);

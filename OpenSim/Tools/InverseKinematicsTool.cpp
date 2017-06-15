@@ -262,7 +262,6 @@ bool InverseKinematicsTool::run()
         else
             modelFromFile = false;
 
-        _model->finalizeFromProperties();
         _model->printBasicInfo();
 
         // Do the maneuver to change then restore working directory 
@@ -369,6 +368,8 @@ bool InverseKinematicsTool::run()
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
+        // Once done, remove the analysis we added
+        _model->removeAnalysis(&kinematicsReporter);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);

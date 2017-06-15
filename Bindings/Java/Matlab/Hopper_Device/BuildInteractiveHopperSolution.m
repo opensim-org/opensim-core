@@ -1,3 +1,7 @@
+function [hopper] = BuildInteractiveHopperSolution(varargin)
+% This function is used to build an InteractiveHopper GUI solution; see
+% BuildHopper and BuildDevice to build the hopper model on your own.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -6,8 +10,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.           %
 %                                                                       %
 % Copyright (c) 2017 Stanford University and the Authors                %
-% Author(s): Thomas Uchida, Chris Dembia, Carmichael Ong, Nick Bianco,  %
-%            Shrinidhi K. Lakshmikanth, Ajay Seth, James Dunne          %
+% Author(s): Nick Bianco, Carmichael Ong                                %
 %                                                                       %
 % Licensed under the Apache License, Version 2.0 (the "License");       %
 % you may not use this file except in compliance with the License.      %
@@ -20,9 +23,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-
-function [hopper] = BuildInteractiveHopperSolution(varargin)
-% This function is used to build an InteractiveHopper GUI solution.
 
 %% INPUT PARSING 
 
@@ -42,6 +42,7 @@ defaultIsActivePropMyo = false;
 defaultActiveParameter = 50;
 defaultDeviceControl = [0.0 2.5 5.0;
                         0.0 0.75 0.0];
+defaultPrintSubcomponentAndOutputInfo = true;
 
 % Create optional values for input parser                   
 addOptional(p,'muscle',defaultMuscle)
@@ -54,6 +55,7 @@ addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
 addOptional(p,'activeParameter',defaultActiveParameter)
 addOptional(p,'deviceControl',defaultDeviceControl)
+addOptional(p,'printSubcomponentAndOutputInfo',defaultPrintSubcomponentAndOutputInfo)
 
 % Parse inputs
 parse(p,varargin{:});
@@ -69,6 +71,7 @@ activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
 activeParameter = p.Results.activeParameter;
 deviceControl = p.Results.deviceControl;
+printSubcomponentAndOutputInfo = p.Results.printSubcomponentAndOutputInfo;
 
 import org.opensim.modeling.*;
 
@@ -113,7 +116,9 @@ hopper = BuildHopper('excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
                      'MillardTendonParams', MillardTendonParams, ...
                      'maxIsometricForce', maxIsometricForce);
-hopper.printSubcomponentInfo();
+if printSubcomponentAndOutputInfo
+    hopper.printSubcomponentInfo();
+end
 
 %% BUILD DEVICES
 devices = cell(0);
@@ -123,8 +128,7 @@ patellaWrap = cell(0);
 % Passive device
 if addPassiveDevice
     passive = BuildDevice('deviceType','passive', ... 
-                          'springStiffness',springStiffness, ...
-                          'passivePatellaWrap',passivePatellaWrap);
+                          'springStiffness',springStiffness);
     devices{1,length(devices)+1} = passive;
     deviceNames{1,length(deviceNames)+1} = 'device_passive';
     patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;  
@@ -154,19 +158,21 @@ for d = 1:length(devices)
     % Print the names of the device's subcomponents, and locate the
     % subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
     % the hopper's subcomponents, and locate the two subcomponents named
-    % 'deviceAttachmentPoint'.
+    % 'deviceAttach'.
     device = devices{d};
-    device.printSubcomponentInfo();
+    if printSubcomponentAndOutputInfo
+        device.printSubcomponentInfo();
+    end
     
     % Get the 'anchor' joints in the device, and downcast them to the
-    % WeldJoint class. Get the 'deviceAttachmentPoint' frames in the hopper
+    % WeldJoint class. Get the 'deviceAttach' frames in the hopper
     % model, and downcast them to the PhysicalFrame class.
     anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
     anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
     thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttachmentPoint'));
+        hopper.getComponent('thigh/deviceAttach'));
     shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttachmentPoint'));
+        hopper.getComponent('shank/deviceAttach'));
     
     % Connect the parent frame sockets of the device's anchor joints to the
     % attachment frames on the hopper; attach anchorA to the thigh, and
@@ -178,14 +184,13 @@ for d = 1:length(devices)
     hopper.addComponent(device);
     
     % Configure the device to wrap over the patella.
-
     if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
             % TODO: Change to downcast from PathSpring when PathSpring is
             % working for passive device
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBpassive'));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoB'));
+            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBactive'));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
@@ -194,8 +199,8 @@ for d = 1:length(devices)
     
     % Print the names of the outputs of the device's PathActuator and
     % ToyPropMyoController subcomponents.
-    device.getComponent('cableAtoB').printOutputInfo();
-    if strcmp(deviceNames{d},'device_active')
+    if strcmp(deviceNames{d},'device_active') && printSubcomponentAndOutputInfo
+        device.getComponent('cableAtoBactive').printOutputInfo();
         device.getComponent('controller').printOutputInfo();
     end
     

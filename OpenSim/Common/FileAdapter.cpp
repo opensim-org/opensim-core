@@ -82,6 +82,10 @@ FileAdapter::getNextLine(std::istream& stream,
                          const std::string& delims) const {
     std::string line{};
     while(std::getline(stream, line)) {
+        // Get rid of the extra \r if parsing a file with CRLF line endings.
+        if (!line.empty() && line.back() == '\r') 
+            line.pop_back();
+
         auto tokens = tokenize(line, delims);
         if(tokens.size() > 0)
             return tokens;

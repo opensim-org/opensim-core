@@ -74,19 +74,6 @@ void ActivationFiberLengthMuscle_Deprecated::constructProperties()
 {
 }
 
-
-void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) const
-{
-    // Reasonable initial activation value
-    setActivation(state, 0.001);
-    setFiberLength(state, getOptimalFiberLength());
-    _model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-    // Compute isometric force to get starting value
-    // of _fiberLength.
-    computeIsometricForce(state, getActivation(state));
-}
-
 //_____________________________________________________________________________
 /**
  * allocate and initialize the SimTK state for this actuator.

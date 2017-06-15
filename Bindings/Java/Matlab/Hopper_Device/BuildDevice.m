@@ -1,3 +1,32 @@
+function device = BuildDevice(varargin)
+% Build an OpenSim model of an assistive device.
+%
+% Optional parameters
+% -------------------
+% deviceType: 'active' for a PathActuator, 'passive' for a path spring.
+% isPropMyo: Control the active device using a PropMyoController
+%   (proportional myoelectric). If false, a PrescribedController is used
+%   instead. This parameter only applies if deviceType'active'.
+% control: For deviceType=='active' and isPropMyo==false, this variable
+%   specifies a prescribed control signal to use for the device. This should be
+%   a matrix where the first row contains time and the second row contains the
+%   control signal.
+% springStiffness: For deviceType=='passive', this is the stiffness of the
+%   spring in the passive device (in units of N/m).
+% passivePatellaWrap:  TODO remove, it is not used.
+% maxTension: For deviceType=='active', this is the optimal force (in units of
+%   Newtons) for the device. Note that the control signal bound between 0 and
+%   1, so maxTension is also the max torque that the device can apply.
+% gain: FOr deviceType=='active' and isPropMyo==true, this is the gain used in
+%   the PropMyoController for converting the muscle activation input into a
+%   control signal.
+% 
+% The arguments must be passed as key-value pairs; for example:
+%
+%   BuildDevice('deviceType', 'passive', 'springStiffness', 1000);
+%
+% Consult the code for this function to learn the parameters' default values.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,7 +49,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function device = BuildDevice(varargin)
 
 p = inputParser();
 
@@ -30,7 +58,7 @@ defaultControl = [0.0 2.5 5.0;
                   0.0 0.75 0.0];
 defaultSpringStiffness = 5000; 
 defaultPassivePatellaWrap = true;
-defaultMaxTension = 1000;
+defaultMaxTension = 2000;
 defaultGain = 1;
 
 addOptional(p, 'deviceType', defaultDeviceType, ...
@@ -38,7 +66,6 @@ addOptional(p, 'deviceType', defaultDeviceType, ...
 addOptional(p, 'isPropMyo', defaultIsPropMyo)
 addOptional(p, 'control', defaultControl)
 addOptional(p, 'springStiffness', defaultSpringStiffness)
-addOptional(p, 'passivePatellaWrap', defaultPassivePatellaWrap)
 addOptional(p, 'maxTension', defaultMaxTension)
 addOptional(p, 'gain', defaultGain)
 
@@ -48,7 +75,6 @@ deviceType = p.Results.deviceType;
 isPropMyo = p.Results.isPropMyo;
 control = p.Results.control;
 springStiffness = p.Results.springStiffness;
-passivePatellaWrap = p.Results.passivePatellaWrap;
 maxTension = p.Results.maxTension;
 gain = p.Results.gain;
 
@@ -72,9 +98,9 @@ device.addComponent(cuffA);
 device.addComponent(cuffB);
 
 % Attach a sphere to each cuff for visualization.
-sphere = Sphere(0.01);
+sphere = Sphere(0.025);
 sphere.setName('sphere');
-sphere.setColor(Vec3(1, 0, 0));
+sphere.setColor(Vec3(0, 0.5, 0));
 cuffA.attachGeometry(sphere);
 cuffB.attachGeometry(sphere.clone());
 
@@ -96,9 +122,10 @@ device.addComponent(anchorB);
 
 switch deviceType
     case 'active'
+        name = 'cableAtoBactive';
         % Attach a PathActuator between the two cuffs.
         pathActuator = PathActuator();
-        pathActuator.setName('cableAtoB');
+        pathActuator.setName(name);
         pathActuator.updGeometryPath().setName('geompath');
         pathActuator.setOptimalForce(maxTension);
         pathActuator.setMinControl(0.0);
@@ -106,6 +133,7 @@ switch deviceType
         pathActuator.addNewPathPoint('pointA', cuffA, Vec3(0));
         pathActuator.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(pathActuator);
+        device.set_actuator_name(name);
         
         if isPropMyo
             % Create a proportional myoelectric controller.
@@ -123,21 +151,15 @@ switch deviceType
             for i = 1:size(control,2)
                 controlFunction.addPoint(control(1,i), control(2,i));
             end
-            controller.addActuator(pathActuator);
-            controller.prescribeControlForActuator('cableAtoB',controlFunction);
+            controller.prescribeControlForActuator(name,controlFunction);
         end
         device.addComponent(controller)
         
     case 'passive'
-        name = 'cableAtoB';
+        name = 'cableAtoBpassive';
         springDissipation = 0.1; 
         relaxationTau = 5;
-        
-        if passivePatellaWrap
-            spring0 = 0.7166;
-        else
-            spring0 = 0.6329;
-        end
+        spring0 = 0;
                
         % TODO: change ClutchedPathSpring to PathSpring
         clutchedPathSpring = ClutchedPathSpring(name, springStiffness, ...
@@ -147,6 +169,7 @@ switch deviceType
         clutchedPathSpring.addNewPathPoint('pointA', cuffA, Vec3(0));
         clutchedPathSpring.addNewPathPoint('pointB', cuffB, Vec3(0));
         device.addComponent(clutchedPathSpring);
+        device.set_actuator_name(name);
         
         controller = PrescribedController();
         controller.setName('controller');
@@ -157,6 +180,7 @@ switch deviceType
         for i = 1:size(clutchControl,2)
             controlFunction.addPoint(clutchControl(1,i), clutchControl(2,i));
         end
+        controller.prescribeControlForActuator(name,controlFunction);
         device.addComponent(controller);
 end
 

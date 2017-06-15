@@ -122,14 +122,21 @@ of the Model, called a System (SimTK::System), using Simbody. Creation of the
 System is initiated by a call to the Model's initSystem() method. The System and
 related objects are maintained in a runtime section of the Model object. You
 can also ask a Model to provide visualization using the setUseVisualizer()
-method, in which case it will allocate an maintain a ModelVisualizer.
+method, in which case it will allocate and maintain a ModelVisualizer.
 
 @authors Frank Anderson, Peter Loan, Ayman Habib, Ajay Seth, Michael Sherman
 @see ModelComponent, ModelVisualizer, SimTK::System
 **/
 
 class OSIMSIMULATION_API Model  : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Model, ModelComponent);
+// Note, a concrete object typically employs the OpenSim_DECLARE_CONCRETE_OBJECT
+// macro, but, for Model we do not want its clone() method to be auto-generated.
+// Instead, we want to override and customize it and so we employ the subset of
+// macros that OpenSim_DECLARE_CONCRETE_OBJECT calls, excluding one that
+// implements clone() and getConcreteClassName(), which are implemented below.
+OpenSim_OBJECT_ANY_DEFS(Model, ModelComponent);
+OpenSim_OBJECT_NONTEMPLATE_DEFS(Model, ModelComponent);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -254,6 +261,12 @@ public:
      */
     void cleanup();
 
+    /** Model clone() override that invokes finalizeFromProperties() 
+        on a default copy constructed Model, prior to returning the Model. */
+    Model* clone() const override;
+    
+    const std::string& getConcreteClassName() const override
+    {   return getClassName(); }
 
     //--------------------------------------------------------------------------
     // VISUALIZATION
@@ -420,13 +433,13 @@ public:
 
     /** Get read-only access to the internal Simbody MultibodySystem that was
     created by this %Model at the last initSystem() call. **/    
-    const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; }
+    const SimTK::MultibodySystem& getMultibodySystem() const {return getSystem(); }
     /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
     that was created by this %Model at the last initSystem() call. Be careful
     if you make modifications to the System because that will invalidate 
     initialization already performed by the Model. 
     @see initStateWithoutRecreatingSystem() **/    
-    SimTK::MultibodySystem& updMultibodySystem() const {return *_system; }
+    SimTK::MultibodySystem& updMultibodySystem() const {return updSystem(); }
 
     /** Get read-only access to the internal DefaultSystemSubsystem allocated
     by this %Model's Simbody MultibodySystem. **/

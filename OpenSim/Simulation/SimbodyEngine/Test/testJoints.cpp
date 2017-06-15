@@ -1941,8 +1941,6 @@ void testEquivalentBodyForceFromGeneralizedForce()
     LoadOpenSimLibrary("osimActuators");
 
     Model gaitModel("testJointConstraints.osim");
-    gaitModel.finalizeFromProperties();
-    gaitModel.print("testJointConstraints.osim_30503.osim");
 
     testEquivalentBodyForceForGenForces(gaitModel);
     
@@ -2047,7 +2045,6 @@ void testAddedFreeJointForBodyWithoutJoint()
     model.initSystem();
 
     ASSERT_EQUAL(6, model.getNumCoordinates(), 0);
-    model.finalizeFromProperties();
     model.printBasicInfo();
 }
 

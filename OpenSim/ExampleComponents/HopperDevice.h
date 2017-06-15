@@ -64,19 +64,26 @@ public:
     OpenSim_DECLARE_OUTPUT(com_height, double, getCenterOfMassHeight,
                            SimTK::Stage::Position);
 
+    OpenSim_DECLARE_PROPERTY(actuator_name, std::string,
+        "Name of the actuator to use for outputs and path coloring.");
+
+    HopperDevice() { constructProperty_actuator_name("cableAtoB"); }
+
     // Member functions that access quantities in which we are interested. These
     // methods are used by the outputs declared above.
     double getLength(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getLength(s);
+        return getComponent<PathActuator>(get_actuator_name()).getLength(s);
     }
     double getSpeed(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getLengtheningSpeed(s);
+        return getComponent<PathActuator>(
+                get_actuator_name()).getLengtheningSpeed(s);
     }
     double getTension(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").computeActuation(s);
+        return getComponent<PathActuator>(
+                get_actuator_name()).computeActuation(s);
     }
     double getPower(const SimTK::State& s) const {
-        return getComponent<PathActuator>("cableAtoB").getPower(s);
+        return getComponent<PathActuator>(get_actuator_name()).getPower(s);
     }
     double getHeight(const SimTK::State& s) const {
         static const std::string hopperHeightCoord = "/Dennis/slider/yCoord";
@@ -91,9 +98,9 @@ public:
 protected:
     // Change the color of the device's path as its tension changes.
     void extendRealizeDynamics(const SimTK::State& s) const override {
-        const auto& actuator = getComponent<PathActuator>("cableAtoB");
+        const auto& actuator = getComponent<PathActuator>(get_actuator_name());
         double level = fmin(1., getTension(s) / actuator.get_optimal_force());
-        actuator.getGeometryPath().setColor(s, SimTK::Vec3(0.1, level, 0.1));
+        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.5, 0));
     }
 
 }; // end of HopperDevice

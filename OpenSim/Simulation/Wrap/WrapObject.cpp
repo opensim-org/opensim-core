@@ -135,9 +135,7 @@ void WrapObject::extendFinalizeFromProperties()
         _wrapSign = 0;
     } else {
         // quadrant was specified incorrectly in wrap object definition; 
-        string errorMessage = "Error: quadrant '" + _quadrantName + "' for wrap object "
-            + getName() + " was specified incorrectly.";
-        throw Exception(errorMessage);
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, getProperty_quadrant().getName());
     }
 }
 
@@ -270,4 +268,16 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
+}
+
+SimTK::Transform WrapObject::calcWrapGeometryTransformInBaseFrame() const
+{
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this WrapGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
+    const SimTK::Transform& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+    return X_BP;
 }

@@ -300,9 +300,7 @@ void testRunTool() {
             "Printing 'testruntool_cmc_setup.xml'.\n");
     // This fails because this setup file doesn't have much in it.
     testCommand("run-tool testruntool_cmc_setup.xml", EXIT_FAILURE,
-            std::regex("(Preparing to run CMCTool.)" + RE_ANY +
-                       "(Running tool default.)" + RE_ANY +
-                       "(ERROR- A model has not been set.)" + RE_ANY));
+            std::regex(RE_ANY + "(No model file was specified)" + RE_ANY));
     // Similar to the previous two commands, except for scaling
     // (since ScaleTool goes through a different branch of the code).
     testCommand("print-xml scale testruntool_scale_setup.xml", EXIT_SUCCESS,

@@ -433,7 +433,6 @@ void testClutchedPathSpring()
     //Test deserialization
     delete model;
     model = new Model("ClutchedPathSpringModel.osim");
-    model->finalizeFromProperties();
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(model);
