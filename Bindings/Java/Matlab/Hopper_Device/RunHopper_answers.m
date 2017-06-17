@@ -23,6 +23,8 @@
 
 % Build and simulate a single-legged hopping mechanism.
 
+clear all;
+
 import org.opensim.modeling.*;
 
 % This function builds the hopper model; no need to edit it.

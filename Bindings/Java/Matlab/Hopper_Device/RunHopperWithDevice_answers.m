@@ -23,6 +23,8 @@
 
 % Connect the device to the hopper to increase hop height.
 
+clear all;
+
 import org.opensim.modeling.*;
 
 % This function builds the hopper model; no need to edit it.
