@@ -126,14 +126,11 @@ int main(int argc,char **argv)
     cout<<"-----------------------------------------------------------------------\n";
     cout<<"Loaded library\n";
     cout<<"-----------------------------------------------------------------------\n";
-    model.finalizeFromProperties();
     model.printBasicInfo();
     cout<<"-----------------------------------------------------------------------\n\n";
 
-
     // RUN
     rra.run();
-
 
     //----------------------------
     // Catch any thrown exceptions

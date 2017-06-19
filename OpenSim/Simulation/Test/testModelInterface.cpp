@@ -35,16 +35,9 @@ int main() {
 
     try {
         Model model("arm26.osim");
-        // finalizeFromProperties() is required to build internal ownership tree
-        // attempt to access the ComponentList will throw that the model (root)
-        // has no subcomponents
-        ASSERT_THROW(ComponentIsRootWithNoSubcomponents, 
-            model.countNumComponents());
 
-        // finalize internal data structures from its properties
-        model.finalizeFromProperties();
-
-        // all subcomponents are now accounted for.
+        // all subcomponents are accounted for since Model constructor invokes
+        // finalizeFromProperties().
         ASSERT(model.countNumComponents() > 0);
 
         // model must be up-to-date with its properties

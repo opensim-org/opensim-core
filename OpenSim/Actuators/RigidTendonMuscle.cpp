@@ -125,12 +125,17 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
     double zeroPennateLength = getLength(s) - mli.tendonLength;
     zeroPennateLength = zeroPennateLength < 0 ? 0 : zeroPennateLength;
 
-    mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth))
-                        + Eps;
-    
+    if (_muscleWidth > SimTK::SqrtEps) {
+        mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth));
     mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
+    }
+    else { 
+        mli.fiberLength = zeroPennateLength;
+        //also avoid divide by zero if fiberLength is approaching zero
+        mli.cosPennationAngle = 1.0;
+    }
+        
     mli.pennationAngle = acos(mli.cosPennationAngle);
-    
     mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 
     const Vector arg(1, mli.normFiberLength);
