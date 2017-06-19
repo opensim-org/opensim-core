@@ -239,8 +239,9 @@ protected:
         } else {
             std::cout << "Warning: No outputs were connected to '"
                       << this->getName() << "' of type "
-                      << getConcreteClassName()
-                      << "; did you intend to report any outputs?" << std::endl;
+                      << getConcreteClassName() << ". You can connect outputs "
+                      "by calling addToReport()." << std::endl;
+
         }
     }
 
