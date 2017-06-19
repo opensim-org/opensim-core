@@ -130,6 +130,7 @@ Python interface
 ----------------
 - Improved error handling. Now, OpenSim's error messages show up as exceptions
 in Python.
+- The Python bindings can now be built for Python 3 (as well as Python 2).
 
 Other Changes
 -------------
