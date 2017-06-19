@@ -107,7 +107,7 @@ public:
                    size_t line,
                    const std::string& func) :
         Exception(file, line, func) {
-        std::string msg = "Table has no column-labels. Use setColumnLabels() to"
+        std::string msg = "Table has no column labels. Use setColumnLabels() to"
                           " add labels.";
 
         addMessage(msg);
@@ -136,17 +136,20 @@ public:
     MetaDataLengthZero(const std::string& file,
                        size_t line,
                        const std::string& func,
-                       const std::string& key) :
+                       const std::string& msg) :
         Exception(file, line, func) {
-        std::string msg = "Key = " + key;
-
         addMessage(msg);
     }
 };
 
 class EmptyTable : public Exception {
 public:
-    using Exception::Exception;
+    EmptyTable(const std::string& file,
+               size_t line,
+               const std::string& func) :
+        Exception(file, line, func) {
+        addMessage("Table is empty.");
+    }
 };
 
 class KeyExists : public Exception {
@@ -379,7 +382,7 @@ public:
     \param last InputIterator representing the sentinel or one past the end of
                 sequence of labels.                                          
 
-    \throws MetaDataLengthZero If input sequence of labels is zero.
+    \throws MetaDataLengthZero If length of input sequence of labels is zero.
     \throws IncorrectMetaDataLength If length of the input sequence of labels is
                                     incorrect -- does not match the number of
                                     columns in the table.                     */
@@ -387,7 +390,7 @@ public:
     void setColumnLabels(InputIt first, InputIt last) {
         OPENSIM_THROW_IF(first == last, 
                          MetaDataLengthZero,
-                         "labels");
+                         "Length of provided sequence of column labels is 0.");
 
         ValueArray<std::string> labels{};
         for(auto it = first; it != last; ++it)
