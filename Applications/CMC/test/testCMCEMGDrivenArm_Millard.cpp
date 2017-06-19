@@ -52,7 +52,7 @@ void testCMCEMGDrivenArm() {
     CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testCMCEMGDrivenArm failed");
 
     const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
-    cout << "\ntestCMCEMGDrivenArm "+muscleType+ " passed\n" << endl;
+    cout << "\ntestCMCEMGDrivenArm_ "+muscleType+ " passed\n" << endl;
 }
 
 int main() {

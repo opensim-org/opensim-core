@@ -270,9 +270,8 @@ public:
 
     double getPotentialEnergy(const SimTK::State& state) const {
         const GeneralForceSubsystem& forces = world->getForceSubsystem();
-        const Force& force = forces.getForce(fix);
-        const Force::TwoPointLinearSpring& spring = 
-            Force::TwoPointLinearSpring::downcast(force);
+        const SimTK::Force& force = forces.getForce(fix);
+        const auto& spring = SimTK::Force::TwoPointLinearSpring::downcast(force);
     
         return spring.calcPotentialEnergyContribution(state);
     }
@@ -312,7 +311,7 @@ protected:
             const MobilizedBody& b1 = matter.getMobilizedBody(MobilizedBodyIndex(1));
             const MobilizedBody& b2 = matter.getMobilizedBody(MobilizedBodyIndex(2));
 
-            Force::TwoPointLinearSpring 
+            SimTK::Force::TwoPointLinearSpring 
                 spring(forces, b1, Vec3(0.5,0,0), b2, Vec3(0.5,0,0), 10.0, 0.1);
             fix = spring.getForceIndex();
         }

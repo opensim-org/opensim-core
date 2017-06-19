@@ -388,5 +388,4 @@ size_t estimateMemoryChangeForCommand(T command, const size_t nSamples = 100)
     return deltas[nmedian];
 }
 
-
 #endif // OPENSIM_AUXILIARY_TEST_FUNCTIONS_H_

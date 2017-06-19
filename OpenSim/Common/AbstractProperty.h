@@ -46,10 +46,12 @@ public:
         size_t line,
         const std::string& func,
         const Object& obj,
-        const std::string& propertName) :
+        const std::string& propertyName,
+        const std::string& errorMsg = "") :
         Exception(file, line, func, obj) {
-        std::string msg = "Property '" + propertName;
+        std::string msg = "Property '" + propertyName;
         msg += "' has an invalid value.";
+        msg += (errorMsg.empty()) ? "\n" : ("\n(details: " + errorMsg + ").");
         addMessage(msg);
     }
 };

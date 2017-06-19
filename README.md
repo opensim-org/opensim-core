@@ -192,12 +192,11 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional):
-        * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
+    * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
@@ -241,11 +240,11 @@ On Windows using Visual Studio
    configured and built.
 7. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
-9. Go to the build directory you specified in step 3 using the command:
+8. Go to the build directory you specified in step 3 using the command:
 
         cd C:/opensim-core-dependencies-build
 
-10. Use CMake to download, compile and install the dependencies:
+9. Use CMake to download, compile and install the dependencies:
 
         cmake --build . --config RelWithDebInfo
 
@@ -262,7 +261,7 @@ On Windows using Visual Studio
    with OpenSim (see below). You should run this command for the release
    configuration *last* to ensure that you use the release version of the
    command-line applications instead of the slow debug versions.
-11. If you like, you can now remove the directory used for building
+10. If you like, you can now remove the directory used for building
     dependencies (`c:/opensim-core-dependencies-build`).
 
 #### Configure and generate project files
@@ -306,7 +305,9 @@ On Windows using Visual Studio
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers.
+      Python version used when building the wrappers.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
@@ -450,14 +451,13 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional):
+    * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
-        * [Enthought Canopy](https://www.enthought.com/products/canopy/), or
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
@@ -554,7 +554,9 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above. CMake sets `PYTHON_*` variables to tell you the
-      Python it will use for building the wrappers.
+      Python version used when building the wrappers.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
 8. Click the **Configure** button again. Then, click **Generate** to create
    Xcode project files in the build directory.
@@ -608,7 +610,7 @@ On Ubuntu using Unix Makefiles
 #### Get the dependencies
 
 Most dependencies can be obtained via the Ubuntu software repositories;
-especially if you are using Ubuntu 15.10 or later. On each line below, we show
+especially if you are using Ubuntu 16.04 or later. On each line below, we show
 the Ubuntu package names for the dependencies. You can find instructions for
 specific Ubuntu versions under 'For the impatient' below.
 
@@ -630,12 +632,12 @@ specific Ubuntu versions under 'For the impatient' below.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.6; must get from SWIG website.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8; `swig`.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-6-jdk` or `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
-    * **Python scripting** (optional): `python-dev`.
+    * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5; `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
@@ -754,6 +756,8 @@ And you could get all the optional dependencies via:
       Java; see dependencies above.
     * `BUILD_PYTHON_WRAPPING` if you want to access OpenSim through Python; see
       dependencies above.
+    * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
+      Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
     * `OPENSIM_COPY_DEPENDENCIES` to decide if Simbody and BTK are copied into
       the OpenSim installation; you want this off if you're installing OpenSim

@@ -29,7 +29,7 @@
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
-%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>; 
+%template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>;
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 %template(SetFrames) OpenSim::Set<OpenSim::Frame>;
 %template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
@@ -198,14 +198,16 @@
 %template(ReferenceDouble) OpenSim::Reference_<double>;
 %template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
+
 %include <OpenSim/Simulation/MarkersReference.h>
+%template(SetMarkerWeights) OpenSim::Set<MarkerWeight>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
-%template(IteratorRangeStatesTrajectoryIterator) 
+%template(IteratorRangeStatesTrajectoryIterator)
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
@@ -282,7 +284,7 @@ constructors because they have additional arguments.
          const PhysicalFrame& child) {
         return new NAME(name, parent, child);
     }
-    
+
     NAME(const std::string& name,
          const PhysicalFrame& parent,
          const SimTK::Vec3& locationInParent,
@@ -309,16 +311,16 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
     PhysicalOffsetFrame() {
         return new PhysicalOffsetFrame();
     }
-    PhysicalOffsetFrame(const PhysicalFrame& parent, 
+    PhysicalOffsetFrame(const PhysicalFrame& parent,
                         const SimTK::Transform& offset) {
         return new PhysicalOffsetFrame(parent, offset);
     }
-    PhysicalOffsetFrame(const std::string& name, 
+    PhysicalOffsetFrame(const std::string& name,
                 const PhysicalFrame& parent,
                 const SimTK::Transform& offset) {
         return new PhysicalOffsetFrame(name, parent, offset);
     }
-        
+
     PhysicalOffsetFrame(const std::string& name,
                 const std::string& parentName,
                 const SimTK::Transform& offset) {

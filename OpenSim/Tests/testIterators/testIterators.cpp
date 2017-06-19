@@ -95,7 +95,6 @@ void testNestedComponentListConsistency() {
     device->addComponent(elbow);
 
     model.addModelComponent(device);
-    model.finalizeFromProperties();
 
     std::vector<const Joint*> joints1{}, joints2{};
     std::set<const Coordinate*> coords{};
@@ -128,11 +127,6 @@ void testNestedComponentListConsistency() {
 void testComponentListConst() {
 
     Model model(modelFilename);
-
-    ASSERT_THROW( ComponentIsRootWithNoSubcomponents,
-                    model.getComponentList());
-
-    model.finalizeFromProperties();
     model.printSubcomponentInfo();
 
     ComponentList<const Component> componentsList = model.getComponentList();
@@ -275,7 +269,6 @@ void testComponentListConst() {
 // components.
 void testComponentListNonConstWithConstIterator() {
     Model model(modelFilename);
-    model.finalizeFromProperties();
 
     // Making this a const ComponentList causes us to use the const
     // begin()/end() methods, which return const_iterators, and thus avoids
@@ -408,7 +401,6 @@ void testComponentListNonConstWithConstIterator() {
 // allow modifying the elements of the list.
 void testComponentListNonConstWithNonConstIterator() {
     Model model(modelFilename);
-    model.finalizeFromProperties();
 
     ComponentList<Component> componentsList = model.updComponentList();
     int numComponents = 0;
@@ -509,7 +501,6 @@ void testComponentListNonConstWithNonConstIterator() {
 // Ensure that we can compare const_iterator and (non-const) iterator.
 void testComponentListComparisonOperators() {
     Model model(modelFilename);
-    model.finalizeFromProperties();
 
     ComponentList<Body> list = model.updComponentList<Body>();
     ComponentList<Body>::const_iterator constIt = list.cbegin();
