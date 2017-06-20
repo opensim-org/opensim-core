@@ -156,7 +156,7 @@ public:
                 this->validateRow(i, indVec[i], depData.row(int(i)));
             }
         }
-        catch (std::exception& x) {
+        catch (std::exception&) {
             // wipe out the data loaded if any
             this->_indData.clear();
             this->_depData.clear();
