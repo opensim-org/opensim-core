@@ -1752,11 +1752,6 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
         }
     }
 
-    // Todo_AYMAN: We need to call connectMarkerToModel() again to make sure the
-    // _body pointers are up to date; but note that we've already called 
-    // it before so we need to make sure the connectMarkerToModel() function
-    // supports getting called multiple times.
-    initSystem();
     cout << "Updated markers in model " << getName() << endl;
 }
 
