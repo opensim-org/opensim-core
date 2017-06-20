@@ -82,10 +82,16 @@ handleNames = fieldnames(handles);
 
 for i = 1:length(handleNames)
     for j = 1:length(subfields)
-        if isprop(handles.(handleNames{i}),subfields{j})
-            settings.(handleNames{i}).(subfields{j}) = handles.(handleNames{i}).(subfields{j});
-        end      
-    end   
+        if isstruct(handles.(handleNames{i}))
+            if isfield(handles.(handleNames{i}),subfields{j})
+                settings.(handleNames{i}).(subfields{j}) = handles.(handleNames{i}).(subfields{j});
+            end
+        else
+            if isprop(handles.(handleNames{i}),subfields{j})
+                settings.(handleNames{i}).(subfields{j}) = handles.(handleNames{i}).(subfields{j});
+            end
+        end            
+    end
 end
 
 save(filename,'-struct','settings')

@@ -81,12 +81,23 @@ handles.output = hObject;
 
 % Load default settings
 handles = InteractiveHopperSettings(handles,'load','setDefaults',true);
+handles.muscleExcitationDefault.Value = handles.muscleExcitation.Value;
+handles.deviceControlDefault.Value = handles.deviceControl.Value;
 
 % Label control axes
 axes(handles.control_axes)
-axis([0 5 0 1])
-xlabel('Jump Time (s)')
-ylabel('Excitation')
+resetControlAxes()
+
+% Initialize control axes line handles lists
+handles.muscleExcitationList.Value = cell(1);
+handles.deviceControlList.Value = cell(1);
+
+% Label results axes
+axes(handles.results_axes)
+resetResultsAxes()
+
+% Initialize results axes line handles list
+handles.resultsList.Value = cell(1);
 
 % Initialize run counter
 setField(handles.run_counter,0)
@@ -109,19 +120,10 @@ handles.setup.String = sprintf('setup_%03.0f',handles.run_counter.Value);
 
 % Muscle
 muscle = handles.muscle.Value;
-if isfield(handles,'muscleExcitation')
-    muscleExcitation = handles.muscleExcitation.Value;
-else
-    muscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
-                        0.3 0.3  1.0 1.0  0.1 0.1];
-    len = size(muscleExcitation,2)+1;
-    muscleExcitation(1,len) = 5;
-    muscleExcitation(2,len) = muscleExcitation(2,len-1);
-    
-    axes(handles.control_axes)
-    color = handles.muscleExcitationColor.Value;
-    pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
-    set(pts,'Xdata',muscleExcitation(1,:),'Ydata',muscleExcitation(2,:))
+muscleExcitation = handles.muscleExcitation.Value;
+if isequal(muscleExcitation, handles.muscleExcitationDefault.Value)
+    line_h = setMuscleExcitation(muscleExcitation, handles);
+    handles.muscleExcitationList.Value{1} = line_h;
 end
 
 
@@ -130,62 +132,47 @@ addPassiveDevice = handles.enable_passive.Value;
 passivePatellaWrap = handles.passive_patella_wrap.Value;
 passiveParameter = handles.passive_slider.Value;
 
-% Active device 
-addActiveDevice = handles.enable_active.Value;
-activePatellaWrap = handles.active_patella_wrap.Value;
-activeParameter = handles.active_slider.Value;
-isActivePropMyo = handles.active_as_prop_myo.Value;
+% Active device
+if handles.with_device.Value
+    addActiveDevice = handles.enable_active.Value;
+    activePatellaWrap = handles.active_patella_wrap.Value;
+    activeParameter = handles.active_slider.Value;
+    isActivePropMyo = handles.active_as_prop_myo.Value;
+    deviceControl = handles.deviceControl.Value;
+else
+    addActiveDevice = false;
+    activePatellaWrap = false;
+    activeParameter = 50;
+    isActivePropMyo = false;
+    deviceControl = [0.0 2.5 5.0;
+                     0.0 0.75 0.0];
+end
+
 if addActiveDevice
     if isActivePropMyo
         deviceControl = muscleExcitation;
-    else 
-        if isfield(handles,'deviceControl')
-            deviceControl = handles.deviceControl.Value;
-        else
-            deviceControl = [0.0 2.5 5.0;
-                             0.0 0.75 0.0];
-            handles.deviceControl.Value = deviceControl;
-            guidata(hObject, handles)
-            axes(handles.control_axes)
-            color = handles.deviceControlColor.Value;
-            pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
-            set(pts,'Xdata',deviceControl(1,:),'Ydata',deviceControl(2,:))
+    else
+        if isequal(deviceControl, handles.deviceControlDefault.Value)
+            line_h = setDeviceControl(deviceControl, handles);
+            handles.deviceControlList.Value{1} = line_h;
         end
     end
-else
-    deviceControl = [0.0 2.5 5.0;
-                     0.0 0.75 0.0];
 end
 
 % Other GUI, visualization features
 visualize = handles.visualize.Value;
 
-% Build or modify hopper solution
-%if ~exist('hopper','var')
-    hopper = BuildInteractiveHopperSolution('muscle', muscle, ...
-             'muscleExcitation', muscleExcitation, ...
-             'addPassiveDevice', addPassiveDevice, ...
-             'passivePatellaWrap', passivePatellaWrap, ...
-             'passiveParameter', passiveParameter, ...
-             'addActiveDevice', addActiveDevice, ...
-             'activePatellaWrap', activePatellaWrap, ...
-             'isActivePropMyo', isActivePropMyo, ...
-             'activeParameter', activeParameter, ...
-             'deviceControl',deviceControl);
-
-% else
-%    hopper = ModifyInteractiveHopperSolution('muscle', muscle, ...
-%              'muscleExcitation', muscleExcitation, ...
-%              'addPassiveDevice', addPassiveDevice, ...
-%              'passivePatellaWrap', passivePatellaWrap, ...
-%              'passiveParameter', passiveParameter, ...
-%              'addActiveDevice', addActiveDevice, ...
-%              'activePatellaWrap', activePatellaWrap, ...
-%              'isActivePropMyo', isActivePropMyo, ...
-%              'activeParameter', activeParameter, ...
-%              'deviceControl',deviceControl);    
-% end
-         
+hopper = BuildInteractiveHopperSolution('muscle', muscle, ...
+    'muscleExcitation', muscleExcitation, ...
+    'addPassiveDevice', addPassiveDevice, ...
+    'passivePatellaWrap', passivePatellaWrap, ...
+    'passiveParameter', passiveParameter, ...
+    'addActiveDevice', addActiveDevice, ...
+    'activePatellaWrap', activePatellaWrap, ...
+    'isActivePropMyo', isActivePropMyo, ...
+    'activeParameter', activeParameter, ...
+    'deviceControl',deviceControl);
+     
 % EvaluateHopper's second and third args are bools for visualizing and
 % for printing EvaluateHopper info to console
 [peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, false);
@@ -202,14 +189,22 @@ end
 
 % Plot results
 axes(handles.results_axes)
-plot(heightStruct.time, heightStruct.height);
-xlabel('time');
-ylabel('height');
+line_h = plot(heightStruct.time, heightStruct.height,'b-','LineWidth',2);
+
+handles.resultsList.Value = ...
+    updateList(handles.resultsList.Value,line_h);
+
+xlabel('Jump Time (s)');
+ylabel('Height (m)');
+
+% Update handles structure
+guidata(hObject, handles);
        
 % WITHOUT_DEVICE - If no device, disable "Choose Assistive Strategy" panel.
 function without_device_Callback(hObject, eventdata, handles)
 
 set(findall(handles.choose_assistive_strategy, '-property', 'enable'), 'enable', 'off')
+hideDeviceControls(hObject,handles)
 
 % WITH_DEVICE - If adding device, enable option to add device.
 function with_device_Callback(hObject, eventdata, handles)
@@ -217,13 +212,16 @@ function with_device_Callback(hObject, eventdata, handles)
 set(handles.enable_passive,'Enable','on')
 if handles.enable_passive.Value
     set(findall(handles.passive, '-property', 'enable'), 'enable', 'on')
-
 end
 
 set(handles.enable_active,'Enable','on')
 if handles.enable_active.Value
     set(findall(handles.active, '-property', 'enable'), 'enable', 'on')
+end
 
+% Show device controls if a non-prop-myo active device is enabled
+if handles.enable_active.Value && ~handles.active_as_prop_myo.Value
+    showDeviceControls(hObject,handles)
 end
 
 % AVERAGE_JOE - Sets "The Average Joe" muscle.
@@ -282,7 +280,11 @@ set(findall(handles.interactive_hopper, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
 color = handles.muscleExcitationColor.Value;
-muscleExcitation = getUserControl(color);
+[muscleExcitation,line_h] = getUserControl(color);
+
+handles.muscleExcitationList.Value = ...
+    updateList(handles.muscleExcitationList.Value,line_h);
+
 handles.muscleExcitation.Value = muscleExcitation;
 guidata(hObject, handles)
 
@@ -308,7 +310,11 @@ set(findall(handles.interactive_hopper, '-property', 'enable'), 'enable', 'off')
 
 axes(handles.control_axes)
 color = handles.deviceControlColor.Value;
-deviceControl = getUserControl(color);
+[deviceControl, line_h] = getUserControl(color);
+
+handles.deviceControlList.Value = ...
+    updateList(handles.deviceControlList.Value,line_h);
+
 handles.deviceControl.Value = deviceControl;
 guidata(hObject, handles)
 
@@ -316,19 +322,32 @@ for i = 1:length(reenable)
     set(reenable{i},'Enable','on')
 end
 
+% FADE - Fade out RGB value to white by given factor
+function rgbFaded = fade(factor,rgb)
+    rgbFaded = factor + (1.0-factor)*rgb;
+
 % CLEAR - Clear results and control axes.
 function clear_Callback(hObject, eventdata, handles)
 
 axes(handles.results_axes)
 ax = gca;
 cla(ax,'reset');
+resetResultsAxes()
 
 axes(handles.control_axes)
 ax = gca;
 cla(ax,'reset');
-axis([0 5 0 1])
-xlabel('Jump Time (s)')
-ylabel('Activation')
+resetControlAxes()
+
+handles.muscleExcitation.Value = handles.muscleExcitationDefault.Value;
+handles.deviceControl.Value = handles.deviceControlDefault.Value;
+
+% Reset line handles lists for both axes
+handles.resultsList.Value = cell(1);
+handles.muscleExcitationList.Value = cell(1);
+handles.deviceControlList.Value = cell(1);
+
+guidata(hObject, handles)
 
 % ENABLE_PASSIVE - Add a passive device to the hopper.
 function enable_passive_Callback(hObject, eventdata, handles)
@@ -344,8 +363,6 @@ else
     enable(handles,handle_names,false)
     setPassive(handles,[])
 end
-
-function active_patella_wrap_Callback(hObject, eventdata, handles)
 
 % PASSIVE_SLIDER - Set passive device parameters.
 function passive_slider_Callback(hObject, eventdata, handles)
@@ -399,9 +416,13 @@ if get(hObject,'Value')
     enable(handles,handle_names,true)
     active_slider = handles.active_slider.Value;
     setActive(handles,active_slider)
+    if ~handles.active_as_prop_myo.Value
+        showDeviceControls(hObject,handles)
+    end
 else
     enable(handles,handle_names,false)
     setActive(handles,[])
+    hideDeviceControls(hObject,handles)
 end
 
 % ACTIVE_SLIDER - Set active device parameters.
@@ -437,17 +458,38 @@ if get(hObject,'Value')
     set(handles.tension_or_gain_text,'String','Gain')
     setField(handles.tension_or_gain_units,[])
     setActive(handles,active_slider)
+    hideDeviceControls(hObject,handles)
 else
     enable(handles,handle_names,true)
     set(handles.tension_or_gain_text,'String','Max Tension')
     set(handles.tension_or_gain_units,'String','N')
     setActive(handles,active_slider)
+    showDeviceControls(hObject,handles)
 end
 
 % RESET - Load default GUI settings.
 function reset_Callback(hObject, eventdata, handles)
 
+clear_Callback(hObject, eventdata, handles)
+
 handles = InteractiveHopperSettings(handles,'load','setDefaults',true);
+handles.muscleExcitationDefault.Value = handles.muscleExcitation.Value;
+handles.deviceControlDefault.Value = handles.deviceControl.Value;
+
+% Reset control axes
+axes(handles.control_axes)
+resetControlAxes()
+
+% Reset control axes line handles lists
+handles.muscleExcitationList.Value = cell(1);
+handles.deviceControlList.Value = cell(1);
+
+% Reset results axes
+axes(handles.results_axes)
+resetResultsAxes()
+
+% Reset results axes line handles list
+handles.resultsList.Value = cell(1);
 guidata(hObject, handles);
 
 % SAVE_SETUP - Save current GUI configuration.
@@ -460,33 +502,70 @@ guidata(hObject, handles);
 % LOAD_SETUP - Load previous GUI configuration.
 function load_setup_Callback(hObject, eventdata, handles)
 
+reset_Callback(hObject, eventdata, handles)
+
 runCount = handles.run_counter.Value;
 filename = handles.setup.String;
 handles = InteractiveHopperSettings(handles,'load','filename',filename);
 setField(handles.run_counter,runCount)
+
+[line_h] = setMuscleExcitation(handles.muscleExcitation.Value,handles);
+handles.muscleExcitationList.Value = ...
+    updateList(handles.muscleExcitationList.Value,line_h);
+[line_h] = setDeviceControl(handles.deviceControl.Value,handles);
+handles.deviceControlList.Value = ...
+    updateList(handles.deviceControlList.Value,line_h);
+
 guidata(hObject, handles);
 
 % GETUSERCONTROL - Get user muscle excitation or device control.
-function [xy] = getUserControl(color)
+function [xy,line_h] = getUserControl(color)
 
-w = [0 5 0 1];
-axis(w), hold on, grid on
+resetControlAxes()
+box = [0 5 0 1];
+border = [-0.5 5.5 -0.1 1.1];
 
-title(getString(message('SPLINES:resources:axesLabel_WhenYouAreDone')))
+title('Draw curve in box, click outside gridded area when done')
 pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
 pts2 = line('Xdata',NaN,'Ydata',NaN,'LineStyle','--','LineWidth',1.5,'Color',color);
 
 maxpnts = 100; xy = zeros(2,maxpnts);
-while 1
-    for j=2:maxpnts
+j = 2;
+while true
+    while true
         try
             [x,y] = ginput(1);
+            title('Draw curve in box, click outside gridded area when done')
         catch ME
             disp('ERROR: ginput failed')
         end
-        if isempty(x)||x<w(1)||x>w(2)||y<w(3)||y>w(4)
+        
+        left = (x < box(1)) && (x > border(1));
+        right = (x > box(2)) && (x < border(2));
+        bottom = (y < box(3)) && (y > border(3));
+        top = (y > box(4)) && (y < border(4));
+        
+        if left || (x<=xy(1,j-1)) 
+            title('ERROR: excitation/control must be a function of time ')
+            continue;
+        end
+        
+        if bottom
+            y = 0;
+        elseif top
+            y = 1;
+        end
+            
+        if isempty(x)||x<border(1)||x>border(2)||y<border(3)||y>border(4)
             xy(1,j) = 5;
             xy(2,j) = xy(2,j-1);
+            
+            set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
+            delete(pts2)
+            break;
+        elseif right
+            xy(1,j) = 5;
+            xy(2,j) = y;
             
             set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
             delete(pts2)
@@ -499,16 +578,95 @@ while 1
         else
             set(pts,'Xdata',x,'Ydata',y)
         end
+        j=j+1;
     end
     
-    if j>1, break, end
+    if j>1 
+        break;
+    end
     
 end
 title(' ')
 xy(:,j) = [5;xy(2,j-1)];
 xy(:,j+1:maxpnts)=[];
+line_h = pts;
+
+% UPDATELIST - Update handle list and fade out previous profiles in list
+function [list] = updateList(list,line_h)
+
+if isempty(list{1})
+    list{1} = line_h;
+else
+    list{length(list)+1} = line_h;
+    for i = 1:length(list)-1
+        rgb = list{i}.Color;
+        rgbFaded = fade(0.5,rgb);
+        list{i}.Color = rgbFaded;
+    end
+end
+
+% RESETCONTROLAXES
+function resetControlAxes()
+hold on
+grid on
+axis([-0.5 5.5 -0.1 1.1])
+xticks(0:5)
+yticks(0:0.2:1)
+rectangle('Position',[0 0 5 1],'LineWidth',1.5)
+xlabel('Jump Time (s)')
+ylabel('Excitation')
+
+% RESETCONTROLAXES
+function resetResultsAxes()
+hold on
+grid on
+axis([0 5 0 2])
+xticks(0:5)
+yticks(0:0.2:2)
+xlabel('Jump Time (s)')
+ylabel('Jump Height (m)')
+
+% SETMUSCLEEXCITATION
+function [line_h] = setMuscleExcitation(muscleExcitation,handles)
+len = size(muscleExcitation,2)+1;
+muscleExcitation(1,len) = 5;
+muscleExcitation(2,len) = muscleExcitation(2,len-1);
+
+axes(handles.control_axes)
+color = handles.muscleExcitationColor.Value;
+line_h = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
+set(line_h,'Xdata',muscleExcitation(1,:),'Ydata',muscleExcitation(2,:))
+
+% SETDEVICECONTROL
+function [line_h] = setDeviceControl(deviceControl,handles)
+axes(handles.control_axes)
+color = handles.deviceControlColor.Value;
+line_h = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
+set(line_h,'Xdata',deviceControl(1,:),'Ydata',deviceControl(2,:))
+
+% HIDEDEVICECONTROLS
+function hideDeviceControls(hObject,handles)
+
+if ~isempty(handles.deviceControlList.Value{1})
+    for i = 1:length(handles.deviceControlList.Value)
+        handles.deviceControlList.Value{i}.Visible = 'off';
+    end
+    guidata(hObject, handles)
+end
+
+% SHOWDEVICECONTROLS
+function showDeviceControls(hObject,handles)
+
+if ~isempty(handles.deviceControlList.Value{1})
+    for i = 1:length(handles.deviceControlList.Value)
+        handles.deviceControlList.Value{i}.Visible = 'on';
+    end
+    guidata(hObject, handles)
+end
 
 % Currently unused callback and create functions - DO NOT DELETE
+function active_patella_wrap_Callback(hObject, eventdata, handles)
+
 function max_jump_recent_Callback(hObject, eventdata, handles)
 
 function max_jump_recent_CreateFcn(hObject, eventdata, handles)
