@@ -1706,50 +1706,21 @@ int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
 }
 
 //_____________________________________________________________________________
-/**
- * Update all markers in the model with the ones in the
- * passed-in marker set. If the marker does not yet exist
- * in the model, it is added.
- *
- * @param aMarkerSet set of markers to be updated/added
- */
-void Model::updateMarkerSet(MarkerSet& aMarkerSet)
+void Model::updateMarkerSet(MarkerSet& newMarkerSet)
 {
-    for (int i = 0; i < aMarkerSet.getSize(); i++)
-    {
-        Marker& updatingMarker = aMarkerSet.get(i);
+    for (int i = 0; i < newMarkerSet.getSize(); i++) {
+        Marker& updatingMarker = newMarkerSet.get(i);
 
         /* If there is already a marker in the model with that name,
-         * update it with the parameters from the updating marker,
-         * moving it to a new body if necessary.
+         * replace it with the updating marker.
          */
-        if (updMarkerSet().contains(updatingMarker.getName()))
-        {
+        if (updMarkerSet().contains(updatingMarker.getName())) {
             Marker& modelMarker = updMarkerSet().get(updatingMarker.getName());
-            /* If the updating marker is on a different body, delete the
-             * marker from the model and add the updating one (as long as
-             * the updating marker's body exists in the model).
-             */
-            //if (modelMarker.getBody().getName() != updatingBodyName)
-            //{
-                upd_MarkerSet().remove(&modelMarker);
-                // Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-                //upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
-            //}
-            //else
-            //{
-            //  modelMarker.updateFromMarker(updatingMarker);
-            //}
+            // Delete the marker from the model and add the updating one
+            upd_MarkerSet().remove(&modelMarker);
         }
-        //else
-        {
-            /* The model does not contain a marker by that name. If it has
-             * a body by that name, add the updating marker to the markerset.
-             */
-            // Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-            //if (getBodySet().contains(updatingBodyName))
-                addMarker(updatingMarker.clone());
-        }
+        // append the marker to the model's Set
+        addMarker(updatingMarker.clone());
     }
 
     cout << "Updated markers in model " << getName() << endl;
