@@ -127,10 +127,11 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
                 bodyElement->getValueAs<std::string>(body_name);
             }
             // ContactGeometry in pre-4.0 models are necessarily 1 level deep
-            // (model, contact_geom), and Bodies were necessarily 1 level deep:
+            // (model, contact_geom), and Bodies are necessarily 1 level deep:
             // prepend "../" to get the correct relative path.
+            if (!body_name.empty()) body_name = "../" + body_name;
             XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
-                    "frame", "../" + body_name);
+                    "frame", body_name);
         }
     }
     Super::updateFromXMLNode(node, versionNumber);

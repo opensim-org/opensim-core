@@ -128,13 +128,17 @@ public:
     If there is no `<connectors>` element, then this function does not edit
     componentElt. */
     static void updateConnectors30508(SimTK::Xml::Element& componentElt);
-    // TODO 
-    static SimTK::Xml::Element findElementWithName(
-            SimTK::Xml::Element& element, const std::string& name);
-    static void addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+    static void addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
         const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
+    /** Find the first XML Element (depth-first search) with the provided
+    `name`, anywhere in the XML document that contains `element`. If the XML
+    document does not contain an element with name `name`, or if `name` is
+    empty, then the returned Xml::Element is empty (Xml::Element::isValid()
+    returns false). */
+    static SimTK::Xml::Element findElementWithName(
+            SimTK::Xml::Element& element, const std::string& name);
 
 private:
     static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);

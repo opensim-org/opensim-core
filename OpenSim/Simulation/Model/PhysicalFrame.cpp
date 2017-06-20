@@ -194,7 +194,11 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         SimTK::Xml::Element scaleFactorsNode("scale_factors", localScaleStr.str());
                         meshNode.insertNodeAfter(meshNode.element_end(), scaleFactorsNode);
                         meshNode.insertNodeAfter(meshNode.element_end(), meshFileNode);
-                        XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
+                        // The transform is relative to the owning component
+                        // (this PhysicalFrame), so the connectee name just
+                        // points up to this component ("..").
+                        XMLDocument::addConnector(meshNode, "Connector_Frame_",
+                                "frame", "..");
                         geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
                     }
                 }
@@ -274,10 +278,17 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
                     componentsNode = bodyNode.element_begin("components");
                 }
 
-                // Create Frame from composed transform and insert in components list
-                createFrameForXform(componentsNode, frameName, composedXformVec6, bodyName);
+                // Create Frame from composed transform and insert in
+                // components list.
+                // The transform is relative to the owning component (this
+                // PhysicalFrame), so the connectee name just points up to this
+                // component ("..").
+                createFrameForXform(componentsNode, frameName,
+                        composedXformVec6, "..");
 
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", frameName);
+                // For Geometry under 'attached_geometry', the 'frame' is
+                // always the owning component.
+                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", "..");
                 SimTK::Xml::element_iterator parentFrame = componentsNode->element_begin("PhysicalOffsetFrame");
                 while (parentFrame->getRequiredAttributeValue("name") != frameName)
                     parentFrame++;
@@ -293,7 +304,10 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
 
             }
             else
-                XMLDocument::addConnector(meshNode, "Connector_Frame_", "frame", bodyName);
+                // For Geometry under 'attached_geometry', the 'frame' is
+                // always the owning component.
+                XMLDocument::addConnector(meshNode, "Connector_Frame_",
+                        "frame", "..");
             // scale_factor
             SimTK::Vec3 localScale(1.);
             SimTK::Xml::element_iterator localScaleIter = displayGeomIter->element_begin("scale_factors");
@@ -339,19 +353,22 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
     }
 }
 
-// This private method creates a frame in the owner model document with passed in name and content relative to bodyName
-void PhysicalFrame::createFrameForXform(const SimTK::Xml::element_iterator& frameSetIter, const std::string& frameName, const SimTK::Vec6& localXform, const std::string& bodyName)
+void PhysicalFrame::createFrameForXform(
+        const SimTK::Xml::element_iterator& ownerIter,
+        const std::string& frameName, const SimTK::Vec6& localXform,
+        const std::string& parentConnecteeName)
 {
     SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);
     stringstream ss;
     ss << localXform[3] << " " << localXform[4] << " " << localXform[5];
     SimTK::Xml::Element translationNode("translation", ss.str());
-    ss.clear();
+    ss = stringstream();
     ss << localXform[0] << " " << localXform[1] << " " << localXform[2];
-    SimTK::Xml::Element orientationNode("rotation", ss.str());
+    SimTK::Xml::Element orientationNode("orientation", ss.str());
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
-    frameSetIter->insertNodeAfter(frameSetIter->element_end(), frameNode);
-    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent", bodyName);
+    ownerIter->insertNodeAfter(ownerIter->element_end(), frameNode);
+    XMLDocument::addConnector(frameNode, "Connector_PhysicalFrame_", "parent",
+            parentConnecteeName);
 }

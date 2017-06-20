@@ -2936,7 +2936,12 @@ void Socket<C>::findAndConnect(const Component& root) {
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        std::cout << ex.getMessage() << std::endl;
+        if (Object::getDebugLevel() > 0) {
+            // TODO once we fix how connections are established when building
+            // models programmatically, we should show this warning even for
+            // debug level 0.
+            std::cout << ex.getMessage() << std::endl;
+        }
         comp =  root.template findComponent<C>(path.toString());
     }
     if (comp)
