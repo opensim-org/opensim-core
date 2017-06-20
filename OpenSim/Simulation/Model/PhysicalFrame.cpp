@@ -360,12 +360,12 @@ void PhysicalFrame::createFrameForXform(
 {
     SimTK::Xml::Element frameNode("PhysicalOffsetFrame");
     frameNode.setAttributeValue("name", frameName);
-    stringstream ss;
-    ss << localXform[3] << " " << localXform[4] << " " << localXform[5];
-    SimTK::Xml::Element translationNode("translation", ss.str());
-    ss = stringstream();
-    ss << localXform[0] << " " << localXform[1] << " " << localXform[2];
-    SimTK::Xml::Element orientationNode("orientation", ss.str());
+    stringstream ssT;
+    ssT << localXform[3] << " " << localXform[4] << " " << localXform[5];
+    SimTK::Xml::Element translationNode("translation", ssT.str());
+    stringstream ssO;
+    ssO << localXform[0] << " " << localXform[1] << " " << localXform[2];
+    SimTK::Xml::Element orientationNode("orientation", ssO.str());
     frameNode.insertNodeAfter(frameNode.element_end(), translationNode);
     frameNode.insertNodeAfter(frameNode.element_end(), orientationNode);
     ownerIter->insertNodeAfter(ownerIter->element_end(), frameNode);

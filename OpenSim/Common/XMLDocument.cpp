@@ -31,6 +31,7 @@
 //-----------------------------------------------------------------------------
 #include "XMLDocument.h"
 #include "Object.h"
+#include <functional>
 
 
 using namespace OpenSim;
