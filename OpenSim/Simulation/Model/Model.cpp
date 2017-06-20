@@ -237,18 +237,22 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
 
-                    // TODO adding "../" here makes things worse but leaving it
-                    // out causes a weird assymetry. Probably has to do with
-                    // parsing of the parentFrameName in Joint.
-                    // TODO probably not necessary b/c an offset frame is
-                    // always introduced.
+                    // In version 30501, this Joint is 1 level deep (in the
+                    // model's JointSet), and the Bodies are necessarily 1
+                    // level deep (in the model's BodySet). Prepend "../" to
+                    // get the correct relative path.
+                    std::string parent_frame = parent_name;
+                    if (!parent_frame.empty())
+                        parent_frame = "../" + parent_frame;
                     XMLDocument::addConnector(*concreteJointNode, 
                         "Connector_PhysicalFrame_", "parent_frame",
-                        "../" + parent_name);
-                    // TODO what if the body did not have a name?
+                        parent_frame);
+                    std::string child_frame = body_name;
+                    if (!child_frame.empty())
+                        child_frame = "../" + child_frame;
                     XMLDocument::addConnector(*concreteJointNode, 
-                        "Connector_PhysicalFrame_", "child_frame", 
-                        "../" + body_name);
+                        "Connector_PhysicalFrame_", "child_frame",
+                        child_frame);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(),
                         *concreteJointNode);
