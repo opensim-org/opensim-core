@@ -885,7 +885,15 @@ public:
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
     int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
     void writeMarkerFile(const std::string& aFileName);
-    void updateMarkerSet(MarkerSet& aMarkerSet);
+
+    /**
+    * Update the markers in the model by appending the ones in the
+    * passed-in marker set. If the marker of the same name exists
+    * in the model, then replace it.
+    *
+    * @param newMarkerSet the set of markers used to update the model's set.
+    */
+    void updateMarkerSet(MarkerSet& newMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
  
     /**
