@@ -37,7 +37,7 @@ using namespace SimTK;
     };
 
     void setInertia(Array<double>& aInertia) {
-        self->setInertia(SimTK::Inertia(aInertia[0], aInertia[1], aInertia[2], 
+        self->setInertia(SimTK::Inertia(aInertia[0], aInertia[1], aInertia[2],
                                         aInertia[3], aInertia[4], aInertia[5]));
     }
 };
@@ -72,7 +72,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
       }
       catch(UnsatisfiedLinkError e){
           new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
+                          "dynamic library osimJavaJNI is in your PATH\n" + e,
         JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
       }
   }
@@ -80,6 +80,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";
+%javamethodmodifiers OpenSim::Model::addMarker "private";
 %javamethodmodifiers OpenSim::Model::addConstraint "private";
 %javamethodmodifiers OpenSim::Model::addForce "private";
 %javamethodmodifiers OpenSim::Model::addProbe "private";
@@ -90,6 +91,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %rename OpenSim::Model::addModelComponent private_addModelComponent;
 %rename OpenSim::Model::addBody private_addBody;
+%rename OpenSim::Model::addMarker private_addMarker;
 %rename OpenSim::Model::addConstraint private_addConstraint;
 %rename OpenSim::Model::addForce private_addForce;
 %rename OpenSim::Model::addProbe private_addProbe;
@@ -103,24 +105,24 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
-  // Important that we only refer to originalModelPath if the model's 
+  // Important that we only refer to originalModelPath if the model's
   // getInputFileName() is not set.
   public void setOriginalModelPathFromModel(Model model) {
     originalModelPath = null;
-    if(model.getInputFileName()!=null && 
+    if(model.getInputFileName()!=null &&
        !model.getInputFileName().equals(""))
-        originalModelPath = 
+        originalModelPath =
             (new java.io.File(model.getInputFileName())).getParent();
-    else if(model.originalModelPath!=null && 
+    else if(model.originalModelPath!=null &&
             !model.originalModelPath.equals(""))
       originalModelPath = model.originalModelPath;
   }
 
   public String getFilePath() {
-      if(getInputFileName()!=null && 
-         !getInputFileName().equals("") && 
+      if(getInputFileName()!=null &&
+         !getInputFileName().equals("") &&
          (new java.io.File(getInputFileName())).getParent()!=null)
-          return (new java.io.File(getInputFileName())).getParent() + 
+          return (new java.io.File(getInputFileName())).getParent() +
               java.io.File.separator;
       else if(originalModelPath!=null && !originalModelPath.equals(""))
           return originalModelPath + java.io.File.separator;
@@ -145,8 +147,13 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
   public void addProbe(Probe aProbe) {
       aProbe.markAdopted();
       private_addProbe(aProbe);
-  }  
-  
+  }
+
+  public void addMarker(Marker aMarker) {
+      aMarker.markAdopted();
+      private_addMarker(aMarker);
+  }
+
   public void addContactGeometry(ContactGeometry aContactGeometry) {
       aContactGeometry.markAdopted();
       private_addContactGeometry(aContactGeometry);
@@ -177,7 +184,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     static void LoadOpenSimLibrary(std::string libraryName){
         LoadOpenSimLibrary(libraryName, true);
     }
-    
+
     void setDefaultControls(SimTK::Vector& newControls) {
         self->updDefaultControls() = newControls;
     }
@@ -188,7 +195,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
        prescribedFunction.markAdopted();
        prescribeControlForActuator_private(index, prescribedFunction);
     }
-    
+
     public void prescribeControlForActuator(String name, Function prescribedFunction) {
        prescribedFunction.markAdopted();
        prescribeControlForActuator_private(name, prescribedFunction);

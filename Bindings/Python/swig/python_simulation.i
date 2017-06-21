@@ -33,7 +33,7 @@ using namespace SimTK;
 // program to crash.
 %include "exception.i"
 // Delete any previous exception handlers.
-%exception; 
+%exception;
 %exception {
     try {
         $action
@@ -66,6 +66,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 
 MODEL_ADOPT_HELPER(ModelComponent);
 MODEL_ADOPT_HELPER(Body);
+MODEL_ADOPT_HELPER(Marker)
 MODEL_ADOPT_HELPER(Probe);
 MODEL_ADOPT_HELPER(Joint);
 MODEL_ADOPT_HELPER(Frame);
@@ -110,7 +111,7 @@ MODEL_ADOPT_HELPER(Controller);
     def __iter__(self):
         """Get an iterator for this Set, to be used as such (where `states` is
         the StatesTrajectory object)::
-           
+
             for state in states:
                 model.calcMassCenterPosition(state)
         """
@@ -176,4 +177,3 @@ SET_ADOPT_HELPER(Analysis);
         return $self->get(i);
     }
 };
-
