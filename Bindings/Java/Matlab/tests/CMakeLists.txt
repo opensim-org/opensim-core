@@ -36,18 +36,22 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
                 NO_UNITTEST_FRAMEWORK
                 )
             #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
-        if(WIN32)
-            # Must set PATH so that osimJavaJNI can find osimCommon, etc.
-            set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
-                    "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+            set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES
+                ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
+            if(WIN32)
+                # Must set PATH so that osimJavaJNI can find osimCommon, etc.
+                set_property(TEST Matlab_${TESTNAME}_${cfg} APPEND PROPERTY
+                    ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/${cfg}")
             endif()
-    endforeach()
+        endforeach()
     else()
         matlab_add_unit_test(NAME Matlab_${TESTNAME}
             UNITTEST_FILE "${_full_path_to_mfile}"
             ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
             NO_UNITTEST_FRAMEWORK
             )
+        set_tests_properties(Matlab_${TESTNAME} PROPERTIES
+            ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
         #TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
     endif()
 endmacro()
@@ -72,9 +76,13 @@ add_dependencies(RunMatlabTests JavaBindings)
 # Tests.
 # ------
 
+# From examples.
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
 OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
     ../examples/wiringInputsAndOutputsWithTableReporter.m)
+OpenSimAddMatlabTest(RunHopper_answers ../Hopper_Device/RunHopper_answers.m)
+OpenSimAddMatlabTest(RunHopperWithDevice_answers
+    ../Hopper_Device/RunHopperWithDevice_answers.m)
 
 OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
