@@ -13,11 +13,10 @@ function device = BuildDevice(varargin)
 %   control signal.
 % springStiffness: For deviceType=='passive', this is the stiffness of the
 %   spring in the passive device (in units of N/m).
-% passivePatellaWrap:  TODO remove, it is not used.
 % maxTension: For deviceType=='active', this is the optimal force (in units of
 %   Newtons) for the device. Note that the control signal bound between 0 and
 %   1, so maxTension is also the max torque that the device can apply.
-% gain: FOr deviceType=='active' and isPropMyo==true, this is the gain used in
+% gain: For deviceType=='active' and isPropMyo==true, this is the gain used in
 %   the PropMyoController for converting the muscle activation input into a
 %   control signal.
 % 
@@ -57,7 +56,6 @@ defaultIsPropMyo = true;
 defaultControl = [0.0 2.5 5.0;
                   0.0 0.75 0.0];
 defaultSpringStiffness = 5000; 
-defaultPassivePatellaWrap = true;
 defaultMaxTension = 2000;
 defaultGain = 1;
 
@@ -109,7 +107,7 @@ anchorA = WeldJoint();
 anchorA.setName('anchorA');
 % Connect the 'child_frame' (a PhysicalFrame) Socket of anchorA to cuffA.
 % Note that only the child frame is connected now; the parent frame will be
-% connected in a different file (TODO).
+% connected in a different file.
 anchorA.connectSocket_child_frame(cuffA);
 device.addComponent(anchorA);
 
