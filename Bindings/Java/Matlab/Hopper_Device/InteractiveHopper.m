@@ -523,7 +523,7 @@ function [xy,line_h] = getUserControl(color)
 
 resetControlAxes()
 box = [0 5 0 1];
-border = [-0.5 5.5 -0.1 1.1];
+border = [0 5 -0.1 1.1];
 
 title('Draw curve in box, click outside gridded area when done')
 pts = line('Xdata',NaN,'Ydata',NaN,'marker','o','LineWidth',1.5,'Color',color);
@@ -545,17 +545,6 @@ while true
         bottom = (y < box(3)) && (y > border(3));
         top = (y > box(4)) && (y < border(4));
         
-        if left || (x<=xy(1,j-1)) 
-            title('ERROR: excitation/control must be a function of time ')
-            continue;
-        end
-        
-        if bottom
-            y = 0;
-        elseif top
-            y = 1;
-        end
-            
         if isempty(x)||x<border(1)||x>border(2)||y<border(3)||y>border(4)
             xy(1,j) = 5;
             xy(2,j) = xy(2,j-1);
@@ -571,6 +560,18 @@ while true
             delete(pts2)
             break;
         end
+        
+        if left || (x<=xy(1,j-1)) 
+            title('ERROR: excitation/control must be a function of time ')
+            continue;
+        end
+        
+        if bottom
+            y = 0;
+        elseif top
+            y = 1;
+        end
+            
         xy(:,j) = [x;y];
         if j>1
             set(pts,'Xdata',xy(1,1:j),'Ydata',xy(2,1:j))
@@ -609,10 +610,10 @@ end
 function resetControlAxes()
 hold on
 grid on
-axis([-0.5 5.5 -0.1 1.1])
+axis([0 5 -0.1 1.1])
 xticks(0:5)
 yticks(0:0.2:1)
-rectangle('Position',[0 0 5 1],'LineWidth',1.5)
+rectangle('Position',[0 0 5.0 1.0],'LineWidth',2.0)
 xlabel('Jump Time (s)')
 ylabel('Excitation')
 
