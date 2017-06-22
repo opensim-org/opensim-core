@@ -1686,7 +1686,7 @@ void Model::writeMarkerFile(const string& aFileName)
  * @param aMarkerSet The new marker set to copy.
  * @return Number of markers that were successfully added to the model.
  */
-int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
+int Model::replaceMarkerSet(SimTK::State& s, const MarkerSet& aMarkerSet)
 {
     int i, numAdded = 0;
 
@@ -1700,7 +1700,8 @@ int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
         upd_MarkerSet().adoptAndAppend(marker);
         ++numAdded;
     }
-
+    // Reconnect the model now that we added aMarkerSet to the Property
+    s = initSystem();
     cout << "Replaced marker set in model " << getName() << endl;
     return numAdded;
 }
