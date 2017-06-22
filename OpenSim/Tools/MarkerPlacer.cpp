@@ -251,6 +251,17 @@ bool MarkerPlacer::processModel(Model* aModel,
                                             return val >= _timeRange[0] &&
                                                    val <= _timeRange[1];
                                         });
+
+    // Users often set a time range that purposely exceeds the range of
+    // their data with the mindset that all their data will be used.
+    // To allow for that, we have to narrow the provided range to data
+    // range, since the TimeSeriesTable will correctly throw that the 
+    // desired time exceeds the data range.
+    if (_timeRange[0] < timeCol.front())
+        _timeRange[0] = timeCol.front();
+    if (_timeRange[1] > timeCol.back())
+        _timeRange[1] = timeCol.back();
+
     const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
                                                    _timeRange[1]);
     for(int r = staticPoseTable.getNumRows() - 1; r > 0; --r)
