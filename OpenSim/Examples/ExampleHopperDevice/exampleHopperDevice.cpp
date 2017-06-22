@@ -38,7 +38,6 @@ that need to be completed. Now, hop to it! */
 
 #include <OpenSim/OpenSim.h>
 #include "defineDeviceAndController.h"
-#include "helperMethods.h"
 
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
