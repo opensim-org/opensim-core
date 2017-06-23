@@ -105,8 +105,8 @@ public:
                    const double max) :
         Exception(file, line, func) {
         std::string msg = "Time " + std::to_string(time) + 
-            " is out of time range {" + std::to_string(min) +
-            ", " + std::to_string(max) + "}";
+            " is out of time range [" + std::to_string(min) +
+            ", " + std::to_string(max) + "]";
 
         addMessage(msg);
     }
