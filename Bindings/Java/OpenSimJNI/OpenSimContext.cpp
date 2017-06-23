@@ -325,8 +325,10 @@ void OpenSimContext::setBody(Marker& currentMarker, PhysicalFrame&  newBody, boo
     return;
 }
 
-int OpenSimContext::replaceMarkerSet(Model& model, MarkerSet& aMarkerSet) {
-  return model.replaceMarkerSet( *_configState, aMarkerSet);
+void OpenSimContext::updateMarkerSet(Model& model, MarkerSet& aMarkerSet) {
+   model.updateMarkerSet(aMarkerSet);
+   recreateSystemKeepStage();
+
 }
 
 // Analyses
