@@ -29,7 +29,7 @@ if(${DOXYGEN_FOUND})
 
     # There are two ways of using MathJax: from the internet, or locally.
     # We prefer using MathJax locally, but we have to download it first.
-    # We download a 50 mb MathJax zip and unzip it (150 mb).
+    # We download a 34 mb MathJax zip and unzip it (150 mb).
     # The zip can be thrown away, but the 150 mb MathJax directory must stay
     # with the Doxygen documentation.
 
@@ -40,7 +40,7 @@ if(${DOXYGEN_FOUND})
     # This block of commands is all executing during the configuring phase.
     if(${OPENSIM_DOXYGEN_USE_MATHJAX} AND NOT EXISTS "${MATHJAX_ZIP_PATH}")
         message(STATUS "Trying to download MathJax for Doxygen...")
-        file(DOWNLOAD https://github.com/mathjax/MathJax/archive/v2.5-latest.zip
+        file(DOWNLOAD https://github.com/mathjax/MathJax/archive/2.7.0.zip
             "${MATHJAX_ZIP_PATH}"
             #SHOW_PROGRESS Clutters the CMake output.
             STATUS MATHJAX_DOWNLOAD_STATUS
@@ -69,7 +69,7 @@ if(${DOXYGEN_FOUND})
 
         # See Doxyfile.in for a description of these variables.
         set(OPENSIM_DOXYGEN_USE_MATHJAX_DOXYFILE "YES")
-        set(OPENSIM_DOXYGEN_MATHJAX_RELPATH "MathJax-2.5-latest")
+        set(OPENSIM_DOXYGEN_MATHJAX_RELPATH "MathJax-2.7.0")
 
     else()
 
@@ -153,14 +153,48 @@ if(${DOXYGEN_FOUND})
             # This means the user wants to use MathJax *and* we were able to
             # download it successfully.
 
-            set(mathjax_unzipped_dir "${html_binary_dir}/MathJax-2.5-latest")
+            set(mathjax_unzipped_dir "${html_binary_dir}/MathJax-2.7.0")
 
-            # This creates a folder html_${audience}/MathJax-2.5-latest in the
+            # This creates a folder html_${audience}/MathJax-2.7-latest in the
             # build tree.
             add_custom_command(
                 OUTPUT "${mathjax_unzipped_dir}"
                 COMMENT "Unzipping MathJax.zip for ${audience} documentation"
                 COMMAND ${CMAKE_COMMAND} -E tar -x "${MATHJAX_ZIP_PATH}" 
+                # Trim away unnecessary files; 170 MB -> under 5 MB.
+                # https://github.com/mathjax/MathJax-docs/wiki/Guide:-reducing-size-of-a-mathjax-installation/1814429ed1e97bfb7675c0fd400804baa9287249
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/docs"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/test"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/localization"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/unpacked"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/config"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/jax/output/SVG"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/png"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Asana-Math"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Gyre-Pagella"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Gyre-Termes"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Latin-Modern"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/Neo-Euler"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/STIX-Web"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/eot"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/otf"
+                COMMAND ${CMAKE_COMMAND} -E remove_directory
+                    "${mathjax_unzipped_dir}/fonts/HTML-CSS/TeX/svg"
                 WORKING_DIRECTORY "${html_binary_dir}"
                 )
 
