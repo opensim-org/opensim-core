@@ -20,4 +20,4 @@ add_executable(exampleHopperDeviceAnswers
 target_link_libraries(exampleHopperDeviceAnswers ${Simbody_LIBRARIES} osimTools)
 set_target_properties(exampleHopperDeviceAnswers PROPERTIES FOLDER "Examples")
 add_test(NAME    exampleHopperDeviceAnswers
-         COMMAND exampleHopperDeviceAnswers noVisualizer simulateOnce)
+         COMMAND exampleHopperDeviceAnswers noVisualizer)
