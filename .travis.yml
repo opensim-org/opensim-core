@@ -25,7 +25,7 @@ env:
     - OPENSIM_HOME=~/opensim-core
     - OPENSIM_DEPENDENCIES_BUILD_DIR=~/opensim_dependencies-build
     - OPENSIM_DEPENDENCIES_INSTALL_DIR=~/opensim_dependencies-install
-    - SWIG_VER=3.0.6
+    - SWIG_VER=3.0.8
     - PATH="$PATH:$TRAVIS_BUILD_DIR/.github"
     - USE_CACHE=false
 
@@ -44,6 +44,10 @@ addons:
       - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
 
     packages:
+      # Must explicitly list cmake-data, otherwise the incorrect
+      # version of cmake-data will be sought to satisfy the dependencies
+      # of cmake.
+      - cmake-data
       - cmake
       # For Simbody.
       - liblapack-dev

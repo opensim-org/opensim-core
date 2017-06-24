@@ -6,7 +6,8 @@ namespace OpenSim {
 
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
-const std::string TRCFileAdapter::_delimitersRead{" \t"};
+// Get rid of the extra \r if parsing a file with CRLF line endings.
+const std::string TRCFileAdapter::_delimitersRead{" \t\r"};
 const std::string TRCFileAdapter::_frameNumColumnLabel{"Frame#"};
 const std::string TRCFileAdapter::_timeColumnLabel{"Time"};
 const std::string TRCFileAdapter::_xLabel{"X"};

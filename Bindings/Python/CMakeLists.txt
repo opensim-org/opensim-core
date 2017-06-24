@@ -1,7 +1,4 @@
 
-# Find python.
-# ============
-
 # Location of the opensim python package in the build directory, for testing.
 if(MSVC OR XCODE)
     # Multi-configuration generators like MSVC and XCODE use one build tree for
@@ -235,6 +232,8 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/storage.sto"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_setup_forward_empty_model.xml"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/gait2392_cmc_actuators_empty_model.xml"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
         "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"

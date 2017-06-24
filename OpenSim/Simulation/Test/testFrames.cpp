@@ -172,7 +172,6 @@ void testPhysicalOffsetFrameOnBody()
 
     cout << "\nRunning testOffsetFrameOnBody" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
-    pendulum->finalizeFromProperties();
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -248,7 +247,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     cout << "\nRunning testPhysicalOffsetFrameOnPhysicalOffsetFrame" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
-    pendulum->finalizeFromProperties();
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
     
@@ -263,10 +261,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrame()
 
     //connect a second frame to the first PhysicalOffsetFrame 
     PhysicalOffsetFrame* secondFrame = offsetFrame->clone();
-    // Hack since clone does not copy internal ownership (parent) references
-    // TODO: should be removed when Component cloning preserves ownership
-    // relationships.
-    secondFrame->finalizeFromProperties();
 
     secondFrame->setName("second");
     secondFrame->setParentFrame(*offsetFrame);
@@ -318,7 +312,6 @@ void testPhysicalOffsetFrameOnBodySerialize()
 
     cout << "\nRunning testPhysicalOffsetFrameOnBodySerialize" << endl;
     Model* pendulum = new Model("double_pendulum.osim");
-    pendulum->finalizeFromProperties();
 
     const OpenSim::Body& rod1 = pendulum->getBodySet().get("rod1");
 
@@ -364,7 +357,6 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
     // PhysicalOffsetFrames occur in the order of the Multibody tree instead of
     // the order in Model's property list, which can be arbitrary.
     Model pendulum("double_pendulum.osim");
-    pendulum.finalizeFromProperties();
 
     SimTK::Transform X_RO;
     X_RO.setP(SimTK::Vec3(0.1, 0.2, 0.3));
@@ -430,7 +422,6 @@ void testFilterByFrameType()
     cout << "\nRunning testFilterByFrameType" << endl;
     // Previous model with a PhysicalOffsetFrame attached to rod1
     Model* pendulumWFrame = new Model("double_pendulum_extraFrame.osim");
-    pendulumWFrame->finalizeFromProperties();
 
     // Create an ordinary (non-physical) OffsetFrame attached to rod2
     const OpenSim::Body& rod2 = pendulumWFrame->getBodySet().get("rod2");

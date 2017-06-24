@@ -23,6 +23,8 @@
 
 % Connect the device to the hopper to increase hop height.
 
+clear all;
+
 import org.opensim.modeling.*;
 
 % This function builds the hopper model; no need to edit it.
@@ -39,8 +41,6 @@ device = BuildDevice();
 %       the hopper's subcomponents, and locate the two subcomponents named
 %       'deviceAttach'.
 % [Step 2, Task A]
-
-
 % ANSWER{
 device.printSubcomponentInfo();
 hopper.printSubcomponentInfo();

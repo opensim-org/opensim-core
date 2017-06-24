@@ -210,7 +210,7 @@ public:
 // Public Convenience Methods
 //==============================================================================
     void printCurveToCSVFile(const CurveType ctype, 
-                            const std::string& path);
+                            const std::string& path) const;
 
 //==============================================================================
 // Public Computations
@@ -228,7 +228,7 @@ public:
     */
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
        
-    ///@cond TO BE DEPRECATED. 
+    ///@cond DEPRECATED
     /*  Once the ignore_tendon_compliance flag is implemented correctly get rid 
         of this method as it duplicates code in calcMuscleLengthInfo,
         calcFiberVelocityInfo, and calcMuscleDynamicsInfo
@@ -366,7 +366,7 @@ private:
     double calcdlceN(double act,double fal, double actFalFv) const;
     double calcfv(double aFse, double aFpe, double aFal,
                   double aCosPhi, double aAct) const;
-    SimTK::Vector calcfvInv(double aAct,  double aFal, double dlceN, 
+    double calcfvInv(double aAct,  double aFal, double dlceN, 
                             double tolerance, int maxIterations) const;
     double calcDdlceDaFalFv(double aAct, double fal, 
                             double aFalFv) const;

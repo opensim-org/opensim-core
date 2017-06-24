@@ -397,6 +397,11 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
+set(OPENSIM_PYTHON_VERSION 2 CACHE STRING
+    "The major Python version (2 or 3) for which to build the wrapping.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
     # To print info on where MATLAB is found: set(MATLAB_FIND_DEBUG ON)
@@ -444,17 +449,51 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     # PythonInterp is supposed to come before PythonLibs.
-    find_package(PythonInterp 2.7 REQUIRED)
-    find_package(PythonLibs 2.7 REQUIRED)
+    if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
+        set(required_python_version 2.7)
+    elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
+        set(required_python_version 3)
+    else()
+        message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
+    endif()
+    find_package(PythonInterp ${required_python_version} REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
     # version.
-    string(REPLACE "VERSION" "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}"
+    set(python_version_majmin "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    string(REPLACE "VERSION" "${python_version_majmin}"
         OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
     # This must be done before adding the OpenSim libraries, since
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
+
+    if(APPLE AND ${OPENSIM_PYTHON_VERSION} STREQUAL "2")
+        # If you have Homebrew's Python2, then by default, PythonInterp finds
+        # Apple's Python, but PythonLibs finds Homebrew's Python, causing
+        # runtime crashes. This also occurs if one has Anaconda Python.
+        # So we use the python-config executable to get the
+        # correct library and include directory.
+        # https://github.com/Homebrew/legacy-homebrew/issues/25118
+        execute_process(COMMAND "${PYTHON_EXECUTABLE}-config" --prefix
+                    OUTPUT_VARIABLE python_prefix
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+        string(CONCAT pyinc_desc
+            "Location of Python header files, to compile bindings. "
+            "Must be consistent with PYTHON_EXECUTABLE.")
+        set(PYTHON_INCLUDE_DIR
+            "${python_prefix}/include/python${python_version_majmin}/"
+            CACHE PATH "${pyinc_desc}")
+
+        string(CONCAT pylib_desc
+            "Location of Python library, to compile bindings. "
+            "Must be consistent with PYTHON_EXECUTABLE.")
+        set(PYTHON_LIBRARY
+            "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
+            CACHE FILEPATH "${pylib_desc}")
+    endif()
+    find_package(PythonLibs ${required_python_version} REQUIRED)
+
 endif()
 
 if(WIN32)

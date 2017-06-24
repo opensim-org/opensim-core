@@ -55,6 +55,7 @@
 %template(ArrayDouble) OpenSim::Array<double>;
 %template(ArrayInt) OpenSim::Array<int>;
 %template(ArrayStr) OpenSim::Array<std::string>;
+%template(ArrayVec3) OpenSim::Array<SimTK::Vec3>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 %template(ArrayConstObjPtr) OpenSim::Array<const OpenSim::Object*>;
@@ -380,3 +381,5 @@ namespace OpenSim {
 %template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
 %template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
+
+%include <OpenSim/Common/GCVSplineSet.h>

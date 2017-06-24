@@ -1,4 +1,4 @@
-%module(directors="1") examplecomponents
+%module(package="opensim", directors="1") examplecomponents
 #pragma SWIG nowarn=822,451,503,516,325, 401
 
 %{

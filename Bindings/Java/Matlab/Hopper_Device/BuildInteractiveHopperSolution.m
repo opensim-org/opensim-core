@@ -1,3 +1,7 @@
+function [hopper] = BuildInteractiveHopperSolution(varargin)
+% This function is used to build an InteractiveHopper GUI solution; see
+% BuildHopper and BuildDevice to build the hopper model on your own.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -6,8 +10,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.           %
 %                                                                       %
 % Copyright (c) 2017 Stanford University and the Authors                %
-% Author(s): Thomas Uchida, Chris Dembia, Carmichael Ong, Nick Bianco,  %
-%            Shrinidhi K. Lakshmikanth, Ajay Seth, James Dunne          %
+% Author(s): Nick Bianco, Carmichael Ong                                %
 %                                                                       %
 % Licensed under the Apache License, Version 2.0 (the "License");       %
 % you may not use this file except in compliance with the License.      %
@@ -20,9 +23,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-
-function [hopper] = BuildInteractiveHopperSolution(varargin)
-% This function is used to build an InteractiveHopper GUI solution.
 
 %% INPUT PARSING 
 
@@ -128,8 +128,7 @@ patellaWrap = cell(0);
 % Passive device
 if addPassiveDevice
     passive = BuildDevice('deviceType','passive', ... 
-                          'springStiffness',springStiffness, ...
-                          'passivePatellaWrap',passivePatellaWrap);
+                          'springStiffness',springStiffness);
     devices{1,length(devices)+1} = passive;
     deviceNames{1,length(deviceNames)+1} = 'device_passive';
     patellaWrap{1,length(patellaWrap)+1} = passivePatellaWrap;  

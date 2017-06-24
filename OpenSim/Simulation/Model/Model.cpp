@@ -72,7 +72,7 @@ using namespace SimTK;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 Model::Model() : ModelComponent(),
@@ -85,9 +85,10 @@ Model::Model() : ModelComponent(),
 {
     constructProperties();
     setNull();
+    finalizeFromProperties();
 }
 //_____________________________________________________________________________
-/**
+/*
  * Constructor from an XML file
  */
 Model::Model(const string &aFileName) :
@@ -105,10 +106,38 @@ Model::Model(const string &aFileName) :
 
     _fileName = aFileName;
     cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
+
+    try {
+        finalizeFromProperties();
+    }
+    catch(const InvalidPropertyValue& err) {
+        cout << "WARNING: Model was unable to finalizeFromProperties.\n" <<
+            "Update the model file and reload OR update the property and call "
+            "finalizeFromProperties() on the model.\n" <<
+            "(details: " << err.what() << ")." << endl;
+    }
+}
+
+Model* Model::clone() const
+{
+    // Invoke default copy constructor.
+    Model* clone = new Model(*this);
+
+    try {
+        clone->finalizeFromProperties();
+    }
+    catch (const InvalidPropertyValue& err) {
+        cout << "WARNING: clone() was unable to finalizeFromProperties.\n" <<
+            "Update the model and call clone() again OR update the clone's "
+            "property and call finalizeFromProperties() on it.\n"
+            "(details: " << err.what() << ")." << endl;
+    }
+
+    return clone;
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
@@ -576,6 +605,12 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+
+    // wipe-out the existing System 
+    _matter.reset();
+    _forceSubsystem.reset();
+    _contactSubsystem.reset();
+    _system.reset();
 
     if(getForceSet().getSize()>0)
     {
@@ -1091,7 +1126,7 @@ void Model::equilibrateMuscles(SimTK::State& state)
     for (auto& muscle : muscles) {
         if (muscle.appliesForce(state)){
             try{
-                muscle.equilibrate(state);
+                muscle.computeEquilibrium(state);
             }
             catch (const std::exception& e) {
                 if(!failed){ // haven't failed to equilibrate other muscles yet
@@ -1671,57 +1706,23 @@ int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
 }
 
 //_____________________________________________________________________________
-/**
- * Update all markers in the model with the ones in the
- * passed-in marker set. If the marker does not yet exist
- * in the model, it is added.
- *
- * @param aMarkerSet set of markers to be updated/added
- */
-void Model::updateMarkerSet(MarkerSet& aMarkerSet)
+void Model::updateMarkerSet(MarkerSet& newMarkerSet)
 {
-    for (int i = 0; i < aMarkerSet.getSize(); i++)
-    {
-        Marker& updatingMarker = aMarkerSet.get(i);
+    for (int i = 0; i < newMarkerSet.getSize(); i++) {
+        Marker& updatingMarker = newMarkerSet.get(i);
 
         /* If there is already a marker in the model with that name,
-         * update it with the parameters from the updating marker,
-         * moving it to a new body if necessary.
+         * replace it with the updating marker.
          */
-        if (updMarkerSet().contains(updatingMarker.getName()))
-        {
+        if (updMarkerSet().contains(updatingMarker.getName())) {
             Marker& modelMarker = updMarkerSet().get(updatingMarker.getName());
-            /* If the updating marker is on a different body, delete the
-             * marker from the model and add the updating one (as long as
-             * the updating marker's body exists in the model).
-             */
-            //if (modelMarker.getBody().getName() != updatingBodyName)
-            //{
-                upd_MarkerSet().remove(&modelMarker);
-                // Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-                //upd_MarkerSet().adoptAndAppend(updatingMarker.clone());
-            //}
-            //else
-            //{
-            //  modelMarker.updateFromMarker(updatingMarker);
-            //}
+            // Delete the marker from the model and add the updating one
+            upd_MarkerSet().remove(&modelMarker);
         }
-        //else
-        {
-            /* The model does not contain a marker by that name. If it has
-             * a body by that name, add the updating marker to the markerset.
-             */
-            // Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-            //if (getBodySet().contains(updatingBodyName))
-                addMarker(updatingMarker.clone());
-        }
+        // append the marker to the model's Set
+        addMarker(updatingMarker.clone());
     }
 
-    // Todo_AYMAN: We need to call connectMarkerToModel() again to make sure the
-    // _body pointers are up to date; but note that we've already called 
-    // it before so we need to make sure the connectMarkerToModel() function
-    // supports getting called multiple times.
-    initSystem();
     cout << "Updated markers in model " << getName() << endl;
 }
 
@@ -1929,8 +1930,12 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         cout << "Number of columns does not match in formStateStorage. Found "
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
+
+    // when the state value is not found in the storage use its default value in the State
+    SimTK::Vector defaultStateValues = getStateVariableValues(getWorkingState());
+
     // Create a list with entry for each desiredName telling which column in originalStorage has the data
-    int* mapColumns = new int[rStateNames.getSize()];
+    Array<int> mapColumns(-1, rStateNames.getSize());
     for(int i=0; i< rStateNames.getSize(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         int fix = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
@@ -1969,29 +1974,31 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
         }
         mapColumns[i] = fix;
         if (fix==-1){
-            cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
+            cout << "Column "<< rStateNames[i] << 
+                " not found by Model::formStateStorage(). "
+                "Assuming its default value of "
+                << defaultStateValues[i] << endl;
         }
     }
-    // Now cycle through and shuffle each
-
+    // Now cycle through each state (row of Storage) and form the Model consistent
+    // order for the state values 
+    double assignedValue = SimTK::NaN;
     for (int row =0; row< originalStorage.getSize(); row++){
         StateVector* originalVec = originalStorage.getStateVector(row);
         StateVector stateVec{originalVec->getTime()};
-        stateVec.getData().setSize(numStates);  // default value 0f 0.
-        for(int column=0; column< numStates; column++){
-            double valueInOriginalStorage=0.0;
-            if (mapColumns[column]!=-1)
-                originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
+        stateVec.getData().setSize(numStates); 
+        for(int column=0; column< numStates; column++) {
+            if (mapColumns[column] != -1)
+                originalVec->getDataValue(mapColumns[column] - 1, assignedValue);
+            else
+                assignedValue = defaultStateValues[column];
 
-            stateVec.setDataValue(column, valueInOriginalStorage);
-
+            stateVec.setDataValue(column, assignedValue);
         }
         statesStorage.append(stateVec);
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
-
-    delete[] mapColumns;
 }
 
 /**
@@ -2121,14 +2128,7 @@ void Model::realizeReport(const SimTK::State& state) const
  */
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-    try {
-        realizeAcceleration(s);
-    }
-    catch (const std::exception& e){
-        string exmsg = e.what();
-        throw Exception(
-            "Model::computeStateVariableDerivatives: failed. See: "+exmsg);
-    }
+    realizeAcceleration(s);
 }
 
 /**

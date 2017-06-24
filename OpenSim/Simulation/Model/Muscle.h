@@ -336,7 +336,9 @@ public:
      */ 
     //@{
     /** Find and set the equilibrium state of the muscle (if any) */
-    void equilibrate(SimTK::State& s) const { return computeFiberEquilibriumAtZeroVelocity(s); }
+    void computeEquilibrium(SimTK::State& s) const override final {
+        return computeInitialFiberEquilibrium(s);
+    }
     // End of Muscle's State Dependent Accessors.
     //@} 
 
@@ -405,18 +407,9 @@ protected:
     velocity into account. This routine can assume that the state contains a
     meaningful estimate of muscle activation, joint positions, and joint 
     velocities. For example, this can produce fiber lengths suited to 
-    beginning a forward dynamics simulation. If you are missing any of that 
-    information, don't call this method, use 
+    beginning a forward dynamics simulation. 
     computeFiberEquilibriumAtZeroVelocity(). */
     virtual void computeInitialFiberEquilibrium(SimTK::State& s) const = 0;
-
-    /** Provide a quick estimate of the fiber length assuming the 
-    musculotendon unit velocity is zero. The default implementation here just
-    calls computeInitialFiberEquilibrium(); you should override if you have
-    a better implementation for this case. */
-    virtual void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const {
-        computeInitialFiberEquilibrium(s);
-    }
 
     // End of Muscle's State Related Calculations.
     //@} 
@@ -447,8 +440,7 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State &s) override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
     
-    // Update the geometry attached to the muscle (location of muscle points and connecting segments
-    //  all in global/inertial frame)
+    // Update the display geometry attached to the muscle
     virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.
     //@} 

@@ -38,9 +38,9 @@ class Model;
 //                           COORDINATE ACTUATOR
 //==============================================================================
 /**
- * An actuator that applies a generalized force to along a generalized
- * a generalized coordinate, which is proportional to its input control.
- * It replaces the GeneralizeForce class implemented by Frank C. Anderson
+ * An actuator that applies a generalized force in the direction of a
+ * generalized coordinate. The applied generalized force is proportional to the
+ * input control of the CoordinateActuator. Replaces the GeneralizedForce class.
  *
  * @author Ajay Seth
  * @author Frank C. Anderson

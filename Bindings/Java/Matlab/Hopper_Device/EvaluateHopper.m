@@ -1,3 +1,13 @@
+function [peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
+% Simulate a hop with the provided hopper model and evaluate the performance of
+% the hop.
+%
+% Parameters
+% ----------
+% model: The OpenSim Model to simulate.
+% state: The SimTK State to use as the initial state for the simulation.
+% visualize (bool): Use the simbody-visualizer to visualize the simulation?
+ 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -21,16 +31,9 @@
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-% Perform a hop with the provided model and evaluate the performance of the
-% hop.
-
-function [peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
-
 import org.opensim.modeling.*;
 
-% TODO make sure this isn't causing a memory leak.
 hopperCopy = hopper.clone();
-hopperCopy.finalizeFromProperties();
 
 hopperCopy.setUseVisualizer(false);
 

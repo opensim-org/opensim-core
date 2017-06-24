@@ -39,8 +39,6 @@ using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
-static const Vec3 DefaultDefaultColor(.5,.5,.5); // boring gray 
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -92,7 +90,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
-    addCacheVariable<SimTK::Vec3>("color", get_default_color(), 
+    addCacheVariable<SimTK::Vec3>("color", get_Appearance().get_color(), 
                                   SimTK::Stage::Topology);
 }
 
@@ -185,7 +183,9 @@ void GeometryPath::constructProperties()
     constructProperty_PathWrapSet(PathWrapSet());
     
     Vec3 defaultColor = SimTK::Gray;
-    constructProperty_default_color(defaultColor);
+    Appearance appearance;
+    appearance.set_color(SimTK::Gray);
+    constructProperty_Appearance(appearance);
 }
 
 //_____________________________________________________________________________
@@ -1187,4 +1187,42 @@ void GeometryPath::extendFinalizeFromProperties()
             upd_PathWrapSet()[i].setName(label.str());
         }
     }
+}
+//_____________________________________________________________________________
+// Override default implementation by object to intercept and fix the XML node
+// underneath the model to match current version.
+void GeometryPath::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30516) {
+            // Create Appearance node under GeometryPath
+            SimTK::Xml::Element appearanceElement("Appearance");
+            aNode.appendNode(appearanceElement);
+            SimTK::Xml::element_iterator visObjectIter = aNode.element_begin("VisibleObject");
+            if (visObjectIter != aNode.element_end()) {
+                SimTK::Xml::element_iterator oldPrefIter = visObjectIter->element_begin("display_preference");
+                // old display_preference was used only for hide/show other options unsupported
+                if (oldPrefIter != visObjectIter->element_end()) {
+                    int oldPrefAsInt = 4;
+                    oldPrefIter->getValueAs<int>(oldPrefAsInt);
+                    if (oldPrefAsInt == 0) { // Hidden => Appearance/Visible
+                        SimTK::Xml::Element visibleElement("visible");
+                        visibleElement.setValueAs<bool>(false);
+                        appearanceElement.insertNodeAfter(appearanceElement.element_end(), visibleElement);
+                    }
+                }
+            }
+            // If default_color existed, copy it to Appearance/color
+            SimTK::Xml::element_iterator defaultColorIter = aNode.element_begin("default_color");
+            if (defaultColorIter != aNode.element_end()) {
+                // Move default_color to Appearance/color
+                SimTK::Xml::Element colorElement("color");
+                const SimTK::String& colorAsString = defaultColorIter->getValue();
+                colorElement.setValue(colorAsString);
+                appearanceElement.appendNode(colorElement);
+            }
+        }
+    }
+    // Call base class now assuming aNode has been corrected for current version
+    Super::updateFromXMLNode(aNode, versionNumber);
 }

@@ -1,3 +1,13 @@
+function Simulate(model, state, visualize)
+% Simulate an OpenSim model from an initial state. The provided state is
+% updated to be the state at the end of the simulation.
+%
+% Parameters
+% ----------
+% model: The OpenSim Model to simulate.
+% state: The SimTK State to use as the initial state for the simulation.
+% visualize (bool): Use the simbody-visualizer to visualize the simulation?
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,9 +30,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function Simulate(model, state, visualize)
-% Simulate an OpenSim model from an initial state. The provided state is
-% updated to be the state at the end of the simulation.
 
 import org.opensim.modeling.*;
 

@@ -1,3 +1,29 @@
+function hopper = BuildHopper(varargin)
+% Build a model of a one-leg hopper, with one muscle.
+%
+% Optional parameters
+% -------------------
+% maxIsometricForce: The max isometric force of the muscle (in Newtons).
+% MillardTendonParameters: An array of 5 numbers defining tendon properties:
+%     strain at one norm force
+%     stiffness at one norm force
+%     norm force at end of the toe region
+%     curviness
+%     lTs (tendon slack length)
+%   Consult the Doxygen for the TendonForceLengthCurve class to learn more
+%   about these parameters.
+% excitation: The excitation control signal for the muscle. This should be
+%   a matrix where the first row contains time and the second row contains the
+%   excitation signal.
+% printModel (bool): Print the resulting model to 'hopper.osim'?
+% additionalMass: Add additional mass (in units of kg) to the pelvis.
+%
+% The arguments must be passed as key-value pairs; for example:
+%
+%   BuildDevice('maxIsometricForce', 3000.0, 'printModel', true);
+%
+% Consult the code for this function to learn the parameters' default values.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -20,8 +46,6 @@
 % implied. See the License for the specific language governing          %
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
-function hopper = BuildHopper(varargin)
-% Build a model of a one-leg hopper, with one muscle.
 
 p = inputParser();
 defaultMaxIsometricForce = 4000.0;

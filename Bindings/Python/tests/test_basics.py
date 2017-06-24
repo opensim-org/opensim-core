@@ -97,3 +97,26 @@ class TestBasics(unittest.TestCase):
     def test_ToyReflexController(self):
         controller = osim.ToyReflexController()
         
+    def test_GCVSplineSet(self):
+        splineset = osim.GCVSplineSet(os.path.join(test_dir,
+            'std_subject01_walk1_ik.mot'))
+        splineset = osim.GCVSplineSet(
+                osim.TimeSeriesTable(os.path.join(test_dir,
+                    'std_subject01_walk1_ik.mot')), [], 5, 0)
+
+    def test_deserialize_tool_with_empty_model_file(self):
+        # Ensure an exception is thrown when loading an AbstractTool (e.g.,
+        # ForwardTool) setup file with an empty model_file. In particular, we
+        # want to check the case where force_set_files is not empty.
+        with self.assertRaises(RuntimeError):
+            rra = osim.ForwardTool(os.path.join(test_dir,
+                'gait2392_setup_forward_empty_model.xml'))
+
+        # No exception if we pass loadModel=False
+        rra = osim.ForwardTool(
+                os.path.join(test_dir,
+                    'gait2392_setup_forward_empty_model.xml'),
+                True, # updateFromXMLNode
+                False, # loadModel
+                )
+
