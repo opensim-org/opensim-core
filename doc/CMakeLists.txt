@@ -29,8 +29,8 @@ if(${DOXYGEN_FOUND})
 
     # There are two ways of using MathJax: from the internet, or locally.
     # We prefer using MathJax locally, but we have to download it first.
-    # We download a 34 mb MathJax zip and unzip it (150 mb).
-    # The zip can be thrown away, but the 150 mb MathJax directory must stay
+    # We download a MathJax zip (~30 MB) and unzip it (over 100 MB).
+    # The zip can be thrown away, but the unzipped MathJax directory must stay
     # with the Doxygen documentation.
 
     # If we are unable to download MathJax, and the user has LaTeX, we fall
@@ -161,7 +161,7 @@ if(${DOXYGEN_FOUND})
                 OUTPUT "${mathjax_unzipped_dir}"
                 COMMENT "Unzipping MathJax.zip for ${audience} documentation"
                 COMMAND ${CMAKE_COMMAND} -E tar -x "${MATHJAX_ZIP_PATH}" 
-                # Trim away unnecessary files; 170 MB -> under 5 MB.
+                # Trim away unnecessary files (over 100 MB -> about 5 MB).
                 # https://github.com/mathjax/MathJax-docs/wiki/Guide:-reducing-size-of-a-mathjax-installation/1814429ed1e97bfb7675c0fd400804baa9287249
                 COMMAND ${CMAKE_COMMAND} -E remove_directory
                     "${mathjax_unzipped_dir}/docs"
