@@ -92,7 +92,7 @@ public:
      * @param table TimeSeriesTable object.
      * @param labels Columns to use from TimeSeriesTable.
      * @param degree Degree of the constructed splines (1, 3, 5, or 7).
-     * @param aErrorVariance Estimate of the variance of the error in the data 
+     * @param errorVariance Estimate of the variance of the error in the data 
      * to be fit.  If negative, the variance will be estimated.  If 0.0, the 
      * fit will try to fit the data points exactly- no smoothing.  If
      * positive, the fits will be smoothed according to the specified variance.
@@ -138,7 +138,7 @@ public:
     double getMaxX() const;
 
     /**
-     * Construct a storage object (see Storage) for this spline \set\ or for 
+     * Construct a storage object (see Storage) for this spline set or for 
      * some derivative of this spline set.
      *
      * @param aDerivOrder Derivative order.  0 constructs from the spline,

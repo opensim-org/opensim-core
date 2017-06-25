@@ -104,9 +104,9 @@ public:
                    const double min,
                    const double max) :
         Exception(file, line, func) {
-        std::string msg = "min = " + std::to_string(min);
-        msg += " max = " + std::to_string(max);
-        msg += " time = " + std::to_string(time);
+        std::string msg = "Time " + std::to_string(time) + 
+            " is out of time range [" + std::to_string(min) +
+            ", " + std::to_string(max) + "]";
 
         addMessage(msg);
     }
@@ -120,8 +120,9 @@ public:
                      const double begTime,
                      const double endTime) :
         Exception(file, line, func) {
-        std::string msg = "Begin-Time = " + std::to_string(begTime);
-        msg += " End-Time = " + std::to_string(endTime);
+        std::string msg = " Invalid time range: initial time " + 
+            std::to_string(begTime)  + " >= final time = " +
+            std::to_string(endTime);
 
         addMessage(msg);
     }
@@ -343,11 +344,11 @@ public:
         OPENSIM_THROW_IF(beginTime < timeCol.front() ||
                          beginTime > timeCol.back(),
                          TimeOutOfRange,
-                         timeCol.front(), timeCol.back(), beginTime);
+                         beginTime, timeCol.front(), timeCol.back(),);
         OPENSIM_THROW_IF(endTime < timeCol.front() ||
                          endTime > timeCol.back(),
                          TimeOutOfRange,
-                         timeCol.front(), timeCol.back(), endTime);
+                         endTime, timeCol.front(), timeCol.back());
 
         std::vector<double> comps(DT::numComponentsPerElement(), 0);
         RowVector row{static_cast<int>(DT::getNumColumns()),
