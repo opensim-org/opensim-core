@@ -123,7 +123,7 @@ function S = getDefaults(subfields)
 muscle = InteractiveHopperParameters('defaultMuscle');
 
 muscleFunc = InteractiveHopperParameters(muscle);
-[max_isometric_force,tendon_stiffness,tendon_slack_length,muscle_mass] = muscleFunc();
+[max_isometric_force,optimal_fiber_length,tendon_slack_length,muscle_mass] = muscleFunc();
 
 controls = InteractiveHopperParameters('controls');
 [muscleExcitation,muscleExcitationColor,deviceControl,deviceControlColor] = controls();
@@ -136,63 +136,63 @@ activeSlider = InteractiveHopperParameters('activeSlider');
 
 S = struct();
 
-S = setSubfields(S,subfields,'active_as_prop_myo'       ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'active_mass'              ,'Value',0,'Enable','off','String',' ');
-S = setSubfields(S,subfields,'active_mass_text'         ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'active_mass_units'        ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'active_patella_wrap'      ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'active_slider'            ,'Value',active_slider,'Enable','off' ...
-                                                        ,'Min',active_min,'Max',active_max);
-S = setSubfields(S,subfields,'arnold'                   ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'average_joe'              ,'Value',1,'Enable','on');
-S = setSubfields(S,subfields,'clear'                    ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'deviceControl'            ,'Value',deviceControl);
-S = setSubfields(S,subfields,'deviceControlColor'       ,'Value',deviceControlColor);
-S = setSubfields(S,subfields,'enable_active'            ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'enable_passive'           ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'katie_ledecky'            ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'load_setup'               ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'max_isometric_force'      ,'Value',max_isometric_force,'Enable','off' ...
-                                                        ,'String',num2str(max_isometric_force));
-S = setSubfields(S,subfields,'max_isometric_force_text' ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'max_isometric_force_units','Value',0,'Enable','on');
-S = setSubfields(S,subfields,'max_jump_best'            ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'max_jump_best_text'       ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'max_jump_recent'          ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'max_jump_recent_text'     ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'muscle'                   ,'Value',muscle);
-S = setSubfields(S,subfields,'muscleExcitation'         ,'Value',muscleExcitation);
-S = setSubfields(S,subfields,'muscleExcitationColor'    ,'Value',muscleExcitationColor);
-S = setSubfields(S,subfields,'muscle_mass'              ,'Value',muscle_mass,'Enable','off' ...
-                                                        ,'String',num2str(muscle_mass));
-S = setSubfields(S,subfields,'muscle_mass_text'         ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'muscle_mass_units'        ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'new_device_control'       ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'new_musc_excitation'      ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'passive_mass'             ,'Enable','off','String',' ');
-S = setSubfields(S,subfields,'passive_mass_text'        ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'passive_mass_units'       ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'passive_patella_wrap'     ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'passive_slider'           ,'Value',passive_slider,'Enable','off' ...
-                                                        ,'Min',passive_min,'Max',passive_max);
-S = setSubfields(S,subfields,'reset'                    ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'save_setup'               ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'setup'                    ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'simulate'                 ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'stiffness'                ,'Enable','off','String',' ');
-S = setSubfields(S,subfields,'stiffness_text'           ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'stiffness_units'          ,'Value',0,'Enable','off');
-S = setSubfields(S,subfields,'tendon_slack_length'      ,'Value',tendon_slack_length,'Enable','off' ...
-                                                        ,'String',num2str(tendon_slack_length));
-S = setSubfields(S,subfields,'tendon_slack_length_text' ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'tendon_slack_length_units','Value',0,'Enable','on');
-S = setSubfields(S,subfields,'tendon_stiffness'         ,'Value',tendon_stiffness,'Enable','off' ...
-                                                        ,'String',num2str(tendon_stiffness));
-S = setSubfields(S,subfields,'tendon_stiffness_text'    ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'tendon_stiffness_units'   ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'tension_or_gain'          ,'Enable','off','String',' ');
-S = setSubfields(S,subfields,'tension_or_gain_text'     ,'Value',0,'Enable','off','String','Max Tension');
-S = setSubfields(S,subfields,'tension_or_gain_units'    ,'Value',0,'Enable','off','String','N');
-S = setSubfields(S,subfields,'visualize'                ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'with_device'              ,'Value',0,'Enable','on');
-S = setSubfields(S,subfields,'without_device'           ,'Value',1,'Enable','on');
+S = setSubfields(S,subfields,'active_as_prop_myo'        ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'active_mass'               ,'Value',0,'Enable','off','String',' ');
+S = setSubfields(S,subfields,'active_mass_text'          ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'active_mass_units'         ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'active_patella_wrap'       ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'active_slider'             ,'Value',active_slider,'Enable','off' ...
+                                                         ,'Min',active_min,'Max',active_max);
+S = setSubfields(S,subfields,'arnold'                    ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'average_joe'               ,'Value',1,'Enable','on');
+S = setSubfields(S,subfields,'clear'                     ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'deviceControl'             ,'Value',deviceControl);
+S = setSubfields(S,subfields,'deviceControlColor'        ,'Value',deviceControlColor);
+S = setSubfields(S,subfields,'enable_active'             ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'enable_passive'            ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'katie_ledecky'             ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'load_setup'                ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'max_isometric_force'       ,'Value',max_isometric_force,'Enable','off' ...
+                                                         ,'String',num2str(max_isometric_force));
+S = setSubfields(S,subfields,'max_isometric_force_text'  ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'max_isometric_force_units' ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'max_jump_best'             ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'max_jump_best_text'        ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'max_jump_recent'           ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'max_jump_recent_text'      ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'muscle'                    ,'Value',muscle);
+S = setSubfields(S,subfields,'muscleExcitation'          ,'Value',muscleExcitation);
+S = setSubfields(S,subfields,'muscleExcitationColor'     ,'Value',muscleExcitationColor);
+S = setSubfields(S,subfields,'muscle_mass'               ,'Value',muscle_mass,'Enable','off' ...
+                                                         ,'String',num2str(muscle_mass));
+S = setSubfields(S,subfields,'muscle_mass_text'          ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'muscle_mass_units'         ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'new_device_control'        ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'new_musc_excitation'       ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'passive_mass'              ,'Enable','off','String',' ');
+S = setSubfields(S,subfields,'passive_mass_text'         ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'passive_mass_units'        ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'passive_patella_wrap'      ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'passive_slider'            ,'Value',passive_slider,'Enable','off' ...
+                                                         ,'Min',passive_min,'Max',passive_max);
+S = setSubfields(S,subfields,'reset'                     ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'save_setup'                ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'setup'                     ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'simulate'                  ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'stiffness'                 ,'Enable','off','String',' ');
+S = setSubfields(S,subfields,'stiffness_text'            ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'stiffness_units'           ,'Value',0,'Enable','off');
+S = setSubfields(S,subfields,'tendon_slack_length'       ,'Value',tendon_slack_length,'Enable','off' ...
+                                                         ,'String',num2str(tendon_slack_length));
+S = setSubfields(S,subfields,'tendon_slack_length_text'  ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'tendon_slack_length_units' ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'optimal_fiber_length'      ,'Value',optimal_fiber_length,'Enable','off' ...
+                                                         ,'String',num2str(optimal_fiber_length));
+S = setSubfields(S,subfields,'optimal_fiber_length_text' ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'optimal_fiber_length_units','Value',0,'Enable','on');
+S = setSubfields(S,subfields,'tension_or_gain'           ,'Enable','off','String',' ');
+S = setSubfields(S,subfields,'tension_or_gain_text'      ,'Value',0,'Enable','off','String','Max Tension');
+S = setSubfields(S,subfields,'tension_or_gain_units'     ,'Value',0,'Enable','off','String','N');
+S = setSubfields(S,subfields,'visualize'                 ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'with_device'               ,'Value',0,'Enable','on');
+S = setSubfields(S,subfields,'without_device'            ,'Value',1,'Enable','on');

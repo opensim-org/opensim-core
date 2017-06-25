@@ -44,7 +44,7 @@ function varargout = InteractiveHopper(varargin)
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-% Last Modified by GUIDE v2.5 02-Apr-2017 19:26:45
+% Last Modified by GUIDE v2.5 25-Jun-2017 10:56:23
 
 % Begin initialization code - DO NOT EDIT
 
@@ -231,8 +231,8 @@ muscle = 'averageJoe';
 handles.muscle.Value = muscle;
 guidata(hObject, handles)
 averageJoe = InteractiveHopperParameters(muscle);
-[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe();
-setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
+[maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = averageJoe();
+setMuscle(handles, maxIsometricForce, optimalFiberLength, tendonSlackLength, mass)
 
 % ARNOLD - Sets "The Arnold" muscle.
 function arnold_Callback(hObject, eventdata, handles)
@@ -241,8 +241,8 @@ muscle = 'arnold';
 handles.muscle.Value = muscle;
 guidata(hObject, handles)
 arnold = InteractiveHopperParameters(muscle);
-[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = arnold();
-setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
+[maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = arnold();
+setMuscle(handles, maxIsometricForce, optimalFiberLength, tendonSlackLength, mass)
     
 % KATIE_LEDECKY - Sets "The Katie Ledecky" muscle.
 function katie_ledecky_Callback(hObject, eventdata, handles)
@@ -251,14 +251,14 @@ muscle = 'katieLedecky';
 handles.muscle.Value = muscle;
 guidata(hObject, handles)
 katieLedecky = InteractiveHopperParameters(muscle);
-[maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = katieLedecky();
-setMuscle(handles, maxIsometricForce,tendonStiffness,tendonSlackLength,mass)
+[maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = katieLedecky();
+setMuscle(handles, maxIsometricForce,optimalFiberLength,tendonSlackLength,mass)
 
 % SETMUSCLE - Set a muscle given specific parameters.
-function setMuscle(handles, maxIsometricForce, tendonStiffness, tendonSlackLength, mass)
+function setMuscle(handles, maxIsometricForce, optimalFiberLength, tendonSlackLength, mass)
 
 setField(handles.max_isometric_force, maxIsometricForce)
-setField(handles.tendon_stiffness, tendonStiffness)
+setField(handles.optimal_fiber_length, optimalFiberLength)
 setField(handles.tendon_slack_length, tendonSlackLength)
 setField(handles.muscle_mass, mass)
 
@@ -707,9 +707,9 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-function tendon_stiffness_Callback(hObject, eventdata, handles)
+function optimal_fiber_length_Callback(hObject, eventdata, handles)
 
-function tendon_stiffness_CreateFcn(hObject, eventdata, handles)
+function optimal_fiber_length_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end

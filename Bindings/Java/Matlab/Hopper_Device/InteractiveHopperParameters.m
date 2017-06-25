@@ -96,8 +96,8 @@ max = 100;
 %   slider value for the passive device.
 function [mass,stiffness] = passive(param)
 
-stiffness = param*500;
-mass = param*0.1;
+stiffness = param*370;
+mass = param*0.025;
 
 % ACTIVECONTROL
 %   Function to determine mass and maximum tension of the active device 
@@ -107,7 +107,7 @@ mass = param*0.1;
 function [mass,maxTension] = activeControl(param)
 
 maxTension = param*20;
-mass = param*0.1;
+mass = param*0.025;
 
 % ACTIVEPROPMYO
 %   Function to determine mass and maximum tension of the active device 
@@ -117,34 +117,34 @@ mass = param*0.1;
 function [mass,gain] = activePropMyo(param)
 
 gain = param/100;
-mass = param*0.1;
+mass = param*0.025;
 
 % AVERAGEJOE
 %   Settings for "The Average Joe" muscle in the InteractiveHopper GUI
 %   example.
-function [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = averageJoe()
+function [maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = averageJoe()
 
 maxIsometricForce = 4000.0;
-tendonStiffness = 28.1;
+optimalFiberLength = 0.55;
 tendonSlackLength = 0.25;
-mass = 5;
+mass = 4.0;
 
 % ARNOLD
 %   Settings for "The Arnold" muscle in the InteractiveHopper GUI
 %   example.
-function [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = arnold()
+function [maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = arnold()
 
 maxIsometricForce = 5000.0;
-tendonStiffness = 30;
-tendonSlackLength = 0.15;
-mass = 7.5;
+optimalFiberLength = 0.40;
+tendonSlackLength = 0.40;
+mass = 5.0;
 
 % KATIELEDECKY
 %   Settings for "The Katie Ledecky" muscle in the InteractiveHopper GUI
 %   example.
-function [maxIsometricForce,tendonStiffness,tendonSlackLength,mass] = katieLedecky()
+function [maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = katieLedecky()
 
 maxIsometricForce = 3500.0;
-tendonStiffness = 25;
-tendonSlackLength = 0.30;
-mass = 2.5;
+optimalFiberLength = 0.60;
+tendonSlackLength = 0.20;
+mass = 2.0;
