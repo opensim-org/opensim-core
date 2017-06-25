@@ -10,13 +10,13 @@ matrix:
   include:
     - os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=3 DEPLOY=yes
     - os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: osx
       compiler: clang
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
@@ -114,6 +114,17 @@ before_install:
   # Only if compiling with gcc, update environment variables
   # to use the new gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
+
+  ## Set up ccache.
+  # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
+  # Put /usr/lib/ccache on the path.
+  # Unnecessary now - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+  # For some reason the Travis CI clang compiler toolchain installation does not
+  # have a symlink in the ccache symlinks directory, so workaround it
+  # Unnecessary now - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
+  # Without the following lines, ccache causes clang to not print in color.
+  - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
+  - if [ "$CXX" == "clang++" ]; then export CXX="clang++ -fcolor-diagnostics"; fi;
 
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ccache; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi
