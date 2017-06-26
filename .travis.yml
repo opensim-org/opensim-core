@@ -3,8 +3,10 @@
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
 
-# Use container-based infrastructure to allow caching (for ccache).
-sudo: false
+# To have more RAM (7.5 GB versus only 4 GB with sudo: false).
+sudo: required
+
+dist: trusty
     
 matrix:
   include:
@@ -19,6 +21,7 @@ matrix:
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: osx
       compiler: clang
+
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
       
 branches:
@@ -50,10 +53,9 @@ addons:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
       # for clang
-      #- llvm-toolchain-precise-3.5
-      # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
-      - kubuntu-backports
-      - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
+      #- llvm-toolchain-trusty-3.5
+      - george-edison55/cmake-3.x # cmake 3.2
+      # - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
 
     packages:
       # Must explicitly list cmake-data, otherwise the incorrect
@@ -68,7 +70,7 @@ addons:
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
-      # TOO OLD; see below. - doxygen
+      # Using more recent version; see below. - doxygen
       # To run the python tests.
       - python-nose
   # To avoid being prompted when ssh'ing into sourceforge.
@@ -131,17 +133,8 @@ before_install:
 
   # Temporary fix until llvm.org/apt is up again. See above.
   # - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
-  
-  ## Temporary hack to find libblas and liblapack.
-  # TODO. Currently Simbody is using Travis CI's Ubuntu 14.04 VMs, which link with 
-  # liblapack.so.3 and libblas.so.3. These files don't exist on the 12.04 machines.
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir ~/lib; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/liblapack.so ~/lib/liblapack.so.3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ln -s /usr/lib/libblas.so ~/lib/libblas.so.3; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/lib; fi
 
   ## Doxygen.
-  # Need a doxygen that is more recent than that available through apt-get.
   - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
   - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
   - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
