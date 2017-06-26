@@ -1917,7 +1917,7 @@ void Model::setAllControllersEnabled( bool enabled ) {
 
 void Model::formStateStorage(const Storage& originalStorage,
                              Storage& statesStorage,
-                             bool warnUnspecifiedStates)
+                             bool warnUnspecifiedStates) const
 {
     Array<string> rStateNames = getStateVariableNames();
     int numStates = getNumStateVariables();
