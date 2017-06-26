@@ -404,7 +404,7 @@ public:
      */
     void formStateStorage(const Storage& originalStorage, 
                           Storage& statesStorage,
-                          bool warnUnspecifiedStates = true);
+                          bool warnUnspecifiedStates = true) const;
 
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
     
