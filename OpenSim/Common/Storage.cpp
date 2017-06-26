@@ -2299,16 +2299,21 @@ pad(int aPadSize)
 void Storage::
 smoothSpline(int aOrder,double aCutoffFrequency)
 {
+    int size = getSize();
     double dtmin = getMinTimeStep();
+    double avgDt = (_storage[size - 1].getTime() - _storage[0].getTime()) / size;
 
     if(dtmin<SimTK::Zero) {
         cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
         return;
     }
 
-    // RESAMPLE
-    dtmin = resample(dtmin,aOrder);
-    int size = getSize();
+    // RESAMPLE if the sampling interval is not uniform
+    if ((avgDt - dtmin) > SimTK::Eps) {
+        dtmin = resample(dtmin, aOrder);
+        size = getSize();
+    }
+
     if(size<(2*aOrder)) {
         cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
         return;
@@ -2344,16 +2349,21 @@ smoothSpline(int aOrder,double aCutoffFrequency)
 void Storage::
 lowpassIIR(double aCutoffFrequency)
 {
+    int size = getSize();
     double dtmin = getMinTimeStep();
+    double avgDt = (_storage[size - 1].getTime() - _storage[0].getTime()) / size;
 
-    if(dtmin<SimTK::Zero) {
+    if(dtmin<SimTK::Eps) {
         cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
         return;
     }
 
-    // RESAMPLE
-    dtmin = resample(dtmin,5);
-    int size = getSize();
+    // RESAMPLE if the sampling interval is not uniform
+    if ((avgDt - dtmin) > SimTK::Eps) {
+        dtmin = resample(dtmin, 5);
+        size = getSize();
+    }
+
     if(size<(4)) {
         cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
         return;
@@ -2386,16 +2396,21 @@ lowpassIIR(double aCutoffFrequency)
 void Storage::
 lowpassFIR(int aOrder,double aCutoffFrequency)
 {
+    int size = getSize();
     double dtmin = getMinTimeStep();
+    double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / size;
 
-    if(dtmin<SimTK::Zero) {
+    if (dtmin<SimTK::Eps) {
         cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
         return;
     }
 
-    // RESAMPLE
-    dtmin = resample(dtmin,5);
-    int size = getSize();
+    // RESAMPLE if the sampling interval is not uniform
+    if ((avgDt - dtmin) > SimTK::Eps) {
+        dtmin = resample(dtmin, 5);
+        size = getSize();
+    }
+
     if(size<(2*aOrder)) {
         cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
         return;
