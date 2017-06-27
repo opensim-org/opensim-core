@@ -4,14 +4,8 @@ function hopper = BuildHopper(varargin)
 % Optional parameters
 % -------------------
 % maxIsometricForce: The max isometric force of the muscle (in Newtons).
-% MillardTendonParameters: An array of 5 numbers defining tendon properties:
-%     strain at one norm force
-%     stiffness at one norm force
-%     norm force at end of the toe region
-%     curviness
-%     lTs (tendon slack length)
-%   Consult the Doxygen for the TendonForceLengthCurve class to learn more
-%   about these parameters.
+% optimalFiberLength: The optimal fiber length of the muscle (in meters).
+% tendonSlackLength: The slack length of the tendon (in meters).
 % excitation: The excitation control signal for the muscle. This should be
 %   a matrix where the first row contains time and the second row contains the
 %   excitation signal.
