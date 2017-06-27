@@ -92,13 +92,6 @@ before_install:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
-  #############################################################################
-  # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
-  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export PATH=$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin:$PATH; fi
-  #############################################################################
-  
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
   # we don't want any matches. If there are matches,
@@ -110,21 +103,18 @@ before_install:
   - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
 
   ## Set up environment variables.
-  # Only if compiling with gcc, update environment variables
-  # to use the new gcc.
+  # Only if compiling with gcc, update environment variables to use the new
+  # gcc.
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.9" CC="gcc-4.9"; fi
   - if [[ "$TRAVIS_OS_NAME" = "linux" && "$CXX" = "clang++" ]]; then export CXX="clang++-3.5" CC="clang-3.5"; fi
 
   ## Set up ccache.
   # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
-  # Put /usr/lib/ccache on the path.
-  # Unnecessary now? - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
   # Since we install our own Clang, it's not set up for ccache. Workaround:
-  # TODO - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="ccache $CC" && export CXX="ccache $CXX"; fi
   - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then ln -s $(which ccache) $HOME/clang-3.5 && ln -s $(which ccache) $HOME/clang++-3.5 && export PATH=$HOME:$PATH; fi
   # Without the following lines, ccache causes clang to not print in color.
-  # - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
-  # - if [ "$CXX" == "clang++" ]; then export CXX="clang++ -fcolor-diagnostics"; fi;
+  - if [[ "$CC" = *clang* ]]; then export CC="$CC -fcolor-diagnostics"; fi;
+  - if [[ "$CXX" = *clang* ]]; then export CXX="$CXX -fcolor-diagnostics"; fi;
 
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ccache; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then PATH=/usr/local/opt/ccache/libexec:$PATH; fi
