@@ -121,7 +121,7 @@ before_install:
   # Unnecessary now? - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
   # Since we install our own Clang, it's not set up for ccache. Workaround:
   # TODO - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="ccache $CC" && export CXX="ccache $CXX"; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX" = *clang* ]]; then ln -s $(which ccache) $HOME/clang-3.5 && ln -s $(which ccache) $HOME/clang++-3.5 && export PATH=$HOME:$PATH; fi
+  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CXX = *clang* ]]; then ln -s $(which ccache) $HOME/clang-3.5 && ln -s $(which ccache) $HOME/clang++-3.5 && export PATH=$HOME:$PATH; fi
   # Without the following lines, ccache causes clang to not print in color.
   # - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
   # - if [ "$CXX" == "clang++" ]; then export CXX="clang++ -fcolor-diagnostics"; fi;
