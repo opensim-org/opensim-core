@@ -2287,15 +2287,6 @@ pad(int aPadSize)
     delete[] vecs;
 }
 
-//_____________________________________________________________________________
-/**
- * Smooth spline each of the columns in the storage.  Note that as a part
- * of this operation, the storage is resampled so that the statevectors are
- * at equal spacing.
- *
- * @param aOrder Order of the spline.
- * @param aCutoffFrequency Cutoff frequency.
- */
 void Storage::
 smoothSpline(int aOrder,double aCutoffFrequency)
 {
@@ -2336,16 +2327,6 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     delete[] signal;
 }
 
-
-//_____________________________________________________________________________
-/**
- * Lowpass filter each of the columns in the storage.  Note that as a part
- * of this operation, the storage is resampled so that the statevectors are
- * at equal spacing.
- *
- * @param aOrder Order of the FIR filter.
- * @param aCutoffFrequency Cutoff frequency.
- */
 void Storage::
 lowpassIIR(double aCutoffFrequency)
 {
@@ -2383,16 +2364,6 @@ lowpassIIR(double aCutoffFrequency)
     delete[] signal;
 }
 
-
-//_____________________________________________________________________________
-/**
- * Lowpass filter each of the columns in the storage.  Note that as a part
- * of this operation, the storage is resampled so that the statevectors are
- * at equal spacing.
- *
- * @param aOrder Order of the FIR filter.
- * @param aCutoffFrequency Cutoff frequency.
- */
 void Storage::
 lowpassFIR(int aOrder,double aCutoffFrequency)
 {
