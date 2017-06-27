@@ -125,8 +125,8 @@ mass = param*0.025;
 function [maxIsometricForce,optimalFiberLength,tendonSlackLength,mass] = averageJoe()
 
 maxIsometricForce = 4000.0;
-optimalFiberLength = 0.55;
-tendonSlackLength = 0.25;
+optimalFiberLength = 0.50;
+tendonSlackLength = 0.30;
 mass = 4.0;
 
 % ARNOLD

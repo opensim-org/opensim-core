@@ -611,8 +611,7 @@ function resetControlAxes()
 hold on
 grid on
 axis([0 5 -0.1 1.1])
-xticks(0:5)
-yticks(0:0.2:1)
+set(gca,'XTick',0:5,'YTick',0:0.2:1)
 rectangle('Position',[0 0 5.0 1.0],'LineWidth',2.0)
 xlabel('Jump Time (s)')
 ylabel('Excitation')
@@ -622,8 +621,7 @@ function resetResultsAxes()
 hold on
 grid on
 axis([0 5 0 2])
-xticks(0:5)
-yticks(0:0.2:2)
+set(gca,'XTick',0:5,'YTick',0:0.2:2)
 xlabel('Jump Time (s)')
 ylabel('Jump Height (m)')
 
