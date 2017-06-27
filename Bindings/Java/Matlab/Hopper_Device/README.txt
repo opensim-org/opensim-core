@@ -37,5 +37,5 @@ The following files are used by the InteractiveHopper GUI:
   - InteractiveHopperParameters.m
   - InteractiveHopperSettings.m
 
-
+These files have been tested with MATLAB versions R2014b and later.
 

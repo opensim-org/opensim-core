@@ -4,14 +4,8 @@ function hopper = BuildHopper(varargin)
 % Optional parameters
 % -------------------
 % maxIsometricForce: The max isometric force of the muscle (in Newtons).
-% MillardTendonParameters: An array of 5 numbers defining tendon properties:
-%     strain at one norm force
-%     stiffness at one norm force
-%     norm force at end of the toe region
-%     curviness
-%     lTs (tendon slack length)
-%   Consult the Doxygen for the TendonForceLengthCurve class to learn more
-%   about these parameters.
+% optimalFiberLength: The optimal fiber length of the muscle (in meters).
+% tendonSlackLength: The slack length of the tendon (in meters).
 % excitation: The excitation control signal for the muscle. This should be
 %   a matrix where the first row contains time and the second row contains the
 %   excitation signal.
@@ -49,14 +43,16 @@ function hopper = BuildHopper(varargin)
 
 p = inputParser();
 defaultMaxIsometricForce = 4000.0;
-defaultMillardTendonParams = [0.049 28.1 0.67 0.5 0.25];
+defaultOptimalFiberLength = 0.55;
+defaultTendonSlackLength = 0.25;
 defaultExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
                      0.3 0.3  1.0 1.0  0.1 0.1];
 defaultPrintModel = false;
 defaultAdditionalMass = 0;
 
 addOptional(p, 'maxIsometricForce', defaultMaxIsometricForce)
-addOptional(p, 'MillardTendonParams', defaultMillardTendonParams)
+addOptional(p, 'optimalFiberLength', defaultOptimalFiberLength)
+addOptional(p, 'tendonSlackLength', defaultTendonSlackLength);
 addOptional(p, 'excitation', defaultExcitation)
 addOptional(p, 'printModel', defaultPrintModel)
 addOptional(p, 'additionalMass', defaultAdditionalMass)
@@ -64,7 +60,8 @@ addOptional(p, 'additionalMass', defaultAdditionalMass)
 parse(p,varargin{:});
 
 maxIsometricForce = p.Results.maxIsometricForce;
-MillardTendonParams = p.Results.MillardTendonParams;
+optimalFiberLength = p.Results.optimalFiberLength;
+tendonSlackLength = p.Results.tendonSlackLength;
 excitation = p.Results.excitation;
 printModel = p.Results.printModel;
 additionalMass = p.Results.additionalMass;
@@ -185,20 +182,9 @@ hopper.addForce(contactForce);
 %% Actuator.
 % ----------
 % Create the vastus muscle and set its origin and insertion points.
-mclFmax = maxIsometricForce; mclOptFibLen = 0.55; mclTendonSlackLen = 0.25;
-mclPennAng = 0.;
-vastus = Millard2012EquilibriumMuscle('vastus', mclFmax, mclOptFibLen, ...
-    mclTendonSlackLen, mclPennAng);
-
-eIso = MillardTendonParams(1);
-kIso = MillardTendonParams(2);
-fToe = MillardTendonParams(3);
-curviness = MillardTendonParams(4);
-tendonFL = TendonForceLengthCurve(eIso,kIso,fToe,curviness);
-vastus.setTendonForceLengthCurve(tendonFL);
-
-lTs = MillardTendonParams(5);
-vastus.setTendonSlackLength(lTs);     
+pennationAngle = 0.0;
+vastus = Millard2012EquilibriumMuscle('vastus', maxIsometricForce, ...
+            optimalFiberLength, tendonSlackLength, pennationAngle);
     
 vastus.addNewPathPoint('origin', thigh, Vec3(linkRadius, 0.1, 0));
 vastus.addNewPathPoint('insertion', shank, Vec3(linkRadius, 0.15, 0));
