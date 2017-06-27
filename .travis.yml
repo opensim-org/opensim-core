@@ -118,10 +118,9 @@ before_install:
   ## Set up ccache.
   # Lots of this is borrowed from https://github.com/weitjong/Urho3D/blob/master/.travis.yml.
   # Put /usr/lib/ccache on the path.
-  # Unnecessary now - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
-  # For some reason the Travis CI clang compiler toolchain installation does not
-  # have a symlink in the ccache symlinks directory, so workaround it
-  # Unnecessary now - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
+  # Unnecessary now? - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
+  # Since we install our own Clang, it's not set up for ccache. Workaround:
+  - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
   # Without the following lines, ccache causes clang to not print in color.
   - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
   - if [ "$CXX" == "clang++" ]; then export CXX="clang++ -fcolor-diagnostics"; fi;
