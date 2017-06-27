@@ -191,9 +191,6 @@ install:
   #############################################################################
   # Build OpenSim.
   #############################################################################
-  # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
-  # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
 script:
@@ -207,7 +204,7 @@ script:
   - if [ $RUN_VALGRIND ]; then find Testing/Temporary -name "MemoryCheck*" -print | xargs cat; fi
 
   ## Build doxygen documentation.
-  - if [ "$DOXY" = "on" ]; then make doxygen; fi
+  - if [ "$DOXY" = "on" ]; then make -j2 doxygen; fi
   
   ## Install OpenSim. Suppress output.
   - make -j8 install > /dev/null
