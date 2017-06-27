@@ -50,7 +50,7 @@ addons:
       # For gcc >= 4.8
       - ubuntu-toolchain-r-test
       # for clang
-      #- llvm-toolchain-precise-3.5
+      - llvm-toolchain-precise-3.5
       # For cmake >= 2.8.8 (for CMakePackageConfigHelpers)
       - kubuntu-backports
       - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
@@ -64,7 +64,7 @@ addons:
       # For Simbody.
       - liblapack-dev
       - g++-4.9
-      #- clang-3.5
+      - clang-3.5
       # In case someone wants to check for memory leaks.
       - valgrind
       # To build doxygen documentation.
@@ -94,9 +94,9 @@ before_install:
   
   #############################################################################
   # Temporary fix until llvm.org/apt is back up. Manually download clang binaries and use them.
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-  - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export PATH=$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin:$PATH; fi
+  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then cd && wget http://llvm.org/releases/3.5.0/clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
+  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then tar -xJf clang+llvm-3.5.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
+  #- if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export PATH=$HOME/clang+llvm-3.5.0-x86_64-linux-gnu/bin:$PATH; fi
   #############################################################################
   
   ## Ensure that there are no tabs in source code.
@@ -120,7 +120,7 @@ before_install:
   # Unnecessary now? - export PATH=$(whereis -b ccache |grep -o '\S*lib\S*'):$PATH
   # Since we install our own Clang, it's not set up for ccache. Workaround:
   # TODO - if [[ "$TRAVIS_OS_NAME" = "linux" && $CC = *clang* ]]; then export CC="ccache $CC" && export CXX="ccache $CXX"; fi
-  # TODO - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
+  - ln -s $(which ccache) $HOME/clang && ln -s $(which ccache) $HOME/clang++ && export PATH=$HOME:$PATH
   # Without the following lines, ccache causes clang to not print in color.
   - if [ "$CC" == "clang" ]; then export CC="clang -fcolor-diagnostics"; fi;
   - if [ "$CXX" == "clang++" ]; then export CXX="clang++ -fcolor-diagnostics"; fi;
