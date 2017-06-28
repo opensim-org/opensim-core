@@ -91,7 +91,7 @@ inline SimTK::State simulate(Model& model,
 
         // Save the states to a storage file (if requested).
         if (saveStatesFile) {
-            manager.getStateStorage().print(model.getName() + ".sto");
+            manager.getStateStorage().print(model.getName() + "_states.sto");
         }
     } while (!simulateOnce);
 
