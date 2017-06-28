@@ -76,11 +76,6 @@ inline SimTK::State simulate(Model& model,
             silo->waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
         }
-        else if (!simulateOnce) {
-            std::cout << "Press <Enter> to begin simulating, or 'q' followed "
-                << "by <Enter> to quit . . . " << std::endl;
-            if (std::cin.get() == 'q') { break; }
-        }
 
         // reset the state to the initial state
         state = initialState;
