@@ -2294,7 +2294,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
     double dtmin = getMinTimeStep();
     double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
-    if(dtmin<SimTK::Zero) {
+    if(dtmin<SimTK::Eps) {
         cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
         return;
     }
