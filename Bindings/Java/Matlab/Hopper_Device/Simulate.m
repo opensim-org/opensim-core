@@ -66,6 +66,7 @@ if visualize
     silo = model.updVisualizer().updInputSilo();
 end
 
+simulatedAtLeastOnce = false;
 while true
     if visualize
         % Ignore any previous key presses.
@@ -81,6 +82,9 @@ while true
         % Key 27 is ESC; see the SimTK::Visualizer::InputListener::KeyCode enum.
         if key == 27
             sviz.shutdown();
+            if ~simulatedAtLeastOnce
+                error('User exited visualizer without running any simulations.')
+            end
             return;
         end
     end
@@ -103,6 +107,7 @@ while true
     state = State(initState);
     manager = Manager(model);
     manager.integrate(state, 5.0);
+    simulatedAtLeastOnce = true;
 
     % If there is no visualizer, only simulate once.
     if ~visualize

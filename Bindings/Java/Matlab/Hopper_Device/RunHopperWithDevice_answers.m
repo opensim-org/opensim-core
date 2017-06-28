@@ -73,6 +73,7 @@ anchorB.connectSocket_parent_frame(shankAttach);
 % ANSWER{
 hopper.addComponent(device);
 % }
+% Note: After this step, simulating will not work until after completing Task F.
 
 % (Done for you) Configure the device to wrap over the patella.
 if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 
@@ -105,8 +106,9 @@ contr.connectInput_activation(...
 %% Report quantities of interest.
 % -------------------------------
 % Configure the outputs we wish to display during the simulation.
-% TODO: Create a TableReporter, give it a name, and set its reporting interval
-%       to 0.2 seconds. Wire the following outputs to the reporter:
+% TODO: Create a TableReporter (assign it to a variable named `reporter`),
+%       set a name for the reporter, and set its reporting interval to 0.2
+%       seconds. Wire the following outputs to the reporter:
 %         - hopper's height,
 %         - vastus muscle activation,
 %         - device controller's control signal output.
@@ -141,6 +143,7 @@ if exist('reporter') == 1
     results = osimTableToStruct(table);
     fieldnames(results);
     if isfield(results, 'height')
+        hold on; % Attempt to plot on top of the RunHopper.m graph.
         plot(results.time, results.height);
         xlabel('time');
         ylabel('height');
