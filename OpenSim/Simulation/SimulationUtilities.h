@@ -34,7 +34,7 @@ If the model's useVisualizer flag is true, the user is repeatedly prompted to
 either begin simulating or quit. The provided state is not updated but the
 final state is returned at the end of the simulation, when finalTime is reached.
 Set saveStatesFile=true to save the states to a storage file as:
-"<model_name>.sto". */
+"<model_name>_states.sto". */
 inline SimTK::State simulate(Model& model,
     const SimTK::State& initialState,
     double finalTime,
