@@ -23,7 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimSimulation.h"
+#include "Model/Model.h"
+#include "Manager/Manager.h"
 #include <simbody/internal/Visualizer_InputListener.h>
 
 namespace OpenSim {
