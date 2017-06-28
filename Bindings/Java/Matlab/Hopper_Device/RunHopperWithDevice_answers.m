@@ -141,6 +141,7 @@ if exist('reporter') == 1
     results = osimTableToStruct(table);
     fieldnames(results);
     if isfield(results, 'height')
+        hold on; % Attempt to plot on top of the RunHopper.m graph.
         plot(results.time, results.height);
         xlabel('time');
         ylabel('height');
