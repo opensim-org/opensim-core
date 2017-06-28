@@ -2292,7 +2292,7 @@ smoothSpline(int aOrder,double aCutoffFrequency)
 {
     int size = getSize();
     double dtmin = getMinTimeStep();
-    double avgDt = (_storage[size - 1].getTime() - _storage[0].getTime()) / size;
+    double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Zero) {
         cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
@@ -2332,7 +2332,7 @@ lowpassIIR(double aCutoffFrequency)
 {
     int size = getSize();
     double dtmin = getMinTimeStep();
-    double avgDt = (_storage[size - 1].getTime() - _storage[0].getTime()) / size;
+    double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if(dtmin<SimTK::Eps) {
         cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
@@ -2369,7 +2369,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 {
     int size = getSize();
     double dtmin = getMinTimeStep();
-    double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / size;
+    double avgDt = (_storage[size-1].getTime() - _storage[0].getTime()) / (size-1);
 
     if (dtmin<SimTK::Eps) {
         cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
