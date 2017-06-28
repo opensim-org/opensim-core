@@ -25,7 +25,6 @@
 
 #include "Common/osimCommon.h"
 #include "Simulation/osimSimulation.h"
-#include "Simulation/SimulationUtilities.h"
 
 #include "Actuators/osimActuators.h"
 #include "Analyses/osimAnalyses.h"
