@@ -82,8 +82,7 @@ additionalMass = 0;
 % Retrieve muscle settings based on user selection 
 %   default: "The Average Joe"
 [muscleFunc] = InteractiveHopperParameters(muscle);
-[maxIsometricForce,tendonStiffness,tendonSlackLength,muscleMass] = muscleFunc();
-MillardTendonParams = [0.049 tendonStiffness 0.67 0.5 tendonSlackLength];
+[maxIsometricForce,optimalFiberLength,tendonSlackLength,muscleMass] = muscleFunc();
 additionalMass = additionalMass + muscleMass;
 
 % Retreive passive device settings if passive device specified
@@ -114,8 +113,9 @@ end
 % Build hopper
 hopper = BuildHopper('excitation',muscleExcitation, ...
                      'additionalMass',additionalMass, ...
-                     'MillardTendonParams', MillardTendonParams, ...
-                     'maxIsometricForce', maxIsometricForce);
+                     'maxIsometricForce', maxIsometricForce, ...
+                     'optimalFiberLength', optimalFiberLength, ...
+                     'tendonSlackLength', tendonSlackLength);
 if printSubcomponentAndOutputInfo
     hopper.printSubcomponentInfo();
 end

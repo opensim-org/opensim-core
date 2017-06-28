@@ -1914,14 +1914,10 @@ bool Model::getAllControllersEnabled() const{
 void Model::setAllControllersEnabled( bool enabled ) {
     _allControllersEnabled = enabled;
 }
-/**
- * Model::formStateStorage is intended to take any storage and populate stateStorage.
- * stateStorage is supposed to be a Storage with labels identical to those obtained by 
- * calling Model::getStateVariableNames(). Columns/entries found in the "originalStorage"
- * are copied to the output statesStorage. Entries not found are populated with 
- * 0s (should be default value).
- */
-void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
+
+void Model::formStateStorage(const Storage& originalStorage,
+                             Storage& statesStorage,
+                             bool warnUnspecifiedStates) const
 {
     Array<string> rStateNames = getStateVariableNames();
     int numStates = getNumStateVariables();
@@ -1973,7 +1969,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
             }
         }
         mapColumns[i] = fix;
-        if (fix==-1){
+        if (fix==-1 && warnUnspecifiedStates){
             cout << "Column "<< rStateNames[i] << 
                 " not found by Model::formStateStorage(). "
                 "Assuming its default value of "

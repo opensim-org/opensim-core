@@ -20,5 +20,7 @@ OpenSimAddLibrary(
     TESTDIRS "Test"
     )
 
-add_dependencies(osimCommon Simbody_CONFIG_check)
+if(WIN32)
+    add_dependencies(osimCommon Simbody_CONFIG_check)
+endif()
   
