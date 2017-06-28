@@ -76,6 +76,7 @@ install:
   # SWIG 3.0.8 is the minimum required version, but it does not yet exist in
   # Chocolatey.
   - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.9 --yes --limit-output #> $null
+  - choco install doxygen.portable
   
   ## Install python-nose for python testing.
   - "%PYTHON_DIR%\\Scripts\\pip install nose"
@@ -112,6 +113,8 @@ build_script:
 test_script:
   ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
+
+  - cmake --build . --target doxygen --config Release
 
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
