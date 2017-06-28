@@ -38,10 +38,10 @@ that need to be completed. Now, hop to it! */
 
 #include <OpenSim/OpenSim.h>
 #include "defineDeviceAndController_answers.h"
-#include "helperMethods.h"
 
 static const double SIGNAL_GEN_CONSTANT{ 0.33 };
 static const double REPORTING_INTERVAL{ 0.2 };
+static const double FINAL_TIME{ 5.0 };
 
 static const std::string testbedAttachment1{"ground"};
 static const std::string testbedAttachment2{"load"};
@@ -237,31 +237,25 @@ void addDeviceConsoleReporterToModel(Model& model, Device& device,
 } // namespace OpenSim
 
 
-void run(bool showVisualizer, bool simulateOnce);
+void run(bool showVisualizer, double finalTime);
 
 int main(int argc, char* argv[]) {
     //==========================================================================
     // Command line argument parsing.
     //==========================================================================
-    // Following are arguments to this executable:
-    // (1) noVisualizer -- [Optional] Do not show visualizer. Default
+    // An optional argument to this executable:
+    //    noVisualizer -- [Optional] Do not show visualizer. Default
     //                       behavior is to show visualizer.
-    // (2) simulateOnce -- [Optional] Simulate once and exit the program.
-    //                       Default behavior is to simulate multiple times
-    //                       until user requests to stop.
     
     // Suppress/show visualizer.
     bool showVisualizer{true};
-    // Simulate just once or until user stops.
-    bool simulateOnce{false};
+
     for(int i = 0; i < argc; ++i)
         if(strcmp(argv[i], "noVisualizer") == 0)
             showVisualizer = false;
-        else if(strcmp(argv[i], "simulateOnce") == 0)
-            simulateOnce = true;
 
     try {
-        run(showVisualizer, simulateOnce);
+        run(showVisualizer, FINAL_TIME);
     }
     catch (const std::exception& ex) {
         std::cout << "Hopper Example Failed to run due to the following Exception: " 
@@ -279,7 +273,7 @@ int main(int argc, char* argv[]) {
 //------------------------------------------------------------------------------
 
 
-void run(bool showVisualizer, bool simulateOnce)
+void run(bool showVisualizer, double finalTime)
 {
     using namespace OpenSim;
 
@@ -314,7 +308,7 @@ void run(bool showVisualizer, bool simulateOnce)
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHop = hopper.initSystem();
-        simulate(hopper, sHop, simulateOnce);
+        simulate(hopper, sHop, finalTime);
     }
 
     //==========================================================================
@@ -370,7 +364,7 @@ void run(bool showVisualizer, bool simulateOnce)
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sDev = testbed.initSystem();
-        simulate(testbed, sDev, simulateOnce);
+        simulate(testbed, sDev, finalTime);
     }
 
     //==========================================================================
@@ -407,6 +401,6 @@ void run(bool showVisualizer, bool simulateOnce)
 
         // Create the system, initialize the state, and simulate.
         SimTK::State& sHD = assistedHopper.initSystem();
-        simulate(assistedHopper, sHD, simulateOnce);
+        simulate(assistedHopper, sHD, finalTime);
     }
 };
