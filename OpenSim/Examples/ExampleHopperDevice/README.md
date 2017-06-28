@@ -19,7 +19,7 @@ Here is a brief description of their contents:
 | File                        | Contents
 | :-------------------------- | :---------------------------------------------------------------------------
 | buildHopperModel.cpp        | Builds an OpenSim model of a single-legged hopping mechanism.
-| buildTestbedModel.cp        | Builds an OpenSim model with an actuator between attachment points for a device
+| buildTestbedModel.cpp       | Builds an OpenSim model with an actuator between attachment points for a device
 | defineDeviceAndController.h | (*incomplete*) Class definitions for an assistive device and its controller.
 | buildDeviceModel.cpp        | (*incomplete*) Builds an OpenSim model of the assistive device.
 | exampleHopperDevice.cpp     | (*incomplete*) Creates and connects models, runs simulations, etc.
