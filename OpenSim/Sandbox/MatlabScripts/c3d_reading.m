@@ -64,11 +64,41 @@ TRCFileAdapter().write(markers_rot,[filename '.trc']);
 
 %% Print the force data as a Vec3 sto file and a flattened doubles sto file
 % make postfix string vector for naming colomns
-postfix = StdVectorString(); postfix.add('_x');postfix.add('_y');postfix.add('_z');
 
 %% flatten the Vec3 table to a table of doubles. 
+postfix = StdVectorString(); postfix.add('_x');postfix.add('_y');postfix.add('_z');
 forces_flattened = forces_rot.flatten(postfix);
-% make a sto adapter and write the forces table to file.
+
+% update the column names to have v,p,m n them.
+
+labels = forces_flattened.getColumnLabels();
+newlabels = forces_flattened.getColumnLabels();
+
+for i = 0 : labels.size() - 1
+    
+    label = char(labels.get(i));
+    
+    if ~isempty(strfind(label,'f'))
+        s = 'v';
+    elseif ~isempty(strfind(label,'p'))
+        s = 'p';
+    elseif ~isempty(strfind(label,'m'))
+        s = 'm';
+    else
+        error(['Colomn name ' label ' isnt recognized as a force, point, or moment'])
+    end
+        % Get the index for the underscore
+        in = strfind(label,'_');
+        % add the specifier (f,p,or m) to the label name. 
+        label_new = [label(1:in) s label(in+1:end)];
+        
+        % update the label name 
+        newlabels.set(i,label_new);
+end
+% set the column labels
+forces_flattened().setColumnLabels(newlabels)
+
+%% make a sto adapter and write the forces table to file.
 STOFileAdapter().write(forces_flattened,[filename '.mot']);
 
 MOTfileadapter()
