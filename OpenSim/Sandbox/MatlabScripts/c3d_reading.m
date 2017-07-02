@@ -98,10 +98,22 @@ end
 % set the column labels
 forces_flattened().setColumnLabels(newlabels)
 
+%% change the points to meters
+for i = 0 : labels.size() - 1
+    label = char(forces_flattened.getColumnLabels().get(i));
+    if ~isempty(strfind(label,'p'))
+        for u = 0 : forces_flattened.getNumRows()-1
+            % Get the point data
+            point = forces_flattened.getDependentColumnAtIndex(i).get(u);
+            % Divide the point by 1000 and set it back into the colomn
+            forces_flattened.getDependentColumnAtIndex(i).set(u,point/1000);
+        end
+    end
+end
+
 %% make a sto adapter and write the forces table to file.
 STOFileAdapter().write(forces_flattened,[filename '.mot']);
 
-MOTfileadapter()
 
 end
 
