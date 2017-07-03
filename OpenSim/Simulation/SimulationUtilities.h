@@ -29,13 +29,14 @@
 
 namespace OpenSim {
 
-/**----------------------------------------------------------------------------
-Simulate a model from an initial state and return the final state.
-If the model's useVisualizer flag is true, the user is repeatedly prompted to
-either begin simulating or quit. The provided state is not updated but the
-final state is returned at the end of the simulation, when finalTime is reached.
-Set saveStatesFile=true to save the states to a storage file as:
-"<model_name>_states.sto". */
+/// @name General purpose simulation driver for OpenSim models
+/// @{
+/** Simulate a model from an initial state and return the final state.
+    If the model's useVisualizer flag is true, the user is repeatedly prompted
+    to either begin simulating or quit. The provided state is not updated but
+    the final state is returned at the end of the simulation, when finalTime is
+    reached. %Set saveStatesFile=true to save the states to a storage file as:
+    "<model_name>_states.sto". */
 inline SimTK::State simulate(Model& model,
     const SimTK::State& initialState,
     double finalTime,
@@ -58,7 +59,8 @@ inline SimTK::State simulate(Model& model,
         help.setIsScreenText(true);
         viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
 
-        viz.setBackgroundType(viz.GroundAndSky).setShowSimTime(true);
+        //viz.setBackgroundType(viz.GroundAndSky);
+        viz.setShowSimTime(true);
         viz.drawFrameNow(state);
         std::cout << "A visualizer window has opened." << std::endl;
 
@@ -93,6 +95,8 @@ inline SimTK::State simulate(Model& model,
 
     return state;
 }
+
+/// @}
 
 } // end of namespace OpenSim
 
