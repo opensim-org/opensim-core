@@ -32,8 +32,10 @@ the C++ interface (You can find a Python version of this example at
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
+
 int main() {
     Model model;
+    model.setName("bicep_curl");
     model.setUseVisualizer(true);
 
     // Create two links, each with a mass of 1 kg, center of mass at the body's
@@ -101,6 +103,7 @@ int main() {
     // Configure the visualizer.
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    viz.setBackgroundType(viz.SolidColor);
     viz.setBackgroundColor(White);
 
     // Simulate.

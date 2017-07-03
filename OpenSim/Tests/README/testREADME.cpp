@@ -40,13 +40,15 @@
  *    repository.
  */
 
-// #define VISUALIZE
+//#define VISUALIZE
 
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
+
 int main() {
     Model model;
+    model.setName("bicep_curl");
 #ifdef VISUALIZE
     model.setUseVisualizer(true);
 #endif
@@ -117,18 +119,12 @@ int main() {
 #ifdef VISUALIZE
     model.updMatterSubsystem().setShowDefaultGeometry(true);
     Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+    viz.setBackgroundType(viz.SolidColor);
     viz.setBackgroundColor(White);
 #endif
 
     // Simulate.
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
-    state.setTime(0.0);
-#ifdef VISUALIZE // To give you the chance to click View -> Save Movie.
-    std::cout << "Press enter/return to begin the simulation..." << std::endl;
-    getchar();
-#endif
-    manager.integrate(state, 10.0);
+    simulate(model, state, 10.0);
 
     return 0;
 };
