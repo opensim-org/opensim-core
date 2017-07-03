@@ -103,6 +103,18 @@ the Model's getVisualizer() method.
 The %ModelVisualizer consults the Model's ModelDisplayHints object for 
 instructions on what to display.
 
+The Simbody visualizer binary needs to be found at runtime to create a
+visualizer. The search proceeds in the following order:
+* Directory of the currently running executable/binary.
+* Directory referred to by the environment variable OPENSIM_HOME/bin
+  if it exists.
+* Directories referred to by the environment variable PATH.
+* Possible locations for simbody installations:
+  -- SIMBODY_HOME/bin if the environment variable SIMBODY_HOME exists.
+  -- SimTK_INSTALL_DIR/bin if the environment variable SIMBODY_HOME exists.
+  -- Platform specific default locations of binaries. For Linux/MacOS, this may
+     be /usr/bin, /usr/local/bin etc. For Windows, this set is empty.
+
 @author Michael Sherman
 
 @see ModelDisplayHints, Model **/

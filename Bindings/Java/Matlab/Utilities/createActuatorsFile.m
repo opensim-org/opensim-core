@@ -37,6 +37,7 @@ function createActuatorsFile(modelpath)
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
+<<<<<<< HEAD
 display('Loading the model...');
 if nargin < 1
     [pathname,filename] = uigetfile('*.osim', 'PSelect an OpenSim Model File');
@@ -47,21 +48,44 @@ end
 
 % Instantiate the model
 model = Model(modelpath);
+=======
+%% Check the inputs
+if isempty(varargin)
+    % open dialog boxes to select the model
+    [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
+elseif nargin == 1
+    if exist(varargin{1}, 'file') == 2
+        [pathname,filename,ext] = fileparts(varargin{1});
+        filename = [filename ext];
+    else 
+        error(['Input file is invalid or does not exist']);
+    end
+else
+    error(['Number of inputs is > 1. Function only takes a single filepath']);
+end
 
-% Get the number of coordinates  and a handle to the coordainte set
-nCoord = model.getCoordinateSet.getSize();
+%% Get the model path
+modelFilePath = fullfile(pathname,filename);
+
+%% Generate an instance of the model
+model = Model(modelFilePath);
+>>>>>>> example_matlab_scripts
+
+%% Instantiate the underlying computational System and return a handle to the State
+state = model.initSystem();
+
+%% Get the number of coordinates  and a handle to the coordainte set
 coordSet = model.getCoordinateSet();
+nCoord = coordSet.getSize();
 
-% Create some empty vec3's for later.
+%% Instantiate some empty vec3's for later.
 massCenter = Vec3();
 axisValues = Vec3();
 
-% Create an empty Force set
+%% Instantiate an empty Force set
 forceSet = ForceSet();
 
-% Create the underlying computational System and return a handle to the State
-state = model.initSystem();
-
+%% Set the optimal force
 optimalForce = 1;
 
 %% Start going through the coordinates, creating an actuator for each
@@ -86,7 +110,7 @@ for iCoord = 0 : nCoord - 1
 
         % Custom and Free Joints have three translational and three
         % rotational coordinates. 
-        if strcmp(joint.getConcreteClassName(), 'CustomJoint') | strcmp(joint.getConcreteClassName(), 'FreeJoint')
+        if strcmp(joint.getConcreteClassName(), 'CustomJoint') || strcmp(joint.getConcreteClassName(), 'FreeJoint')
                % get the coordainte motion type
                motion = char(coordinate.getMotionType());
                % to get the axis value for the coordinate, we need to drill
@@ -146,13 +170,21 @@ for iCoord = 0 : nCoord - 1
     forceSet.cloneAndAppend(newActuator);
 end
 
+<<<<<<< HEAD
 %% Print Actuators to file.
 % Get the file parts 
 [pathname,filename,ext] = fileparts(modelpath);
 printPath = fullfile(pathname, [filename '_actuators.xml']);
 % Print the actuators xml file
+=======
+%% Get the parts of the file path
+[pathname,filename,ext] = fileparts(modelFilePath);
+%% Define the new print path
+printPath = fullfile(pathname, [filename '_actuators.xml']);
+%% Print the actuators xml file
+>>>>>>> example_matlab_scripts
 forceSet.print(printPath);
-% Display printed file
+%% Display printed file
 display(['Printed actuators to ' printPath])
 
 end

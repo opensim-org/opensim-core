@@ -33,7 +33,7 @@ function structdata = osimTableToStruct(osimtable)
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% import java libraries
+% Import Java libraries 
 import org.opensim.modeling.*
 
 %% Type check the input variables 

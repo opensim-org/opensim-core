@@ -1302,20 +1302,20 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
 {
 
     Super::generateDecorations(fixed, hints, state, appendToThis);
-    if (fixed) return;
+    if (!fixed) return;
 
     if (hints.get_show_wrap_geometry()) {
         const Appearance& defaultAppearance = get_Appearance();
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
         
-        const SimTK::Transform& X_GB = getFrame().getTransformInGround(state);
-        SimTK::Transform X_GW = X_GB*getTransform();
+        const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeEllipsoid(getRadii())
-            .setTransform(X_GW).setResolution(2.0)
+            .setTransform(X_BP).setResolution(2.0)
             .setColor(color).setOpacity(defaultAppearance.get_opacity())
-            .setScale(1).setRepresentation(defaultAppearance.get_representation()));
+            .setScale(1).setRepresentation(defaultAppearance.get_representation())
+            .setBodyId(getFrame().getMobilizedBodyIndex()));
     }
 
 }

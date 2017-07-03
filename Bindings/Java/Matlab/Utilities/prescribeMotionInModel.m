@@ -1,7 +1,14 @@
 function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
+<<<<<<< HEAD:Bindings/Java/Matlab/examples/prescribeMotionInModel.m
 %% Function to take an existing model file and coordinate data accessed 
 % from an IK solution and write it as a Natural Cubic Spline Function to 
 % the Prescribed Function method of a Coordinate to a model file.
+=======
+% Function to take an existing model file and coordinate data accessed from an IK solution
+% and write it as a Natural Cubic Spline Function to the Prescribed
+% Function method of a Coordinate to a model file. Based off work done by
+% Dominic Farris
+>>>>>>> example_matlab_scripts:Bindings/Java/Matlab/Utilities/prescribeMotionInModel.m
 %
 % Inputs - Model_In - Existing model stored in osim file
 %        - Mot_In - A file contains motion data for the particular model
@@ -9,6 +16,7 @@ function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
 %
 % e.g. prescribedMotionInModel('myInputModel.osim','myMotionFile', 'myOutputModel.osim')
 
+<<<<<<< HEAD:Bindings/Java/Matlab/examples/prescribeMotionInModel.m
 % Author - Dominic Farris
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -33,14 +41,20 @@ function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
 % ----------------------------------------------------------------------- %
 
 %% import java libraries
+=======
+% Author - Dominic Farris (North Carolina State University). Please
+% acknowledge contribution in published academic works
+% last updated - 17/07/2012
+
+%% load java libraries
+>>>>>>> example_matlab_scripts:Bindings/Java/Matlab/Utilities/prescribeMotionInModel.m
 import org.opensim.modeling.*
 
-% Argument checking
+%% Argument checking
 error(nargchk(0, 3, nargin));
 
 % If there aren't enough arguments passed in system will ask user to
 % manually select file(s)
-
 if nargin < 1
     [Model_In, modelpath] = uigetfile('.osim', 'Please select a model file');
     [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
@@ -63,7 +77,12 @@ else
 end
 
 % Initialize model
+<<<<<<< HEAD:Bindings/Java/Matlab/examples/prescribeMotionInModel.m
 osimModel = Model(modelfilepath);
+=======
+osimModel=Model(modelfilepath);
+osimModel.finalizeFromProperties();
+>>>>>>> example_matlab_scripts:Bindings/Java/Matlab/Utilities/prescribeMotionInModel.m
 
 % Create the coordinate storage object from the input .sto file
 coordinateSto = Storage(motfilepath);

@@ -18,6 +18,10 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+%feature("director") OpenSim::AnalysisWrapper;
+%feature("director") OpenSim::SimtkLogCallback;
+
+
 %include "arrays_java.i";
 
 /* Load the required libraries when this module is loaded.                    */

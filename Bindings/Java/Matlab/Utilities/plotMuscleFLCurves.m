@@ -38,7 +38,7 @@ function plotMuscleFLCurves(modelpath)
 %% import Java Libraries
 import org.opensim.modeling.*
 
-%% If no input Model, select select Model. 
+%% Get input model
 display('Loading the model...');
 if nargin < 1
     [filein, pathname] = ...
@@ -53,13 +53,13 @@ end
 display('Creating the Simbody system...');
 state = model.initSystem();
 
-% Ensure the model contains at least one muscle.
+%% Ensure the model contains at least one muscle.
 if (model.getMuscles().getSize() < 1)
     display('No muscles found; exiting.');
     return;
 end
 
-% Display all muscle names.
+%% Display all muscle names.
 musclelist = {};
 fprintf('%d muscles found:\n', model.getMuscles().getSize());
 for i = 0 : model.getMuscles().getSize() - 1
@@ -68,7 +68,7 @@ for i = 0 : model.getMuscles().getSize() - 1
     display([ '  ', thisName ]);
 end
 
-% Prompt the user to select a muscle.
+%% Prompt the user to select a muscle.
 stopLoop = false;
 
 while (~stopLoop)
@@ -121,14 +121,18 @@ while (~stopLoop)
     legend('show');
     hold off;
 
-end %while (~stopLoop)
-end %function plotMuscleFLCurves
+end 
+end 
 
 
+<<<<<<< HEAD
 %% 
 function muscle = getMuscleCoordinates(model, state, muscleName)
 % Muscle coordinate finder
 %   Input is a Model(), State(), and a muscle name (string).
+=======
+function muscle = getMuscleCoordinates(model, state, muscleName)
+>>>>>>> example_matlab_scripts
 %   Returns a structure containing the coordinates that a muscle crosses and the
 %   range of values for which the muscle can generate a moment. This is done by
 %   examining the moment arm of the muscle across all coordinates in the model
@@ -196,6 +200,7 @@ end
 
 end %function getMuscleCoordinates
 
+<<<<<<< HEAD
 
 %% 
 function [fl_active, fl_passive] = getForceLength(model, s, muscle)
@@ -204,20 +209,26 @@ function [fl_active, fl_passive] = getForceLength(model, s, muscle)
 %   Input is a Model(), State(), and a structure of muscle names
 %   ie muscle.<muscleName> = 'TibAnt';
 %   Returns arrays of the muslce normalized active and passive force-length.
+=======
+function [fl_active, fl_passive] = getForceLength(model, s, muscle)
+% Get the active and passive force--length values across for the
+% possible fiber lengths of the muscle. fl_active and fl_passive are 
+% matrices containing forces corresponding to each fiber length.
+>>>>>>> example_matlab_scripts
 
 %% Import OpenSim libraries.
 import org.opensim.modeling.*  
 
-% Get the number of coordinates for the muscle.
+%% Get the number of coordinates for the muscle.
 coordNames = fieldnames(muscle.coordinates);
 nCoords = length( coordNames );
 
-% Get a reference to the concrete muscle class.
+%% Get a reference to the concrete muscle class.
 force = model.getMuscles().get(muscle.name);
 muscleClass = char(force.getConcreteClassName());
 eval(['myMuscle = ' muscleClass '.safeDownCast(force);']);
 
-% Initilize a matrix for storing the complete force--length curve.
+%% Initilize a matrix for storing the complete force--length curve.
 flMatrix = zeros(1,3);
 
 for k = 1 : nCoords
@@ -266,4 +277,8 @@ end
 fl_active = flMatrix(:,1:2);
 fl_passive = flMatrix(:,[1 3]);
 
+<<<<<<< HEAD
 end 
+=======
+end 
+>>>>>>> example_matlab_scripts

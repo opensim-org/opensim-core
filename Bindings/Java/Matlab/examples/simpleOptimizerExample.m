@@ -23,45 +23,47 @@
 % simpleOptimizationExample.m                                                        
 % Author: Ayman Habib, Lorenzo Flores
 
+%% Load Java libraris
 import org.opensim.modeling.*
 
 % Read in osim model
-modelFile = strcat('testData',filesep,'Arm26_Optimize.osim');
+modelPath = strcat('testData',filesep,'Arm26_Optimize.osim');
 %Create the Original OpenSim model from a .osim file
-osimModel = Model(modelFile);
-state = osimModel.initSystem;
+model = Model(modelPath);
+state = model.initSystem;
 
-coords = osimModel.getCoordinateSet();
+coords = model.getCoordinateSet();
 coords.get('r_shoulder_elev').setValue(state, 0.0);
 
-% Get the set of muscles that are in the original model
-muscles = osimModel.getMuscles(); 
+% Get the set of muscles
+muscles = model.getMuscles(); 
 nMuscles = muscles.getSize();
 
 for i = 0:nMuscles-1
-
+    % for each muscle, set the fiber length
 	muscles.get(i).setActivation(state, 1.0);
 	afl = ActivationFiberLengthMuscle.safeDownCast(muscles.get(i));
     afl.setFiberLength(state, .1);
-
 end
 
-elbowFlexCoord = osimModel.updCoordinateSet().get('r_elbow_flex');
+%% Set the value of the elbow coordinate
+elbowFlexCoord = model.updCoordinateSet().get('r_elbow_flex');
 elbowFlexCoord.setValue(state, 1.0);
 
-osimModel.equilibrateMuscles(state);
+%% Equilibrate the muslces
+model.equilibrateMuscles(state);
 
-%Set up optimization
+%% Set up optimization
 coordMin = elbowFlexCoord.getRangeMin();
 coordMax = elbowFlexCoord.getRangeMax();
 
-% Control bounds must be specified as a column vector, every row
-% corresponds to a control
-lowerBound = coordMin*ones(1,1);
-upperBound = coordMax*ones(1,1);
+%% Control bounds must be specified as a column vector, every row
+%% corresponds to a control
+lowerBound = coordMin * ones(1,1);
+upperBound = coordMax * ones(1,1);
 
-% Parameters to be passed in to the optimizer
-params.model = osimModel;
+%% Parameters to be passed in to the optimizer
+params.model = model;
 params.state = state;
 
 % knobs or coefficients that need to be computed by the optimizer

@@ -44,6 +44,11 @@ class Actuator;
  * The defining method of a Controller is its computeControls() method.
  * @see computeControls()
  *
+ * @note Controllers currently do not use the Socket mechanism to locate 
+ * and connect to the Actuators that Controllers depend on. As a result,
+ * for now, Controllers do not support controlling multiple actuators with 
+ * the same name.
+ *
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API Controller : public ModelComponent {

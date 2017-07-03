@@ -147,7 +147,7 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              TAG        9f2123212dadcedcd680a8d8b3832d4fe40e1f8b
+              TAG        247f0cdb2916317115e50186c2f3ee0a177e02b3
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
                      
