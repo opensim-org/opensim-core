@@ -59,7 +59,6 @@ inline SimTK::State simulate(Model& model,
         help.setIsScreenText(true);
         viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
 
-        //viz.setBackgroundType(viz.GroundAndSky);
         viz.setShowSimTime(true);
         viz.drawFrameNow(state);
         std::cout << "A visualizer window has opened." << std::endl;
