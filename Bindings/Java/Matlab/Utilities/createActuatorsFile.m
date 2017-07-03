@@ -1,12 +1,17 @@
-%createActuatorsFile   make and Print an OpenSim Actuator File from a Model
+function createActuatorsFile(modelpath)
+%% Function to generate a generic OpenSim Actuator File from a Model by
+%  identifying the coordinates that are connected to ground and placing 
+%  point or torque actuators on translational or rotational coordinates, 
+%  respectively. All other coordiantes will get coordinate actuators. 
+%  Any constrained coordinates will be ignored.
+%  File is Printed to the same folder as the selected Model.
+% 
+% Inputs - modelpath ? path to an OSIM file (string)
 %
-%  createActuatorsFile makes a template actuators file that can
-%  be used in Static Optimization, RRA and CMC. This identifies the
-%  coordinates that are connected to ground and places point or torque
-%  actuators on translational or rotational coordinates, respectively. All
-%  other coordiantes will get coordinate actuators. Any constrained 
-%  coordinates will be ignored.
+% e.g. createActuatorsFile('myInputModel.osim')
 
+% Author: James Dunne, Tom Uchida, Chris Dembia, 
+% Ajay Seth, Ayman Habib, Shrinidhi K. Lakshmikanth, Jen Hicks.
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -29,33 +34,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Author: James Dunne, Tom Uchida, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Shrinidhi K. Lakshmikanth, Jen Hicks.
-
-function createActuatorsFile(varargin)
-
-% Import OpenSim Libraries
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-if isempty(varargin)
-    % open dialog boxes to select the model
-    [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
-elseif nargin == 1
-    if exist(varargin{1}, 'file') == 2
-        [pathname,filename,ext] = fileparts(varargin{1});
-        filename = [filename ext];
-    else 
-        error(['Input file is invalid or does not exist']);
-    end
-else
-    error(['Number of inputs is > 1. Function only takes a single filepath']);
+display('Loading the model...');
+if nargin < 1
+    [pathname,filename] = uigetfile('*.osim', 'PSelect an OpenSim Model File');
+    modelpath = fullfile(filename,pathname);
+elseif nargin > 1 
+    error('Too many inputs to function. Input is Model path');
 end
 
-% get the model path
-modelFilePath = fullfile(pathname,filename);
-
-% Generate an instance of the model
-model = Model(modelFilePath);
+% Instantiate the model
+model = Model(modelpath);
 
 % Get the number of coordinates  and a handle to the coordainte set
 nCoord = model.getCoordinateSet.getSize();
@@ -155,11 +146,11 @@ for iCoord = 0 : nCoord - 1
     forceSet.cloneAndAppend(newActuator);
 end
 
-%% get the parts of the file path
-[pathname,filename,ext] = fileparts(modelFilePath);
-% define the new print path
+%% Print Actuators to file.
+% Get the file parts 
+[pathname,filename,ext] = fileparts(modelpath);
 printPath = fullfile(pathname, [filename '_actuators.xml']);
-% print the actuators xml file
+% Print the actuators xml file
 forceSet.print(printPath);
 % Display printed file
 display(['Printed actuators to ' printPath])
