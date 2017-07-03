@@ -3,7 +3,6 @@
 % double-pendulum model (with markers). Writes the results to .sto and .trc
 %
 % Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
-%
 % -------------------------------------------------------------------------- %
 %                simulate_double_pendulum_and_write_tables.m                 %
 % -------------------------------------------------------------------------- %

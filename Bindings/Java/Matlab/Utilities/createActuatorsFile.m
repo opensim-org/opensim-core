@@ -37,7 +37,7 @@ function createActuatorsFile(modelpath)
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-<<<<<<< HEAD
+
 display('Loading the model...');
 if nargin < 1
     [pathname,filename] = uigetfile('*.osim', 'PSelect an OpenSim Model File');
@@ -46,30 +46,11 @@ elseif nargin > 1
     error('Too many inputs to function. Input is Model path');
 end
 
-% Instantiate the model
+%% Instantiate the model
 model = Model(modelpath);
-=======
-%% Check the inputs
-if isempty(varargin)
-    % open dialog boxes to select the model
-    [filename, pathname] = uigetfile('*.osim', 'Select an OpenSim Model File');
-elseif nargin == 1
-    if exist(varargin{1}, 'file') == 2
-        [pathname,filename,ext] = fileparts(varargin{1});
-        filename = [filename ext];
-    else 
-        error(['Input file is invalid or does not exist']);
-    end
-else
-    error(['Number of inputs is > 1. Function only takes a single filepath']);
-end
-
-%% Get the model path
-modelFilePath = fullfile(pathname,filename);
 
 %% Generate an instance of the model
 model = Model(modelFilePath);
->>>>>>> example_matlab_scripts
 
 %% Instantiate the underlying computational System and return a handle to the State
 state = model.initSystem();

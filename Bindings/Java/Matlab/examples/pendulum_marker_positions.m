@@ -1,5 +1,8 @@
-% -------------------------------------------------------------------------- %
-%                simulate_double_pendulum_and_write_tables.m                 %
+%% pendulum_marker_positions.m
+% OpenSim API example to build, simulate, and generate outputs for a
+% double-pendulum model. Writes the results to .sto and .trc files.
+
+% Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
 % -------------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  %
 % See http://opensim.stanford.edu and the NOTICE file for more information.  %
@@ -20,9 +23,6 @@
 % See the License for the specific language governing permissions and        %
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
-
-% This API example runs a forward simulation of a double-pendulum model and
-% writes the results to .sto and .trc files.
 
 %% import java libraries
 import org.opensim.modeling.*
