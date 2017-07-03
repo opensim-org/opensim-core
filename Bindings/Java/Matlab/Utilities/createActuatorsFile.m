@@ -1,13 +1,54 @@
-function createActuatorsFile(varargin)
-%  Make a template actuators file
-%  Function identifies the coordinates that are connected to ground and 
-%  places point or torque actuators on translational or rotational 
-%  coordinates, respectively. All other coordinates will get coordinate 
-%  actuators. Any constrained coordinates will be ignored.
+function createActuatorsFile(modelpath)
+%% Function to generate a generic OpenSim Actuator File from a Model by
+%  identifying the coordinates that are connected to ground and placing 
+%  point or torque actuators on translational or rotational coordinates, 
+%  respectively. All other coordiantes will get coordinate actuators. 
+%  Any constrained coordinates will be ignored.
+%  File is Printed to the same folder as the selected Model.
+% 
+% Inputs - modelpath ? path to an OSIM file (string)
+%
+% e.g. createActuatorsFile('myInputModel.osim')
+
+% Author: James Dunne, Tom Uchida, Chris Dembia, 
+% Ajay Seth, Ayman Habib, Shrinidhi K. Lakshmikanth, Jen Hicks.
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %
+% Copyright (c) 2005-2016 Stanford University and the Authors             %
+% Author(s): James Dunne                                                  %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
 
 %% Import OpenSim Libraries
 import org.opensim.modeling.*
 
+<<<<<<< HEAD
+display('Loading the model...');
+if nargin < 1
+    [pathname,filename] = uigetfile('*.osim', 'PSelect an OpenSim Model File');
+    modelpath = fullfile(filename,pathname);
+elseif nargin > 1 
+    error('Too many inputs to function. Input is Model path');
+end
+
+% Instantiate the model
+model = Model(modelpath);
+=======
 %% Check the inputs
 if isempty(varargin)
     % open dialog boxes to select the model
@@ -28,6 +69,7 @@ modelFilePath = fullfile(pathname,filename);
 
 %% Generate an instance of the model
 model = Model(modelFilePath);
+>>>>>>> example_matlab_scripts
 
 %% Instantiate the underlying computational System and return a handle to the State
 state = model.initSystem();
@@ -128,11 +170,19 @@ for iCoord = 0 : nCoord - 1
     forceSet.cloneAndAppend(newActuator);
 end
 
+<<<<<<< HEAD
+%% Print Actuators to file.
+% Get the file parts 
+[pathname,filename,ext] = fileparts(modelpath);
+printPath = fullfile(pathname, [filename '_actuators.xml']);
+% Print the actuators xml file
+=======
 %% Get the parts of the file path
 [pathname,filename,ext] = fileparts(modelFilePath);
 %% Define the new print path
 printPath = fullfile(pathname, [filename '_actuators.xml']);
 %% Print the actuators xml file
+>>>>>>> example_matlab_scripts
 forceSet.print(printPath);
 %% Display printed file
 display(['Printed actuators to ' printPath])
