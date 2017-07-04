@@ -85,7 +85,7 @@ for i = 0 : labels.size() - 1
     elseif ~isempty(strfind(label,'m'))
         s = 'm';
     else
-        error(['Colomn name ' label ' isnt recognized as a force, point, or moment'])
+        error(['Column name ' label ' isnt recognized as a force, point, or moment'])
     end
         % Get the index for the underscore
         in = strfind(label,'_');
@@ -98,7 +98,7 @@ end
 % set the column labels
 forces_flattened().setColumnLabels(newlabels)
 
-%% change the points to meters
+%% Change the points from mm to m
 for i = 0 : labels.size() - 1
     label = char(forces_flattened.getColumnLabels().get(i));
     if ~isempty(strfind(label,'p'))
@@ -111,9 +111,64 @@ for i = 0 : labels.size() - 1
     end
 end
 
+%% Change the header in the file to meet Storage conditions
+for i = 0 : forces_flattened.getTableMetaDataKeys().size() - 1
+    % get the metakey string at index zero. Since the array gets smaller on
+    % each loop, we just need to keep taking the first one off. 
+    metakey = char(forces_flattened.getTableMetaDataKeys().get(0));
+    % remove the key from the meta data
+    forces_flattened.removeTableMetaDataKey(metakey)
+end
+    
+% Add the column and row data to the meta day    
+forces_flattened.addTableMetaDataString('nColumns',num2str(forces_flattened.getNumColumns()+1))
+forces_flattened.addTableMetaDataString('nRows',num2str(forces_flattened.getNumRows()));
+
 %% make a sto adapter and write the forces table to file.
 STOFileAdapter().write(forces_flattened,[filename '.mot']);
 
 
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
