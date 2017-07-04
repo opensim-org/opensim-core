@@ -114,13 +114,13 @@ end
 %% Change the header in the file to meet Storage conditions
 for i = 0 : forces_flattened.getTableMetaDataKeys().size() - 1
     % get the metakey string at index zero. Since the array gets smaller on
-    % each loop, we just need to keep taking the first one off. 
+    % each loop, we just need to keep taking the first one in the array. 
     metakey = char(forces_flattened.getTableMetaDataKeys().get(0));
     % remove the key from the meta data
     forces_flattened.removeTableMetaDataKey(metakey)
 end
     
-% Add the column and row data to the meta day    
+% Add the column and row data to the meta key    
 forces_flattened.addTableMetaDataString('nColumns',num2str(forces_flattened.getNumColumns()+1))
 forces_flattened.addTableMetaDataString('nRows',num2str(forces_flattened.getNumRows()));
 
