@@ -106,8 +106,8 @@ int main() {
     // Simulate.
     RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
-    manager.setInitialTime(0); manager.setFinalTime(10.0);
-    manager.integrate(state);
+    state.setTime(0.0);
+    manager.integrate(state, 10.0);
     
     return 0;
 };
