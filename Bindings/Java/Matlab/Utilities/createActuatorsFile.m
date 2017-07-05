@@ -151,19 +151,13 @@ for iCoord = 0 : nCoord - 1
     forceSet.cloneAndAppend(newActuator);
 end
 
-<<<<<<< HEAD
+
 %% Print Actuators to file.
 % Get the file parts 
 [pathname,filename,ext] = fileparts(modelpath);
-printPath = fullfile(pathname, [filename '_actuators.xml']);
-% Print the actuators xml file
-=======
-%% Get the parts of the file path
-[pathname,filename,ext] = fileparts(modelFilePath);
-%% Define the new print path
+% Make the print path
 printPath = fullfile(pathname, [filename '_actuators.xml']);
 %% Print the actuators xml file
->>>>>>> example_matlab_scripts
 forceSet.print(printPath);
 %% Display printed file
 display(['Printed actuators to ' printPath])
