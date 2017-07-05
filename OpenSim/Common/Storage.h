@@ -303,7 +303,7 @@ public:
     *
     * @param cutoffFrequency Cutoff frequency of the lowpass filter.
     */
-    void lowpassIIR(double cutoffFequency);
+    void lowpassIIR(double cutoffFrequency);
     /**
     * Lowpass filter each of the columns in the storage using an FIR non-
     * recursive digital filter. Note that as a part of this operation, the
@@ -313,7 +313,7 @@ public:
     * @param order Order of the FIR filter.
     * @param cutoffFrequency Cutoff frequency.
     */
-    void lowpassFIR(int order,double cutoffFequency);
+    void lowpassFIR(int order, double cutoffFrequency);
     // Append rows of two storages at matched time
     void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
     //--------------------------------------------------------------------------
