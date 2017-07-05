@@ -107,10 +107,7 @@ int main() {
     viz.setBackgroundColor(White);
 
     // Simulate.
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
-    manager.setInitialTime(0); manager.setFinalTime(10.0);
-    manager.integrate(state);
+    simulate(model, state, 10.0);
     
     return 0;
 };
