@@ -15,13 +15,9 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
-string(CONCAT DEP_BUILD_MSG
-  "\n-------------------------IMPORTANT----------------------------------\n"
-  "| Make sure that all OpenSim dependencies are built with the same   |\n"
-  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
-  "| to avoid mysterious runtime errors.                               |\n"
-  "-------------------------IMPORTANT----------------------------------\n")
-message(${DEP_BUILD_MSG})
+message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
+same CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim to \
+avoid mysterious runtime errors.")
 
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -641,23 +637,13 @@ string(CONCAT MESSAGE
     "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
     "the current OpenSim BUILD_TYPE or CONFIGURATION.")
 
-if(${PLATFORM_NAME} STREQUAL Windows)
+if(WIN32)
     string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
     add_custom_target(Simbody_CONFIG_check ALL
         COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
         COMMAND "if"
            "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
            "exit" "1"
-        COMMENT ${MESSAGE})
-elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
-    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
-    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
-                          "exit 1\n"
-                          "fi\n")
-    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
-    add_custom_target(Simbody_CONFIG_check ALL
-        COMMAND "bash" "simbody_config_check.sh"
-                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
         COMMENT ${MESSAGE})
 endif()
 

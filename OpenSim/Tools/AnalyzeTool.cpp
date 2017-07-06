@@ -371,7 +371,7 @@ loadStatesFromFile(SimTK::State& s)
         cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
         Storage temp(_statesFileName);
         _statesStore = new Storage();
-        _model->formStateStorage(temp, *_statesStore);
+        _model->formStateStorage(temp, *_statesStore, true);
     } else {
         if(!_coordinatesFileNameProp.isValidFileName()) 
             throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
@@ -409,7 +409,7 @@ loadStatesFromFile(SimTK::State& s)
         delete _statesStore;
         _statesStore = new Storage(512, "states");
 
-        _model->formStateStorage(*qStore, *_statesStore);
+        _model->formStateStorage(*qStore, *_statesStore, false);
 
         delete qStore;
         delete uStore;
@@ -449,7 +449,7 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
     delete _statesStore;
     _statesStore = new Storage(512, "states");
 
-    _model->formStateStorage(*qStore, *_statesStore);
+    _model->formStateStorage(*qStore, *_statesStore, false);
     delete qStore;
     delete uStore;
 }

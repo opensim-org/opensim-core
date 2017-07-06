@@ -154,10 +154,11 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     Model guiModel("gait2354_simbody.osim");
     
     // Keep track of the folder containing setup file, will be used to locate results to compare against
-    guiModel.initSystem();
     std::unique_ptr<MarkerSet> markerSet{ 
         new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName()) };
     guiModel.updateMarkerSet(*markerSet);
+
+    guiModel.initSystem();
 
     // processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
     guiModel.getMultibodySystem().realizeTopology();
