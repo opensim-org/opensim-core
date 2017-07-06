@@ -262,7 +262,6 @@ bool InverseKinematicsTool::run()
         else
             modelFromFile = false;
 
-        _model->finalizeFromProperties();
         _model->printBasicInfo();
 
         // Do the maneuver to change then restore working directory 

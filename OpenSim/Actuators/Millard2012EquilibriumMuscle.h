@@ -427,23 +427,25 @@ public:
         @param[in,out] s The state of the system.
         @throws MuscleCannotEquilibrate
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const override;
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override {
+        computeFiberEquilibrium(s, false);
+    }
 
     /** Computes the fiber length such that the fiber and tendon are developing
-    the same force, assuming velocities are zero. This is a static equilibrium
-    version of computeInitialFiberEquilibrium(). By setting velocities to zero,
-    we obtain a reasonable and robust solution that provides a rough solution
-    for fiber length.
-        @param[in,out] s The state of the system.
+        the same force, either assuming muscle-tendon velocity as provided
+        by the state or zero as designated by the useZeroVelocity flag.
+        @param[in,out] s         The state of the system.
+        @param solveForVelocity  Flag indicating to solve for fiber velocity,
+                                 which by default is false (zero fiber-velocity)
         @throws MuscleCannotEquilibrate
     */
-    void computeFiberEquilibriumAtZeroVelocity(SimTK::State& s) const 
-        override;
+    void computeFiberEquilibrium(SimTK::State& s, 
+                                 bool solveForVelocity = false) const;
 
 //==============================================================================
-// TO BE DEPRECATED
+// DEPRECATED
 //==============================================================================
-    ///@cond TO BE DEPRECATED
+    ///@cond DEPRECATED
     /*  Once the ignore_tendon_compliance flag is implemented correctly, get rid
     of this method as it duplicates code in calcMuscleLengthInfo,
     calcFiberVelocityInfo, and calcMuscleDynamicsInfo.

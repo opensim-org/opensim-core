@@ -156,7 +156,6 @@ void testMemoryUsage(const string& modelFile)
     // Estimate the size of the model when loaded into memory
     auto creator = [modelFile]() { 
         Model* model = new Model(modelFile);
-        model->finalizeFromProperties();
         return model;
     };
 

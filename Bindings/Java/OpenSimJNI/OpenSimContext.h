@@ -165,7 +165,7 @@ public:
     void deletePathWrap(GeometryPath& p, int num);
     // Markers
     void setBody(Marker& currentMarker, PhysicalFrame& newBody, bool  b);
-    int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
+    void updateMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
     void getCenterOfMassInGround(double com[3]) const {
         SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);

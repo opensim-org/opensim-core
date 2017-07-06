@@ -25,5 +25,3 @@ OpenSimAddLibrary(
     TESTDIRS SimbodyEngine Test
     INCLUDEDIRS ${SIMULATION_SUBDIRS}
     )
-
-add_dependencies(osimSimulation Simbody_CONFIG_check)

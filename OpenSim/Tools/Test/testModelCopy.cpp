@@ -82,8 +82,6 @@ int main()
         armAssigned = arm;
         ASSERT(armAssigned == arm);
 
-        arm.finalizeFromProperties();
-
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
         testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
@@ -103,7 +101,6 @@ void testCopyModel(const string& fileName, const int nbod,
 
     // Automatically finalizes properties by default when loading from file
     Model* model = new Model(fileName);
-    model->finalizeFromProperties();
 
     // Catch a possible decrease in the memory footprint, which will cause
     // size_t (unsigned int) to wrap through zero.
@@ -137,7 +134,7 @@ void testCopyModel(const string& fileName, const int nbod,
 
     //  Now delete original model and make sure copy can stand
     Model *cloneModel = modelCopy->clone();
-    cloneModel->finalizeFromProperties();
+
     ASSERT(*model == *cloneModel);
     ASSERT(model->getActuators().getSize() ==
            cloneModel->getActuators().getSize());
@@ -154,7 +151,7 @@ void testCopyModel(const string& fileName, const int nbod,
     modelCopy->finalizeFromProperties();
 
     Model* modelSerialized = new Model(latestFile);
-    modelSerialized->finalizeFromProperties();
+
     ASSERT(*modelSerialized == *modelCopy);
 
     int nb = modelSerialized->getNumBodies();

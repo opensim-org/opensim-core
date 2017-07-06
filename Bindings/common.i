@@ -55,6 +55,7 @@
 %template(ArrayDouble) OpenSim::Array<double>;
 %template(ArrayInt) OpenSim::Array<int>;
 %template(ArrayStr) OpenSim::Array<std::string>;
+%template(ArrayVec3) OpenSim::Array<SimTK::Vec3>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
 %template(ArrayConstObjPtr) OpenSim::Array<const OpenSim::Object*>;
@@ -184,6 +185,23 @@ namespace OpenSim {
         return new OpenSim::DataTable_<ETX, ETY>{*$self};
     }
 }
+// A version of SWIG between 3.0.6 and 3.0.12 broke the ability to extend class
+// templates with more than 1 template parameter, so we must enumerate the
+// possible template arguments (not necesary for TimeSeriesTable's clone; that
+// template has only 1 param.).
+%define DATATABLE_CLONE(ETX, ETY)
+%extend OpenSim::DataTable_<ETX, ETY> {
+    OpenSim::DataTable_<ETX, ETY>* clone() const {
+        return new OpenSim::DataTable_<ETX, ETY>{*$self};
+    }
+}
+%enddef
+DATATABLE_CLONE(double, double)
+DATATABLE_CLONE(double, SimTK::Vec3)
+DATATABLE_CLONE(double, SimTK::UnitVec3)
+DATATABLE_CLONE(double, SimTK::Quaternion)
+DATATABLE_CLONE(double, SimTK::Vec6)
+DATATABLE_CLONE(double, SimTK::SpatialVec)
 %extend OpenSim::DataTable_<double, double> {
     DataTable_<double, SimTK::Vec3>
     packVec3() {

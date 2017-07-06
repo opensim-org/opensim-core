@@ -1510,7 +1510,29 @@ public:
 
     template<typename C>
     void printSubcomponentInfo() const {
+
+        ComponentList<const C> compList = getComponentList<C>();
+
+        // Step through compList once to determine if there are any
+        // subcomponents and to find the longest concrete class name.
+        const std::string concreteClassName = this->getConcreteClassName();
+        unsigned numSubcomponents = 0;
+        unsigned maxlen = concreteClassName.length();
+        for (const C& thisComp : compList) {
+            ++numSubcomponents;
+            auto len = thisComp.getConcreteClassName().length();
+            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+        }
+
+        if (numSubcomponents == 0) {
+            std::cout << "Component '" << getName()
+                      << "' has no subcomponents." << std::endl;
+            return;
+        }
+        maxlen += 4; //padding
+
         std::string className = SimTK::NiceTypeName<C>::namestr();
+        // Remove "OpenSim::", etc. if it exists.
         const std::size_t colonPos = className.rfind(":");
         if (colonPos != std::string::npos)
             className = className.substr(colonPos+1,
@@ -1520,18 +1542,8 @@ public:
                   << getName() << "' that are of type " << className << ":\n"
                   << std::endl;
 
-        ComponentList<const C> compList = getComponentList<C>();
-
-        // Step through compList once to find the longest concrete class name.
-        unsigned maxlen = 0;
-        for (const C& thisComp : compList) {
-            auto len = thisComp.getConcreteClassName().length();
-            maxlen = std::max(maxlen, static_cast<unsigned>(len));
-        }
-        maxlen += 4; //padding
-
-        std::cout << std::string(maxlen-getConcreteClassName().length(), ' ')
-                  << "[" + getConcreteClassName() + "]"
+        std::cout << std::string(maxlen-concreteClassName.length(), ' ')
+                  << "[" << concreteClassName << "]"
                   << "  " << getAbsolutePathName() << std::endl;
 
         // Step through compList again to print.

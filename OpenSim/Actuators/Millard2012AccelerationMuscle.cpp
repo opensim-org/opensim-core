@@ -580,7 +580,7 @@ postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  START OF TO BE DEPRECATED   XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                             START OF DEPRECATED
 //==============================================================================
 double Millard2012AccelerationMuscle::
 calcInextensibleTendonActiveFiberForce(SimTK::State& s, 
@@ -672,7 +672,7 @@ double Millard2012AccelerationMuscle::
 }
 
 //==============================================================================
-// XXXXXXXXXXXXXXXXXXXX  END OF TO BE DEPRECATED     XXXXXXXXXXXXXXXXXXXXXXXXXXX
+//                              END OF DEPRECATED
 //==============================================================================
 
 

@@ -169,7 +169,7 @@ public:
     physical vector quantities such as a frame's angular velocity or an
     applied force, from one frame to another without changing the physical
     quantity. If you have a position vector and want to change the point from
-    which the position is measured, you want findLocationInAnotherFrame().
+    which the position is measured, you want findStationLocationInAnotherFrame().
 
     @param state       The state of the model.
     @param vec_F       The vector to be re-expressed.
@@ -182,9 +182,8 @@ public:
 
     /**
     Take a vector in this frame (F) and re-express the same vector
-    in Ground (G). This method is equivalent to `expressVectorInAnotherFrame()`
-    where `otherFrame` is always Ground.
-
+    in Ground (G). This method is equivalent to expressVectorInAnotherFrame()
+    where the "other Frame" is always Ground.
     @param state       The state of the model.
     @param vec_F       The vector to be re-expressed.
     @return vec_G      The expression of the vector in Ground.
@@ -212,11 +211,11 @@ public:
     /**
     Take a station located and expressed in this frame (F) and determine
     its location relative to and expressed in Ground (G). This method is
-    equivalent to `findLocationInAnotherFrame()` where `otherFrame` is 
+    equivalent to findStationLocationInAnotherFrame() where the "other Frame" is
     always Ground.
 
     Note that if you have added an OpenSim::Station, you should use the
-    Station's method `getLocationInGround(state)` instead.
+    Station's %getLocationInGround() method instead.
 
     @param state       The state of the model.
     @param station_F   The position Vec3 from frame F's origin to the station.
@@ -230,7 +229,7 @@ public:
     its velocity relative to and expressed in Ground (G).
 
     Note that if you have added an OpenSim::Station, you should use the
-    Station's method `getVelocityInGround(state)` instead.
+    Station's %getVelocityInGround() method instead.
 
     @param state       The state of the model.
     @param station_F   The position Vec3 from frame F's origin to the station.
@@ -244,7 +243,7 @@ public:
     its acceleration relative to and expressed in Ground (G).
 
     Note that if you have added an OpenSim::Station, you should use the
-    Station's method `getAccelerationInGround(state)` instead.
+    Station's %getAccelerationInGround() method instead.
 
     @param state       The state of the model.
     @param station_F   The position Vec3 from frame F's origin to the station.
@@ -268,7 +267,7 @@ public:
     */
     ///@{
     /** 
-    Find this Frame's base Frame.
+    Find this Frame's base Frame. See the "Advanced" note, above.
 
     @return baseFrame     The Frame that is the base for this Frame.
     */

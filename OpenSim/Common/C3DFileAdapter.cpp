@@ -69,13 +69,19 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     reader->Update();
     auto acquisition = reader->GetOutput();
 
+    EventTable event_table{};
+    auto events = acquisition->GetEvents();
+    for (auto it = events->Begin();
+        it != events->End();
+        ++it) {
+        auto et = *it;
+        event_table.push_back({ et->GetLabel(),
+            et->GetTime(),
+            et->GetFrame(),
+            et->GetDescription() });
+    }
+
     OutputTables tables{};
-    auto& marker_table = *(new TimeSeriesTableVec3{});
-    auto&  force_table = *(new TimeSeriesTableVec3{});
-    tables.emplace(_markers, 
-                   std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
-    tables.emplace(_forces, 
-                   std::shared_ptr<TimeSeriesTableVec3>(&force_table));
 
     auto marker_pts = btk::PointCollection::New();
 
@@ -88,45 +94,51 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     if(marker_pts->GetItemNumber() != 0) {
-        marker_table.
-            updTableMetaData().
-            setValueForKey("DataRate", 
-                           std::to_string(acquisition->GetPointFrequency()));
 
-        marker_table.
-            updTableMetaData().
-            setValueForKey("Units", 
-                           acquisition->GetPointUnit());
+        int marker_nrow = marker_pts->GetFrontItem()->GetFrameNumber();
+        int marker_ncol = marker_pts->GetItemNumber();
 
-        ValueArray<std::string> marker_labels{};
-        for(auto it = marker_pts->Begin();
-            it != marker_pts->End();
-            ++it) {
-            marker_labels.
-            upd().
-            push_back(SimTK::Value<std::string>((*it)->GetLabel()));
+        std::vector<double> marker_times(marker_nrow);
+        SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
+
+        std::vector<std::string> marker_labels{};
+        for (auto it = marker_pts->Begin(); it != marker_pts->End(); ++it) {
+            marker_labels.push_back(SimTK::Value<std::string>((*it)->GetLabel()));
         }
 
-        TimeSeriesTableVec3::DependentsMetaData marker_dep_metadata{};
-        marker_dep_metadata.setValueArrayForKey("labels", marker_labels);
-        marker_table.setDependentsMetaData(marker_dep_metadata);
-
         double time_step{1.0 / acquisition->GetPointFrequency()};
-        for(int f = 0; 
-            f < marker_pts->GetFrontItem()->GetFrameNumber();
-            ++f) {
+        for(int f = 0; f < marker_nrow; ++f) {
             SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
             int m{0};
-            for(auto it = marker_pts->Begin();
-                it != marker_pts->End();
-                ++it) {
+            for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
                 auto pt = *it;
                 row[m++] = SimTK::Vec3{pt->GetValues().coeff(f, 0),
                                        pt->GetValues().coeff(f, 1),
                                        pt->GetValues().coeff(f, 2)};
             }
-            marker_table.appendRow(0 + f * time_step, row);
+
+            marker_matrix.updRow(f) = row;
+            marker_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
         }
+
+        // Create the data
+        auto& marker_table = *new 
+            TimeSeriesTableVec3(marker_times, marker_matrix, marker_labels);
+
+        marker_table.
+            updTableMetaData().
+            setValueForKey("DataRate",
+                std::to_string(acquisition->GetPointFrequency()));
+
+        marker_table.
+            updTableMetaData().
+            setValueForKey("Units",
+                acquisition->GetPointUnit());
+
+        marker_table.updTableMetaData().setValueForKey("events", event_table);
+
+        tables.emplace(_markers,
+            std::shared_ptr<TimeSeriesTableVec3>(&marker_table));
     }
 
     // This is probably the right way to get the raw forces data from force 
@@ -174,57 +186,37 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     if(fp_force_pts->GetItemNumber() != 0) {
-        force_table.
-            updTableMetaData().
-            setValueForKey("CalibrationMatrices", std::move(fpCalMatrices));
 
-        force_table.
-            updTableMetaData().
-            setValueForKey("Corners",             std::move(fpCorners));
-
-        force_table.
-            updTableMetaData().
-            setValueForKey("Origins",             std::move(fpOrigins));
-
-        force_table.
-            updTableMetaData().
-            setValueForKey("Types",               std::move(fpTypes));
-
-        force_table.
-            updTableMetaData().
-            setValueForKey("DataRate", 
-                           std::to_string(acquisition->GetAnalogFrequency()));
-
-        ValueArray<std::string> labels{};
+        std::vector<std::string> labels{};
         ValueArray<std::string> units{};
         for(int fp = 1; fp <= fp_force_pts->GetItemNumber(); ++fp) {
             auto fp_str = std::to_string(fp);
 
-            labels.upd().push_back(SimTK::Value<std::string>("f" + fp_str));
+            labels.push_back(SimTK::Value<std::string>("f" + fp_str));
             auto force_unit = acquisition->GetPointUnits().
                 at(_unit_index.at("force"));
             units.upd().push_back(SimTK::Value<std::string>(force_unit));
 
-            labels.upd().push_back(SimTK::Value<std::string>("m" + fp_str));
+            labels.push_back(SimTK::Value<std::string>("m" + fp_str));
             auto moment_unit = acquisition->GetPointUnits().
                 at(_unit_index.at("moment"));
             units.upd().push_back(SimTK::Value<std::string>(moment_unit));
 
-            labels.upd().push_back(SimTK::Value<std::string>("p" + fp_str));
+            labels.push_back(SimTK::Value<std::string>("p" + fp_str));
             auto position_unit = acquisition->GetPointUnits().
                 at(_unit_index.at("marker"));
             units.upd().push_back(SimTK::Value<std::string>(position_unit));
         }
-        TimeSeriesTableVec3::DependentsMetaData force_dep_metadata{};
-        force_dep_metadata.setValueArrayForKey("labels", labels);
-        force_dep_metadata.setValueArrayForKey("units", units);
-        force_table.setDependentsMetaData(force_dep_metadata);
+
+        const int nf = fp_force_pts->GetFrontItem()->GetFrameNumber();
+        
+        std::vector<double> force_times(nf);
+        SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, labels.size());
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
-        for(int f = 0;
-            f < fp_force_pts->GetFrontItem()->GetFrameNumber();
-            ++f) {
-            SimTK::RowVector_<SimTK::Vec3>
+
+        for(int f = 0; f < nf;  ++f) {
+            SimTK::RowVector_<SimTK::Vec3> 
                 row{fp_force_pts->GetItemNumber() * 3};
             int col{0};
             for(auto fit = fp_force_pts->Begin(),
@@ -247,23 +239,46 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                                        (*pit)->GetValues().coeff(f, 2)};
                 ++col;
             }
-            force_table.appendRow(0 + f * time_step, row);
+            force_matrix.updRow(f) = row;
+            force_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
         }
-    }
 
-    EventTable event_table{};
-    auto events = acquisition->GetEvents();
-    for(auto it = events->Begin();
-        it != events->End();
-        ++it) {
-        auto et = *it;
-        event_table.push_back({et->GetLabel(),
-                               et->GetTime(),
-                               et->GetFrame(),
-                               et->GetDescription()});
-    }
-       marker_table.updTableMetaData().setValueForKey("events", event_table);
+        auto&  force_table = 
+            *(new TimeSeriesTableVec3(force_times, force_matrix, labels));
+
+        TimeSeriesTableVec3::DependentsMetaData force_dep_metadata
+            = force_table.getDependentsMetaData();
+
+        // add units to the dependent meta data
+        force_dep_metadata.setValueArrayForKey("units", units);
+        force_table.setDependentsMetaData(force_dep_metadata);
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("CalibrationMatrices", std::move(fpCalMatrices));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("Corners", std::move(fpCorners));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("Origins", std::move(fpOrigins));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("Types", std::move(fpTypes));
+
+        force_table.
+            updTableMetaData().
+            setValueForKey("DataRate",
+                std::to_string(acquisition->GetAnalogFrequency()));
+
+        tables.emplace(_forces,
+            std::shared_ptr<TimeSeriesTableVec3>(&force_table));
+
         force_table.updTableMetaData().setValueForKey("events", event_table);
+    }
 
     return tables;
 }
