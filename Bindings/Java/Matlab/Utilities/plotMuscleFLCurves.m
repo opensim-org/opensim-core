@@ -47,7 +47,7 @@ if nargin < 1
 elseif nargin == 1
     model = Model(modelpath);
 elseif nargin > 1 
-    error('Too many inputs to function. Input Model path']);
+    error('Too many inputs to function. Input Model path');
 end
 
 display('Creating the Simbody system...');
