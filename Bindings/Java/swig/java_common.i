@@ -55,7 +55,7 @@ using namespace SimTK;
   }
 %}
 
-%newobject *::clone; 
+// %newobject *::clone; 
 
 %typemap(javacode) OpenSim::Array<double> %{
 	public void fromString(String string) {
