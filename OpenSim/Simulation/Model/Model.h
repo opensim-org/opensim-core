@@ -129,7 +129,14 @@ method, in which case it will allocate and maintain a ModelVisualizer.
 **/
 
 class OSIMSIMULATION_API Model  : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(Model, ModelComponent);
+// Note, a concrete object typically employs the OpenSim_DECLARE_CONCRETE_OBJECT
+// macro, but, for Model we do not want its clone() method to be auto-generated.
+// Instead, we want to override and customize it and so we employ the subset of
+// macros that OpenSim_DECLARE_CONCRETE_OBJECT calls, excluding one that
+// implements clone() and getConcreteClassName(), which are implemented below.
+OpenSim_OBJECT_ANY_DEFS(Model, ModelComponent);
+OpenSim_OBJECT_NONTEMPLATE_DEFS(Model, ModelComponent);
+
 public:
 //==============================================================================
 // PROPERTIES
@@ -254,6 +261,12 @@ public:
      */
     void cleanup();
 
+    /** Model clone() override that invokes finalizeFromProperties() 
+        on a default copy constructed Model, prior to returning the Model. */
+    Model* clone() const override;
+    
+    const std::string& getConcreteClassName() const override
+    {   return getClassName(); }
 
     //--------------------------------------------------------------------------
     // VISUALIZATION
@@ -381,12 +394,18 @@ public:
     /** Check that the underlying computational system representing the model is valid. 
         That is, is the system ready for performing calculations. */
     bool isValidSystem() const;
+
     /**
-     * create a storage (statesStorage) that has same label order as model's states
-     * with values populated from originalStorage, 0.0 for those states unspecified
-     * in the originalStorage.
+     * Create a storage (statesStorage) that has same label order as model's states
+     * with values populated from originalStorage. Use the default state value if
+     * a state is unspecified in the originalStorage. If warnUnspecifiedStates is
+     * true then a warning is printed that includes the default value used for
+     * the state value unspecified in originalStorage.
      */
-    void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
+    void formStateStorage(const Storage& originalStorage, 
+                          Storage& statesStorage,
+                          bool warnUnspecifiedStates = true) const;
+
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
     
     /**
@@ -872,7 +891,15 @@ public:
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
     int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
     void writeMarkerFile(const std::string& aFileName);
-    void updateMarkerSet(MarkerSet& aMarkerSet);
+
+    /**
+    * Update the markers in the model by appending the ones in the
+    * passed-in marker set. If the marker of the same name exists
+    * in the model, then replace it.
+    *
+    * @param newMarkerSet the set of markers used to update the model's set.
+    */
+    void updateMarkerSet(MarkerSet& newMarkerSet);
     int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
  
     /**

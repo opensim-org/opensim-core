@@ -15,13 +15,9 @@ if(COMMAND cmake_policy)
     cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
-string(CONCAT DEP_BUILD_MSG
-  "\n-------------------------IMPORTANT----------------------------------\n"
-  "| Make sure that all OpenSim dependencies are built with the same   |\n"
-  "| CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim |\n"
-  "| to avoid mysterious runtime errors.                               |\n"
-  "-------------------------IMPORTANT----------------------------------\n")
-message(${DEP_BUILD_MSG})
+message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
+same CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim to \
+avoid mysterious runtime errors.")
 
 # To create a folder hierarchy within Visual Studio.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -397,6 +393,11 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
+set(OPENSIM_PYTHON_VERSION 2 CACHE STRING
+    "The major Python version (2 or 3) for which to build the wrapping.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
     # To print info on where MATLAB is found: set(MATLAB_FIND_DEBUG ON)
@@ -444,7 +445,14 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     # PythonInterp is supposed to come before PythonLibs.
-    find_package(PythonInterp 2.7 REQUIRED)
+    if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
+        set(required_python_version 2.7)
+    elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
+        set(required_python_version 3)
+    else()
+        message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
+    endif()
+    find_package(PythonInterp ${required_python_version} REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
@@ -456,8 +464,8 @@ if(${BUILD_PYTHON_WRAPPING})
     # OPENSIM_INSTALL_PYTHONDIR is used in OpenSimAddLibrary (in
     # OpenSimMacros.cmake).
 
-    if(APPLE)
-        # If you have Homebrew's Python, then by default, PythonInterp finds
+    if(APPLE AND ${OPENSIM_PYTHON_VERSION} STREQUAL "2")
+        # If you have Homebrew's Python2, then by default, PythonInterp finds
         # Apple's Python, but PythonLibs finds Homebrew's Python, causing
         # runtime crashes. This also occurs if one has Anaconda Python.
         # So we use the python-config executable to get the
@@ -480,7 +488,7 @@ if(${BUILD_PYTHON_WRAPPING})
             "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
             CACHE FILEPATH "${pylib_desc}")
     endif()
-    find_package(PythonLibs 2.7 REQUIRED)
+    find_package(PythonLibs ${required_python_version} REQUIRED)
 
 endif()
 
@@ -629,23 +637,13 @@ string(CONCAT MESSAGE
     "Checking if Simbody was built with same BUILD_TYPE or CONFIGURATION as "
     "the current OpenSim BUILD_TYPE or CONFIGURATION.")
 
-if(${PLATFORM_NAME} STREQUAL Windows)
+if(WIN32)
     string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
     add_custom_target(Simbody_CONFIG_check ALL
         COMMAND "set" "Simbody_CONFIG=${Simbody_CONFIGURATION_STR}"
         COMMAND "if"
            "\"%Simbody_CONFIG:$<LOWER_CASE:$<CONFIG>>=%\"==\"%Simbody_CONFIG%\""
            "exit" "1"
-        COMMENT ${MESSAGE})
-elseif(${PLATFORM_NAME} STREQUAL Mac OR ${PLATFORM_NAME} STREQUAL Linux)
-    string(TOLOWER "${Simbody_CONFIGURATION}" Simbody_CONFIGURATION_STR)
-    string(CONCAT CONTENT "if [[ $1 != *\"$2\"* ]]\; then\n"
-                          "exit 1\n"
-                          "fi\n")
-    file(WRITE "${CMAKE_BINARY_DIR}/simbody_config_check.sh" ${CONTENT})
-    add_custom_target(Simbody_CONFIG_check ALL
-        COMMAND "bash" "simbody_config_check.sh"
-                "\"${Simbody_CONFIGURATION_STR}\"" "\"$<LOWER_CASE:$<CONFIG>>\""
         COMMENT ${MESSAGE})
 endif()
 

@@ -507,7 +507,6 @@ generateMarkerDataFromModelAndStates(const Model& model,
     std::normal_distribution<double> noise(0.0, 1);
 
     unique_ptr<Model> m{ model.clone() };
-    m->finalizeFromProperties();
     
     auto* markerReporter = new TableReporterVec3();
     

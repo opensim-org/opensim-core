@@ -39,7 +39,6 @@ You don't need to add anything in this file, but you should know what
 buildHopper() is doing. */
 
 #include <OpenSim/OpenSim.h>
-#include "helperMethods.h"
 
 namespace OpenSim {
 
