@@ -55,7 +55,7 @@ markers = tables.get('markers');
 forces = tables.get('forces');
 
 %% Rotate marker and force data
-axis = 'x'; value = 90;
+axis = 'x'; value = -90;
 markers_rot = rotateTableData(markers, axis, value);
 forces_rot = rotateTableData(forces, axis, value);
 
@@ -78,19 +78,28 @@ for i = 0 : labels.size() - 1
     
     label = char(labels.get(i));
     
+    if i < 9
+        n = '1';
+    elseif  8 < i < 18
+        n = '2';
+    elseif 17 < i < 27
+       n = '3';
+    end
+    
     if ~isempty(strfind(label,'f'))
-        s = 'v';
+        s = ['ground_force_' n '_v'];
     elseif ~isempty(strfind(label,'p'))
-        s = 'p';
+        s = ['ground_force_' n '_p'];
     elseif ~isempty(strfind(label,'m'))
-        s = 'm';
+        s = ['ground_torque_' n '_m'];
     else
         error(['Column name ' label ' isnt recognized as a force, point, or moment'])
     end
         % Get the index for the underscore
-        in = strfind(label,'_');
+        % in = strfind(label,'_');
         % add the specifier (f,p,or m) to the label name. 
-        label_new = [label(1:in) s label(in+1:end)];
+        %label_new = [label(1:in) s label(in+1:end)];
+        label_new = [ s label(end)];
         
         % update the label name 
         newlabels.set(i,label_new);
@@ -111,21 +120,56 @@ for i = 0 : labels.size() - 1
     end
 end
 
+%% change the order of the forces
+% turn the timetable into a Maltab Struct
+sdata = osimTableToStruct(forces_flattened);
+% get the label names
+labels =  fieldnames(sdata);
+% find all the labels with string m (including time)
+imoments = find(~cellfun(@isempty,strfind(labels,'m')));
+% get a tempory set of labels for the moements, delete them from the
+% original
+templabels = labels(imoments);
+labels(imoments) = [];
+% append the moment labels
+labels2 = [labels;templabels];
+% reorder the structure given the new label order
+sdata = orderfields(sdata, labels2);
+
+%% Check for NaNs
+% If there are any NaNs in the forces data, OpenSim will interpret them as
+% the 'end' of the file. We must set NaNs to zero and report where they are
+% found
+for i = 1 : length(labels2)
+    % get an index of all the NaN values
+    n = find( isnan( sdata.(labels2{i})));
+    
+    if ~isempty(n)
+        % replace the NaN value with 0
+        sdata.(labels2{i})(n) = 0;
+    end    
+end
+
+%% convert the structure back to an OpenSim time series table
+forces_reorder = osimTableFromStruct(sdata);
+
 %% Change the header in the file to meet Storage conditions
-for i = 0 : forces_flattened.getTableMetaDataKeys().size() - 1
-    % get the metakey string at index zero. Since the array gets smaller on
-    % each loop, we just need to keep taking the first one in the array. 
-    metakey = char(forces_flattened.getTableMetaDataKeys().get(0));
-    % remove the key from the meta data
-    forces_flattened.removeTableMetaDataKey(metakey)
+if forces_reorder.getTableMetaDataKeys().size() > 0
+    for i = 0 : forces_reorder.getTableMetaDataKeys().size() - 1
+        % get the metakey string at index zero. Since the array gets smaller on
+        % each loop, we just need to keep taking the first one in the array. 
+        metakey = char(forces_reorder.getTableMetaDataKeys().get(0));
+        % remove the key from the meta data
+        forces_reorder.removeTableMetaDataKey(metakey)
+    end
 end
     
 % Add the column and row data to the meta key    
-forces_flattened.addTableMetaDataString('nColumns',num2str(forces_flattened.getNumColumns()+1))
-forces_flattened.addTableMetaDataString('nRows',num2str(forces_flattened.getNumRows()));
+forces_reorder.addTableMetaDataString('nColumns',num2str(forces_reorder.getNumColumns()+1))
+forces_reorder.addTableMetaDataString('nRows',num2str(forces_reorder.getNumRows()));
 
 %% make a sto adapter and write the forces table to file.
-STOFileAdapter().write(forces_flattened,[filename '.mot']);
+STOFileAdapter().write(forces_reorder,[filename '.mot']);
 
 
 end

@@ -8,6 +8,8 @@ function T_R = rotateTableData(T, A, V)
 % t_r = rotateTableData(t, 'x', 90) - rotate all (Vec3) elements in t by 90
 %                                     degrees about the x axis.
  
+% By James Dunne
+
 %% import java libraries
 import org.opensim.modeling.*
 
