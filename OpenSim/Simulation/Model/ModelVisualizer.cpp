@@ -260,8 +260,6 @@ void ModelVisualizer::createVisualizer() {
     _viz->setShutdownWhenDestructed(true);
 
     _viz->setCameraClippingPlanes(.01,100.);
-    _viz->setBackgroundColor(SimTK::Black);
-    _viz->setBackgroundType(SimTK::Visualizer::SolidColor);
 
     // Give it an OpenSim-friendly window heading.
     bool isAbsolutePath; string directory, fileName, extension; 
