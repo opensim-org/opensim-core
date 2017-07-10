@@ -50,7 +50,7 @@ ana_Yvalue_ref = ana.getDependentColumnAtIndex(1).getElt(0,0);
 ana_Zvalue_ref = ana.getDependentColumnAtIndex(2).getElt(0,0);
 
 %% Rotate about X
-c3d_reading('filepath', 'test_walking.c3d', 'firstrotation', 90, 'axis', 'x');
+c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'x');
 mkr = TRCFileAdapter.read('test_walking.trc');
 ana = STOFileAdapter().read('test_walking.mot');
 % Set the new marker and force values
@@ -64,16 +64,16 @@ ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
 assert(mkr_Xvalue_ref ==  mkr_Xvalue, 'X axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Zvalue_ref ~=  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
-assert(abs(mkr_Zvalue_ref) ==  abs(mkr_Yvalue), 'Y axis marker rotation is incorrect')
-assert(abs(mkr_Yvalue_ref) ==  abs(mkr_Zvalue), 'Z axis marker rotation is incorrect')
+assert(abs(round(mkr_Zvalue_ref)) ==  abs(round(mkr_Yvalue)), 'Y axis marker rotation is incorrect')
+assert(abs(round(mkr_Yvalue_ref)) ==  abs(round(mkr_Zvalue)), 'Z axis marker rotation is incorrect')
 assert(ana_Xvalue_ref ==  ana_Xvalue, 'X axis force rotation is incorrect ')
 assert(ana_Yvalue_ref ~=  ana_Yvalue, 'Y axis force rotation is incorrect ')
 assert(ana_Zvalue_ref ~=  ana_Zvalue, 'Z axis force rotation is incorrect ')
-assert(abs(ana_Zvalue_ref) ==  abs(ana_Yvalue), 'Y axis force rotation is incorrect')
-assert(abs(ana_Yvalue_ref) ==  abs(ana_Zvalue), 'Z axis force rotation is incorrect')
+assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Yvalue)), 'Y axis force rotation is incorrect')
+assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
 %% Roate about Y
-c3d_reading('filepath', 'test_walking.c3d', 'firstrotation', 90, 'axis', 'y');
+c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'y');
 mkr = TRCFileAdapter.read('test_walking.trc');
 ana = STOFileAdapter().read('test_walking.mot');
 % Set the new marker and force values
@@ -87,16 +87,16 @@ ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
 assert(mkr_Yvalue_ref ==  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Xvalue_ref ~=  mkr_Xvalue, 'X axis marker rotation is incorrect ')
 assert(mkr_Zvalue_ref ~=  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
-assert(abs(mkr_Zvalue_ref) ==  abs(mkr_Xvalue), 'X axis marker rotation is incorrect')
-assert(abs(mkr_Xvalue_ref) ==  abs(mkr_Zvalue), 'Z axis marker rotation is incorrect')
+assert(abs(round(mkr_Zvalue_ref)) ==  abs(round(mkr_Xvalue)), 'X axis marker rotation is incorrect')
+assert(abs(round(mkr_Xvalue_ref)) ==  abs(round(mkr_Zvalue)), 'Z axis marker rotation is incorrect')
 assert(ana_Yvalue_ref ==  ana_Yvalue, 'Y axis force rotation is incorrect ')
 assert(ana_Xvalue_ref ~=  ana_Xvalue, 'X axis force rotation is incorrect ')
 assert(ana_Zvalue_ref ~=  ana_Zvalue, 'Z axis force rotation is incorrect ')
-assert(abs(ana_Zvalue_ref) ==  abs(ana_Xvalue), 'X axis force rotation is incorrect')
-assert(abs(ana_Xvalue_ref) ==  abs(ana_Zvalue), 'Z axis force rotation is incorrect')
+assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rotation is incorrect')
+assert(abs(round(ana_Xvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
 %% Roate about Z
-c3d_reading('filepath', 'test_walking.c3d', 'firstrotation', 90, 'axis', 'z');
+c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'z');
 mkr = TRCFileAdapter.read('test_walking.trc');
 ana = STOFileAdapter().read('test_walking.mot');
 % Set the new marker and force values
@@ -110,13 +110,13 @@ ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
 assert(mkr_Zvalue_ref ==  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Xvalue_ref ~=  mkr_Xvalue, 'X axis marker rotation is incorrect ')
-assert(abs(mkr_Xvalue_ref) ==  abs(mkr_Yvalue), 'Y axis marker rotation is incorrect')
-assert(abs(mkr_Yvalue_ref) ==  abs(mkr_Xvalue), 'X axis marker rotation is incorrect')
+assert(abs(round(mkr_Xvalue_ref)) ==  abs(round(mkr_Yvalue)), 'Y axis marker rotation is incorrect')
+assert(abs(round(mkr_Yvalue_ref)) ==  abs(round(mkr_Xvalue)), 'X axis marker rotation is incorrect')
 assert(ana_Zvalue_ref ==  ana_Zvalue, 'Z axis force rotation is incorrect ')
 assert(ana_Yvalue_ref ~=  ana_Yvalue, 'Y axis force rotation is incorrect ')
 assert(ana_Xvalue_ref ~=  ana_Xvalue, 'X axis force rotation is incorrect ')
-assert(abs(ana_Xvalue_ref) ==  abs(ana_Yvalue), 'Y axis force rotation is incorrect')
-assert(abs(ana_Yvalue_ref) ==  abs(ana_Xvalue), 'X axis force rotation is incorrect')
+assert(abs(round(ana_Xvalue_ref)) ==  abs(round(ana_Yvalue)), 'Y axis force rotation is incorrect')
+assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rotation is incorrect')
 
 
 

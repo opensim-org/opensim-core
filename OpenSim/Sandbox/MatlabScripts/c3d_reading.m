@@ -35,10 +35,19 @@ value = p.Results.value;
 %% check for file path
 if isempty(filepath)
         [filein, path] = uigetfile({'*.c3d','C3D file'}, 'Select C3D data file(s)...', 'MultiSelect', 'on');
-elseif nargin >= 1
-        if exist(filepath,'file') == 0
+else
+    % If the input path to file is wrong, return exception
+    if exist(filepath,'file') == 0
             error('file does not exist')
-        end        
+    else    
+        % if the input path is local (called from current folder), you will
+        % need to set the full path. 
+        [path, filename, ext] = fileparts(filepath);
+        if isempty(path)
+            path = cd;
+        end
+        filein = [filename ext];
+    end
 end
 
 if iscell(filein)
