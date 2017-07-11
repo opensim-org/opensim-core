@@ -121,7 +121,8 @@
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 
-#include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
+#include "SimulationUtilities.h"
 
+#include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
 
 #endif // _osimSimulation_h_
