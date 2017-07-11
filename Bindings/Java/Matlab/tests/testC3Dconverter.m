@@ -20,9 +20,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Jen Hicks.
+% Function tests osimC3Dconverter for correct writing of trc and mot files, 
+% and that rotations are done correctly. 
 
+% Author: James Dunne
+
+%% Load libraries 
 import org.opensim.modeling.*
 
 %% get path to file
@@ -31,6 +34,10 @@ filepath = '../../../../OpenSim/Tests/shared/walking2.c3d';
 if isempty(exist('../../../../OpenSim/Tests/shared/walking2.c3d', 'file'))
    error('cannot find test file (walking2.c3d) at ../../../../OpenSim/Tests/shared/walking2.c3d');
 end
+
+%% Instantiate the file readers
+trc = TRCFileAdapter();
+stp = STOFileAdapter();
 
 %% Test script for utility function 
 osimC3Dconverter('filepath', filepath);
@@ -44,8 +51,8 @@ assert( exist(fullfile(path,[file '.mot']), 'file') == 2, 'TRC was not printed '
 % components. ie if rotatiing about X, X values remain the same. 
 
 %% Get the unrotated reference values
-mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
-ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
+mkr = trc.read(fullfile(path,[file '.trc']));
+ana = sto.read(fullfile(path,[file '.mot']));
 
 mkr_Xvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
 mkr_Yvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
@@ -57,8 +64,10 @@ ana_Zvalue_ref = ana.getDependentColumnAtIndex(2).getElt(238,0);
 
 %% Rotate about X
 osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'x');
-mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
-ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
+mkr = trc.read(fullfile(path,[file '.trc']));
+ana = sto.read(fullfile(path,[file '.mot']));
+
+
 % Set the new marker and force values
 mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
 mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
@@ -78,10 +87,10 @@ assert(ana_Zvalue_ref ~=  ana_Zvalue, 'Z axis force rotation is incorrect ')
 assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Yvalue)), 'Y axis force rotation is incorrect')
 assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
-%% Roate about Y
+%% Rotate about Y
 osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'y');
-mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
-ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
+mkr = trc.read(fullfile(path,[file '.trc']));
+ana = sto().read(fullfile(path,[file '.mot']));
 % Set the new marker and force values
 mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
 mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
@@ -101,10 +110,10 @@ assert(ana_Zvalue_ref ~=  ana_Zvalue, 'Z axis force rotation is incorrect ')
 assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rotation is incorrect')
 assert(abs(round(ana_Xvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
-%% Roate about Z
+%% Rotate about Z
 osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'z');
-mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
-ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
+mkr = trc.read(fullfile(path,[file '.trc']));
+ana = sto().read(fullfile(path,[file '.mot']));
 % Set the new marker and force values
 mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
 mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);

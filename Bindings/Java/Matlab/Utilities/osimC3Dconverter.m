@@ -8,13 +8,33 @@ function osimC3Dconverter(varargin)
 % 'axis2', 'Y'              applies second rotation to axis Y (string)
 %
 % Example ? read WalkingData.c3d and perform a 90 degree rotation about X
-%   c3d_reading('filepath', 'C:/data/WalkingData.c3d',...
-%                 'firstRotation', '90'...
+%   osimC3Dconverter('filepath', 'C:/data/WalkingData.c3d',...
+%                 'value', '90'...
 %                 'axis', 'X')
 
-% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Jen Hicks.
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
+% Author(s): James Dunne                                                  %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
 
+% Author: James Dunne
 
 p = inputParser;
 value = 0;
@@ -32,7 +52,7 @@ filepath = p.Results.filepath;
 axis = p.Results.axis;
 value = p.Results.value;
 
-%% check for file path
+%% Check for file path
 if isempty(filepath)
         [filein, path] = uigetfile({'*.c3d','C3D file'}, 'Select C3D data file(s)...', 'MultiSelect', 'on');
 else
@@ -40,7 +60,7 @@ else
     if exist(filepath,'file') == 0
             error('file does not exist')
     else    
-        % if the input path is local (called from current folder), you will
+        % If the input path is local (called from current folder), you will
         % need to set the full path. 
         [path, filename, ext] = fileparts(filepath);
         if isempty(path)
@@ -54,11 +74,10 @@ if iscell(filein)
     nFiles = length(filein);
     multipleFiles = 1;
 else
-    nFiles = 1
+    nFiles = 1;
     multipleFiles = 0;
 end
     
-
 for iFile = 1 : nFiles
     
     if multipleFiles == 1
@@ -179,13 +198,17 @@ for iFile = 1 : nFiles
     for i = 1 : length(labels2)
         % get an index of all the NaN values
         n = find( isnan( sdata.(labels2{i})));
-
+ 
         if ~isempty(n)
+            % Display NaN value to console
+            warning(['Nan values found for ' labels2{i} ', at row(s) ' num2str(n') '. Replacing with zeros'])
             % replace the NaN value with 0
             sdata.(labels2{i})(n) = 0;
         end    
     end
-
+    
+    
+    
     %% convert the structure back to an OpenSim time series table
     forces_reorder = osimTableFromStruct(sdata);
 

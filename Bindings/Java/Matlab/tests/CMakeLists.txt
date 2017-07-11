@@ -69,10 +69,6 @@ add_custom_target(RunMatlabTests
 
 add_dependencies(RunMatlabTests JavaBindings)
 
-
-
-
-
 # Tests.
 # ------
 
@@ -88,7 +84,8 @@ OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
 OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
+OpenSimAddMatlabTest(osimC3Dconverter testC3Dconverter.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
-     DESTINATION "${matlab_output_dir}")
+     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}")
