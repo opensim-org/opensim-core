@@ -1,4 +1,4 @@
-function c3d_reading(varargin)
+function osimC3Dconverter(varargin)
 % Utility function for converting c3d data to OpenSim format.
 % Inputs to function are pairs of string-string or string-number pairs.
 % 'filepath', 'path2file'   reads c3d data at path2file.
@@ -91,8 +91,8 @@ for iFile = 1 : nFiles
         markers_rot = markers.clone();
     else
         display(['Rotating Marker and Force data ' num2str(value) ' about the ' axis ' axis']); 
-        markers_rot = rotateTableData(markers, axis, value);
-        forces_rot = rotateTableData(forces, axis, value);
+        markers_rot = osimRotateTableData(markers, axis, value);
+        forces_rot = osimRotateTableData(forces, axis, value);
     end
     
     %% Print the rotated markers to trc file

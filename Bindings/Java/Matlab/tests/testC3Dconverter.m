@@ -25,41 +25,47 @@
 
 import org.opensim.modeling.*
 
+%% get path to file
+filepath = '../../../../OpenSim/Tests/shared/walking2.c3d';
+[path, file, ext] = fileparts(filepath);
+if isempty(exist('../../../../OpenSim/Tests/shared/walking2.c3d', 'file'))
+   error('cannot find test file (walking2.c3d) at ../../../../OpenSim/Tests/shared/walking2.c3d');
+end
 
 %% Test script for utility function 
-c3d_reading('filepath', 'test_walking.c3d');
+osimC3Dconverter('filepath', filepath);
 
 %% Test if trc and mot file were printed. 
-assert( exist('test_walking.trc', 'file') == 2, 'TRC was not printed ')
-assert( exist('test_walking.mot', 'file') == 2, 'TRC was not printed ')
+assert( exist(fullfile(path,[file '.trc']), 'file') == 2, 'TRC was not printed ')
+assert( exist(fullfile(path,[file '.mot']), 'file') == 2, 'TRC was not printed ')
 
 %% Test rotations
 % test if roations about X, Y, and Z, respectively, maintain the correct
 % components. ie if rotatiing about X, X values remain the same. 
 
 %% Get the unrotated reference values
-mkr = TRCFileAdapter.read('test_walking.trc');
-ana = STOFileAdapter().read('test_walking.mot');
+mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
+ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
 
-mkr_Xvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(0);
-mkr_Yvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(1);
-mkr_Zvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(2);
+mkr_Xvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
+mkr_Yvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
+mkr_Zvalue_ref = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
 
-ana_Xvalue_ref = ana.getDependentColumnAtIndex(0).getElt(0,0);
-ana_Yvalue_ref = ana.getDependentColumnAtIndex(1).getElt(0,0);
-ana_Zvalue_ref = ana.getDependentColumnAtIndex(2).getElt(0,0);
+ana_Xvalue_ref = ana.getDependentColumnAtIndex(0).getElt(238,0);
+ana_Yvalue_ref = ana.getDependentColumnAtIndex(1).getElt(238,0);
+ana_Zvalue_ref = ana.getDependentColumnAtIndex(2).getElt(238,0);
 
 %% Rotate about X
-c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'x');
-mkr = TRCFileAdapter.read('test_walking.trc');
-ana = STOFileAdapter().read('test_walking.mot');
+osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'x');
+mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
+ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
 % Set the new marker and force values
-mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(0);
-mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(1);
-mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(2);
-ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(0,0);
-ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(0,0);
-ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
+mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
+mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
+mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
+ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
+ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
+ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
 % Assess if the rotation is correct 
 assert(mkr_Xvalue_ref ==  mkr_Xvalue, 'X axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
@@ -73,16 +79,16 @@ assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Yvalue)), 'Y axis force rota
 assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
 %% Roate about Y
-c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'y');
-mkr = TRCFileAdapter.read('test_walking.trc');
-ana = STOFileAdapter().read('test_walking.mot');
+osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'y');
+mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
+ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
 % Set the new marker and force values
-mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(0);
-mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(1);
-mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(2);
-ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(0,0);
-ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(0,0);
-ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
+mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
+mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
+mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
+ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
+ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
+ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
 % Assess if the rotation is correct 
 assert(mkr_Yvalue_ref ==  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Xvalue_ref ~=  mkr_Xvalue, 'X axis marker rotation is incorrect ')
@@ -96,16 +102,16 @@ assert(abs(round(ana_Zvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rota
 assert(abs(round(ana_Xvalue_ref)) ==  abs(round(ana_Zvalue)), 'Z axis force rotation is incorrect')
 
 %% Roate about Z
-c3d_reading('filepath', 'test_walking.c3d', 'value', -90, 'axis', 'z');
-mkr = TRCFileAdapter.read('test_walking.trc');
-ana = STOFileAdapter().read('test_walking.mot');
+osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'z');
+mkr = TRCFileAdapter.read(fullfile(path,[file '.trc']));
+ana = STOFileAdapter().read(fullfile(path,[file '.mot']));
 % Set the new marker and force values
-mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(0);
-mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(1);
-mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(0,0).get(2);
-ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(0,0);
-ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(0,0);
-ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(0,0);
+mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
+mkr_Yvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(1);
+mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
+ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
+ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
+ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
 % Assess if the rotation is correct 
 assert(mkr_Zvalue_ref ==  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
@@ -118,5 +124,7 @@ assert(ana_Xvalue_ref ~=  ana_Xvalue, 'X axis force rotation is incorrect ')
 assert(abs(round(ana_Xvalue_ref)) ==  abs(round(ana_Yvalue)), 'Y axis force rotation is incorrect')
 assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rotation is incorrect')
 
-
+%% clean up files
+delete(fullfile(path,[file '.trc']));
+delete(fullfile(path,[file '.mot']));
 

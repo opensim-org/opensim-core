@@ -1,4 +1,4 @@
-function T_R = rotateTableData(T, A, V)
+function T_R = osimRotateTableData(T, A, V)
 % t = rotateTableData(table, A, V) returns an opentsim table with
 % elements rotated about A by V. table is an opensim
 % TimeseriesTableVec3, A is a string ('x','y','z'), and V is a 
