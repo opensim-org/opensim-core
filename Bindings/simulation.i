@@ -163,6 +163,7 @@
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
+%copyctor OpenSim::Model;
 %include <OpenSim/Simulation/Model/Model.h>
 
 %include <OpenSim/Simulation/Model/AbstractPathPoint.h>

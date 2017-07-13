@@ -1596,6 +1596,48 @@ void testTableSource() {
     std::cout << report << std::endl;
 }
 
+void testTableReporter() {
+    // TableReporter works fine even if its input has no connectees.
+    {
+        TheWorld model;
+        auto* reporter = new TableReporter();
+        reporter->set_report_time_interval(0.1);
+        model.addComponent(reporter);
+    
+        MultibodySystem system;
+        model.buildUpSystem(system);
+    
+        {
+            SimTK::State s = system.realizeTopology();
+            RungeKuttaFeldbergIntegrator integ(system);
+            integ.setAccuracy(1.0e-3);
+            TimeStepper ts(system, integ);
+            ts.initialize(s);
+            ts.stepTo(1.0);
+            std::cout << "TableReporter table after simulating:\n";
+            const auto& table = reporter->getTable();
+            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+        }
+
+        // Ensure that clearing the table and performing a new simulation works
+        // even if the reporter's input has no connectees.
+        reporter->clearTable();
+        std::cout << "TableReporter table after clearing:\n";
+        SimTK_TEST_MUST_THROW_EXC(reporter->getTable().toString(), EmptyTable);
+    
+        {
+            SimTK::State s = system.realizeTopology();
+            RungeKuttaFeldbergIntegrator integ(system);
+            integ.setAccuracy(1.0e-3);
+            TimeStepper ts(system, integ);
+            ts.initialize(s);
+            ts.stepTo(1.0);
+            std::cout << "TableReporter table after simulating again:\n";
+            const auto& table = reporter->getTable();
+            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+        }
+    }
+}
 
 const std::string dataFileNameForInputConnecteeSerialization =
         "testComponentInterface_testInputConnecteeSerialization_data.sto";
@@ -1966,6 +2008,7 @@ int main() {
         SimTK_SUBTEST(testExceptionsInputNameExistsAlready);
         SimTK_SUBTEST(testExceptionsOutputNameExistsAlready);
         SimTK_SUBTEST(testTableSource);
+        SimTK_SUBTEST(testTableReporter);
         SimTK_SUBTEST(testAliasesAndLabels);
     
         writeTimeSeriesTableForInputConnecteeSerialization();

@@ -149,12 +149,14 @@ hipRange = [110., -90.];
 hipStiff = [20., 20.]; hipDamping = 5.; hipTransition = 10.;
 hipLimitForce = CoordinateLimitForce('hipFlexion', hipRange(1), ...
     hipStiff(1), hipRange(2), hipStiff(2), hipDamping, hipTransition);
+hipLimitForce.setName('hipLigaments');
 hip.addComponent(hipLimitForce);
 
 kneeRange = [140., 10.];
 kneeStiff = [50., 40.]; kneeDamping = 2.; kneeTransition = 10.;
 kneeLimitForce = CoordinateLimitForce('kneeFlexion', kneeRange(1), ...
     kneeStiff(1), kneeRange(2), kneeStiff(2), kneeDamping, kneeTransition);
+kneeLimitForce.setName('kneeLigaments');
 knee.addComponent(kneeLimitForce);
 
 % Use a contact model to prevent the foot (ContactSphere) from passing
