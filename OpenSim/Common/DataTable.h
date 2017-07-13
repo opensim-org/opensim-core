@@ -1438,7 +1438,7 @@ protected:
 
     /** Validate metadata for independent column.                             
     
-    \throws InvalidMetaData If independent column's metadata does not contain
+    \throws MissingMetaData If independent column's metadata does not contain
                             a key named "labels".                             */
     void validateIndependentMetaData() const override {
         try {
@@ -1450,12 +1450,14 @@ protected:
 
     /** Validate metadata for dependent columns.
 
-    \throws InvalidMetaData (1) If metadata for dependent columns does not 
-                            contain a key named "labels". (2) If ValueArray
-                            for key "labels" does not have length equal to the
-                            number of columns in the table. (3) If not all
-                            entries in the metadata for dependent columns have
-                            the correct length (equal to number of columns).  */
+    \throws MissingMetaData If metadata for dependent columns does not 
+                            contain a key named "labels". 
+    \throws MetaDataLengthZero If 'labels' metadata has length 0.
+    \throws IncorrectMetaDataLength (1) If ValueArray for key "labels" does not
+                            have length equal to the number of columns in the
+                            table. (2) If not all entries in the metadata for
+                            dependent columns have the correct length (equal to
+                            number of columns).                               */
     void validateDependentsMetaData() const override {
         size_t numCols{};
         try {
@@ -1466,7 +1468,8 @@ protected:
         }
 
         OPENSIM_THROW_IF(numCols == 0,
-                         MetaDataLengthZero,"labels");
+                         MetaDataLengthZero,
+                         "Length of 'labels' metadata is 0.");
 
         OPENSIM_THROW_IF(_depData.ncol() != 0 && 
                          numCols != static_cast<unsigned>(_depData.ncol()),

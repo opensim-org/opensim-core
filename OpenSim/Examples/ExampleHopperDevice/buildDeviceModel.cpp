@@ -35,7 +35,6 @@ and the "TODO" comments below for instructions. */
 
 #include <OpenSim/OpenSim.h>
 #include "defineDeviceAndController.h"
-#include "helperMethods.h"
 
 static const double OPTIMAL_FORCE{ 4000. };
 static const double GAIN{ 1.0 };

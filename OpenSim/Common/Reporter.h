@@ -191,15 +191,22 @@ public:
     simulation. Each new iteration should start with an empty report and so this
     function can be used to clear the report at the end of each iteration.    */
     void clearTable() {
-        auto columnLabels = _outputTable.getColumnLabels();
+        std::vector<std::string> columnLabels;
+        // Handle the case where no outputs were connected to the reporter.
+        if (_outputTable.hasColumnLabels()) {
+            columnLabels = _outputTable.getColumnLabels();
+        }
         _outputTable = TimeSeriesTable_<ValueT>{};
-        _outputTable.setColumnLabels(columnLabels);
+        if (!columnLabels.empty()) {
+            _outputTable.setColumnLabels(columnLabels);
+        }
     }
 
 protected:
     void implementReport(const SimTK::State& state) const override {
         const auto& input = this->template getInput<InputT>("inputs");
-        SimTK::RowVector_<ValueT> result(int(input.getNumConnectees()));
+        SimTK::RowVector_<ValueT> result;
+        result.resize(int(input.getNumConnectees()));
 
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
               const auto& chan = input.getChannel(idx);
@@ -218,7 +225,6 @@ protected:
         }
     }
 
-
     void extendConnect(Component& root) override {
         Super::extendConnect(root);
 
@@ -228,7 +234,15 @@ protected:
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
             labels.push_back( input.getLabel(idx) );
         }
-        const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
+        if (!labels.empty()) {
+            const_cast<Self*>(this)->_outputTable.setColumnLabels(labels);
+        } else {
+            std::cout << "Warning: No outputs were connected to '"
+                      << this->getName() << "' of type "
+                      << getConcreteClassName() << ". You can connect outputs "
+                      "by calling addToReport()." << std::endl;
+
+        }
     }
 
 private:

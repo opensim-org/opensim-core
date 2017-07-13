@@ -1,6 +1,8 @@
 MATLAB Example: *Hopper Device*
 ===============================
 
+NOTE: This example only works with MATLAB versions R2014b and later.
+
 This is the MATLAB version of the Hopper Device example (there is also a C++
 version). The example demonstrates some of the new features of the OpenSim 4.0
 API. The Component architecture allows us to join sub-assemblies using Sockets
@@ -36,6 +38,4 @@ The following files are used by the InteractiveHopper GUI:
   - BuildInteractiveHopperSolution.m
   - InteractiveHopperParameters.m
   - InteractiveHopperSettings.m
-
-These files have been tested with MATLAB versions R2014b and later.
 
