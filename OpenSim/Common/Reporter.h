@@ -193,7 +193,7 @@ public:
     void clearTable() {
         std::vector<std::string> columnLabels;
         // Handle the case where no outputs were connected to the reporter.
-        if (_outputTable.getNumColumns()) {
+        if (_outputTable.hasColumnLabels()) {
             columnLabels = _outputTable.getColumnLabels();
         }
         _outputTable = TimeSeriesTable_<ValueT>{};
