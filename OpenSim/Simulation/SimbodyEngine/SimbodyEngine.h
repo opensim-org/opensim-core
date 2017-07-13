@@ -168,16 +168,16 @@ public:
     //-------------------------------------------------------------------------
     /** @name Deprecated */
     // @{
-    /** <b>(Deprecated)</b> Use Frame::findLocationInGround() instead. */
-    DEPRECATED_14("use Frame::findLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::getPositionInGround() instead. */
+    DEPRECATED_14("use Frame::getPositionInGround() instead")
     void getPosition(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rPos) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findVelocityInGround() instead. */
-    DEPRECATED_14("use Frame::findVelocityInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::getVelocityInGround() instead. */
+    DEPRECATED_14("use Frame::getVelocityInGround() instead")
     void getVelocity(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rVel) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findAccelerationInGround() instead. */
-    DEPRECATED_14("use Frame::findAccelerationInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::getAccelerationInGround() instead. */
+    DEPRECATED_14("use Frame::getAccelerationInGround() instead")
     void getAcceleration(const SimTK::State& s, const PhysicalFrame &aBody, const SimTK::Vec3& aPoint, SimTK::Vec3& rAcc) const;
     
     /** <b>(Deprecated)</b> Use Frame::getTransformInGround().R() instead. */
@@ -208,36 +208,36 @@ public:
     DEPRECATED_14("use Frame::getTransformInGround() instead")
     SimTK::Transform getTransform(const SimTK::State& s, const PhysicalFrame &aBody) const;
 
-    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherframe() instead. */
-    DEPRECATED_14("use Frame::expressVectorInAnotherframe() instead") 
+    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::expressVectorInAnotherFrame() instead") 
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aVec[3], const PhysicalFrame &aBodyTo, double rVec[3]) const;
     
-    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherframe() instead. */
-    DEPRECATED_14("use Frame::expressVectorInAnotherframe() instead")
+    /** <b>(Deprecated)</b> Use Frame::expressVectorInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::expressVectorInAnotherFrame() instead")
     void transform(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aVec, const PhysicalFrame &aBodyTo, SimTK::Vec3& rVec) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findLocationInAnotherFrame() instead. */
-    DEPRECATED_14("use Frame::findLocationInAnotherFrame() instead")
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInAnotherFrame() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], const PhysicalFrame &aBodyTo, double rPos[3]) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findLocationInAnotherFrame() instead. */
-    DEPRECATED_14("use Frame::findLocationInAnotherFrame() instead")
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInAnotherFrame() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInAnotherFrame() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, const PhysicalFrame &aBodyTo, SimTK::Vec3& rPos) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findLocationInGround() instead. */
-    DEPRECATED_14("use Frame::findLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInGround() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInGround() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const double aPos[3], double rPos[3]) const;
     
-    /** <b>(Deprecated)</b> Use Frame::findLocationInGround() instead. */
-    DEPRECATED_14("use Frame::findLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Frame::findStationLocationInGround() instead. */
+    DEPRECATED_14("use Frame::findStationLocationInGround() instead")
     void transformPosition(const SimTK::State& s, const PhysicalFrame &aBodyFrom, const SimTK::Vec3& aPos, SimTK::Vec3& rPos) const;
 
-    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findLocationInGround() instead */
-    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead */
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead")
     double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const SimTK::Vec3& aPoint1, const PhysicalFrame& aBody2, const SimTK::Vec3& aPoint2) const;
     
-    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findLocationInGround() instead */
-    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findLocationInGround() instead")
+    /** <b>(Deprecated)</b> Use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead */
+    DEPRECATED_14("use Point::calcDistanceBetween() or Frame::findStationLocationInGround() instead")
     double calcDistance(const SimTK::State& s, const PhysicalFrame& aBody1, const double aPoint1[3], const PhysicalFrame& aBody2, const double aPoint2[3]) const;
 
     // @}
