@@ -7,7 +7,7 @@
 set(matlab_output_dir "${CMAKE_BINARY_DIR}/Matlab")
 file(WRITE "${matlab_output_dir}/javaclasspath.txt"
     "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}")
-if(MSVC OR XCODE) 
+if(MSVC OR XCODE)
     # TODO: should not write all configuration build dirs to the
     # librarypath.txt file; this means that Debug libraries are available to
     # the Release build, for example.
@@ -69,9 +69,17 @@ add_custom_target(RunMatlabTests
 
 add_dependencies(RunMatlabTests JavaBindings)
 
+
+# Copy resources.
+file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
+     DESTINATION "${matlab_output_dir}")
+
+file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/walking2.c3d"
+		      DESTINATION "${matlab_output_dir}")
+
+
 # Tests.
 # ------
-
 # From examples.
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
 OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
@@ -85,7 +93,3 @@ OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
 OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
 OpenSimAddMatlabTest(osimC3Dconverter testC3Dconverter.m)
-
-# Copy resources.
-file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
-     DESTINATION "${CMAKE_CURRENT_SOURCE_DIR}")

@@ -20,35 +20,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Function tests osimC3Dconverter for correct writing of trc and mot files, 
-% and that rotations are done correctly. 
+% Function tests osimC3Dconverter for correct writing of trc and mot files,
+% and that rotations are done correctly.
 
 % Author: James Dunne
 
-%% Load libraries 
+%% Load libraries
 import org.opensim.modeling.*
 
 %% get path to file
-filepath = '../../../../OpenSim/Tests/shared/walking2.c3d';
+filepath = 'walking2.c3d';
 [path, file, ext] = fileparts(filepath);
-if isempty(exist('../../../../OpenSim/Tests/shared/walking2.c3d', 'file'))
-   error('cannot find test file (walking2.c3d) at ../../../../OpenSim/Tests/shared/walking2.c3d');
+if isempty(exist('walking2.c3d', 'file'))
+   error('cannot find test file (walking2.c3d) at walking2.c3d');
 end
 
 %% Instantiate the file readers
 trc = TRCFileAdapter();
-stp = STOFileAdapter();
+sto = STOFileAdapter();
 
-%% Test script for utility function 
+%% Test script for utility function
 osimC3Dconverter('filepath', filepath);
 
-%% Test if trc and mot file were printed. 
+%% Test if trc and mot file were printed.
 assert( exist(fullfile(path,[file '.trc']), 'file') == 2, 'TRC was not printed ')
 assert( exist(fullfile(path,[file '.mot']), 'file') == 2, 'TRC was not printed ')
 
 %% Test rotations
 % test if roations about X, Y, and Z, respectively, maintain the correct
-% components. ie if rotatiing about X, X values remain the same. 
+% components. ie if rotatiing about X, X values remain the same.
 
 %% Get the unrotated reference values
 mkr = trc.read(fullfile(path,[file '.trc']));
@@ -75,7 +75,7 @@ mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
 ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
 ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
 ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
-% Assess if the rotation is correct 
+% Assess if the rotation is correct
 assert(mkr_Xvalue_ref ==  mkr_Xvalue, 'X axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Zvalue_ref ~=  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
@@ -98,7 +98,7 @@ mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
 ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
 ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
 ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
-% Assess if the rotation is correct 
+% Assess if the rotation is correct
 assert(mkr_Yvalue_ref ==  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Xvalue_ref ~=  mkr_Xvalue, 'X axis marker rotation is incorrect ')
 assert(mkr_Zvalue_ref ~=  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
@@ -121,7 +121,7 @@ mkr_Zvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(2);
 ana_Xvalue = ana.getDependentColumnAtIndex(0).getElt(238,0);
 ana_Yvalue = ana.getDependentColumnAtIndex(1).getElt(238,0);
 ana_Zvalue = ana.getDependentColumnAtIndex(2).getElt(238,0);
-% Assess if the rotation is correct 
+% Assess if the rotation is correct
 assert(mkr_Zvalue_ref ==  mkr_Zvalue, 'Z axis marker rotation is incorrect ')
 assert(mkr_Yvalue_ref ~=  mkr_Yvalue, 'Y axis marker rotation is incorrect ')
 assert(mkr_Xvalue_ref ~=  mkr_Xvalue, 'X axis marker rotation is incorrect ')
@@ -136,4 +136,3 @@ assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rota
 %% clean up files
 delete(fullfile(path,[file '.trc']));
 delete(fullfile(path,[file '.mot']));
-
