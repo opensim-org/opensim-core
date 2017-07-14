@@ -287,17 +287,17 @@ public:
     double getTendonForce(const SimTK::State& s) const;
 
     /** get the current fiber stiffness (N/m) defined as the partial derivative
-        of fiber force w.r.t. fiber length */
+        of fiber force with respect to fiber length */
     double getFiberStiffness(const SimTK::State& s) const;
     /**get the stiffness of the fiber (N/m) along the direction of the tendon,
     that is the partial derivative of the fiber force along the tendon with
     respect to small changes in fiber length along the tendon*/
     double getFiberStiffnessAlongTendon(const SimTK::State& s) const;
     /** get the current tendon stiffness (N/m) defined as the partial derivative
-        of tendon force w.r.t. tendon length */
+        of tendon force with respect to tendon length */
     double getTendonStiffness(const SimTK::State& s) const;
     /** get the current muscle stiffness (N/m) defined as the partial derivative
-        of muscle force w.r.t. muscle length */
+        of muscle force with respect to muscle length */
     double getMuscleStiffness(const SimTK::State& s) const;
 
     /** get the current active fiber power (W) */
