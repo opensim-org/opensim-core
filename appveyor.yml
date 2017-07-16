@@ -101,7 +101,7 @@ build_script:
   # for some reason.
   - cd %OPENSIM_BUILD_DIR%
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
-  - cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON 
+  - cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=OFF -DWITH_BTK:BOOL=ON -DBUILD_TETSING=OFF
 
   # Build.
   # Hack to avoid error MSB3191: Unable to create directory
@@ -114,17 +114,17 @@ test_script:
   ## Run tests.
   #- ctest --parallel 4 --build-config RelWithDebInfo --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
-  - cmake --build . --target doxygen --config RelWithDebInfo
+  #- cmake --build . --target doxygen --config RelWithDebInfo
 
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
   
   ## Test python wrapping.
-  - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
+  #- set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
   # Move to the installed location of the python package.
-  - cd %OPENSIM_INSTALL_DIR%\sdk\python
+  #- cd %OPENSIM_INSTALL_DIR%\sdk\python
   # Run python tests.
-  - "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
+  #- "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
 
 after_test:
   - cd %APPVEYOR_BUILD_FOLDER%
