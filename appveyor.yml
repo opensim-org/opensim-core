@@ -94,7 +94,7 @@ build_script:
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% # -DSUPERBUILD_simbody=OFF
-  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
   # Must create separate build dir, otherwise can't read test files
@@ -105,19 +105,19 @@ build_script:
 
   # Build.
   # Hack to avoid error MSB3191: Unable to create directory
-  # "C:\projects\opensim_build\Release\" which may result from parallel jobs
+  # "C:\projects\opensim_build\RelWithDebInfo\" which may result from parallel jobs
   # trying to create this directory.
-  - mkdir %OPENSIM_BUILD_DIR%\Release
-  - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
+  - mkdir %OPENSIM_BUILD_DIR%\RelWithDebInfo
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
 test_script:
   ## Run tests.
-  - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
+  #- ctest --parallel 4 --build-config RelWithDebInfo --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
-  - cmake --build . --target doxygen --config Release
+  - cmake --build . --target doxygen --config RelWithDebInfo
 
   ## Ensure we have no trouble installing.
-  - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --target install --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
   
   ## Test python wrapping.
   - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
@@ -132,8 +132,8 @@ after_test:
   - # Detect if we are on the master branch.
   - IF %APPVEYOR_REPO_BRANCH% EQU tgcs2017_build_on_ci IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - # Create and upload NuGet package.
-  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%_tgcs2017" -BasePath %OPENSIM_INSTALL_DIR%
-  - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%_tgcs2017.0.0.0.nupkg
+  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%_tgcs2017_relwithdebinfo" -BasePath %OPENSIM_INSTALL_DIR%
+  - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%_tgcs2017_relwithdebinfo.0.0.0.nupkg
 
 # The following, if uncommented, should allow you to remote-desktop into
 # the Appveyor build machine.
