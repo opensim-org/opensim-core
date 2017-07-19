@@ -141,12 +141,6 @@ int main(int argc,char **argv)
     // CONSTRUCT
     cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
     InverseKinematicsTool ik(setupFileName);
-    //ik.print("ik_setup_check.xml");
-
-    // PRINT MODEL INFORMATION
-    //Model& model = ik.getModel();
-    //model.finalizeFromProperties();
-    //model.printBasicInfo();
 
     // start timing
     std::clock_t startTime = std::clock();
