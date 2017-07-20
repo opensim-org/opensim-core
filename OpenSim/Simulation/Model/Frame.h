@@ -98,15 +98,15 @@ public:
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(velocity, SimTK::SpatialVec, getVelocityInGround,
         SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(angularVelocity, SimTK::Vec3, getAngularVelocityInGround,
+    OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3, getAngularVelocityInGround,
         SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(linearVelocity, SimTK::Vec3, getLinearVelocityInGround,
+    OpenSim_DECLARE_OUTPUT(linear_velocity, SimTK::Vec3, getLinearVelocityInGround,
         SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(acceleration, SimTK::SpatialVec, getAccelerationInGround,
         SimTK::Stage::Acceleration);
-    OpenSim_DECLARE_OUTPUT(angularAcceleration, SimTK::Vec3, getAngularAccelerationInGround,
+    OpenSim_DECLARE_OUTPUT(angular_acceleration, SimTK::Vec3, getAngularAccelerationInGround,
         SimTK::Stage::Acceleration);
-    OpenSim_DECLARE_OUTPUT(linearAcceleration, SimTK::Vec3, getLinearAccelerationInGround,
+    OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3, getLinearAccelerationInGround,
         SimTK::Stage::Acceleration);
 
     //--------------------------------------------------------------------------
