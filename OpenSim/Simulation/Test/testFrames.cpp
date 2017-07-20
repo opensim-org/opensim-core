@@ -526,4 +526,15 @@ void testVelocityAndAccelerationMethods()
         SimTK_TEST_EQ(v, vo);
         SimTK_TEST_EQ(a, ao);
     }
+
+    // Test convenience methods for accessing angular and linear components of
+    // velocity and acceleration.
+    SimTK_TEST_EQ(rod2.getVelocityInGround(s)[0],
+                  rod2.getAngularVelocityInGround(s));
+    SimTK_TEST_EQ(rod2.getVelocityInGround(s)[1],
+                  rod2.getLinearVelocityInGround(s));
+    SimTK_TEST_EQ(rod2.getAccelerationInGround(s)[0],
+                  rod2.getAngularAccelerationInGround(s));
+    SimTK_TEST_EQ(rod2.getAccelerationInGround(s)[1],
+                  rod2.getLinearAccelerationInGround(s));
 }
