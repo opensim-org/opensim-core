@@ -386,10 +386,14 @@ cmake ..\opensim-core                                              `
       -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
       -DBUILD_JAVA_WRAPPING=ON                                     `
       -DBUILD_PYTHON_WRAPPING=ON                                   `
-      -DWITH_BTK=ON
+      -DWITH_BTK=ON                                                `                                  
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest -C RelWithDebInfo --parallel 8
+cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
 ```
+
+Note: Please add `<FULL-DIR>\opensim_install\bin` to your PATH variable as per [these instructions](#set-environment-variables).  
+Example: If `opensim_install` is in `C:`, add `C:\opensim_install\bin` to your PATH.  
 
 On Mac OSX using Xcode
 ======================
@@ -832,6 +836,7 @@ cmake ../opensim-core \
       -DWITH_BTK=ON
 make -j8
 ctest -j8
+make -j8 install
  ```
 ##### Ubuntu 15.10 Wily Werewolf
 In **Terminal** --
@@ -862,6 +867,7 @@ cmake ../opensim-core \
       -DWITH_BTK=ON
 make -j8
 ctest -j8
+make -j8 install
 ```
 ##### Ubuntu 16.04 Xenial Xerus AND Ubuntu 16.10 Yakkety Yak
 In **Terminal** --
@@ -891,7 +897,13 @@ cmake ../opensim-core \
       -DWITH_BTK=ON
 make -j8
 ctest -j8
+make -j8 install
 ```
+Note: You may need to add `<FULL-DIR>/opensim_install/bin` to your PATH variable as per [these instructions](#set-environment-variables-2).  
+Example: If opensim_install is in your home directory:
+
+        $ echo 'export PATH=~/opensim_install/bin:$PATH' >> ~/.bashrc
+ 
 
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
