@@ -899,7 +899,7 @@ make -j8
 ctest -j8
 make -j8 install
 ```
-Note: You may need to add `<FULL-DIR>/opensim_install/bin` to your PATH variable as per [these instructions](#set-environment-variables).  
+Note: You may need to add `<FULL-DIR>/opensim_install/bin` to your PATH variable as per [these instructions](#set-environment-variables-2).  
 Example: If opensim_install is in your home directory:
 
         $ echo 'export PATH=~/opensim_install/bin:$PATH' >> ~/.bashrc
