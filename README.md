@@ -392,7 +392,7 @@ ctest -C RelWithDebInfo --parallel 8
 cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
 ```
 
-Note: Please add Add **<FULL-DIR>\opensim_install\bin** to your PATH variable as per [these instructions](#set-environment-variables).  
+Note: Please add **<FULL-DIR>\opensim_install\bin** to your PATH variable as per [these instructions](#set-environment-variables).  
 (Example: If `opensim_install` is in `C:`, add `C:\opensim_install\bin` to your PATH.)  
 
 On Mac OSX using Xcode
