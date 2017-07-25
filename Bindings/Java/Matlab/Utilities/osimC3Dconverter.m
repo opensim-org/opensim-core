@@ -1,13 +1,12 @@
 function osimC3Dconverter(varargin)
 % Utility function for converting c3d data to OpenSim format.
-% Inputs to function are pairs of string-string or string-number pairs.
+% Inputs to function are pairs of string-string or string-number pairs. 
 % 'filepath', 'path2file'   reads c3d data at path2file.
-% 'firstRotation'           num applies first rotation of num (dble)
 % 'axis', 'X'               applies first rotation to axis X (string)
-% 'secondRotation'          num applies second rotation of num (dble) 
-% 'axis2', 'Y'              applies second rotation to axis Y (string)
+% 'value', 90               value, in degrees, to rotate data by
 %
-% Example ? read WalkingData.c3d and perform a 90 degree rotation about X
+%
+% Example: read WalkingData.c3d and perform a 90 degree rotation about X
 %   osimC3Dconverter('filepath', 'C:/data/WalkingData.c3d',...
 %                 'value', '90'...
 %                 'axis', 'X')
@@ -58,7 +57,7 @@ if isempty(filepath)
 else
     % If the input path to file is wrong, return exception
     if exist(filepath,'file') == 0
-            error('file does not exist')
+            error('Path to input file is incorrect or file does not exist')
     else    
         % If the input path is local (called from current folder), you will
         % need to set the full path. 
@@ -182,7 +181,7 @@ for iFile = 1 : nFiles
     labels =  fieldnames(sdata);
     % find all the labels with string m (including time)
     imoments = find(~cellfun(@isempty,strfind(labels,'m')));
-    % get a tempory set of labels for the moements, delete them from the
+    % get a temporary set of labels for the moements, delete them from the
     % original
     templabels = labels(imoments);
     labels(imoments) = [];

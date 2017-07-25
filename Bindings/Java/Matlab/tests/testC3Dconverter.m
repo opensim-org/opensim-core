@@ -20,7 +20,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% Function tests osimC3Dconverter for correct writing of trc and mot files,
+% Function tests for correct writing of trc and mot files,
 % and that rotations are done correctly.
 
 % Author: James Dunne
@@ -47,7 +47,7 @@ assert( exist(fullfile(path,[file '.trc']), 'file') == 2, 'TRC was not printed '
 assert( exist(fullfile(path,[file '.mot']), 'file') == 2, 'TRC was not printed ')
 
 %% Test rotations
-% test if roations about X, Y, and Z, respectively, maintain the correct
+% test if rotations about X, Y, and Z maintain the correct
 % components. ie if rotatiing about X, X values remain the same.
 
 %% Get the unrotated reference values
@@ -66,7 +66,6 @@ ana_Zvalue_ref = ana.getDependentColumnAtIndex(2).getElt(238,0);
 osimC3Dconverter('filepath', filepath, 'value', -90, 'axis', 'x');
 mkr = trc.read(fullfile(path,[file '.trc']));
 ana = sto.read(fullfile(path,[file '.mot']));
-
 
 % Set the new marker and force values
 mkr_Xvalue = mkr.getDependentColumnAtIndex(0).getElt(238,0).get(0);
