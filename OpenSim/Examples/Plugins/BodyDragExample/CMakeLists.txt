@@ -11,8 +11,8 @@ set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
 set(PLUGIN_NAME "BodyDragForce" CACHE STRING "Name of shared library to create")
 
 # OpenSim uses C++11 language features.
-if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU" OR
-        "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+        ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     # Using C++11 on OSX requires using libc++ instead of libstd++.
     # libc++ is an implementation of the C++ standard library for OSX.
     if(APPLE)
