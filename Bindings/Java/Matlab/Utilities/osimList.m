@@ -1,11 +1,14 @@
 classdef osimList
 properties
-        model;
-        list;
+        model % a reference to an opensim model
+        list; % an opensim list
     end
     
     methods 
         function obj = osimList(model,classname)
+            % Constructor for osimList class. Takes a model and a classname
+            % (string). constructs an instance of the osimList class with
+            % properties model and list
             if nargin == 0
                 error('no inputs to constructor')
             elseif nargin == 1
@@ -14,7 +17,8 @@ properties
                 error(['2 inputs required, num2str(nargin) ' given])
             end
             
-
+            % Use input string (classname) to determine the type of list
+            % returned. 
             switch classname
                 case 'Body'
                     list = model.getBodyList();
@@ -33,7 +37,7 @@ properties
             obj.model = model;
         end
         function size = getSize(obj)
-            % get the size of 
+            % get the size of the list
             list = obj.list;
             li = list.begin();
             size = 0;
@@ -43,6 +47,7 @@ properties
             end
         end
         function names = getNames(obj)
+            % get all names in the list as a Matlab array of strings
             list = obj.list;
             li = list.begin();
             names = [{}];
@@ -53,6 +58,7 @@ properties
             names = names';
         end
         function outputnames = getOutputNames(obj)
+            % get all output names of the class as a Matlab array of strings
             list = obj.list;
             li = list.begin();
             outNames = li.getOutputNames();
@@ -64,6 +70,7 @@ properties
             outputnames = outputnames';
         end
         function reference = get(obj,name)
+            % return a reference for a object in the list
             import org.opensim.modeling.*
             model = obj.model;
             list = obj.list;
