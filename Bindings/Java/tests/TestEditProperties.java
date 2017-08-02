@@ -53,6 +53,7 @@ class TestEditProperties {
 			double ret = PropertyHelper.getValueVec6(inertiaProp, i);
 			newInertia.set(i, ret);
 			System.out.println(newInertia.get(i));
+			assert newInertia.get(i)==i;
 		}
         long t3  = System.currentTimeMillis();
         System.out.println("Time to perform 10 edits (ms):"+(t3 - t2));
