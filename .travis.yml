@@ -3,6 +3,9 @@
 # To learn about this file, go to http://docs.travis-ci.com/user/languages/c/
 language: cpp
 
+# The default environment is now Trusty (14.04).
+dist: precise
+
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
     
