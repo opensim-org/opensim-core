@@ -17,6 +17,7 @@ class TestEditMarkers {
             Vec3 offset = new Vec3(0.11, 0.22, 0.33);
             Body body = model.getBodySet().get(0);
             String newMarkerName = "newMarker";
+            // This exercises Marker -> Add New
             Marker marker = markerset.addMarker(newMarkerName, offset, body);
             // This exercises Marker -> delete
             //markerset.remove(marker);
