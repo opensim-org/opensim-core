@@ -41,11 +41,12 @@ class TestEditProperties {
         // Now edit a Vec6 Property (inertia)
         AbstractProperty inertiaProp = bdy.getPropertyByName("inertia");
         // This block populates a stock Vec6 from a prestored inertia property
-        // 0.10423369488353 0.08831473564548 0.05870749935560 0 0 0
+        double[] inertiaFromFile = new double[]{0.10423369488353, 0.08831473564548, 0.05870749935560, 0, 0, 0};
         Vec6 oldInertia = new Vec6();
         for(int i=0; i<6; i++){
             oldInertia.set(i, PropertyHelper.getValueVec6(inertiaProp, i));
             System.out.println(oldInertia.get(i));
+            assert Math.abs(inertiaFromFile[i] - oldInertia.get(i)) < 1e-4;
         }
         // This block sets inertia to [0,1,2,3,4,5]
         for(int i=0; i<6; i++){
