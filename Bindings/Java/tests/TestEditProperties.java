@@ -38,23 +38,24 @@ class TestEditProperties {
                     System.exit(-1);
                 } 
         }
-		// Now edit a Vec6 Property (inertia)
-		AbstractProperty inertiaProp = bdy.getPropertyByName("inertia");
-		Vec6 oldInertia = new Vec6();
-		for(int i=0; i<6; i++){
-			oldInertia.set(i, PropertyHelper.getValueVec6(inertiaProp, i));
-			System.out.println(oldInertia.get(i));
-		}
-		for(int i=0; i<6; i++){
-			PropertyHelper.setValueVec6(i, inertiaProp, i); // Bad inertia matrix but we're just testing set/get'
-		}
-		Vec6 newInertia = new Vec6();
-		for(int i=0; i<6; i++){
-			double ret = PropertyHelper.getValueVec6(inertiaProp, i);
-			newInertia.set(i, ret);
-			System.out.println(newInertia.get(i));
-			assert newInertia.get(i)==i;
-		}
+        // Now edit a Vec6 Property (inertia)
+        AbstractProperty inertiaProp = bdy.getPropertyByName("inertia");
+        Vec6 oldInertia = new Vec6();
+        for(int i=0; i<6; i++){
+            oldInertia.set(i, PropertyHelper.getValueVec6(inertiaProp, i));
+            System.out.println(oldInertia.get(i));
+        }
+        for(int i=0; i<6; i++){
+            // Bad inertia matrix but we're just testing set/get'
+            PropertyHelper.setValueVec6(i, inertiaProp, i); 
+        }
+        Vec6 newInertia = new Vec6();
+        for(int i=0; i<6; i++){
+            double ret = PropertyHelper.getValueVec6(inertiaProp, i);
+            newInertia.set(i, ret);
+            System.out.println(newInertia.get(i));
+            assert newInertia.get(i)==i;
+        }
         long t3  = System.currentTimeMillis();
         System.out.println("Time to perform 10 edits (ms):"+(t3 - t2));
         System.out.println("Test finished!");
