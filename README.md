@@ -386,7 +386,7 @@ cmake ..\opensim-core                                              `
       -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
       -DBUILD_JAVA_WRAPPING=ON                                     `
       -DBUILD_PYTHON_WRAPPING=ON                                   `
-      -DWITH_BTK=ON                                                `                                  
+      -DWITH_BTK=ON                                  
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest -C RelWithDebInfo --parallel 8
 cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
