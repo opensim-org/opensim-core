@@ -17,10 +17,18 @@ else:
 
 
 data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
-fig = pl.figure()
 num_plots = len(data.dtype.names) - 1
-num_rows = 10
-num_cols = math.ceil(float(num_plots) / num_rows)
+if num_plots < 5:
+    num_rows = num_plots
+    num_cols = 1
+else:
+    aspect_ratio = 0.50 # width of figure is 0.75 * height of figure.
+    num_rows = math.ceil(math.sqrt(float(num_plots) / aspect_ratio))
+    num_cols = math.ceil(aspect_ratio * num_rows)
+    if (num_rows * num_cols) > (num_plots + num_cols):
+        # There's an extra row that we don't need.
+        num_rows -= 1
+fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows))
 for i in range(num_plots):
     ax = fig.add_subplot(num_rows, num_cols, i + 1)
     name = data.dtype.names[i + 1]
@@ -30,4 +38,6 @@ for i in range(num_plots):
     ax.set_title(name)
     if i == num_plots - 1:
         ax.set_xlabel('time')
+
+pl.subplots_adjust()
 pl.show()
