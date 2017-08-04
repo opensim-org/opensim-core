@@ -77,6 +77,11 @@ tropics
 tropical
 tropism
 
+Collaboratory, Collabrocate, collocate
+
+Tropter
+
+
 Dexterous (capable of many things....)
 
 Names of animals...cheetah, etc.
@@ -173,6 +178,36 @@ https://www.coin-or.org/Ipopt/documentation/node15.html#CygwinInstall
 
 ADOL-C source code downloads: https://www.coin-or.org/download/source/ADOL-C/
 
+Resources about licensing:
+(amazing q&a) https://www.whitesourcesoftware
+.com/whitesource-blog/top-10-apache-license-questions-answered/?utm_content=Is-the-MIT-license-compatible-with-the-Apache&utm_medium=social&utm_source=quora&utm_term=blog-top-10-apache-license-questions-answered
+https://www.apache.org/legal/resolved#category-b
+https://opensource.com/law/11/9/mpl-20-copyleft-and-license-compatibility
+https://softwareengineering.stackexchange.com/questions/227639/can-i-use-apache-software-license-version-2-0-and-gnu-lgpl-3-licence-plugins-in
+https://projects.coin-or.org/ADOL-C
+https://projects.coin-or.org/Ipopt/wiki/FAQ
+https://en.wikipedia.org/wiki/CeCILL
+http://www.cecill.info/faq.en.html#enfrance
+https://choosealicense.com/licenses/
+http://eigen.tuxfamily.org/index.php?title=Licensing_FAQ
+http://www.cecill.info/licences/Licence_CeCILL-C_V1-en.html#mention
+https://www.apache.org/licenses/LICENSE-2.0
+https://www.gnu.org/licenses/lgpl-3.0.txt
+
+
+GFortran and MSVC
+=================
+https://stackoverflow.com/questions/7281794/linking-mixed-fortran-and-c-in-the-visual-studio-2008-environment
+https://blog.kitware.com/fortran-for-cc-developers-made-easier-with-cmake/
+
+Ipopt binaries on Windows: https://www.coin-or.org/download/binary/Ipopt/
+https://www.coin-or.org/Ipopt/documentation/node15.html
+
+WinRPM, openSUSE win64?? https://github.com/JuliaOpt/Ipopt.jl/issues/27
+https://discourse.julialang.org/t/windows-c-binary-compatibility-mingw-vs-msvc/1250/12
+
+Pseudocode
+==========
 
 Hanging mass lift with minimum effort:
 TomuProblem p;
