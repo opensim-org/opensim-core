@@ -24,7 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <Vendors/lepton/include/Lepton.h>
+#include <Lepton.h>
 
 #include "ExpressionBasedBushingForce.h"
 
