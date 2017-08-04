@@ -3,9 +3,11 @@
 function(MRSAddTest TEST_NAME LIB_DEPENDENCIES)
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp testing.h)
     target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})
-    # SYSTEM avoids warnings from dependencies.
-    target_include_directories(${TEST_NAME}
-            SYSTEM PRIVATE ${OpenSim_INCLUDE_DIRS})
+    # SYSTEM avoids warnings from dependencies
+    # No longer need to explicitly include OpenSim's headers;
+    # this is handled by linking to OpenSim's libraries.
+    # TODO target_include_directories(${TEST_NAME}
+    # TODO         SYSTEM PRIVATE ${OpenSim_INCLUDE_DIRS})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endfunction()
 

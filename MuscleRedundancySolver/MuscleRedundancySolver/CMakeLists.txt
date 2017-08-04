@@ -1,6 +1,6 @@
 
 add_library(osimMuscleRedundancySolver
-        InverseMuscleSolver.h           InverseMuscleSolver.cpp
+        InverseMuscleSolver.h            InverseMuscleSolver.cpp
         GlobalStaticOptimizationSolver.h GlobalStaticOptimizationSolver.cpp
         MuscleRedundancySolver.h         MuscleRedundancySolver.cpp
         DeGroote2016Muscle.h
@@ -8,8 +8,10 @@ add_library(osimMuscleRedundancySolver
         )
 target_link_libraries(osimMuscleRedundancySolver osimTools mesh)
 # Do not generate warnings from OpenSim headers ("SYSTEM").
-target_include_directories(osimMuscleRedundancySolver
-        SYSTEM PUBLIC ${OpenSim_INCLUDE_DIRS})
+# No longer need to explicitly include OpenSim's headers;
+# this is handled by linking to OpenSim's libraries.
+# TODO target_include_directories(osimMuscleRedundancySolver
+# TODO         SYSTEM PUBLIC ${OpenSim_INCLUDE_DIRS})
 target_include_directories(osimMuscleRedundancySolver INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         # TODO this variable doesn't exist yet:
