@@ -143,8 +143,7 @@ void PathActuator::addNewPathPoint(
          PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
-    AbstractPathPoint* newPathPoint = updGeometryPath()
-        .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================
