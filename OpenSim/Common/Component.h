@@ -600,8 +600,12 @@ public:
     template <typename T = Component>
     unsigned countNumComponents() const {
         unsigned count = 0u;
-        for (const auto& comp : getComponentList<T>())
+        const auto compList = getComponentList<T>();
+        auto it = compList.begin();
+        while (it != compList.end()) {
             ++count;
+            ++it;
+        }
         return count;
     }
 
