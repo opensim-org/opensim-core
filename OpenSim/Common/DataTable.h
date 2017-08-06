@@ -1189,7 +1189,8 @@ protected:
                               unsigned         maxWidth     = 80,
                               unsigned         precision    = 4) const
     {
-        if (getNumRows() == 0 || getNumColumns() == 0) { return ""; }
+        if (getNumRows() == 0 || getNumColumns() == 0)
+            return "(Table is empty)\n";
 
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
