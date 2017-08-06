@@ -1616,14 +1616,17 @@ void testTableReporter() {
             ts.stepTo(1.0);
             std::cout << "TableReporter table after simulating:\n";
             const auto& table = reporter->getTable();
-            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+            SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                                      ColumnIndexOutOfRange);
         }
 
         // Ensure that clearing the table and performing a new simulation works
         // even if the reporter's input has no connectees.
         reporter->clearTable();
         std::cout << "TableReporter table after clearing:\n";
-        SimTK_TEST_MUST_THROW_EXC(reporter->getTable().toString(), EmptyTable);
+        SimTK_TEST_MUST_THROW_EXC(
+            reporter->getTable().getDependentColumnAtIndex(0),
+            ColumnIndexOutOfRange);
     
         {
             SimTK::State s = system.realizeTopology();
@@ -1634,7 +1637,8 @@ void testTableReporter() {
             ts.stepTo(1.0);
             std::cout << "TableReporter table after simulating again:\n";
             const auto& table = reporter->getTable();
-            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+            SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                                      ColumnIndexOutOfRange);
         }
     }
 }

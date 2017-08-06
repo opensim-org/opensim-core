@@ -78,9 +78,9 @@ int main() {
     }
     // Print out the DataTable to console.
     try {
-        std::cout << table << std::endl;
+        table.getDependentColumnAtIndex(0);
         throw Exception{"Test failed: Exception expected."};
-    } catch(const OpenSim::EmptyTable&) {}
+    } catch(const OpenSim::ColumnIndexOutOfRange&) {}
 
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);

@@ -1187,12 +1187,13 @@ protected:
                               const bool       withMetaData = true,
                               unsigned         splitSize    = 25,
                               unsigned         maxWidth     = 80,
-                              unsigned         precision    = 4) const {
+                              unsigned         precision    = 4) const
+    {
+        if (getNumRows() == 0 || getNumColumns() == 0) { return ""; }
+
         static_assert(std::is_same<ETX, double>::value,
                       "This function can only be called for a table with "
                       "independent column of type 'double'.");
-        OPENSIM_THROW_IF(getNumRows() == 0 || getNumColumns() == 0,
-                         EmptyTable);
 
         // Defaults.
         const unsigned    defSplitSize{25};
