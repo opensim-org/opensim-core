@@ -198,7 +198,7 @@ private:
 
 
 template<typename T>
-const std::string 
+inline const std::string
 DelimFileAdapter<T>::tableString() {
     return "table";
 }
