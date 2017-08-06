@@ -222,9 +222,9 @@ public:
     */
     double calcDerivative(double normFiberLength, int order) const;
     
-    /// Allow the more general calcDerivative from the base class to be used.
-    // This helps avoid the -Woverloaded-virtual warning with Clang.
-    using Function::calcDerivative;
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
 
     /** Returns a SimTK::Vec2 containing the lower (0th element) and upper (1st
     element) bounds on the domain of the curve. Outside this domain, the curve
