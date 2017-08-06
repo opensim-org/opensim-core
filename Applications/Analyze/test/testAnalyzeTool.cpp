@@ -154,7 +154,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
-    for (int i = 0; i < nstates; ++i) {
+    for (size_t i = 0; i < nstates; ++i) {
         s = statesTraj[i];
         // When the muscle states are not supplied in the input dataStore
         // (isCoordinatesOnly == true), then set it to its default value.
