@@ -1614,8 +1614,9 @@ void testTableReporter() {
             TimeStepper ts(system, integ);
             ts.initialize(s);
             ts.stepTo(1.0);
-            std::cout << "TableReporter table after simulating:\n";
             const auto& table = reporter->getTable();
+            std::cout << "TableReporter table after simulating:\n"
+                      << table.toString() << std::endl;
             SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
                                       ColumnIndexOutOfRange);
         }
@@ -1623,7 +1624,8 @@ void testTableReporter() {
         // Ensure that clearing the table and performing a new simulation works
         // even if the reporter's input has no connectees.
         reporter->clearTable();
-        std::cout << "TableReporter table after clearing:\n";
+        std::cout << "TableReporter table after clearing:\n"
+                  << reporter->getTable().toString() << std::endl;
         SimTK_TEST_MUST_THROW_EXC(
             reporter->getTable().getDependentColumnAtIndex(0),
             ColumnIndexOutOfRange);
@@ -1635,8 +1637,9 @@ void testTableReporter() {
             TimeStepper ts(system, integ);
             ts.initialize(s);
             ts.stepTo(1.0);
-            std::cout << "TableReporter table after simulating again:\n";
             const auto& table = reporter->getTable();
+            std::cout << "TableReporter table after simulating again:\n"
+                      << table.toString() << std::endl;
             SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
                                       ColumnIndexOutOfRange);
         }
