@@ -205,22 +205,6 @@ double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord)
 }
 
 //------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this PathActuator.
- */
-void PathActuator::extendFinalizeFromProperties()
-{
-    GeometryPath &path = updGeometryPath();
-
-    Super::extendFinalizeFromProperties();
-}
-
-//------------------------------------------------------------------------------
 //                            REALIZE DYNAMICS
 //------------------------------------------------------------------------------
 // See if anyone has an opinion about the path color and change it if so.
