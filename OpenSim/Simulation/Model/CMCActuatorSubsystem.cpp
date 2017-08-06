@@ -126,7 +126,6 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
   {
      /* set generalized coordinates and speeds from spline sets */
     int nq = _model->getNumCoordinates();
-    int nu = _model->getNumSpeeds();
     double t;
 
     if(_holdCoordinatesConstant) {
