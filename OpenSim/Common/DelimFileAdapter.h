@@ -109,7 +109,7 @@ public:
     DelimFileAdapter* clone() const override;
 
     /** Key used for table associative array returned/accepted by write/read. */
-    static inline const std::string tableString();
+    static const std::string tableString();
 
     /** Name of the data type T (template parameter).                         */
     static inline std::string dataTypeName();
