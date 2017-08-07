@@ -24,6 +24,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
@@ -127,6 +128,48 @@ int main() {
         // verify the new connection was made
         ASSERT(model.getComponent<Joint>("r_elbow").getParentFrame().getName()
                 == "elbow_in_humerus");
+
+        // Test requirement for each Body and Joint to have a unique absolute
+        // path name.
+        {
+            Model& model = Model();
+
+            const std::string& name = "nonUniqueName";
+            Body* body1 = new Body(name, 1., SimTK::Vec3(0), SimTK::Inertia(0));
+            Body* body2 = new Body(name, 1., SimTK::Vec3(0), SimTK::Inertia(0));
+
+            // No exception is thrown if two bodies with the same absolute path
+            // name are added to the model.
+            model.addBody(body1);
+            model.addBody(body2);
+
+            // Add joints to create a valid model.
+            FreeJoint* jt1 = new FreeJoint("joint1", model.getGround(), *body1);
+            FreeJoint* jt2 = new FreeJoint("joint2", model.getGround(), *body2);
+            model.addJoint(jt1);
+            model.addJoint(jt2);
+
+            // No exception is thrown by Model::finalizeFromProperties().
+            model.finalizeFromProperties();
+
+            // Exception thrown when attempting to construct multibody graph.
+            // TODO: Perhaps the check for non-unique names should occur sooner.
+            ASSERT_THROW(MultibodyGraphMakerFailed,
+                         model.finalizeConnections(model));
+
+            // Model can be serialized and deserialized with bodies having the
+            // same absolute path name.
+            const std::string& filename = "model_testModelInterface.osim";
+            model.print(filename);
+            Model& model2 = Model(filename);
+
+            // Exception thrown when attempting to construct multibody graph.
+            ASSERT_THROW(MultibodyGraphMakerFailed,
+                         model2.finalizeConnections(model2));
+
+            model2.finalizeConnections(model2);
+        }
+
     }
     catch (const std::exception& ex) {
         std::cout << ex.what() << std::endl;
@@ -137,7 +180,3 @@ int main() {
 
     return 0;
 }
-
-
-
-

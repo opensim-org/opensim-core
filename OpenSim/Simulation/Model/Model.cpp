@@ -661,9 +661,14 @@ void Model::createMultibodyTree()
 
     auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
-        _multibodyTree.addBody( body.getAbsolutePathName(),
-                                body.getMass(), false,
-                                const_cast<Body*>(&body) );
+        try {
+            _multibodyTree.addBody( body.getAbsolutePathName(),
+                                    body.getMass(), false,
+                                    const_cast<Body*>(&body) );
+        } catch (const std::runtime_error& e) {
+            OPENSIM_THROW_FRMOBJ(MultibodyGraphMakerFailed,
+                                 std::string(e.what()));
+        }
     }
 
     std::vector<SimTK::ReferencePtr<Joint>> joints;
@@ -695,14 +700,19 @@ void Model::createMultibodyTree()
             finalizeConnections(*this);
 
         // Use joints to define the underlying multibody tree
-        _multibodyTree.addJoint(name,
-            joint->getConcreteClassName(),
-            // Multibody tree builder only cares about bodies not intermediate
-            // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
-            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
-            false,
-            joint.get());
+        try {
+            _multibodyTree.addJoint(name,
+                joint->getConcreteClassName(),
+                // Multibody tree builder only cares about bodies not
+                // intermediate frames that joints actually connect to.
+                joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
+                joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
+                false,
+                joint.get());
+        } catch (const std::runtime_error& e) {
+            OPENSIM_THROW_FRMOBJ(MultibodyGraphMakerFailed,
+                                 std::string(e.what()));
+        }
     }
 }
 
