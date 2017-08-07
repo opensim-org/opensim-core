@@ -76,11 +76,16 @@ int main() {
                 throw Exception{"Test failed: "
                                 "table.getColumnIndex(labels.at(i)) != i"};
     }
-    // Print out the DataTable to console.
-    try {
-        table.getDependentColumnAtIndex(0);
-        throw Exception{"Test failed: Exception expected."};
-    } catch(const OpenSim::ColumnIndexOutOfRange&) {}
+
+    // Test exceptions (table should be empty here).
+    SimTK_TEST_MUST_THROW_EXC(table.getRowAtIndex(0),
+                              OpenSim::RowIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.updRowAtIndex(0),
+                              OpenSim::RowIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                              OpenSim::ColumnIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.updDependentColumnAtIndex(0),
+                              OpenSim::ColumnIndexOutOfRange);
 
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
