@@ -30,17 +30,19 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
              const std::string& actualColumnLabel,
              const OpenSim::TimeSeriesTable& expectedTable,
              const std::string& expectedColumnLabel,
-             double tol) {
+             double tol, bool verbose = false) {
     // For this problem, there's only 1 column in this table.
     const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
-    //std::cout << "DEBUG " << expectedColumnLabel << std::endl;
-    //for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
-    //    std::cout << "DEBUG " << actual[i] << " " << expected[i] << " "
-    //            << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
-    //            << std::endl;
-    //}
+    if (verbose) {
+        std::cout << "Comparing " << expectedColumnLabel << std::endl;
+        for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+            std::cout << actual[i] << " " << expected[i] << " "
+                    << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
+                    << std::endl;
+        }
+    }
     SimTK_TEST_EQ_TOL(actual, expected, tol);
 };
 // A weaker check. Compute the root mean square of the error between the
@@ -51,16 +53,18 @@ void rootMeanSquare(
         const std::string& actualColumnLabel,
         const OpenSim::TimeSeriesTable& expectedTable,
         const std::string& expectedColumnLabel,
-        double tol) {
+        double tol, bool verbose = false) {
     const auto& actual = actualTable.getDependentColumn(actualColumnLabel);
     SimTK::Vector expected = interp(actualTable, expectedTable,
                                     expectedColumnLabel);
     const auto rmsError = (actual - expected).normRMS();
-    //std::cout << "DEBUG " << expectedColumnLabel << std::endl;
-    //for (int i = 0; i < actual.size(); ++i) {
-    //    std::cout << actual[i] << " " << expected[i] << std::endl;
-    //}
-    //std::cout << "DEBUG RMS error: " << rmsError << std::endl;
+    if (verbose) {
+        std::cout << "Comparing " << expectedColumnLabel << std::endl;
+        for (int i = 0; i < actual.size(); ++i) {
+            std::cout << actual[i] << " " << expected[i] << std::endl;
+        }
+        std::cout << "RMS error: " << rmsError << std::endl;
+    }
     SimTK_TEST(rmsError < tol);
 };
 
