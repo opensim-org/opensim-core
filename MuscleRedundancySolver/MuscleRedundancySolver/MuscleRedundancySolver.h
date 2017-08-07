@@ -39,9 +39,10 @@ public:
         "Should the initial activation of all muscles be constrained to 0? "
         "This may be useful because the optimizer will often otherwise set "
         "initial activation to an unreasonably large value (there is no cost "
-        "for this). If a muscle's min_control is greater than 0, then "
-        "min_control is used instead. "
+        "for this). "
         "Default: false");
+    // TODO not true anymore: If a muscle's min_control is greater than 0,"
+    //      " then min_control is used instead. "
 
     struct Solution {
         /// The excitation trajectories for all enabled (appliesForce) muscles.

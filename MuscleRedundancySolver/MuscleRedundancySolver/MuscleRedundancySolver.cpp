@@ -144,17 +144,25 @@ public:
 
             const auto& actuPath = actuator.getAbsolutePathName();
             // Activation dynamics.
-            this->add_control(actuPath + "_excitation",
-                              {actuator.get_min_control(),
-                               actuator.get_max_control()});
+            // PR #1728 on opensim-core causes the min_control for muscles
+            // to be the minimum activation, and using non-zero minimum
+            // excitation/activation here causes issues (very noisy
+            // excitation/activation). Moreover, allowing zero muscle
+            // activation is possible with implicit muscle models and has
+            // numerical benefits.
+            this->add_control(actuPath + "_excitation", {0, 1});
+                              // {actuator.get_min_control(),
+                              //  actuator.get_max_control()});
             // TODO use activation bounds, not excitation bounds (then
             // also update the property comment for zero_initial_activation).
             const double initialActiv = mrs.get_zero_initial_activation() ?
-                    std::max(actuator.get_min_control(), 0.0) : SimTK::NaN;
-            this->add_state(actuPath + "_activation",
-                            {actuator.get_min_control(),
-                             actuator.get_max_control()},
-                            initialActiv);
+                                        0.0 : SimTK::NaN;
+            // const double initialActiv = mrs.get_zero_initial_activation() ?
+            //         std::max(actuator.get_min_control(), 0.0) : SimTK::NaN;
+            this->add_state(actuPath + "_activation", {0, 1},
+                            initialActiv); // TODO fix noisy activation bug
+                            // {actuator.get_min_control(),
+                            //  actuator.get_max_control()},
 
             // Fiber dynamics.
             // TODO initial value should be 0? That is what CMC does (via

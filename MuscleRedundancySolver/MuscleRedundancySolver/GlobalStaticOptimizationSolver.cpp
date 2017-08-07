@@ -115,9 +115,14 @@ public:
             const auto& actuPath = actuator.getAbsolutePathName();
 
             // TODO use activation bounds, not excitation bounds.
-            this->add_control(actuPath + "_activation",
-                              {actuator.get_min_control(),
-                               actuator.get_max_control()});
+            this->add_control(actuPath + "_activation", {0, 1});
+            // PR #1728 on opensim-core causes the min_control for muscles
+            // to be the minimum activation, and using non-zero minimum
+            // activation here causes issues (actually, only causes issues
+            // with MuscleRedundancySolver, but for consistency, we also
+            // ignore min_control for GSO).
+            //                  {actuator.get_min_control(),
+            //                   actuator.get_max_control()});
 
             _muscleLabels.push_back(actuPath);
             _numMuscles++;
