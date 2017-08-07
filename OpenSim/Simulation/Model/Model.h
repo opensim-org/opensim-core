@@ -105,6 +105,22 @@ public:
     }
 };
 
+class MultibodyGraphMakerFailed : public Exception {
+public:
+    MultibodyGraphMakerFailed(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const Object& obj,
+        const std::string& err) :
+        Exception(file, line, func, obj) {
+        std::string msg;
+        msg += "Unable to define a valid multibody tree.\nPlease ensure that ";
+        msg += "all bodies and joints have unique absolute path names.\nThe ";
+        msg += "MultibodyGraphMaker reported the following error:\n" + err;
+        addMessage(msg);
+    }
+};
+
 //==============================================================================
 //                                  MODEL
 //==============================================================================

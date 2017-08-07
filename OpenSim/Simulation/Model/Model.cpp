@@ -666,9 +666,8 @@ void Model::createMultibodyTree()
                                     body.getMass(), false,
                                     const_cast<Body*>(&body) );
         } catch (const std::runtime_error& e) {
-            cout << "Duplicate Body names are not permitted. Please update "
-                 << "your model's .osim file accordingly." << std::endl;
-            throw e;
+            OPENSIM_THROW_FRMOBJ(MultibodyGraphMakerFailed,
+                                 std::string(e.what()));
         }
     }
 
@@ -711,9 +710,8 @@ void Model::createMultibodyTree()
                 false,
                 joint.get());
         } catch (const std::runtime_error& e) {
-            cout << "Duplicate Joint names are not permitted. Please update "
-                 << "your model's .osim file accordingly." << std::endl;
-            throw e;
+            OPENSIM_THROW_FRMOBJ(MultibodyGraphMakerFailed,
+                                 std::string(e.what()));
         }
     }
 }
