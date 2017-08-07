@@ -39,6 +39,8 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         _initialTime(initialTime), _finalTime(finalTime) {
     // TODO spline/filter over only [initial_time, final_time]?
 
+    _numCoordsToActuate = coordsToActuate.size();
+
     // Muscle analysis.
     // ================
     // Form a StatesTrajectory.
@@ -109,9 +111,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 
         // Moment arms.
         // ````````````
-        // TODO this assumes no coordinates are locked.
-        // auto coords = model.getCoordinatesInMultibodyTreeOrder();
-        _numCoordsToActuate = coordsToActuate.size();
+        // TODO see above; _nu
         // This member holds moment arms across time, DOFs, and muscles.
         _momentArms.resize(_numCoordsToActuate);
         // Working memory.
