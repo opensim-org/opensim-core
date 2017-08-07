@@ -98,6 +98,11 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             // muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
         }
         _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
+        // auto MTLSto = std::unique_ptr<Storage>(
+        //         _muscleTendonLengths.constructStorage(0));
+        // MTLSto->print("DEBUG_muscle_tendon_lengths.sto");
+
+
         // TODO Separately splining muscleTendonLengths and velocities might
         // lead to inconsistency.
         // _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
