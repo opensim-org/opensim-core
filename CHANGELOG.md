@@ -70,7 +70,7 @@ Converting from v3.x to v4.0
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
 where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
 - `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
-- The name of each Body and Joint component must be unique (PR #1866).
+- Each Body and Joint must have a unique absolute path name (PR #1866).
 
 Composing a Component from other components
 -------------------------------------------
