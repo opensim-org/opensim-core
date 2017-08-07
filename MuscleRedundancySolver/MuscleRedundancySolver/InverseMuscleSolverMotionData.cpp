@@ -52,10 +52,14 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         statesLabels.append(label);
     }
     statesSto.setColumnLabels(statesLabels);
+    double timeSlop = 0.05;
     for (size_t i_time = 0; i_time < kinematicsData.getNumRows(); ++i_time) {
         const auto& time = kinematicsData.getIndependentColumn()[i_time];
         SimTK::Vector row = kinematicsData.getRowAtIndex(i_time).transpose();
-        statesSto.append(time, row);
+        // Only append columns approximately within [initialTime, finalTime].
+        if (initialTime - timeSlop <= time && time <= finalTime + timeSlop) {
+            statesSto.append(time, row);
+        }
     }
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
             statesSto,
