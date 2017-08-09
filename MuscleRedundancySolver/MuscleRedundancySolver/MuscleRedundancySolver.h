@@ -91,7 +91,7 @@ public:
     /// kinematics data before calling this function.
     /// @returns A struct containing muscle excitation, activation, fiber
     ///     length, fiber velocity, and other control signals.
-    Solution solve();
+    Solution solve() const;
 
 private:
     void constructProperties();

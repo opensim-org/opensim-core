@@ -54,7 +54,7 @@ public:
     /// kinematics data before calling this function.
     /// @returns A struct containing muscle activation, fiber
     ///     length, fiber velocity, tendon force, and other control signals.
-    Solution solve();
+    Solution solve() const;
 
 };
 

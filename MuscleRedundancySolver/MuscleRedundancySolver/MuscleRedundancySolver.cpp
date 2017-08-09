@@ -539,7 +539,7 @@ void MuscleRedundancySolver::constructProperties() {
     constructProperty_zero_initial_activation(false);
 }
 
-MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
+MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
 
     // TODO make sure experimental data is available for all unconstrained
     // coordinates; throw exception otherwise!

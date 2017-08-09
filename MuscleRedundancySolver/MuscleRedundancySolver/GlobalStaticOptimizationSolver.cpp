@@ -344,7 +344,7 @@ GlobalStaticOptimizationSolver::GlobalStaticOptimizationSolver(
 }
 
 GlobalStaticOptimizationSolver::Solution
-GlobalStaticOptimizationSolver::solve() {
+GlobalStaticOptimizationSolver::solve() const {
 
     // Load model and kinematics files.
     // --------------------------------
