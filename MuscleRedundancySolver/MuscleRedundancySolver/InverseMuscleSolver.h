@@ -5,8 +5,8 @@
 
 namespace OpenSim {
 
-/// This is a base class for methods that solve for muscle activity using
-/// direct collocation.
+/// This is a base class for methods that solve for muscle activity for a
+/// known motion (kinematics) using direct collocation.
 /// Currently, the actuators that the inverse muscle solvers support are only
 /// Muscles and CoordinateActuators.
 /// To prevent certain Muscle%s or CoordinateActuator%s from being used in the
@@ -14,27 +14,43 @@ namespace OpenSim {
 /// tracking certain Coordinate%s, set the coordinates' "locked" property to
 /// true. TODO alternatively, use properties in this class.
 ///
+/// ### Input data
+///
+/// The inverse muscle solvers require two sets of data as input:
+///   - kinematics (that is, generalized coordinates, or joint angles),
+///   - net generalized forces (that is, "inverse dynamics" results, or net
+///     joint moments).
+/// You must provide kinematics, but providing net generalized forces is
+/// optional (the methods can compute the net generalized forces for you by
+/// running inverse dynamics internally).
+/// Direct collocation works best if these data are smooth. To help with
+/// this, you can request that these data are filtered (see the properties
+/// named `lowpass_cutoff_frequency_...`).
+///
+/// TODO explain the benefit of using filtering on kinematics and joint
+/// moments: must be smooth, otherwise will get noisy muscle activations, etc.
+///
 /// ### Reserve actuators
 ///
 /// Sometimes it is not possible to achieve the desired net joint moments using
-/// muscles alone. This may be caused by a number of reasons:
+/// muscles alone. There are multiple possible causes for this:
 ///   - the muscles are not strong enough to achieve the net joint moments,
 ///   - the net joint moments change more rapidly than activation and
 ///     deactivation time constants allow,
 ///   - the filtering of the data causes unrealistic desired net joint moments.
 /// For this reason, you may want to add "reserve" actuators to your model.
-/// This will be done automatically for you if you set the property
-/// `create_reserve_actuators`; this option will cause a CoordinateActuator
-/// to be added to the model for each unconstrained coordinate.
-/// The main knob on these actuators is their `optimal_force`.
-/// If the optimal force is $F$ and the actuator's control
-/// signal is $e$, then the cost of using the actuator is $e*e$, but the
-/// generalized force it applies is $F*e$. A smaller optimal force means a
-/// greater control value is required to generate a given force.
-/// TODO suggest an optimal force to use.
-/// The actuators *can* generate (generalized) forces larger than their
+/// This can be done automatically for you if you set the property
+/// `create_reserve_actuators` appropriately ; this option will cause a
+/// CoordinateActuator to be added to the model for each unconstrained
+/// coordinate. The main knob on these actuators is their `optimal_force`. If
+/// the optimal force is $F$ and the actuator's control signal is $e$, then the
+/// cost of using the actuator is $e*e$, but the generalized force it applies is
+/// $F*e$. A smaller optimal force means a greater control value is required to
+/// generate a given force.
+/// The reserve actuators *can* generate (generalized) forces larger than their
 /// optimal force. The optimal force for reserve actuators should be set very
 /// low to discourage their use.
+/// TODO suggest an optimal force to use.
 ///
 /// After solving, the control signal $e$ for each reserve actuator is
 /// reported in the Solution's `other_controls` table.
@@ -53,6 +69,10 @@ public:
     "Path to a data file (CSV, STO) containing generalized coordinates "
     "to track. The path can be absolute or relative to the setup file.");
 
+    OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_kinematics, double,
+    "The frequency (Hz) at which to filter the kinematics. "
+    "(default is -1, which means no filtering; for walking, consider 6 Hz).");
+
     // TODO add ability to specify external loads, and update comment.
     OpenSim_DECLARE_OPTIONAL_PROPERTY(net_generalized_forces_file, std::string,
     "(Optional) Path to a data file (CSV, STO) containing net generalized "
@@ -62,6 +82,7 @@ public:
     "If not provided, inverse dynamics will be performed internally.");
 
     // TODO this should be used even if net_generalized_forces_file is provided.
+    // TODO replace "joint_moments" with "net_generalized_forces."
     OpenSim_DECLARE_PROPERTY(lowpass_cutoff_frequency_for_joint_moments, double,
     "The frequency (Hz) at which to filter inverse dynamics joint moments, "
     "which are computed internally from the kinematics if "

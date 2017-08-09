@@ -15,6 +15,7 @@ InverseMuscleSolver::InverseMuscleSolver(const std::string& setupFilePath) :
 void InverseMuscleSolver::constructProperties() {
     constructProperty_model_file("");
     constructProperty_kinematics_file("");
+    constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
     constructProperty_net_generalized_forces_file("");
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_initial_time();

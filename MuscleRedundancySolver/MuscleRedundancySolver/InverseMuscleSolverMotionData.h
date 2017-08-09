@@ -30,6 +30,7 @@ public:
             const std::vector<const Coordinate*>& coordsToActuate,
             const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
+            const double& lowpassCutoffKinematics,
             const double& lowpassCutoffJointMoments);
     /// From the given kinematics trajectory (joint angles), this constructor
     /// will perform a muscle analysis to provide net
@@ -41,7 +42,9 @@ public:
             const std::vector<const Coordinate*>& coordsToActuate,
             const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
+            const double& lowpassCutoffKinematics,
             const TimeSeriesTable& netGeneralizedForcesData);
+
     /// Get the paths (relative to the model) of the coordinates that are to be
     /// actuated by an InverseMuscleSolver.
     const std::vector<std::string>& getCoordinatesToActuate() const
@@ -88,7 +91,8 @@ private:
     InverseMuscleSolverMotionData(const Model& model,
             const std::vector<const Coordinate*>& coordsToActuate,
             const double& initialTime, const double& finalTime,
-            const TimeSeriesTable& kinematicsData);
+            const TimeSeriesTable& kinematicsData,
+            const double& lowpassCutoffKinematics);
     std::vector<std::string> createCoordPathsToActuate(const Model& model,
             const std::vector<const Coordinate*>& coordsToActuate) const;
     /// The coordPathsToActuate must be listed in multibody tree order.

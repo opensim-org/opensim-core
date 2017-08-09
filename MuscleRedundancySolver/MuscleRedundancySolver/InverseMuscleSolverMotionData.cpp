@@ -34,7 +34,8 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const Model& model,
         const std::vector<const Coordinate*>& coordsToActuate,
         const double& initialTime, const double& finalTime,
-        const TimeSeriesTable& kinematicsData) :
+        const TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffKinematics) :
         _coordPathsToActuate(createCoordPathsToActuate(model, coordsToActuate)),
         _initialTime(initialTime), _finalTime(finalTime) {
     // TODO spline/filter over only [initial_time, final_time]?
@@ -60,6 +61,16 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         if (initialTime - timeSlop <= time && time <= finalTime + timeSlop) {
             statesSto.append(time, row);
         }
+    }
+    const double& cutoffFrequency = lowpassCutoffKinematics;
+    if (cutoffFrequency > 0) {
+        // Filtering kinematics is important for obtaining muscle activations
+        // that are not noisy. Also, smooth kinematics improves the
+        // convergence time of the optimization.
+        // We pad because OpenSim's other tools also pad; not clear if it's
+        // really necessary.
+        statesSto.pad(statesSto.getSize()/2);
+        statesSto.lowpassIIR(cutoffFrequency);
     }
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
             statesSto,
@@ -145,9 +156,11 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const std::vector<const Coordinate*>& coordsToActuate,
         const double& initialTime, const double& finalTime,
         const TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffKinematics,
         const double& lowpassCutoffJointMoments) :
         InverseMuscleSolverMotionData(model, coordsToActuate,
-                initialTime, finalTime, kinematicsData) {
+                initialTime, finalTime, kinematicsData,
+                lowpassCutoffKinematics) {
     // Inverse dynamics.
 
     // All that computeInverseDynamics needs is the paths of the coordinates.
@@ -162,9 +175,11 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const std::vector<const Coordinate*>& coordsToActuate,
         const double& initialTime, const double& finalTime,
         const TimeSeriesTable& kinematicsData,
+        const double& lowpassCutoffKinematics,
         const TimeSeriesTable& netGeneralizedForcesData) :
         InverseMuscleSolverMotionData(model, coordsToActuate,
-                initialTime, finalTime, kinematicsData) {
+                initialTime, finalTime, kinematicsData, lowpassCutoffKinematics)
+{
     // Inverse dynamics.
     // Only store the columns corresponding to coordsToActuate, and store
     // them in multibody tree order.

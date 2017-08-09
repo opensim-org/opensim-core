@@ -689,18 +689,26 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
     // --------------------------
     // TODO move to InverseMuscleSolver
     InverseMuscleSolverMotionData motionData;
+    OPENSIM_THROW_IF(
+            get_lowpass_cutoff_frequency_for_kinematics() <= 0 &&
+            get_lowpass_cutoff_frequency_for_kinematics() != -1,
+            Exception,
+            "Invalid value for cutoff frequency for kinematics.");
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
-                initialTime, finalTime, kinematics, netGeneralizedForces);
+                initialTime, finalTime, kinematics,
+                get_lowpass_cutoff_frequency_for_kinematics(),
+                netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
         OPENSIM_THROW_IF(
                 get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-                        get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+                get_lowpass_cutoff_frequency_for_joint_moments() != -1,
                 Exception,
                 "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
+                get_lowpass_cutoff_frequency_for_kinematics(),
                 get_lowpass_cutoff_frequency_for_joint_moments());
     }
 
@@ -725,6 +733,8 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() {
         GlobalStaticOptimizationSolver gso;
         gso.setModel(origModel);
         gso.setKinematicsData(kinematics);
+        gso.set_lowpass_cutoff_frequency_for_kinematics(
+                get_lowpass_cutoff_frequency_for_kinematics());
         if (netGeneralizedForces.getNumRows()) {
             gso.setNetGeneralizedForcesData(netGeneralizedForces);
         }

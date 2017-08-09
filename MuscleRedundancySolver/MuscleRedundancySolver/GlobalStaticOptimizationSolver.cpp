@@ -181,7 +181,6 @@ public:
         //      musTenLength(i_act, i_mesh), musTenVelocity(i_act, i_mesh))
         //      - b(i_act, i_time);
         // Multiply A and b by the moment arm matrix.
-
     }
 
     void path_constraints(unsigned i_mesh,
@@ -461,9 +460,16 @@ GlobalStaticOptimizationSolver::solve() {
     // --------------------------
     // TODO move to InverseMuscleSolver
     InverseMuscleSolverMotionData motionData;
+    OPENSIM_THROW_IF(
+            get_lowpass_cutoff_frequency_for_kinematics() <= 0 &&
+            get_lowpass_cutoff_frequency_for_kinematics() != -1,
+            Exception,
+            "Invalid value for cutoff frequency for kinematics.");
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
-                initialTime, finalTime, kinematics, netGeneralizedForces);
+                initialTime, finalTime, kinematics,
+                get_lowpass_cutoff_frequency_for_kinematics(),
+                netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
         OPENSIM_THROW_IF(
@@ -473,6 +479,7 @@ GlobalStaticOptimizationSolver::solve() {
                 "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
+                get_lowpass_cutoff_frequency_for_kinematics(),
                 get_lowpass_cutoff_frequency_for_joint_moments());
     }
 
