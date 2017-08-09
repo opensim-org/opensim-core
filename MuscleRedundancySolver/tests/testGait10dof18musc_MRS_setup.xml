@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="30512">
-	<MuscleRedundancySolver>
+	<MuscleRedundancySolver name="testGait10dof18musc_MRS">
 		<model_file>testGait10dof18musc_subject01.osim</model_file>
 		<kinematics_file>testGait10dof18musc_kinematics.mot</kinematics_file>
 		<lowpass_cutoff_frequency_for_kinematics>6</lowpass_cutoff_frequency_for_kinematics>

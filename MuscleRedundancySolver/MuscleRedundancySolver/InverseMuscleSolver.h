@@ -61,6 +61,12 @@ namespace OpenSim {
 class InverseMuscleSolver : public OpenSim::Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(InverseMuscleSolver, Object);
 public:
+
+    OpenSim_DECLARE_PROPERTY(write_solution, std::string,
+    "Provide the folder path (relative to working directory) to which the "
+    "solution files should be written. Set to 'false' to not write the "
+    "solution to disk.");
+
     OpenSim_DECLARE_PROPERTY(model_file, std::string,
     "Path to the OSIM file containing the OpenSim model to use. The path can "
     "be absolute or relative to the setup file.");

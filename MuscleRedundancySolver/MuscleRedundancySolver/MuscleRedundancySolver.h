@@ -88,7 +88,9 @@ public:
     explicit MuscleRedundancySolver(const std::string& setupFilePath);
 
     /// Solve for muscle activity. You must have provide a model and
-    /// kinematics data before calling this function.
+    /// kinematics data before calling this function. If the property
+    /// `write_solution` is not 'false', then the solution is also written as
+    /// files to the disk.
     /// @returns A struct containing muscle excitation, activation, fiber
     ///     length, fiber velocity, and other control signals.
     Solution solve() const;

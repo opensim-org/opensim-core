@@ -801,5 +801,14 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
     // TODO remove:
     ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
     // dircol.print_constraint_values(ocp_solution);
-    return ocp->deconstruct_iterate(ocp_solution);
+    Solution solution = ocp->deconstruct_iterate(ocp_solution);
+    if (get_write_solution() != "false") {
+        IO::makeDir(get_write_solution());
+        std::string prefix = getName().empty() ?
+                             "MuscleRedundancySolver" : getName();
+        solution.write(get_write_solution() +
+                SimTK::Pathname::getPathSeparator() + prefix +
+                "_solution");
+    }
+    return solution;
 }

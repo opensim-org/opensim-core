@@ -11,7 +11,7 @@ void testGait10dof18musc_GSO() {
     // the speed states.
     GlobalStaticOptimizationSolver gso("testGait10dof18musc_GSO_setup.xml");
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    solution.write("testGait10dof18musc_GSO_solution");
+    // solution.write("testGait10dof18musc_GSO_solution");
 
 
     // Regression tests.
@@ -118,7 +118,7 @@ void testGait10dof18musc_GSO() {
 void testGait10dof18musc_MRS() {
     MuscleRedundancySolver mrs("testGait10dof18musc_MRS_setup.xml");
     MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("testGait10dof18musc_MRS_solution");
+    // solution.write("testGait10dof18musc_MRS_solution");
 
     // Regression tests.
     TimeSeriesTable std_activation = STOFileAdapter_<double>::read

@@ -13,6 +13,7 @@ InverseMuscleSolver::InverseMuscleSolver(const std::string& setupFilePath) :
 }
 
 void InverseMuscleSolver::constructProperties() {
+    constructProperty_write_solution("./");
     constructProperty_model_file("");
     constructProperty_kinematics_file("");
     constructProperty_lowpass_cutoff_frequency_for_kinematics(-1);
