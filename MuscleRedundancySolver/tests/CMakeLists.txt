@@ -35,4 +35,15 @@ file(COPY testGait10dof18musc_subject01.osim
           testGait10dof18musc_netgeneralizedforces.mot
           testGait10dof18musc_GSO_setup.xml
           testGait10dof18musc_MRS_setup.xml
+          std_testGait10dof18musc_MRS_solution_activation.sto
+          std_testGait10dof18musc_MRS_solution_excitation.sto
+          std_testGait10dof18musc_MRS_solution_norm_fiber_length.sto
+          std_testGait10dof18musc_MRS_solution_norm_fiber_velocity.sto
+          std_testGait10dof18musc_MRS_solution_other_controls.sto
+          std_testGait10dof18musc_MRS_solution_tendon_force.sto
+          std_testGait10dof18musc_GSO_solution_activation.sto
+          std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto
+          std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto
+          std_testGait10dof18musc_GSO_solution_other_controls.sto
+          std_testGait10dof18musc_GSO_solution_tendon_force.sto
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
