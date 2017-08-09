@@ -2,6 +2,7 @@
 
 import sys
 import math
+import os
 
 import numpy as np
 import pylab as pl
@@ -17,7 +18,16 @@ else:
 
 
 data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
-num_plots = len(data.dtype.names) - 1
+
+names = data.dtype.names[1:]
+
+name_prefix = os.path.commonprefix(names)
+plot_names = list()
+for i, name in enumerate(names):
+    plot_names.append(names[i][len(name_prefix):])
+num_plots = len(plot_names)
+
+
 if num_plots < 5:
     num_rows = num_plots
     num_cols = 1
@@ -35,9 +45,11 @@ for i in range(num_plots):
     if include_zero:
         ax.axhline(0, color='gray', alpha=0.5)
     ax.plot(data['time'], data[name])
-    ax.set_title(name)
+    plot_name = plot_names[i]
+    ax.set_title(plot_name)
     if i == num_plots - 1:
         ax.set_xlabel('time')
 
-pl.subplots_adjust()
+#fig.subplots_adjust()
+fig.tight_layout()
 pl.show()
