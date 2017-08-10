@@ -8,6 +8,8 @@ include(CMakeParseArguments)
 # therefore we pass some command-line flags that Catch interprets.
 function(mesh_add_test TEST_NAME LIB_DEPENDENCIES)
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+    # To organize targets in Visual Studio's Solution Explorer.
+    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Mesh Tests")
     target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})
     # TODO MESH shouldn't know that it's in a larger project.
     target_include_directories(${TEST_NAME}

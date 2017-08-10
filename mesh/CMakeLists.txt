@@ -2,6 +2,13 @@ project(mesh) # TODO another name: Trop (trajectory optimization)
 # TODO TROP
 cmake_minimum_required(VERSION 3.2)
 
+# CMake settings.
+# ---------------
+# To allow a folder hierarchy within Visual Studio's Solution Explorer.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# Compiler flags.
+# ---------------
 set(CMAKE_CXX_STANDARD 11)
 # Using c++11 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,7 +42,7 @@ find_package(IPOPT REQUIRED)
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
 
-find_package(Adolc REQUIRED)
+find_package(ADOLC REQUIRED)
 
 # OpenMP allows parallelization (of evaluating dynaimcs and path constraints
 # across mesh points) and is usually a feature of a compiler. It's fine if the
