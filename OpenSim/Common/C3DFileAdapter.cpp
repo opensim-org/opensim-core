@@ -230,9 +230,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                                        (*fit)->GetValues().coeff(f, 1),
                                        (*fit)->GetValues().coeff(f, 2)};
                 ++col;
-                row[col] = SimTK::Vec3{ (*pit)->GetValues().coeff(f, 0),
-                    (*pit)->GetValues().coeff(f, 1),
-                    (*pit)->GetValues().coeff(f, 2) };
+                row[col] = SimTK::Vec3{(*pit)->GetValues().coeff(f, 0),
+                                       (*pit)->GetValues().coeff(f, 1),
+                                       (*pit)->GetValues().coeff(f, 2)};
                 ++col;
                 row[col] = SimTK::Vec3{(*mit)->GetValues().coeff(f, 0),
                                        (*mit)->GetValues().coeff(f, 1),
