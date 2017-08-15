@@ -119,6 +119,7 @@ MATLAB and Python interfaces
 - The SimbodyMatterSubsystem class--which provides operators related to the mass
 matrix, Jacobians, inverse dynamics, etc.--is now accessible in MATLAB and
 Python (PR #930).
+- Changed wrapping of `SimTK::Array_<OpenSim::CoordinateReference>` from `ArrayCoordinateReference` to `SimTKArrayCoordinateReference` for consistency with other classes. (PR #1842)
 
 MATLAB interface
 ----------------

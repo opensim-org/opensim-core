@@ -98,7 +98,15 @@ public:
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(velocity, SimTK::SpatialVec, getVelocityInGround,
         SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3, getAngularVelocityInGround,
+        SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(linear_velocity, SimTK::Vec3, getLinearVelocityInGround,
+        SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(acceleration, SimTK::SpatialVec, getAccelerationInGround,
+        SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(angular_acceleration, SimTK::Vec3, getAngularAccelerationInGround,
+        SimTK::Stage::Acceleration);
+    OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3, getLinearAccelerationInGround,
         SimTK::Stage::Acceleration);
 
     //--------------------------------------------------------------------------
@@ -126,22 +134,48 @@ public:
     const SimTK::Transform&
         getTransformInGround(const SimTK::State& state) const;
 
-    /** The spatial velocity V_GF {omega; v} for this Frame in ground.
-        It can be used to compute the velocity of any stationary point on F,
-        located at r_F (Vec3), in ground, G, as:
+    /** The spatial velocity V_GF {omega; v} of this Frame, measured with
+        respect to and expressed in the ground frame. It can be used to compute
+        the velocity of any stationary point on F, located at r_F (Vec3), in
+        ground, G, as:
             v_G = V_GF[1] + SimTK::cross(V_GF[0], r_F);
         Is only valid at Stage::Velocity or higher. */
     const SimTK::SpatialVec&
         getVelocityInGround(const SimTK::State& state) const;
 
-    /** The spatial acceleration A_GF {alpha; a} for this Frame in ground.
-        It can also be used to compute the acceleration of any stationary point
-        on F, located at r_F (Vec3), in ground, G, as:
+    /** The angular velocity of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the first half of the SpatialVec
+        returned by getVelocityInGround()). */
+    const SimTK::Vec3&
+        getAngularVelocityInGround(const SimTK::State& state) const;
+
+    /** The linear velocity of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the second half of the SpatialVec
+        returned by getVelocityInGround()). */
+    const SimTK::Vec3&
+        getLinearVelocityInGround(const SimTK::State& state) const;
+
+    /** The spatial acceleration A_GF {alpha; a} of this Frame, measured with
+        respect to and expressed in the ground frame. It can also be used to
+        compute the acceleration of any stationary point on F, located at r_F
+        (Vec3), in ground, G, as:
             a_G = A_GF[1] + SimTK::cross(A_GF[0], r_F) + 
                   SimTK::cross(V_GF[0], SimTK::cross(V_GF[0], r_F));
         Is only valid at Stage::Acceleration or higher. */
     const SimTK::SpatialVec&
         getAccelerationInGround(const SimTK::State& state) const;
+
+    /** The angular acceleration of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the first half of the SpatialVec
+        returned by getAccelerationInGround()). */
+    const SimTK::Vec3&
+        getAngularAccelerationInGround(const SimTK::State& state) const;
+
+    /** The linear acceleration of this Frame, measured with respect to and
+        expressed in the ground frame (i.e., the second half of the SpatialVec
+        returned by getAccelerationInGround()). */
+    const SimTK::Vec3&
+        getLinearAccelerationInGround(const SimTK::State& state) const;
 
 
     /**

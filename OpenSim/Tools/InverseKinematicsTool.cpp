@@ -262,6 +262,9 @@ bool InverseKinematicsTool::run()
         else
             modelFromFile = false;
 
+        // although newly loaded model will be finalized
+        // there is no gaurantee that the _model has not been edited/modified
+        _model->finalizeFromProperties();
         _model->printBasicInfo();
 
         // Do the maneuver to change then restore working directory 

@@ -91,8 +91,8 @@ class TestDataAdapter(unittest.TestCase):
         assert fpOrigins[0].ncol() == 1
         assert fpOrigins[1].nrow() == 3
         assert fpOrigins[1].ncol() == 1
-        assert forces.getDependentsMetaDataString('units') == ('N', 'Nmm', 'mm',
-                                                               'N', 'Nmm', 'mm')
+        assert forces.getDependentsMetaDataString('units') == ('N', 'mm', 'Nmm',
+                                                               'N', 'mm', 'Nmm')
 
         # Flatten forces data.
         forcesFlat = forces.flatten()

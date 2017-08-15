@@ -64,11 +64,6 @@ OpenSimGenerateJavaWrapper(examplecomponents
     ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE})
 
-include_directories(${OpenSim_SOURCE_DIR} 
-                    ${OpenSim_SOURCE_DIR}/Vendors 
-                    ${JAVA_INCLUDE_PATH}
-                    ${JAVA_INCLUDE_PATH2})
-
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 add_library(osim${KIT} 
@@ -85,6 +80,9 @@ add_library(osim${KIT}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
+
+target_include_directories(osim${KIT} PRIVATE
+                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 
 target_link_libraries(osim${KIT} osimTools osimSimmFileWriter osimExampleComponents)
     

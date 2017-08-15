@@ -48,12 +48,12 @@ int main()
         Model osimModel;
         osimModel.setName("tugOfWar");
     }
-    catch (OpenSim::Exception ex)
+    catch (const OpenSim::Exception& ex)
     {
         std::cout << ex.getMessage() << std::endl;
         return 1;
     }
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

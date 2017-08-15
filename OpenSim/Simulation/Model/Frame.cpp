@@ -111,6 +111,16 @@ const SimTK::SpatialVec& Frame::getVelocityInGround(const State& s) const
         getCacheEntry(s, _velocityIndex)).get();
 }
 
+const SimTK::Vec3& Frame::getAngularVelocityInGround(const State& s) const
+{
+    return getVelocityInGround(s)[0];
+}
+
+const SimTK::Vec3& Frame::getLinearVelocityInGround(const State& s) const
+{
+    return getVelocityInGround(s)[1];
+}
+
 const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 {
     if (!getSystem().getDefaultSubsystem().
@@ -127,6 +137,16 @@ const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
     return SimTK::Value<SpatialVec>::downcast(
         getSystem().getDefaultSubsystem().
         getCacheEntry(s, _accelerationIndex)).get();
+}
+
+const SimTK::Vec3& Frame::getAngularAccelerationInGround(const State& s) const
+{
+    return getAccelerationInGround(s)[0];
+}
+
+const SimTK::Vec3& Frame::getLinearAccelerationInGround(const State& s) const
+{
+    return getAccelerationInGround(s)[1];
 }
 
 void Frame::attachGeometry(OpenSim::Geometry* geom)
