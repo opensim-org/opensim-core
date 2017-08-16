@@ -9,24 +9,49 @@ class TestEditMarkers {
         Model model = new Model("gait10dof18musc_subject01.osim");
         OpenSimContext context=null;
         long t1  = System.currentTimeMillis();
+        context = new OpenSimContext(model.initSystem(), model);
+        MarkerSet markerset = model.getMarkerSet();
+        // The following code exercises the Marker->Add New  functionality
+        Vec3 offset = new Vec3(0.11, 0.22, 0.33);
+        Body body = model.getBodySet().get(0);
+        String newMarkerName = "newMarker";
+        // This exercises Marker -> Add New
+        Marker newMarker = new Marker();
+        newMarker.setName(newMarkerName);
+        newMarker.set_location(offset);
+        newMarker.setParentFrame(body);
+        context.cacheModelAndState();
+        markerset.adoptAndAppend(newMarker);
         try {
-            context = new OpenSimContext(model.initSystem(), model);
-            context.cacheModelAndState();
-            MarkerSet markerset = model.getMarkerSet();
-            // The following code exercises the Marker->Add New  functionality
-            Vec3 offset = new Vec3(0.11, 0.22, 0.33);
-            Body body = model.getBodySet().get(0);
-            String newMarkerName = "newMarker";
-            // This exercises Marker -> Add New
-            Marker marker = markerset.addMarker(newMarkerName, offset, body);
-            // This exercises Marker -> delete
-            //markerset.remove(marker);
             context.restoreStateFromCachedModel();
         } catch (IOException ex) {
-            ex.printStackTrace();
-            System.out.println("Failed to initialize Context");
-            System.exit(-1);
+            System.exit(1);
         }
+        // This exercises Marker -> delete
+        context.cacheModelAndState();
+        Marker findMarker = Marker.safeDownCast(model.getComponent("newMarker"));
+        assert (findMarker != null);
+        markerset.remove(findMarker);
+        try {
+            context.restoreStateFromCachedModel();
+        } catch (IOException ex) {
+            System.exit(1);
+        }
+        markerset.print("savedMarkers.xml");
+        // Now create a new MarkerSet from the file
+        MarkerSet newMarkerSet = new MarkerSet(model, "savedMarkers.xml");
+        Marker newMarkerRenamed = newMarkerSet.get(0);
+        String addedMarkerName = newMarkerRenamed.getName()+"_renamed";
+        newMarkerRenamed.setName(addedMarkerName);
+        context.cacheModelAndState();
+        markerset.adoptAndAppend(newMarkerRenamed);
+        try {
+            context.restoreStateFromCachedModel();
+        } catch (IOException ex) {
+            System.exit(1);
+        }
+        Marker findMarkerAdded = Marker.safeDownCast(model.getComponent(addedMarkerName));
+        assert(findMarkerAdded != null);
         System.exit(0);
     }
     catch(IOException ex){
