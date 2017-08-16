@@ -69,10 +69,6 @@ add_custom_target(RunMatlabTests
 
 add_dependencies(RunMatlabTests JavaBindings)
 
-
-
-
-
 # Tests.
 # ------
 
@@ -84,11 +80,13 @@ OpenSimAddMatlabTest(RunHopper_answers ../Hopper_Device/RunHopper_answers.m)
 OpenSimAddMatlabTest(RunHopperWithDevice_answers
     ../Hopper_Device/RunHopperWithDevice_answers.m)
 
+OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
+OpenSimAddMatlabTest(osimC3Dconverter testC3Dconverter.m)
 OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
-OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
-OpenSimAddMatlabTest(osimC3Dconverter testC3Dconverter.m)
+
+
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"

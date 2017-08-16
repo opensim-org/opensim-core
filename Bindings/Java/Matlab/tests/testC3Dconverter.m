@@ -24,7 +24,7 @@
 % and that rotations are done correctly.
 
 % Author: James Dunne
-
+tic
 %% Load libraries
 import org.opensim.modeling.*
 
@@ -135,3 +135,4 @@ assert(abs(round(ana_Yvalue_ref)) ==  abs(round(ana_Xvalue)), 'X axis force rota
 %% clean up files
 delete(fullfile(path,[file '.trc']));
 delete(fullfile(path,[file '.mot']));
+toc

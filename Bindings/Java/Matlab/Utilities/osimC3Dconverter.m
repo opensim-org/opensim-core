@@ -32,7 +32,6 @@ function osimC3Dconverter(varargin)
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
 % Author: James Dunne
 
 p = inputParser;
@@ -69,6 +68,7 @@ else
     end
 end
 
+%% 
 if iscell(filein)
     nFiles = length(filein);
     multipleFiles = 1;
@@ -77,6 +77,8 @@ else
     multipleFiles = 0;
 end
     
+
+%% 
 for iFile = 1 : nFiles
     
     if multipleFiles == 1
@@ -123,8 +125,8 @@ for iFile = 1 : nFiles
     postfix = StdVectorString(); postfix.add('_x');postfix.add('_y');postfix.add('_z');
     forces_flattened = forces_rot.flatten(postfix);
 
-    % update the column names to have v,p,m n them.
-
+    % Tge GUI (~3.3) looks for force labels containing '_v'. We add
+    % the char 'v' here. 
     labels = forces_flattened.getColumnLabels();
     newlabels = forces_flattened.getColumnLabels();
 
@@ -134,13 +136,13 @@ for iFile = 1 : nFiles
 
         if i < 9
             n = '1';
-        elseif  8 < i < 18
+        elseif  8 < i < 18;
             n = '2';
-        elseif 17 < i < 27
+        elseif 17 < i < 27;
            n = '3';
         end
-
-        if ~isempty(strfind(label,'f'))
+        
+       if ~isempty(strfind(label,'f'))
             s = ['ground_force_' n '_v'];
         elseif ~isempty(strfind(label,'p'))
             s = ['ground_force_' n '_p'];
@@ -153,7 +155,7 @@ for iFile = 1 : nFiles
             % in = strfind(label,'_');
             % add the specifier (f,p,or m) to the label name. 
             %label_new = [label(1:in) s label(in+1:end)];
-            label_new = [ s label(end)];
+            label_new = [s label(end)];
 
             % update the label name 
             newlabels.set(i,label_new);
@@ -173,61 +175,40 @@ for iFile = 1 : nFiles
             end
         end
     end
-
-    %% change the order of the forces
-    % turn the timetable into a Maltab Struct
-    sdata = osimTableToStruct(forces_flattened);
-    % get the label names
-    labels =  fieldnames(sdata);
-    % find all the labels with string m (including time)
-    imoments = find(~cellfun(@isempty,strfind(labels,'m')));
-    % get a temporary set of labels for the moements, delete them from the
-    % original
-    templabels = labels(imoments);
-    labels(imoments) = [];
-    % append the moment labels
-    labels2 = [labels;templabels];
-    % reorder the structure given the new label order
-    sdata = orderfields(sdata, labels2);
-
+    
     %% Check for NaNs
     % If there are any NaNs in the forces data, OpenSim will interpret them as
     % the 'end' of the file. We must set NaNs to zero and report where they are
     % found
-    for i = 1 : length(labels2)
-        % get an index of all the NaN values
-        n = find( isnan( sdata.(labels2{i})));
- 
-        if ~isempty(n)
-            % Display NaN value to console
-            warning(['Nan values found for ' labels2{i} ', at row(s) ' num2str(n') '. Replacing with zeros'])
-            % replace the NaN value with 0
-            sdata.(labels2{i})(n) = 0;
-        end    
+    for i = 0 : forces_flattened.getNumColumns() - 1
+        dependentData = forces_flattened.getDependentColumnAtIndex(i);
+        for u = 0 : forces_flattened.getNumRows() - 1
+            if isnan(dependentData.get(u))
+                % Display NaN value to console
+                warning(['Nan values found for ' char(forces_flattened.getColumnLabels().get(i)) ', at row(s) ' num2str(u) '. Replacing with zeros'])
+                % replace with 0;
+                dependentData.set(u,0)
+            end
+        end
     end
     
-    
-    
-    %% convert the structure back to an OpenSim time series table
-    forces_reorder = osimTableFromStruct(sdata);
-
     %% Change the header in the file to meet Storage conditions
-    if forces_reorder.getTableMetaDataKeys().size() > 0
-        for i = 0 : forces_reorder.getTableMetaDataKeys().size() - 1
+    if forces_flattened.getTableMetaDataKeys().size() > 0
+        for i = 0 : forces_flattened.getTableMetaDataKeys().size() - 1
             % get the metakey string at index zero. Since the array gets smaller on
             % each loop, we just need to keep taking the first one in the array. 
-            metakey = char(forces_reorder.getTableMetaDataKeys().get(0));
+            metakey = char(forces_flattened.getTableMetaDataKeys().get(0));
             % remove the key from the meta data
-            forces_reorder.removeTableMetaDataKey(metakey)
+            forces_flattened.removeTableMetaDataKey(metakey)
         end
     end
 
     % Add the column and row data to the meta key    
-    forces_reorder.addTableMetaDataString('nColumns',num2str(forces_reorder.getNumColumns()+1))
-    forces_reorder.addTableMetaDataString('nRows',num2str(forces_reorder.getNumRows()));
+    forces_flattened.addTableMetaDataString('nColumns',num2str(forces_flattened.getNumColumns()+1))
+    forces_flattened.addTableMetaDataString('nRows',num2str(forces_flattened.getNumRows()));
 
     %% make a sto adapter and write the forces table to file.
-    STOFileAdapter().write(forces_reorder,fullfile(path,[filename '.mot']));
+    STOFileAdapter().write(forces_flattened,fullfile(path,[filename '.mot']));
     display([[filename '.mot'] ' written to dir: ' path]);
 end
 
