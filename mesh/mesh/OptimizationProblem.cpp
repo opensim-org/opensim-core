@@ -1,7 +1,7 @@
 #include "OptimizationProblem.hpp"
 
 // TODO put adolc sparsedrivers in their own namespace. mesh::adolc
-#include <adolc/sparse/sparsedrivers.h>
+#include <adolc/adolc.h>
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -99,6 +99,14 @@ sparsity(const Eigen::VectorXd& x,
 {
     // TODO check their sizes.
     assert(x.size() == num_variables());
+
+    // Create tapes.
+    // -------------
+    double obj_value; // We don't actually need the obj. value.
+    trace_objective(m_objective_tag, num_variables(), x.data(), obj_value);
+    Eigen::VectorXd constr(num_constraints());
+    trace_constraints(m_constraints_tag,
+            num_variables(), x.data(), num_constraints(), constr.data());
 
     // Determine sparsity patterns.
     // ----------------------------
@@ -199,7 +207,18 @@ objective(unsigned num_variables, const double* x,
         bool /*new_x*/,
         double& obj_value) const
 {
-    trace_objective(m_objective_tag, num_variables, x, obj_value);
+    int status = ::function(m_objective_tag,
+            1, // number of dependent variables.
+            num_variables, // number of independent variables.
+            // The signature of ::function() should take a const double*; I'm
+            // fairly sure ADOL-C won't try to edit the independent variables.
+            const_cast<double*>(x), &obj_value);
+    // TODO create fancy return value checking (create a class for it).
+    // check_adolc_driver_return_value(status);
+    assert(status == 3);
+    // TODO if status != 3, retape.
+
+    //trace_objective(m_objective_tag, num_variables, x, obj_value);
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -208,8 +227,16 @@ constraints(unsigned num_variables, const double* variables,
         unsigned num_constraints, double* constr) const
 {
     // TODO cache constraint values? we are ignoring new_variables.
-    trace_constraints(m_constraints_tag,
-            num_variables, variables, num_constraints, constr);
+    // Evaluate the constraints tape.
+    int status = ::function(m_constraints_tag,
+            num_constraints, // number of dependent variables.
+            num_variables, // number of independent variables.
+            // The signature of ::function() should take a const double*; I'm
+            // fairly sure ADOL-C won't try to edit the independent variables.
+            const_cast<double*>(variables), constr);
+    assert(status == 3);
+    //trace_constraints(m_constraints_tag,
+    //        num_variables, variables, num_constraints, constr);
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -220,8 +247,8 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     // a previous evaluation might have been of one of the functions that does
     // NOT compute the objective (e.g., the constraints).
     // TODO if (new_x) {
-        double obj_value; // Not needed.
-        trace_objective(m_objective_tag, num_variables, x, obj_value);
+    //    double obj_value; // Not needed.
+    //    trace_objective(m_objective_tag, num_variables, x, obj_value);
     // TODO }
     int success = ::gradient(m_objective_tag, num_variables, x, grad);
     assert(success); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
@@ -294,6 +321,7 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     for (unsigned icon = 0; icon < num_constraints; ++icon) {
         lambda_vector[icon] = lambda[icon];
     }
+    // TODO use ADOLC's set_param_vec().
     lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
     lagrangian_adouble >>= lagr;
     trace_off();

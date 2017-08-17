@@ -1,7 +1,7 @@
 #ifndef MESH_COMMON_H
 #define MESH_COMMON_H
 
-#include <adolc/adolc.h>
+#include <adolc/adouble.h>
 #include <Eigen/Dense>
 #include <fstream>
 
