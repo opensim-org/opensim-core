@@ -100,10 +100,6 @@ OptimizationProblem<adouble>::Proxy::~Proxy() {
         delete [] m_jacobian_col_indices;
         m_jacobian_col_indices = nullptr;
     }
-    if (m_jacobian_values) {
-        delete [] m_jacobian_values;
-        m_jacobian_values = nullptr;
-    }
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -127,32 +123,25 @@ sparsity(const Eigen::VectorXd& x,
     // sparsity?
     // TODO or can I reuse the tape?
     /* TODO if (m_num_constraints)*/ {
-        //short int tag = 0;
-        //trace_constraints(tag, num_variables(), x.data(),
-        //        num_constraints(), constraint_values.data());
         Eigen::VectorXd constraint_values(num_constraints()); // Unused.
         trace_constraints(m_constraints_tag,
                 num_variables(), x.data(),
                 num_constraints(), constraint_values.data());
 
         int repeated_call = 0; // this is the first call at this value of x.
+        double* jacobian_values = nullptr; // Unused.
         int success = ::sparse_jac(m_constraints_tag, num_constraints(),
                 num_variables(), repeated_call, x.data(),
                 // The next 4 arguments are outputs.
                 &m_jacobian_num_nonzeros,
                 &m_jacobian_row_indices, &m_jacobian_col_indices,
-                &m_jacobian_values,
+                &jacobian_values,
                 const_cast<int*>(m_sparse_jac_options.data()));
         //assert(success == 3);
         assert(success >= 0);
+        delete [] jacobian_values;
         jacobian_row_indices.resize(m_jacobian_num_nonzeros);
         jacobian_col_indices.resize(m_jacobian_num_nonzeros);
-        // TODO use std::copy.
-        //for (int i = 0; i < m_jacobian_num_nonzeros; ++i) {
-        //    // Copy ADOL-C's sparsity memory into MESH's sparsity memory.
-        //    jacobian_row_indices[i] = m_jacobian_row_indices[i];
-        //    jacobian_col_indices[i] = m_jacobian_col_indices[i];
-        //}
         // Copy ADOL-C's sparsity memory into MESH's sparsity memory.
         std::copy(m_jacobian_row_indices,
                 m_jacobian_row_indices + m_jacobian_num_nonzeros,
@@ -234,8 +223,6 @@ objective(unsigned num_variables, const double* x,
     //assert(status == 3);
     assert(status >= 0);
     // TODO if status != 3, retape.
-
-    //trace_objective(m_objective_tag, num_variables, x, obj_value);
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -253,39 +240,20 @@ constraints(unsigned num_variables, const double* variables,
             const_cast<double*>(variables), constr);
     //assert(status == 3);
     assert(status >= 0);
-    //trace_constraints(m_constraints_tag,
-    //        num_variables, variables, num_constraints, constr);
 }
 
 void OptimizationProblem<adouble>::Proxy::
 gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
-    // TODO removing the "new_x" optimization until we handle the fact that
-    // a previous evaluation might have been of one of the functions that does
-    // NOT compute the objective (e.g., the constraints).
-    // TODO if (new_x) {
-    //    double obj_value; // Not needed.
-    //    trace_objective(m_objective_tag, num_variables, x, obj_value);
-    // TODO }
-    int success = ::gradient(m_objective_tag, num_variables, x, grad);
-    assert(success); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
+    int status = ::gradient(m_objective_tag, num_variables, x, grad);
+    assert(status); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
 }
 
 void OptimizationProblem<adouble>::Proxy::
 jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
-    // TODO removing the "new_x" optimization until we handle the fact that
-    // a previous evaluation might have been of one of the functions that does
-    // NOT compute the constraints (e.g., the objective).
-    // TODO if (new_x) {
-        // TODO where to get num_constraints from? Store in local variable.
-    //    VectorXd g(num_constraints());
-    //    trace_constraints(m_constraints_tag,
-    //            num_variables, x, num_constraints(), g.data());
-    // TODO }
-
     int repeated_call = 1; // We already have the sparsity structure.
     int status = ::sparse_jac(m_constraints_tag, num_constraints(),
             num_variables, repeated_call, x,
@@ -295,14 +263,6 @@ jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
     // TODO create enums for ADOL-C's return values.
     //assert(status == 3);
     assert(status >= 0);
-    // TODO ideally we would avoid this copy. Should we use std::copy?
-    // TODO std::copy(m_jacobian_values, m_jacobian_values + num_nonzeros,
-    // nonzeros);
-    // TODO we can just pass nonzeros to sparse_jac to avoid this copy
-    // alltogether.
-    //for (int inz = 0; inz < m_jacobian_num_nonzeros; ++inz) {
-    //    nonzeros[inz] = m_jacobian_values[inz];
-    //}
 
     // TODO if we call with repeated_call == 0, we must first delete the
     // previous memory for row indices, etc.
