@@ -14,6 +14,14 @@ cmake_minimum_required(VERSION 3.2)
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Add "_d" to the end of debug libraries, so both debug and non-debug libraries
+# can be installed.
+set(CMAKE_DEBUG_POSTFIX "_d")
+
+# Avoid need to set DYLD_LIBRARY_PATH on macOS.
+set(CMAKE_MACOSX_RPATH ON)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+
 # Compiler flags.
 # ---------------
 set(CMAKE_CXX_STANDARD 11)

@@ -19,3 +19,7 @@ target_include_directories(osimMuscleRedundancySolver INTERFACE
 
 add_executable(opensim-mrs opensim-mrs.cpp)
 target_link_libraries(opensim-mrs osimMuscleRedundancySolver)
+
+install(TARGETS opensim-mrs DESTINATION bin)
+set_target_properties(opensim-mrs PROPERTIES
+        DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
