@@ -411,8 +411,9 @@ public:
      * variable values, but not discrete state variable values, modeling
      * option values, etc. Also, keep in mind that states Storage files usually
      * do not contain the state values to full precision, and thus cannot
-     * exactly reproduce results from the initial state trajectory; constraints
-     * may not be satisfied, etc.
+     * exactly reproduce results from the initial state trajectory. Lastly,
+     * this function modifies each state to obey any constraints in the model
+     * (by calling Model::assemble()).
      *
      * The states in the resulting trajectory will be realized to
      * SimTK::Stage::Instance. You should not use the resulting trajectory with
