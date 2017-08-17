@@ -439,21 +439,15 @@ public:
      *      ignored.
      *
      * #### Usage
-     * You must have called Model::initSystem() on your model before calling
-     * this function.
      * Here is how you might use this function in python:
      * @code{.py}
      * import opensim
      * model = opensim.Model("subject01.osim")
-     * model.initSystem()
      * sto = opensim.Storage("subject01_states.sto")
      * states = opensim.StatesTrajectory.createFromStatesStorage(model, sto)
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
-     * 
-     * @throws ModelHasNoSystem Thrown if you have not yet called initSystem()
-     *      on the model.
      * 
      * @throws MissingColumnsInStatesStorage See the description of the
      *      `allowMissingColumns` argument.

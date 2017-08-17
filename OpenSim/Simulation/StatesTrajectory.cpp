@@ -178,10 +178,11 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // This is what we'll return.
     StatesTrajectory states;
 
-    OPENSIM_THROW_IF(!model.hasSystem(), ModelHasNoSystem, model.getName());
+    // Make a copy of the model so that we can get a corresponding state.
+    Model localModel(model);
     
     // We'll keep editing this state as we loop through time.
-    auto state = model.getWorkingState();
+    auto state = localModel.initSystem();
 
     // The labels of the columns in the storage file.
     const auto& stoLabels = sto.getColumnLabels();
@@ -207,7 +208,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
     // Check if states are missing from the Storage.
     // ---------------------------------------------
-    const auto& modelStateNames = model.getStateVariableNames();
+    const auto& modelStateNames = localModel.getStateVariableNames();
     std::vector<std::string> missingColumnNames;
     // Also, assemble the indices of the states that we will actually set in the
     // trajectory.
@@ -223,7 +224,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
             MissingColumnsInStatesStorage, 
-            model.getName(), missingColumnNames);
+            localModel.getName(), missingColumnNames);
 
     // Check if the Storage has columns that are not states in the Model.
     // ------------------------------------------------------------------
@@ -239,7 +240,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
                     extraColumnNames.push_back(stoLabels[ic]);
                 }
             }
-            OPENSIM_THROW(ExtraColumnsInStatesStorage, model.getName(),
+            OPENSIM_THROW(ExtraColumnsInStatesStorage, localModel.getName(),
                     extraColumnNames);
         }
     }
@@ -271,7 +272,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
             // 'first': index for Storage; 'second': index for Model.
             statesValues[kv.second] = dependentValues[kv.first];
         }
-        model.setStateVariableValues(state, statesValues);
+        localModel.setStateVariableValues(state, statesValues);
 
         // Make a copy of the edited state and put it in the trajectory.
         states.append(state);
