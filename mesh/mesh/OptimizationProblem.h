@@ -219,11 +219,13 @@ template<>
 class OptimizationProblem<adouble>::Proxy : public OptimizationProblemProxy {
 public:
     Proxy(const OptimizationProblem<adouble>& problem) : m_problem(problem) {}
-    // TODO might not use eigen...just raw C arrays...
+    // Delete memory allocated by ADOL-C.
+    virtual ~Proxy();
     unsigned num_variables() const override
     {   return m_problem.get_num_variables(); }
     unsigned num_constraints() const override
     {   return m_problem.get_num_constraints(); }
+    // TODO might not use eigen...just raw C arrays...
     const Eigen::VectorXd& variable_lower_bounds() const override
     {   return m_problem.get_variable_lower_bounds(); }
     const Eigen::VectorXd& variable_upper_bounds() const override
@@ -271,10 +273,26 @@ private:
 
 
     const OptimizationProblem<adouble>& m_problem;
+    // TODO if we want to be able to solve multiple problems at once, these
+    // cannot be static. We could create a registry of tags, and the tags can
+    // be "checked out" and "returned."
     static const short int m_objective_tag   = 1;
     static const short int m_constraints_tag = 2;
-};
 
+    // We must hold onto the sparsity pattern and values for the Jacobian and
+    // Hessian so that we can pass them to subsequent calls to sparse_jac().
+    // ADOL-C allocates this memory, but we must delete it.
+    mutable int m_jacobian_num_nonzeros = -1;
+    mutable unsigned int* m_jacobian_row_indices = nullptr;
+    mutable unsigned int* m_jacobian_col_indices = nullptr;
+    mutable double* m_jacobian_values = nullptr; // working memory.
+    // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
+    // [0]: Way of sparsity pattern computation (propagation of index domains).
+    // [1]: Test the computational graph control flow (safe mode).
+    // [2]: Way of bit pattern propagation (automatic detection).
+    // [3]: Way of compression (column compression).
+    std::vector<int> m_sparse_jac_options = {4, 0};
+};
 
 } // namespace mesh
 
