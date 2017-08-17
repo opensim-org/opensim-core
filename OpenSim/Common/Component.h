@@ -2117,12 +2117,15 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsupported-friend"
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunsupported-friend"
+#endif
     template<class C>
     friend void Socket<C>::findAndConnect(const Component& root);
-#pragma clang diagnostic pop
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#endif
 
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
