@@ -3,7 +3,7 @@
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
-#include <mesh.h>
+#include <tropter.h>
 #include "testing.h"
 
 using namespace OpenSim;
@@ -37,7 +37,7 @@ using namespace OpenSim;
 /// where lm and vm are determined from the muscle-tendon length and velocity
 /// with the assumption of a rigid tendon.
 class DeGroote2016MuscleLiftMinTimeStatic
-        : public mesh::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblemNamed<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -51,7 +51,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGroote2016MuscleLiftMinTimeStatic() :
-            mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -62,9 +62,9 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Unpack variables.
         const T& position = states[0];
         const T& speed = states[1];
@@ -80,7 +80,7 @@ public:
         derivatives[1] = g - tendonForce / mass;
     }
     void endpoint_cost(const T& final_time,
-                       const mesh::VectorX<T>& /*final_states*/,
+                       const tropter::VectorX<T>& /*final_states*/,
                        T& cost) const override {
         cost = final_time;
     }
@@ -94,9 +94,9 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     // ----------------------------------------
     auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTimeStatic>();
     ocp->print_description();
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", 100);
-    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
             "testSingleMuscleDeGroote2016_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
@@ -182,7 +182,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
 /// Making the initial fiber velocity 0 helps avoid a sharp spike in fiber
 /// velocity at the beginning of the motion.
 class DeGroote2016MuscleLiftMinTimeDynamic
-        : public mesh::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblemNamed<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -195,7 +195,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGroote2016MuscleLiftMinTimeDynamic() :
-            mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -209,9 +209,9 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Unpack variables.
         const T& position = states[0];
         const T& speed = states[1];
@@ -238,9 +238,9 @@ public:
     }
     void path_constraints(unsigned /*i_mesh*/,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& states,
-                          const mesh::VectorX<T>& controls,
-                          Eigen::Ref<mesh::VectorX<T>> constraints)
+                          const tropter::VectorX<T>& states,
+                          const tropter::VectorX<T>& controls,
+                          Eigen::Ref<tropter::VectorX<T>> constraints)
     const override {
         // Unpack variables.
         // -----------------
@@ -252,7 +252,7 @@ public:
                 activation, position, normFibLen, normFibVel, constraints[0]);
     }
     void endpoint_cost(const T& final_time,
-                       const mesh::VectorX<T>& /*final_states*/,
+                       const tropter::VectorX<T>& /*final_states*/,
                        T& cost) const override {
         cost = final_time;
     }
@@ -266,9 +266,9 @@ solveForTrajectoryMuscleRedundancySolver() {
     // ----------------------------------------
     auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTimeDynamic>();
     ocp->print_description();
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", 100);
-    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
             "testSingleMuscleDeGroote2016_MRS_trajectory.csv";
     ocp_solution.write(trajectoryFile);
@@ -490,7 +490,7 @@ int main() {
 // This is no longer used...it's just here for comparison and checking
 // performance.
 //class DeGroote2016MuscleTrajectoryOptimizationOrig
-//        : public mesh::OptimalControlProblemNamed<adouble> {
+//        : public tropter::OptimalControlProblemNamed<adouble> {
 //public:
 //    using T = adouble;
 //    const double g = 9.81;
@@ -509,7 +509,7 @@ int main() {
 //    constexpr static const double c3 = 0.250;
 //
 //    DeGroote2016MuscleTrajectoryOptimizationOrig() :
-//            mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+//            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
 //        // The motion occurs in 1 second.
 //        this->set_time(0, {0.01, 1.0});
 //        // TODO these functions should return indices for these variables.
@@ -521,9 +521,9 @@ int main() {
 //        this->add_control("norm_fiber_velocity", {-1, 1});
 //        this->add_path_constraint("fiber_equilibrium", 0);
 //    }
-//    void dynamics(const mesh::VectorX<T>& states,
-//                  const mesh::VectorX<T>& controls,
-//                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+//    void dynamics(const tropter::VectorX<T>& states,
+//                  const tropter::VectorX<T>& controls,
+//                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
 //        // Unpack variables.
 //        const T& position = states[0];
 //        const T& speed = states[1];
@@ -572,9 +572,9 @@ int main() {
 //    }
 //    void path_constraints(unsigned /*i_mesh*/,
 //                          const T& /*time*/,
-//                          const mesh::VectorX<T>& states,
-//                          const mesh::VectorX<T>& controls,
-//                          Eigen::Ref<mesh::VectorX<T>> constraints)
+//                          const tropter::VectorX<T>& states,
+//                          const tropter::VectorX<T>& controls,
+//                          Eigen::Ref<tropter::VectorX<T>> constraints)
 //    const override {
 //        // Fiber-tendon equilibrium.
 //        // =========================
@@ -661,13 +661,13 @@ int main() {
 //        constraints[0] = normFibForceAlongTen - normTenForce;
 //    }
 //    void endpoint_cost(const T& final_time,
-//                       const mesh::VectorX<T>& /*final_states*/,
+//                       const tropter::VectorX<T>& /*final_states*/,
 //                       T& cost) const override {
 //        cost = final_time;
 //    }
 //    //void integral_cost(const T& /*time*/,
-//    //                   const mesh::VectorX<T>& /*states*/,
-//    //                   const mesh::VectorX<T>& controls,
+//    //                   const tropter::VectorX<T>& /*states*/,
+//    //                   const tropter::VectorX<T>& controls,
 //    //                   T& integrand) const override {
 //    //    integrand = controls[0] * controls[0];
 //    //}

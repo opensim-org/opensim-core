@@ -3,7 +3,7 @@
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
-#include <mesh.h>
+#include <tropter.h>
 
 #include "testing.h"
 
@@ -55,7 +55,7 @@ using namespace OpenSim;
 /// @endverbatim
 /// This class can also solve the problem without muscle dynamics.
 class DeGroote2016MuscleLiftMinTime
-        : public mesh::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblemNamed<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -73,7 +73,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGroote2016MuscleLiftMinTime(bool muscleDynamics) :
-            mesh::OptimalControlProblemNamed<T>("hanging_muscle_min_time"),
+            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time"),
             m_muscleDynamics(muscleDynamics) {
         this->set_time(0, {0.01, 1.0});
         this->add_state("angle", {-SimTK::Pi/2, SimTK::Pi/2}, 0, SimTK::Pi/4);
@@ -91,9 +91,9 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Unpack variables.
         // -----------------
         const T& angle = states[0];
@@ -149,9 +149,9 @@ public:
     }
     void path_constraints(unsigned /*i_mesh*/,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& states,
-                          const mesh::VectorX<T>& controls,
-                          Eigen::Ref<mesh::VectorX<T>> constraints)
+                          const tropter::VectorX<T>& states,
+                          const tropter::VectorX<T>& controls,
+                          Eigen::Ref<tropter::VectorX<T>> constraints)
     const override {
         if (m_muscleDynamics) {
             // Unpack variables.
@@ -172,7 +172,7 @@ public:
         }
     }
     void endpoint_cost(const T& final_time,
-                       const mesh::VectorX<T>& /*final_states*/,
+                       const tropter::VectorX<T>& /*final_states*/,
                        T& cost) const override {
         cost = final_time;
     }
@@ -188,11 +188,11 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>(false);
     ocp->print_description();
     const int N = 100;
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", N);
     // Create an initial guess.
     using Eigen::RowVectorXd;
-    mesh::OptimalControlIterate guess;
+    tropter::OptimalControlIterate guess;
     guess.time.setLinSpaced(N, 0, 0.26);
     ocp->set_state_guess(guess, "angle",
                          RowVectorXd::LinSpaced(N, 0, SimTK::Pi/4));
@@ -200,7 +200,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     ocp->set_control_guess(guess, "activation",
                            RowVectorXd::LinSpaced(N, 1.0, 0));
 
-    mesh::OptimalControlSolution ocp_solution = dircol.solve(guess);
+    tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     std::string trajectoryFile =
             "testSingleMuscleDeGroote2016MomentArms_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
@@ -272,11 +272,11 @@ solveForTrajectoryMuscleRedundancySolver() {
     auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>(true);
     ocp->print_description();
     const int N = 100;
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", N);
     // Create an initial guess.
     using Eigen::RowVectorXd;
-    mesh::OptimalControlIterate guess;
+    tropter::OptimalControlIterate guess;
     guess.time.setLinSpaced(N, 0, 0.3);
     ocp->set_state_guess(guess, "angle",
                          RowVectorXd::LinSpaced(N, 0, SimTK::Pi/4));
@@ -290,7 +290,7 @@ solveForTrajectoryMuscleRedundancySolver() {
     ocp->set_control_guess(guess, "norm_fiber_velocity",
                            RowVectorXd::LinSpaced(N, -0.3, 0));
 
-    mesh::OptimalControlSolution ocp_solution = dircol.solve(guess);
+    tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
 
     std::string trajectoryFile =
             "testSingleMuscleDeGroote2016MomentArms_MRS_trajectory.csv";

@@ -45,6 +45,6 @@ endif()
 
 enable_testing()
 
-add_subdirectory(mesh)
+add_subdirectory(tropter)
 
 add_subdirectory(MuscleRedundancySolver)

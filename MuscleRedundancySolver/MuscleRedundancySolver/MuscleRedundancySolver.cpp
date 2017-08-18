@@ -4,7 +4,7 @@
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimizationSolver.h"
 
-#include <mesh.h>
+#include <tropter.h>
 
 #include <algorithm>
 
@@ -34,12 +34,12 @@ void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class MRSProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
+class MRSProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
 public:
     MRSProblemSeparate(const MuscleRedundancySolver& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
-            : mesh::OptimalControlProblemNamed<T>("MRS"),
+            : tropter::OptimalControlProblemNamed<T>("MRS"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 
@@ -225,9 +225,9 @@ public:
         }
     }
 
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Actuator dynamics.
         // ==================
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
@@ -250,15 +250,15 @@ public:
     }
     void path_constraints(unsigned i_mesh,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& states,
-                          const mesh::VectorX<T>& controls,
-                          Eigen::Ref<mesh::VectorX<T>> constraints)
+                          const tropter::VectorX<T>& states,
+                          const tropter::VectorX<T>& controls,
+                          Eigen::Ref<tropter::VectorX<T>> constraints)
             const override {
         // Actuator equilibrium.
         // =====================
 
         // Assemble generalized forces to apply to the joints.
-        mesh::VectorX<T> genForce(_numCoordsToActuate);
+        tropter::VectorX<T> genForce(_numCoordsToActuate);
         genForce.setZero();
 
         // CoordinateActuators.
@@ -271,7 +271,7 @@ public:
         // Muscles.
         // --------
         if (_numMuscles) {
-            mesh::VectorX<T> tendonForces(_numMuscles);
+            tropter::VectorX<T> tendonForces(_numMuscles);
             for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
                 // Unpack variables.
                 const T& activation = states[2 * i_act];
@@ -304,11 +304,11 @@ public:
                 - genForce;
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& /*states*/,
-                       const mesh::VectorX<T>& controls,
+                       const tropter::VectorX<T>& /*states*/,
+                       const tropter::VectorX<T>& controls,
                        T& integrand) const override {
         // Use a map to skip over fiber velocities.
-        using ExcitationsVector = Eigen::Map<const mesh::VectorX<T>,
+        using ExcitationsVector = Eigen::Map<const tropter::VectorX<T>,
                 /* pointer alignment: Unaligned */   0,
                 /* pointer increment btn elements */ Eigen::InnerStride<2>>;
         ExcitationsVector muscleExcit(controls.data() + _numCoordActuators,
@@ -319,7 +319,7 @@ public:
         // did not end up being a solution to the problem.
         // TODO could also just minimize initial activation.
         // Use a map to skip over fiber lengths.
-        // using ActivationsVector = Eigen::Map<const mesh::VectorX<T>,
+        // using ActivationsVector = Eigen::Map<const tropter::VectorX<T>,
         //         /* pointer alignment: Unaligned */   0,
         //         /* pointer increment btn elements */ Eigen::InnerStride<2>>;
         // ActivationsVector muscleActiv(states.data() + _numCoordActuators,
@@ -332,13 +332,13 @@ public:
     /// mrsVars.activation or mrsVars.other_controls tables), then this returns
     /// an empty iterate.
     // TODO should take a "Iterate" instead.
-    mesh::OptimalControlIterate construct_iterate(
+    tropter::OptimalControlIterate construct_iterate(
             const MuscleRedundancySolver::Solution& mrsVars) const {
         using Eigen::Map;
         using Eigen::VectorXd;
         using Eigen::MatrixXd;
 
-        mesh::OptimalControlIterate vars;
+        tropter::OptimalControlIterate vars;
         // The mrsVars has time as the row dimension, but mrsVars has time as
         // the column dimension. As a result, some quantities must be
         // transposed.
@@ -423,7 +423,7 @@ public:
     /// because computing tendon length requires on the cached muscle-tendon
     /// lengths.
     MuscleRedundancySolver::Solution deconstruct_iterate(
-            const mesh::OptimalControlIterate& ocpVars) const {
+            const tropter::OptimalControlIterate& ocpVars) const {
 
         MuscleRedundancySolver::Solution sol;
         if (_numCoordActuators) {
@@ -724,7 +724,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
             "Invalid value (" + get_initial_guess() + " for "
             "initial_guess; should be 'static_optimization' or 'bounds'.");
     const int num_mesh_points = 100;
-    mesh::OptimalControlIterate guess;
+    tropter::OptimalControlIterate guess;
     if (get_initial_guess() == "static_optimization") {
         std::cout << std::string(79, '=') << std::endl;
         std::cout << "Computing an initial guess with static optimization."
@@ -780,12 +780,12 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
     // Solve the optimal control problem.
     // ----------------------------------
     ocp->print_description();
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
                                                   num_mesh_points);
     std::cout << std::string(79, '=') << std::endl;
     std::cout << "Running the Muscle Redundancy Solver." << std::endl;
     std::cout << std::string(79, '-') << std::endl;
-    mesh::OptimalControlSolution ocp_solution;
+    tropter::OptimalControlSolution ocp_solution;
     if (get_initial_guess() == "static_optimization") {
         ocp_solution = dircol.solve(guess);
     } else if (get_initial_guess() == "bounds") {

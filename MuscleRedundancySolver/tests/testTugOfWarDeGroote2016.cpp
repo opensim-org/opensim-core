@@ -2,7 +2,7 @@
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <DeGroote2016Muscle.h>
-#include <mesh.h>
+#include <tropter.h>
 
 #include "testing.h"
 
@@ -41,7 +41,7 @@ const double DISTANCE = 0.25;
 /// @endverbatim
 template <typename T>
 class DeGroote2016MuscleTugOfWarMinEffortStatic
-        : public mesh::OptimalControlProblemNamed<T> {
+        : public tropter::OptimalControlProblemNamed<T> {
 public:
     const double d = DISTANCE;
     double mass = -1;
@@ -53,7 +53,7 @@ public:
     DeGroote2016Muscle<T> m_muscleR;
 
     DeGroote2016MuscleTugOfWarMinEffortStatic(const Model& model) :
-            mesh::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+            tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
                 this->add_state("position", {-0.02, 0.02}, -0.015, 0.015);
@@ -82,9 +82,9 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Unpack variables.
         // -----------------
         const T& speed = states[m_i_speed];
@@ -98,8 +98,8 @@ public:
         const T netForce = calcNetForce(states, controls);
         derivatives[m_i_speed] = netForce / mass;
     }
-    T calcNetForce(const mesh::VectorX<T>& states,
-                   const mesh::VectorX<T>& controls) const {
+    T calcNetForce(const tropter::VectorX<T>& states,
+                   const tropter::VectorX<T>& controls) const {
         const T& position = states[m_i_position];
         const T& speed = states[m_i_speed];
 
@@ -114,8 +114,8 @@ public:
         return -forceL + forceR;
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& /*states*/,
-                       const mesh::VectorX<T>& controls,
+                       const tropter::VectorX<T>& /*states*/,
+                       const tropter::VectorX<T>& controls,
                        T& integrand) const override {
         const auto& controlL = controls[m_i_activation_l];
         const auto& controlR = controls[m_i_activation_r];
@@ -156,7 +156,7 @@ public:
 // Activation dynamics do *not* substantially slow down the solution process.
 template <typename T>
 class DeGroote2016MuscleTugOfWarMinEffortDynamic
-        : public mesh::OptimalControlProblemNamed<T> {
+        : public tropter::OptimalControlProblemNamed<T> {
 public:
     const double d = DISTANCE;
     double mass = -1;
@@ -177,7 +177,7 @@ public:
     DeGroote2016Muscle<T> m_muscleR;
 
     DeGroote2016MuscleTugOfWarMinEffortDynamic(const Model& model) :
-            mesh::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+            tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
                 this->add_state("position", {-0.02, 0.02}, -0.015, 0.015);
@@ -221,9 +221,9 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const mesh::VectorX<T>& states,
-                  const mesh::VectorX<T>& controls,
-                  Eigen::Ref<mesh::VectorX<T>> derivatives) const override {
+    void dynamics(const tropter::VectorX<T>& states,
+                  const tropter::VectorX<T>& controls,
+                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
         // Unpack variables.
         // -----------------
         const T& speed = states[m_i_speed];
@@ -258,7 +258,7 @@ public:
         derivatives[m_i_norm_fiber_length_r] =
                 m_muscleR.get_max_contraction_velocity() * normFibVelR;
     }
-    T calcNetForce(const mesh::VectorX<T>& states) const {
+    T calcNetForce(const tropter::VectorX<T>& states) const {
         const T& position = states[m_i_position];
 
         T forceL;
@@ -272,9 +272,9 @@ public:
     }
     void path_constraints(unsigned /*i_mesh*/,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& states,
-                          const mesh::VectorX<T>& controls,
-                          Eigen::Ref<mesh::VectorX<T>> constraints)
+                          const tropter::VectorX<T>& states,
+                          const tropter::VectorX<T>& controls,
+                          Eigen::Ref<tropter::VectorX<T>> constraints)
     const override {
         const T& position = states[m_i_position];
         {
@@ -295,8 +295,8 @@ public:
         }
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& /*states*/,
-                       const mesh::VectorX<T>& controls,
+                       const tropter::VectorX<T>& /*states*/,
+                       const tropter::VectorX<T>& controls,
                        T& integrand) const override {
         const auto& controlL = controls[m_i_excitation_l];
         const auto& controlR = controls[m_i_excitation_r];
@@ -376,9 +376,9 @@ solveForTrajectory_GSO(const Model& model) {
     auto ocp = std::make_shared<TugOfWarStatic<adouble>>(model);
     ocp->print_description();
     const int N = 100;
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", N);
-    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
             "testTugOfWarDeGroote2016_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
@@ -441,12 +441,12 @@ solveForTrajectory_MRS(const Model& model) {
     auto ocp = std::make_shared<TugOfWarDynamic<adouble>>(model);
     ocp->print_description();
     const int N = 100;
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", N);
     // Create an initial guess.
     // This initial guess reduces the number of iterations from 52 to 32.
     // using Eigen::RowVectorXd;
-    // mesh::OptimalControlIterate guess;
+    // tropter::OptimalControlIterate guess;
     // guess.time.setLinSpaced(N, 0, 0.5);
     // ocp->set_state_guess(guess, "position",
     //                      RowVectorXd::LinSpaced(N, -0.015, 0.015));
@@ -469,10 +469,10 @@ solveForTrajectory_MRS(const Model& model) {
     //                        RowVectorXd::Constant(N, -0.03));
     // Initializing with a previous solution reduces the number of iterations
     // from 32 to 20.
-    mesh::OptimalControlIterate guess(
+    tropter::OptimalControlIterate guess(
             "testTugOfWarDeGroote2016_MRS_initial_guess.csv");
-    mesh::OptimalControlSolution ocp_solution = dircol.solve(guess);
-    //mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
+    //tropter::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
 
     std::string trajectoryFile =

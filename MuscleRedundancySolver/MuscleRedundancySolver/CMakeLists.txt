@@ -6,7 +6,7 @@ add_library(osimMuscleRedundancySolver
         DeGroote2016Muscle.h
         InverseMuscleSolverMotionData.h InverseMuscleSolverMotionData.cpp
         )
-target_link_libraries(osimMuscleRedundancySolver osimTools mesh)
+target_link_libraries(osimMuscleRedundancySolver osimTools tropter)
 # Do not generate warnings from OpenSim headers ("SYSTEM").
 # No longer need to explicitly include OpenSim's headers;
 # this is handled by linking to OpenSim's libraries.

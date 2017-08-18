@@ -3,7 +3,7 @@
 #include "DeGroote2016Muscle.h"
 #include "InverseMuscleSolverMotionData.h"
 
-#include <mesh.h>
+#include <tropter.h>
 
 #include <algorithm>
 
@@ -28,12 +28,12 @@ void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class GSOProblemSeparate : public mesh::OptimalControlProblemNamed<T> {
+class GSOProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
 public:
     GSOProblemSeparate(const GlobalStaticOptimizationSolver& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
-            : mesh::OptimalControlProblemNamed<T>("GSO"),
+            : tropter::OptimalControlProblemNamed<T>("GSO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 
@@ -185,9 +185,9 @@ public:
 
     void path_constraints(unsigned i_mesh,
                           const T& /*time*/,
-                          const mesh::VectorX<T>& /*states*/,
-                          const mesh::VectorX<T>& controls,
-                          Eigen::Ref<mesh::VectorX<T>> constraints)
+                          const tropter::VectorX<T>& /*states*/,
+                          const tropter::VectorX<T>& controls,
+                          Eigen::Ref<tropter::VectorX<T>> constraints)
     const override {
         // Actuator equilibrium.
         // =====================
@@ -196,7 +196,7 @@ public:
 
         // Assemble generalized forces to apply to the joints.
         // TODO avoid reallocating this each time?
-        mesh::VectorX<T> genForce(_numCoordsToActuate);
+        tropter::VectorX<T> genForce(_numCoordsToActuate);
         genForce.setZero();
 
         // CoordinateActuators.
@@ -209,7 +209,7 @@ public:
         // Muscles.
         // --------
         if (_numMuscles) {
-            mesh::VectorX<T> muscleForces(_numMuscles);
+            tropter::VectorX<T> muscleForces(_numMuscles);
             for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
                 // Unpack variables.
                 const T& activation = controls[_numCoordActuators + i_act];
@@ -235,13 +235,13 @@ public:
                     - genForce;
     }
     void integral_cost(const T& /*time*/,
-                       const mesh::VectorX<T>& /*states*/,
-                       const mesh::VectorX<T>& controls,
+                       const tropter::VectorX<T>& /*states*/,
+                       const tropter::VectorX<T>& controls,
                        T& integrand) const override {
         integrand = controls.squaredNorm();
     }
     GlobalStaticOptimizationSolver::Solution deconstruct_iterate(
-            const mesh::OptimalControlIterate& ocpVars) const {
+            const tropter::OptimalControlIterate& ocpVars) const {
 
         GlobalStaticOptimizationSolver::Solution vars;
         if (_numCoordActuators) {
@@ -488,9 +488,9 @@ GlobalStaticOptimizationSolver::solve() const {
     auto ocp = std::make_shared<GSOProblemSeparate<adouble>>(*this, model,
             motionData);
     ocp->print_description();
-    mesh::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
                                                   100);
-    mesh::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::OptimalControlSolution ocp_solution = dircol.solve();
 
     // Return the solution.
     // --------------------

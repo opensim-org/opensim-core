@@ -1,7 +1,7 @@
 
 #include "InverseMuscleSolverMotionData.h"
 
-#include <mesh.h>
+#include <tropter.h>
 
 #include <OpenSim/OpenSim.h>
 // TODO should not be needed after updating to a newer OpenSim:
@@ -225,7 +225,7 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
             desiredMoments(i_dof, i_time) = value;
         }
     }
-    mesh::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
+    tropter::write(times, desiredMoments, "DEBUG_desiredMoments.csv");
 }
 
 void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
@@ -382,7 +382,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     //         coordFunctions.constructStorage(2));
     // accelSto->print("DEBUG_splinedAccelerations.sto");
 
-    // Convert normalized mesh points into times at which to evaluate
+    // Convert normalized tropter points into times at which to evaluate
     // net joint moments.
     // TODO this variant ignores our data for generalized speeds.
     const auto& times = kinematicsData.getIndependentColumn();
