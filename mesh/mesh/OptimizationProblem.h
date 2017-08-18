@@ -268,12 +268,6 @@ private:
             const double& obj_factor,
             unsigned num_constraints, const double* lambda,
             double& lagrangian_value) const;
-    //    void lagrangian(double obj_factor,
-    //            unsigned num_variables, const adouble* variables,
-    //            unsigned num_constraints, const double* lambda,
-    //            adouble& result) const;
-    void lagrangian(const VectorXa& x, const double& obj_factor,
-            const Eigen::VectorXd& lambda, adouble& result) const;
 
     const OptimizationProblem<adouble>& m_problem;
     // TODO if we want to be able to solve multiple problems at once, these
@@ -281,7 +275,7 @@ private:
     // be "checked out" and "returned."
     static const short int m_objective_tag   = 1;
     static const short int m_constraints_tag = 2;
-    static const short int m_lagrangian_tag = 2;
+    static const short int m_lagrangian_tag = 3;
 
     // We must hold onto the sparsity pattern for the Jacobian and
     // Hessian so that we can pass them to subsequent calls to sparse_jac().
