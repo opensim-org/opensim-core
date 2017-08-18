@@ -1,5 +1,5 @@
-#ifndef TOMU_TESTING_H
-#define TOMU_TESTING_H
+#ifndef MUSCOLLO_TESTING_H
+#define MUSCOLLO_TESTING_H
 
 #include <OpenSim/OpenSim.h>
 
@@ -68,4 +68,4 @@ void rootMeanSquare(
     SimTK_TEST(rmsError < tol);
 };
 
-#endif // TOMU_TESTING_H
+#endif // MUSCOLLO_TESTING_H

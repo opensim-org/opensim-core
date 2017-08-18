@@ -1,5 +1,5 @@
-#ifndef TOMU_MOTIONDATA_H
-#define TOMU_MOTIONDATA_H
+#ifndef MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H
+#define MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -115,4 +115,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // TOMU_MOTIONDATA_H
+#endif // MUSCOLLO_INVERSEMUSCLESOLVERMOTIONDATA_H

@@ -45,7 +45,7 @@ public:
     }
 };
 
-#if defined(TOMU_WITH_SNOPT)
+#if defined(MUSCOLLO_WITH_SNOPT)
 TEST_CASE("Sliding mass new interface") {
 
     auto ocp = std::make_shared<SlidingMassNew<adouble>>();

@@ -21,7 +21,7 @@ target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
 #target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(tropter ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
-if(TOMU_WITH_SNOPT)
+if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
 endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
@@ -29,8 +29,8 @@ endif()
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").
 target_compile_definitions(tropter PUBLIC EIGEN_MPL2_ONLY)
-if(TOMU_WITH_SNOPT)
-    target_compile_definitions(tropter PUBLIC TOMU_WITH_SNOPT)
+if(MUSCOLLO_WITH_SNOPT)
+    target_compile_definitions(tropter PUBLIC MUSCOLLO_WITH_SNOPT)
 endif()
 
 # Specify the include directories that client targets should use.

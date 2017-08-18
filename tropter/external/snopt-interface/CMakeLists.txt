@@ -1,5 +1,5 @@
 # TODO The following is preferable to changing the language for the
-# overall tomu project:
+# overall muscollo project:
 # project(snopt-interface C CXX Fortran)
 
 # TODO cannot use Fortran with Xcode.

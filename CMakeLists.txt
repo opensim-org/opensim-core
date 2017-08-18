@@ -1,11 +1,11 @@
-option(TOMU_WITH_SNOPT
+option(MUSCOLLO_WITH_SNOPT
         "Compile support for the SNOPT optimization library; \
         requires Fortran compiler"
         OFF)
-if(TOMU_WITH_SNOPT)
-    project(tomu C CXX Fortran) # TODO Fortran only for SNOPT interface.
+if(MUSCOLLO_WITH_SNOPT)
+    project(Muscollo C CXX Fortran) # TODO Fortran only for SNOPT interface.
 else()
-    project(tomu C CXX)
+    project(Muscollo C CXX)
 endif()
 cmake_minimum_required(VERSION 3.2)
 

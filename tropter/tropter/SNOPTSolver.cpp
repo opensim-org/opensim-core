@@ -7,7 +7,7 @@ using Eigen::VectorXd;
 using Eigen::VectorXi;
 
 // TODO building the tropter library should not *require* snopt.
-#if !defined(TOMU_WITH_SNOPT)
+#if !defined(MUSCOLLO_WITH_SNOPT)
 
 double SNOPTSolver::optimize_impl(VectorXd& /*variables*/) const
 {
@@ -171,4 +171,4 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     return F[0];
 }
 
-#endif // !defined(TOMU_WITH_SNOPT)
+#endif // !defined(MUSCOLLO_WITH_SNOPT)

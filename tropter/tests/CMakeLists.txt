@@ -18,7 +18,7 @@ tropter_add_test(test_analytic_optimal_control_solutions tropter)
 tropter_add_test(test_double_pendulum tropter)
 tropter_add_test(test_path_constraints tropter)
 tropter_add_test(test_optimal_control_initial_guess tropter)
-if(TOMU_WITH_SNOPT)
+if(MUSCOLLO_WITH_SNOPT)
     tropter_add_test(test_snopt tropter) # snopt7_cpp
 endif()
 
