@@ -192,6 +192,39 @@ void Component::finalizeFromProperties()
 
     markPropertiesAsSubcomponents();
     componentsFinalizeFromProperties();
+
+    auto& subs = getImmediateSubcomponents();
+    std::set<std::string> names{};
+    std::string name{};
+
+    int count = 0;
+    for (auto& sub : subs) {
+        name = sub->getName();
+        const auto& type = sub->getConcreteClassName();
+        auto it = names.find(type+name);
+
+        if (it == names.cend())
+            names.insert(type + name);
+        else {
+            // In the future this should become an Exception 
+            //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), name);
+            
+            //for now rename the duplicately named Component
+            Component* mutableSub = const_cast<Component *>(sub.get());
+            mutableSub->setName(name + "_" + std::to_string(count));
+
+            // Warn of the problem
+            std::string msg = type + " '" + getName() + "' has subcomponents " +
+                "with duplicate name '" + name + "', and was renamed as '" +
+                sub->getName() + "'.";
+            std::cout << msg << std::endl;
+
+            names.insert(type + name);
+        }
+
+        count++;
+    }
+
     extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
 }
