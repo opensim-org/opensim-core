@@ -9,3 +9,6 @@ out.log
 # CLion
 cmake-build-*
 .idea
+
+# Mac
+.DS_Store
