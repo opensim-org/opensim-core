@@ -7,7 +7,6 @@ using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Eigen::Ref;
 
-
 namespace mesh {
 
 Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
@@ -85,14 +84,17 @@ sparsity(const Eigen::VectorXd& x,
 
     // Objective.
     // ----------
-    double obj_value; // We don't actually need the obj. value.
-    trace_objective(m_objective_tag, num_variables(), x.data(), obj_value);
+    {
+        double obj_value; // We don't actually need the obj. value.
+        trace_objective(m_objective_tag, num_variables(), x.data(), obj_value);
+    }
 
     // Jacobian.
     // ---------
     // TODO allow user to provide multiple points at which to determine
     // sparsity?
-    /* TODO if (m_num_constraints)*/ {
+    // TODO if (m_num_constraints)
+    {
         Eigen::VectorXd constraint_values(num_constraints()); // Unused.
         trace_constraints(m_constraints_tag,
                 num_variables(), x.data(),
@@ -132,16 +134,11 @@ sparsity(const Eigen::VectorXd& x,
                 num_constraints(), lambda_vector.data(), lagr_value);
         int repeated_call = 0; // No previous call, need to create tape.
         double* hessian_values = nullptr; // Unused.
-        //VectorXd x_and_lambda(m_num_variables + m_num_constraints);
-        //for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
-        //    x_and_lambda[ivar] = guess[ivar];
-        //}
-        //for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
-        //    x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
-        //}
         int status = ::sparse_hess(m_lagrangian_tag, num_variables(),
                 repeated_call, x.data(), &m_hessian_num_nonzeros,
-                &m_hessian_row_indices, &m_hessian_col_indices, &hessian_values,
+                &m_hessian_row_indices, &m_hessian_col_indices,
+                &hessian_values,
+                // TODO &hessian_values,
                 const_cast<int*>(m_sparse_hess_options.data()));
         // TODO See ADOL-C manual Table 1 to interpret the return value.
         // TODO improve error handling.
@@ -157,6 +154,9 @@ sparsity(const Eigen::VectorXd& x,
                 hessian_col_indices.data());
         // TODO don't duplicate the memory consumption for storing the sparsity
         // pattern: store the pointer to Ipopt's sparsity pattern?
+
+        // Working memory to hold obj_factor and lambda (multipliers).
+        m_hessian_obj_factor_lambda.resize(1 + num_constraints());
     }
 }
 
@@ -225,26 +225,11 @@ hessian_lagrangian(unsigned num_variables, const double* x,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda,
         bool /*new_lambda TODO */,
-        unsigned num_nonzeros, double* nonzeros) const
+        unsigned /*num_nonzeros*/, double* hessian_values) const
 {
-    // TODO this hessian must include the constraint portion!!!
     // TODO if not new_x, then do NOT re-eval objective()!!!
 
-    //// TODO use ADOLC's set_param_vec().
-    double lagr; // Unused.
-    trace_lagrangian(m_lagrangian_tag, num_variables, x, obj_factor,
-            num_constraints, lambda, lagr);
-    // TODO efficiently use the "repeat" argument.
-    int repeated_call = 0;
-    // TODO make general:
-    unsigned int* row_indices = nullptr;
-    unsigned int* col_indices = nullptr;
-    // TODO hope that the row indices are the same between IpOopt and
-    // ADOL-C.
-    double* vals = nullptr;
-    int num_nz;
-    // TODO compute sparse hessian for each element of the constraint
-    // vector....TODO trace with respect to both x and lambda..
+    int repeated_call = 1;
     // http://list.coin-or.org/pipermail/adol-c/2013-April/000900.html
     // TODO "since lambda changes, the Lagrangian function has to be
     // repated every time ...cannot set repeat = 1"
@@ -275,19 +260,20 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     //for (unsigned icon = 0; icon < num_constraints; ++icon) {
     //    x_and_lambda[icon + num_variables] = lambda[icon];
     //}
-    int success = sparse_hess(m_lagrangian_tag, num_variables, repeated_call,
-            x, &num_nz, &row_indices, &col_indices,
-            &vals,
+
+    // Update the passive parameters.
+    m_hessian_obj_factor_lambda[0] = obj_factor;
+    std::copy(lambda, lambda + num_constraints,
+            m_hessian_obj_factor_lambda.begin() + 1);
+    set_param_vec(m_lagrangian_tag, 1 + num_constraints,
+            m_hessian_obj_factor_lambda.data());
+
+    int status = sparse_hess(m_lagrangian_tag, num_variables, repeated_call,
+            x, &m_hessian_num_nonzeros, &m_hessian_row_indices,
+            &m_hessian_col_indices,
+            &hessian_values,
             const_cast<int*>(m_sparse_hess_options.data()));
-    assert(success);
-    for (unsigned i = 0; i < num_nonzeros; ++i) {
-        nonzeros[i] = vals[i];
-    }
-    // TODO try to use modern memory management.
-    delete [] row_indices;
-    delete [] col_indices;
-    // TODO avoid reallocating vals each time!!!
-    delete [] vals;
+    assert(status >= 0);
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -355,18 +341,16 @@ trace_lagrangian(short int tag,
     m_problem.objective(x_adouble, lagrangian_adouble);
     // TODO make sure not to create more params if trace_lagrangian is called
     // multiple times.
-    //result *= mkparam(obj_factor);
-    lagrangian_adouble *= obj_factor;
+    lagrangian_adouble *= ::mkparam(obj_factor);
 
     // TODO if (!m_num_constraints) return;
     VectorXa constr(num_constraints);
     // TODO ...might not need all constraints.
     m_problem.constraints(x_adouble, constr);
-    // TODO it's highly unlikely that this works:
+    // TODO it's highly unlikely that this works (can't use with mkparam()).
     // TODO result += lambda.dot(constr);
     for (unsigned icon = 0; icon < num_constraints; ++icon) {
-        //result += mkparam(lambda[icon]) * constr[icon];
-        lagrangian_adouble += lambda[icon] * constr[icon];
+        lagrangian_adouble += ::mkparam(lambda[icon]) * constr[icon];
     }
 
     lagrangian_adouble >>= lagrangian_value;

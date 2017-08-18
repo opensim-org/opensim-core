@@ -288,6 +288,8 @@ private:
     mutable int m_hessian_num_nonzeros = -1;
     mutable unsigned int* m_hessian_row_indices = nullptr;
     mutable unsigned int* m_hessian_col_indices = nullptr;
+    // Working memory for lambda multipliers and the "obj_factor."
+    mutable std::vector<double> m_hessian_obj_factor_lambda;
     std::vector<int> m_sparse_hess_options;
 };
 
