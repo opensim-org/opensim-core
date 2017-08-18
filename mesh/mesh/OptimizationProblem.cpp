@@ -28,6 +28,28 @@ Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
     return guess;
 }
 
+OptimizationProblem<adouble>::Proxy::Proxy(
+        const OptimizationProblem<adouble>& problem) : m_problem(problem)
+{
+    // TODO move to cpp file.
+
+    // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
+    // [0]: Way of sparsity pattern computation (propagation of index domains).
+    // [1]: Test the computational graph control flow (safe mode).
+    // [2]: Way of bit pattern propagation (automatic detection).
+    // [3]: Way of compression (column compression).
+    m_sparse_jac_options = {0, 0, 0, 0};
+
+    // Test the computational graph control flow (safe mode).
+    // This finds more nonzeros than necessary, but will generate a
+    // sparsity pattern that should be valid across all possible variables.
+    m_sparse_hess_options.resize(2);
+    m_sparse_hess_options[0] = 0;
+    // Way of recovery (indirect). This is a setting for ColPack.
+    // TODO try using direct recovery (1) also.
+    m_sparse_hess_options[1] = 0;
+}
+
 OptimizationProblem<adouble>::Proxy::~Proxy() {
     if (m_jacobian_row_indices) {
         delete [] m_jacobian_row_indices;
