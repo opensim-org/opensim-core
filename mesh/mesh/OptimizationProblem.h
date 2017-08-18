@@ -218,7 +218,26 @@ class OptimizationProblem<T>::Proxy : public OptimizationProblemProxy {
 template<>
 class OptimizationProblem<adouble>::Proxy : public OptimizationProblemProxy {
 public:
-    Proxy(const OptimizationProblem<adouble>& problem) : m_problem(problem) {}
+    Proxy(const OptimizationProblem<adouble>& problem) : m_problem(problem)
+    {
+        // TODO move to cpp file.
+
+        // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
+        // [0]: Way of sparsity pattern computation (propagation of index domains).
+        // [1]: Test the computational graph control flow (safe mode).
+        // [2]: Way of bit pattern propagation (automatic detection).
+        // [3]: Way of compression (column compression).
+        m_sparse_jac_options = {0, 0, 0, 0};
+
+        // Test the computational graph control flow (safe mode).
+        // This finds more nonzeros than necessary, but will generate a
+        // sparsity pattern that should be valid across all possible variables.
+        m_sparse_hess_options.resize(2);
+        m_sparse_hess_options[0] = 0;
+        // Way of recovery (indirect). This is a setting for ColPack.
+        // TODO try using direct recovery (1) also.
+        m_sparse_hess_options[1] = 0;
+    }
     // Delete memory allocated by ADOL-C.
     virtual ~Proxy();
     unsigned num_variables() const override
@@ -263,14 +282,17 @@ private:
     void trace_constraints(short int tag,
             unsigned num_variables, const double* variables,
             unsigned num_constraints, double* constr) const;
-//    void lagrangian(double obj_factor,
-//            unsigned num_variables, const adouble* variables,
-//            unsigned num_constraints, const double* lambda,
-//            adouble& result) const;
-    void lagrangian(double obj_factor, const VectorXa& x,
+    void trace_lagrangian(short int tag,
+            unsigned num_variables, const double* variables,
+            const double& obj_factor,
+            unsigned num_constraints, const double* lambda,
+            double& lagrangian_value) const;
+    //    void lagrangian(double obj_factor,
+    //            unsigned num_variables, const adouble* variables,
+    //            unsigned num_constraints, const double* lambda,
+    //            adouble& result) const;
+    void lagrangian(const VectorXa& x, const double& obj_factor,
             const Eigen::VectorXd& lambda, adouble& result) const;
-    // TODO trace_lagrangian.
-
 
     const OptimizationProblem<adouble>& m_problem;
     // TODO if we want to be able to solve multiple problems at once, these
@@ -278,6 +300,7 @@ private:
     // be "checked out" and "returned."
     static const short int m_objective_tag   = 1;
     static const short int m_constraints_tag = 2;
+    static const short int m_lagrangian_tag = 2;
 
     // We must hold onto the sparsity pattern for the Jacobian and
     // Hessian so that we can pass them to subsequent calls to sparse_jac().
@@ -285,12 +308,12 @@ private:
     mutable int m_jacobian_num_nonzeros = -1;
     mutable unsigned int* m_jacobian_row_indices = nullptr;
     mutable unsigned int* m_jacobian_col_indices = nullptr;
-    // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
-    // [0]: Way of sparsity pattern computation (propagation of index domains).
-    // [1]: Test the computational graph control flow (safe mode).
-    // [2]: Way of bit pattern propagation (automatic detection).
-    // [3]: Way of compression (column compression).
-    std::vector<int> m_sparse_jac_options = {4, 0};
+    std::vector<int> m_sparse_jac_options;
+
+    mutable int m_hessian_num_nonzeros = -1;
+    mutable unsigned int* m_hessian_row_indices = nullptr;
+    mutable unsigned int* m_hessian_col_indices = nullptr;
+    std::vector<int> m_sparse_hess_options;
 };
 
 } // namespace mesh

@@ -28,69 +28,6 @@ Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
     return guess;
 }
 
-//template<>
-//void OptimizationProblem<adouble>::objective(
-//        const Eigen::VectorXd& x, double& obj_value) const
-//{
-//    assert(x.size() == m_num_variables);
-//    // TODO where to store this tag? the proxy would be a good location.
-//    // TODO b/c we can't add a member variable to the template class.
-//    //static const short int objective_tag = 1;
-//    // =====================================================================
-//    // START ACTIVE
-//    // ---------------------------------------------------------------------
-//    trace_on(m_objective_tag);
-//    VectorXa x_adouble(m_num_variables);
-//    adouble f_adouble = 0;
-//    for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= x[i];
-//    m_problem.objective(x_adouble, f_adouble);
-//    f_adouble >>= obj_value;
-//    trace_off();
-//    // ---------------------------------------------------------------------
-//    // END ACTIVE
-//    // =====================================================================
-//}
-//
-//template<>
-//void OptimizationProblem<adouble>::constraints(const Eigen::VectorXd& x,
-//        Eigen::Ref<Eigen::VectorXd> constr) const
-//{
-//    assert(x.size() == m_num_variables);
-//    assert(constr.size() == m_num_constraints);
-//    // TODO if (!num_constraints) return true;
-//
-//    //static const short int constraints_tag = 2;
-//    // =====================================================================
-//    // START ACTIVE
-//    // ---------------------------------------------------------------------
-//    trace_on(constraints_tag);
-//    VectorXa x_adouble(m_num_variables);
-//    // TODO efficiently store this result so it can be used in grad_f, etc.
-//    for (unsigned i = 0; i < m_num_variables; ++i) x_adouble[i] <<= x[i];
-//    VectorXa g_adouble(m_num_constraints);
-//    mconstraints(x_adouble, g_adouble);
-//    for (unsigned i = 0; i < m_num_constraints; ++i) g_adouble[i] >>= constr[i];
-//    trace_off();
-//    // ---------------------------------------------------------------------
-//    // END ACTIVE
-//    // =====================================================================
-//}
-
-
-//template<typename T>
-//void OptimizationProblem<T>::objective(
-//        const VectorX<T>& x, T& obj_value) const
-//{
-//    objective_impl(x, obj_value);
-//}
-
-//template<typename T>
-//void OptimizationProblem<T>::constraints(const VectorX<T>& x,
-//        Eigen::Ref<VectorX<T>> constr) const
-//{
-//    constraints_impl(x, constr);
-//}
-
 OptimizationProblem<adouble>::Proxy::~Proxy() {
     if (m_jacobian_row_indices) {
         delete [] m_jacobian_row_indices;
@@ -99,6 +36,14 @@ OptimizationProblem<adouble>::Proxy::~Proxy() {
     if (m_jacobian_col_indices) {
         delete [] m_jacobian_col_indices;
         m_jacobian_col_indices = nullptr;
+    }
+    if (m_hessian_row_indices) {
+        delete [] m_hessian_row_indices;
+        m_hessian_row_indices = nullptr;
+    }
+    if (m_hessian_col_indices) {
+        delete [] m_hessian_col_indices;
+        m_hessian_col_indices = nullptr;
     }
 }
 
@@ -112,23 +57,26 @@ sparsity(const Eigen::VectorXd& x,
     // TODO check their sizes.
     assert(x.size() == num_variables());
 
-    // Create tapes and determine sparsity patterns.
-    // ---------------------------------------------
+
+    // This function also creates the ADOL-C tapes that are used in the other
+    // function calls.
+
+    // Objective.
+    // ----------
     double obj_value; // We don't actually need the obj. value.
     trace_objective(m_objective_tag, num_variables(), x.data(), obj_value);
 
-    // Determine sparsity patterns.
-    // ----------------------------
+    // Jacobian.
+    // ---------
     // TODO allow user to provide multiple points at which to determine
     // sparsity?
-    // TODO or can I reuse the tape?
     /* TODO if (m_num_constraints)*/ {
         Eigen::VectorXd constraint_values(num_constraints()); // Unused.
         trace_constraints(m_constraints_tag,
                 num_variables(), x.data(),
                 num_constraints(), constraint_values.data());
 
-        int repeated_call = 0; // this is the first call at this value of x.
+        int repeated_call = 0; // No previous call, need to create tape.
         double* jacobian_values = nullptr; // Unused.
         int success = ::sparse_jac(m_constraints_tag, num_constraints(),
                 num_variables(), repeated_call, x.data(),
@@ -149,37 +97,20 @@ sparsity(const Eigen::VectorXd& x,
         std::copy(m_jacobian_col_indices,
                 m_jacobian_col_indices + m_jacobian_num_nonzeros,
                 jacobian_col_indices.data());
+        // TODO don't duplicate the memory consumption for storing the sparsity
+        // pattern: store the pointer to Ipopt's sparsity pattern?
     }
 
+    // Lagrangian.
+    // -----------
     {
-        short int tag = 0;
-        // =================================================================
-        // START ACTIVE
-        // -----------------------------------------------------------------
-        trace_on(tag);
-        VectorXa x_adouble(num_variables());
-        auto lambda_vector = Eigen::VectorXd::Ones(num_constraints());
-        adouble lagrangian_adouble;
-        double lagr;
-        for (unsigned i = 0; i < num_variables(); ++i) {
-            x_adouble[i] <<= x[i];
-        }
-        lagrangian(1.0, x_adouble, lambda_vector, lagrangian_adouble);
-        lagrangian_adouble >>= lagr;
-        trace_off();
-        // -----------------------------------------------------------------
-        // END ACTIVE
-        // =================================================================
-        // TODO efficiently use the "repeat" argument.
-        int repeated_call = 0;
-        int options[2];
-        options[0] = 0; /* test the computational graph control flow? TODO*/
-        options[1] = 0; /* way of recovery TODO */
-        unsigned int* row_indices = NULL;
-        unsigned int* col_indices = NULL;
-        double* hessian = NULL; // We don't actually need the hessian...
-        // TODO use hess_pat instead!!!
-        int num_nonzeros;
+        short int tag = 0; // TODO change to m_lagrangian_tag
+        VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints());
+        double lagr_value; // Unused.
+        trace_lagrangian(tag, num_variables(), x.data(), 1.0,
+                num_constraints(), lambda_vector.data(), lagr_value);
+        int repeated_call = 0; // No previous call, need to create tape.
+        double* hessian_values = nullptr; // Unused.
         //VectorXd x_and_lambda(m_num_variables + m_num_constraints);
         //for (unsigned ivar = 0; ivar < m_num_variables; ++ivar) {
         //    x_and_lambda[ivar] = guess[ivar];
@@ -187,23 +118,24 @@ sparsity(const Eigen::VectorXd& x,
         //for (unsigned icon = 0; icon < m_num_constraints; ++icon) {
         //    x_and_lambda[icon + m_num_variables] = 1; // TODO consistency?
         //}
-        int success = ::sparse_hess(tag, num_variables(),
-                repeated_call, x.data(), &num_nonzeros,
-                &row_indices, &col_indices, &hessian,
-                options);
+        int status = ::sparse_hess(tag, num_variables(),
+                repeated_call, x.data(), &m_hessian_num_nonzeros,
+                &m_hessian_row_indices, &m_hessian_col_indices, &hessian_values,
+                const_cast<int*>(m_sparse_hess_options.data()));
         // TODO See ADOL-C manual Table 1 to interpret the return value.
         // TODO improve error handling.
-        assert(success);
-        hessian_row_indices.resize(num_nonzeros);
-        hessian_col_indices.resize(num_nonzeros);
-        for (int i = 0; i < num_nonzeros; ++i) {
-            hessian_row_indices[i] = row_indices[i];
-            hessian_col_indices[i] = col_indices[i];
-        }
-        // TODO try to use modern memory management.
-        delete [] row_indices;
-        delete [] col_indices;
-        delete [] hessian;
+        assert(status >= 0);
+        delete [] hessian_values;
+        hessian_row_indices.resize(m_hessian_num_nonzeros);
+        hessian_col_indices.resize(m_hessian_num_nonzeros);
+        std::copy(m_hessian_row_indices,
+                m_hessian_row_indices + m_hessian_num_nonzeros,
+                hessian_row_indices.data());
+        std::copy(m_hessian_col_indices,
+                m_hessian_col_indices + m_hessian_num_nonzeros,
+                hessian_col_indices.data());
+        // TODO don't duplicate the memory consumption for storing the sparsity
+        // pattern: store the pointer to Ipopt's sparsity pattern?
     }
 }
 
@@ -230,7 +162,6 @@ constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
 {
-    // TODO cache constraint values? we are ignoring new_variables.
     // Evaluate the constraints tape.
     int status = ::function(m_constraints_tag,
             num_constraints, // number of dependent variables.
@@ -275,44 +206,22 @@ hessian_lagrangian(unsigned num_variables, const double* x,
         bool /*new_lambda TODO */,
         unsigned num_nonzeros, double* nonzeros) const
 {
-
     // TODO this hessian must include the constraint portion!!!
     // TODO if not new_x, then do NOT re-eval objective()!!!
 
-    // TODO remove from here and utilize new_x.
-    // TODO or can I reuse the tape?
     short int tag = 0;
-    // -----------------------------------------------------------------
-    // START ACTIVE
-    trace_on(tag);
-    VectorXa x_adouble(num_variables);
-    VectorXd lambda_vector(num_constraints); // TODO use Eigen::Map.
-    adouble lagrangian_adouble;
-    double lagr;
-    for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
-        // TODO add this operator for std::vector.
-        x_adouble[ivar] <<= x[ivar];
-    }
-    for (unsigned icon = 0; icon < num_constraints; ++icon) {
-        lambda_vector[icon] = lambda[icon];
-    }
-    // TODO use ADOLC's set_param_vec().
-    lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
-    lagrangian_adouble >>= lagr;
-    trace_off();
-    // END ACTIVE
-    // -----------------------------------------------------------------
+    //// TODO use ADOLC's set_param_vec().
+    double lagr; // Unused.
+    trace_lagrangian(tag /*m_lagrangian_tag*/, num_variables, x, obj_factor,
+            num_constraints, lambda, lagr);
     // TODO efficiently use the "repeat" argument.
     int repeated_call = 0;
-    int options[2];
-    options[0] = 0; /* test the computational graph control flow? TODO*/
-    options[1] = 0; /* way of recovery TODO */
     // TODO make general:
-    unsigned int* row_indices = NULL;
-    unsigned int* col_indices = NULL;
+    unsigned int* row_indices = nullptr;
+    unsigned int* col_indices = nullptr;
     // TODO hope that the row indices are the same between IpOopt and
     // ADOL-C.
-    double* vals = NULL;
+    double* vals = nullptr;
     int num_nz;
     // TODO compute sparse hessian for each element of the constraint
     // vector....TODO trace with respect to both x and lambda..
@@ -348,7 +257,8 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     //}
     int success = sparse_hess(tag, num_variables, repeated_call,
             x, &num_nz, &row_indices, &col_indices,
-            &vals, options);
+            &vals,
+            const_cast<int*>(m_sparse_hess_options.data()));
     assert(success);
     for (unsigned i = 0; i < num_nonzeros; ++i) {
         nonzeros[i] = vals[i];
@@ -366,9 +276,9 @@ trace_objective(short int tag,
         double& obj_value) const
 {
 //    assert(x.size() == m_num_variables);
-    // =====================================================================
+    // =========================================================================
     // START ACTIVE
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     trace_on(tag);
     VectorXa x_adouble(num_variables);
     adouble f_adouble = 0;
@@ -376,9 +286,9 @@ trace_objective(short int tag,
     m_problem.objective(x_adouble, f_adouble);
     f_adouble >>= obj_value;
     trace_off();
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // END ACTIVE
-    // =====================================================================
+    // =========================================================================
 }
 
 void OptimizationProblem<adouble>::Proxy::
@@ -389,9 +299,9 @@ trace_constraints(short int tag,
 //    assert(x.size() == m_num_variables);
 //    assert(constr.size() == m_num_constraints);
     // TODO if (!num_constraints) return true;
-    // =====================================================================
+    // =========================================================================
     // START ACTIVE
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     trace_on(tag);
     VectorXa x_adouble(num_variables);
     // TODO efficiently store this result so it can be used in grad_f, etc.
@@ -400,13 +310,34 @@ trace_constraints(short int tag,
     m_problem.constraints(x_adouble, g_adouble);
     for (unsigned i = 0; i < num_constraints; ++i) g_adouble[i] >>= constr[i];
     trace_off();
-    // ---------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // END ACTIVE
-    // =====================================================================
+    // =========================================================================
 }
 
 void OptimizationProblem<adouble>::Proxy::
-lagrangian(double obj_factor, const VectorXa& x,
+trace_lagrangian(short int tag,
+        unsigned num_variables, const double* x, const double& obj_factor,
+        unsigned num_constraints, const double* lambda,
+        double& lagrangian_value) const {
+    // =========================================================================
+    // START ACTIVE
+    // -------------------------------------------------------------------------
+    trace_on(tag);
+    VectorXa x_adouble(num_variables);
+    VectorXd lambda_vector = Eigen::VectorXd::Map(lambda, num_constraints);
+    adouble lagrangian_adouble;
+    for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
+    lagrangian(x_adouble, obj_factor, lambda_vector, lagrangian_adouble);
+    lagrangian_adouble >>= lagrangian_value;
+    trace_off();
+    // -------------------------------------------------------------------------
+    // END ACTIVE
+    // =========================================================================
+}
+
+void OptimizationProblem<adouble>::Proxy::
+lagrangian(const VectorXa& x, const double& obj_factor,
         const Eigen::VectorXd& lambda, adouble& result) const
 {
     assert(x.size() == num_variables());
@@ -420,14 +351,18 @@ lagrangian(double obj_factor, const VectorXa& x,
     //    result *= obj_factor;
     //}
     m_problem.objective(x, result);
+    // TODO make sure not to create more params if trace_lagrangian is called
+    // multiple times.
+    //result *= mkparam(obj_factor);
     result *= obj_factor;
 
     // TODO if (!m_num_constraints) return;
     VectorXa constr(num_constraints());
-    m_problem.constraints(x, constr); // TODO ...?
+    m_problem.constraints(x, constr); // TODO ...might not need all constraints.
     // TODO it's highly unlikely that this works:
     // TODO result += lambda.dot(constr);
     for (unsigned icon = 0; icon < num_constraints(); ++icon) {
+        //result += mkparam(lambda[icon]) * constr[icon];
         result += lambda[icon] * constr[icon];
     }
 }
