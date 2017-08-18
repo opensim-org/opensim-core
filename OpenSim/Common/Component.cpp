@@ -193,7 +193,7 @@ void Component::finalizeFromProperties()
     markPropertiesAsSubcomponents();
     componentsFinalizeFromProperties();
 
-    auto& subs = getImmediateSubcomponents();
+    auto subs = getImmediateSubcomponents();
     std::set<std::string> names{};
     std::string name{};
 
