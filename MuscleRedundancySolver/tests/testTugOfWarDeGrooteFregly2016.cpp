@@ -1,7 +1,7 @@
 #include <OpenSim/OpenSim.h>
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
-#include <DeGroote2016Muscle.h>
+#include <DeGrooteFregly2016Muscle.h>
 #include <tropter.h>
 
 #include "testing.h"
@@ -40,7 +40,7 @@ const double DISTANCE = 0.25;
 ///              u(t_f) = 0
 /// @endverbatim
 template <typename T>
-class DeGroote2016MuscleTugOfWarMinEffortStatic
+class DeGrooteFregly2016MuscleTugOfWarMinEffortStatic
         : public tropter::OptimalControlProblemNamed<T> {
 public:
     const double d = DISTANCE;
@@ -49,10 +49,10 @@ public:
     int m_i_speed = -1;
     int m_i_activation_l = -1;
     int m_i_activation_r = -1;
-    DeGroote2016Muscle<T> m_muscleL;
-    DeGroote2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016Muscle<T> m_muscleL;
+    DeGrooteFregly2016Muscle<T> m_muscleR;
 
-    DeGroote2016MuscleTugOfWarMinEffortStatic(const Model& model) :
+    DeGrooteFregly2016MuscleTugOfWarMinEffortStatic(const Model& model) :
             tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
@@ -64,7 +64,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGroote2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016Muscle<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -74,7 +74,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGroote2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016Muscle<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),
@@ -155,7 +155,7 @@ public:
 // first solve the problem without pennation?
 // Activation dynamics do *not* substantially slow down the solution process.
 template <typename T>
-class DeGroote2016MuscleTugOfWarMinEffortDynamic
+class DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic
         : public tropter::OptimalControlProblemNamed<T> {
 public:
     const double d = DISTANCE;
@@ -173,10 +173,10 @@ public:
     int m_i_norm_fiber_velocity_r = -1;
     int m_i_fiber_equilibrium_r = -1;
 
-    DeGroote2016Muscle<T> m_muscleL;
-    DeGroote2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016Muscle<T> m_muscleL;
+    DeGrooteFregly2016Muscle<T> m_muscleR;
 
-    DeGroote2016MuscleTugOfWarMinEffortDynamic(const Model& model) :
+    DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic(const Model& model) :
             tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
@@ -203,7 +203,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGroote2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016Muscle<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -213,7 +213,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGroote2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016Muscle<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),
@@ -365,7 +365,7 @@ OpenSim::Model buildTugOfWarModel() {
 }
 
 template <typename T>
-using TugOfWarStatic = DeGroote2016MuscleTugOfWarMinEffortStatic<T>;
+using TugOfWarStatic = DeGrooteFregly2016MuscleTugOfWarMinEffortStatic<T>;
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
 solveForTrajectory_GSO(const Model& model) {
@@ -380,7 +380,7 @@ solveForTrajectory_GSO(const Model& model) {
                                                   "ipopt", N);
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
-            "testTugOfWarDeGroote2016_GSO_trajectory.csv";
+            "testTugOfWarDeGrooteFregly2016_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -432,7 +432,7 @@ solveForTrajectory_GSO(const Model& model) {
 }
 
 template <typename T>
-using TugOfWarDynamic = DeGroote2016MuscleTugOfWarMinEffortDynamic<T>;
+using TugOfWarDynamic = DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic<T>;
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
 solveForTrajectory_MRS(const Model& model) {
@@ -470,13 +470,13 @@ solveForTrajectory_MRS(const Model& model) {
     // Initializing with a previous solution reduces the number of iterations
     // from 32 to 20.
     tropter::OptimalControlIterate guess(
-            "testTugOfWarDeGroote2016_MRS_initial_guess.csv");
+            "testTugOfWarDeGrooteFregly2016_MRS_initial_guess.csv");
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     //tropter::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
 
     std::string trajectoryFile =
-            "testTugOfWarDeGroote2016_MRS_trajectory.csv";
+            "testTugOfWarDeGrooteFregly2016_MRS_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -542,7 +542,7 @@ void test2Muscles1DOFGlobalStaticOptimizationSolver(
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    solution.write("testTugOfWarDeGroote2016_GSO");
+    solution.write("testTugOfWarDeGrooteFregly2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -583,7 +583,7 @@ void test2Muscles1DOFMuscleRedundancySolver(
     // generalized forces (which are not available in practice).
     mrs.set_zero_initial_activation(true);
     MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("testTugOfWarDeGroote2016_MRS");
+    solution.write("testTugOfWarDeGrooteFregly2016_MRS");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -631,7 +631,7 @@ void test2Muscles1DOFMuscleRedundancySolver(
 }
 
 int main() {
-    SimTK_START_TEST("testTugOfWarDeGroote2016");
+    SimTK_START_TEST("testTugOfWarDeGrooteFregly2016");
         Model model = buildTugOfWarModel();
         model.finalizeFromProperties();
         {

@@ -2,7 +2,7 @@
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <MuscleRedundancySolver.h>
 #include <GlobalStaticOptimizationSolver.h>
-#include <DeGroote2016Muscle.h>
+#include <DeGrooteFregly2016Muscle.h>
 #include <tropter.h>
 
 #include "testing.h"
@@ -14,7 +14,7 @@ using namespace OpenSim;
 /// Then use an inverse solver to recover the original activation trajectory.
 /// We do this for both GlobalStaticOptimizationSolver and
 /// MuscleRedundancySolver. This is similar to
-/// testSingleMuscleDeGroote2016MomentArms except this time we use a
+/// testSingleMuscleDeGrooteFregly2016MomentArms except this time we use a
 /// rotational degree of freedom and we seek to make sure moment arms are
 /// used properly in MuscleRedundancySolver.
 
@@ -23,7 +23,7 @@ using namespace OpenSim;
 
 /// Lift a muscle against gravity from a fixed starting state to a fixed end
 /// position and velocity, in minimum time. Unlike in
-/// testSingleMuscleDeGroote2016, in which the single degree of freedom is
+/// testSingleMuscleDeGrooteFregly2016, in which the single degree of freedom is
 /// translational, this DOF is rotational. This allows us to test the moment
 /// arms calculations.
 ///
@@ -54,7 +54,7 @@ using namespace OpenSim;
 ///              u(t_f) = 0
 /// @endverbatim
 /// This class can also solve the problem without muscle dynamics.
-class DeGroote2016MuscleLiftMinTime
+class DeGrooteFregly2016MuscleLiftMinTime
         : public tropter::OptimalControlProblemNamed<adouble> {
 public:
     using T = adouble;
@@ -72,7 +72,7 @@ public:
     // optimal fiber lengths per second:
     const double max_contraction_velocity = 10;
 
-    DeGroote2016MuscleLiftMinTime(bool muscleDynamics) :
+    DeGrooteFregly2016MuscleLiftMinTime(bool muscleDynamics) :
             tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time"),
             m_muscleDynamics(muscleDynamics) {
         this->set_time(0, {0.01, 1.0});
@@ -87,7 +87,7 @@ public:
         } else {
             this->add_control("activation", {0, 1});
         }
-        m_muscle = DeGroote2016Muscle<T>(
+        m_muscle = DeGrooteFregly2016Muscle<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
@@ -177,7 +177,7 @@ public:
         cost = final_time;
     }
 private:
-    DeGroote2016Muscle<T> m_muscle;
+    DeGrooteFregly2016Muscle<T> m_muscle;
     bool m_muscleDynamics;
 };
 
@@ -185,7 +185,7 @@ std::pair<TimeSeriesTable, TimeSeriesTable>
 solveForTrajectoryGlobalStaticOptimizationSolver() {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
-    auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>(false);
+    auto ocp = std::make_shared<DeGrooteFregly2016MuscleLiftMinTime>(false);
     ocp->print_description();
     const int N = 100;
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
@@ -202,7 +202,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
 
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     std::string trajectoryFile =
-            "testSingleMuscleDeGroote2016MomentArms_GSO_trajectory.csv";
+            "testSingleMuscleDeGrooteFregly2016MomentArms_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -240,7 +240,7 @@ solveForTrajectoryGlobalStaticOptimizationSolver() {
     // ------------------------------------------------------
     // TimeSeriesTable actualInvDyn;
     // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
+    // DeGrooteFregly2016Muscle<double> muscle(ocp->max_isometric_force,
     //                                   ocp->optimal_fiber_length,
     //                                   ocp->tendon_slack_length,
     //                                   ocp->pennation_angle_at_optimal,
@@ -269,7 +269,7 @@ std::pair<TimeSeriesTable, TimeSeriesTable>
 solveForTrajectoryMuscleRedundancySolver() {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
-    auto ocp = std::make_shared<DeGroote2016MuscleLiftMinTime>(true);
+    auto ocp = std::make_shared<DeGrooteFregly2016MuscleLiftMinTime>(true);
     ocp->print_description();
     const int N = 100;
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
@@ -293,7 +293,7 @@ solveForTrajectoryMuscleRedundancySolver() {
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
 
     std::string trajectoryFile =
-            "testSingleMuscleDeGroote2016MomentArms_MRS_trajectory.csv";
+            "testSingleMuscleDeGrooteFregly2016MomentArms_MRS_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -331,7 +331,7 @@ solveForTrajectoryMuscleRedundancySolver() {
     // ------------------------------------------------------
     // TimeSeriesTable actualInvDyn;
     // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGroote2016Muscle<double> muscle(ocp->max_isometric_force,
+    // DeGrooteFregly2016Muscle<double> muscle(ocp->max_isometric_force,
     //                                   ocp->optimal_fiber_length,
     //                                   ocp->tendon_slack_length,
     //                                   ocp->pennation_angle_at_optimal,
@@ -357,7 +357,7 @@ solveForTrajectoryMuscleRedundancySolver() {
 OpenSim::Model buildLiftingMassModel() {
     using SimTK::Vec3;
 
-    DeGroote2016MuscleLiftMinTime ocp(true);
+    DeGrooteFregly2016MuscleLiftMinTime ocp(true);
     Model model;
     //model.setUseVisualizer(true);
     model.setName("hanging_muscle");
@@ -424,7 +424,7 @@ void testLiftingMassGlobalStaticOptimizationSolver(
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    solution.write("testSingleMuscleDeGroote2016MomentArms_GSO");
+    solution.write("testSingleMuscleDeGrooteFregly2016MomentArms_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -458,7 +458,7 @@ void testLiftingMassMuscleRedundancySolver(
     // accelerations from a spline fit.
     mrs.set_create_reserve_actuators(0.001);
     MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("testSingleMuscleDeGroote2016MomentArms_MRS");
+    solution.write("testSingleMuscleDeGrooteFregly2016MomentArms_MRS");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -479,7 +479,7 @@ void testLiftingMassMuscleRedundancySolver(
 }
 
 int main() {
-    SimTK_START_TEST("testSingleMuscleDeGroote2016MomentArms");
+    SimTK_START_TEST("testSingleMuscleDeGrooteFregly2016MomentArms");
         {
             auto gsoData = solveForTrajectoryGlobalStaticOptimizationSolver();
             SimTK_SUBTEST1(testLiftingMassGlobalStaticOptimizationSolver,

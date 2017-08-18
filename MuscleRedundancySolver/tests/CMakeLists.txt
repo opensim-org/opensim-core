@@ -17,18 +17,19 @@ MRSAddTest(testHangingMassRoundtrip osimMuscleRedundancySolver)
 
 MRSAddTest(testSingleMuscle osimMuscleRedundancySolver)
 
-MRSAddTest(testSingleMuscleDeGroote2016 osimMuscleRedundancySolver)
+MRSAddTest(testSingleMuscleDeGrooteFregly2016 osimMuscleRedundancySolver)
 
-MRSAddTest(testSingleMuscleDeGroote2016MomentArms osimMuscleRedundancySolver)
+MRSAddTest(testSingleMuscleDeGrooteFregly2016MomentArms
+        osimMuscleRedundancySolver)
 
-MRSAddTest(testTugOfWarDeGroote2016 osimMuscleRedundancySolver)
-file(COPY testTugOfWarDeGroote2016_MRS_initial_guess.csv
+MRSAddTest(testTugOfWarDeGrooteFregly2016 osimMuscleRedundancySolver)
+file(COPY testTugOfWarDeGrooteFregly2016_MRS_initial_guess.csv
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-MRSAddTest(test2Muscles2DOFsDeGroote2016 osimMuscleRedundancySolver)
-file(COPY test2Muscles2DOFsDeGroote2016_MRS_initial_guess.csv
-          test2Muscles2DOFsDeGroote2016_GSO_setup.xml
-          test2Muscles2DOFsDeGroote2016_MRS_setup.xml
+MRSAddTest(test2Muscles2DOFsDeGrooteFregly2016 osimMuscleRedundancySolver)
+file(COPY test2Muscles2DOFsDeGrooteFregly2016_MRS_initial_guess.csv
+          test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml
+          test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 MRSAddTest(testGait10dof18musc osimMuscleRedundancySolver)

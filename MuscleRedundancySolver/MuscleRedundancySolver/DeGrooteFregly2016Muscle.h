@@ -1,5 +1,5 @@
-#ifndef MRS_DEGROOTE2016MUSCLE_H_
-#define MRS_DEGROOTE2016MUSCLE_H_
+#ifndef MRS_DEGROOTEFREGLY2016MUSCLE_H_
+#define MRS_DEGROOTEFREGLY2016MUSCLE_H_
 
 #include <adolc/adolc.h>
 
@@ -11,14 +11,14 @@
 /// This class template is not part of OpenSim.
 // TODO unify the function signatures (return types).
 // TODO splitting calcEquilibriumResidual() into calcNorm*() functions caused
-// testSingleMuscleDeGroote2016()'s trajectory optimization and
+// testSingleMuscleDeGrooteFregly2016()'s trajectory optimization and
 // MuscleRedundancySolver to increase duration from 9 seconds to 13 seconds
 // (in Debug).
 template <typename T>
-class DeGroote2016Muscle {
+class DeGrooteFregly2016Muscle {
 public:
-    DeGroote2016Muscle() = default;
-    DeGroote2016Muscle(const double& max_isometric_force,
+    DeGrooteFregly2016Muscle() = default;
+    DeGrooteFregly2016Muscle(const double& max_isometric_force,
                        const double& optimal_fiber_length,
                        const double& tendon_slack_length,
                        const double& pennation_angle_at_optimal,
@@ -31,8 +31,8 @@ public:
         _norm_fiber_width = sin(pennation_angle_at_optimal);
         _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
-    DeGroote2016Muscle<double> convert_scalartype_double() const {
-        return DeGroote2016Muscle<double>(_max_isometric_force,
+    DeGrooteFregly2016Muscle<double> convert_scalartype_double() const {
+        return DeGrooteFregly2016Muscle<double>(_max_isometric_force,
                 _optimal_fiber_length, _tendon_slack_length,
                 _pennation_angle_at_optimal, _max_contraction_velocity);
     }
@@ -257,4 +257,4 @@ private:
     double _fiber_width = NaN;
 };
 
-#endif // MRS_DEGROOTE2016MUSCLE_H_
+#endif // MRS_DEGROOTEFREGLY2016MUSCLE_H_

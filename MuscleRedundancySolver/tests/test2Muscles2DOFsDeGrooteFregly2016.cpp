@@ -1,7 +1,7 @@
 #include <OpenSim/OpenSim.h>
 #include <GlobalStaticOptimizationSolver.h>
 #include <MuscleRedundancySolver.h>
-#include <DeGroote2016Muscle.h>
+#include <DeGrooteFregly2016Muscle.h>
 #include <InverseMuscleSolverMotionData.h>
 #include <tropter.h>
 
@@ -69,8 +69,8 @@ public:
     int m_i_vy = -1;
     int m_i_activation_l = -1;
     int m_i_activation_r = -1;
-    DeGroote2016Muscle<T> m_muscleL;
-    DeGroote2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016Muscle<T> m_muscleL;
+    DeGrooteFregly2016Muscle<T> m_muscleR;
     struct NetForce {
         T x;
         T y;
@@ -89,7 +89,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGroote2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016Muscle<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -99,7 +99,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGroote2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016Muscle<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),
@@ -218,8 +218,8 @@ public:
     int m_i_fiber_equilibrium_l = -1;
     int m_i_norm_fiber_velocity_r = -1;
     int m_i_fiber_equilibrium_r = -1;
-    DeGroote2016Muscle<T> m_muscleL;
-    DeGroote2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016Muscle<T> m_muscleL;
+    DeGrooteFregly2016Muscle<T> m_muscleR;
     struct NetForce {
         T x;
         T y;
@@ -251,7 +251,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGroote2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016Muscle<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -261,7 +261,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGroote2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016Muscle<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),
@@ -435,7 +435,7 @@ OpenSim::Model buildModel() {
     }
 
     // For use in "filebased" tests.
-    model.print("test2Muscles2DOFsDeGroote2016.osim");
+    model.print("test2Muscles2DOFsDeGrooteFregly2016.osim");
     // SimTK::State s = model.initSystem();
     // model.equilibrateMuscles(s);
     // model.updMatterSubsystem().setShowDefaultGeometry(true);
@@ -460,7 +460,7 @@ solveForTrajectory_GSO(const Model& model) {
                                                   "ipopt", N);
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
-            "test2Muscles2DOFsDeGroote2016_GSO_trajectory.csv";
+            "test2Muscles2DOFsDeGrooteFregly2016_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -499,7 +499,7 @@ solveForTrajectory_GSO(const Model& model) {
     }
     // For use in the "filebased" test.
     CSVFileAdapter::write(kinematics,
-            "test2Muscles2DOFsDeGroote2016_GSO_kinematics.csv");
+            "test2Muscles2DOFsDeGrooteFregly2016_GSO_kinematics.csv");
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
@@ -531,13 +531,13 @@ solveForTrajectory_MRS(const Model& model) {
                                                   "ipopt", N);
 
     tropter::OptimalControlIterate guess(
-            "test2Muscles2DOFsDeGroote2016_MRS_initial_guess.csv");
+            "test2Muscles2DOFsDeGrooteFregly2016_MRS_initial_guess.csv");
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     //tropter::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
 
     std::string trajectoryFile =
-            "test2Muscles2DOFsDeGroote2016_MRS_trajectory.csv";
+            "test2Muscles2DOFsDeGrooteFregly2016_MRS_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -576,7 +576,7 @@ solveForTrajectory_MRS(const Model& model) {
     }
     // For use in the "filebased" test.
     CSVFileAdapter::write(kinematics,
-            "test2Muscles2DOFsDeGroote2016_MRS_kinematics.csv");
+            "test2Muscles2DOFsDeGrooteFregly2016_MRS_kinematics.csv");
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
@@ -624,9 +624,9 @@ void test2Muscles2DOFs_GSO(
     gso.set_lowpass_cutoff_frequency_for_joint_moments(80);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
-    // gso.print("test2Muscles2DOFsDeGroote2016_GSO_setup.xml");
+    // gso.print("test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
-    // solution.write("test2Muscles2DOFsDeGroote2016_GSO");
+    // solution.write("test2Muscles2DOFsDeGrooteFregly2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
     compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
@@ -639,7 +639,7 @@ void test2Muscles2DOFs_GSO_Filebased(
     const auto& ocpSolution = data.first;
 
     GlobalStaticOptimizationSolver gso(
-            "test2Muscles2DOFsDeGroote2016_GSO_setup.xml");
+            "test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
     double reserveOptimalForce = gso.get_create_reserve_actuators();
     GlobalStaticOptimizationSolver::Solution solution = gso.solve();
 
@@ -751,9 +751,9 @@ void test2Muscles2DOFs_MRS(
     // incorrectly starts at a large value (no penalty for large initial
     // activation).
     mrs.set_zero_initial_activation(true);
-    // mrs.print("test2Muscles2DOFsDeGroote2016_MRS_setup.xml");
+    // mrs.print("test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml");
     MuscleRedundancySolver::Solution solution = mrs.solve();
-    // solution.write("test2Muscles2DOFsDeGroote2016_MRS");
+    // solution.write("test2Muscles2DOFsDeGrooteFregly2016_MRS");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -766,7 +766,8 @@ void test2Muscles2DOFs_MRS_Filebased(
     const auto& ocpSolution = data.first;
 
     // Create the MuscleRedundancySolver.
-    MuscleRedundancySolver mrs("test2Muscles2DOFsDeGroote2016_MRS_setup.xml");
+    MuscleRedundancySolver mrs
+            ("test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml");
     double reserveOptimalForce = mrs.get_create_reserve_actuators();
     MuscleRedundancySolver::Solution solution = mrs.solve();
 
@@ -824,7 +825,7 @@ void test2Muscles2DOFs_MRS_GenForces(
 }
 
 int main() {
-    SimTK_START_TEST("test2Muscles2DOFsDeGroote2016");
+    SimTK_START_TEST("test2Muscles2DOFsDeGrooteFregly2016");
         Model model = buildModel();
         model.finalizeFromProperties();
         {

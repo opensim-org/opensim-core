@@ -3,7 +3,7 @@ add_library(osimMuscleRedundancySolver
         InverseMuscleSolver.h            InverseMuscleSolver.cpp
         GlobalStaticOptimizationSolver.h GlobalStaticOptimizationSolver.cpp
         MuscleRedundancySolver.h         MuscleRedundancySolver.cpp
-        DeGroote2016Muscle.h
+        DeGrooteFregly2016Muscle.h
         InverseMuscleSolverMotionData.h InverseMuscleSolverMotionData.cpp
         )
 target_link_libraries(osimMuscleRedundancySolver osimTools tropter)
