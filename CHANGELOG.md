@@ -86,7 +86,8 @@ a parent Component are accessible this way. The Model's typed %Sets and `add####
 are no longer necessary to compose a Model, since any Component can now be composed of
 components. `Model` still supports `addd####()` methods and de/serialization of Sets,
 but components added via `addComponent` are NOT included in the Sets but contained
-in the Component's *components* property list. Details in PR#1014.
+in the Component's *components* property list. Details in PR#1014. **Note**, it is now
+strictly required that immediate subcomponents of the same type have unique names. For example, a Model's `BodySet` cannot contain two bodies named *tibia* because it is  ambiguous as to which *tibia* `Body` a `Joint` or any other component is referring to.
 
 Bug Fixes
 ---------
@@ -97,6 +98,8 @@ Bug Fixes
 - Fixed a bug in the equilibrium solution of Millard and Thelen muscles, where the initial activation and fiber-length values (for solving for equilibrium) were always coming from the default values. This was unnecessary, because unless specified otherwise, the state automatically contains the default values. This fixes an issue where initial states activations from a file were not respected by the Forward Tool and instead, the initial activations would revert to the model defaults. (PR #272)
 - Fixed a bug where MuscleAnalysis was producing empty moment arm files. We now avoid creating empty Moment and MomentArm storage files when `_computeMoments` is False. (PR #324)
 - Fixed bug causing the muscle equilibrium solve routine in both Thelen2003Muscle and Millard2012EquilibriumMuscle to fail to converge and erroneously return the minimum fiber length. The fix added a proper reduction in step-size when errors increase and limiting the fiber-length to its minimum. (PR #1728)
+- Fixed a bug where Models with Bodies and Joints (and other component types) with the same name were loaded without error. Duplicate names Bodies were simply being ignored and only the first Body of that name in the BodySet was being used, for example, to connect a Body to its parent via its Joint, or to affix path points to its respective Body. Now, duplicate names are flagged and renamed so they are uniquely identified. (PR #1887)
+
 
 New Classes
 -----------
