@@ -252,7 +252,6 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     // a try and see what works better for you. Both approaches have their
     // pros and cons with respect to efficiency.
     //
-
     //std::vector<double> x_and_lambda(num_variables + num_constraints);
     //for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
     //    x_and_lambda[ivar] = x[ivar];
