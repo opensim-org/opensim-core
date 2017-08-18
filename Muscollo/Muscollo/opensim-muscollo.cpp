@@ -1,6 +1,6 @@
 #include <iostream>
-#include "GlobalStaticOptimizationSolver.h"
-#include "MuscleRedundancySolver.h"
+#include "GlobalStaticOptimization.h"
+#include "INDYGO.h"
 
 using namespace OpenSim;
 
@@ -12,10 +12,11 @@ int main(int argc, char* argv[]) {
 
     try {
         OPENSIM_THROW_IF(argc != 2, Exception,
-            "opensim-mrs requires exactly 1 argument (path to setup file).");
+            "opensim-muscollo requires exactly 1 argument (path to setup file)"
+                    ".");
 
-        Object::registerType(GlobalStaticOptimizationSolver());
-        Object::registerType(MuscleRedundancySolver());
+        Object::registerType(GlobalStaticOptimization());
+        Object::registerType(INDYGO());
 
         const std::string setupFile(argv[1]);
         auto obj = std::unique_ptr<Object>(Object::makeObjectFromFile(setupFile));
@@ -24,11 +25,11 @@ int main(int argc, char* argv[]) {
             "A problem occurred when trying to load file '" + setupFile + "'.");
 
         if (const auto* gso =
-                dynamic_cast<const GlobalStaticOptimizationSolver*>(obj.get()))
+                dynamic_cast<const GlobalStaticOptimization*>(obj.get()))
         {
             auto solution = gso->solve();
         } else if (const auto* mrs =
-                dynamic_cast<const MuscleRedundancySolver*>(obj.get())) {
+                dynamic_cast<const INDYGO*>(obj.get())) {
             auto solution = mrs->solve();
         } else {
             throw Exception("The provided file '" + setupFile + "' does not "

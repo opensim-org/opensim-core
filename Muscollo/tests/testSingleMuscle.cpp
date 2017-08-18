@@ -1,6 +1,6 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
-#include <MuscleRedundancySolver.h>
+#include <INDYGO.h>
 
 using namespace OpenSim;
 
@@ -74,13 +74,13 @@ void testIsometricMuscleRoundtrip() {
     // Reconstruct actuation.
     {
         // Solve the problem.
-        MuscleRedundancySolver mrs;
+        INDYGO mrs;
         mrs.setModel(model);
         mrs.setKinematicsData(states);
         mrs.set_lowpass_cutoff_frequency_for_joint_moments(6);
         // The static opt problem has "too few degrees of freedom."
         mrs.set_initial_guess("bounds");
-        MuscleRedundancySolver::Solution solution = mrs.solve();
+        INDYGO::Solution solution = mrs.solve();
         solution.write("testSingleMuscle_isometric_muscle");
 
         // Check the answer. The differences in excitation and activation are

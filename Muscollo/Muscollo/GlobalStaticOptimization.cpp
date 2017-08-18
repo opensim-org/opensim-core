@@ -1,4 +1,4 @@
-#include "GlobalStaticOptimizationSolver.h"
+#include "GlobalStaticOptimization.h"
 
 #include "DeGrooteFregly2016Muscle.h"
 #include "InverseMuscleSolverMotionData.h"
@@ -9,7 +9,7 @@
 
 using namespace OpenSim;
 
-void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
+void GlobalStaticOptimization::Solution::write(const std::string& prefix)
         const {
     auto write = [&](const TimeSeriesTable& table, const std::string& suffix)
     {
@@ -30,7 +30,7 @@ void GlobalStaticOptimizationSolver::Solution::write(const std::string& prefix)
 template<typename T>
 class GSOProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
 public:
-    GSOProblemSeparate(const GlobalStaticOptimizationSolver& mrs,
+    GSOProblemSeparate(const GlobalStaticOptimization& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
             : tropter::OptimalControlProblemNamed<T>("GSO"),
@@ -119,7 +119,7 @@ public:
             // PR #1728 on opensim-core causes the min_control for muscles
             // to be the minimum activation, and using non-zero minimum
             // activation here causes issues (actually, only causes issues
-            // with MuscleRedundancySolver, but for consistency, we also
+            // with INDYGO, but for consistency, we also
             // ignore min_control for GSO).
             //                  {actuator.get_min_control(),
             //                   actuator.get_max_control()});
@@ -240,10 +240,10 @@ public:
                        T& integrand) const override {
         integrand = controls.squaredNorm();
     }
-    GlobalStaticOptimizationSolver::Solution deconstruct_iterate(
+    GlobalStaticOptimization::Solution deconstruct_iterate(
             const tropter::OptimalControlIterate& ocpVars) const {
 
-        GlobalStaticOptimizationSolver::Solution vars;
+        GlobalStaticOptimization::Solution vars;
         if (_numCoordActuators) {
             vars.other_controls.setColumnLabels(_otherControlsLabels);
         }
@@ -308,7 +308,7 @@ public:
         return vars;
     }
 private:
-    const GlobalStaticOptimizationSolver& _mrs;
+    const GlobalStaticOptimization& _mrs;
     Model _model;
     const InverseMuscleSolverMotionData& _motionData;
     double _initialTime = SimTK::NaN;
@@ -337,14 +337,14 @@ private:
     std::vector<DeGrooteFregly2016Muscle<T>> _muscles;
 };
 
-GlobalStaticOptimizationSolver::GlobalStaticOptimizationSolver(
+GlobalStaticOptimization::GlobalStaticOptimization(
         const std::string& setupFilePath) :
         InverseMuscleSolver(setupFilePath) {
     updateFromXMLDocument();
 }
 
-GlobalStaticOptimizationSolver::Solution
-GlobalStaticOptimizationSolver::solve() const {
+GlobalStaticOptimization::Solution
+GlobalStaticOptimization::solve() const {
 
     // Load model and kinematics files.
     // --------------------------------
@@ -495,13 +495,13 @@ GlobalStaticOptimizationSolver::solve() const {
     // Return the solution.
     // --------------------
     // TODO remove
-    ocp_solution.write("GlobalStaticOptimizationSolver_OCP_solution.csv");
+    ocp_solution.write("GlobalStaticOptimization_OCP_solution.csv");
     // dircol.print_constraint_values(ocp_solution);
     Solution solution = ocp->deconstruct_iterate(ocp_solution);
     if (get_write_solution() != "false") {
         IO::makeDir(get_write_solution());
         std::string prefix = getName().empty() ?
-                             "GlobalStaticOptimizationSolver" : getName();
+                             "GlobalStaticOptimization" : getName();
         solution.write(get_write_solution() +
                 SimTK::Pathname::getPathSeparator() + prefix +
                 "_solution");

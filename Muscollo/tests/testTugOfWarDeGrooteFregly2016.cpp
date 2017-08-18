@@ -1,6 +1,6 @@
 #include <OpenSim/OpenSim.h>
-#include <MuscleRedundancySolver.h>
-#include <GlobalStaticOptimizationSolver.h>
+#include <GlobalStaticOptimization.h>
+#include <INDYGO.h>
 #include <DeGrooteFregly2016Muscle.h>
 #include <tropter.h>
 
@@ -8,7 +8,7 @@
 
 using namespace OpenSim;
 
-// The objective of this test is to ensure that MRS functions properly with
+// The objective of this test is to ensure that INDYGO functions properly with
 // multiple muscles that oppose each other.
 
 const double DISTANCE = 0.25;
@@ -435,7 +435,7 @@ template <typename T>
 using TugOfWarDynamic = DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic<T>;
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectory_MRS(const Model& model) {
+solveForTrajectory_INDYGO(const Model& model) {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<TugOfWarDynamic<adouble>>(model);
@@ -470,13 +470,13 @@ solveForTrajectory_MRS(const Model& model) {
     // Initializing with a previous solution reduces the number of iterations
     // from 32 to 20.
     tropter::OptimalControlIterate guess(
-            "testTugOfWarDeGrooteFregly2016_MRS_initial_guess.csv");
+            "testTugOfWarDeGrooteFregly2016_INDYGO_initial_guess.csv");
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     //tropter::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
 
     std::string trajectoryFile =
-            "testTugOfWarDeGrooteFregly2016_MRS_trajectory.csv";
+            "testTugOfWarDeGrooteFregly2016_INDYGO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -521,27 +521,27 @@ solveForTrajectory_MRS(const Model& model) {
                                SimTK::RowVector(1, netForce));
     }
     CSVFileAdapter::write(actualInvDyn,
-                          "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
+                          "DEBUG_testTugOfWar_INDYGO_actualInvDyn.csv");
     return {ocpSolution, kinematics};
 }
 
 // Reproduce the trajectory (generated without muscle dynamics) using static
 // optimization.
-void test2Muscles1DOFGlobalStaticOptimizationSolver(
+void test2Muscles1DOFGSO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
-    // Create the GlobalStaticOptimizationSolver.
+    // Create the GlobalStaticOptimization.
     // ------------------------------------------
-    GlobalStaticOptimizationSolver gso;
+    GlobalStaticOptimization gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);
     gso.set_lowpass_cutoff_frequency_for_joint_moments(50);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
-    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    GlobalStaticOptimization::Solution solution = gso.solve();
     solution.write("testTugOfWarDeGrooteFregly2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -558,16 +558,16 @@ void test2Muscles1DOFGlobalStaticOptimizationSolver(
 }
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
-// MuscleRedundancySolver.
-void test2Muscles1DOFMuscleRedundancySolver(
+// INDYGO.
+void test2Muscles1DOFINDYGO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
-    // Create the MuscleRedundancySolver.
+    // Create the INDYGO.
     // ----------------------------------
-    MuscleRedundancySolver mrs;
+    INDYGO mrs;
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
     // Without filtering, the moments have high frequency content,
@@ -576,14 +576,14 @@ void test2Muscles1DOFMuscleRedundancySolver(
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(30);
     const double reserveOptimalForce = 0.01;
     mrs.set_create_reserve_actuators(reserveOptimalForce);
-    // We constrain initial MRS activation to 0 because otherwise activation_l
-    // incorrectly starts at ~0.45 (no penalty for large initial activation).
-    // We tried setting initial fiber velocity to 0 instead, and this also
-    // solved the problem but only if using the *exact* inverse dynamics
-    // generalized forces (which are not available in practice).
+    // We constrain initial INDYGO activation to 0 because otherwise
+    // activation_l incorrectly starts at ~0.45 (no penalty for large initial
+    // activation). We tried setting initial fiber velocity to 0 instead, and
+    // this also solved the problem but only if using the *exact* inverse
+    // dynamics generalized forces (which are not available in practice).
     mrs.set_zero_initial_activation(true);
-    MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("testTugOfWarDeGrooteFregly2016_MRS");
+    INDYGO::Solution solution = mrs.solve();
+    solution.write("testTugOfWarDeGrooteFregly2016_INDYGO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -637,13 +637,11 @@ int main() {
         {
             auto gsoData =
                     solveForTrajectory_GSO(model);
-            SimTK_SUBTEST2(test2Muscles1DOFGlobalStaticOptimizationSolver,
-                           gsoData, model);
+            SimTK_SUBTEST2(test2Muscles1DOFGSO, gsoData, model);
         }
         {
-            auto mrsData = solveForTrajectory_MRS(model);
-            SimTK_SUBTEST2(test2Muscles1DOFMuscleRedundancySolver, mrsData,
-                           model);
+            auto mrsData = solveForTrajectory_INDYGO(model);
+            SimTK_SUBTEST2(test2Muscles1DOFINDYGO, mrsData, model);
         }
     SimTK_END_TEST();
 }

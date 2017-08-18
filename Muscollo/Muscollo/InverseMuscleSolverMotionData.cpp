@@ -81,7 +81,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // ----------------------------------------------
     TimeSeriesTable muscleTendonLengths;
     // TimeSeriesTable muscleTendonVelocities; using MTL spline now.
-    // TODO get list of muscles from MuscleRedundancySolver.
+    // TODO get list of muscles from INDYGO.
     const auto muscleList = model.getComponentList<Muscle>();
     std::vector<const Muscle*> activeMuscles;
     std::vector<std::string> musclePathNames;
@@ -390,7 +390,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
 
     /* For debugging: use exact inverse dynamics solution.
     auto table = CSVFileAdapter::read(
-            "DEBUG_testTugOfWar_MRS_actualInvDyn.csv");
+            "DEBUG_testTugOfWar_INDYGO_actualInvDyn.csv");
     _netGeneralizedForces = createGCVSplineSet(table);
      */
 

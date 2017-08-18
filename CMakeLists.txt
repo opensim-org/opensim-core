@@ -47,4 +47,4 @@ enable_testing()
 
 add_subdirectory(tropter)
 
-add_subdirectory(MuscleRedundancySolver)
+add_subdirectory(Muscollo)

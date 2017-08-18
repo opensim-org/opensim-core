@@ -1,7 +1,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
-#include <MuscleRedundancySolver.h>
-#include <GlobalStaticOptimizationSolver.h>
+#include <INDYGO.h>
+#include <GlobalStaticOptimization.h>
 #include <DeGrooteFregly2016Muscle.h>
 #include <tropter.h>
 #include "testing.h"
@@ -11,8 +11,7 @@ using namespace OpenSim;
 /// Use De Groote's 2016 muscle model (outside of OpenSim) to solve a
 /// trajectory optimization problem for a muscle's optimal length trajectory.
 /// Then use an inverse solver to recover the original activation trajectory.
-/// We do this for both GlobalStaticOptimizationSolver and
-/// MuscleRedundancySolver.
+/// We do this for both GSO and INDYGO.
 
 // TODO try improving solution time by first solving a static optimization
 // problem.
@@ -89,7 +88,7 @@ private:
 };
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryGlobalStaticOptimizationSolver() {
+solveForTrajectoryGSO() {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<DeGrooteFregly2016MuscleLiftMinTimeStatic>();
@@ -261,7 +260,7 @@ private:
 };
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectoryMuscleRedundancySolver() {
+solveForTrajectoryINDYGO() {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<DeGrooteFregly2016MuscleLiftMinTimeDynamic>();
@@ -270,7 +269,7 @@ solveForTrajectoryMuscleRedundancySolver() {
                                                   "ipopt", 100);
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
-            "testSingleMuscleDeGrooteFregly2016_MRS_trajectory.csv";
+            "testSingleMuscleDeGrooteFregly2016_INDYGO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -322,7 +321,7 @@ solveForTrajectoryMuscleRedundancySolver() {
     //                            SimTK::RowVector(1, -tendonForce));
     // }
     // CSVFileAdapter::write(actualInvDyn,
-    //                       "DEBUG_testLiftingMass_MRS_actualInvDyn.csv");
+    //                       "DEBUG_testLiftingMass_INDYGO_actualInvDyn.csv");
 
     // TODO add regression test!!!
 
@@ -361,7 +360,7 @@ OpenSim::Model buildLiftingMassModel() {
     return model;
 }
 
-void testLiftingMassGlobalStaticOptimizationSolver(
+void testLiftingMassGSO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
@@ -371,22 +370,22 @@ void testLiftingMassGlobalStaticOptimizationSolver(
     Model model = buildLiftingMassModel();
     model.finalizeFromProperties();
 
-    // Create the GlobalStaticOptimizationSolver.
+    // Create the GlobalStaticOptimization.
     // ------------------------------------------
-    GlobalStaticOptimizationSolver gso;
+    GlobalStaticOptimization gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);
     // Without filtering, the moments have high frequency content,
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
-    // GSO requires a higher cutoff than MRS because the lack of activation
+    // GSO requires a higher cutoff than INDYGO because the lack of activation
     // dynamics results in an abrupt change in force when the muscle turns off
     // instantaneously. I tried 80-300 Hz; higher than 100 Hz gives noisy
     // activation.
     gso.set_lowpass_cutoff_frequency_for_joint_moments(100);
     // TODO is the filtering necessary if we have reserve actuators?
     gso.set_create_reserve_actuators(0.001);
-    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    GlobalStaticOptimization::Solution solution = gso.solve();
     solution.write("testSingleMuscleDeGrooteFregly2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -404,7 +403,7 @@ void testLiftingMassGlobalStaticOptimizationSolver(
 
 // Reproduce the trajectory using the MuscleRedundancy, without specifying an
 // initial guess.
-void testLiftingMassMuscleRedundancySolver(
+void testLiftingMassINDYGO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         bool useStaticOptiGuess) {
     const auto& ocpSolution = data.first;
@@ -415,9 +414,9 @@ void testLiftingMassMuscleRedundancySolver(
     Model model = buildLiftingMassModel();
     model.finalizeFromProperties();
 
-    // Create the MuscleRedundancySolver.
+    // Create the INDYGO.
     // ----------------------------------
-    MuscleRedundancySolver mrs;
+    INDYGO mrs;
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
     // Without filtering, the moments have high frequency content,
@@ -431,8 +430,8 @@ void testLiftingMassMuscleRedundancySolver(
     } else {
         mrs.set_initial_guess("bounds");
     }
-    MuscleRedundancySolver::Solution solution = mrs.solve();
-    solution.write("testSingleMuscleDeGrooteFregly2016_MRS");
+    INDYGO::Solution solution = mrs.solve();
+    solution.write("testSingleMuscleDeGrooteFregly2016_INDYGO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
@@ -468,20 +467,17 @@ void testLiftingMassMuscleRedundancySolver(
 int main() {
     SimTK_START_TEST("testSingleMuscleDeGrooteFregly2016");
         {
-            auto gsoData = solveForTrajectoryGlobalStaticOptimizationSolver();
-            SimTK_SUBTEST1(testLiftingMassGlobalStaticOptimizationSolver,
-                           gsoData);
+            auto gsoData = solveForTrajectoryGSO();
+            SimTK_SUBTEST1(testLiftingMassGSO, gsoData);
         }
         {
-            auto mrsData = solveForTrajectoryMuscleRedundancySolver();
+            auto mrsData = solveForTrajectoryINDYGO();
             // Without using static optimization to obtain an initial guess.
-            SimTK_SUBTEST2(testLiftingMassMuscleRedundancySolver, mrsData,
-                           false);
+            SimTK_SUBTEST2(testLiftingMassINDYGO, mrsData, false);
             // Use static optimization to obtain an initial guess; this
             // should take under 1 second, compare to 10 seconds for using
             // the more naive guess above.
-            SimTK_SUBTEST2(testLiftingMassMuscleRedundancySolver, mrsData,
-                           true);
+            SimTK_SUBTEST2(testLiftingMassINDYGO, mrsData, true);
         }
     SimTK_END_TEST();
 }

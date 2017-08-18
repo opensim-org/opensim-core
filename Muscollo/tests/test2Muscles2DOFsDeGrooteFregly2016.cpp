@@ -1,6 +1,6 @@
 #include <OpenSim/OpenSim.h>
-#include <GlobalStaticOptimizationSolver.h>
-#include <MuscleRedundancySolver.h>
+#include <GlobalStaticOptimization.h>
+#include <INDYGO.h>
 #include <DeGrooteFregly2016Muscle.h>
 #include <InverseMuscleSolverMotionData.h>
 #include <tropter.h>
@@ -9,7 +9,7 @@
 
 using namespace OpenSim;
 
-// The objective of this test is to ensure that MRS functions properly with
+// The objective of this test is to ensure that INDYGO functions properly with
 // multiple muscles and multiple degrees of freedom.
 
 // The horizontal distance between the muscle origins and the origin of the
@@ -379,7 +379,7 @@ OpenSim::Model buildModel() {
     auto* body = new Body("body", 1, Vec3(0), SimTK::Inertia(1));
     model.addComponent(body);
 
-    // TODO GSO and MRS do not support locked coordinates yet.
+    // TODO GSO and INDYGO do not support locked coordinates yet.
     // Allow translation along x and y; disable rotation about z.
     // auto* joint = new PlanarJoint();
     // joint->setName("joint");
@@ -521,7 +521,7 @@ solveForTrajectory_GSO(const Model& model) {
 }
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
-solveForTrajectory_MRS(const Model& model) {
+solveForTrajectory_INDYGO(const Model& model) {
     // Solve a trajectory optimization problem.
     // ----------------------------------------
     auto ocp = std::make_shared<OCPDynamic<adouble>>(model);
@@ -531,13 +531,13 @@ solveForTrajectory_MRS(const Model& model) {
                                                   "ipopt", N);
 
     tropter::OptimalControlIterate guess(
-            "test2Muscles2DOFsDeGrooteFregly2016_MRS_initial_guess.csv");
+            "test2Muscles2DOFsDeGrooteFregly2016_INDYGO_initial_guess.csv");
     tropter::OptimalControlSolution ocp_solution = dircol.solve(guess);
     //tropter::OptimalControlSolution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
 
     std::string trajectoryFile =
-            "test2Muscles2DOFsDeGrooteFregly2016_MRS_trajectory.csv";
+            "test2Muscles2DOFsDeGrooteFregly2016_INDYGO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
 
     // Save the trajectory with a header so that OpenSim can read it.
@@ -576,7 +576,7 @@ solveForTrajectory_MRS(const Model& model) {
     }
     // For use in the "filebased" test.
     CSVFileAdapter::write(kinematics,
-            "test2Muscles2DOFsDeGrooteFregly2016_MRS_kinematics.csv");
+            "test2Muscles2DOFsDeGrooteFregly2016_INDYGO_kinematics.csv");
 
     // Compute actual inverse dynamics moment, for debugging.
     // ------------------------------------------------------
@@ -591,11 +591,11 @@ solveForTrajectory_MRS(const Model& model) {
         actualInvDyn.appendRow(ocp_solution.time(iTime), row);
     }
     CSVFileAdapter::write(actualInvDyn,
-                          "DEBUG_test2Muscles2DOFs_MRS_actualInvDyn.csv");
+                          "DEBUG_test2Muscles2DOFs_INDYGO_actualInvDyn.csv");
     return {ocpSolution, kinematics};
 }
 
-void compareSolution_GSO(const GlobalStaticOptimizationSolver::Solution& actual,
+void compareSolution_GSO(const GlobalStaticOptimization::Solution& actual,
                          const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
     compare(actual.activation, "/block2musc2dof/left",
@@ -618,14 +618,14 @@ void test2Muscles2DOFs_GSO(
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
-    GlobalStaticOptimizationSolver gso;
+    GlobalStaticOptimization gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);
     gso.set_lowpass_cutoff_frequency_for_joint_moments(80);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
     // gso.print("test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
-    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    GlobalStaticOptimization::Solution solution = gso.solve();
     // solution.write("test2Muscles2DOFsDeGrooteFregly2016_GSO");
 
     // Compare the solution to the initial trajectory optimization solution.
@@ -638,10 +638,10 @@ void test2Muscles2DOFs_GSO_Filebased(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
     const auto& ocpSolution = data.first;
 
-    GlobalStaticOptimizationSolver gso(
+    GlobalStaticOptimization gso(
             "test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
     double reserveOptimalForce = gso.get_create_reserve_actuators();
-    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    GlobalStaticOptimization::Solution solution = gso.solve();
 
     // Compare the solution to the initial trajectory optimization solution.
     compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
@@ -677,19 +677,19 @@ void test2Muscles2DOFs_GSO_GenForces(
         netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
     }
 
-    GlobalStaticOptimizationSolver gso;
+    GlobalStaticOptimization gso;
     gso.setModel(model);
     gso.setKinematicsData(kinematics);
     gso.setNetGeneralizedForcesData(netGenForces);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
-    GlobalStaticOptimizationSolver::Solution solution = gso.solve();
+    GlobalStaticOptimization::Solution solution = gso.solve();
 
     // Compare the solution to the initial trajectory optimization solution.
     compareSolution_GSO(solution, ocpSolution, reserveOptimalForce);
 }
 
-void compareSolution_MRS(const MuscleRedundancySolver::Solution& actual,
+void compareSolution_INDYGO(const INDYGO::Solution& actual,
                          const TimeSeriesTable& expected,
                          const double& reserveOptimalForce) {
     compare(actual.activation, "/block2musc2dof/left",
@@ -732,51 +732,51 @@ void compareSolution_MRS(const MuscleRedundancySolver::Solution& actual,
 }
 
 // Reproduce the trajectory (generated with muscle dynamics) using the
-// MuscleRedundancySolver.
-void test2Muscles2DOFs_MRS(
+// INDYGO.
+void test2Muscles2DOFs_INDYGO(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
     const auto& kinematics = data.second;
 
-    // Create the MuscleRedundancySolver.
+    // Create the INDYGO.
     // ----------------------------------
-    MuscleRedundancySolver mrs;
+    INDYGO mrs;
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(20);
     const double reserveOptimalForce = 0.01;
     mrs.set_create_reserve_actuators(reserveOptimalForce);
-    // We constrain initial MRS activation to 0 because otherwise activation
+    // We constrain initial INDYGO activation to 0 because otherwise activation
     // incorrectly starts at a large value (no penalty for large initial
     // activation).
     mrs.set_zero_initial_activation(true);
-    // mrs.print("test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml");
-    MuscleRedundancySolver::Solution solution = mrs.solve();
-    // solution.write("test2Muscles2DOFsDeGrooteFregly2016_MRS");
+    // mrs.print("test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml");
+    INDYGO::Solution solution = mrs.solve();
+    // solution.write("test2Muscles2DOFsDeGrooteFregly2016_INDYGO");
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
+    compareSolution_INDYGO(solution, ocpSolution, reserveOptimalForce);
 }
 
-// Load MRS from an XML file.
-void test2Muscles2DOFs_MRS_Filebased(
+// Load INDYGO from an XML file.
+void test2Muscles2DOFs_INDYGO_Filebased(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data) {
     const auto& ocpSolution = data.first;
 
-    // Create the MuscleRedundancySolver.
-    MuscleRedundancySolver mrs
-            ("test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml");
+    // Create the INDYGO.
+    INDYGO mrs
+            ("test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml");
     double reserveOptimalForce = mrs.get_create_reserve_actuators();
-    MuscleRedundancySolver::Solution solution = mrs.solve();
+    INDYGO::Solution solution = mrs.solve();
 
     // Compare the solution to the initial trajectory optimization solution.
-    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
+    compareSolution_INDYGO(solution, ocpSolution, reserveOptimalForce);
 }
 
-// Perform inverse dynamics outside of MRS.
-void test2Muscles2DOFs_MRS_GenForces(
+// Perform inverse dynamics outside of INDYGO.
+void test2Muscles2DOFs_INDYGO_GenForces(
         const std::pair<TimeSeriesTable, TimeSeriesTable>& data,
         const Model& model) {
     const auto& ocpSolution = data.first;
@@ -808,20 +808,20 @@ void test2Muscles2DOFs_MRS_GenForces(
         netGenForces.appendRow(times[iRow], netGenForcesMatrix.row(iRow));
     }
 
-    // Create the MuscleRedundancySolver.
+    // Create the INDYGO.
     // ----------------------------------
-    MuscleRedundancySolver mrs;
+    INDYGO mrs;
     mrs.setModel(model);
     mrs.setKinematicsData(kinematics);
     const double reserveOptimalForce = 0.01;
     mrs.set_create_reserve_actuators(reserveOptimalForce);
     mrs.set_zero_initial_activation(true);
     mrs.setNetGeneralizedForcesData(netGenForces);
-    MuscleRedundancySolver::Solution solution = mrs.solve();
+    INDYGO::Solution solution = mrs.solve();
 
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
-    compareSolution_MRS(solution, ocpSolution, reserveOptimalForce);
+    compareSolution_INDYGO(solution, ocpSolution, reserveOptimalForce);
 }
 
 int main() {
@@ -835,10 +835,10 @@ int main() {
             SimTK_SUBTEST2(test2Muscles2DOFs_GSO_GenForces, data, model);
         }
         {
-            auto data = solveForTrajectory_MRS(model);
-            SimTK_SUBTEST2(test2Muscles2DOFs_MRS, data, model);
-            SimTK_SUBTEST1(test2Muscles2DOFs_MRS_Filebased, data);
-            SimTK_SUBTEST2(test2Muscles2DOFs_MRS_GenForces, data, model);
+            auto data = solveForTrajectory_INDYGO(model);
+            SimTK_SUBTEST2(test2Muscles2DOFs_INDYGO, data, model);
+            SimTK_SUBTEST1(test2Muscles2DOFs_INDYGO_Filebased, data);
+            SimTK_SUBTEST2(test2Muscles2DOFs_INDYGO_GenForces, data, model);
         }
     SimTK_END_TEST();
 }

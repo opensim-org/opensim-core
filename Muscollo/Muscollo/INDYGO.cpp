@@ -1,8 +1,8 @@
 
-#include "MuscleRedundancySolver.h"
+#include "INDYGO.h"
 #include "DeGrooteFregly2016Muscle.h"
 #include "InverseMuscleSolverMotionData.h"
-#include "GlobalStaticOptimizationSolver.h"
+#include "GlobalStaticOptimization.h"
 
 #include <tropter.h>
 
@@ -14,7 +14,7 @@
 
 using namespace OpenSim;
 
-void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
+void INDYGO::Solution::write(const std::string& prefix) const
 {
     auto write = [&](const TimeSeriesTable& table, const std::string& suffix)
     {
@@ -34,12 +34,12 @@ void MuscleRedundancySolver::Solution::write(const std::string& prefix) const
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class MRSProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
+class INDYGOProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
 public:
-    MRSProblemSeparate(const MuscleRedundancySolver& mrs,
+    INDYGOProblemSeparate(const INDYGO& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
-            : tropter::OptimalControlProblemNamed<T>("MRS"),
+            : tropter::OptimalControlProblemNamed<T>("INDYGO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 
@@ -57,7 +57,7 @@ public:
             if (actuator.get_appliesForce() &&
                     !dynamic_cast<const Muscle*>(&actuator) &&
                     !dynamic_cast<const CoordinateActuator*>(&actuator)) {
-                throw std::runtime_error("[MRS] Only Muscles and "
+                throw std::runtime_error("[INDYGO] Only Muscles and "
                         "CoordinateActuators are currently supported but the"
                         " model contains an enabled "
                         + actuator.getConcreteClassName() + ". Either set "
@@ -97,7 +97,7 @@ public:
 //                ++i_coord;
 //            }
 //            if (i_coord == coordsOrdered.size()) {
-//                throw std::runtime_error("[MRS] Could not find Coordinate '" +
+//                throw std::runtime_error("[INDYGO] Could not find Coordinate '" +
 //                        coord->getAbsolutePathName() + "' used in "
 //                        "CoordinateActuator '" + actuator.getAbsolutePathName()
 //                                                 + "'.");
@@ -126,7 +126,7 @@ public:
             }
             // TODO move this into InverseMuscleSolver.
             if (i_coord == coordPathsToActuate.size()) {
-                throw std::runtime_error("[MRS] Could not find Coordinate '" +
+                throw std::runtime_error("[INDYGO] Could not find Coordinate '" +
                         coord->getAbsolutePathName() + "' used in "
                         "CoordinateActuator '" + actuator.getAbsolutePathName()
                         + "'. Is the coordinate locked?");
@@ -209,7 +209,7 @@ public:
     void initialize_on_mesh(const Eigen::VectorXd& mesh) const override {
 
         // For caching desired joint moments.
-        auto* mutableThis = const_cast<MRSProblemSeparate<T>*>(this);
+        auto* mutableThis = const_cast<INDYGOProblemSeparate<T>*>(this);
 
         const auto duration = _finalTime - _initialTime;
         // "array()" b/c Eigen matrix types do not support elementwise add.
@@ -333,7 +333,7 @@ public:
     /// an empty iterate.
     // TODO should take a "Iterate" instead.
     tropter::OptimalControlIterate construct_iterate(
-            const MuscleRedundancySolver::Solution& mrsVars) const {
+            const INDYGO::Solution& mrsVars) const {
         using Eigen::Map;
         using Eigen::VectorXd;
         using Eigen::MatrixXd;
@@ -422,10 +422,10 @@ public:
     /// expecting (for the current mesh refinement iteration); this is
     /// because computing tendon length requires on the cached muscle-tendon
     /// lengths.
-    MuscleRedundancySolver::Solution deconstruct_iterate(
+    INDYGO::Solution deconstruct_iterate(
             const tropter::OptimalControlIterate& ocpVars) const {
 
-        MuscleRedundancySolver::Solution sol;
+        INDYGO::Solution sol;
         if (_numCoordActuators) {
             sol.other_controls.setColumnLabels(_otherControlsLabels);
         }
@@ -496,7 +496,7 @@ public:
         return sol;
     }
 private:
-    const MuscleRedundancySolver& _mrs;
+    const INDYGO& _mrs;
     Model _model;
     const InverseMuscleSolverMotionData& _motionData;
     double _initialTime = SimTK::NaN;
@@ -524,22 +524,22 @@ private:
     std::vector<DeGrooteFregly2016Muscle<T>> _muscles;
 };
 
-MuscleRedundancySolver::MuscleRedundancySolver() {
+INDYGO::INDYGO() {
     constructProperties();
 }
 
-MuscleRedundancySolver::MuscleRedundancySolver(
+INDYGO::INDYGO(
         const std::string& setupFilePath) : InverseMuscleSolver(setupFilePath) {
     constructProperties();
     updateFromXMLDocument();
 }
 
-void MuscleRedundancySolver::constructProperties() {
+void INDYGO::constructProperties() {
     constructProperty_initial_guess("static_optimization");
     constructProperty_zero_initial_activation(false);
 }
 
-MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
+INDYGO::Solution INDYGO::solve() const {
 
     // TODO make sure experimental data is available for all unconstrained
     // coordinates; throw exception otherwise!
@@ -714,7 +714,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
 
     // Create the optimal control problem.
     // -----------------------------------
-    auto ocp = std::make_shared<MRSProblemSeparate<adouble>>(*this,
+    auto ocp = std::make_shared<INDYGOProblemSeparate<adouble>>(*this,
                                                              model, motionData);
 
     // Solve for an initial guess with static optimization.
@@ -730,7 +730,7 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
         std::cout << "Computing an initial guess with static optimization."
                   << std::endl;
         std::cout << std::string(79, '-') << std::endl;
-        GlobalStaticOptimizationSolver gso;
+        GlobalStaticOptimization gso;
         gso.setModel(origModel);
         gso.setKinematicsData(kinematics);
         gso.set_lowpass_cutoff_frequency_for_kinematics(
@@ -756,16 +756,16 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
                     getProperty_actuators_to_include());
         }
         // Convert the static optimization solution into a guess.
-        GlobalStaticOptimizationSolver::Solution gsoSolution = gso.solve();
-        // gsoSolution.write("DEBUG_MuscleRedundancySolver_GSO_solution");
-        MuscleRedundancySolver::Solution mrsGuess;
+        GlobalStaticOptimization::Solution gsoSolution = gso.solve();
+        // gsoSolution.write("DEBUG_INDYGO_GSO_solution");
+        INDYGO::Solution mrsGuess;
         mrsGuess.excitation = gsoSolution.activation;
         mrsGuess.activation = gsoSolution.activation;
         mrsGuess.norm_fiber_length = gsoSolution.norm_fiber_length;
         mrsGuess.norm_fiber_velocity = gsoSolution.norm_fiber_velocity;
         mrsGuess.other_controls = gsoSolution.other_controls;
         guess = ocp->construct_iterate(mrsGuess);
-        // guess.write("DEBUG_MuscleRedundancySolver_guess.csv");
+        // guess.write("DEBUG_INDYGO_guess.csv");
     } else {
         // This is the behavior if no guess is provided.
         std::cout << std::string(79, '=') << std::endl;
@@ -799,13 +799,12 @@ MuscleRedundancySolver::Solution MuscleRedundancySolver::solve() const {
     // Return the solution.
     // --------------------
     // TODO remove:
-    ocp_solution.write("MuscleRedundancySolver_OCP_solution.csv");
+    ocp_solution.write("INDYGO_OCP_solution.csv");
     // dircol.print_constraint_values(ocp_solution);
     Solution solution = ocp->deconstruct_iterate(ocp_solution);
     if (get_write_solution() != "false") {
         IO::makeDir(get_write_solution());
-        std::string prefix = getName().empty() ?
-                             "MuscleRedundancySolver" : getName();
+        std::string prefix = getName().empty() ? "INDYGO" : getName();
         solution.write(get_write_solution() +
                 SimTK::Pathname::getPathSeparator() + prefix +
                 "_solution");

@@ -1,5 +1,5 @@
-#ifndef MRS_DEGROOTEFREGLY2016MUSCLE_H_
-#define MRS_DEGROOTEFREGLY2016MUSCLE_H_
+#ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
+#define MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
 
 #include <adolc/adolc.h>
 
@@ -12,7 +12,7 @@
 // TODO unify the function signatures (return types).
 // TODO splitting calcEquilibriumResidual() into calcNorm*() functions caused
 // testSingleMuscleDeGrooteFregly2016()'s trajectory optimization and
-// MuscleRedundancySolver to increase duration from 9 seconds to 13 seconds
+// INDYGO to increase duration from 9 seconds to 13 seconds
 // (in Debug).
 template <typename T>
 class DeGrooteFregly2016Muscle {
@@ -257,4 +257,4 @@ private:
     double _fiber_width = NaN;
 };
 
-#endif // MRS_DEGROOTEFREGLY2016MUSCLE_H_
+#endif // MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_

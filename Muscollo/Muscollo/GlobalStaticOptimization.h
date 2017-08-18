@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_GLOBALSTATICOPTIMIZATIONSOLVER_H
-#define MUSCOLLO_GLOBALSTATICOPTIMIZATIONSOLVER_H
+#ifndef MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
+#define MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
 
 #include "InverseMuscleSolver.h"
 
@@ -9,8 +9,8 @@ namespace OpenSim {
 
 // TODO document
 // TODO example usage.
-class GlobalStaticOptimizationSolver : public InverseMuscleSolver {
-    OpenSim_DECLARE_CONCRETE_OBJECT(GlobalStaticOptimizationSolver,
+class GlobalStaticOptimization : public InverseMuscleSolver {
+    OpenSim_DECLARE_CONCRETE_OBJECT(GlobalStaticOptimization,
             InverseMuscleSolver);
 public:
 
@@ -37,7 +37,7 @@ public:
         void write(const std::string& prefix) const;
     };
 
-    GlobalStaticOptimizationSolver() = default;
+    GlobalStaticOptimization() = default;
 
     /// Load a solver from an XML setup file.
     ///
@@ -48,7 +48,7 @@ public:
     /// loaded until you call solve(). If these files are not provided, you
     /// must call the setModel() and/or setKinematicsData() functions before
     /// calling solve().
-    explicit GlobalStaticOptimizationSolver(const std::string& setupFilePath);
+    explicit GlobalStaticOptimization(const std::string& setupFilePath);
 
     /// Solve for muscle activity. You must have provide a model and
     /// kinematics data before calling this function. If the property
@@ -62,4 +62,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_GLOBALSTATICOPTIMIZATIONSOLVER_H
+#endif // MUSCOLLO_GLOBALSTATICOPTIMIZATION_H

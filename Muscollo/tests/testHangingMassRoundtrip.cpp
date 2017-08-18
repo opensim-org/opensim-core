@@ -1,7 +1,7 @@
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
-#include <MuscleRedundancySolver.h>
+#include <INDYGO.h>
 
 using namespace OpenSim;
 
@@ -63,10 +63,10 @@ void testHangingMassRoundtrip() {
 
     // Reconstruct actuation.
     {
-        MuscleRedundancySolver mrs;
+        INDYGO mrs;
         mrs.setModel(model);
         mrs.setKinematicsData(states);
-        MuscleRedundancySolver::Solution solution = mrs.solve();
+        INDYGO::Solution solution = mrs.solve();
 
         const auto& actual = solution.other_controls.getDependentColumn(
                 "/hanging_mass/actuator");

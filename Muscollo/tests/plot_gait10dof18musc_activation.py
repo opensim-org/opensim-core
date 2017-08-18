@@ -11,9 +11,9 @@ muscles = ['glut_max', 'iliopsoas', 'rect_fem',
            'hamstrings', 'bifemsh', 'vasti',
            'gastroc', 'soleus', 'tib_ant']
 
-sol = pd.read_csv('GlobalStaticOptimizationSolver_OCP_solution.csv', index_col=0,
+sol = pd.read_csv('GlobalStaticOptimization_OCP_solution.csv', index_col=0,
         skiprows=2)
-#sol = pd.read_csv('MuscleRedundancySolver_OCP_solution.csv', index_col=0,
+#sol = pd.read_csv('INDYGO_OCP_solution.csv', index_col=0,
 #        skiprows=2)
 # sol.plot()
 #num_muscles = 0

@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_MUSCLEREDUNDANCYSOLVER_H
-#define MUSCOLLO_MUSCLEREDUNDANCYSOLVER_H
+#ifndef MUSCOLLO_INDYGO_H
+#define MUSCOLLO_INDYGO_H
 
 #include "InverseMuscleSolver.h"
 
@@ -19,9 +19,8 @@ namespace OpenSim {
 // TODO method performs better with longer activation/deactivation time
 // constants. TODO get these constants from the muscle model rather than using
 // hard-coded values.
-class MuscleRedundancySolver : public InverseMuscleSolver {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MuscleRedundancySolver,
-            InverseMuscleSolver);
+class INDYGO : public InverseMuscleSolver {
+    OpenSim_DECLARE_CONCRETE_OBJECT(INDYGO, InverseMuscleSolver);
 public:
 
     OpenSim_DECLARE_PROPERTY(initial_guess, std::string,
@@ -64,8 +63,8 @@ public:
         /// enabled.
         TimeSeriesTable other_controls;
         /// The tendon force trajectories for all enabled (appliesForce)
-        /// muscles. This is *not* a variable in the MuscleRedundancySolver;
-        /// rather, this is provided to support analysis of results.
+        /// muscles. This is *not* a variable in INDYGO; rather, this is
+        /// provided to support analysis of results.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable tendon_force;
         /// Write the solution to a series of OpenSim Storage files (one
@@ -74,7 +73,7 @@ public:
         void write(const std::string& prefix) const;
     };
 
-    MuscleRedundancySolver();
+    INDYGO();
 
     /// Load a solver from an XML setup file.
     ///
@@ -85,7 +84,7 @@ public:
     /// loaded until you call solve(). If these files are not provided, you
     /// must call the setModel() and/or setKinematicsData() functions before
     /// calling solve().
-    explicit MuscleRedundancySolver(const std::string& setupFilePath);
+    explicit INDYGO(const std::string& setupFilePath);
 
     /// Solve for muscle activity. You must have provide a model and
     /// kinematics data before calling this function. If the property
@@ -102,4 +101,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUSCLEREDUNDANCYSOLVER_H
+#endif // MUSCOLLO_INDYGO_H

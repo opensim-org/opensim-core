@@ -1,9 +1,9 @@
 # Create an exectuable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
-function(MRSAddTest TEST_NAME LIB_DEPENDENCIES)
+function(MuscolloAddTest TEST_NAME LIB_DEPENDENCIES)
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "MRS Tests")
+    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Muscollo Tests")
     target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})
     # SYSTEM avoids warnings from dependencies
     # No longer need to explicitly include OpenSim's headers;
@@ -13,37 +13,37 @@ function(MRSAddTest TEST_NAME LIB_DEPENDENCIES)
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
 endfunction()
 
-MRSAddTest(testHangingMassRoundtrip osimMuscleRedundancySolver)
+MuscolloAddTest(testHangingMassRoundtrip osimMuscollo)
 
-MRSAddTest(testSingleMuscle osimMuscleRedundancySolver)
+MuscolloAddTest(testSingleMuscle osimMuscollo)
 
-MRSAddTest(testSingleMuscleDeGrooteFregly2016 osimMuscleRedundancySolver)
+MuscolloAddTest(testSingleMuscleDeGrooteFregly2016 osimMuscollo)
 
-MRSAddTest(testSingleMuscleDeGrooteFregly2016MomentArms
-        osimMuscleRedundancySolver)
+MuscolloAddTest(testSingleMuscleDeGrooteFregly2016MomentArms
+        osimMuscollo)
 
-MRSAddTest(testTugOfWarDeGrooteFregly2016 osimMuscleRedundancySolver)
-file(COPY testTugOfWarDeGrooteFregly2016_MRS_initial_guess.csv
+MuscolloAddTest(testTugOfWarDeGrooteFregly2016 osimMuscollo)
+file(COPY testTugOfWarDeGrooteFregly2016_INDYGO_initial_guess.csv
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-MRSAddTest(test2Muscles2DOFsDeGrooteFregly2016 osimMuscleRedundancySolver)
-file(COPY test2Muscles2DOFsDeGrooteFregly2016_MRS_initial_guess.csv
+MuscolloAddTest(test2Muscles2DOFsDeGrooteFregly2016 osimMuscollo)
+file(COPY test2Muscles2DOFsDeGrooteFregly2016_INDYGO_initial_guess.csv
           test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml
-          test2Muscles2DOFsDeGrooteFregly2016_MRS_setup.xml
+        test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml
         DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-MRSAddTest(testGait10dof18musc osimMuscleRedundancySolver)
+MuscolloAddTest(testGait10dof18musc osimMuscollo)
 file(COPY testGait10dof18musc_subject01.osim
           testGait10dof18musc_kinematics.mot
           testGait10dof18musc_netgeneralizedforces.mot
           testGait10dof18musc_GSO_setup.xml
-          testGait10dof18musc_MRS_setup.xml
-          std_testGait10dof18musc_MRS_solution_activation.sto
-          std_testGait10dof18musc_MRS_solution_excitation.sto
-          std_testGait10dof18musc_MRS_solution_norm_fiber_length.sto
-          std_testGait10dof18musc_MRS_solution_norm_fiber_velocity.sto
-          std_testGait10dof18musc_MRS_solution_other_controls.sto
-          std_testGait10dof18musc_MRS_solution_tendon_force.sto
+          testGait10dof18musc_INDYGO_setup.xml
+          std_testGait10dof18musc_INDYGO_solution_activation.sto
+          std_testGait10dof18musc_INDYGO_solution_excitation.sto
+          std_testGait10dof18musc_INDYGO_solution_norm_fiber_length.sto
+          std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto
+          std_testGait10dof18musc_INDYGO_solution_other_controls.sto
+          std_testGait10dof18musc_INDYGO_solution_tendon_force.sto
           std_testGait10dof18musc_GSO_solution_activation.sto
           std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto
           std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto
