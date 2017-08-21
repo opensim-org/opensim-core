@@ -6,16 +6,15 @@ import java.nio.file.*;
 class TestEditMarkers {
   public static void main(String[] args) {
     try {
+        // GUI model loading
         Model model = new Model("gait10dof18musc_subject01.osim");
         OpenSimContext context=null;
-        long t1  = System.currentTimeMillis();
         context = new OpenSimContext(model.initSystem(), model);
         MarkerSet markerset = model.getMarkerSet();
         // The following code exercises the Marker->Add New  functionality
         Vec3 offset = new Vec3(0.11, 0.22, 0.33);
         Body body = model.getBodySet().get(0);
         String newMarkerName = "newMarker";
-        // This exercises Marker -> Add New
         Marker newMarker = new Marker();
         newMarker.setName(newMarkerName);
         newMarker.set_location(offset);
@@ -29,6 +28,7 @@ class TestEditMarkers {
         }
         // This exercises Marker -> delete
         context.cacheModelAndState();
+        // we use getComponent to make sure Marker is accessible thru model traversal
         Marker findMarker = Marker.safeDownCast(model.getComponent("newMarker"));
         assert (findMarker != null);
         markerset.remove(findMarker);
@@ -37,6 +37,7 @@ class TestEditMarkers {
         } catch (IOException ex) {
             System.exit(1);
         }
+		// Exercise saveToFile
         markerset.print("savedMarkers.xml");
         // Now create a new MarkerSet from the file
         MarkerSet newMarkerSet = new MarkerSet(model, "savedMarkers.xml");
