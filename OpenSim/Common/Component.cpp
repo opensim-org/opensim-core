@@ -197,32 +197,42 @@ void Component::finalizeFromProperties()
     std::set<std::string> names{};
     std::string name{};
 
-    int count = 0;
+    // increment the count of duplicates to use as a unique suffix
+    int count{ 0 };
+    // temp variable to hold the unique name used to rename a duplicate
+    std::string uniqueName{};
+
     for (auto& sub : subs) {
         name = sub->getName();
         const auto& type = sub->getConcreteClassName();
-        auto it = names.find(type+name);
 
-        if (it == names.cend())
-            names.insert(type + name);
-        else {
+        // reset duplicate count and search name
+        count = 0;
+        uniqueName = name;
+
+        // while the name is still not unique keep incrementing the count
+        while (names.find(type + uniqueName) != names.cend()) {
             // In the future this should become an Exception 
-            //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), name);
-            
-            //for now rename the duplicately named Component
+            //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), searchName);
+            // for now, rename the duplicately named subcomponent 
+            // but first test the uniqueness of the name (the while condition)
+            uniqueName = name + "_" + std::to_string(count++);
+        }
+
+        if (count > 0) { // if a duplicate
+            // rename the the subcomponent with its verified unique name
             Component* mutableSub = const_cast<Component *>(sub.get());
-            mutableSub->setName(name + "_" + std::to_string(count));
+            mutableSub->setName(uniqueName);
 
             // Warn of the problem
             std::string msg = type + " '" + getName() + "' has subcomponents " +
                 "with duplicate name '" + name + "'. The duplicate was renamed to '" +
-                sub->getName() + "'.";
+                uniqueName + "'.";
             std::cout << msg << std::endl;
-
-            names.insert(type + name);
         }
 
-        count++;
+        // keep track of unique names
+        names.insert(type + uniqueName);
     }
 
     extendFinalizeFromProperties();
