@@ -215,7 +215,7 @@ void Component::finalizeFromProperties()
 
             // Warn of the problem
             std::string msg = type + " '" + getName() + "' has subcomponents " +
-                "with duplicate name '" + name + "', and was renamed as '" +
+                "with duplicate name '" + name + "'. The duplicate was renamed to '" +
                 sub->getName() + "'.";
             std::cout << msg << std::endl;
 
