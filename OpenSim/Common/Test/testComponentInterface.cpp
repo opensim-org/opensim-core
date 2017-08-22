@@ -1618,7 +1618,7 @@ void testTableReporter() {
             std::cout << "TableReporter table after simulating:\n"
                       << table.toString() << std::endl;
             SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
-                                      ColumnIndexOutOfRange);
+                                      EmptyTable);
         }
 
         // Ensure that clearing the table and performing a new simulation works
@@ -1628,7 +1628,7 @@ void testTableReporter() {
                   << reporter->getTable().toString() << std::endl;
         SimTK_TEST_MUST_THROW_EXC(
             reporter->getTable().getDependentColumnAtIndex(0),
-            ColumnIndexOutOfRange);
+            EmptyTable);
     
         {
             SimTK::State s = system.realizeTopology();
@@ -1641,7 +1641,7 @@ void testTableReporter() {
             std::cout << "TableReporter table after simulating again:\n"
                       << table.toString() << std::endl;
             SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
-                                      ColumnIndexOutOfRange);
+                                      EmptyTable);
         }
     }
 }
