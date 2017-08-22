@@ -1207,7 +1207,7 @@ protected:
                               unsigned         maxWidth     = 80,
                               unsigned         precision    = 4) const
     {
-        if (getNumRows() == 0 || getNumColumns() == 0)
+        if (isEmpty())
             return "(Table is empty)\n";
 
         static_assert(std::is_same<ETX, double>::value,
@@ -1437,7 +1437,7 @@ protected:
 
     /** Determine whether table is empty. */
     bool isEmpty() const {
-        return _depData.nrow() == 0 || _depData.ncol() == 0;
+        return getNumRows() == 0 || getNumColumns() == 0;
     }
 
     /** Check if row index is out of range.                                   */
