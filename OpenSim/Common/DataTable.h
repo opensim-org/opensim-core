@@ -670,8 +670,10 @@ public:
 
     /** Get row at index.                                                     
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If index is out of range.                      */
     const RowVectorView getRowAtIndex(size_t index) const {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -697,8 +699,10 @@ public:
 
     /** Update row at index.                                                  
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -727,6 +731,7 @@ public:
     updRowAtIndex(index) = depRow;
     ```
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void setRowAtIndex(size_t index, const RowVectorView& depRow) {
         updRowAtIndex(index) = depRow;
@@ -737,6 +742,7 @@ public:
     updRowAtIndex(index) = depRow;
     ```
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void setRowAtIndex(size_t index, const RowVector& depRow) {
         updRowAtIndex(index) = depRow;
@@ -774,8 +780,10 @@ public:
 
     /** Remove row at index.
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void removeRowAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -945,9 +953,11 @@ public:
 
     /** Get dependent column at index.
 
+    \throws EmptyTable If the table is empty.
     \throws ColumnIndexOutOfRange If index is out of range for number of columns
                                   in the table.                               */
     VectorView getDependentColumnAtIndex(size_t index) const {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
                          static_cast<size_t>(_depData.ncol() - 1));
@@ -965,9 +975,11 @@ public:
 
     /** Update dependent column at index.
 
+    \throws EmptyTable If the table is empty.
     \throws ColumnIndexOutOfRange If index is out of range for number of columns
                                   in the table.                               */
     VectorView updDependentColumnAtIndex(size_t index) {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isColumnIndexOutOfRange(index),
                          ColumnIndexOutOfRange, index, 0,
                          static_cast<size_t>(_depData.ncol() - 1));
@@ -985,10 +997,12 @@ public:
 
     /** %Set value of the independent column at index.
 
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If rowIndex is out of range.
     \throws InvalidRow If this operation invalidates the row. Validation is
                        performed by derived classes.                          */
     void setIndependentValueAtIndex(size_t rowIndex, const ETX& value) {
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowIndex),
                          RowIndexOutOfRange, 
                          rowIndex, 0, 
@@ -1013,6 +1027,7 @@ public:
     /** Get a read-only view of a block of the underlying matrix.             
 
     \throws InvalidArgument If numRows or numColumns is zero.
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If one or more rows of the desired block is out
                                of range of the matrix.
     \throws ColumnIndexOutOfRange If one or more columns of the desired block is
@@ -1024,6 +1039,7 @@ public:
         OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
                          InvalidArgument,
                          "Either numRows or numColumns is zero.");
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
                          RowIndexOutOfRange,
                          rowStart, 0, 
@@ -1055,6 +1071,7 @@ public:
     /** Get a writable view of a block of the underlying matrix.
 
     \throws InvalidArgument If numRows or numColumns is zero.
+    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If one or more rows of the desired block is out
                                of range of the matrix.
     \throws ColumnIndexOutOfRange If one or more columns of the desired block is
@@ -1066,6 +1083,7 @@ public:
         OPENSIM_THROW_IF(numRows == 0 || numColumns == 0,
                          InvalidArgument,
                          "Either numRows or numColumns is zero.");
+        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(rowStart),
                          RowIndexOutOfRange,
                          rowStart, 0, 
@@ -1416,8 +1434,12 @@ protected:
         makeElement_helper(elem, begin, end);
         return elem;
     }
-    
-    
+
+    /** Determine whether table is empty. */
+    bool isEmpty() const {
+        return _depData.nrow() == 0 || _depData.ncol() == 0;
+    }
+
     /** Check if row index is out of range.                                   */
     bool isRowIndexOutOfRange(size_t index) const {
         return index >= _indData.size();
