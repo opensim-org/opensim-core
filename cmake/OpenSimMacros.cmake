@@ -353,15 +353,12 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             message(FATAL_ERROR "Zero DLLs found in directory "
                                 "${DEP_INSTALL_DIR}.")
         endif()
-        foreach(DLL IN LISTS DLLS)
-            get_filename_component(DLL_NAME ${DLL} NAME)
-            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
-                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}.")
-            list(APPEND DLL_NAMES ${DLL_NAME})
-        endforeach()
-        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLL_NAMES})
+	set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
+	add_custom_command(OUTPUT ${DLLS}
+	                   COMMAND ${CMAKE_COMMAND -E make_directory ${DEST_DIR}
+                           COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${DEST_DIR}
+                           COMMENT "Copying ${DLLS} to ${DEST_DIR}.")
+        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS})
         set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
             PROJECT_LABEL "Copy ${DEP_NAME} DLLs")
         if(OPENSIM_COPY_DEPENDENCIES)
