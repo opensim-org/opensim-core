@@ -1,3 +1,16 @@
+function structdata = osimTableToStruct(osimtable)
+%% Convert TimeSeriesTable to a Matlab Struct
+%  Input is an OpenSim TimesSeriesTable.
+%  Output is a Matlab stucture where data.<label> = n x 1 or n x 3 array
+% 
+%  Inputs - OpenSim TimesSeriesTable()
+%  
+%  Outputs - structure such that structdata.<label> = [n x 1] or [n x 3]
+% 
+%  e.g. structdata = osimTableFromStruct(osimtable)
+
+% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
+% Ajay Seth, Ayman Habib, Jen Hicks.
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -19,17 +32,6 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
-%% Convert Matlab Struct to OpenSim time Series Table
-%  Input is an OpenSim TimesSeriesTable or TimesSeriesTableVec3
-%
-%  Output is a Maltab stucture where data.label = nX1 or nx3 array
-%  eg structdata.LASI = [2 3 4; 4 5 6, ...
-
-% Author: James Dunne, Tom Uchida, Shrinidhi K. Lakshmikanth, Chris Dembia, 
-% Ajay Seth, Ayman Habib, Jen Hicks.
-
-function structdata = osimTableToStruct(osimtable)
 
 % Import Java libraries 
 import org.opensim.modeling.*

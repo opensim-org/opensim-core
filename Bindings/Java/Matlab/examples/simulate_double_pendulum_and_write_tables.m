@@ -1,3 +1,8 @@
+%% simulate_double_pendulum_and_write_tables.m
+% OpenSim API example that builds, simulates, and reports the motion of a 
+% double-pendulum model (with markers). Writes the results to .sto and .trc
+%
+% Author(s): James Dunne, Tom Uchida, Chris Dembia                           %
 % -------------------------------------------------------------------------- %
 %                simulate_double_pendulum_and_write_tables.m                 %
 % -------------------------------------------------------------------------- %
@@ -21,9 +26,7 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 
-% This API example runs a forward simulation of a double-pendulum model and
-% writes the results to .sto and .trc files.
-
+%% import java libraries
 import org.opensim.modeling.*
 
 % Read double-pendulum model.

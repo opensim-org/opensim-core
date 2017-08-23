@@ -1,3 +1,15 @@
+function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
+%% Function to take an existing model file and coordinate data accessed 
+% from an IK solution and write it as a Natural Cubic Spline Function to 
+% the Prescribed Function method of a Coordinate to a model file.
+%
+% Inputs - Model_In - Existing model stored in osim file
+%        - Mot_In - A file contains motion data for the particular model
+%        - Model_Out - The output file with prescribed motion
+%
+% e.g. prescribedMotionInModel('myInputModel.osim','myMotionFile', 'myOutputModel.osim')
+
+% Author - Dominic Farris
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -20,34 +32,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% prescribeMotionInModel.m                                                        
-% Author: Dominic Farris
-
-function prescribeMotionInModel(Model_In, Mot_In, Model_Out)
-
-% Function to take an existing model file and coordinate data accessed from an IK solution
-% and write it as a Natural Cubic Spline Function to the Prescribed
-% Function method of a Coordinate to a model file. Based off work done by
-% Dominic Farris
-%
-% Inputs - Model_In - Existing model stored in osim file
-%        - Mot_In - A file contains motion data for the particular model
-%        - Model_Out - The output file with prescribed motion
-%
-% e.g. prescribedMotionInModel('myInputModel.osim','myMotionFile', 'myOutputModel.osim')
-%
-% Author - Dominic Farris (North Carolina State University). Please
-% acknowledge contribution in published academic works
-% last updated - 17/07/2012
-
+%% import java libraries
 import org.opensim.modeling.*
 
-% Argument checking
+%% Argument checking
 error(nargchk(0, 3, nargin));
 
 % If there aren't enough arguments passed in system will ask user to
 % manually select file(s)
-
 if nargin < 1
     [Model_In, modelpath] = uigetfile('.osim', 'Please select a model file');
     [Mot_In, motpath] = uigetfile('.mot', 'Please select a motion file');
@@ -70,10 +62,10 @@ else
 end
 
 % Initialize model
-osimModel=Model(modelfilepath);
+osimModel = Model(modelfilepath);
 
 % Create the coordinate storage object from the input .sto file
-coordinateSto=Storage(motfilepath);
+coordinateSto = Storage(motfilepath);
 
 % Rename the modified Model
 osimModel.setName('modelWithPrescribedMotion');

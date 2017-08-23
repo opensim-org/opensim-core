@@ -1,3 +1,9 @@
+%% build_and_simulate_simple_arm.m
+% This API example demonstrates building and simulating a simple arm model
+% consisting of two bodies, two joints, a muscle, and a controller. The API
+% visualizer and a reporter are used to display the simulation results.
+
+% Author(s): James Dunne, Chris Dembia, Tom Uchida                           %
 % -------------------------------------------------------------------------- %
 %                      build_and_simulate_simple_arm.m                       %
 % -------------------------------------------------------------------------- %
@@ -21,9 +27,7 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 
-% This API example demonstrates building and simulating a simple arm model
-% consisting of two bodies, two joints, a muscle, and a controller. The API
-% visualizer and a reporter are used to display the simulation results.
+
 
 import org.opensim.modeling.*
 

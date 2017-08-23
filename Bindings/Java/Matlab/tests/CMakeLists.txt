@@ -7,7 +7,7 @@
 set(matlab_output_dir "${CMAKE_BINARY_DIR}/Matlab")
 file(WRITE "${matlab_output_dir}/javaclasspath.txt"
     "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}")
-if(MSVC OR XCODE) 
+if(MSVC OR XCODE)
     # TODO: should not write all configuration build dirs to the
     # librarypath.txt file; this means that Debug libraries are available to
     # the Release build, for example.
@@ -34,14 +34,12 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
                 TEST_ARGS CONFIGURATIONS ${cfg}
                 ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
                 NO_UNITTEST_FRAMEWORK
+                UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
                 )
-            #UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
-            set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES
-                ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
-            if(WIN32)
-                # Must set PATH so that osimJavaJNI can find osimCommon, etc.
-                set_property(TEST Matlab_${TESTNAME}_${cfg} APPEND PROPERTY
-                    ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/${cfg}")
+        if(WIN32)
+            # Must set PATH so that osimJavaJNI can find osimCommon, etc.
+            set_tests_properties(Matlab_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
+                    "PATH=${CMAKE_BINARY_DIR}/${cfg}")
             endif()
         endforeach()
     else()
@@ -49,6 +47,8 @@ macro(OpenSimAddMatlabTest TESTNAME MFILE)
             UNITTEST_FILE "${_full_path_to_mfile}"
             ADDITIONAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../Utilities"
             NO_UNITTEST_FRAMEWORK
+            # Necessary for custom initial working dir in MATLAB:
+            UNITTEST_PRECOMMAND "cd('${matlab_output_dir}')"
             )
         set_tests_properties(Matlab_${TESTNAME} PROPERTIES
             ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
