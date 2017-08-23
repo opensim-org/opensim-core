@@ -76,11 +76,16 @@ int main() {
                 throw Exception{"Test failed: "
                                 "table.getColumnIndex(labels.at(i)) != i"};
     }
-    // Print out the DataTable to console.
-    try {
-        std::cout << table << std::endl;
-        throw Exception{"Test failed: Exception expected."};
-    } catch(const OpenSim::EmptyTable&) {}
+
+    // Test exceptions (table should be empty here).
+    SimTK_TEST_MUST_THROW_EXC(table.getRowAtIndex(0),
+                              OpenSim::EmptyTable);
+    SimTK_TEST_MUST_THROW_EXC(table.updRowAtIndex(0),
+                              OpenSim::EmptyTable);
+    SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                              OpenSim::EmptyTable);
+    SimTK_TEST_MUST_THROW_EXC(table.updDependentColumnAtIndex(0),
+                              OpenSim::EmptyTable);
 
     table.setDependentsMetaData(dep_metadata);
     table.setIndependentMetaData(ind_metadata);
@@ -99,6 +104,16 @@ int main() {
     try {
         table.appendRow(0.5, row);
     } catch (OpenSim::Exception&) {}
+
+    // Test exceptions (table should have 5 rows and 5 dependent columns here).
+    SimTK_TEST_MUST_THROW_EXC(table.getRowAtIndex(10),
+                              OpenSim::RowIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.updRowAtIndex(10),
+                              OpenSim::RowIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(10),
+                              OpenSim::ColumnIndexOutOfRange);
+    SimTK_TEST_MUST_THROW_EXC(table.updDependentColumnAtIndex(10),
+                              OpenSim::ColumnIndexOutOfRange);
 
     const auto& avgRow = table.averageRow(0.2, 0.8);
     for(int i = 0; i < avgRow.ncol(); ++i)
