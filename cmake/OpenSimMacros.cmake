@@ -355,7 +355,7 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
         endif()
 	set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
 	add_custom_command(OUTPUT ${DLLS}
-	                   COMMAND ${CMAKE_COMMAND -E make_directory ${DEST_DIR}
+	                   COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
                            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${DEST_DIR}
                            COMMENT "Copying ${DLLS} to ${DEST_DIR}.")
         add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS})
