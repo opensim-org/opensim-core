@@ -142,7 +142,7 @@ public:
         std::string str = "(";
         char dbl[256];
             for(int i=0; i < M; i++){
-                sprintf(dbl, "%g", _dblvec[i]);
+                snprintf(dbl, 256, "%g", _dblvec[i]);
                 str += (i>0?" ":"") + std::string(dbl);
             }
         str += ")";
