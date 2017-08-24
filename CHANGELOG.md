@@ -135,6 +135,7 @@ in Python.
 
 Other Changes
 -------------
+- Support for compiling the source code with Microsoft Visual Studio 2017.
 - There is now a formal CMake mechanism for using OpenSim in your own C++
   project. See cmake/SampleCMakeLists.txt. (PR #187)
 - Substantial cleanup of the internal CMake scripts.
