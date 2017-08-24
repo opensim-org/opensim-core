@@ -1995,8 +1995,6 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
-#include <OpenSim/version.h>
-
 int main() {
 
     //Register new types for testing deserialization
@@ -2023,8 +2021,6 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
-
-    std::cout << OpenSim::GetCompilerVersion() << std::endl;
 
     SimTK_END_TEST();
 }

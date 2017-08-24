@@ -164,26 +164,23 @@ On Windows using Visual Studio
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: Visual Studio [2015](https://www.visualstudio.com/vs/older-downloads/) or [2017](https://www.visualstudio.com/) (2017 requires CMake >= 3.9).
     * The *Community* variant is sufficient and is free for everyone.
-    * Visual Studio 2015 and 2017 do not install C++
-      support by default.
-      * 2015: During the installation you must select
+    * Visual Studio 2015 and 2017 do not install C++ support by default.
+      * **2015**: During the installation you must select
         *Custom*, and check *Programming Languages > Visual C++ > Common Tools
         for Visual C++ 2015*.
-        You can uncheck all other boxes. If Visual Studio
-        is installed without C++ support, CMake will report
+        You can uncheck all other boxes. If you have already installed
+        Visual Studio without C++ support, simply re-run the installer and
+        select *Modify*. Alternatively, go to *File > New > Project...* in
+        Visual Studio, select *Visual C++*, and click
+        *Install Visual C++ 2015 Tools for Windows Desktop*.
+      * **2017**: During the installation, select the workload
+        *Desktop Development with C++*.
+      * If Visual Studio is installed without C++ support, CMake will report
         the following errors:
-
         ```
         The C compiler identification is unknown
         The CXX compiler identification is unknown
-        ```
-
-        If you have already installed Visual Studio without C++ support, simply
-        re-run the installer and select *Modify*. Alternatively, go to
-        *File > New > Project...* in Visual Studio, select *Visual C++*, and click
-        *Install Visual C++ 2015 Tools for Windows Desktop*.
-      * 2017: During the installation, select the workload
-        *Desktop Development with C++*.
+        ```    
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
@@ -364,7 +361,9 @@ directory to your `PATH` environment variable.
 
 #### For the impatient (Windows)
 
-* Get **Visual Studio Community** [2015](https://www.visualstudio.com/vs/older-downloads/) or [2017](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
+* Get **Visual Studio Community**
+  [2015](https://www.visualstudio.com/vs/older-downloads/) or
+  [2017](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
  * 2015: Choose *Custom installation*, then choose
    *Programming Languages* -> *Visual C++*.
  * 2017: Choose the workload *Desktop Development with C++*.
