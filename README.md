@@ -24,8 +24,8 @@ include source code for the OpenSim GUI.
 
 Simple example
 --------------
-Let's simulate a simple arm whose elbow is actuated by a muscle, using 
-the C++ interface (You can find a Python version of this example at 
+Let's simulate a simple arm whose elbow is actuated by a muscle, using
+the C++ interface (You can find a Python version of this example at
 `Bindings/Python/examples/build_simple_arm_model.py`):
 
 ```cpp
@@ -108,7 +108,7 @@ int main() {
 
     // Simulate.
     simulate(model, state, 10.0);
-    
+
     return 0;
 };
 ```
@@ -120,31 +120,36 @@ This code produces the following animation:
 and prints the following information to the console:
 ```
 [reporter]
-              |   /model_/bice|               | 
-          time| ps|fiber_force|    elbow_angle| 
---------------| --------------| --------------| 
-  0.000000e+00| 1.18096897e+00| 1.57079633e+00| 
-1.00000000e+00| 5.72750904e+01| 7.70664118e-01| 
-2.00000000e+00| 1.97284113e+01| 1.56804557e+00| 
-3.00000000e+00| 5.60904315e+01| 1.44198608e+00| 
-4.00000000e+00| 3.45483498e+01| 1.50834805e+00| 
-5.00000000e+00| 3.26037208e+01| 1.51802366e+00| 
-6.00000000e+00| 3.71360518e+01| 1.50212351e+00| 
-7.00000000e+00| 3.56985024e+01| 1.50718884e+00| 
-8.00000000e+00| 3.41860103e+01| 1.50791862e+00| 
-9.00000000e+00| 3.43416494e+01| 1.50672695e+00| 
-1.00000000e+01| 3.57847134e+01| 1.50716396e+00| 
+              |   /model_/bice|               |
+          time| ps|fiber_force|    elbow_angle|
+--------------| --------------| --------------|
+  0.000000e+00| 1.18096897e+00| 1.57079633e+00|
+1.00000000e+00| 5.72750904e+01| 7.70664118e-01|
+2.00000000e+00| 1.97284113e+01| 1.56804557e+00|
+3.00000000e+00| 5.60904315e+01| 1.44198608e+00|
+4.00000000e+00| 3.45483498e+01| 1.50834805e+00|
+5.00000000e+00| 3.26037208e+01| 1.51802366e+00|
+6.00000000e+00| 3.71360518e+01| 1.50212351e+00|
+7.00000000e+00| 3.56985024e+01| 1.50718884e+00|
+8.00000000e+00| 3.41860103e+01| 1.50791862e+00|
+9.00000000e+00| 3.43416494e+01| 1.50672695e+00|
+1.00000000e+01| 3.57847134e+01| 1.50716396e+00|
 ```
 ---
 
 Building from the source code
 -----------------------------
 
-**NOTE -- In all platforms (Windows, OSX, Linux), it is advised to build all OpenSim Dependencies (Simbody, BTK etc) with same *CMAKE_BUILD_TYPE* (Linux) / *CONFIGURATION* (MSVC/Xcode) as OpenSim. For example, if OpenSim is to be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*, Simbody, BTK and all other OpenSim dependencies also should be built with *CMAKE_BUILD_TYPE/CONFIGURATION* as *Debug*. Failing to do so *may* result in mysterious runtime errors like 'segfault' in standard c++ library implementation.**
+**NOTE**: On all platforms (Windows, OSX, Linux), you should
+build all OpenSim dependencies (Simbody, BTK, etc) with the
+same *CMAKE_BUILD_TYPE* (Linux) / *CONFIGURATION*
+(MSVC/Xcode) (e.g., Release, Debug) as OpenSim. Failing to
+do so *may* result in mysterious runtime errors like
+segfaults.
 
 We support a few ways of building OpenSim:
 
-1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows). 
+1. [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio). In a rush? Use [these instructions](#for-the-impatient-windows).
 2. [On Mac OSX using Xcode](#on-mac-osx-using-xcode). Need extended instructions? Use [these instructions](#extended-instructions-for-osx).
 3. [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles). In a rush? Use [these instructions](#for-the-impatient-ubuntu).
 
@@ -154,27 +159,31 @@ On Windows using Visual Studio
 
 #### Get the dependencies
 
-* **operating system**: Windows 7 or 8.
+* **operating system**: Windows 7, 8, or 10.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
-* **compiler / IDE**: [Visual Studio 2015](https://www.visualstudio.com/).
-    * *Visual Studio Community 2015* is sufficient and is free for everyone.
-    * Visual Studio 2015 does not install C++
-      support by default. During the installation you must select
-      *Custom*, and check *Programming Languages > Visual C++ > Common Tools
-      for Visual C++ 2015*.
-      You can uncheck all other boxes. If Visual Studio is installed without C++
-      support, CMake will report the following errors:
-      
-      ```
-      The C compiler identification is unknown
-      The CXX compiler identification is unknown
-      ```
-      
-      If you have already installed Visual Studio without C++ support, simply
-      re-run the installer and select *Modify*. Alternatively, go to
-      *File > New > Project...* in Visual Studio, select *Visual C++*, and click
-      *Install Visual C++ 2015 Tools for Windows Desktop*.
+* **compiler / IDE**: Visual Studio [2015](https://www.visualstudio.com/vs/older-downloads/) or [2017](https://www.visualstudio.com/) (2017 requires CMake >= 3.9).
+    * The *Community* variant is sufficient and is free for everyone.
+    * Visual Studio 2015 and 2017 do not install C++
+      support by default.
+      * 2015: During the installation you must select
+        *Custom*, and check *Programming Languages > Visual C++ > Common Tools
+        for Visual C++ 2015*.
+        You can uncheck all other boxes. If Visual Studio
+        is installed without C++ support, CMake will report
+        the following errors:
+
+        ```
+        The C compiler identification is unknown
+        The CXX compiler identification is unknown
+        ```
+
+        If you have already installed Visual Studio without C++ support, simply
+        re-run the installer and select *Modify*. Alternatively, go to
+        *File > New > Project...* in Visual Studio, select *Visual C++*, and click
+        *Install Visual C++ 2015 Tools for Windows Desktop*.
+      * 2017: During the installation, select the workload
+        *Desktop Development with C++*.
 * **physics engine**: Simbody >= 3.6. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
@@ -229,9 +238,10 @@ On Windows using Visual Studio
    which to build dependencies. Let's say this is
    `C:/opensim-core-dependencies-build`.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 14* generator (for Visual Studio 2015). To
-       build as 64-bit, select *Visual Studio 14 Win64*.
-    2. Click **Finish**.
+    1. Visual Studio 2015: Choose the *Visual Studio 14 2015* generator (may appear as *Visual Studio 14*).
+    2. Visual Studio 2017: Choose the *Visual Studio 15 2017* generator.
+    3. To build as 64-bit, select the generator with *Win64* in the name.
+    4. Click **Finish**.
 5. Where do you want to install OpenSim dependencies on your computer? Set this
    by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
    `C:/opensim-core-dependencies-install`.
@@ -249,7 +259,7 @@ On Windows using Visual Studio
         cmake --build . --config RelWithDebInfo
 
    Alternative values for `--config` in this command are:
-   
+
    * **Debug**: debugger symbols; no optimizations (more than 10x slower).
      Library names end with `_d`.
    * **Release**: no debugger symbols; optimized.
@@ -272,11 +282,11 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Choose the *Visual Studio 14* or *Visual Studio 14 2015* generator. To
-       build as 64-bit, select *Visual Studio 14 Win64* or 
-       *Visual Studio 14 2015 Win64*. The choice between
-       32-bit/64-bit must be the same across all dependencies.
-    2. Click **Finish**.
+    1. Visual Studio 2015: Choose the *Visual Studio 14* or *Visual Studio 14 2015* generator.
+    2. Visual Studio 2017: Choose the *Visual Studio 15 2017* generator.
+    3. To build as 64-bit, select the generator with *Win64* in the name.
+       The choice between 32-bit/64-bit must be the same across all dependencies.
+    4. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `C:/opensim-core`. If you choose a different installation location, make
@@ -293,8 +303,8 @@ On Windows using Visual Studio
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
         3. docopt.cpp. Set the variable `docopt_DIR` to the directory
-           containing `docopt-config.cmake`. If the root directory of your 
-           docopt.cpp installation is `C:/docopt.cpp-install`, then set this 
+           containing `docopt-config.cmake`. If the root directory of your
+           docopt.cpp installation is `C:/docopt.cpp-install`, then set this
            variable to `C:/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
@@ -354,43 +364,45 @@ directory to your `PATH` environment variable.
 
 #### For the impatient (Windows)
 
-* Get **Visual Studio Community** from [here](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
- * Choose *Custom' installation*.
- * Choose *Programming Languages* -> *Visual C++*.
+* Get **Visual Studio Community** [2015](https://www.visualstudio.com/vs/older-downloads/) or [2017](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
+ * 2015: Choose *Custom installation*, then choose
+   *Programming Languages* -> *Visual C++*.
+ * 2017: Choose the workload *Desktop Development with C++*.
 * Get **git** from [here](https://git-scm.com/downloads).
  * Choose *Use Git from the Windows Command Prompt*.
 * Get **CMake** from [here](https://cmake.org/download/).
  * Choose *Add CMake to the system PATH for all users*.
 * Get **Chocolatey** from [here](https://chocolatey.org/).
-* In **PowerShell**, *run as Administrator* --
+* In **PowerShell**, *run as Administrator*:
 
- ```powershell
- choco install python2 jdk8 swig
- ```
-* In **PowerShell** --
+  ```powershell
+  choco install python2 jdk8 swig
+  ```
+* In **PowerShell** (if using Visual Studio 2017, replace
+  *14 2015* with *15 2017*):
 
- ```powershell
-git clone https://github.com/opensim-org/opensim-core.git
-mkdir opensim_dependencies_build
-cd .\opensim_dependencies_build
-cmake ..\opensim-core\dependencies                             `
-      -G"Visual Studio 14 2015 Win64"                          `
-      -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
-cmake --build . --config RelWithDebInfo -- /maxcpucount:8
-cd ..
-mkdir opensim_build
-cd .\opensim_build
-cmake ..\opensim-core                                              `
-      -G"Visual Studio 14 2015 Win64"                              `
-      -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
-      -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
-      -DBUILD_JAVA_WRAPPING=ON                                     `
-      -DBUILD_PYTHON_WRAPPING=ON                                   `
-      -DWITH_BTK=ON                                  
-cmake --build . --config RelWithDebInfo -- /maxcpucount:8
-ctest -C RelWithDebInfo --parallel 8
-cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
-```
+  ```powershell
+  git clone https://github.com/opensim-org/opensim-core.git
+  mkdir opensim_dependencies_build
+  cd .\opensim_dependencies_build
+  cmake ..\opensim-core\dependencies                             `
+        -G"Visual Studio 14 2015 Win64"                          `
+        -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
+  cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+  cd ..
+  mkdir opensim_build
+ c d .\opensim_build
+  cmake ..\opensim-core                                              `
+        -G"Visual Studio 14 2015 Win64"                              `
+        -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
+        -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
+        -DBUILD_JAVA_WRAPPING=ON                                     `
+        -DBUILD_PYTHON_WRAPPING=ON                                   `
+        -DWITH_BTK=ON                                  
+  cmake --build . --config RelWithDebInfo -- /maxcpucount:8
+  ctest --build-config RelWithDebInfo --parallel 8
+  cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
+  ```
 
 Note: Please add `<FULL-DIR>\opensim_install\bin` to your PATH variable as per [these instructions](#set-environment-variables).  
 Example: If `opensim_install` is in `C:`, add `C:\opensim_install\bin` to your PATH.  
@@ -400,12 +412,12 @@ On Mac OSX using Xcode
 
 ### For Mac OSX 10.11 El Capitan
 Get **Xcode** from the App store. Open **Xcode** and *Agree* to license agreement. To *Agree* to to the license agreement, you may need to type in **Terminal**:
-```shell 
+```shell
 sudo xcodebuild -license
-``` 
+```
 If you already have **Xcode**, update it to 7.3, or the latest version.
 
-Then, in **Terminal**, copy and paste commands below, line by line, one at a time. Be sure the output doesn't contain errors.
+Then, in **Terminal**, copy and paste commands below, line by line, one at a time. The first line installs the Homebrew package manager; omit this line if you already have Homebrew. Be sure the output doesn't contain errors.
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 brew install cmake swig
@@ -436,7 +448,7 @@ ctest -j8
 
 #### Get the dependencies
 
-* **operating system**: Mac OSX 10.11 El Capitan.
+* **operating system**: Mac OSX 10.11 El Capitan or newer.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
@@ -546,8 +558,8 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
         3. docopt.cpp. Set the variable `docopt_DIR` to the directory
-           containing `docopt-config.cmake`. If the root directory of your 
-           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           containing `docopt-config.cmake`. If the root directory of your
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
@@ -620,7 +632,7 @@ specific Ubuntu versions under 'For the impatient' below.
 
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2;
-  `cmake-gui`. 
+  `cmake-gui`.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
 * **physics engine**: Simbody >= 3.6. Two options:
@@ -732,8 +744,8 @@ And you could get all the optional dependencies via:
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
         3. docopt.cpp. Set the variable `docopt_DIR` to the directory
-           containing `docopt-config.cmake`. If the root directory of your 
-           docopt.cpp installation is `~/docopt.cpp-install`, then set this 
+           containing `docopt-config.cmake`. If the root directory of your
+           docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
@@ -903,7 +915,7 @@ Note: You may need to add `<FULL-DIR>/opensim_install/bin` to your PATH variable
 Example: If opensim_install is in your home directory:
 
         $ echo 'export PATH=~/opensim_install/bin:$PATH' >> ~/.bashrc
- 
+
 
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-core.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
