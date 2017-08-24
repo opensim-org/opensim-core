@@ -21,6 +21,10 @@ OpenSimAddLibrary(
     )
 
 if(WIN32)
-    add_dependencies(osimCommon Simbody_CONFIG_check)
+    add_dependencies(osimCommon
+        Simbody_CONFIG_check Copy_Simbody_DLLs)
+    if(WITH_BTK)
+        add_dependencies(osimCommon Copy_BTK_DLLs)
+    endif()
 endif()
   
