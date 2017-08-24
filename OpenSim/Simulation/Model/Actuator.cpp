@@ -78,17 +78,6 @@ void Actuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     _model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
 }
 
-
-//_____________________________________________________________________________
-/**
- * Update the geometric representation of the Actuator if any.
- * The resulting geometry is maintained at the VisibleObject layer
- * 
- */
-void Actuator::updateGeometry()
-{
-}
-
 // CONTROLS
 //_____________________________________________________________________________
 /**
