@@ -40,3 +40,9 @@ target_include_directories(tropter INTERFACE
         # Used by client projects using an installed version of Tropter.
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
+
+set_target_properties(tropter PROPERTIES FOLDER "tropter")
+
+if(WIN32)
+    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+endif()

@@ -6,14 +6,18 @@ if (ADOLC_INCLUDES AND ADOLC_LIBRARIES)
   set(ADOLC_FIND_QUIETLY TRUE)
 endif (ADOLC_INCLUDES AND ADOLC_LIBRARIES)
 
+set(ADOLC_DIR $ENV{ADOLC_DIR} CACHE PATH
+    "Path to ADOL-C install directory.")
+
 find_path(ADOLC_INCLUDES
   NAMES
   adolc/adtl.h
   PATHS
-  $ENV{ADOLCDIR}/include
+  "${ADOLC_DIR}/include"
 )
 
-find_library(ADOLC_LIBRARIES adolc PATHS $ENV{ADOLCDIR}/lib)
+find_library(ADOLC_LIBRARIES adolc PATHS
+    "${ADOLC_DIR}/lib")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ADOLC DEFAULT_MSG

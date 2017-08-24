@@ -3,14 +3,13 @@
 function(MuscolloAddTest TEST_NAME LIB_DEPENDENCIES)
     add_executable(${TEST_NAME} ${TEST_NAME}.cpp testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Muscollo Tests")
+    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "Muscollo/Tests")
     target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})
-    # SYSTEM avoids warnings from dependencies
-    # No longer need to explicitly include OpenSim's headers;
-    # this is handled by linking to OpenSim's libraries.
-    # TODO target_include_directories(${TEST_NAME}
-    # TODO         SYSTEM PRIVATE ${OpenSim_INCLUDE_DIRS})
     add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    #if(WIN32) # Instead, we are copying dependencies' DLLs.
+    #    set_property(TEST ${TEST_NAME} APPEND PROPERTY
+    #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin\;${OpenSim_ROOT_DIR}/bin")
+    #endif()
 endfunction()
 
 MuscolloAddTest(testHangingMassRoundtrip osimMuscollo)

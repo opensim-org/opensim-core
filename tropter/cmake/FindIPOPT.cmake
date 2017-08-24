@@ -1,3 +1,5 @@
+# This file was copied from iCub and modified by chrisdembia to fix the library dependencies expected on Windows.
+
 #.rst:
 # FindIPOPT
 # ---------
@@ -185,42 +187,42 @@ else()
   set(IPOPT_LIBRARIES ${IPOPT_IPOPT_LIBRARY})
 
 
-  if(IPOPT_IPOPT_LIBRARY)
-    find_file(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
-                                                   ${IPOPT_DIR}/share/coin/doc/Ipopt
-                                                   NO_DEFAULT_PATH)
-    mark_as_advanced(IPOPT_DEP_FILE)
+  # if(IPOPT_IPOPT_LIBRARY)
+  #   find_file(IPOPT_DEP_FILE ipopt_addlibs_cpp.txt ${IPOPT_DIR}/share/doc/coin/Ipopt
+  #                                                  ${IPOPT_DIR}/share/coin/doc/Ipopt
+  #                                                  NO_DEFAULT_PATH)
+  #   mark_as_advanced(IPOPT_DEP_FILE)
 
-    if(IPOPT_DEP_FILE)
-      # parse the file and acquire the dependencies
-      file(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
-      string(REPLACE "libipopt.lib"      "" IPOPT_DEP ${IPOPT_DEP}) # Already taken care of.
-      separate_arguments(IPOPT_DEP)
-      foreach(dep ${IPOPT_DEP})
-        # Only keep the items that are library names (ending with .lib).
-        if(dep MATCHES "\\.lib$")
-          string(REGEX REPLACE ".lib$" "" libname ${dep})
-          list(APPEND IPOPT_DEP_LIBNAMES "${libname}")
-        endif()
-      endforeach()
+  #   if(IPOPT_DEP_FILE)
+  #     # parse the file and acquire the dependencies
+  #     file(READ ${IPOPT_DEP_FILE} IPOPT_DEP)
+  #     string(REPLACE "libipopt.lib"      "" IPOPT_DEP ${IPOPT_DEP}) # Already taken care of.
+  #     separate_arguments(IPOPT_DEP)
+  #     foreach(dep ${IPOPT_DEP})
+  #       # Only keep the items that are library names (ending with .lib).
+  #       if(dep MATCHES "\\.lib$")
+  #         string(REGEX REPLACE ".lib$" "" libname ${dep})
+  #         list(APPEND IPOPT_DEP_LIBNAMES "${libname}")
+  #       endif()
+  #     endforeach()
 
-      # use the find_library command in order to prepare rpath correctly
-      foreach(LIB ${IPOPT_DEP_LIBNAMES})
-        find_library(IPOPT_SEARCH_FOR_${LIB} ${LIB} ${IPOPT_DIR}/lib
-                                                    ${IPOPT_DIR}/lib/coin
-                                                    ${IPOPT_DIR}/lib/coin/ThirdParty
-                                                    NO_DEFAULT_PATH)
-        if(IPOPT_SEARCH_FOR_${LIB})
-          # handle non-system libraries (e.g. coinblas)
-          set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_SEARCH_FOR_${LIB}})
-        else()
-          # handle system libraries (e.g. gfortran)
-          set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-        endif()
-        mark_as_advanced(IPOPT_SEARCH_FOR_${LIB})
-      endforeach()
-    endif()
-  endif()
+  #     # use the find_library command in order to prepare rpath correctly
+  #     foreach(LIB ${IPOPT_DEP_LIBNAMES})
+  #       find_library(IPOPT_SEARCH_FOR_${LIB} ${LIB} ${IPOPT_DIR}/lib
+  #                                                   ${IPOPT_DIR}/lib/coin
+  #                                                   ${IPOPT_DIR}/lib/coin/ThirdParty
+  #                                                   NO_DEFAULT_PATH)
+  #       if(IPOPT_SEARCH_FOR_${LIB})
+  #         # handle non-system libraries (e.g. coinblas)
+  #         set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_SEARCH_FOR_${LIB}})
+  #       else()
+  #         # handle system libraries (e.g. gfortran)
+  #         set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
+  #       endif()
+  #       mark_as_advanced(IPOPT_SEARCH_FOR_${LIB})
+  #     endforeach()
+  #   endif()
+  # endif()
   # Some old version of binary releases of IPOPT have Intel fortran
   # libraries embedded in the library, newer releases require them to
   # be explicitly linked.
@@ -278,7 +280,6 @@ else()
 
     execute_process(COMMAND ${LIB_EXECUTABLE} /list "${_IPOPT_LIB}"
                     OUTPUT_VARIABLE _lib_output)
-
     set(ENV{PATH} "${_path}")
     unset(_path)
 
@@ -295,14 +296,10 @@ else()
       # the dynamic runtime library (MSVC /MD flag).
       foreach(_lib ifconsol
                    libifcoremd
-                   libifcoremt
                    libifportmd
-                   libifport
                    libmmd
-                   libmmt
                    libirc
-                   svml_dispmd
-                   svml_dispmt)
+                   svml_dispmd)
         string(TOUPPER "${_lib}" _LIB)
         find_library(IPOPT_${_LIB}_LIBRARY_RELEASE ${_lib} ${_IPOPT_IPOPT_LIBRARY_DIR})
         find_library(IPOPT_${_LIB}_LIBRARY_DEBUG ${_lib}d ${_IPOPT_IPOPT_LIBRARY_DIR})

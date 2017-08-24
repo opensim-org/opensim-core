@@ -22,6 +22,22 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 set(CMAKE_MACOSX_RPATH ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
+# Make targets go in the same binary directory.
+# These are CMake-defined variables.
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
+
+# Define variables that help describe the layout of the installation.
+include(GNUInstallDirs)
+
+# Muscollo settings.
+# ------------------
+# Copy dependencies' libraries into Muscollo's installation?
+set(MUSCOLLO_COPY_DEPENDENCIES ON)
+
+# Include CMake macros that we wrote to reduce duplication in this project.
+include(cmake/MuscolloMacros.cmake)
+
 # Compiler flags.
 # ---------------
 set(CMAKE_CXX_STANDARD 11)

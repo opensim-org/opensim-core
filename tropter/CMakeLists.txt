@@ -13,6 +13,9 @@ set(CMAKE_CXX_STANDARD 11)
 # Using c++11 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Copy dependencies' libraries into Tropter's installation?
+set(TROPTER_COPY_DEPENDENCIES ON)
+
 # Include CMake macros that we wrote to reduce duplication in this project.
 include(cmake/tropter_macros.cmake)
 
@@ -41,8 +44,10 @@ find_package(IPOPT REQUIRED)
 # TODO move these flags to a specific target.
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
+tropter_copy_dlls(IPOPT "${IPOPT_DIR}/bin")
 
 find_package(ADOLC REQUIRED)
+tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
 
 # OpenMP allows parallelization (of evaluating dynaimcs and path constraints
 # across tropter points) and is usually a feature of a compiler. It's fine if the

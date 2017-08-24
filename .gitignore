@@ -1,6 +1,7 @@
 # Vim
 .*.swo
 .*.swp
+*~
 
 # OpenSim
 err.log
@@ -12,3 +13,7 @@ cmake-build-*
 
 # Mac
 .DS_Store
+
+# dependencies
+dependencies/*
+!dependencies/CMakeLists.txt
