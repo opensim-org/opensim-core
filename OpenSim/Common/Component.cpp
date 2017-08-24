@@ -204,14 +204,13 @@ void Component::finalizeFromProperties()
 
     for (auto& sub : subs) {
         name = sub->getName();
-        const auto& type = sub->getConcreteClassName();
 
         // reset duplicate count and search name
         count = 0;
         uniqueName = name;
 
         // while the name is still not unique keep incrementing the count
-        while (names.find(type + uniqueName) != names.cend()) {
+        while (names.find(uniqueName) != names.cend()) {
             // In the future this should become an Exception 
             //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), searchName);
             // for now, rename the duplicately named subcomponent 
@@ -225,14 +224,14 @@ void Component::finalizeFromProperties()
             mutableSub->setName(uniqueName);
 
             // Warn of the problem
-            std::string msg = type + " '" + getName() + "' has subcomponents " +
-                "with duplicate name '" + name + "'. The duplicate was renamed to '" +
-                uniqueName + "'.";
+            std::string msg = getConcreteClassName() + " '" + getName() +
+                "' has subcomponents with duplicate name '" + name + 
+                "'. The duplicate was renamed to '" + uniqueName + "'.";
             std::cout << msg << std::endl;
         }
 
         // keep track of unique names
-        names.insert(type + uniqueName);
+        names.insert(uniqueName);
     }
 
     extendFinalizeFromProperties();
