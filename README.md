@@ -364,13 +364,13 @@ directory to your `PATH` environment variable.
 * Get **Visual Studio Community**
   [2015](https://www.visualstudio.com/vs/older-downloads/) or
   [2017](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
- * 2015: Choose *Custom installation*, then choose
-   *Programming Languages* -> *Visual C++*.
- * 2017: Choose the workload *Desktop Development with C++*.
+  * 2015: Choose *Custom installation*, then choose
+    *Programming Languages* -> *Visual C++*.
+  * 2017: Choose the workload *Desktop Development with C++*.
 * Get **git** from [here](https://git-scm.com/downloads).
- * Choose *Use Git from the Windows Command Prompt*.
+  * Choose *Use Git from the Windows Command Prompt*.
 * Get **CMake** from [here](https://cmake.org/download/).
- * Choose *Add CMake to the system PATH for all users*.
+  * Choose *Add CMake to the system PATH for all users*.
 * Get **Chocolatey** from [here](https://chocolatey.org/).
 * In **PowerShell**, *run as Administrator*:
 
@@ -390,7 +390,7 @@ directory to your `PATH` environment variable.
   cmake --build . --config RelWithDebInfo -- /maxcpucount:8
   cd ..
   mkdir opensim_build
- c d .\opensim_build
+  cd .\opensim_build
   cmake ..\opensim-core                                              `
         -G"Visual Studio 14 2015 Win64"                              `
         -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
