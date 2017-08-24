@@ -315,7 +315,7 @@ printPerformance(const SimTK::State& s, double *parameters)
     SimTK::Vector constraints(getNumConstraints());
     constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
     cout << endl;
-    cout << "time = " << s.getTime() <<" Performance =" << p << 
+    cout << "time = " << s.getTime() <<" Performance = " << p << 
     " Constraint violation = " << sqrt(~constraints*constraints) << endl;
 }
 
