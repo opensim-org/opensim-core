@@ -1,5 +1,8 @@
-# This is a PowerShell script to build Muscollo and its dependencies on
-# Windows using Visual Studio.
+# This is a PowerShell script that performs the following steps:
+# 1. Obtain/build Muscollo's dependencies.
+# 2. Build Muscollo.
+# 3. Test Muscollo.
+# 4. Install Muscollo.
 # The script will make multiple directories adjacent to the directory
 # containing this script.
 mkdir ..\muscollo_dependencies_build
