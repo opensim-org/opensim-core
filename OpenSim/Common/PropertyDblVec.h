@@ -115,6 +115,9 @@ public:
     void setValue(const SimTK::Vec<M> &aVec) { 
         SimTK::Vec<M>::updAs(&_dblvec[0])=aVec; 
     }
+    // This helps avoid the -Woverloaded-virtual warning with Clang (the method
+    // above otherwise hides the virtual setValue() methods in the base class).
+    using Property_Deprecated::setValue;
     /** set value of this property from an array of doubles of equal or greater length */
     void setValue(const Array<double> &anArray) override {
         assert(anArray.getSize() >= M);
