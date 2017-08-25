@@ -618,16 +618,18 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete (absolute) pathname for this Component to its 
-     * ancestral Component, which is the root of the tree to which this 
-     * Component belongs.
-     * For example: a Coordinate Component would have an absolute path name 
-     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. */
+    /** Get the complete (absolute) pathname for this Component to its ancestral
+     * Component, which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Component would have an absolute path name
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its
+     * absolutePathName from root is guaranteed to be unique. The
+     * absolutePathName is generated on-the-fly by traversing the ownership tree
+     * and, therefore, calling this method is not "free". */
     std::string getAbsolutePathName() const;
 
 
-    /** Get the relative pathname of this Component with respect to another one */
+    /** Get the relative pathname of this Component with respect to another
+     * Component. */
     std::string getRelativePathName(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
