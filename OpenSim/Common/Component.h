@@ -600,8 +600,12 @@ public:
     template <typename T = Component>
     unsigned countNumComponents() const {
         unsigned count = 0u;
-        for (const auto& comp : getComponentList<T>())
+        const auto compList = getComponentList<T>();
+        auto it = compList.begin();
+        while (it != compList.end()) {
             ++count;
+            ++it;
+        }
         return count;
     }
 
@@ -614,16 +618,13 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete (absolute) pathname for this Component to its 
-     * ancestral Component, which is the root of the tree to which this 
-     * Component belongs.
-     * For example: a Coordinate Component would have an absolute path name 
-     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. 
-     * Note that this has more overhead than calling `getName()` because 
-     * it traverses up the tree to generate the absolute pathname (and 
-     * is thus a function of depth). Consider other options if this is
-     * repeatedly called and efficiency is important. */
+    /** Get the complete (absolute) pathname for this Component to its ancestral
+     * Component, which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Component would have an absolute path name
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its
+     * absolutePathName from root is guaranteed to be unique. The
+     * absolutePathName is generated on-the-fly by traversing the ownership tree
+     * and, therefore, calling this method is not "free". */
     std::string getAbsolutePathName() const;
 
     /** Return a ComponentPath of the absolute path of this Component. 
@@ -633,7 +634,8 @@ public:
      * repeatedly called and efficiency is important. */
     ComponentPath getAbsolutePath() const;
 
-    /** Get the relative pathname of this Component with respect to another one */
+    /** Get the relative pathname of this Component with respect to another
+     * Component. */
     std::string getRelativePathName(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified

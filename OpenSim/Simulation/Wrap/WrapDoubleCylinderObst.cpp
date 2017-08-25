@@ -142,8 +142,12 @@ void WrapDoubleCylinderObst::setupProperties()
 *
 * @param aModel simbody model
 */
-void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
+void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel,
+        PhysicalFrame& aBody)
 {
+    OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<Body*>(&aBody),
+        Exception, "Non-Body PhysicalFrames not yet supported.");
+
     // Base class
     Super::connectToModelAndBody(aModel, aBody);
 
@@ -191,6 +195,7 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body&
     _model = &aModel;   // Save this for use in wrapLine
 
     // Obtain wrapVcylHomeBody based on wrapVcylHomeBodyName
+    // TODO should look for PhysicalFrames anywhere in the model.
     if(!aModel.updBodySet().contains(_wrapVcylHomeBodyName)) {
         string errorMessage = "Error: wrapVcylHomeBody " + _wrapVcylHomeBodyName + " for wrap obstacle " + getName() + " was not found in model.";
         throw Exception(errorMessage);
