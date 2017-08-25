@@ -167,7 +167,7 @@ void testGait10dof18musc_INDYGO() {
     TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_tendon_force.sto");
     compare(solution.tendon_force, "/walk_subject01/gastroc_r",
-            std_tendon_force,      "/walk_subject01/gastroc_r", 1e-1);
+            std_tendon_force,      "/walk_subject01/gastroc_r", 0.5);
     // Forces diverge at the very end of the motion.
     rootMeanSquare(solution.tendon_force, "/walk_subject01/soleus_r",
                    std_tendon_force,      "/walk_subject01/soleus_r", 0.5);
