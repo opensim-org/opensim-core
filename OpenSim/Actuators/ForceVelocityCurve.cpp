@@ -188,6 +188,13 @@ double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
     return m_curve.calcDerivative(normFiberVelocity,order);
 }
 
+double ForceVelocityCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
