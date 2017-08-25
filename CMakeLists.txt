@@ -49,6 +49,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
         OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshorten-64-to-32")
+    endif()
     # The assert() macro is omitted in Release, causing "unused-variable"
     # warnings. It is sufficient to just catch such warnings in Debug.
     foreach(cfg RELEASE RELWITHDEBINFO MINSIZEREL)

@@ -418,17 +418,17 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     auto compare_size = [](const std::string& a, const std::string& b) {
         return a.size() < b.size();
     };
-    size_t max_name_length = 0;
+    int max_name_length = 0;
     if (!state_names.empty()) {
-        max_name_length = std::max_element(state_names.begin(),
-                                           state_names.end(),
-                                           compare_size)->size();
+        max_name_length = (int)std::max_element(state_names.begin(),
+                                                state_names.end(),
+                                                compare_size)->size();
     }
     if (!control_names.empty()) {
-        max_name_length = std::max(max_name_length,
-                                   std::max_element(control_names.begin(),
-                                                    control_names.end(),
-                                                    compare_size)->size());
+        max_name_length = (int)std::max((size_t)max_name_length,
+                std::max_element(control_names.begin(),
+                                 control_names.end(),
+                                 compare_size)->size());
     }
 
     stream << "Total number of constraints: "
@@ -506,9 +506,9 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     }
     stream << std::endl;
 
-    const auto max_pathcon_name_length =
-        std::max_element(pathcon_names.begin(), pathcon_names.end(),
-                         compare_size)->size();
+    const int max_pathcon_name_length =
+            (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
+                                  compare_size)->size();
     stream << std::setw(max_pathcon_name_length) << " "
            << "  norm across the tropter" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
