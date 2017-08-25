@@ -619,10 +619,18 @@ public:
      * Component belongs.
      * For example: a Coordinate Component would have an absolute path name 
      * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. */
+     * absolutePathName from root is guaranteed to be unique. 
+     * Note that this has more overhead than calling `getName()` because 
+     * it traverses up the tree to generate the absolute pathname (and 
+     * is thus a function of depth). Consider other options if this is
+     * repeatedly called and efficiency is important. */
     std::string getAbsolutePathName() const;
 
-    /** Return a ComponentPath of the absolute path of the Component. */
+    /** Return a ComponentPath of the absolute path of this Component. 
+     * Note that this has more overhead than calling `getName()` because 
+     * it traverses up the tree to generate the absolute pathname (and 
+     * is thus a function of depth). Consider other options if this is
+     * repeatedly called and efficiency is important. */
     ComponentPath getAbsolutePath() const;
 
     /** Get the relative pathname of this Component with respect to another one */
