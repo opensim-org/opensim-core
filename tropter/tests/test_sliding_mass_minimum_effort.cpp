@@ -160,7 +160,7 @@ TEST_CASE("Minimize effort of sliding a mass TODO new interface.") {
     REQUIRE(Approx(traj.states(1, 0)) == 0.0);
     REQUIRE(Approx(traj.states.rightCols<1>()[1]) == 0.0);
 
-    int N = traj.time.size();
+    const auto N = traj.time.size();
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
     RowVectorXd errors = traj.controls.middleCols(1, N - 2) - expected;
     TROPTER_REQUIRE_EIGEN(traj.controls.middleCols(1, N - 2), expected, 0.1);

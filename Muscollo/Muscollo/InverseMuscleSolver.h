@@ -1,9 +1,14 @@
 #ifndef MUSCOLLO_INVERSEMUSCLESOLVER_H
 #define MUSCOLLO_INVERSEMUSCLESOLVER_H
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
+
+#include <SimTKcommon/internal/ResetOnCopy.h>
 
 namespace OpenSim {
+
+class Model;
 
 /// This is a base class for methods that solve for muscle activity for a
 /// known motion (kinematics) using direct collocation.
@@ -132,10 +137,7 @@ public:
     /// Set the model to use. If you set a model this way, make sure to set
     /// the model_file property to an empty string
     /// (`solver.set_model_file ("")`).
-    void setModel(const Model& model) {
-        _model.reset(model.clone());
-        _model->finalizeFromProperties();
-    }
+    void setModel(const Model& model);
     /// This throws an exception if setModel() has not been called. A model
     /// specified via model_file cannot be accessed via this method.
     const Model& getModel() const {
@@ -154,8 +156,7 @@ public:
     // update docs.
     // TODO rename to states_file or coordinates_file to be consistent with
     // other tools? Take Storage files?
-    void setKinematicsData(const TimeSeriesTable& kinematics)
-    { _kinematics.reset(new TimeSeriesTable(kinematics)); }
+    void setKinematicsData(const TimeSeriesTable& kinematics);
     /// This throws an exception if setKinematicsData() has not been called.
     /// Kinematic specified via kinematics_file cannot be accessed via this
     /// method.
@@ -167,8 +168,7 @@ public:
 
     // TODO document
     // TODO rename to remove "Data".
-    void setNetGeneralizedForcesData(const TimeSeriesTable& netGenForces)
-    { _netGeneralizedForces.reset(new TimeSeriesTable(netGenForces)); }
+    void setNetGeneralizedForcesData(const TimeSeriesTable& netGenForces);
 
     const TimeSeriesTable& getNetGeneralizedForcesData() const {
         OPENSIM_THROW_IF_FRMOBJ(!_netGeneralizedForces, Exception,

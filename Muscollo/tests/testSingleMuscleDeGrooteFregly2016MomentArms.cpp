@@ -228,7 +228,7 @@ solveForTrajectoryGSO() {
                                 "joint/flexion/speed"});
     const auto& position = ocpSolution.getDependentColumn("angle");
     const auto& speed = ocpSolution.getDependentColumn("speed");
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         SimTK::RowVector row(2);
         row[0] = position[iRow];
         row[1] = speed[iRow];
@@ -319,7 +319,7 @@ solveForTrajectoryINDYGO() {
                                 "joint/flexion/speed"});
     const auto& position = ocpSolution.getDependentColumn("angle");
     const auto& speed = ocpSolution.getDependentColumn("speed");
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         SimTK::RowVector row(2);
         row[0] = position[iRow];
         row[1] = speed[iRow];

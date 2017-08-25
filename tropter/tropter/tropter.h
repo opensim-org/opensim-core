@@ -1,10 +1,6 @@
 #ifndef TROPTER_TROPTER_H
 #define TROPTER_TROPTER_H
 
-#include <iostream>
-#include <Eigen/Dense>
-#include <IpTNLP.hpp>
-#include <adolc/adolc.h>
 #include "common.h"
 
 // TODO remove.

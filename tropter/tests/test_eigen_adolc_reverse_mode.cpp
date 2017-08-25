@@ -3,8 +3,18 @@
 #include <catch.hpp>
 
 #include <Eigen/Dense>
+
+#ifdef _MSC_VER
+    // Ignore warnings from ADOL-C headers.
+    #pragma warning(push)
+    // 'argument': conversion from 'size_t' to 'locint', possible loss of data.
+    #pragma warning(disable: 4267)
+#endif
 #include <adolc/adolc.h>
 #include <adolc/sparse/sparsedrivers.h>
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;

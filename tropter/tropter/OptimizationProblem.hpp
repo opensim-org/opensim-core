@@ -2,7 +2,6 @@
 #define TROPTER_OPTIMIZATIONPROBLEM_HPP
 
 #include "OptimizationProblem.h"
-#include <adolc/sparse/sparsedrivers.h>
 
 namespace tropter {
 

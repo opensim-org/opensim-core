@@ -15,11 +15,10 @@ SimTK::Vector interp(const OpenSim::TimeSeriesTable& actualTable,
     const auto& expectedCol =
             expectedTable.getDependentColumn(expectedColumnLabel);
     // Create a linear function for interpolation.
-    OpenSim::PiecewiseLinearFunction expectedFunc(expectedTable.getNumRows(),
-                                                  expectedTime.data(),
-                                                  &expectedCol[0]);
-    SimTK::Vector expected(actualTable.getNumRows());
-    for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+    OpenSim::PiecewiseLinearFunction expectedFunc(
+        (int)expectedTable.getNumRows(), expectedTime.data(), &expectedCol[0]);
+    SimTK::Vector expected((int)actualTable.getNumRows());
+    for (int i = 0; i < (int)actualTable.getNumRows(); ++i) {
         const auto& time = actualTime[i];
         expected[i] = expectedFunc.calcValue(SimTK::Vector(1, time));
     }
@@ -37,7 +36,7 @@ void compare(const OpenSim::TimeSeriesTable& actualTable,
                                     expectedColumnLabel);
     if (verbose) {
         std::cout << "Comparing " << expectedColumnLabel << std::endl;
-        for (size_t i = 0; i < actualTable.getNumRows(); ++i) {
+        for (int i = 0; i < (int)actualTable.getNumRows(); ++i) {
             std::cout << actual[i] << " " << expected[i] << " "
                     << SimTK::isNumericallyEqual(actual[i], expected[i], tol)
                     << std::endl;

@@ -490,7 +490,7 @@ solveForTrajectory_GSO(const Model& model) {
     const auto& y = ocpSolution.getDependentColumn("y");
     const auto& vy = ocpSolution.getDependentColumn("vy");
     SimTK::RowVector row(4);
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         row[0] = x[iRow];
         row[1] = vx[iRow];
         row[2] = y[iRow];
@@ -567,7 +567,7 @@ solveForTrajectory_INDYGO(const Model& model) {
     const auto& y = ocpSolution.getDependentColumn("y");
     const auto& vy = ocpSolution.getDependentColumn("vy");
     SimTK::RowVector row(4);
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         row[0] = x[iRow];
         row[1] = vx[iRow];
         row[2] = y[iRow];
@@ -669,7 +669,7 @@ void test2Muscles2DOFs_GSO_GenForces(
     // is column-major. We can exploit this to transpose the data from
     // "DOFs x time" to "time x DOFs".
     SimTK::Matrix netGenForcesMatrix(
-            netGenForcesEigen.cols(), netGenForcesEigen.rows(),
+            (int)netGenForcesEigen.cols(), (int)netGenForcesEigen.rows(),
             netGenForcesEigen.data());
     TimeSeriesTable netGenForces;
     netGenForces.setColumnLabels({"tx/tx", "ty/ty"});
@@ -800,7 +800,7 @@ void test2Muscles2DOFs_INDYGO_GenForces(
     // is column-major. We can exploit this to transpose the data from
     // "DOFs x time" to "time x DOFs".
     SimTK::Matrix netGenForcesMatrix(
-            netGenForcesEigen.cols(), netGenForcesEigen.rows(),
+            (int)netGenForcesEigen.cols(), (int)netGenForcesEigen.rows(),
             netGenForcesEigen.data());
     TimeSeriesTable netGenForces;
     netGenForces.setColumnLabels({"tx/tx", "ty/ty"});

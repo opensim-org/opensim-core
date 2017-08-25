@@ -506,9 +506,9 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     }
     stream << std::endl;
 
-    int max_pathcon_name_length = std::max_element(pathcon_names.begin(),
-                                                   pathcon_names.end(),
-                                                   compare_size)->size();
+    const auto max_pathcon_name_length =
+        std::max_element(pathcon_names.begin(), pathcon_names.end(),
+                         compare_size)->size();
     stream << std::setw(max_pathcon_name_length) << " "
            << "  norm across the tropter" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {

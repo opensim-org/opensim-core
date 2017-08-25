@@ -200,7 +200,7 @@ public:
 //            _numCoordsToActuate++;
 //        }
         // Add a constraint for each coordinate we want to actuate.
-        _numCoordsToActuate = coordPathsToActuate.size();
+        _numCoordsToActuate = (int)coordPathsToActuate.size();
         for (const auto& coordPath : coordPathsToActuate) {
             this->add_path_constraint("net_gen_force_" + coordPath, 0);
         }

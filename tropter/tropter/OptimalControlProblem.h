@@ -212,7 +212,7 @@ public:
             const FinalBounds& final_bounds = FinalBounds())
     {
         m_state_infos.push_back({name, bounds, initial_bounds, final_bounds});
-        return m_state_infos.size() - 1;
+        return (int)m_state_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific control
     /// variable within `dynamics()` , `path_constraints()`, etc.
@@ -227,14 +227,14 @@ public:
         // problem if initial/final bounds are omitted. Use the Bounds'
         // objects' "is_set()" function.
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
-        return m_control_infos.size() - 1;
+        return (int)m_control_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific path
     /// constraint element within `path_constraints()`.
     /// TODO check if a path constraint with the provided name already exists.
     int add_path_constraint(const std::string& name, const Bounds& bounds) {
         m_path_constraint_infos.push_back({name, bounds});
-        return m_path_constraint_infos.size() - 1;
+        return (int)m_path_constraint_infos.size() - 1;
     }
     /// @}
 
@@ -350,11 +350,17 @@ public:
 
     /// @name Get information about the problem
     /// @{
-    int num_states() const override final { return m_state_infos.size(); }
-    int num_controls() const override final { return m_control_infos.size(); }
+    int num_states() const override final
+    {
+        return (int)m_state_infos.size();
+    }
+    int num_controls() const override final
+    {
+        return (int)m_control_infos.size();
+    }
     int num_path_constraints() const override final
     {
-        return m_path_constraint_infos.size();
+        return (int)m_path_constraint_infos.size();
     }
     std::vector<std::string> get_state_names() const override {
         std::vector<std::string> names;

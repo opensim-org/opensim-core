@@ -98,7 +98,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         // `````````````````````````````````````
         muscleTendonLengths.setColumnLabels(musclePathNames);
         // muscleTendonVelocities.setColumnLabels(musclePathNames);
-        SimTK::RowVector rowMTL(musclePathNames.size());
+        SimTK::RowVector rowMTL((int)musclePathNames.size());
         // SimTK::RowVector rowMTV(musclePathNames.size());
         for (size_t i_time = 0; i_time < statesTraj.getSize(); ++i_time) {
             const auto& state = statesTraj[i_time];
@@ -130,7 +130,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         // This member holds moment arms across time, DOFs, and muscles.
         _momentArms.resize(_numCoordsToActuate);
         // Working memory.
-        SimTK::RowVector rowMA(musclePathNames.size());
+        SimTK::RowVector rowMA((int)musclePathNames.size());
         for (size_t i_dof = 0; i_dof < _numCoordsToActuate; ++i_dof) {
             TimeSeriesTable momentArmsThisDOF;
             momentArmsThisDOF.setColumnLabels(musclePathNames);
@@ -187,7 +187,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     try {
         _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData,
                 _coordPathsToActuate);
-    } catch (KeyNotFound& ex) {
+    } catch (KeyNotFound&) {
         // The net generalized forces file's column labels do not seem to
         // be coordinate paths. Try using the column label format produced
         // by inverse dynamics (e.g., "knee_flexion_r_moment").
@@ -220,7 +220,7 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
         for (size_t i_dof = 0; i_dof < size_t(_netGeneralizedForces.getSize());
              ++i_dof) {
-            const double value = _netGeneralizedForces[i_dof].calcValue(
+            const double value = _netGeneralizedForces[(int)i_dof].calcValue(
                     SimTK::Vector(1, times[i_time]));
             desiredMoments(i_dof, i_time) = value;
         }
@@ -242,7 +242,7 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
         SimTK::Vector time(1, times[i_mesh]);
         for (size_t i_mus = 0; i_mus < _numActiveMuscles; ++i_mus) {
             muscleTendonLengths(i_mus, i_mesh) =
-                    _muscleTendonLengths.get(i_mus).calcValue(time);
+                    _muscleTendonLengths.get((int)i_mus).calcValue(time);
         }
     }
 }
@@ -264,7 +264,7 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
             // when we don't have generalized speeds data.
             // The '{0}' means taking the first derivative w.r.t. time.
             muscleTendonVelocities(i_mus, i_mesh) =
-                    _muscleTendonLengths.get(i_mus).calcDerivative({0}, time);
+                _muscleTendonLengths.get((int)i_mus).calcDerivative({0}, time);
             // TODO muscleTendonVelocities(i_mus, i_mesh) =
             // TODO         _muscleTendonVelocities.get(i_mus).calcValue(time);
         }
@@ -287,7 +287,7 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
         for (size_t i_mus = 0; i_mus < _numActiveMuscles; ++i_mus) {
             for (size_t i_dof = 0; i_dof < _numCoordsToActuate; ++i_dof) {
                 momentArms[i_mesh](i_dof, i_mus) =
-                        _momentArms[i_dof].get(i_mus).calcValue(time);
+                        _momentArms[i_dof].get((int)i_mus).calcValue(time);
             }
         }
     }
@@ -411,16 +411,17 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // --------------------------------------
     Storage forceTrajectorySto;
     // TODO only store the columns corresponding to coordsToActuate.
-    OpenSim::Array<std::string> labels("", coordPathsToActuate.size() + 1);
+    OpenSim::Array<std::string> labels("", (int)coordPathsToActuate.size() + 1);
     labels[0] = "time";
-    for (size_t i = 0; i < coordPathsToActuate.size(); ++i) {
+    for (int i = 0; i < (int)coordPathsToActuate.size(); ++i) {
         labels[i + 1] = coordPathsToActuate[i];
     }
     forceTrajectorySto.setColumnLabels(labels);
-    SimTK::Vector row(_numCoordsToActuate);
-    for (size_t i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
-        for (size_t i_coord = 0; i_coord < _numCoordsToActuate; ++i_coord) {
-            row[i_coord] = forceTrajectory[i_time][coordActIndices[i_coord]];
+    SimTK::Vector row((int)_numCoordsToActuate);
+    for (unsigned i_time = 0; i_time < forceTrajectory.size(); ++i_time) {
+        for (int i_coord = 0; i_coord < (int)_numCoordsToActuate; ++i_coord) {
+            row[i_coord] =
+                    forceTrajectory[i_time][(int)coordActIndices[i_coord]];
         }
         forceTrajectorySto.append(times[i_time], row);
     }

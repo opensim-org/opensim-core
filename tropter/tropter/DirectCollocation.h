@@ -4,8 +4,6 @@
 #include "common.h"
 #include "OptimizationProblem.h"
 #include "OptimalControlProblem.h"
-#include <Eigen/Dense>
-#include <adolc/adolc.h>
 #include <fstream>
 
 namespace tropter {

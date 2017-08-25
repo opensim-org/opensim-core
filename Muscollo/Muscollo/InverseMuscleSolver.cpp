@@ -1,6 +1,9 @@
 
 #include "InverseMuscleSolver.h"
 
+#include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
 using namespace OpenSim;
 
 InverseMuscleSolver::InverseMuscleSolver() {
@@ -11,6 +14,10 @@ InverseMuscleSolver::InverseMuscleSolver(const std::string& setupFilePath) :
         Object(setupFilePath) {
     constructProperties();
 }
+
+/// Set the model to use. If you set a model this way, make sure to set
+/// the model_file property to an empty string
+/// (`solver.set_model_file ("")`).
 
 void InverseMuscleSolver::constructProperties() {
     constructProperty_write_solution("./");
@@ -24,6 +31,22 @@ void InverseMuscleSolver::constructProperties() {
     constructProperty_create_reserve_actuators(-1);
     constructProperty_coordinates_to_include();
     constructProperty_actuators_to_include();
+}
+
+void InverseMuscleSolver::setModel(const Model & model) {
+    _model.reset(model.clone());
+    _model->finalizeFromProperties();
+}
+
+void InverseMuscleSolver::setKinematicsData(const TimeSeriesTable & kinematics)
+{
+    _kinematics.reset(new TimeSeriesTable(kinematics));
+}
+
+void InverseMuscleSolver::setNetGeneralizedForcesData(
+        const TimeSeriesTable & netGenForces)
+{
+    _netGeneralizedForces.reset(new TimeSeriesTable(netGenForces));
 }
 
 void InverseMuscleSolver::loadModelAndData(Model& model,

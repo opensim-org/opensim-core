@@ -85,8 +85,8 @@ void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
     m_problem->sparsity(guess,
                         m_jacobian_row_indices, m_jacobian_col_indices,
                         m_hessian_row_indices,  m_hessian_col_indices);
-    m_jacobian_num_nonzeros = m_jacobian_row_indices.size();
-    m_hessian_num_nonzeros = m_hessian_row_indices.size();
+    m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
+    m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 
 bool IpoptSolver::TNLP::get_bounds_info(

@@ -1,7 +1,17 @@
 #ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
 #define MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
 
-#include <adolc/adolc.h>
+#ifdef _MSC_VER
+    // Ignore warnings from ADOL-C headers.
+    #pragma warning(push)
+    // 'argument': conversion from 'size_t' to 'locint', possible loss of data.
+    #pragma warning(disable: 4267)
+#endif
+#include <adolc/adouble.h>
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
 
 /// This class template implements the muscle model from De Groote et al.,
 /// 2016, Evaluation of Direct Collocation Optimal Control Problem

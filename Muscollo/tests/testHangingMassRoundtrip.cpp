@@ -72,7 +72,7 @@ void testHangingMassRoundtrip() {
                 "/hanging_mass/actuator");
 
         const auto& timeVec = solution.other_controls.getIndependentColumn();
-        SimTK::Vector expected(timeVec.size(), &timeVec[0]);
+        SimTK::Vector expected((int)timeVec.size(), &timeVec[0]);
         for (int i = 0; i < expected.size(); ++i) {
             expected[i] = -std::sin(2 * SimTK::Pi * expected[i]);
             //std::cout << "DEBUG " << actual[i]

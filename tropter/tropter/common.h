@@ -1,7 +1,17 @@
 #ifndef TROPTER_COMMON_H
 #define TROPTER_COMMON_H
 
+#ifdef _MSC_VER
+    // Ignore warnings from ADOL-C headers.
+    #pragma warning(push)
+    // 'argument': conversion from 'size_t' to 'locint', possible loss of data.
+    #pragma warning(disable: 4267)
+#endif
 #include <adolc/adouble.h>
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
 #include <Eigen/Dense>
 #include <fstream>
 

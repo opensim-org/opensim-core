@@ -1,7 +1,18 @@
 #include "OptimizationProblem.hpp"
 
+#ifdef _MSC_VER
+    // Ignore warnings from ADOL-C headers.
+    #pragma warning(push)
+    // 'argument': conversion from 'size_t' to 'locint', possible loss of data.
+    #pragma warning(disable: 4267)
+#endif
 // TODO put adolc sparsedrivers in their own namespace. tropter::adolc
 #include <adolc/adolc.h>
+#include <adolc/sparse/sparsedrivers.h>
+#ifdef _MSC_VER
+    #pragma warning(pop)
+#endif
+
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;

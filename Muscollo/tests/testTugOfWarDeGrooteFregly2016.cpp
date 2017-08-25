@@ -407,7 +407,7 @@ solveForTrajectory_GSO(const Model& model) {
                                 "joint/position/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         SimTK::RowVector row(2);
         row[0] = position[iRow];
         row[1] = speed[iRow];
@@ -503,7 +503,7 @@ solveForTrajectory_INDYGO(const Model& model) {
                                 "joint/position/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
-    for (size_t iRow = 0; iRow < ocpSolution.getNumRows(); ++iRow) {
+    for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
         SimTK::RowVector row(2);
         row[0] = position[iRow];
         row[1] = speed[iRow];
@@ -623,7 +623,7 @@ void test2Muscles1DOFINDYGO(
     // The reserve force at t = 0 is large to account for an incorrect
     // inverse dynamics moment caused by filtering.
     // But after that, the reserve forces should be small.
-    const auto numRows = solution.other_controls.getNumRows();
+    const int numRows = (int)solution.other_controls.getNumRows();
     auto reserveForceRMS = reserveOptimalForce *
             solution.other_controls.getDependentColumnAtIndex(0)
                     .updBlock(1, 0, numRows - 1, 1).normRMS();

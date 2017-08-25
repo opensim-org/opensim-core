@@ -5,6 +5,8 @@
 
 #include <tropter.h>
 
+#include <OpenSim/Common/TimeSeriesTable.h>
+
 #include <algorithm>
 
 using namespace OpenSim;
@@ -145,7 +147,7 @@ public:
         }
 
         // Add a constraint for each coordinate we want to actuate.
-        _numCoordsToActuate = coordPathsToActuate.size();
+        _numCoordsToActuate = (int)coordPathsToActuate.size();
         for (const auto& coordPath : coordPathsToActuate) {
             this->add_path_constraint("net_gen_force_" + coordPath, 0);
         }
@@ -285,7 +287,7 @@ public:
             SimTK::RowVector normFibLenRow(_numMuscles);
             SimTK::RowVector normFibVelRow(_numMuscles);
             SimTK::RowVector tenForceRow(_numMuscles);
-            for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
+            for (int i_act = 0; i_act < _numMuscles; ++i_act) {
                 const auto& musTenLen = _muscleTendonLengths(i_act, i_time);
                 const auto& musTenVel = _muscleTendonVelocities(i_act, i_time);
                 double normFiberLength;

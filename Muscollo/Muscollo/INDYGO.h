@@ -3,8 +3,6 @@
 
 #include "InverseMuscleSolver.h"
 
-#include <OpenSim/OpenSim.h>
-
 namespace OpenSim {
 
 // TODO if this solves for the activity of any actuator, then it should not
