@@ -1988,6 +1988,64 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
+void testGetAbsolutePathNameSpeed() {
+    
+    std::clock_t constructStartTime = std::clock();
+
+    TheWorld* A = new TheWorld();
+    TheWorld* B = new TheWorld();
+    TheWorld* C = new TheWorld();
+    TheWorld* D = new TheWorld();
+    TheWorld* E = new TheWorld();
+    // Use longer names to avoid short string optimization
+    A->setName("a2345678901234567890");
+    B->setName("b2345678901234567890");
+    C->setName("c2345678901234567890");
+    D->setName("d2345678901234567890");
+    E->setName("e2345678901234567890");
+
+    A->add(B);
+    B->add(C);
+    C->add(D);
+    D->add(E);
+
+    double avgTime = 0;
+    int numTrials = 10;
+    int numLoops = 1000000;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getAbsolutePathName();
+            B->getAbsolutePathName();
+            C->getAbsolutePathName();
+            D->getAbsolutePathName();
+            E->getAbsolutePathName();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getAbsolutePathName avgTime = " << avgTime / numTrials << "s" << endl;
+
+    avgTime = 0;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getName();
+            B->getName();
+            C->getName();
+            D->getName();
+            E->getName();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getName avgTime = " << avgTime / numTrials << "s" << endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2014,6 +2072,11 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+
+        // This is commented out since it adds ~20-30sec without testing
+        // any new functionality. Make sure to uncomment to use (and
+        // consider commenting other subtests for more stable benchmark).
+        //SimTK_SUBTEST(testGetAbsolutePathNameSpeed);
 
     SimTK_END_TEST();
 }
