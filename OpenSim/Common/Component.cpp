@@ -640,6 +640,21 @@ void Component::setOwner(const Component& owner)
 
 std::string Component::getAbsolutePathName() const
 {
+    std::string absPathName("/" + getName());
+
+    const Component* up = this;
+
+    while (up && up->hasOwner()) {
+        up = &up->getOwner();
+        absPathName.insert(0, "/" + up->getName());
+    }
+
+    return absPathName;
+
+}
+
+ComponentPath Component::getAbsolutePath() const
+{
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
 
@@ -649,10 +664,8 @@ std::string Component::getAbsolutePathName() const
         up = &up->getOwner();
         pathVec.insert(pathVec.begin(), up->getName());
     }
-    // The root must have a leading '/' 
-    ComponentPath path(pathVec, true);
 
-    return path.toString();
+    return ComponentPath(pathVec, true);
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const

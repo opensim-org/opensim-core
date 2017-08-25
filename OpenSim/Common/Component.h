@@ -622,6 +622,8 @@ public:
      * absolutePathName from root is guaranteed to be unique. */
     std::string getAbsolutePathName() const;
 
+    /** Return a ComponentPath of the absolute path of the Component. */
+    ComponentPath getAbsolutePath() const;
 
     /** Get the relative pathname of this Component with respect to another one */
     std::string getRelativePathName(const Component& wrt) const;
