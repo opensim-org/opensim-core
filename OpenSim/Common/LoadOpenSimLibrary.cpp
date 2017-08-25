@@ -146,7 +146,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 OSIMCOMMON_API void
 OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 {
-    OPENSIM_PORTABLE_HINSTANCE library = LoadOpenSimLibrary(aLibraryName, true);
+    LoadOpenSimLibrary(aLibraryName, true);
 }
 
 OSIMCOMMON_API bool

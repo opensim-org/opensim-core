@@ -316,6 +316,11 @@ public:
         normalized fiber velocity.
     */
     double calcDerivative(double normFiberVelocity, int order) const;
+    
+
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
 
     /** Returns a SimTK::Vec2 containing the lower (0th element) and upper (1st
     element) bounds on the domain of the curve. Outside this domain, the curve
