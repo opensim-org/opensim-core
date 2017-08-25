@@ -46,3 +46,5 @@ set_target_properties(tropter PROPERTIES FOLDER "tropter")
 if(WIN32)
     add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
+
+install(TARGETS tropter DESTINATION ${CMAKE_INSTALL_LIBDIR})

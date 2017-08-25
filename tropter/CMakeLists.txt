@@ -1,5 +1,4 @@
-project(tropter) # TODO another name: Trop (trajectory optimization)
-# TODO TROP
+project(tropter)
 cmake_minimum_required(VERSION 3.2)
 
 # CMake settings.
