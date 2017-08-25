@@ -1561,7 +1561,7 @@ public:
             const std::string thisClass = thisComp.getConcreteClassName();
             std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
                       << thisClass << "]  ";
-            auto path = ComponentPath(thisComp.getAbsolutePathName());
+            auto path = thisComp.getAbsolutePath();
             std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
                       << "/" << path.getComponentName() << std::endl;
         }
@@ -2164,7 +2164,7 @@ protected:
             throw Exception(msg);
         }
 
-        ComponentPath thisAbsPath(getAbsolutePathName());
+        ComponentPath thisAbsPath = getAbsolutePath();
         ComponentPath pathToFind(name);
 
         const C* found = NULL;
@@ -2188,8 +2188,8 @@ protected:
         for (const C& comp : compsList) {
             // if a child of this Component, one should not need
             // to specify this Component's absolute path name
-            ComponentPath compAbsPath(comp.getAbsolutePathName());
-            ComponentPath thisAbsPathPlusSubname(getAbsolutePathName());
+            ComponentPath compAbsPath = comp.getAbsolutePath();
+            ComponentPath thisAbsPathPlusSubname = getAbsolutePath();
             thisAbsPathPlusSubname.pushBack(subname);
             if (compAbsPath == thisAbsPathPlusSubname) {
                 foundCs.push_back(&comp);
@@ -2277,10 +2277,10 @@ protected:
                 }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
-                ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
+                ComponentPath currentAbsPathPlusSubpath = current->getAbsolutePath();
                 currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
                 for (const Component& comp : compsList) {
-                    ComponentPath compAbsPath(comp.getAbsolutePathName());
+                    ComponentPath compAbsPath = comp.getAbsolutePath();
                     std::string compName = comp.getName();
                     // Check if we're in the right component
                     if (compAbsPath == currentAbsPathPlusSubpath) {

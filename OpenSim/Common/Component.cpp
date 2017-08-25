@@ -670,8 +670,8 @@ ComponentPath Component::getAbsolutePath() const
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    ComponentPath thisP(getAbsolutePathName());
-    ComponentPath wrtP(wrt.getAbsolutePathName());
+    ComponentPath thisP = getAbsolutePath();
+    ComponentPath wrtP = wrt.getAbsolutePath();
 
     return thisP.formRelativePath(wrtP).toString();
 }
