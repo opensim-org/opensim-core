@@ -5,6 +5,7 @@
 #include <cmath>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Sparse>
+#include <ctime>
 
 using namespace Eigen;
 
@@ -12,8 +13,9 @@ VectorXd func(const VectorXd& x) {
     VectorXd y(x.size());
     for (int i = 0; i < x.size(); ++i) {
         y[i] = x[i] * x[i];
-        if (i < x.size() - 1) {
-            y[i] += x[i + 1] * x[i + 1];
+        if (i < x.size() - 3) {
+            y[i] += x[i + 1] * x[i + 1] + x[i + 2] * x[i + 2] + x[i + 3] *
+                    x[i + 3];
         }
     }
     return y;
@@ -96,9 +98,9 @@ SparsityPattern compute_sparsity(int m, int n,
         x[j] = NaN;
         y = func(x);
         x[j] = 0;
-        std::cout << std::endl;
+        //std::cout << std::endl;
         for (int i = 0; i < m; ++i) {
-            std::cout << y[i] << std::endl;
+            //std::cout << y[i] << std::endl;
             if (std::isnan(y[i])) {
                 sparsity.add_nonzero(i, j);
             }
@@ -107,36 +109,36 @@ SparsityPattern compute_sparsity(int m, int n,
     return sparsity;
 }
 
-class SparseJacobian {
+//class SparseJacobian {
+//
+//public:
+//    void print() const {
+//
+//    }
+//private:
+//    std::vector<unsigned int> row_indices;
+//    std::vector<unsigned int> column_indices;
+//    std::vector<double> values;
+//};
 
-public:
-    void print() const {
-
-    }
-private:
-    std::vector<unsigned int> row_indices;
-    std::vector<unsigned int> column_indices;
-    std::vector<double> values;
-};
-
-SparseJacobian compute_jacobian(
+void compute_jacobian(
         const std::function<VectorXd (const VectorXd&)> f,
         const VectorXd& x) {
     const int n = x.size();
     VectorXd y0 = func(x);
     const int m = y0.size();
     auto sparsity = compute_sparsity(m, n, func);
-    sparsity.print();
+    //sparsity.print();
 
     auto sparsity_cr = sparsity.convert_to_ADOLC_compressed_row_format();
-    for (int i = 0; i < n; ++i) {
-        std::cout << i << ":";
-        for (int j = 1; j <= sparsity_cr[i][0]; ++j) {
-            std::cout << " " << sparsity_cr[i][j];
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
+    //for (int i = 0; i < n; ++i) {
+    //    std::cout << i << ":";
+    //    for (int j = 1; j <= sparsity_cr[i][0]; ++j) {
+    //        std::cout << " " << sparsity_cr[i][j];
+    //    }
+    //    std::cout << std::endl;
+    //}
+    //std::cout << std::endl;
     ColPack::BipartiteGraphPartialColoringInterface bgpci(SRC_MEM_ADOLC,
             sparsity_cr, m, n);
     double** seed = nullptr;
@@ -153,9 +155,11 @@ SparseJacobian compute_jacobian(
         delete [] seed[i];
     }
     delete [] seed;
-    std::cout << "Eigen seed mat \n" << seed_mat << std::endl;
+    //std::cout << "Eigen seed mat \n" << seed_mat << std::endl;
 
     int num_seeds = seed_column_count;
+
+    clock_t dense_begin = clock();
 
     //Eigen::SparseMatrix<double> jacobian;
     Eigen::MatrixXd jacobian(m, n);
@@ -165,7 +169,7 @@ SparseJacobian compute_jacobian(
 
 //    for (int iseed = 0; iseed < num_seeds; ++iseed) {
     double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
-    std::cout << eps << std::endl;
+    //std::cout << eps << std::endl;
     for (int icol = 0; icol < n; ++icol) {
         double h = eps * std::abs(x_working[icol]);
         x_working[icol] += h;
@@ -174,7 +178,9 @@ SparseJacobian compute_jacobian(
         jacobian.col(icol) = (y1 - y0) / h;
     }
     std::cout << "jacobian " << std::endl;
-    std::cout << jacobian << std::endl;
+    //std::cout << jacobian << std::endl;
+    std::cout << "duration for dense jac: " << double(clock() -
+            dense_begin) / CLOCKS_PER_SEC << std::endl;
 
 
     std::vector<std::vector<unsigned int>> seed_info(num_seeds);
@@ -186,8 +192,11 @@ SparseJacobian compute_jacobian(
         }
     }
 
+    std::cout << "number of seeds " << num_seeds << std::endl;
     std::cout << "SPARSE JAC CALC " << std::endl;
     const auto sparsity_cc = sparsity.convert_to_compressed_column_format();
+
+    clock_t sparse_begin = clock();
 
     std::vector<Eigen::Triplet<double>> jacobian_triplets;
     for (int iseed = 0; iseed < num_seeds; ++iseed) {
@@ -207,24 +216,29 @@ SparseJacobian compute_jacobian(
             }
         }
     }
+    std::cout << "duration for sparse jac: " << double(clock() -
+            sparse_begin) / CLOCKS_PER_SEC << std::endl;
     Eigen::SparseMatrix<double> jacobian_sparse(m, n);
     jacobian_sparse.setFromTriplets(jacobian_triplets.begin(),
             jacobian_triplets.end());
-    std::cout << "sparse jac\n" << jacobian_sparse << std::endl;
+    //std::cout << "sparse jac\n" << jacobian_sparse << std::endl;
 
 }
 
 int main() {
-    const int n = 4;
+    const int n = 1000;
     VectorXd x(n);
-    x << 2, 1, 5, 3;
-    VectorXd y = func(x);
     for (int i = 0; i < n; ++i) {
-        std::cout << y[i] << std::endl;
+        x[i] = rand();
     }
+    VectorXd y = func(x);
+    //for (int i = 0; i < n; ++i) {
+    //    std::cout << y[i] << std::endl;
+    //}
 
-    SparseJacobian jac = compute_jacobian(func, x);
-    jac.print();
+    //SparseJacobian jac = compute_jacobian(func, x);
+    compute_jacobian(func, x);
+    //jac.print();
 
     std::cout << "DEBUG END" << std::endl;
     return 0;
