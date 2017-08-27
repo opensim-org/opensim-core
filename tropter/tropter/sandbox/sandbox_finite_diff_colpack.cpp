@@ -246,3 +246,9 @@ int main() {
 
 
 
+// Parallelize the FD calculation: this avoids issues with ADOL-C's
+// non-parallelizability, and the fact that the constraint eval should happen
+// for all time points at once (to handle constant parameters).
+// However, there is an opportunity for greater parallelization if we also
+// parallelize each contraint eval.
+
