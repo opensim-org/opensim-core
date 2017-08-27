@@ -48,3 +48,9 @@ if(WIN32)
 endif()
 
 install(TARGETS tropter DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+
+
+
+
+add_subdirectory(sandbox)
