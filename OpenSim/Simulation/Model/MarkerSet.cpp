@@ -129,7 +129,7 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
     for (int i = 0; i < getSize(); i++)
     {
         Marker& nextMarker = get(i);
-        const string& refFrameName = nextMarker.getFrameName();
+        const string& refFrameName = nextMarker.getParentFrameName();
         //assert(refBodyName);
         bool found = false;
         for (int j = 0; j < scaleSet.getSize() && !found; j++)
@@ -174,7 +174,7 @@ Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, Op
     m->set_location(aOffset);
     // Frame will be based on this name when marker is connected to Model.
 
-    m->setFrameName(aPhysicalFrame.getName()); 
+    m->setParentFrameName(aPhysicalFrame.getName()); 
     aPhysicalFrame.updModel().addMarker(m);
 
     return m;
