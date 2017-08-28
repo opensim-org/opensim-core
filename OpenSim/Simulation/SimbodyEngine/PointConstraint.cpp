@@ -65,8 +65,8 @@ PointConstraint::PointConstraint(const PhysicalFrame& body1,
     setNull();
     constructProperties();
 
-    setBody1ByName(body1.getName());
-    setBody2ByName(body2.getName());
+    connectSocket_body_1(body1);
+    connectSocket_body_2(body2);
 
     set_location_body_1(locationBody1);
     set_location_body_2(locationBody2);
