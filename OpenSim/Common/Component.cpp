@@ -161,7 +161,7 @@ void Component::finalizeFromProperties()
     // handle nameless components so assign them their class name
     // - aseth
     if (getName().empty()) {
-        setName(IO::Lowercase(getConcreteClassName()) + "_");
+        setName(IO::Lowercase(getConcreteClassName()));
     }
 
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
