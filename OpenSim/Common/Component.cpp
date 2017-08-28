@@ -193,6 +193,10 @@ void Component::finalizeFromProperties()
     markPropertiesAsSubcomponents();
     componentsFinalizeFromProperties();
 
+    // The following block is used to ensure that deserialized names of 
+    // Components are unique so they can be used to unambiguously locate
+    // and connect all loaded Components. If a duplicate is encountered,
+    // it is assigned a unique name.
     auto subs = getImmediateSubcomponents();
     std::set<std::string> names{};
     std::string name{};
@@ -233,6 +237,7 @@ void Component::finalizeFromProperties()
         // keep track of unique names
         names.insert(uniqueName);
     }
+    // End of duplicate finding and renaming.
 
     extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
