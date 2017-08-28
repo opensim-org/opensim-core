@@ -897,52 +897,15 @@ void testListSockets() {
 
 void testComponentPathNames()
 {
-    Foo foo;
-    Bar bar;
-    TheWorld top;
-
-    // These are not valid component names
-    // Only using for testing as surrogates for path names
-    // which are computed by the component. Just testing
-    // the relative path name facility here.
-    top.setName("Top");
-    foo.setName("A/B/C/D");
-    bar.setName("A/B/E");
-
-    std::string fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../C/D"); // "/A/B/" as common
-
-    std::string barWrtFoo= bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../../E"); // "/A/B/" as common
-
-    // null case foo wrt foo
-    std::string fooWrtFoo = foo.getRelativePathName(foo);
-    ASSERT(fooWrtFoo == "");
-
-    std::string topAbsPath = top.getAbsolutePathName();
-    std::string fooWrtTop = foo.getRelativePathName(top);
-    ASSERT(fooWrtTop == "../A/B/C/D");
-
-    std::string topWrtFoo = top.getRelativePathName(foo);
-    ASSERT(topWrtFoo== "../../../../Top");
-
-    foo.setName("World/Foo");
-    bar.setName("World3/bar2");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../../World/Foo");
-
-    foo.setName("World3/bar2/foo1");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "foo1");
-
-    bar.setName("LegWithConstrainedFoot/footConstraint");
-    foo.setName("LegWithConstrainedFoot/foot");
-    barWrtFoo = bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../footConstraint");
-
-    // Now build use real components and assemble them 
+    // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
+    TheWorld top;
+    TheWorld otherTop;
+
+    top.setName("Top");
+    otherTop.setName("OtherTop");
+
     TheWorld* A = new TheWorld();
     TheWorld* B = new TheWorld();
     TheWorld* C = new TheWorld();
@@ -968,6 +931,23 @@ void testComponentPathNames()
 
     std::string absPathE = E->getAbsolutePathName();
     ASSERT(absPathE == "/Top/A/D/E");
+
+    // Specific tests to relative path name facilities
+    std::string EWrtB = E->getRelativePathName(*B);
+    ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
+
+    std::string BWrtE = B->getRelativePathName(*E);
+    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+
+    // null case component wrt itself
+    std::string fooWrtFoo = D->getRelativePathName(*D);
+    ASSERT(fooWrtFoo == "");
+
+    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
+    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+
+    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
+    ASSERT(OtherTopWrtC == "../../../../OtherTop");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
