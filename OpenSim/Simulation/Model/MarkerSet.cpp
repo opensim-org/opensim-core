@@ -158,24 +158,3 @@ void MarkerSet::addNamePrefix(const string& prefix)
         get(i).setName(prefix + get(i).getName());
 }
 
-//_____________________________________________________________________________
-/**
- * Create a new marker and add it to the set.
- */
-Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame)
-{
-    // If a marker by this name already exists, do nothing.
-    if (contains(aName))
-        return NULL;
-
-    // Create a marker and add it to the set.
-    Marker* m = new Marker();
-    m->setName(aName);
-    m->set_location(aOffset);
-    // Frame will be based on this name when marker is connected to Model.
-
-    m->setParentFrameName(aPhysicalFrame.getName()); 
-    aPhysicalFrame.updModel().addMarker(m);
-
-    return m;
-}
