@@ -68,9 +68,10 @@ public:
     void setParentFrameName(const std::string& aName);
     /** Change the parent PhysicalFrame that this marker is attached to. */
     void changeFrame(const PhysicalFrame& parentFrame);
-    /**  Change the parent PhysicalFrame that this marker is attached to, and 
-         use the state to compute the location in the new parent frame and set
-         its location. */
+    /**  Change the parent PhysicalFrame that this marker is attached to. In  
+         addition, preserve the marker location in the inertial (Ground) frame
+         by using the state to compute the location in the new parent frame and
+         to set its location property. */
     void changeFramePreserveLocation(const SimTK::State& s, 
                                      const PhysicalFrame& newParentFrame );
 
