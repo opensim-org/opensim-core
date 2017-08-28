@@ -199,7 +199,6 @@ void Component::finalizeFromProperties()
     // it is assigned a unique name.
     auto subs = getImmediateSubcomponents();
     std::set<std::string> names{};
-    std::string name{};
 
     // increment the count of duplicates to use as a unique suffix
     int count{ 0 };
@@ -207,7 +206,7 @@ void Component::finalizeFromProperties()
     std::string uniqueName{};
 
     for (auto& sub : subs) {
-        name = sub->getName();
+        const std::string& name = sub->getName();
 
         // reset duplicate count and search name
         count = 0;
