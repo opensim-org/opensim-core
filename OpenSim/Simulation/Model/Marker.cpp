@@ -82,16 +82,13 @@ void Marker::setParentFrameName(const string& name)
 /**
  * Get the 'frame name' field, which is used when the marker is added to
  * an existing model.
- *
- * @return aName frame name.
  */
-const string& Marker::getFrameName() const
-{
-    //if (_bodyNameProp.getValueIsDefault())
-    //  return NULL;
 
-    return getParentFrame().getName();
+const string& Marker::getParentFrameName() const
+{
+    return getSocket<PhysicalFrame>("parent_frame").getConnecteeName();
 }
+
 
 //_____________________________________________________________________________
 /**
@@ -107,7 +104,7 @@ void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
     if (aPhysicalFrame == getParentFrame())
         return;
 
-    setFrameName(aPhysicalFrame.getName());
+    setParentFrameName(aPhysicalFrame.getName());
 
     extendConnectToModel(updModel());
 }
@@ -133,7 +130,7 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::Physica
     newLocation = findLocationInFrame(s, aPhysicalFrame);
     set_location(newLocation);
 
-    setFrameName(aPhysicalFrame.getName());
+    setParentFrameName(aPhysicalFrame.getName());
     extendConnectToModel(aPhysicalFrame.updModel());
 }
 

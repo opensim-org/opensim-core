@@ -60,10 +60,10 @@ public:
 public:
     Marker();
     virtual ~Marker();
+    /** Convenience method to get the 'parent_frame' Socket's connectee_name */
+    const std::string& getParentFrameName() const;
 
-    const std::string& getFrameName() const;
-
-    /** Convenience method to set the 'parent_frame' Socket' connecte_name
+    /** Convenience method to set the 'parent_frame' Socket's connectee_name
         and to establish the connection during finalizeConnections(). */
     void setParentFrameName(const std::string& aName);
     void changeFrame(const PhysicalFrame& aPhysicalFrame );
