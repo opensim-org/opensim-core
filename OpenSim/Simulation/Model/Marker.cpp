@@ -90,48 +90,27 @@ const string& Marker::getParentFrameName() const
 }
 
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the frame is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param aFrame Reference to the PhysicalFrame.
- */
-void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
+void Marker::changeFrame(const PhysicalFrame& parentFrame)
 {
-
-    if (aPhysicalFrame == getParentFrame())
+    if (parentFrame == getParentFrame())
         return;
 
-    setParentFrameName(aPhysicalFrame.getName());
-
-    extendConnectToModel(updModel());
+    setParentFrame(parentFrame);
 }
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the body is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param s State.
- * @param aBody Reference to the PhysicalFrame.
- */
-void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame)
+void Marker::changeFramePreserveLocation(const SimTK::State& s, 
+                                         const PhysicalFrame& parentFrame)
 {
 
-    if (aPhysicalFrame == getParentFrame())
+    if (parentFrame == getParentFrame())
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the marker in the inertial reference frame.
     Vec3 newLocation;
-    newLocation = findLocationInFrame(s, aPhysicalFrame);
+    newLocation = findLocationInFrame(s, parentFrame);
     set_location(newLocation);
-
-    setParentFrameName(aPhysicalFrame.getName());
-    extendConnectToModel(aPhysicalFrame.updModel());
+    setParentFrame(parentFrame);
 }
 
 //=============================================================================

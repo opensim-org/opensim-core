@@ -66,9 +66,14 @@ public:
     /** Convenience method to set the 'parent_frame' Socket's connectee_name
         and to establish the connection during finalizeConnections(). */
     void setParentFrameName(const std::string& aName);
-    void changeFrame(const PhysicalFrame& aPhysicalFrame );
+    /** Change the parent PhysicalFrame that this marker is attached to. */
+    void changeFrame(const PhysicalFrame& parentFrame);
+    /**  Change the parent PhysicalFrame that this marker is attached to, and 
+         use the state to compute the location in the new parent frame and set
+         its location. */
     void changeFramePreserveLocation(const SimTK::State& s, 
-                                     PhysicalFrame& aPhysicalFrame );
+                                     const PhysicalFrame& newParentFrame );
+
     void scale(const SimTK::Vec3& aScaleFactors);
 
     /** Override of the default implementation to account for versioning. */
