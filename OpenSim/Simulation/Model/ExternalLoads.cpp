@@ -439,7 +439,13 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                 PrescribedForce& oldPrescribedForce = oldForces.get(i);
                 ExternalForce* newExternalForce = new ExternalForce();
                 newExternalForce->setName(oldPrescribedForce.getName());
-                newExternalForce->setAppliedToBodyName(oldPrescribedForce.getBodyName());
+                // In 4.0, PrescribedForce's body_name became a relative path
+                // to the body; we need to pull off just the body name.
+                std::string bodyName = oldPrescribedForce.getBodyName();
+                const auto slashLoc = bodyName.rfind('/');
+                if (slashLoc != std::string::npos)
+                    bodyName = bodyName.substr(slashLoc + 1);
+                newExternalForce->setAppliedToBodyName(bodyName);
                 newExternalForce->setPointExpressedInBodyName("ground");
                 newExternalForce->setForceExpressedInBodyName("ground");
                 // Reconstruct function names and use these to extract the identifier(s)

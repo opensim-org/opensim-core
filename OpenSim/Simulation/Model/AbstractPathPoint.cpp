@@ -74,6 +74,11 @@ void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode,
             std::string bodyName("");
             if (bodyElement != aNode.element_end()) {
                 bodyElement->getValueAs<std::string>(bodyName);
+                // PathPoints in pre-4.0 models are necessarily 3 levels deep
+                // (model, muscle, geometry path), and Bodies are necessarily
+                // 1 level deep: prepend "../../../" to get the correct
+                // relative path.
+                if (!bodyName.empty()) bodyName = "../../../" + bodyName;
                 XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "parent_frame", bodyName);
             }
