@@ -245,12 +245,6 @@ bool MarkerPlacer::processModel(Model* aModel,
     */
     TimeSeriesTableVec3 staticPoseTable{aPathToSubject + _markerFileName};
     const auto& timeCol = staticPoseTable.getIndependentColumn();
-    auto numRowsInRange = std::count_if(timeCol.cbegin(),
-                                        timeCol.cend(),
-                                        [&] (const double& val) {
-                                            return val >= _timeRange[0] &&
-                                                   val <= _timeRange[1];
-                                        });
 
     // Users often set a time range that purposely exceeds the range of
     // their data with the mindset that all their data will be used.

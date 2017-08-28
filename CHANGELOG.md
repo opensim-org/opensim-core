@@ -17,6 +17,7 @@ Converting from v3.x to v4.0
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
 - Markers are now ModelComponents (PR #188). Code is included for conversion on serialization/de-serialization.
+- MarkerSet::addMarker() was removed (PR #1898). Please use Model::addMarker() to add markers to your model.
 - `Body::getMassCenter` now returns a `Vec3` instead of taking a `Vec3` reference as an argument (commit cb0697d98).
 - The following virtual methods in ModelComponent have been moved:
   - connectToModel -> extendConnectToModel

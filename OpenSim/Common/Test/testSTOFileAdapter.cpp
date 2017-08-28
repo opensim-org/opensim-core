@@ -271,6 +271,16 @@ int main() {
     SimTK_TEST_MUST_THROW_EXC(STOFileAdapter::read(emptyFileName), FileIsEmpty);
     std::remove(emptyFileName.c_str());
 
+    std::cout << "Testing reading STO version 1.0 using "
+              << "FileAdapter::readFile()." << std::endl;
+    // There was a bug where the FileAdapter::readFile() could not handle
+    // version-1.0 STO files because the "DataType" metadata was required to
+    // determine the template argument for STOFileAdapter (Issue #1725).
+    // This test ensures that bug is fixed (test.sto is version 1.0).
+    auto outputTables = FileAdapter::readFile("test.sto");
+    SimTK_TEST(outputTables["table"]->getNumRows() == 2);
+    SimTK_TEST(outputTables["table"]->getNumColumns() == 2);
+
     std::cout << "\nAll tests passed!" << std::endl;
 
     return 0;

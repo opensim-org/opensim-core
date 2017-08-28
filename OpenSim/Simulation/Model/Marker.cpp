@@ -179,6 +179,10 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
+            // Markers in pre-4.0 models are necessarily 1 level deep
+            // (model, markers), and Bodies were necessarily 1 level deep:
+            // prepend "../" to get the correct relative path.
+            if (!bName.empty()) bName = "../" + bName;
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);

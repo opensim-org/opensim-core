@@ -137,7 +137,6 @@ protected:
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult, bool& aFlag) const = 0;
 
-    virtual void updateGeometry() {};
     /**
      * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
      * it is attached to.

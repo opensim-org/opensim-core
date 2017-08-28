@@ -134,6 +134,9 @@ public:
 
     // Other members (not in Property base class)
     void setValue(const ArrayPtrs<T> &aArray) { _array = aArray; }
+    // This helps avoid the -Woverloaded-virtual warning with Clang (the method
+    // above otherwise hides the virtual setValue() methods in the base class).
+    using Property_Deprecated::setValue;
     ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
     const ArrayPtrs<T>& getValueObjArray() const { return _array; }

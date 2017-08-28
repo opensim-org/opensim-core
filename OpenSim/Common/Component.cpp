@@ -1593,7 +1593,6 @@ void Component::printSubcomponentInfo() const {
 }
 
 void Component::printOutputInfo(const bool includeDescendants) const {
-    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
