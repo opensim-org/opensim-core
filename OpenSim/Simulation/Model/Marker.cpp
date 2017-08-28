@@ -73,17 +73,9 @@ void Marker::constructProperties()
     constructProperty_fixed(false);
 }
 
-//_____________________________________________________________________________
-/**
- * Set the 'frame name' field, which is used when the marker is added to
- * an existing model.
- *
- * @param  name of frame
- */
-void Marker::setFrameName(const string& name)
+void Marker::setParentFrameName(const string& name)
 {
-    const auto& refFrame = getModel().getComponent<PhysicalFrame>(name);
-    setParentFrame(refFrame);
+    updSocket<PhysicalFrame>("parent_frame").setConnecteeName(name);
 }
 
 //_____________________________________________________________________________

@@ -46,9 +46,9 @@ class OSIMSIMULATION_API Marker : public Station {
 
 class Body;
 public:
-    //==============================================================================
-    // PROPERTIES
-    //==============================================================================
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     OpenSim_DECLARE_PROPERTY(fixed, bool,
         "Flag (true or false) specifying whether the marker is fixed in its "
         "parent frame during the marker placement step of scaling.  If false, "
@@ -57,24 +57,25 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     Marker();
     virtual ~Marker();
 
     const std::string& getFrameName() const;
 
-    void setFrameName(const std::string& aName);
-    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
-    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
+    /** Convenience method to set the 'parent_frame' Socket' connecte_name
+        and to establish the connection during finalizeConnections(). */
+    void setParentFrameName(const std::string& aName);
+    void changeFrame(const PhysicalFrame& aPhysicalFrame );
+    void changeFramePreserveLocation(const SimTK::State& s, 
+                                     PhysicalFrame& aPhysicalFrame );
     void scale(const SimTK::Vec3& aScaleFactors);
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 private:
