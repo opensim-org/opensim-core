@@ -13,6 +13,7 @@ v4.0 (in development)
 
 Converting from v3.x to v4.0
 -----------------------------
+- A significant difference between v3.3 and 4.0 is the naming of dependencies. Unique names were not enforced in 3.3, which lead to undefined behavior. In 4.0, Component pathnames must be unique. That is a Component must be unique with respect to its peers. A Model named *model* cannot have multiple subcomponents with the name *toes* either as bodies or joints, because the pathname */model/toes* will not uniquely identify the Component. However, multiple *toes* bodies can be used as long as they are not subcomponents of the same Component. For example, a *device* Component with a *toes* Body will have no issues since this *toes* Body has a unique pathname, */model/device/toes*, which in unambiguous. One could also create multi-legged model, where each leg is identical, with *hip*. *knee* and *ankle* joints and *upper*, *lower* and *foot* bodies, but each being a unique because of Leg Component that contains the leg subcomponents, is uniquely named like */model/leg1* and */model/leg4/* and thus all of their subcomponents are unique, e.g.: */model/leg1/knee* vs. */model/leg4/knee*.        
 - The Actuator class has been renamed to ScalarActuator (and `Actuator_` has been renamed to `Actuator`) (PR #126).
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
@@ -88,7 +89,7 @@ are no longer necessary to compose a Model, since any Component can now be compo
 components. `Model` still supports `addd####()` methods and de/serialization of Sets,
 but components added via `addComponent` are NOT included in the Sets but contained
 in the Component's *components* property list. Details in PR#1014. **Note**, it is now
-strictly required that immediate subcomponents of the same type have unique names. For example, a Model's `BodySet` cannot contain two bodies named *tibia* because it is  ambiguous as to which *tibia* `Body` a `Joint` or any other component is referring to.
+strictly required that immediate subcomponents have unique names. For example, a Model cannot contain two bodies in its `BodySet` named *tibia* or a Body and a Joint named *toes*, since it is ambiguous as to which *tibia* `Body` or *toes* `Component` is being referenced.
 
 Bug Fixes
 ---------
