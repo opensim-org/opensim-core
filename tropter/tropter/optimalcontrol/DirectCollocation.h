@@ -1,8 +1,8 @@
 #ifndef TROPTER_DIRECTCOLLOCATION_H
 #define TROPTER_DIRECTCOLLOCATION_H
 
-#include "common.h"
-#include "OptimizationProblem.h"
+#include "../common.h"
+#include "../optimization/OptimizationProblem.h"
 #include "OptimalControlProblem.h"
 #include <fstream>
 

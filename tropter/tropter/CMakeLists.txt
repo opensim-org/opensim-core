@@ -1,15 +1,25 @@
 add_library(tropter
-    tropter.h
-    common.h
-    AbstractOptimizationProblem.h
-    OptimizationProblem.h   OptimizationProblem.hpp OptimizationProblem.cpp
-    OptimizationSolver.h                            OptimizationSolver.cpp
-    SNOPTSolver.h                                   SNOPTSolver.cpp
-    IpoptSolver.h                                   IpoptSolver.cpp
-    DirectCollocation.h     DirectCollocation.hpp   DirectCollocation.cpp
-    OptimalControlProblem.h
-    legacy.h                                        legacy.cpp
-    OptimalControlIterate.h                         OptimalControlIterate.cpp)
+        tropter.h
+        common.h
+        optimization/AbstractOptimizationProblem.h
+        optimization/OptimizationProblem.h
+        optimization/OptimizationProblem.hpp
+        optimization/OptimizationProblem.cpp
+        optimization/OptimizationSolver.h
+        optimization/OptimizationSolver.cpp
+        optimization/SNOPTSolver.h
+        optimization/SNOPTSolver.cpp
+        optimization/IpoptSolver.h
+        optimization/IpoptSolver.cpp
+        optimalcontrol/DirectCollocation.h
+        optimalcontrol/DirectCollocation.hpp
+        optimalcontrol/DirectCollocation.cpp
+        optimalcontrol/OptimalControlProblem.h
+        optimalcontrol/OptimalControlIterate.h
+        optimalcontrol/OptimalControlIterate.cpp
+        legacy.h
+        legacy.cpp
+        )
 
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and

@@ -2,7 +2,7 @@
 #define TROPTER_OPTIMALCONTROLPROBLEM_H
 
 #include "OptimalControlIterate.h"
-#include "common.h"
+#include "../common.h"
 #include <Eigen/Dense>
 
 namespace tropter {

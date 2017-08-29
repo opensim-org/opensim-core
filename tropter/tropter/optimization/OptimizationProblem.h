@@ -1,7 +1,7 @@
 #ifndef TROPTER_OPTIMIZATIONPROBLEM_H
 #define TROPTER_OPTIMIZATIONPROBLEM_H
 
-#include "common.h"
+#include "../common.h"
 #include "AbstractOptimizationProblem.h"
 #include <memory>
 

@@ -4,15 +4,15 @@
 #include "common.h"
 
 // TODO remove.
-#include "AbstractOptimizationProblem.h"
-#include "OptimizationProblem.h"
-#include "OptimizationSolver.h"
-#include "SNOPTSolver.h"
-#include "IpoptSolver.h"
+#include "optimization/AbstractOptimizationProblem.h"
+#include "optimization/OptimizationProblem.h"
+#include "optimization/OptimizationSolver.h"
+#include "optimization/SNOPTSolver.h"
+#include "optimization/IpoptSolver.h"
 
-#include "OptimalControlIterate.h"
-#include "OptimalControlProblem.h"
-#include "DirectCollocation.h"
+#include "optimalcontrol/OptimalControlIterate.h"
+#include "optimalcontrol/OptimalControlProblem.h"
+#include "optimalcontrol/DirectCollocation.h"
 // TODO should not have using declarations in a header file.
 
 // http://www.coin-or.org/Ipopt/documentation/node23.html
