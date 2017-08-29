@@ -21,7 +21,31 @@ VectorXd constraints(const VectorXd& x) {
     return y;
 }
 
+double objective(const VectorXd& x) {
+    double f = 0;
+    for (int i = 0; i < x.size(); ++i) {
+        f += x[i] * x[i] + log(x[0]) * x[i];
+    }
+    return f;
+}
 
+VectorXd compute_gradient(const std::function<double (const VectorXd&)> f,
+        const VectorXd& x0) {
+    VectorXd gradient(x0.size());
+    VectorXd x = x0;
+    const double y0 = f(x);
+    double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
+    double two_eps = 2 * eps;
+    for (int i = 0; i < x.size(); ++i) {
+        x[i] += eps;
+        const double ypos = f(x);
+        x[i] = x0[i] - eps;
+        const double yneg = f(x);
+        x[i] = x0[i];
+        gradient[i] = (ypos - yneg) / two_eps;
+    }
+    return gradient;
+}
 
 static const double NaN = std::numeric_limits<double>::quiet_NaN();
 
@@ -91,7 +115,7 @@ private:
     std::vector<unsigned int> m_column_indices;
 };
 
-SparsityPattern compute_sparsity(int m, int n,
+SparsityPattern compute_jacobian_sparsity(int m, int n,
         const std::function<VectorXd (const VectorXd&)> f) {
     SparsityPattern sparsity(m, n);
     VectorXd x = VectorXd::Zero(n);
@@ -111,6 +135,37 @@ SparsityPattern compute_sparsity(int m, int n,
     return sparsity;
 }
 
+SparsityPattern compute_hessian_sparsity(int n,
+        const std::function<double (const VectorXd&)> f,
+        const VectorXd& x0) {
+    SparsityPattern sparsity(n, n);
+    double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
+    double epsSquared = Eigen::NumTraits<double>::epsilon();
+    double y;
+    VectorXd x = x0;
+    const double y0 = f(x0);
+    for (int i = 0; i < n; ++i) {
+        for (int j = i; j < n; ++j) {
+            x[i] += eps;
+            double perturb_i = f(x);
+            x[j] += eps;
+            double perturb_i_j = f(x);
+            x[i] = x0[i];
+            double perturb_j = f(x);
+            x[j] = x0[j];
+            double second_deriv = (perturb_i_j + y0 - perturb_i - perturb_j)
+                    / epsSquared;
+            //if ((perturb_i_j != y0) {
+            //std::cout << i << " " << j << " " << second_deriv << std::endl;
+            if (second_deriv > eps) { // TODO test condition.
+                sparsity.add_nonzero(i, j);
+            }
+        }
+    }
+    return sparsity;
+}
+
+
 //class SparseJacobian {
 //
 //public:
@@ -129,7 +184,7 @@ void compute_jacobian(
     const int n = x.size();
     VectorXd y0 = f(x);
     const int m = y0.size();
-    auto sparsity = compute_sparsity(m, n, f);
+    auto sparsity = compute_jacobian_sparsity(m, n, f);
     //sparsity.print();
 
     auto sparsity_cr = sparsity.convert_to_ADOLC_compressed_row_format();
@@ -228,10 +283,12 @@ void compute_jacobian(
 }
 
 int main() {
-    const int n = 1000;
+    const int n = 5;
     VectorXd x(n);
     for (int i = 0; i < n; ++i) {
-        x[i] = rand();
+        //x[i] = rand();
+        //x[i] = i; //rand();
+        x[i] = 0.5 * double(i)+ 0.105; //rand();
     }
     VectorXd y = constraints(x);
     //for (int i = 0; i < n; ++i) {
@@ -241,6 +298,16 @@ int main() {
     //SparseJacobian jac = compute_jacobian(constraints, x);
     compute_jacobian(constraints, x);
     //jac.print();
+
+
+    // std::cout << x << std::endl;
+    //clock_t hess_sparse_begin = clock();
+    //SparsityPattern hessian_sparsity =
+    //        compute_hessian_sparsity(n, objective, x);
+    //std::cout << "duration for sparse hess: " << double(clock() -
+    //        hess_sparse_begin) / CLOCKS_PER_SEC << std::endl;
+    //hessian_sparsity.print();
+    std::cout << compute_gradient(objective, x) << std::endl;
 
     std::cout << "DEBUG END" << std::endl;
     return 0;

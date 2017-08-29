@@ -23,6 +23,8 @@ public:
     ///   - only one bound: value of the bound.
     Eigen::VectorXd initial_guess_from_bounds() const;
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
+    // You must call this function first before calling objective(),
+    // constraints(), etc.
     virtual void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,

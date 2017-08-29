@@ -82,9 +82,21 @@ TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
     auto ocp = std::make_shared<SecondOrderLinearMinEffort<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 1000);
     OptimalControlSolution solution = dircol.solve();
-    solution.write("second_order_linear_min_effort_solution.csv");
+    //solution.write("second_order_linear_min_effort_solution.csv");
 
     MatrixXd expected_states = ocp->states_solution(solution.time);
 
     TROPTER_REQUIRE_EIGEN(solution.states, expected_states, 0.005);
 }
+
+//TEST_CASE("Second order linear min effort", "[finitediff][trapezoidal]") {
+//
+//    auto ocp = std::make_shared<SecondOrderLinearMinEffort<double>>();
+//    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", 1000);
+//    OptimalControlSolution solution = dircol.solve();
+//    //solution.write("second_order_linear_min_effort_solution.csv");
+//
+//    MatrixXd expected_states = ocp->states_solution(solution.time);
+//
+//    TROPTER_REQUIRE_EIGEN(solution.states, expected_states, 0.005);
+//}
