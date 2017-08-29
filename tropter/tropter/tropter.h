@@ -4,6 +4,7 @@
 #include "common.h"
 
 // TODO remove.
+#include "AbstractOptimizationProblem.h"
 #include "OptimizationProblem.h"
 #include "OptimizationSolver.h"
 #include "SNOPTSolver.h"

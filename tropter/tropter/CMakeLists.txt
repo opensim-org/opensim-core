@@ -1,6 +1,7 @@
 add_library(tropter
     tropter.h
     common.h
+    AbstractOptimizationProblem.h
     OptimizationProblem.h   OptimizationProblem.hpp OptimizationProblem.cpp
     OptimizationSolver.h                            OptimizationSolver.cpp
     SNOPTSolver.h                                   SNOPTSolver.cpp
