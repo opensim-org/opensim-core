@@ -92,7 +92,7 @@ const string& Marker::getParentFrameName() const
 
 void Marker::changeFrame(const PhysicalFrame& parentFrame)
 {
-    if (parentFrame == getParentFrame())
+    if (&parentFrame == &getParentFrame())
         return;
 
     setParentFrame(parentFrame);
@@ -102,7 +102,7 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s,
                                          const PhysicalFrame& parentFrame)
 {
 
-    if (parentFrame == getParentFrame())
+    if (&parentFrame == &getParentFrame())
         return;
 
     // Preserve location means to switch bodies without changing
