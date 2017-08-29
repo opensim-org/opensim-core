@@ -39,7 +39,8 @@ Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
 }
 
 OptimizationProblem<adouble>::Proxy::Proxy(
-        const OptimizationProblem<adouble>& problem) : m_problem(problem)
+        const OptimizationProblem<adouble>& problem) :
+        OptimizationProblemProxy(problem), m_problem(problem)
 {
     // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
     // [0]: Way of sparsity pattern computation (propagation of index domains).

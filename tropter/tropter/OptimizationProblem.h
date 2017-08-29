@@ -6,56 +6,7 @@
 
 namespace tropter {
 
-class OptimizationProblemProxy {
-    // TODO rename all method names to verbs
-public:
-    // TODO might not use eigen...just raw C arrays...
-    virtual unsigned num_variables() const = 0;
-    virtual unsigned num_constraints() const = 0;
-    virtual const Eigen::VectorXd& variable_lower_bounds() const = 0;
-    virtual const Eigen::VectorXd& variable_upper_bounds() const = 0;
-    virtual const Eigen::VectorXd& constraint_lower_bounds() const = 0;
-    virtual const Eigen::VectorXd& constraint_upper_bounds() const = 0;
-    /// Create an initial guess for this problem according to the
-    /// following rules:
-    ///   - unconstrained variable: 0.
-    ///   - lower and upper bounds: midpoint of the bounds.
-    ///   - only one bound: value of the bound.
-    Eigen::VectorXd initial_guess_from_bounds() const;
-    // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
-    // You must call this function first before calling objective(),
-    // constraints(), etc.
-    virtual void sparsity(const Eigen::VectorXd& variables,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const = 0;
-    // TODO provide alternatives that take raw buffers. This is the interface
-    // for optimizers, after all...
-    virtual void objective(unsigned num_variables, const double* variables,
-            bool new_variables,
-            double& obj_value) const = 0;
-    virtual void constraints(unsigned num_variables, const double* variables,
-            bool new_variables,
-            unsigned num_constraints, double* constr) const = 0;
-    virtual void gradient(unsigned num_variables, const double* variables,
-            bool new_variables,
-            double* grad) const = 0;
-    virtual void jacobian(unsigned num_variables, const double* variables,
-            bool new_variables,
-            unsigned num_nonzeros, double* nonzeros) const = 0;
-    // TODO this signature seems to be tailoring to Ipopt too much.
-    virtual void hessian_lagrangian(
-            unsigned num_variables, const double* variables,
-            bool new_variables, double obj_factor,
-            unsigned num_constraints, const double* lambda,
-            bool new_lambda,
-            unsigned num_nonzeros, double* nonzeros) const = 0;
-    // TODO consider providing alternative signatures like:
-    // void objective(const Eigen::VectorXd& variables,
-    //         bool new_variables = true,
-    //         double& obj_value) const = 0;
-};
+class OptimizationProblemProxy;
 
 class AbstractOptimizationProblem {
 public:
@@ -67,20 +18,15 @@ public:
             m_num_constraints(num_constraints) {}
 
     unsigned get_num_variables() const { return m_num_variables; }
-
     unsigned get_num_constraints() const { return m_num_constraints; }
-
     const Eigen::VectorXd& get_variable_lower_bounds() const
-    { return m_variable_lower_bounds; }
-
+    {   return m_variable_lower_bounds; }
     const Eigen::VectorXd& get_variable_upper_bounds() const
-    { return m_variable_upper_bounds; }
-
+    {   return m_variable_upper_bounds; }
     const Eigen::VectorXd& get_constraint_lower_bounds() const
-    { return m_constraint_lower_bounds; }
-
+    {   return m_constraint_lower_bounds; }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
-    { return m_constraint_upper_bounds; }
+    {   return m_constraint_upper_bounds; }
 
     virtual std::shared_ptr<OptimizationProblemProxy> make_proxy() const = 0;
 
@@ -132,6 +78,66 @@ private:
     Eigen::VectorXd m_variable_upper_bounds;
     Eigen::VectorXd m_constraint_lower_bounds;
     Eigen::VectorXd m_constraint_upper_bounds;
+};
+
+class OptimizationProblemProxy {
+    // TODO rename all method names to verbs
+public:
+    OptimizationProblemProxy(const AbstractOptimizationProblem& problem) :
+            m_problem(problem) {}
+    unsigned num_variables() const
+    {   return m_problem.get_num_variables(); }
+    unsigned num_constraints() const
+    {   return m_problem.get_num_constraints(); }
+    const Eigen::VectorXd& variable_lower_bounds() const
+    {   return m_problem.get_variable_lower_bounds(); }
+    const Eigen::VectorXd& variable_upper_bounds() const
+    {   return m_problem.get_variable_upper_bounds(); }
+    const Eigen::VectorXd& constraint_lower_bounds() const
+    {   return m_problem.get_constraint_lower_bounds(); }
+    const Eigen::VectorXd& constraint_upper_bounds() const
+    {   return m_problem.get_constraint_upper_bounds(); }
+    /// Create an initial guess for this problem according to the
+    /// following rules:
+    ///   - unconstrained variable: 0.
+    ///   - lower and upper bounds: midpoint of the bounds.
+    ///   - only one bound: value of the bound.
+    Eigen::VectorXd initial_guess_from_bounds() const;
+    // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
+    // You must call this function first before calling objective(),
+    // constraints(), etc.
+    virtual void sparsity(const Eigen::VectorXd& variables,
+            std::vector<unsigned int>& jacobian_row_indices,
+            std::vector<unsigned int>& jacobian_col_indices,
+            std::vector<unsigned int>& hessian_row_indices,
+            std::vector<unsigned int>& hessian_col_indices) const = 0;
+    // TODO provide alternatives that take raw buffers. This is the interface
+    // for optimizers, after all...
+    virtual void objective(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double& obj_value) const = 0;
+    virtual void constraints(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_constraints, double* constr) const = 0;
+    virtual void gradient(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double* grad) const = 0;
+    virtual void jacobian(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_nonzeros, double* nonzeros) const = 0;
+    // TODO this signature seems to be tailoring to Ipopt too much.
+    virtual void hessian_lagrangian(
+            unsigned num_variables, const double* variables,
+            bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda,
+            bool new_lambda,
+            unsigned num_nonzeros, double* nonzeros) const = 0;
+    // TODO consider providing alternative signatures like:
+    // void objective(const Eigen::VectorXd& variables,
+    //         bool new_variables = true,
+    //         double& obj_value) const = 0;
+private:
+    const AbstractOptimizationProblem& m_problem;
 };
 
 template<typename T>
@@ -193,6 +199,9 @@ std::shared_ptr<OptimizationProblemProxy> OptimizationProblem<T>::make_proxy()
 const
 {
     // TODO is this what we want? a shared_ptr??
+    //auto* proxy = new Proxy(*this);
+    //return std::shared_ptr<OptimizationProblemProxy>
+    //        (proxy);
     return std::make_shared<Proxy>(*this);
 }
 
@@ -223,19 +232,6 @@ public:
     Proxy(const OptimizationProblem<adouble>& problem);
     /// Delete memory allocated by ADOL-C.
     virtual ~Proxy();
-    unsigned num_variables() const override
-    {   return m_problem.get_num_variables(); }
-    unsigned num_constraints() const override
-    {   return m_problem.get_num_constraints(); }
-    // TODO might not use eigen...just raw C arrays...
-    const Eigen::VectorXd& variable_lower_bounds() const override
-    {   return m_problem.get_variable_lower_bounds(); }
-    const Eigen::VectorXd& variable_upper_bounds() const override
-    {   return m_problem.get_variable_upper_bounds(); }
-    const Eigen::VectorXd& constraint_lower_bounds() const override
-    {   return m_problem.get_constraint_lower_bounds(); }
-    const Eigen::VectorXd& constraint_upper_bounds() const override
-    {   return m_problem.get_constraint_upper_bounds(); }
     void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
@@ -277,7 +273,7 @@ private:
     // be "checked out" and "returned."
     static const short int m_objective_tag   = 1;
     static const short int m_constraints_tag = 2;
-    static const short int m_lagrangian_tag = 3;
+    static const short int m_lagrangian_tag  = 3;
 
     // We must hold onto the sparsity pattern for the Jacobian and
     // Hessian so that we can pass them to subsequent calls to sparse_jac().
