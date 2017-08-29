@@ -59,78 +59,31 @@ public:
 
 class AbstractOptimizationProblem {
 public:
-    virtual std::shared_ptr<OptimizationProblemProxy> make_proxy() const = 0;
-};
 
-template<typename T>
-class OptimizationProblem : public AbstractOptimizationProblem {
-public:
-    class Proxy;
-
-    virtual ~OptimizationProblem() = default;
-
-    OptimizationProblem() = default;
-
-    OptimizationProblem(unsigned num_variables, unsigned num_constraints)
-            :m_num_variables(num_variables),
-             m_num_constraints(num_constraints) { }
-
-    std::shared_ptr<OptimizationProblemProxy> make_proxy() const override final;
-
-    // TODO can override to provide custom derivatives.
-    //virtual void gradient(const std::vector<T>& x, std::vector<T>& grad) const;
-    //virtual void jacobian(const std::vector<T>& x, TODO) const;
-    //virtual void hessian() const;
+    AbstractOptimizationProblem() = default;
+    AbstractOptimizationProblem(
+            unsigned num_variables, unsigned num_constraints) :
+            m_num_variables(num_variables),
+            m_num_constraints(num_constraints) {}
 
     unsigned get_num_variables() const { return m_num_variables; }
 
     unsigned get_num_constraints() const { return m_num_constraints; }
 
-    // TODO it might be weird for users to use/implement a method called "_impl"
-    virtual void objective(const VectorX<T>& x, T& obj_value) const;
-
-    virtual void constraints(const VectorX<T>& x,
-            Eigen::Ref<VectorX<T>> constr) const;
-
-    // TODO user may want to define gradient, jacobian, hessian on their own...
-
-//    void objective(const Eigen::VectorXd& variables, double& obj_value) const;
-//
-//    void constraints(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> constr) const;
-//    void objective(const VectorX<T>& x, T& obj_value) const;
-//
-//    void constraints(const VectorX<T>& x,
-//            Eigen::Ref<VectorX<T>> constr) const;
-
-    // TODO for both hessian and jacobian.
-    // TODO what about multiple points used to determine sparsity?
-    // TODO this would move to a proxy class.
-//    void determine_sparsity(const Eigen::VectorXd& variables,
-//            std::vector<unsigned int>& jacobian_row_indices,
-//            std::vector<unsigned int>& jacobian_col_indices,
-//            std::vector<unsigned int>& hessian_row_indices,
-//            std::vector<unsigned int>& hessian_col_indices) const;
-
     const Eigen::VectorXd& get_variable_lower_bounds() const
-    {
-        return m_variable_lower_bounds;
-    }
+    { return m_variable_lower_bounds; }
 
     const Eigen::VectorXd& get_variable_upper_bounds() const
-    {
-        return m_variable_upper_bounds;
-    }
+    { return m_variable_upper_bounds; }
 
     const Eigen::VectorXd& get_constraint_lower_bounds() const
-    {
-        return m_constraint_lower_bounds;
-    }
+    { return m_constraint_lower_bounds; }
 
     const Eigen::VectorXd& get_constraint_upper_bounds() const
-    {
-        return m_constraint_upper_bounds;
-    }
+    { return m_constraint_upper_bounds; }
+
+    virtual std::shared_ptr<OptimizationProblemProxy> make_proxy() const = 0;
+
 protected:
 
     void set_num_variables(unsigned num_variables)
@@ -172,13 +125,6 @@ protected:
     }
 
 private:
-
-    // TODO this feels too Ipopt-specific..obj_factor?
-	// TODO can delete this now; the TODO above is outdated.
-    // void lagrangian(double obj_factor, const VectorX<T>& x,
-    //         const Eigen::VectorXd& lambda, T& result) const;
-
-
     // TODO use safer types that will give exceptions for improper values.
     unsigned m_num_variables;
     unsigned m_num_constraints;
@@ -186,6 +132,60 @@ private:
     Eigen::VectorXd m_variable_upper_bounds;
     Eigen::VectorXd m_constraint_lower_bounds;
     Eigen::VectorXd m_constraint_upper_bounds;
+};
+
+template<typename T>
+class OptimizationProblem : public AbstractOptimizationProblem {
+public:
+    class Proxy;
+
+    virtual ~OptimizationProblem() = default;
+
+    OptimizationProblem() = default;
+
+    OptimizationProblem(unsigned num_variables, unsigned num_constraints) :
+            AbstractOptimizationProblem(num_variables, num_constraints) {}
+
+    std::shared_ptr<OptimizationProblemProxy> make_proxy() const override final;
+
+    // TODO can override to provide custom derivatives.
+    //virtual void gradient(const std::vector<T>& x, std::vector<T>& grad) const;
+    //virtual void jacobian(const std::vector<T>& x, TODO) const;
+    //virtual void hessian() const;
+
+    // TODO it might be weird for users to use/implement a method called "_impl"
+    virtual void objective(const VectorX<T>& x, T& obj_value) const;
+
+    virtual void constraints(const VectorX<T>& x,
+            Eigen::Ref<VectorX<T>> constr) const;
+
+    // TODO user may want to define gradient, jacobian, hessian on their own...
+
+//    void objective(const Eigen::VectorXd& variables, double& obj_value) const;
+//
+//    void constraints(const Eigen::VectorXd& variables,
+//            Eigen::Ref<Eigen::VectorXd> constr) const;
+//    void objective(const VectorX<T>& x, T& obj_value) const;
+//
+//    void constraints(const VectorX<T>& x,
+//            Eigen::Ref<VectorX<T>> constr) const;
+
+    // TODO for both hessian and jacobian.
+    // TODO what about multiple points used to determine sparsity?
+    // TODO this would move to a proxy class.
+//    void determine_sparsity(const Eigen::VectorXd& variables,
+//            std::vector<unsigned int>& jacobian_row_indices,
+//            std::vector<unsigned int>& jacobian_col_indices,
+//            std::vector<unsigned int>& hessian_row_indices,
+//            std::vector<unsigned int>& hessian_col_indices) const;
+
+private:
+
+    // TODO this feels too Ipopt-specific..obj_factor?
+	// TODO can delete this now; the TODO above is outdated.
+    // void lagrangian(double obj_factor, const VectorX<T>& x,
+    //         const Eigen::VectorXd& lambda, T& result) const;
+
 };
 
 template<typename T>
