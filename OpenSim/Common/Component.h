@@ -110,6 +110,21 @@ public:
     }
 };
 
+class SubcomponentsWithDuplicateName : public Exception {
+public:
+    SubcomponentsWithDuplicateName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& duplicateName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' has subcomponents " +
+            "with duplicate name '" + duplicateName + "'. "
+            "Please supply unique names for immediate subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentIsRootWithNoSubcomponents : public Exception {
 public:
     ComponentIsRootWithNoSubcomponents(const std::string& file,

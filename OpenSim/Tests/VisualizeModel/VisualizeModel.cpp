@@ -60,12 +60,8 @@ int main(int argc, char **argv)
         osimModel.getVisualizer().show(si);
         getchar(); // Keep Visualizer from dying until we inspect the visualization window..
     }
-    catch (OpenSim::Exception ex)
-    {
-        std::cout << ex.getMessage() << std::endl;
-        return 1;
-    }
-    catch (std::exception ex)
+
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

@@ -161,7 +161,7 @@ void Component::finalizeFromProperties()
     // handle nameless components so assign them their class name
     // - aseth
     if (getName().empty()) {
-        setName(IO::Lowercase(getConcreteClassName()) + "_");
+        setName(IO::Lowercase(getConcreteClassName()));
     }
 
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
@@ -192,6 +192,52 @@ void Component::finalizeFromProperties()
 
     markPropertiesAsSubcomponents();
     componentsFinalizeFromProperties();
+
+    // The following block is used to ensure that deserialized names of 
+    // Components are unique so they can be used to unambiguously locate
+    // and connect all loaded Components. If a duplicate is encountered,
+    // it is assigned a unique name.
+    auto subs = getImmediateSubcomponents();
+    std::set<std::string> names{};
+
+    // increment the count of duplicates to use as a unique suffix
+    int count{ 0 };
+    // temp variable to hold the unique name used to rename a duplicate
+    std::string uniqueName{};
+
+    for (auto& sub : subs) {
+        const std::string& name = sub->getName();
+
+        // reset duplicate count and search name
+        count = 0;
+        uniqueName = name;
+
+        // while the name is still not unique keep incrementing the count
+        while (names.find(uniqueName) != names.cend()) {
+            // In the future this should become an Exception 
+            //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), searchName);
+            // for now, rename the duplicately named subcomponent 
+            // but first test the uniqueness of the name (the while condition)
+            uniqueName = name + "_" + std::to_string(count++);
+        }
+
+        if (count > 0) { // if a duplicate
+            // rename the the subcomponent with its verified unique name
+            Component* mutableSub = const_cast<Component *>(sub.get());
+            mutableSub->setName(uniqueName);
+
+            // Warn of the problem
+            std::string msg = getConcreteClassName() + " '" + getName() +
+                "' has subcomponents with duplicate name '" + name + 
+                "'. The duplicate was renamed to '" + uniqueName + "'.";
+            std::cout << msg << std::endl;
+        }
+
+        // keep track of unique names
+        names.insert(uniqueName);
+    }
+    // End of duplicate finding and renaming.
+
     extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
 }
