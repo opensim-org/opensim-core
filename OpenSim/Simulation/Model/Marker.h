@@ -63,9 +63,10 @@ public:
     /** Convenience method to get the 'parent_frame' Socket's connectee_name */
     const std::string& getParentFrameName() const;
 
-    /** Convenience method to set the 'parent_frame' Socket's connectee_name
-        and to establish the connection during finalizeConnections(). */
-    void setParentFrameName(const std::string& aName);
+    /** Convenience method to set the 'parent_frame' Socket's connectee_name.
+        The the named parent frame is not connected and finalizeConnections()
+        must be invoked to establish the connection. */
+    void setParentFrameName(const std::string& parentFrameName);
     /** Change the parent PhysicalFrame that this marker is attached to. */
     void changeFrame(const PhysicalFrame& parentFrame);
     /**  Change the parent PhysicalFrame that this marker is attached to. In  
