@@ -147,7 +147,6 @@ void OptimizationProblem<T>::constraints(const VectorX<T>&,
 // TODO throw std::runtime_error("Not implemented.");
 }
 
-
 // TODO The non-specialized version is empty!
 template<typename T>
 class OptimizationProblem<T>::Proxy : public OptimizationProblemProxy {
