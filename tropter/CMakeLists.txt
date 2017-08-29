@@ -20,7 +20,13 @@ include(cmake/tropter_macros.cmake)
 
 # Organization of installation.
 # -----------------------------
-set(TROPTER_INSTALL_INCLUDEDIR include/tropter)
+include(GNUInstallDirs)
+set(TROPTER_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}/tropter)
+if(WIN32)
+    set(TROPTER_INSTALL_CMAKEDIR cmake)
+else()
+    set(TROPTER_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/tropter)
+endif()
 
 # Find dependencies.
 # ------------------
@@ -80,3 +86,8 @@ add_subdirectory(tropter)
 add_subdirectory(tests)
 
 
+# Allowing use of tropter in other libraries.
+# -------------------------------------------
+# export(TARGETS tropter FILE tropter-config.cmake)
+
+install(EXPORT tropter-config DESTINATION ${TROPTER_INSTALL_CMAKEDIR})
