@@ -2,15 +2,15 @@
 #define TROPTER_OPTIMALCONTROLPROBLEM_H
 
 #include "OptimalControlIterate.h"
-#include "../common.h"
+#include <tropter/common.h>
 #include <Eigen/Dense>
 
 namespace tropter {
 
 template <typename T>
-class OptimalControlProblem {
+class OptimalControlProblemBase {
 public:
-    virtual ~OptimalControlProblem() = default;
+    virtual ~OptimalControlProblemBase() = default;
     // TODO this is definitely not the interface I want.
     // TODO difficult... virtual void initial_guess()
     // TODO really want to declare each state variable individually, and give
@@ -86,7 +86,7 @@ public:
 
 template<typename T>
 std::vector<std::string>
-OptimalControlProblem<T>::get_state_names() const
+OptimalControlProblemBase<T>::get_state_names() const
 {
     size_t N = num_states();
     std::vector<std::string> names(N);
@@ -96,7 +96,7 @@ OptimalControlProblem<T>::get_state_names() const
 
 template<typename T>
 std::vector<std::string>
-OptimalControlProblem<T>::get_control_names() const
+OptimalControlProblemBase<T>::get_control_names() const
 {
     size_t N = num_controls();
     std::vector<std::string> names(N);
@@ -107,7 +107,7 @@ OptimalControlProblem<T>::get_control_names() const
 
 template<typename T>
 std::vector<std::string>
-OptimalControlProblem<T>::get_path_constraint_names() const
+OptimalControlProblemBase<T>::get_path_constraint_names() const
 {
     size_t N = num_path_constraints();
     std::vector<std::string> names(N);
@@ -117,7 +117,7 @@ OptimalControlProblem<T>::get_path_constraint_names() const
 }
 
 template<typename T>
-void OptimalControlProblem<T>::print_description() const {
+void OptimalControlProblemBase<T>::print_description() const {
     std::cout << "Description of this optimal control problem:" << std::endl;
     std::cout << "Number of states: "
               << this->num_states() << std::endl;
@@ -128,28 +128,28 @@ void OptimalControlProblem<T>::print_description() const {
 }
 
 template<typename T>
-void OptimalControlProblem<T>::initialize_on_mesh(const Eigen::VectorXd&) const
+void OptimalControlProblemBase<T>::initialize_on_mesh(const Eigen::VectorXd&) const
 {}
 
 template<typename T>
-void OptimalControlProblem<T>::dynamics(const VectorX<T>&,
+void OptimalControlProblemBase<T>::dynamics(const VectorX<T>&,
                                         const VectorX<T>&,
                                         Eigen::Ref<VectorX<T>>) const
 {}
 
 template<typename T>
-void OptimalControlProblem<T>::path_constraints(unsigned,
+void OptimalControlProblemBase<T>::path_constraints(unsigned,
                                                 const T&,
                                                 const VectorX <T>&,
                                                 const VectorX <T>&,
                                                 Eigen::Ref<VectorX<T>>) const {}
 
 template<typename T>
-void OptimalControlProblem<T>::endpoint_cost(const T&,
+void OptimalControlProblemBase<T>::endpoint_cost(const T&,
                                              const VectorX<T>&, T&) const {}
 
 template<typename T>
-void OptimalControlProblem<T>::integral_cost(const T&,
+void OptimalControlProblemBase<T>::integral_cost(const T&,
                                              const VectorX<T>&,
                                              const VectorX<T>&, T&) const {}
 
@@ -179,7 +179,7 @@ struct FinalBounds : public Bounds {
 };
 
 template<typename T>
-class OptimalControlProblemNamed : public OptimalControlProblem<T> {
+class OptimalControlProblemNamed : public OptimalControlProblemBase<T> {
 private:
     struct ContinuousVariableInfo {
         std::string name;

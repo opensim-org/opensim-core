@@ -3,7 +3,7 @@
 #include <catch.hpp>
 #include "testing.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 using Eigen::Ref;
 using Eigen::VectorXd;
@@ -106,7 +106,7 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     OptimalControlIterate guess;
 
-    // Check for exceptions with OptimalControlProblem set_*_guess().
+    // Check for exceptions with OptimalControlProblemBase set_*_guess().
     // --------------------------------------------------------------
     // Must set guess.time first.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),

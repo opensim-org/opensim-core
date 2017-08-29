@@ -4,7 +4,7 @@
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include <algorithm>
 

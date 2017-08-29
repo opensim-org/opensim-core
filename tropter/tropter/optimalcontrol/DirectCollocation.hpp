@@ -3,9 +3,9 @@
 
 #include "DirectCollocation.h"
 #include "OptimalControlProblem.h"
-#include "../optimization/OptimizationSolver.h"
-#include "../optimization/SNOPTSolver.h"
-#include "../optimization/IpoptSolver.h"
+#include <tropter/optimization/OptimizationSolver.h>
+#include <tropter/optimization/SNOPTSolver.h>
+#include <tropter/optimization/IpoptSolver.h>
 
 #include <iomanip>
 

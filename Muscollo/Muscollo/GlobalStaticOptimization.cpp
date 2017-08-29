@@ -3,7 +3,7 @@
 #include "DeGrooteFregly2016Muscle.h"
 #include "InverseMuscleSolverMotionData.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 

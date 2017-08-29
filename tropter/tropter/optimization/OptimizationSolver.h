@@ -1,7 +1,7 @@
 #ifndef TROPTER_OPTIMIZATIONSOLVER_H
 #define TROPTER_OPTIMIZATIONSOLVER_H
 
-#include "../common.h"
+#include <tropter/common.h>
 #include <Eigen/Dense>
 
 #include <memory>

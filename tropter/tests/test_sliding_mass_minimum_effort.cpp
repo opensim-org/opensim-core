@@ -1,5 +1,5 @@
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
@@ -74,7 +74,7 @@ TEST_CASE("Sliding mass new interface") {
 #endif
 
 template<typename T>
-class SlidingMass : public tropter::OptimalControlProblem<T> {
+class SlidingMass : public tropter::OptimalControlProblemBase<T> {
     // TODO difficult... virtual void initial_guess()
     // TODO really want to declare each state variable individually, and give
     // each one a name.

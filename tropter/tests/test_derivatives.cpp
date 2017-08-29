@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include "testing.h"
 

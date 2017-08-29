@@ -1,7 +1,7 @@
 
 #include "InverseMuscleSolverMotionData.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include <OpenSim/OpenSim.h>
 // TODO should not be needed after updating to a newer OpenSim:

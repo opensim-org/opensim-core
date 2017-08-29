@@ -1,8 +1,8 @@
 #ifndef TROPTER_DIRECTCOLLOCATION_H
 #define TROPTER_DIRECTCOLLOCATION_H
 
-#include "../common.h"
-#include "../optimization/OptimizationProblem.h"
+#include <tropter/common.h>
+#include <tropter/optimization/OptimizationProblem.h>
 #include "OptimalControlProblem.h"
 #include <fstream>
 
@@ -26,7 +26,7 @@ class Transcription;
 template<typename T>
 class DirectCollocationSolver {
 public:
-    typedef OptimalControlProblem<T> OCProblem;
+    typedef OptimalControlProblemBase<T> OCProblem;
     DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem,
                             const std::string& transcription_method,
                             const std::string& optimization_solver,
@@ -150,7 +150,7 @@ class LowOrder : public Transcription<T> {
     // TODO should this *BE* an OptimizationProblem, or should it just
     // contain one?
 public:
-    typedef OptimalControlProblem<T> OCProblem;
+    typedef OptimalControlProblemBase<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?

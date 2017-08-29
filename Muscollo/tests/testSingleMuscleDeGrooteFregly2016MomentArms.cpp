@@ -3,7 +3,7 @@
 #include <INDYGO.h>
 #include <GlobalStaticOptimization.h>
 #include <DeGrooteFregly2016Muscle.h>
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include "testing.h"
 

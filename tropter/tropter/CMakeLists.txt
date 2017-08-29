@@ -44,10 +44,11 @@ if(MUSCOLLO_WITH_SNOPT)
     target_compile_definitions(tropter PUBLIC MUSCOLLO_WITH_SNOPT)
 endif()
 
-# Specify the include directories that client targets should use.
-target_include_directories(tropter INTERFACE
+# Specify the include directories that the tropter target and client targets
+# should use.
+target_include_directories(tropter PUBLIC
         # Used by other targets in this project:
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tropter>
         # Used by client projects using an installed version of Tropter.
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)

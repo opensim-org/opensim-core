@@ -3,7 +3,7 @@
 #include <catch.hpp>
 #include "testing.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include <Eigen/LU>
 

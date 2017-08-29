@@ -2,8 +2,8 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-#include <tropter.h>
-#include <legacy.h>
+#include <tropter/tropter.h>
+#include <tropter/legacy.h>
 
 #include "testing.h"
 

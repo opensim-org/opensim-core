@@ -1,7 +1,7 @@
 #ifndef TROPTER_ABSTRACTOPTIMIZATIONPROBLEM_H
 #define TROPTER_ABSTRACTOPTIMIZATIONPROBLEM_H
 
-#include "../common.h"
+#include <tropter/common.h>
 #include <memory>
 
 namespace tropter {
