@@ -9,7 +9,7 @@
 
 using namespace Eigen;
 
-VectorXd func(const VectorXd& x) {
+VectorXd constraints(const VectorXd& x) {
     VectorXd y(x.size());
     for (int i = 0; i < x.size(); ++i) {
         y[i] = x[i] * x[i];
@@ -20,6 +20,8 @@ VectorXd func(const VectorXd& x) {
     }
     return y;
 }
+
+
 
 static const double NaN = std::numeric_limits<double>::quiet_NaN();
 
@@ -96,7 +98,7 @@ SparsityPattern compute_sparsity(int m, int n,
     for (int j = 0; j < n; ++j) {
         VectorXd y = VectorXd::Zero(m);
         x[j] = NaN;
-        y = func(x);
+        y = f(x);
         x[j] = 0;
         //std::cout << std::endl;
         for (int i = 0; i < m; ++i) {
@@ -125,9 +127,9 @@ void compute_jacobian(
         const std::function<VectorXd (const VectorXd&)> f,
         const VectorXd& x) {
     const int n = x.size();
-    VectorXd y0 = func(x);
+    VectorXd y0 = f(x);
     const int m = y0.size();
-    auto sparsity = compute_sparsity(m, n, func);
+    auto sparsity = compute_sparsity(m, n, f);
     //sparsity.print();
 
     auto sparsity_cr = sparsity.convert_to_ADOLC_compressed_row_format();
@@ -173,7 +175,7 @@ void compute_jacobian(
     for (int icol = 0; icol < n; ++icol) {
         double h = eps * std::abs(x_working[icol]);
         x_working[icol] += h;
-        VectorXd y1 = func(x_working);
+        VectorXd y1 = f(x_working);
         x_working[icol] = x[icol];
         jacobian.col(icol) = (y1 - y0) / h;
     }
@@ -203,7 +205,7 @@ void compute_jacobian(
         const VectorXd& direction = seed_mat.col(iseed);
 
         VectorXd p = eps * direction;
-        VectorXd y1 = func(x + p);
+        VectorXd y1 = f(x + p);
         VectorXd deriv = (y1 - y0) / eps;
 
         const auto& columns_in_this_seed = seed_info[iseed];
@@ -231,13 +233,13 @@ int main() {
     for (int i = 0; i < n; ++i) {
         x[i] = rand();
     }
-    VectorXd y = func(x);
+    VectorXd y = constraints(x);
     //for (int i = 0; i < n; ++i) {
     //    std::cout << y[i] << std::endl;
     //}
 
-    //SparseJacobian jac = compute_jacobian(func, x);
-    compute_jacobian(func, x);
+    //SparseJacobian jac = compute_jacobian(constraints, x);
+    compute_jacobian(constraints, x);
     //jac.print();
 
     std::cout << "DEBUG END" << std::endl;
