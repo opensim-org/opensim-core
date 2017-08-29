@@ -130,6 +130,8 @@ protected:
     //-----------------------------------------------------------------------------
     void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system) const override;
 
+    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
+
 private:
     void setNull();
     void constructProperties();
