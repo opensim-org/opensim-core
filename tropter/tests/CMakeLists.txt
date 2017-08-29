@@ -23,10 +23,10 @@ if(MUSCOLLO_WITH_SNOPT)
     tropter_add_test(test_snopt tropter) # snopt7_cpp
 endif()
 
-if(OpenMP_FOUND)
-    tropter_add_test(test_adolc_parallelized_openmp tropter)
-    target_compile_options(test_adolc_parallelized_openmp PRIVATE
-            "${OpenMP_CXX_FLAGS}")
-    set_property(TARGET test_adolc_parallelized_openmp APPEND PROPERTY
-            LINK_FLAGS "${OpenMP_CXX_FLAGS}")
-endif()
+#if(OpenMP_FOUND)
+#    tropter_add_test(test_adolc_parallelized_openmp tropter)
+#    target_compile_options(test_adolc_parallelized_openmp PRIVATE
+#            "${OpenMP_CXX_FLAGS}")
+#    set_property(TARGET test_adolc_parallelized_openmp APPEND PROPERTY
+#            LINK_FLAGS "${OpenMP_CXX_FLAGS}")
+#endif()
