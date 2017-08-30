@@ -69,8 +69,8 @@ PointOnLineConstraint::PointOnLineConstraint( const PhysicalFrame& lineBody,
     setNull();
     constructProperties();
 
-    setLineBodyByName(lineBody.getName());
-    setFollowerBodyByName(followerBody.getName());
+    connectSocket_line_body(lineBody);
+    connectSocket_follower_body(followerBody);
 
     set_line_direction_vec(lineDirection);
     set_point_on_line(pointOnLine);

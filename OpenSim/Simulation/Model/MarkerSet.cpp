@@ -129,8 +129,8 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
     for (int i = 0; i < getSize(); i++)
     {
         Marker& nextMarker = get(i);
-        const string& refFrameName = nextMarker.getFrameName();
-        //assert(refBodyName);
+        const string& refFrameName = nextMarker.getParentFrame().getName();
+
         bool found = false;
         for (int j = 0; j < scaleSet.getSize() && !found; j++)
         {
