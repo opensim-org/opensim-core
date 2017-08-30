@@ -153,10 +153,6 @@ TEST_CASE("Check derivatives with analytical deriv.")
         VectorXd fd_jacobian_values(num_jacobian_elem);
         proxy->jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, fd_jacobian_values.data());
-        WARN(analytical_jacobian);
-        for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
-            WARN(fd_jacobian_values[inz]);
-        }
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
             const auto& j = jacobian_col_indices[inz];
