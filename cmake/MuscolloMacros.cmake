@@ -20,13 +20,12 @@ function(MuscolloCopyDLLs DEP_NAME DEP_INSTALL_DIR)
         foreach(DLL IN LISTS DLLS)
             get_filename_component(DLL_NAME ${DLL} NAME)
             list(APPEND DLLS_DEST "${DEST_DIR}/${DLL_NAME}")
-            set(DLL_NAMES "${DLL_NAMES} ${DLL_NAME}")
+            add_custom_command(OUTPUT "${DEST_DIR}/${DLL_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
+                DEPENDS ${DLL}
+                COMMENT "Copying ${DLL_NAME} from ${DEP_INSTALL_DIR} to ${DEST_DIR}.")
         endforeach()
-        add_custom_command(OUTPUT ${DLLS_DEST}
-            COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
-            COMMAND ${CMAKE_COMMAND} -E copy ${DLLS} ${DEST_DIR}
-            DEPENDS ${DLLS}
-            COMMENT "Copying DLLs from ${DEP_INSTALL_DIR} to ${DEST_DIR}:${DLL_NAMES}")
         add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
         set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
             PROJECT_LABEL "Copy ${DEP_NAME} DLLs" FOLDER "Muscollo")
