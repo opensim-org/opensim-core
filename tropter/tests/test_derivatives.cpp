@@ -123,7 +123,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
 
     // Finite differences.
     // -------------------
-    SECTION("Finite differences") {/*
+    SECTION("Finite differences") {
         HS071<double> problemd;
         auto proxy = problemd.make_proxy();
         // Must first initialize.
@@ -136,10 +136,10 @@ TEST_CASE("Check derivatives with analytical deriv.")
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
-        VectorXd adolc_gradient(problem.get_num_variables());
+        VectorXd fd_gradient(problem.get_num_variables());
         proxy->gradient(problem.get_num_variables(), x.data(), false,
-                adolc_gradient.data());
-        TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
+                fd_gradient.data());
+        TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-8);
 
         // Hessian (of the Lagrangian).
         // TODO
@@ -150,15 +150,20 @@ TEST_CASE("Check derivatives with analytical deriv.")
         // The Jacobian is dense.
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
-        VectorXd adolc_jacobian_values(num_jacobian_elem);
+        VectorXd fd_jacobian_values(num_jacobian_elem);
         proxy->jacobian(problem.get_num_variables(), x.data(), false,
-                num_jacobian_elem, adolc_jacobian_values.data());
+                num_jacobian_elem, fd_jacobian_values.data());
+        WARN(analytical_jacobian);
+        for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
+            WARN(fd_jacobian_values[inz]);
+        }
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
             const auto& j = jacobian_col_indices[inz];
-            REQUIRE(analytical_jacobian(i, j) == adolc_jacobian_values[inz]);
+            REQUIRE(analytical_jacobian(i, j) ==
+                    Approx(fd_jacobian_values[inz]).epsilon(1e-8));
         }
-    */}
+    }
 
     // Automatic derivatives.
     // ----------------------
@@ -225,6 +230,7 @@ TEST_CASE("Check finite differences on bounds", "[finitediff]")
    // TODO
 }
 
+// TODO try something with a sparse jacobian
 
 
 
