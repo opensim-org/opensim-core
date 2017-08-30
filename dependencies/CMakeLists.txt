@@ -5,7 +5,8 @@
 # klshrinidhi).
 
 project(MuscolloDependencies)
-cmake_minimum_required(VERSION 2.8)
+# We require a version of CMake that supports Visual Studio 2015.
+cmake_minimum_required(VERSION 3.2)
 
 if(NOT ${CMAKE_GENERATOR} MATCHES "Win64")
     # This requirement results from the use of 64-bit pre-built binaries for
