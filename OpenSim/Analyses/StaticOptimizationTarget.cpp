@@ -78,7 +78,7 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
     for (size_t i = 0u; i < coordinates.size(); ++i) {
         const Coordinate& coord = *coordinates[i];
         if(!coord.isConstrained(s)) {
-            _accelerationIndices.append(i);
+            _accelerationIndices.append(static_cast<int>(i));
         }
     }
 }

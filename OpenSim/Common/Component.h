@@ -1538,11 +1538,11 @@ public:
         // subcomponents and to find the longest concrete class name.
         const std::string concreteClassName = this->getConcreteClassName();
         unsigned numSubcomponents = 0;
-        unsigned maxlen = concreteClassName.length();
+        size_t maxlen = concreteClassName.length();
         for (const C& thisComp : compList) {
             ++numSubcomponents;
             auto len = thisComp.getConcreteClassName().length();
-            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+            maxlen = std::max(maxlen, len);
         }
 
         if (numSubcomponents == 0) {

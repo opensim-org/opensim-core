@@ -1052,7 +1052,7 @@ void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
     const CoordinateSet& coordinateSet = _model->getCoordinateSet();
     
     // first column is time, so skip
-    for (int i = 0; i < ncols; i++) {
+    for (size_t i = 0; i < ncols; i++) {
         const std::string& name = table.getColumnLabel(i);
         index = coordinateSet.getIndex(name);
         if (index < 0){
