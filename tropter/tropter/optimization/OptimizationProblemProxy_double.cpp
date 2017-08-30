@@ -1,4 +1,5 @@
 #include "OptimizationProblem.hpp"
+#include <ColPack/ColPackHeaders.h>
 
 using Eigen::VectorXd;
 
@@ -18,16 +19,35 @@ sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& hessian_col_indices) const
 {
     // TODO
-    unsigned int num_jacobian_elements = num_constraints() * num_variables();
-    jacobian_row_indices.resize(num_jacobian_elements);
-    jacobian_col_indices.resize(num_jacobian_elements);
-    // Example: the entries of a 2 x 4 Jacobian would be ordered as follows:
-    //          0 2 4 6
-    //          1 3 5 7
-    // This is a column-major storage order.
-    for (unsigned int i = 0; i < num_jacobian_elements; ++i) {
-        jacobian_row_indices[i] = i % num_constraints();
-        jacobian_col_indices[i] = i / num_constraints();
+    //unsigned int num_jacobian_elements = num_constraints() * num_variables();
+    //jacobian_row_indices.resize(num_jacobian_elements);
+    //jacobian_col_indices.resize(num_jacobian_elements);
+    //// Example: the entries of a 2 x 4 Jacobian would be ordered as follows:
+    ////          0 2 4 6
+    ////          1 3 5 7
+    //// This is a column-major storage order.
+    //for (unsigned int i = 0; i < num_jacobian_elements; ++i) {
+    //    jacobian_row_indices[i] = i % num_constraints();
+    //    jacobian_col_indices[i] = i / num_constraints();
+    //}
+
+    //SparsityPattern sparsity(num_constraints(), num_variables());
+    VectorXd x_working = VectorXd::Zero(num_variables());
+    VectorXd constr_working(num_constraints());
+    for (int j = 0; j < num_variables(); ++j) {
+        constr_working.setZero();
+        x_working[j] = std::numeric_limits<double>::quiet_NaN();
+        m_problem.constraints(x_working, constr_working);
+        x_working[j] = 0;
+        //std::cout << std::endl;
+        for (int i = 0; i < num_constraints(); ++i) {
+            //std::cout << y[i] << std::endl;
+            if (std::isnan(constr_working[i])) {
+                //sparsity.add_nonzero(i, j);
+                jacobian_row_indices.push_back(i);
+                jacobian_col_indices.push_back(j);
+            }
+        }
     }
 
     // Exact hesisan mode is unsupported for now.
