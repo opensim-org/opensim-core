@@ -128,6 +128,7 @@ public:
         // could use ADOL-C's fmax(), but it was causing EXC_BAD_INSTRUCTION
         // in sparse_hess(). The function (y + |y|)/2 has the desired effect.
         const T y = (exp(kPE*(normFiberLength - 1)/e0) - 1) / (exp(kPE) - 1);
+        // TODO Antoine said there's a bug here.
         return (y + fabs(y)) / 2;
     }
     T calcNormFiberForce(const T& activation,
