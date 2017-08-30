@@ -516,8 +516,6 @@ void testSpringMass()
 
     osimModel.addForce(&spring);
 
-    //osimModel.print("SpringMassModel.osim");
-
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
     osimModel.addAnalysis(reporter);
@@ -563,6 +561,14 @@ void testSpringMass()
     PointToPointSpring *copyOfSpring = spring.clone();
 
     ASSERT(*copyOfSpring == spring);
+
+    // Verify that the PointToPointSpring is correctly deserialized from
+    // previous major version of OpenSim.
+    Model bouncer("bouncing_block_30000.osim");
+    SimTK::State& s = bouncer.initSystem();
+    bouncer.realizeAcceleration(s);
+
+    Vec3 comA = bouncer.calcMassCenterAcceleration(s);
 }
 
 void testBushingForce()
