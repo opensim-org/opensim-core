@@ -5,6 +5,7 @@ add_library(tropter
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.hpp
         optimization/OptimizationProblem.cpp
+        optimization/OptimizationProblemProxy_double.cpp
         optimization/OptimizationProblemProxy_adouble.cpp
         optimization/OptimizationSolver.h
         optimization/OptimizationSolver.cpp

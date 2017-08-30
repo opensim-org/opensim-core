@@ -153,6 +153,36 @@ class OptimizationProblem<T>::Proxy : public OptimizationProblemProxy {
 };
 
 template<>
+class OptimizationProblem<double>::Proxy : public OptimizationProblemProxy {
+public:
+    Proxy(const OptimizationProblem<double>& problem);
+    void sparsity(const Eigen::VectorXd& variables,
+            std::vector<unsigned int>& jacobian_row_indices,
+            std::vector<unsigned int>& jacobian_col_indices,
+            std::vector<unsigned int>& hessian_row_indices,
+            std::vector<unsigned int>& hessian_col_indices) const override;
+    void objective(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double& obj_value) const override;
+    void constraints(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_constraints, double* constr) const override;
+    void gradient(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double* grad) const override;
+    void jacobian(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_nonzeros, double* nonzeros) const override;
+    void hessian_lagrangian(unsigned num_variables, const double* variables,
+            bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda,
+            bool new_lambda,
+            unsigned num_nonzeros, double* nonzeros) const override;
+private:
+    const OptimizationProblem<double>& m_problem;
+};
+
+template<>
 class OptimizationProblem<adouble>::Proxy : public OptimizationProblemProxy {
 public:
     Proxy(const OptimizationProblem<adouble>& problem);
@@ -194,6 +224,9 @@ private:
             double& lagrangian_value) const;
 
     const OptimizationProblem<adouble>& m_problem;
+
+    // ADOL-C
+    // ------
     // TODO if we want to be able to solve multiple problems at once, these
     // cannot be static. We could create a registry of tags, and the tags can
     // be "checked out" and "returned."
