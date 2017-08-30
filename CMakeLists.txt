@@ -1,12 +1,4 @@
-option(MUSCOLLO_WITH_SNOPT
-        "Compile support for the SNOPT optimization library; \
-        requires Fortran compiler"
-        OFF)
-if(MUSCOLLO_WITH_SNOPT)
-    project(Muscollo C CXX Fortran) # TODO Fortran only for SNOPT interface.
-else()
-    project(Muscollo C CXX)
-endif()
+project(Muscollo)
 cmake_minimum_required(VERSION 3.2)
 
 # CMake settings.

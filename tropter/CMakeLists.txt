@@ -1,6 +1,9 @@
 project(tropter)
 cmake_minimum_required(VERSION 3.2)
 
+# Include CMake macros that we wrote to reduce duplication in this project.
+include(cmake/tropter_macros.cmake)
+
 # CMake settings.
 # ---------------
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
@@ -15,8 +18,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Copy dependencies' libraries into Tropter's installation?
 set(TROPTER_COPY_DEPENDENCIES ON)
 
-# Include CMake macros that we wrote to reduce duplication in this project.
-include(cmake/tropter_macros.cmake)
+# Configurable settings.
+# ----------------------
+option(TROPTER_WITH_SNOPT
+        "Compile support for the SNOPT optimization library; \
+        requires Fortran compiler"
+        OFF)
+if(TROPTER_WITH_SNOPT)
+    enable_language(Fortran)
+endif()
 
 # Organization of installation.
 # -----------------------------
