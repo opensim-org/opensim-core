@@ -568,7 +568,7 @@ void testSpringMass()
     SimTK::State& s = bouncer.initSystem();
     bouncer.realizeAcceleration(s);
 
-    Vec3 comA = bouncer.calcMassCenterAcceleration(s);
+    /*Vec3 comA =*/ bouncer.calcMassCenterAcceleration(s);
 }
 
 void testBushingForce()
