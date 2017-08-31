@@ -17,7 +17,9 @@ target_include_directories(osimMuscollo INTERFACE
         # TODO this variable doesn't exist yet:
         $<INSTALL_INTERFACE:${MUSCLEREDUNDANCYSOLVER_INSTALL_INCLUDEDIR}>)
 
-set_target_properties(osimMuscollo PROPERTIES FOLDER "Muscollo")
+set_target_properties(osimMuscollo PROPERTIES
+        PROJECT_LABEL "Library - osimMuscollo"
+        FOLDER "Muscollo")
 
 if(WIN32)
     add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
@@ -26,13 +28,4 @@ endif()
 install(TARGETS osimMuscollo DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 
-
-
-add_executable(opensim-muscollo opensim-muscollo.cpp)
-target_link_libraries(opensim-muscollo osimMuscollo)
-
-install(TARGETS opensim-muscollo DESTINATION bin)
-set_target_properties(opensim-muscollo PROPERTIES
-        DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX}
-        FOLDER "Muscollo")
 

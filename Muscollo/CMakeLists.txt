@@ -7,3 +7,4 @@ MuscolloCopyDLLs(OpenSim "${OpenSim_ROOT_DIR}/bin")
 
 add_subdirectory(Muscollo)
 add_subdirectory(tests)
+add_subdirectory(executable)
