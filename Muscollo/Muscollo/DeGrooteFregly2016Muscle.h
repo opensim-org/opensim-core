@@ -122,13 +122,14 @@ public:
         // Passive force-length curve.
         static const double kPE = 4.0;
         static const double e0  = 0.6;
-        // y is negative for normFiberLength < 1, but we don't want
-        // negative forces. We could use an if-statement to set force to 0 if
-        // normFiberLength < 1, but this wouldn't work well with ADOL-C. We
-        // could use ADOL-C's fmax(), but it was causing EXC_BAD_INSTRUCTION
-        // in sparse_hess(). The function (y + |y|)/2 has the desired effect.
-        const T y = (exp(kPE*(normFiberLength - 1)/e0) - 1) / (exp(kPE) - 1);
-        return (y + fabs(y)) / 2;
+        static const double denom = exp(kPE) - 1;
+        static const double numer_offset = exp(kPE * (0.2 - 1)/e0);
+        // The version of this equation in the supplementary materials of De
+        // Groote, et al. 2016 has an error. The correct equation passes
+        // through y = 0 at x = 0.2, and therefore is never negative within
+        // the allowed range of the optimal fiber length. The version in the
+        // supplementary materials allows for negative forces.
+        return (exp(kPE*(normFiberLength - 1)/e0) - numer_offset) / denom;
     }
     T calcNormFiberForce(const T& activation,
                          const T& normFiberLength,

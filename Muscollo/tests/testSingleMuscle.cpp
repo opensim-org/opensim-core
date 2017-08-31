@@ -94,8 +94,8 @@ void testIsometricMuscleRoundtrip() {
             SimTK_TEST_EQ_TOL(actual, expectedVector, tol);
         };
 
-        compare(solution.excitation, 0.5, 0.01);
-        compare(solution.activation, 0.5, 0.01);
+        compare(solution.excitation, 0.5, 0.02);
+        compare(solution.activation, 0.5, 0.02);
         compare(solution.norm_fiber_velocity, 0.0, 0.01);
         // The fiber must be shorter than 0.1 meters so that the tendon is
         // not slack and can convey a force.

@@ -600,16 +600,16 @@ void compareSolution_GSO(const GlobalStaticOptimization::Solution& actual,
                          const double& reserveOptimalForce) {
     compare(actual.activation, "/block2musc2dof/left",
             expected,          "activation_l",
-            0.01);
+            0.02);
     compare(actual.activation, "/block2musc2dof/right",
             expected,          "activation_r",
             0.05);
     auto reserveForceXRMS = reserveOptimalForce *
             actual.other_controls.getDependentColumnAtIndex(0).normRMS();
-    SimTK_TEST(reserveForceXRMS < 0.01);
+    SimTK_TEST(reserveForceXRMS < 0.05);
     auto reserveForceYRMS = reserveOptimalForce *
             actual.other_controls.getDependentColumnAtIndex(1).normRMS();
-    SimTK_TEST(reserveForceYRMS < 0.01);
+    SimTK_TEST(reserveForceYRMS < 0.07);
 }
 
 void test2Muscles2DOFs_GSO(
