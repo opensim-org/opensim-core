@@ -29,6 +29,15 @@ direct collocation. Currently, Tropter's source code is part of Muscollo.
 On **Linux** and **macOS**, you must obtain these packages on your own. Most of
 them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).
 
+In particular, if you are using Homebrew to obtain ColPack and ADOL-C, make 
+sure they are compiled with the same compiler you will use for Muscollo and 
+tropter (by default, Homebrew compiles these with GCC):
+
+```bash
+brew install --cc=clang colpack
+brew install --cc=clang adol-c
+```
+
 On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
 obtain Muscollo's dependencies and to build Muscollo. This script assumes you
 have installed **Microsoft Visual Studio 2015** (with C++ support) and **CMake**
