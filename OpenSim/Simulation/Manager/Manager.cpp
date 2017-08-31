@@ -50,21 +50,23 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-Manager::Manager(Model& model) : Manager(model, true)
+Manager::Manager(Model& model, SimTK::State& state) 
+        : Manager(model, state, true)
 {
     _defaultInteg.reset(
             new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
     _integ = *_defaultInteg;
 }
 
-Manager::Manager(Model& aModel, SimTK::Integrator& integ)
-        : Manager(aModel, true) {
+Manager::Manager(Model& aModel, SimTK::State& state, SimTK::Integrator& integ)
+        : Manager(aModel, state, true) {
     setIntegrator(integ);
 }
 
 // Private constructor to handle common tasks of the two constructors above.
-Manager::Manager(Model& model, bool dummyVar) :
+Manager::Manager(Model& model, SimTK::State& state, bool dummyVar) :
        _model(&model),
+       _state(&state),
        _performAnalyses(true),
        _writeToStorage(true),
        _controllerSet(&model.updControllerSet())

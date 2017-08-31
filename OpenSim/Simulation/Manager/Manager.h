@@ -76,7 +76,9 @@ private:
     /** Simulation session name. */
     std::string _sessionName;
     /** Model for which the simulation is performed. */
-    Model *_model;
+    Model* _model;
+    /** The State to be integrated. */
+    SimTK::State* _state;
 
     /** Integrator. */
     // This is the actual integrator that is used when integrate() is called.
@@ -137,12 +139,12 @@ private:
 public:
     /** This constructor cannot be used in MATLAB/Python, since the
      * SimTK::Integrator%s are not exposed in those languages. */
-    Manager(Model&, SimTK::Integrator&);
+    Manager(Model& model, SimTK::State& state, SimTK::Integrator& integ);
     /** Constructor that takes a model only and internally uses a
      * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
      * constraint tolerance, etc.). MATLAB/Python users must use this
      * constructor. */
-    Manager(Model& aModel);
+    Manager(Model& model, SimTK::State& state);
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
@@ -271,7 +273,7 @@ public:
 private:
 
     // Handles common tasks of some of the other constructors.
-    Manager(Model& aModel, bool dummyVar);
+    Manager(Model& aModel, SimTK::State&, bool dummyVar);
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(SimTK::State& s);
