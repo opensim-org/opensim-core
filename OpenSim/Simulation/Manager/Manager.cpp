@@ -58,8 +58,8 @@ Manager::Manager(Model& model, SimTK::State& state)
     _integ = *_defaultInteg;
 }
 
-Manager::Manager(Model& aModel, SimTK::State& state, SimTK::Integrator& integ)
-        : Manager(aModel, state, true) {
+Manager::Manager(Model& model, SimTK::State& state, SimTK::Integrator& integ)
+        : Manager(model, state, true) {
     setIntegrator(integ);
 }
 
@@ -627,7 +627,7 @@ hasStateStorage() const
 //-----------------------------------------------------------------------------
 
 bool Manager::
-integrate(SimTK::State& s, double finalTime)
+integrate(double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
 
@@ -642,7 +642,7 @@ integrate(SimTK::State& s, double finalTime)
     clearHalt();
 
     // CHECK SPECIFIED DT STEPPING
-    double initialTime = s.getTime();
+    double initialTime = _state->getTime();
     if (_specifiedDT) {
         if (_tArray.getSize() <= 0) {
             string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
@@ -670,7 +670,7 @@ integrate(SimTK::State& s, double finalTime)
     if (_constantDT || _specifiedDT) fixedStep = true;
 
     // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(s);
+    if (_timeStepper == NULL) initializeTimeStepper(*_state);
 
     SimTK::Integrator::SuccessfulStepStatus status;
 
@@ -678,20 +678,21 @@ integrate(SimTK::State& s, double finalTime)
         _integ->setReturnEveryInternalStep(true);
     }
 
-    _model->realizeVelocity(s);
-    initializeStorageAndAnalyses(s);
+    _model->realizeVelocity(*_state);
+    initializeStorageAndAnalyses(*_state);
 
     if (fixedStep) {
-        _model->realizeAcceleration(s);
+        _model->realizeAcceleration(*_state);
 
-        if (_performAnalyses) _model->updAnalysisSet().step(s, step);
+        if (_performAnalyses) _model->updAnalysisSet().step(*_state, step);
         if (_writeToStorage) {
-            SimTK::Vector stateValues = _model->getStateVariableValues(s);
+            SimTK::Vector stateValues = 
+                _model->getStateVariableValues(*_state);
             StateVector vec;
-            vec.setStates(s.getTime(), stateValues);
+            vec.setStates(_state->getTime(), stateValues);
             getStateStorage().append(vec);
             if (_model->isControlled())
-                _controllerSet->storeControls(s, step);
+                _controllerSet->storeControls(*_state, step);
         }
     }
 
@@ -735,7 +736,7 @@ integrate(SimTK::State& s, double finalTime)
         if (checkHalt()) break;
     }
     finalize(_integ->updAdvancedState());
-    s = _integ->getState();
+    *_state = _integ->getState();
 
     // CLEAR ANY INTERRUPT
     clearHalt();
@@ -754,7 +755,7 @@ bool Manager::
 integrate(SimTK::State& s)
 {
     s.setTime( _ti );
-    return integrate(s, _tf);
+    return integrate(_tf);
 }
 
 //_____________________________________________________________________________

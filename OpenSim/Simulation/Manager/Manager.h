@@ -248,7 +248,7 @@ public:
     * @endcode
     *
     */
-    bool integrate(SimTK::State& s, double finalTime);
+    bool integrate(double finalTime);
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
         Manager::integrate(SimTK::State&, double). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
