@@ -31,9 +31,12 @@ sparsity(const Eigen::VectorXd& x,
     //    jacobian_col_indices[i] = i / num_constraints();
     //}
 
+    // Determine the sparsity pattern.
+    // -------------------------------
     //SparsityPattern sparsity(num_constraints(), num_variables());
     VectorXd x_working = VectorXd::Zero(num_variables());
     VectorXd constr_working(num_constraints());
+    unsigned int inonzero = 0;
     for (int j = 0; j < num_variables(); ++j) {
         constr_working.setZero();
         x_working[j] = std::numeric_limits<double>::quiet_NaN();
@@ -46,10 +49,91 @@ sparsity(const Eigen::VectorXd& x,
                 //sparsity.add_nonzero(i, j);
                 jacobian_row_indices.push_back(i);
                 jacobian_col_indices.push_back(j);
+
+                std::pair<unsigned, unsigned> idxpair(i, j);
+                m_jacobian_nonzero_indices[idxpair] = inonzero;
+                ++inonzero;
             }
         }
     }
 
+    // Convert sparsity pattern to ADOL-C compressed row format.
+    // ---------------------------------------------------------
+    //using UnsignedInt2DPtr =
+    //    std::unique_ptr<unsigned*[], std::function<void(unsigned**)>>;
+    const auto num_jacobian_nonzeros = jacobian_row_indices.size();
+    const auto num_jac_rows = num_constraints();
+    const auto num_vars = num_variables();
+    auto unsigned_int_2d_deleter = [num_jac_rows](unsigned** x) {
+        std::for_each(x, x + num_jac_rows, std::default_delete<unsigned[]>());
+        delete [] x;
+    };
+    m_jacobian_pattern_ADOLC_format = UnsignedInt2DPtr(
+            new unsigned*[num_jac_rows], unsigned_int_2d_deleter);
+    for (int i = 0; i < num_jac_rows; ++i) {
+        std::vector<unsigned int> col_idx_for_nonzeros;
+        for (int inz = 0; inz < num_jacobian_nonzeros; ++inz) {
+            if (jacobian_row_indices[inz] == i) {
+                col_idx_for_nonzeros.push_back(jacobian_col_indices[inz]);
+            }
+            const auto num_nonzeros_this_row = col_idx_for_nonzeros.size();
+            m_jacobian_pattern_ADOLC_format[i] =
+                    new unsigned[num_nonzeros_this_row+1];
+            m_jacobian_pattern_ADOLC_format[i][0] = num_nonzeros_this_row;
+            std::copy(col_idx_for_nonzeros.begin(), col_idx_for_nonzeros.end(),
+                    // Skip over the first element.
+                    m_jacobian_pattern_ADOLC_format[i] + 1);
+        }
+    }
+
+    // Determine the efficient perturbation directions.
+    // ------------------------------------------------
+    ColPack::BipartiteGraphPartialColoringInterface jacobian_coloring(
+            SRC_MEM_ADOLC, m_jacobian_pattern_ADOLC_format.get(),
+            num_jac_rows, num_vars);
+    // No longer need this memory.
+    //jac_pattern_ADOLC_format.reset();
+
+    ///*
+    // TODO better memory management.
+    double** jacobian_seed_raw = nullptr;
+    int jacobian_seed_num_rows; // Should be num_vars.
+    int jacobian_seed_num_cols; // Number of seeds.
+    jacobian_coloring.GenerateSeedJacobian_unmanaged(&jacobian_seed_raw,
+            &jacobian_seed_num_rows, &jacobian_seed_num_cols,
+            "SMALLEST_LAST", "COLUMN_PARTIAL_DISTANCE_TWO");
+    m_jacobian_seed.resize(jacobian_seed_num_rows, jacobian_seed_num_cols);
+    for (int i = 0; i < jacobian_seed_num_rows; ++i) {
+        for (int j = 0; j < jacobian_seed_num_cols; ++j) {
+            m_jacobian_seed(i, j) = jacobian_seed_raw[i][j];
+        }
+        delete [] jacobian_seed_raw[i];
+    }
+    delete [] jacobian_seed_raw;
+
+    // TODO
+    const Eigen::Index num_seeds = m_jacobian_seed.cols();
+    m_jacobian_seed_info.resize(num_seeds);
+    for (int iseed = 0; iseed < num_seeds; ++iseed) {
+        for (int j = 0; j < m_jacobian_seed.rows(); ++j) {
+            if (m_jacobian_seed(j, iseed) == 1) {
+                m_jacobian_seed_info[iseed].push_back(j);
+            }
+        }
+    }
+
+    m_jacobian_sparsity_cc.resize(num_variables());
+    for (int j = 0; j < num_variables(); ++j) {
+        for (int inz = 0; inz < num_jacobian_nonzeros; ++inz) {
+            if (jacobian_col_indices[inz] == j) {
+                m_jacobian_sparsity_cc[j].push_back(jacobian_row_indices[inz]);
+            }
+        }
+    }
+    //*/
+
+    // Hessian.
+    // ========
     // Exact hesisan mode is unsupported for now.
     hessian_row_indices.clear();
     hessian_col_indices.clear();
@@ -110,10 +194,11 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
 }
 
 void OptimizationProblem<double>::Proxy::
-jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
+jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
-    VectorXd x_working = Eigen::Map<const VectorXd>(x, num_variables);
+    /*
+    VectorXd x_working = Eigen::Map<const VectorXd>(variables, num_variables);
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
     const double two_eps = 2 * eps;
     // TODO
@@ -126,12 +211,48 @@ jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
     for (int icol = 0; icol < num_variables; ++icol) {
         x_working[icol] += eps;
         m_problem.constraints(x_working, constr_pos);
-        x_working[icol] = x[icol] - eps;
+        x_working[icol] = variables[icol] - eps;
         m_problem.constraints(x_working, constr_neg);
         // Restore the original value.
-        x_working[icol] = x[icol];
+        x_working[icol] = variables[icol];
         jacobian.col(icol) = (constr_pos - constr_neg) / two_eps;
     }
+    */
+
+    const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
+    const double two_eps = 2 * eps;
+    const Eigen::Index num_seeds = m_jacobian_seed.cols();
+    VectorXd constr_pos(num_constraints());
+    VectorXd constr_neg(num_constraints());
+    VectorXd deriv_this_seed(num_constraints());
+    Eigen::Map<const VectorXd> x0(variables, num_variables);
+    int inonzero = 0;
+    for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
+        const auto direction = m_jacobian_seed.col(iseed);
+        // Perturb x in the positive direction.
+        m_problem.constraints(x0 + eps * direction, constr_pos);
+        // Perturb x in the negative direction.
+        m_problem.constraints(x0 - eps * direction, constr_neg);
+        // Compute central difference.
+        deriv_this_seed = (constr_pos - constr_neg) / two_eps;
+
+        const auto& columns_in_this_seed = m_jacobian_seed_info[iseed];
+        for (const auto& ijaccol : columns_in_this_seed) {
+            for (const auto& ijacrow : m_jacobian_sparsity_cc[ijaccol]) {
+                std::pair<unsigned int, unsigned int> indices(ijacrow, ijaccol);
+                const auto& inonzero = m_jacobian_nonzero_indices[indices];
+                jacobian_values[inonzero] = deriv_this_seed[ijacrow];
+            }
+        }
+
+        /*
+        for (int i = 0; i < num_constraints(); ++i) {
+            jacobian_values[inonzero] = jacobian_column[i];
+            ++inonzero;
+        }
+         */
+    }
+
 }
 
 void OptimizationProblem<double>::Proxy::

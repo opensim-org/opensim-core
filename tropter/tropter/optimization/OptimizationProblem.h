@@ -4,6 +4,7 @@
 #include <tropter/common.h>
 #include "AbstractOptimizationProblem.h"
 #include <memory>
+#include <map>
 
 namespace tropter {
 
@@ -180,6 +181,22 @@ public:
             unsigned num_nonzeros, double* nonzeros) const override;
 private:
     const OptimizationProblem<double>& m_problem;
+
+    mutable Eigen::MatrixXd m_jacobian_seed;
+    using UnsignedInt2DPtr =
+            std::unique_ptr<unsigned*[], std::function<void(unsigned**)>>;
+    mutable UnsignedInt2DPtr m_jacobian_pattern_ADOLC_format;
+    mutable std::vector<std::vector<unsigned int>> m_jacobian_seed_info;
+    mutable std::vector<std::vector<unsigned int>> m_jacobian_sparsity_cc;
+    mutable std::map<std::pair<unsigned, unsigned>, unsigned>
+            m_jacobian_nonzero_indices;
+    /*
+    const auto& columns_in_this_seed = m_jacobian_seed_info[iseed];
+    for (const auto& ijaccol : columns_in_this_seed) {
+        for (const auto& ijacrow : m_jacobian_sparsity_cc[ijaccol]) {
+            std::pair<unsigned int, unsigned int> indices(ijacrow, ijaccol);
+            const auto& inonzero = m_jacobian_nonzero_indices[indices];
+            */
 };
 
 template<>
