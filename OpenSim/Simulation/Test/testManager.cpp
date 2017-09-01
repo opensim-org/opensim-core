@@ -106,16 +106,18 @@ void testStationCalcWithManager()
 
     // Hold the computed kinematics from OpenSim and Simbody
     SimTK::Vec3 lo, vo, ao, l, v, a;
-
-    state.setTime(0.0);
-    Manager manager(pendulum, state, integrator);
+    
+    Manager manager(pendulum, integrator);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
+    state.setTime(0.0);
+    manager.initialize(state);
 
     for (int i = 1; i <= n; ++i) {
         // Reuse the same Manager to integrate a state forward repeatedly.
         // This would previously cause issues with cache validation.
         manager.integrate(i*dt);
+        state = manager.getState();
 
         // realize to acceleration to access acceleration stage cache
         pendulum.realizeAcceleration(state);

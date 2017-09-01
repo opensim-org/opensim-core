@@ -50,23 +50,22 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-Manager::Manager(Model& model, SimTK::State& state) 
-        : Manager(model, state, true)
+Manager::Manager(Model& model) 
+        : Manager(model,  true)
 {
     _defaultInteg.reset(
             new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
     _integ = *_defaultInteg;
 }
 
-Manager::Manager(Model& model, SimTK::State& state, SimTK::Integrator& integ)
-        : Manager(model, state, true) {
+Manager::Manager(Model& model, SimTK::Integrator& integ)
+        : Manager(model, true) {
     setIntegrator(integ);
 }
 
 // Private constructor to handle common tasks of the two constructors above.
-Manager::Manager(Model& model, SimTK::State& state, bool dummyVar) :
+Manager::Manager(Model& model, bool dummyVar) :
        _model(&model),
-       _state(&state),
        _performAnalyses(true),
        _writeToStorage(true),
        _controllerSet(&model.updControllerSet())
@@ -631,10 +630,9 @@ integrate(double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
 
-    if (!_integ) {
-        throw Exception("Manager::integrate(): "
-            "Integrator has not been set. Construct the Manager "
-            "with an integrator, or call Manager::setIntegrator().");
+    if (_timeStepper == NULL) {
+        throw Exception("Manager::integrate(): Manager has not be "
+            "initialized. Call Manager::initialize() first.");
     }
 
     // CLEAR ANY INTERRUPT
@@ -642,7 +640,8 @@ integrate(double finalTime)
     clearHalt();
 
     // CHECK SPECIFIED DT STEPPING
-    double initialTime = _state->getTime();
+    SimTK::State s = _integ->getState();
+    double initialTime = s.getTime();
     if (_specifiedDT) {
         if (_tArray.getSize() <= 0) {
             string msg = "IntegRKF.integrate: ERR- specified dt stepping not";
@@ -669,30 +668,27 @@ integrate(double finalTime)
     bool fixedStep = false;
     if (_constantDT || _specifiedDT) fixedStep = true;
 
-    // Only initialize a TimeStepper if it hasn't been done yet
-    if (_timeStepper == NULL) initializeTimeStepper(*_state);
-
     SimTK::Integrator::SuccessfulStepStatus status;
 
     if (!fixedStep) {
         _integ->setReturnEveryInternalStep(true);
     }
 
-    _model->realizeVelocity(*_state);
-    initializeStorageAndAnalyses(*_state);
+    _model->realizeVelocity(s);
+    initializeStorageAndAnalyses(s);
 
     if (fixedStep) {
-        _model->realizeAcceleration(*_state);
+        _model->realizeAcceleration(s);
 
-        if (_performAnalyses) _model->updAnalysisSet().step(*_state, step);
+        if (_performAnalyses) _model->updAnalysisSet().step(s, step);
         if (_writeToStorage) {
             SimTK::Vector stateValues = 
-                _model->getStateVariableValues(*_state);
+                _model->getStateVariableValues(s);
             StateVector vec;
-            vec.setStates(_state->getTime(), stateValues);
+            vec.setStates(s.getTime(), stateValues);
             getStateStorage().append(vec);
             if (_model->isControlled())
-                _controllerSet->storeControls(*_state, step);
+                _controllerSet->storeControls(s, step);
         }
     }
 
@@ -736,13 +732,17 @@ integrate(double finalTime)
         if (checkHalt()) break;
     }
     finalize(_integ->updAdvancedState());
-    *_state = _integ->getState();
 
     // CLEAR ANY INTERRUPT
     clearHalt();
 
     return true;
 
+}
+
+SimTK::State Manager::getState()
+{
+    return _integ->getState();
 }
 
 /**
@@ -813,8 +813,14 @@ void Manager::initializeStorageAndAnalyses(SimTK::State& s)
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initializeTimeStepper(const SimTK::State& s)
+void Manager::initialize(const SimTK::State& s)
 {
+    if (!_integ) {
+        throw Exception("Manager::integrate(): "
+            "Integrator has not been set. Construct the Manager "
+            "with an integrator, or call Manager::setIntegrator().");
+    }
+
     _timeStepper.reset(
         new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
     _timeStepper->initialize(s);

@@ -77,8 +77,6 @@ private:
     std::string _sessionName;
     /** Model for which the simulation is performed. */
     Model* _model;
-    /** The State to be integrated. */
-    SimTK::State* _state;
 
     /** Integrator. */
     // This is the actual integrator that is used when integrate() is called.
@@ -139,12 +137,12 @@ private:
 public:
     /** This constructor cannot be used in MATLAB/Python, since the
      * SimTK::Integrator%s are not exposed in those languages. */
-    Manager(Model& model, SimTK::State& state, SimTK::Integrator& integ);
+    Manager(Model& model, SimTK::Integrator& integ);
     /** Constructor that takes a model only and internally uses a
      * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
      * constraint tolerance, etc.). MATLAB/Python users must use this
      * constructor. */
-    Manager(Model& model, SimTK::State& state);
+    Manager(Model& model);
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
@@ -223,6 +221,13 @@ public:
     // EXECUTION
     //--------------------------------------------------------------------------
     /**
+    * Initializes the Manager by creating and initializing the underlying 
+    * SimTK::TimeStepper. Subsequent changes to the State object passed in
+    * here will not affect the simulation.
+    */
+    void initialize(const SimTK::State& s);
+    
+    /**
     * Integrate the equations of motion for the specified model, given the current
     * state (at which the integration will start) and a finalTime. Make sure to
     * use SimTK::state::setTime(double) to specify a starting time before calling
@@ -249,6 +254,10 @@ public:
     *
     */
     bool integrate(double finalTime);
+
+    /** Get the Manager's State (the current State of the Integrator). */
+    SimTK::State getState();
+    
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
         Manager::integrate(SimTK::State&, double). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
@@ -273,7 +282,7 @@ public:
 private:
 
     // Handles common tasks of some of the other constructors.
-    Manager(Model& aModel, SimTK::State&, bool dummyVar);
+    Manager(Model& aModel, bool dummyVar);
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(SimTK::State& s);
