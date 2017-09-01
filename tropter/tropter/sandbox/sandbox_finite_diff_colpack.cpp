@@ -13,10 +13,13 @@ VectorXd constraints(const VectorXd& x) {
     VectorXd y(x.size());
     for (int i = 0; i < x.size(); ++i) {
         y[i] = x[i] * x[i];
-        if (i < x.size() - 3) {
-            y[i] += x[i + 1] * x[i + 1] + x[i + 2] * x[i + 2] + x[i + 3] *
-                    x[i + 3];
+        if (i < x.size() - 1) {
+            y[i] += x[i + 1] * x[i + 1];
         }
+        //if (i < x.size() - 3) {
+        //    y[i] += x[i + 1] * x[i + 1] + x[i + 2] * x[i + 2] + x[i + 3] *
+        //            x[i + 3];
+        //}
     }
     return y;
 }
@@ -62,8 +65,19 @@ public:
         m_num_nonzeros++;
     }
     // TODO use smart pointers to handle this memory.
-    unsigned int** convert_to_ADOLC_compressed_row_format() const {
-        unsigned int** pattern = new unsigned int*[m_num_rows];
+    std::unique_ptr<unsigned int*[], std::function<void(unsigned int**)>>
+    convert_to_ADOLC_compressed_row_format() const {
+        //unsigned int** pattern = new unsigned int*[m_num_rows];
+        const unsigned int num_rows = m_num_rows;
+        auto double_array_deleter = [num_rows](unsigned int** x) {
+            std::for_each(x, x + num_rows,
+                    std::default_delete<unsigned int[]>());
+            delete [] x;
+        };
+        using DoubleArrayUnsignedIntPtr =
+        std::unique_ptr<unsigned int*[], std::function<void(unsigned int**)>>;
+        DoubleArrayUnsignedIntPtr pattern(
+                new unsigned int*[m_num_rows], double_array_deleter);
         for (int i = 0; i < m_num_rows; ++i) {
             std::vector<unsigned int> col_indices_for_nonzeros_in_this_row;
             for (int inz = 0; inz < m_num_nonzeros; ++inz) {
@@ -106,6 +120,11 @@ public:
         }
         return pattern;
     }
+    unsigned int num_nonzeros() const { return m_num_nonzeros; }
+    const std::vector<unsigned int>& row_indices() const { return
+                m_row_indices; }
+    const std::vector<unsigned int>& col_indices() const { return
+                m_column_indices; }
 
 private:
     unsigned int m_num_rows;
@@ -196,8 +215,11 @@ void compute_jacobian(
     //    std::cout << std::endl;
     //}
     //std::cout << std::endl;
+    //std::unique_ptr<unsigned*[]> testing;
+    //std::cout << typeid(testing).name() << std::endl;
+    //std::cout << typeid(testing.get()).name() << std::endl;
     ColPack::BipartiteGraphPartialColoringInterface bgpci(SRC_MEM_ADOLC,
-            sparsity_cr, m, n);
+            sparsity_cr.get(), m, n);
     double** seed = nullptr;
     int seed_row_count;
     int seed_column_count;
@@ -235,11 +257,12 @@ void compute_jacobian(
         jacobian.col(icol) = (y1 - y0) / h;
     }
     std::cout << "jacobian " << std::endl;
-    //std::cout << jacobian << std::endl;
+    std::cout << jacobian << std::endl;
     std::cout << "duration for dense jac: " << double(clock() -
             dense_begin) / CLOCKS_PER_SEC << std::endl;
 
 
+    /*
     std::vector<std::vector<unsigned int>> seed_info(num_seeds);
     for (int iseed = 0; iseed < num_seeds; ++iseed) {
         for (int j = 0; j < n; ++j) {
@@ -252,17 +275,21 @@ void compute_jacobian(
     std::cout << "number of seeds " << num_seeds << std::endl;
     std::cout << "SPARSE JAC CALC " << std::endl;
     const auto sparsity_cc = sparsity.convert_to_compressed_column_format();
+    */
+
 
     clock_t sparse_begin = clock();
 
     std::vector<Eigen::Triplet<double>> jacobian_triplets;
+    Eigen::MatrixXd compressed_jacobian(m, num_seeds);
     for (int iseed = 0; iseed < num_seeds; ++iseed) {
         const VectorXd& direction = seed_mat.col(iseed);
 
         VectorXd p = eps * direction;
         VectorXd y1 = f(x + p);
-        VectorXd deriv = (y1 - y0) / eps;
+        compressed_jacobian.col(iseed) = (y1 - y0) / eps;
 
+        /*
         const auto& columns_in_this_seed = seed_info[iseed];
         for (const auto& ijaccol : columns_in_this_seed) {
 
@@ -272,12 +299,57 @@ void compute_jacobian(
                         {(int)ijacrow, (int)ijaccol, deriv[ijacrow]});
             }
         }
+         */
     }
+    double** compressed_jacobian_raw = new double*[m];
+    for (int i = 0; i < m; ++i) {
+        compressed_jacobian_raw[i] = new double[n];
+        // TODO replace with std::copy(compressed_jacobian.)
+        for (int j = 0; j < num_seeds; ++j) {
+            compressed_jacobian_raw[i][j] = compressed_jacobian(i, j);
+        }
+    }
+    std::cout << "compressed jac \n" << compressed_jacobian << std::endl;
+    ColPack::JacobianRecovery1D jacobian_recovery;
+    std::vector<unsigned int> jacobian_row_indices_recovered(
+            sparsity.num_nonzeros());
+    //std::unique_ptr<unsigned int[]> jacobian_row_indices_recovered(
+    //        new unsigned int[sparsity.num_nonzeros()]);
+    std::vector<unsigned int> jacobian_col_indices_recovered(
+            sparsity.num_nonzeros());
+    std::vector<double> jacobian_recovered(sparsity.num_nonzeros());
+    unsigned int* jricd = jacobian_row_indices_recovered.data();
+    unsigned int* jcicd = jacobian_col_indices_recovered.data();
+    double* jrd = jacobian_recovered.data();
+    //unsigned int* jricd = new unsigned int[sparsity.num_nonzeros()];
+    //unsigned int* jcicd = new unsigned int[sparsity.num_nonzeros()];
+    //double* jrd = new double[sparsity.num_nonzeros()];
+    //unsigned int** jricd = new unsigned int*;
+    //unsigned int** jcicd = new unsigned int*;
+    //double** jrd = new double*;
+    jacobian_recovery.RecoverD2Cln_CoordinateFormat_usermem(&bgpci,
+            compressed_jacobian_raw, sparsity_cr.get(),
+            &jricd, &jcicd, &jrd);
+    displayMatrix(compressed_jacobian_raw, m, num_seeds);
+    //displayVector(*jricd, bgpci.GetEdgeCount());
+    //displayVector(*jcicd, bgpci.GetEdgeCount());
+    //displayVector(*jrd, bgpci.GetEdgeCount());
+
+    for (int inz = 0; inz < sparsity.num_nonzeros(); ++inz) {
+        std::cout << sparsity.row_indices()[inz] << " " <<
+                jacobian_row_indices_recovered[inz] << " " <<
+                sparsity.col_indices()[inz] << " " <<
+                jacobian_col_indices_recovered[inz] << " " <<
+                jacobian_recovered[inz] << std::endl;
+    }
+
     std::cout << "duration for sparse jac: " << double(clock() -
             sparse_begin) / CLOCKS_PER_SEC << std::endl;
+    /*
     Eigen::SparseMatrix<double> jacobian_sparse(m, n);
     jacobian_sparse.setFromTriplets(jacobian_triplets.begin(),
             jacobian_triplets.end());
+    */
     //std::cout << "sparse jac\n" << jacobian_sparse << std::endl;
 
 }
@@ -288,9 +360,10 @@ int main() {
     for (int i = 0; i < n; ++i) {
         //x[i] = rand();
         //x[i] = i; //rand();
-        x[i] = 0.5 * double(i)+ 0.105; //rand();
+        x[i] = 0.5 * double(i) + 0.105; //rand();
     }
     VectorXd y = constraints(x);
+    std::cout << "y " << y << std::endl;
     //for (int i = 0; i < n; ++i) {
     //    std::cout << y[i] << std::endl;
     //}
@@ -307,7 +380,7 @@ int main() {
     //std::cout << "duration for sparse hess: " << double(clock() -
     //        hess_sparse_begin) / CLOCKS_PER_SEC << std::endl;
     //hessian_sparsity.print();
-    std::cout << compute_gradient(objective, x) << std::endl;
+    //std::cout << compute_gradient(objective, x) << std::endl;
 
     std::cout << "DEBUG END" << std::endl;
     return 0;
