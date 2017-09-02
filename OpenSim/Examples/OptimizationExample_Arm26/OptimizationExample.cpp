@@ -75,7 +75,8 @@ public:
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        manager.integrate(s, finalTime);
+        manager.initialize(s);
+        manager.integrate(finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
@@ -204,7 +205,8 @@ int main()
         // Integrate from initial time to final time.
         si.setTime(initialTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
-        manager.integrate(si, finalTime);
+        manager.initialize(si);
+        manager.integrate(finalTime);
 
         auto statesTable = manager.getStatesTable();
         STOFileAdapter_<double>::write(statesTable, 

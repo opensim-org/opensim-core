@@ -191,10 +191,11 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     integrator.setAccuracy(integ_accuracy);
     Manager manager(*osimModel, integrator);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     for (unsigned int i = 0; i < duration/interval; ++i)
     {
-        manager.integrate(osim_state, (i + 1)*interval);
+        manager.integrate((i + 1)*interval);
         double time = osim_state.getTime();
 
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
@@ -327,7 +328,8 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     integrator.setMaximumStepSize(100*integ_accuracy);
     Manager manager(*osimModel, integrator);
     osim_state.setTime(0.0);
-    manager.integrate(osim_state, duration);
+    manager.initialize(osim_state);
+    manager.integrate(duration);
 
     kin->printResults(prefix);
     reporter->printResults(prefix);
@@ -492,7 +494,8 @@ void testIntermediateFrames() {
         integrator.setAccuracy(integ_accuracy);
         Manager manager(model, integrator);
         state.setTime(0.0);
-        manager.integrate(state, 1.0);
+        manager.initialize(state);
+        manager.integrate(1.0);
 
         return state;
     };
