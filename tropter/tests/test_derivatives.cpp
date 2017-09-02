@@ -147,15 +147,14 @@ TEST_CASE("Check derivatives with analytical deriv.")
         // Jacobian.
         const auto num_jacobian_elem = problem.get_num_constraints() *
                 problem.get_num_variables();
-        std::cout << "ANALYTICAL " << analytical_gradient << std::endl;
         // The Jacobian is dense.
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
         proxy->jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, fd_jacobian_values.data());
-        WARN(analytical_jacobian);
-        WARN(fd_jacobian_values);
+        INFO(analytical_jacobian);
+        INFO(fd_jacobian_values);
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
             const auto& j = jacobian_col_indices[inz];
