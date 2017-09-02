@@ -140,7 +140,11 @@ sparsity(const Eigen::VectorXd& x,
             m_jacobian_compressed.get(), m_jacobian_pattern_ADOLC_format.get(),
             &jac_row_ptr, &jac_col_ptr, &jacobian_values_dummy_ptr);
 
-    // Allocate memory that is used in jacobian() as dummy variables.
+    // Allocate memory that is used in jacobian().
+    m_constr_pos.resize(num_constraints());
+    m_constr_neg.resize(num_constraints());
+    m_jacobian_compressed_column.resize(num_constraints());
+    // Used as dummy variables:
     m_jacobian_recovered_row_indices.resize(num_jacobian_nonzeros);
     m_jacobian_recovered_col_indices.resize(num_jacobian_nonzeros);
 
@@ -173,10 +177,10 @@ constraints(unsigned num_variables, const double* variables,
         unsigned num_constraints, double* constr) const
 {
     // TODO avoid copy.
-    const VectorXd xvec = Eigen::Map<const VectorXd>(variables, num_variables);
+    m_x_working = Eigen::Map<const VectorXd>(variables, num_variables);
     VectorXd constrvec(num_constraints); // TODO avoid copy.
     // TODO at least keep constrvec as working memory.
-    m_problem.constraints(xvec, constrvec);
+    m_problem.constraints(m_x_working, constrvec);
     // TODO avoid copy.
     std::copy(constrvec.data(), constrvec.data() + num_constraints, constr);
 }
@@ -185,8 +189,8 @@ void OptimizationProblem<double>::Proxy::
 gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
-    // TODO
-    VectorXd x_working = Eigen::Map<const VectorXd>(x, num_variables);
+    // TODO avoid copying.
+    m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
 
     // TODO use a better estimate for this step size.
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
@@ -196,12 +200,12 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     double obj_neg;
     for (Eigen::Index i = 0; i < num_variables; ++i) {
         // Perform a central difference.
-        x_working[i] += eps;
-        m_problem.objective(x_working, obj_pos);
-        x_working[i] = x[i] - eps;
-        m_problem.objective(x_working, obj_neg);
+        m_x_working[i] += eps;
+        m_problem.objective(m_x_working, obj_pos);
+        m_x_working[i] = x[i] - eps;
+        m_problem.objective(m_x_working, obj_neg);
         // Restore the original value.
-        x_working[i] = x[i];
+        m_x_working[i] = x[i];
         grad[i] = (obj_pos - obj_neg) / two_eps;
     }
 }
@@ -215,26 +219,25 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
     const double two_eps = 2 * eps;
     // Number of perturbation directions.
     const Eigen::Index num_seeds = m_jacobian_seed.cols();
-    VectorXd constr_pos(num_constraints()); // TODO avoid reallocating.
-    VectorXd constr_neg(num_constraints());
-    VectorXd deriv(num_constraints());
     Eigen::Map<const VectorXd> x0(variables, num_variables);
+
+    // TODO parallelize.
 
     // Compute the dense "compressed Jacobian" using the directions ColPack
     // told us to use.
     for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
         const auto direction = m_jacobian_seed.col(iseed);
         // Perturb x in the positive direction.
-        m_problem.constraints(x0 + eps * direction, constr_pos);
+        m_problem.constraints(x0 + eps * direction, m_constr_pos);
         // Perturb x in the negative direction.
-        m_problem.constraints(x0 - eps * direction, constr_neg);
+        m_problem.constraints(x0 - eps * direction, m_constr_neg);
         // Compute central difference.
-        deriv = (constr_pos - constr_neg) / two_eps;
+        m_jacobian_compressed_column = (m_constr_pos - m_constr_neg) / two_eps;
 
         // Store this column of the compressed Jacobian in the data structure
         // that ColPack will use.
         for (int i = 0; i < num_constraints(); ++i) {
-            m_jacobian_compressed[i][iseed] = deriv[i];
+            m_jacobian_compressed[i][iseed] = m_jacobian_compressed_column[i];
         }
     }
 
@@ -251,11 +254,11 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 }
 
 void OptimizationProblem<double>::Proxy::
-hessian_lagrangian(unsigned num_variables, const double* x,
-        bool /*new_x*/, double obj_factor,
-        unsigned num_constraints, const double* lambda,
+hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
+        bool /*new_x*/, double /*obj_factor*/,
+        unsigned /*num_constraints*/, const double* /*lambda*/,
         bool /*new_lambda TODO */,
-        unsigned /*num_nonzeros*/, double* hessian_values) const
+        unsigned /*num_nonzeros*/, double* /*hessian_values*/) const
 {
     // TODO
     throw std::runtime_error("Unimplemented.");

@@ -188,6 +188,12 @@ public:
 private:
     const OptimizationProblem<double>& m_problem;
 
+    // Working memory.
+    mutable Eigen::VectorXd m_x_working;
+    mutable Eigen::VectorXd m_constr_pos;
+    mutable Eigen::VectorXd m_constr_neg;
+    mutable Eigen::VectorXd m_jacobian_compressed_column;
+
     // ColPack objects for (a) determining the directions in which to perturb
     // the variables to compute the Jacobian and (b) recovering the sparse
     // Jacobian (to pass to the optimization solver) after computing finite
