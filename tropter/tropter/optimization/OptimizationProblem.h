@@ -6,6 +6,11 @@
 #include <memory>
 #include <map>
 
+namespace ColPack {
+class BipartiteGraphPartialColoringInterface;
+class JacobianRecovery1D;
+}
+
 namespace tropter {
 
 class OptimizationProblemProxy {
@@ -157,6 +162,7 @@ template<>
 class OptimizationProblem<double>::Proxy : public OptimizationProblemProxy {
 public:
     Proxy(const OptimizationProblem<double>& problem);
+    ~Proxy();
     void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
@@ -182,14 +188,20 @@ public:
 private:
     const OptimizationProblem<double>& m_problem;
 
+    mutable std::unique_ptr<ColPack::BipartiteGraphPartialColoringInterface>
+            m_jacobian_coloring;
+    mutable std::unique_ptr<ColPack::JacobianRecovery1D> m_jacobian_recovery;
     mutable Eigen::MatrixXd m_jacobian_seed;
     using UnsignedInt2DPtr =
             std::unique_ptr<unsigned*[], std::function<void(unsigned**)>>;
     mutable UnsignedInt2DPtr m_jacobian_pattern_ADOLC_format;
-    mutable std::vector<std::vector<unsigned int>> m_jacobian_seed_info;
-    mutable std::vector<std::vector<unsigned int>> m_jacobian_sparsity_cc;
-    mutable std::map<std::pair<unsigned, unsigned>, unsigned>
-            m_jacobian_nonzero_indices;
+    mutable std::vector<unsigned int> m_jacobian_recovered_row_indices;
+    mutable std::vector<unsigned int> m_jacobian_recovered_col_indices;
+    //mutable Double2DPtr m_jacobian_compressed; // working memory.
+    //mutable std::vector<std::vector<unsigned int>> m_jacobian_seed_info;
+    //mutable std::vector<std::vector<unsigned int>> m_jacobian_sparsity_cc;
+    //mutable std::map<std::pair<unsigned, unsigned>, unsigned>
+    //        m_jacobian_nonzero_indices;
     /*
     const auto& columns_in_this_seed = m_jacobian_seed_info[iseed];
     for (const auto& ijaccol : columns_in_this_seed) {

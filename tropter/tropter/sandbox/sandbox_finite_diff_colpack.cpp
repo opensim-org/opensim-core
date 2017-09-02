@@ -303,7 +303,7 @@ void compute_jacobian(
     }
     double** compressed_jacobian_raw = new double*[m];
     for (int i = 0; i < m; ++i) {
-        compressed_jacobian_raw[i] = new double[n];
+        compressed_jacobian_raw[i] = new double[num_seeds];
         // TODO replace with std::copy(compressed_jacobian.)
         for (int j = 0; j < num_seeds; ++j) {
             compressed_jacobian_raw[i][j] = compressed_jacobian(i, j);
