@@ -732,6 +732,7 @@ integrate(double finalTime)
         if (checkHalt()) break;
     }
     finalize(_integ->updAdvancedState());
+    *_state = _integ->getState();
 
     // CLEAR ANY INTERRUPT
     clearHalt();
@@ -813,14 +814,20 @@ void Manager::initializeStorageAndAnalyses(SimTK::State& s)
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initialize(const SimTK::State& s)
+void Manager::initialize(SimTK::State& s)
 {
     if (!_integ) {
-        throw Exception("Manager::integrate(): "
+        throw Exception("Manager::initialize(): "
             "Integrator has not been set. Construct the Manager "
             "with an integrator, or call Manager::setIntegrator().");
     }
 
+    if (!_timeStepper == NULL) {
+        throw Exception("Manager::initialize(): "
+            "Cannot initialize a Manager multiple times.");
+    }
+
+    _state = &s;
     _timeStepper.reset(
         new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
     _timeStepper->initialize(s);

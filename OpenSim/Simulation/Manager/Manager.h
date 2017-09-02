@@ -77,6 +77,8 @@ private:
     std::string _sessionName;
     /** Model for which the simulation is performed. */
     Model* _model;
+    /** Keep a pointer to the State passed in so we can update it. */
+    SimTK::State* _state;
 
     /** Integrator. */
     // This is the actual integrator that is used when integrate() is called.
@@ -225,7 +227,7 @@ public:
     * SimTK::TimeStepper. Subsequent changes to the State object passed in
     * here will not affect the simulation.
     */
-    void initialize(const SimTK::State& s);
+    void initialize(SimTK::State& s);
     
     /**
     * Integrate the equations of motion for the specified model, given the current
