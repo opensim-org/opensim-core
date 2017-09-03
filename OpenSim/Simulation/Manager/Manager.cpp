@@ -741,11 +741,6 @@ integrate(double finalTime)
 
 }
 
-SimTK::State Manager::getState()
-{
-    return _integ->getState();
-}
-
 /**
  * Integrate the equations of motion for the specified model.
  *

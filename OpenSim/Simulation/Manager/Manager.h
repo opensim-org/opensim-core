@@ -56,15 +56,15 @@ class ControllerSet;
  * using setIntegrator().
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
- * we only create a TimeStepper once, specifically at the first call to
- * integrate(SimTK::State&, double). To ensure this, the Manager will throw 
- * an exception if setModel() or setIntegrator() is called after 
- * integrate(SimTK::State&, double) has been called at least once.
+ * we only create a TimeStepper once, specifically when we call
+ * initialize(SimTK::State&). To ensure this, the Manager will throw
+ * an exception if initialize(SimTK::State&) is called more than once. Note 
+ * that any subsequent changes to the SimTK::State passed into 
+ * initialize(SimTK::State&) will not affect the simulation.
  *
- * Since the call to integrate(SimTK::State&, double) takes the state as an 
- * argument, it is up to the caller to ensure that the state is a legal state 
- * if the same Manager is used to integrate again. Integrating a different 
- * state for some new arbitrary system has undefined behavior.
+ * Note that this interface means that you cannot "reinitialize" a Manager.
+ * If you make changes to the SimTK::State, a new Manager must be created
+ * before integrating again.
  */
 class OSIMSIMULATION_API Manager
 {
@@ -224,23 +224,25 @@ public:
     //--------------------------------------------------------------------------
     /**
     * Initializes the Manager by creating and initializing the underlying 
-    * SimTK::TimeStepper. Subsequent changes to the State object passed in
-    * here will not affect the simulation.
+    * SimTK::TimeStepper. This must be called before calling 
+    * Manager::integrate() Subsequent changes to the State object passed in 
+    * here will not affect the simulation. Calling this function multiple 
+    * times with the same Manager will trigger an Exception.
     */
     void initialize(SimTK::State& s);
     
     /**
     * Integrate the equations of motion for the specified model, given the current
-    * state (at which the integration will start) and a finalTime. Make sure to
-    * use SimTK::state::setTime(double) to specify a starting time before calling
-    * this function.
+    * state (at which the integration will start) and a finalTime. You must call
+    * Manager::initialize(SimTK::State&) before calling this function.
     *
     * Example: Integrating from time = 1s to time = 2s
     * @code
     * SimTK::State state = model.initSystem();
     * Manager manager(model);
     * state.setTime(1.0);
-    * manager.integrate(state, 2.0);
+    * manager.initialize(state);
+    * manager.integrate(2.0);
     * @endcode
     *
     * Example: Integrate from time = 0s to time = 10s, in 2s increments
@@ -249,16 +251,14 @@ public:
     * finalTime = 10.0;
     * int n = int(round(finalTime/dTime));
     * state.setTime(0.0);
+    * manager.initialize(state);
     * for (int i = 1; i <= n; ++i) {
-    *     manager.integrate(state, i*dTime);
+    *     manager.integrate(i*dTime);
     * }
     * @endcode
     *
     */
     bool integrate(double finalTime);
-
-    /** Get the Manager's State (the current State of the Integrator). */
-    SimTK::State getState();
     
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
         Manager::integrate(SimTK::State&, double). */
