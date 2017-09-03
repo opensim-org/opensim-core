@@ -37,9 +37,9 @@ state = model.initSystem();
 % Run a fwd simulation using the manager
 state = model.initSystem();
 manager = Manager(model);
-manager.setInitialTime(0);
-manager.setFinalTime(2);
-manager.integrate(state);
+state.setTime(0);
+manager.initialize(state);
+manager.integrate(2);
 
 % Get the states table from the manager and print the results.
 sTable = manager.getStatesTable();
