@@ -74,7 +74,7 @@ class TestBasics(unittest.TestCase):
 
         manager = osim.Manager(model)
         state.setTime(0);
-		manager.initialize(state);
+        manager.initialize(state);
         manager.integrate(0.00001)
 
     def test_WrapObject(self):
