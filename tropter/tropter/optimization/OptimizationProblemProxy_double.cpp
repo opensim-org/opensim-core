@@ -16,7 +16,7 @@ OptimizationProblem<double>::Proxy::Proxy(
         OptimizationProblemProxy(problem), m_problem(problem) {}
 
 void OptimizationProblem<double>::Proxy::
-sparsity(const Eigen::VectorXd& x,
+sparsity(const Eigen::VectorXd& /*x*/,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         std::vector<unsigned int>& hessian_row_indices,
@@ -43,14 +43,14 @@ sparsity(const Eigen::VectorXd& x,
     // the Jacobian. The remaining elements are the column indices of those
     // nonzeros. The length of each row (the second dimension) is
     // num_nonzeros_in_the_row + 1.
-    std::vector<std::vector<unsigned int>> jacobian_sparsity_temp(num_vars);
+    std::vector<std::vector<unsigned int>> jacobian_sparsity_temp(num_jac_rows);
     size_t num_jacobian_nonzeros = 0;
-    for (int j = 0; j < num_variables(); ++j) {
+    for (int j = 0; j < (int)num_vars; ++j) {
         constr_working.setZero();
         x_working[j] = std::numeric_limits<double>::quiet_NaN();
         m_problem.constraints(x_working, constr_working);
         x_working[j] = 0;
-        for (int i = 0; i < num_constraints(); ++i) {
+        for (int i = 0; i < (int)num_jac_rows; ++i) {
             if (std::isnan(constr_working[i])) {
                 jacobian_sparsity_temp[i].push_back(j);
                 ++num_jacobian_nonzeros;
@@ -67,12 +67,12 @@ sparsity(const Eigen::VectorXd& x,
     };
     m_jacobian_pattern_ADOLC_format = UnsignedInt2DPtr(
             new unsigned*[num_jac_rows], unsigned_int_2d_deleter);
-    for (int i = 0; i < num_jac_rows; ++i) {
+    for (int i = 0; i < (int)num_jac_rows; ++i) {
         const auto& col_idx_for_nonzeros = jacobian_sparsity_temp[i];
         const auto num_nonzeros_this_row = col_idx_for_nonzeros.size();
         m_jacobian_pattern_ADOLC_format[i] =
                 new unsigned[num_nonzeros_this_row+1];
-        m_jacobian_pattern_ADOLC_format[i][0] = num_nonzeros_this_row;
+        m_jacobian_pattern_ADOLC_format[i][0] = (unsigned)num_nonzeros_this_row;
         std::copy(col_idx_for_nonzeros.begin(), col_idx_for_nonzeros.end(),
                 // Skip over the first element.
                 m_jacobian_pattern_ADOLC_format[i] + 1);
@@ -122,7 +122,7 @@ sparsity(const Eigen::VectorXd& x,
     };
     m_jacobian_compressed = Double2DPtr(new double*[num_jac_rows],
                                         double_2d_deleter);
-    for (int i = 0; i < num_jac_rows; ++i) {
+    for (int i = 0; i < (int)num_jac_rows; ++i) {
         // We don't actually care about the value of m_jacobian_compressed here;
         // no need to set values.
         m_jacobian_compressed[i] = new double[num_jacobian_seeds];
@@ -141,9 +141,9 @@ sparsity(const Eigen::VectorXd& x,
             &jac_row_ptr, &jac_col_ptr, &jacobian_values_dummy_ptr);
 
     // Allocate memory that is used in jacobian().
-    m_constr_pos.resize(num_constraints());
-    m_constr_neg.resize(num_constraints());
-    m_jacobian_compressed_column.resize(num_constraints());
+    m_constr_pos.resize(num_jac_rows);
+    m_constr_neg.resize(num_jac_rows);
+    m_jacobian_compressed_column.resize(num_jac_rows);
     // Used as dummy variables:
     m_jacobian_recovered_row_indices.resize(num_jacobian_nonzeros);
     m_jacobian_recovered_col_indices.resize(num_jacobian_nonzeros);
@@ -212,8 +212,11 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
 
 void OptimizationProblem<double>::Proxy::
 jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
-        unsigned num_nonzeros, double* jacobian_values) const
+        unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
+    // TODO give error message that sparsity() must be called first.
+
+
     // TODO scale by magnitude of x.
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
     const double two_eps = 2 * eps;
@@ -236,7 +239,7 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 
         // Store this column of the compressed Jacobian in the data structure
         // that ColPack will use.
-        for (int i = 0; i < num_constraints(); ++i) {
+        for (unsigned int i = 0; i < num_constraints(); ++i) {
             m_jacobian_compressed[i][iseed] = m_jacobian_compressed_column[i];
         }
     }
