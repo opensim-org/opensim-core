@@ -228,7 +228,7 @@ public:
     void constraints(
             const VectorX<T>& x, Eigen::Ref<VectorX<T>> constr) const override {
         const int m = this->get_num_constraints();
-        const int n = x.size();
+        const int n = (int)x.size();
         constr.setZero();
         // Sparsity pattern (and order of jacobian_values).
         // 0 . . .
@@ -253,7 +253,7 @@ public:
     void analytical_jacobian(const VectorXd& x,
             Eigen::Ref<MatrixXd> jacobian) {
         const int m = this->get_num_constraints();
-        const int n = x.size();
+        const int n = (int)x.size();
         assert(jacobian.rows() == m);
         assert(jacobian.cols() == n);
         jacobian.setZero();
@@ -273,13 +273,13 @@ public:
         assert(hessian.cols() == this->get_num_variables());
         // obj_factor * grad^2 f(x)
         hessian.setZero();
-        for (int i = 0; i < this->get_num_variables(); ++i) {
+        for (int i = 0; i < (int)this->get_num_variables(); ++i) {
             hessian(i, i) = obj_factor * 2;
         }
 
         // lambda_j * grad^2 g_j(x)
         const int m = this->get_num_constraints();
-        const int n = x.size();
+        const int n = (int)x.size();
         for (int i = 0; i < m; ++i) {
             for (int j = std::max(i - 1, 0); j < std::min(i + 1, n); ++j) {
                 hessian(j, j) += lambda[i] * 2;
