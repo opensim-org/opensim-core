@@ -817,16 +817,18 @@ void Manager::initialize(SimTK::State& s)
             "with an integrator, or call Manager::setIntegrator().");
     }
 
-    if (!_timeStepper == NULL) {
+    if (_timeStepper == NULL) {
+        _state = &s;
+        _timeStepper.reset(
+            new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
+        _timeStepper->initialize(s);
+        _timeStepper->setReportAllSignificantStates(true);
+    }
+
+    else {
         throw Exception("Manager::initialize(): "
             "Cannot initialize a Manager multiple times.");
     }
-
-    _state = &s;
-    _timeStepper.reset(
-        new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
-    _timeStepper->initialize(s);
-    _timeStepper->setReportAllSignificantStates(true);
 }
 
 //_____________________________________________________________________________
