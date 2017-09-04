@@ -22,6 +22,17 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
         app->Options()->SetIntegerValue("max_iter", m_max_iterations);
     }
     // TODO app->Options()->SetStringValue("derivative_test", "second-order");
+    if (!m_hessian_approximation.empty()) {
+        if (m_hessian_approximation != "exact"
+                && m_hessian_approximation != "limited-memory") {
+            throw std::runtime_error("[tropter] When using Ipopt, the "
+                    "'hessian_approximation' setting must be either "
+                    "'exact' or 'limited-memory', but '" +
+                    m_hessian_approximation + "' was provided.");
+        }
+        app->Options()->SetStringValue("hessian_approximation",
+                m_hessian_approximation);
+    }
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
@@ -147,8 +158,6 @@ bool IpoptSolver::TNLP::get_starting_point(
     assert(init_z == false);
     assert(init_lambda == false);
     assert((unsigned)num_constraints == m_num_constraints);
-    // TODO change this interface so that the user specifies the initial
-    // guess at the time they request the optimization?
     for (Index ivar = 0; ivar < num_variables; ++ivar) {
         x[ivar] = m_initial_guess[ivar];
     }
@@ -159,27 +168,7 @@ bool IpoptSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool new_x,
         Number& obj_value) {
     assert((unsigned)num_variables == m_num_variables);
-    //std::vector<adouble> x_adouble(num_variables);
-    //// TODO efficiently store this result so it can be used in grad_f, etc.
-    //for (Index i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    //adouble f = 0;
-    //// TODO objective() could be templatized... so that we could use finite
-    //// difference if necessary.
-    //m_problem.objective(x_adouble, f);
-    //obj_value = f.value();
-    //short int tag = 1;
-    //if (new_x) {
-    //    obj_value = trace_objective(tag, num_variables, x);
-    //    // TODO is this caching okay? threadsafe??
-    //    m_cached_obj_value = obj_value;
-    //} else {
-    //    obj_value = m_cached_obj_value;
-    //obj_value = trace_objective(m_objective_tag, num_variables, x);
-
-    // TODO this copy is disgusting:
-    // TODO Eigen::Map<VectorXd> x_eigen(x, num_variables);
     m_problem->objective(num_variables, x, new_x, obj_value);
-
     return true;
 }
 
@@ -230,8 +219,6 @@ bool IpoptSolver::TNLP::eval_h(
         Index* iRow, Index *jCol, Number* values) {
     assert((unsigned)num_nonzeros_hessian == m_hessian_num_nonzeros);
     if (values == nullptr) {
-        // TODO use ADOLC to determine sparsity pattern; hess_pat
-        // TODO
         for (Index inz = 0; inz < num_nonzeros_hessian; ++inz) {
             iRow[inz] = m_hessian_row_indices[inz];
             jCol[inz] = m_hessian_col_indices[inz];
@@ -244,90 +231,6 @@ bool IpoptSolver::TNLP::eval_h(
     m_problem->hessian_lagrangian(num_variables, x, new_x, obj_factor,
                                   num_constraints, lambda, new_lambda,
                                   num_nonzeros_hessian, values);
-
-    return true;
-
-//    // TODO this hessian must include the constraint portion!!!
-//    // TODO if not new_x, then do NOT re-eval objective()!!!
-//
-//    // TODO remove from here and utilize new_x.
-//    // TODO or can I reuse the tape?
-//    short int tag = 0;
-//    // -----------------------------------------------------------------
-//    // START ACTIVE
-//    trace_on(tag);
-//    VectorXa x_adouble(num_variables);
-//    VectorXd lambda_vector(num_constraints);
-//    adouble lagrangian_adouble;
-//    double lagr;
-//    for (Index ivar = 0; ivar < num_variables; ++ivar) {
-//        // TODO add this operator for std::vector.
-//        x_adouble[ivar] <<= x[ivar];
-//    }
-//    for (Index icon = 0; icon < num_constraints; ++icon) {
-//        lambda_vector[icon] = lambda[icon];
-//    }
-//    lagrangian(obj_factor, x_adouble, lambda_vector, lagrangian_adouble);
-//    lagrangian_adouble >>= lagr;
-//    trace_off();
-//    // END ACTIVE
-//    // -----------------------------------------------------------------
-//    // TODO efficiently use the "repeat" argument.
-//    int repeated_call = 0;
-//    int options[2];
-//    options[0] = 0; /* test the computational graph control flow? TODO*/
-//    options[1] = 0; /* way of recovery TODO */
-//    // TODO make general:
-//    unsigned int* row_indices = NULL;
-//    unsigned int* col_indices = NULL;
-//    // TODO hope that the row indices are the same between IpOopt and
-//    // ADOL-C.
-//    double* vals = NULL;
-//    int num_nonzeros;
-//    // TODO compute sparse hessian for each element of the constraint
-//    // vector....TODO trace with respect to both x and lambda..
-//    // http://list.coin-or.org/pipermail/adol-c/2013-April/000900.html
-//    // TODO "since lambda changes, the Lagrangian function has to be
-//    // repated every time ...cannot set repeat = 1"
-//    // The following link suggests more efficient methods:
-//    // http://list.coin-or.org/pipermail/adol-c/2013-April/000903.html
-//    // Quote:
-//    // We made the experience that it really depends on the application
-//    // whether
-//    //
-//    // * tracing the Lagrangian once with x and lambda as inputs
-//    //    and evaluating only a part of the Hessian reusing the trace
-//    //       in all iterations
-//    //
-//    // or
-//    //
-//    // *  retracing the Lagrangian with x as adoubles and lambda as doubles
-//    // in each iteration and computing then the whole Hessian
-//    //
-//    // performs better in terms of runtime. You could give both approaches
-//    // a try and see what works better for you. Both approaches have their
-//    // pros and cons with respect to efficiency.
-//    //
-//
-//    //std::vector<double> x_and_lambda(num_variables + num_constraints);
-//    //for (unsigned ivar = 0; ivar < num_variables; ++ivar) {
-//    //    x_and_lambda[ivar] = x[ivar];
-//    //}
-//    //for (unsigned icon = 0; icon < num_constraints; ++icon) {
-//    //    x_and_lambda[icon + num_variables] = lambda[icon];
-//    //}
-//    int success = sparse_hess(tag, num_variables, repeated_call,
-//            x, &num_nonzeros, &row_indices, &col_indices,
-//            &vals, options);
-//    assert(success);
-//    for (int i = 0; i < num_nonzeros; ++i) {
-//        values[i] = vals[i];
-//    }
-//    // TODO try to use modern memory management.
-//    delete [] row_indices;
-//    delete [] col_indices;
-//    // TODO avoid reallocating vals each time!!!
-//    delete [] vals;
 
     return true;
 }

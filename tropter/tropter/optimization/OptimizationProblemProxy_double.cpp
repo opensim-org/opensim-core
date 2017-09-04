@@ -216,7 +216,6 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 {
     // TODO give error message that sparsity() must be called first.
 
-
     // TODO scale by magnitude of x.
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
     const double two_eps = 2 * eps;

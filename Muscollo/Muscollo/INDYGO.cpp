@@ -782,6 +782,9 @@ INDYGO::Solution INDYGO::solve() const {
     ocp->print_description();
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
                                                   num_mesh_points);
+    // TODO Consider trying using the quasi-Newton mode; it seems to work
+    // well for some problems but not well for larger problems.
+    // dircol.optimization_solver().set_hessian_approximation("limited-memory");
     std::cout << std::string(79, '=') << std::endl;
     std::cout << "Running the Muscle Redundancy Solver." << std::endl;
     std::cout << std::string(79, '-') << std::endl;
