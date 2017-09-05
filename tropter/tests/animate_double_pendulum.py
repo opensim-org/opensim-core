@@ -11,13 +11,13 @@ if len(sys.argv) != 2:
 
 data_filepath = sys.argv[1]
 
-data = np.genfromtxt(data_filepath, names=True, delimiter=',')
+data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
 
 fig, ax = plt.subplots()
 
 # time = data['time']
-q0 = data['state0']
-q1 = data['state1']
+q0 = data['q0']
+q1 = data['q1']
 x0 = np.cos(q0)
 y0 = np.sin(q0)
 x1 = x0 + np.cos(q0 + q1)

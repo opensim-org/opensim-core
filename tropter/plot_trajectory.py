@@ -21,6 +21,7 @@ data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
 
 names = data.dtype.names[1:]
 
+# If headers have a common prefix, remove it (to avoid very long plot titles).
 name_prefix = os.path.commonprefix(names)
 plot_names = list()
 for i, name in enumerate(names):

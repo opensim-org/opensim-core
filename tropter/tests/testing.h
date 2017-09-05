@@ -11,6 +11,7 @@ do {                                                                         \
     REQUIRE(actual.cols() == expected.cols());                               \
     for (int ir = 0; ir < actual.rows(); ++ir) {                             \
         for (int ic = 0; ic < actual.cols(); ++ic) {                         \
+            INFO("Checking row " << ir << " column " << ic << ".");          \
             REQUIRE(Approx(actual(ir, ic)).epsilon(abs_error_tolerance)      \
                     == expected(ir, ic));                                    \
         }                                                                    \

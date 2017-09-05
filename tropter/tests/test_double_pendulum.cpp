@@ -1,6 +1,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
+#include "testing.h"
 
 #include <tropter/tropter.h>
 
@@ -15,6 +16,9 @@ using Eigen::Matrix2d;
 
 using namespace tropter;
 
+/// This class template defines the dynamics of a double pendulum. To create
+/// an actual optimal control problem, one must derive from this class
+/// template and define boundary conditions, cost terms, etc.
 template<typename T>
 class DoublePendulum : public tropter::OptimalControlProblemNamed<T> {
 public:
@@ -55,25 +59,25 @@ public:
     }
 };
 
+/// The optimal solution for a double pendulum to swing from horizontal to
+/// vertical (up) in minimum time is for the links to fall down first and
+/// for the first link to rotate clockwise. The second link flips around +360
+/// degrees to reach the Cartesian coordinates (0, 2).
 template<typename T>
-class DoublePendulumHorizontalVertical : public DoublePendulum<T> {
+class DoublePendulumSwingUpMinTime : public DoublePendulum<T> {
 public:
-    DoublePendulumHorizontalVertical()
+    DoublePendulumSwingUpMinTime()
     {
-        this->set_time(0, 2); //{0, 5});
+        this->set_time(0, {0, 5}); //{0, 5});
         // TODO fix allowing final bounds to be unconstrained.
         this->add_state("q0", {-10, 10}, {0});
         this->add_state("q1", {-10, 10}, {0});
-        this->add_state("u0", {-20, 20}, {0}, {0});
-        this->add_state("u1", {-20, 20}, {0}, {0});
-        this->add_control("tau0", {-200, 200});
-        this->add_control("tau1", {-200, 200});
+        this->add_state("u0", {-50, 50}, {0}, {0});
+        this->add_state("u1", {-50, 50}, {0}, {0});
+        this->add_control("tau0", {-50, 50});
+        this->add_control("tau1", {-50, 50});
     }
-    //void terminal_cost(const double& final_time, const VectorX<T>&
-    // final_states, const VectorX<T>& final_controls, T& cost)
-    // TODO want to take const T& final_time.
-    void endpoint_cost(const T& /*final_time*/,
-            const VectorX<T>& final_states,
+    void endpoint_cost(const T& final_time, const VectorX<T>& final_states,
             T& cost) const override
     {
         // TODO a final state constraint probably makes more sense.
@@ -84,26 +88,51 @@ public:
         Vector2<T> actual_location(L0 * cos(q0) + L1 * cos(q0 + q1),
                                    L0 * sin(q0) + L1 * sin(q0 + q1));
         const Vector2<T> desired_location(0, 2);
-        cost = 10.0 * (actual_location - desired_location).squaredNorm();
-        // cost = final_time;
-    }
-    void integral_cost(const T& /*time*/,
-            const VectorX<T>& /*states*/,
-            const VectorX<T>& controls,
-            T& integrand) const override
-    {
-        // TODO different penalties for tau0 vs. tau1.
-        integrand = 0.001 * controls.squaredNorm();
+        cost = 1000.0 * (actual_location - desired_location).squaredNorm() +
+                0.001 * final_time;
     }
 };
 
-#if defined(MUSCOLLO_WITH_SNOPT)
-TEST_CASE("Double pendulum horizontal to vertical", "[adolc][trapezoidal]")
+TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 {
-    auto ocp = std::make_shared<DoublePendulumHorizontalVertical<adouble>>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", 100);
-    OptimalControlSolution solution = dircol.solve();
-    solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
+    SECTION("Ipopt") {
+        auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<adouble>>();
+        const int N = 100;
+        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
+        dircol.optimization_solver().set_hessian_approximation(
+                "limited-memory");
+        tropter::OptimalControlIterate guess;
+        guess.time.setLinSpaced(N, 0, 1);
+        const double pi = 3.14159;
+        // Give a hint (not the exact final state, but something close to it).
+        // I tried giving a guess where the final state guess was from the
+        // solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
+        // solution was all zeros.
+        ocp->set_state_guess(guess, "q0",
+                Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
+        ocp->set_state_guess(guess, "q1",
+                Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
+        ocp->set_state_guess(guess, "u0", Eigen::RowVectorXd::Zero(N));
+        ocp->set_state_guess(guess, "u1", Eigen::RowVectorXd::Zero(N));
+        ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
+        ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
+        OptimalControlSolution solution = dircol.solve(guess);
+        solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
+        // Check the final state.
+        INFO(solution.states);
+        TROPTER_REQUIRE_EIGEN(solution.states.rightCols<1>(),
+                Eigen::Vector4d(-3./2.*pi, 2*pi, 0, 0), 1e-3);
+
+    }
+    #if defined(MUSCOLLO_WITH_SNOPT)
+    SECTION("SNOPT") {
+        auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<adouble>>();
+        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt",
+                100);
+        OptimalControlSolution solution = dircol.solve();
+        solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
+    }
+    #endif
 }
-#endif
+
 
