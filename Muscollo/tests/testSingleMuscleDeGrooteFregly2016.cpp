@@ -266,7 +266,9 @@ solveForTrajectoryINDYGO() {
     auto ocp = std::make_shared<DeGrooteFregly2016MuscleLiftMinTimeDynamic>();
     ocp->print_description();
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
-                                                  "ipopt", 100);
+                                                     "ipopt", 100);
+    // The quasi-Newton method gives a pretty good speedup for this problem.
+    dircol.optimization_solver().set_hessian_approximation("limited-memory");
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
             "testSingleMuscleDeGrooteFregly2016_INDYGO_trajectory.csv";

@@ -5,6 +5,7 @@ add_library(tropter
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.hpp
         optimization/OptimizationProblem.cpp
+        optimization/OptimizationProblemProxy_double.cpp
         optimization/OptimizationProblemProxy_adouble.cpp
         optimization/OptimizationSolver.h
         optimization/OptimizationSolver.cpp
@@ -28,11 +29,18 @@ add_library(tropter
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
 target_link_libraries(tropter Eigen3::Eigen) # This takes care of includes.
-target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
+
+target_include_directories(tropter SYSTEM PUBLIC ${COLPACK_INCLUDE_DIR})
+target_link_libraries(tropter ${COLPACK_LIBRARIES})
+
 # This line was from when we used pkg-config to find ADOL-C.
 #target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
-target_link_libraries(tropter ${IPOPT_LIBRARIES} ${ADOLC_LIBRARIES})
+target_link_libraries(tropter ${ADOLC_LIBRARIES})
+
+target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
+target_link_libraries(tropter ${IPOPT_LIBRARIES})
+
 if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
 endif()
@@ -57,7 +65,7 @@ target_include_directories(tropter PUBLIC
 set_target_properties(tropter PROPERTIES FOLDER "tropter")
 
 if(WIN32)
-    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 
 install(TARGETS tropter EXPORT tropter-config

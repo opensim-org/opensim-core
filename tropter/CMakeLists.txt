@@ -54,15 +54,18 @@ find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 #link_directories(${IPOPT_LIBRARY_DIRS})
 #link_directories(${ADOLC_LIBRARY_DIRS})
 
+find_package(ColPack REQUIRED)
+tropter_copy_dlls(ColPack "${COLPACK_DIR}/bin")
+
+find_package(ADOLC REQUIRED)
+tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
+
 find_package(IPOPT REQUIRED)
 # Flags to use when building a shared library.
 # TODO move these flags to a specific target.
 set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
 tropter_copy_dlls(IPOPT "${IPOPT_DIR}/bin")
-
-find_package(ADOLC REQUIRED)
-tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
 
 # OpenMP allows parallelization (of evaluating dynaimcs and path constraints
 # across tropter points) and is usually a feature of a compiler. It's fine if the

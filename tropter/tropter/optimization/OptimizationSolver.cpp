@@ -24,6 +24,16 @@ void OptimizationSolver::set_max_iterations(int max_iterations)
     m_max_iterations = max_iterations;
 }
 
+const std::string& OptimizationSolver::get_hessian_approximation() const
+{
+    return m_hessian_approximation;
+}
+void OptimizationSolver::set_hessian_approximation(
+        const std::string& setting)
+{
+    m_hessian_approximation = setting;
+}
+
 double OptimizationSolver::optimize(Eigen::VectorXd& variables) const
 {
     // If the user did not provide an initial guess, then we choose

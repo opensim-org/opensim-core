@@ -4,6 +4,12 @@
 #include <tropter/common.h>
 #include "AbstractOptimizationProblem.h"
 #include <memory>
+#include <map>
+
+namespace ColPack {
+class BipartiteGraphPartialColoringInterface;
+class JacobianRecovery1D;
+}
 
 namespace tropter {
 
@@ -153,6 +159,80 @@ class OptimizationProblem<T>::Proxy : public OptimizationProblemProxy {
 };
 
 template<>
+class OptimizationProblem<double>::Proxy : public OptimizationProblemProxy {
+public:
+    Proxy(const OptimizationProblem<double>& problem);
+    ~Proxy();
+    void sparsity(const Eigen::VectorXd& variables,
+            std::vector<unsigned int>& jacobian_row_indices,
+            std::vector<unsigned int>& jacobian_col_indices,
+            std::vector<unsigned int>& hessian_row_indices,
+            std::vector<unsigned int>& hessian_col_indices) const override;
+    void objective(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double& obj_value) const override;
+    void constraints(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_constraints, double* constr) const override;
+    void gradient(unsigned num_variables, const double* variables,
+            bool new_variables,
+            double* grad) const override;
+    void jacobian(unsigned num_variables, const double* variables,
+            bool new_variables,
+            unsigned num_nonzeros, double* nonzeros) const override;
+    void hessian_lagrangian(unsigned num_variables, const double* variables,
+            bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda,
+            bool new_lambda,
+            unsigned num_nonzeros, double* nonzeros) const override;
+private:
+    const OptimizationProblem<double>& m_problem;
+
+    // Working memory.
+    mutable Eigen::VectorXd m_x_working;
+    mutable Eigen::VectorXd m_constr_pos;
+    mutable Eigen::VectorXd m_constr_neg;
+    mutable Eigen::VectorXd m_jacobian_compressed_column;
+
+    // ColPack objects for (a) determining the directions in which to perturb
+    // the variables to compute the Jacobian and (b) recovering the sparse
+    // Jacobian (to pass to the optimization solver) after computing finite
+    // differences.
+    mutable std::unique_ptr<ColPack::BipartiteGraphPartialColoringInterface>
+            m_jacobian_coloring;
+    mutable std::unique_ptr<ColPack::JacobianRecovery1D> m_jacobian_recovery;
+
+    // This has dimensions num_variables x num_perturbation_directions. All
+    // entries are either 0 or 1, and each column is a direction in which we
+    // will perturb the variables. This matrix is computed for us by
+    // ColPack's graph coloring algorithms.
+    mutable Eigen::MatrixXd m_jacobian_seed;
+
+    // We determine the sparsity structure of the Jacobian (by propagating
+    // NaNs through the constraint function) and hold the result in this
+    // variable to pass to ColPack methods.
+    // We resort to using a unique_ptr with a custom deleter because ColPack
+    // requires that we provide the sparsity structure as two-dimensional C
+    // array.
+    using UnsignedInt2DPtr =
+            std::unique_ptr<unsigned*[], std::function<void(unsigned**)>>;
+    mutable UnsignedInt2DPtr m_jacobian_pattern_ADOLC_format;
+
+    // Working memory to hold onto the Jacobian finite differences to pass to
+    // ColPack.
+    // We resort to using a unique_ptr with a custom deleter because ColPack
+    // requires that we provide the data as a two-dimensional C array.
+    using Double2DPtr =
+            std::unique_ptr<double*[], std::function<void(double**)>>;
+    mutable Double2DPtr m_jacobian_compressed;
+
+    // These variables store the output of ColPack's recovery routine, but the
+    // values are not used.
+    mutable std::vector<unsigned int> m_jacobian_recovered_row_indices;
+    mutable std::vector<unsigned int> m_jacobian_recovered_col_indices;
+};
+
+template<>
 class OptimizationProblem<adouble>::Proxy : public OptimizationProblemProxy {
 public:
     Proxy(const OptimizationProblem<adouble>& problem);
@@ -194,6 +274,9 @@ private:
             double& lagrangian_value) const;
 
     const OptimizationProblem<adouble>& m_problem;
+
+    // ADOL-C
+    // ------
     // TODO if we want to be able to solve multiple problems at once, these
     // cannot be static. We could create a registry of tags, and the tags can
     // be "checked out" and "returned."
