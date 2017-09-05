@@ -18,9 +18,9 @@ class TestEditMarkers {
         Marker newMarker = new Marker();
         newMarker.setName(newMarkerName);
         newMarker.set_location(offset);
-        newMarker.setParentFrame(body);
+        newMarker.setParentFrameName(body.getName());
         context.cacheModelAndState();
-        markerset.adoptAndAppend(newMarker);
+        model.addMarker(newMarker);
         try {
             context.restoreStateFromCachedModel();
         } catch (IOException ex) {
@@ -29,7 +29,7 @@ class TestEditMarkers {
         // This exercises Marker -> delete
         context.cacheModelAndState();
         // we use getComponent to make sure Marker is accessible thru model traversal
-        Marker findMarker = Marker.safeDownCast(model.getComponent("newMarker"));
+        Marker findMarker = markerset.get(newMarkerName);
         assert (findMarker != null);
         markerset.remove(findMarker);
         try {
@@ -51,7 +51,7 @@ class TestEditMarkers {
         } catch (IOException ex) {
             System.exit(1);
         }
-        Marker findMarkerAdded = Marker.safeDownCast(model.getComponent(addedMarkerName));
+        Marker findMarkerAdded = markerset.get(addedMarkerName);
         assert(findMarkerAdded != null);
         System.exit(0);
     }
