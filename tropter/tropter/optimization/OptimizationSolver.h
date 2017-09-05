@@ -36,6 +36,8 @@ public:
     ///     After this function returns, `variables` contains the solution to
     ///     the optimization problem.
     /// @returns The value of the objective function evaluated at the solution.
+    // TODO return struct that contains info about the optimizer's return
+    // status.
     double optimize(Eigen::VectorXd& variables) const;
 protected:
     virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
