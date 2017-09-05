@@ -411,8 +411,9 @@ public:
      * variable values, but not discrete state variable values, modeling
      * option values, etc. Also, keep in mind that states Storage files usually
      * do not contain the state values to full precision, and thus cannot
-     * exactly reproduce results from the initial state trajectory; constraints
-     * may not be satisfied, etc.
+     * exactly reproduce results from the initial state trajectory. Lastly,
+     * this function modifies each state to obey any constraints in the model
+     * (by calling Model::assemble()).
      *
      * The states in the resulting trajectory will be realized to
      * SimTK::Stage::Instance. You should not use the resulting trajectory with
@@ -439,21 +440,15 @@ public:
      *      ignored.
      *
      * #### Usage
-     * You must have called Model::initSystem() on your model before calling
-     * this function.
      * Here is how you might use this function in python:
      * @code{.py}
      * import opensim
      * model = opensim.Model("subject01.osim")
-     * model.initSystem()
      * sto = opensim.Storage("subject01_states.sto")
      * states = opensim.StatesTrajectory.createFromStatesStorage(model, sto)
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
-     * 
-     * @throws ModelHasNoSystem Thrown if you have not yet called initSystem()
-     *      on the model.
      * 
      * @throws MissingColumnsInStatesStorage See the description of the
      *      `allowMissingColumns` argument.

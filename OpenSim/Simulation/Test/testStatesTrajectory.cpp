@@ -179,13 +179,14 @@ void testFromStatesStorageGivesCorrectStates() {
 
     Storage sto(statesStoFname);
 
-    // This will fail because we have not yet called initSystem() on the model.
-    SimTK_TEST_MUST_THROW_EXC(
-            StatesTrajectory::createFromStatesStorage(model, sto),
-            OpenSim::ModelHasNoSystem);
-
-    model.initSystem();
+    // It's important that we have not yet initialized the model,
+    // since `createFromStatesStorage()` should be able to work with such a
+    // model.
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+
+    // However, we eventually *do* need to call initSystem() to make use of the
+    // trajectory with the model.
+    model.initSystem();
 
     // Test that the states are correct, and also that the iterator works.
     // -------------------------------------------------------------------
@@ -399,7 +400,6 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 void testFromStatesStorageUniqueColumnLabels() {
 
     Model model("gait2354_simbody.osim");
-    model.initSystem();
     Storage sto(statesStoFname);
     
     // Edit column labels so that they are not unique.
@@ -439,8 +439,8 @@ void testFromStatesStoragePre40CorrectStates() {
     Storage sto(pre40StoFname);
     // So the test doesn't take so long.
     sto.resampleLinear(0.01);
-    model.initSystem();
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+    model.initSystem();
 
     // Test that the states are correct.
     // ---------------------------------
