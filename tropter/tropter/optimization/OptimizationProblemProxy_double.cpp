@@ -263,7 +263,10 @@ hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
         unsigned /*num_nonzeros*/, double* /*hessian_values*/) const
 {
     // TODO
-    throw std::runtime_error("Unimplemented.");
+    std::string msg =
+            "[tropter] Hessian not available with finite differences.";
+    std::cerr << msg << std::endl;
+    throw std::runtime_error(msg);
 }
 
 } // namespace tropter
