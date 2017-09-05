@@ -204,9 +204,7 @@ AddDependency(NAME       docopt
               GIT_TAG    af03fa044ee1eff20819549b534ea86829a24a54)
 
 AddDependency(NAME       opensim_core
-              URL https://github.com/opensim-org/opensim-core/archive/fix_cmake_DLL_copy_destination.zip
-#              GIT_URL    https://github.com/opensim-org/opensim-core.git
-#              GIT_TAG    fix_cmake_DLL_copy_destination # 8ff07f241ff5c811be06782e56d9d9b8ff8bf46d
+              URL        https://github.com/opensim-org/opensim-core/archive/67e378b387f0601ce32ab4606ce6aa4b250b4bc4.zip
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
