@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include "Force.h"
-#include <Vendors/lepton/include/lepton/ExpressionProgram.h>
+#include <lepton/ExpressionProgram.h>
 
 namespace OpenSim {
 

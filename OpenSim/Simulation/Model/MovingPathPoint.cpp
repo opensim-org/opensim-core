@@ -162,20 +162,48 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         SimTK::Xml::element_iterator zCoord = aNode.element_begin("z_coordinate");
 
         std::string xCoord_name(""), yCoord_name(""), zCoord_name("");
-        // If default constructed then elements not serialized since they are default
-        // values. Check that we have associated elements, then extract their values.
+        // If default constructed then elements not serialized since they are
+        // default values. Check that we have associated elements, then extract
+        // their values.
         if (xCoord != aNode.element_end())
             xCoord->getValueAs<std::string>(xCoord_name);
         if (yCoord != aNode.element_end())
             yCoord->getValueAs<std::string>(yCoord_name);
         if (zCoord != aNode.element_end())
             zCoord->getValueAs<std::string>(zCoord_name);
+
+        // Helper function to try creating relative paths to the coordinates.
+        auto createConnecteeName = [](SimTK::Xml::Element& elem, 
+                const std::string& coordName) -> std::string {
+            if (coordName.empty()) return coordName;
+            // As a backup, we will specify just the coordinate name as the
+            // connectee name...
+            std::string connectee_name = coordName;
+            // ...but if possible, we try to create a relative path from this
+            // PathPoint to the coordinate.
+            SimTK::Xml::Element coordElem = 
+                XMLDocument::findElementWithName(elem, coordName);
+            if (coordElem.isValid() && coordElem.hasParentElement()) {
+                // We found an Xml Element with the coordinate's name.
+                const auto jointElem = coordElem.getParentElement();
+                std::string jointName =
+                    jointElem.getOptionalAttributeValue("name");
+                // PathPoints in pre-4.0 models are necessarily 3 levels deep
+                // (model, muscle, geometry path), and Coordinates were
+                // necessarily 2 level deep: prepend "../../../<joint-name>/"
+                // to get the correct relative path.
+                if (!jointName.empty())
+                    connectee_name = "../../../" + jointName + "/" + coordName;
+            }
+            return connectee_name;
+        };
+        
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "x_coordinate", xCoord_name);
+            "x_coordinate", createConnecteeName(aNode, xCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "y_coordinate", yCoord_name);
+            "y_coordinate", createConnecteeName(aNode, yCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "z_coordinate", zCoord_name);
+            "z_coordinate", createConnecteeName(aNode, zCoord_name));
     }
 
     // Call base class now assuming _node has been corrected for current version

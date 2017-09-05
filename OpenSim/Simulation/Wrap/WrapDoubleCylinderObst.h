@@ -1,5 +1,5 @@
-#ifndef __WrapDoubleCylinderObst_h__
-#define __WrapDoubleCylinderObst_h__
+#ifndef OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
+#define OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  WrapDoubleCylinderObst.h                     *
  * -------------------------------------------------------------------------- *
@@ -77,8 +77,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
     // Name of body to which B cylinder is attached
     PropertyStr _wrapVcylHomeBodyNameProp;
     std::string& _wrapVcylHomeBodyName;
-    OpenSim::Body* _wrapVcylHomeBody;
-    OpenSim::Body* _wrapUcylHomeBody;
+    PhysicalFrame* _wrapVcylHomeBody;
+    PhysicalFrame* _wrapUcylHomeBody;
 
     PropertyDblArray _xyzBodyRotationVcylProp;
     Array<double>& _xyzBodyRotationVcyl;
@@ -119,7 +119,7 @@ public:
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     void scale(const SimTK::Vec3& aScaleFactors) override { }
-    virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
+    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
@@ -131,12 +131,12 @@ private:
 
 
 //=============================================================================
-};  // END of class WrapCylinder
+};  // END of class WrapDoubleCylinderObst
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
 
 

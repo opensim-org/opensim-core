@@ -18,6 +18,8 @@ include(CMakeParseArguments)
 #   paths). See OpenSim/Simulation/CMakeLists.txt for an example. If omitted,
 #   all the headers specified under INCLUDES are installed into the same
 #   directory in the installation tree.
+# INCLUDEINSTALLREL (optional): If INCLUDEDIRS is specified, remove
+#   "INCLUDEINSTALLREL" from the location of the installed headers.
 #
 # Here's an example from OpenSim/Common/CMakeLists.txt:
 #
@@ -35,7 +37,7 @@ function(OpenSimAddLibrary)
     # ----------------
     # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
     set(options VENDORLIB LOWERINCLUDEDIRNAME EXCLUDEFROMPYTHON)
-    set(oneValueArgs KIT AUTHORS)
+    set(oneValueArgs KIT AUTHORS INCLUDEINSTALLREL)
     set(multiValueArgs LINKLIBS INCLUDES SOURCES TESTDIRS INCLUDEDIRS)
     cmake_parse_arguments(
         OSIMADDLIB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -61,12 +63,22 @@ function(OpenSimAddLibrary)
     # Add the library.
     # ----------------
     # These next few lines are the most important:
-    # Specify the directories in OpenSim that contain header files.
-    include_directories(${OpenSim_SOURCE_DIR})
 
     # Create the library using the provided source and include files.
     add_library(${OSIMADDLIB_LIBRARY_NAME} SHARED
         ${OSIMADDLIB_SOURCES} ${OSIMADDLIB_INCLUDES})
+
+    target_include_directories(${OSIMADDLIB_LIBRARY_NAME} 
+        # Used when building this target:
+        PRIVATE "${OpenSim_SOURCE_DIR}"
+                "${OpenSim_SOURCE_DIR}/Vendors/lepton/include"
+        # Used by other targets in this project:
+        INTERFACE $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}>
+                  $<BUILD_INTERFACE:${OpenSim_SOURCE_DIR}/Vendors/lepton/include>
+        # Used by client projects using an installed OpenSim:
+        INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+                  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/OpenSim>
+        )
 
     # This target links to the libraries provided as arguments to this func.
     target_link_libraries(${OSIMADDLIB_LIBRARY_NAME} ${OSIMADDLIB_LINKLIBS})
@@ -111,12 +123,7 @@ function(OpenSimAddLibrary)
 
     # Install headers.
     # ----------------
-    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}")
-    if(OSIMADDLIB_VENDORLIB)
-        set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/Vendors)
-    else()
-        set(_INCLUDE_PREFIX ${_INCLUDE_PREFIX}/OpenSim)
-    endif()
+    set(_INCLUDE_PREFIX "${CMAKE_INSTALL_INCLUDEDIR}/OpenSim")
     if(OSIMADDLIB_LOWERINCLUDEDIRNAME)
         string(TOLOWER "${OSIMADDLIB_KIT}" OSIMADDLIB_LKIT)
         set(_INCLUDE_LIBNAME ${OSIMADDLIB_LKIT})
@@ -126,8 +133,16 @@ function(OpenSimAddLibrary)
     if(OSIMADDLIB_INCLUDEDIRS)
         foreach(dir ${OSIMADDLIB_INCLUDEDIRS})
             file(GLOB HEADERS ${dir}/*.h) # returns full pathnames
+            if(OSIMADDLIB_INCLUDEINSTALLREL)
+                # Remove "INCLUDEINSTALLREL" from the installed location.
+                file(RELATIVE_PATH subdir
+                    "${CMAKE_CURRENT_SOURCE_DIR}${OSIMADDLIB_INCLUDEINSTALLREL}"
+                    "${CMAKE_CURRENT_SOURCE_DIR}${dir}")
+            else()
+                set(subdir ${dir})
+            endif()
             install(FILES ${HEADERS}
-                DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME}/${dir})
+                DESTINATION ${_INCLUDE_PREFIX}/${_INCLUDE_LIBNAME}/${subdir})
         endforeach(dir)
     else()
         install(FILES ${OSIMADDLIB_INCLUDES}
@@ -135,6 +150,7 @@ function(OpenSimAddLibrary)
     endif()
 
     # RPATH (so that libraries find library dependencies)
+    # ---------------------------------------------------
     if(${OPENSIM_USE_INSTALL_RPATH})
         if(APPLE)
             set(install_rpath "\@loader_path/")
@@ -219,8 +235,6 @@ function(OpenSimAddTests)
 
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
-            target_include_directories(${TEST_NAME}
-                PRIVATE ${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
@@ -265,7 +279,6 @@ function(OpenSimAddApplication)
         OSIMADDAPP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     
     # Build.
-    include_directories(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors)
     add_executable(${OSIMADDAPP_NAME} ${OSIMADDAPP_NAME}.cpp
                                       ${OSIMADDAPP_SOURCES})
     target_link_libraries(${OSIMADDAPP_NAME} osimTools)
@@ -340,15 +353,17 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             message(FATAL_ERROR "Zero DLLs found in directory "
                                 "${DEP_INSTALL_DIR}.")
         endif()
+        set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
             get_filename_component(DLL_NAME ${DLL} NAME)
-            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
-                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}.")
-            list(APPEND DLL_NAMES ${DLL_NAME})
+            list(APPEND DLLS_DEST "${DEST_DIR}/${DLL_NAME}")
+            add_custom_command(OUTPUT "${DEST_DIR}/${DLL_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
+                DEPENDS ${DLL}
+                COMMENT "Copying DLL from ${DEP_INSTALL_DIR}/${DLL_NAME} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLL_NAMES})
+        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
         set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
             PROJECT_LABEL "Copy ${DEP_NAME} DLLs")
         if(OPENSIM_COPY_DEPENDENCIES)
@@ -356,7 +371,6 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
         endif()
     endif()
 endfunction()
-
 
 # Discover the file dependencies for an invocation of swig, for use with the
 # DEPENDS field of an add_custom_command().

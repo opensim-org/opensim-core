@@ -5,9 +5,6 @@ file(GLOB TO_COMPILE "future*.cpp")
 
 # These executables are *not* tests.
 
-include_directories(${OpenSim_SOURCE_DIR}
-                    ${OpenSim_SOURCE_DIR}/Vendors)
-
 set(SANDBOX_FILES
     "futureOrientationInverseKinematics.osim"
     "futureOrientationInverseKinematics.trc"
@@ -31,7 +28,7 @@ endforeach()
 
 
 if(UNIX)
-    add_executable(ImuStreaming ImuStreaming.cpp)
+    add_executable(ImuStreaming EXCLUDE_FROM_ALL ImuStreaming.cpp)
     target_link_libraries(ImuStreaming osimCommon osimSimulation osimTools)
 endif()
 

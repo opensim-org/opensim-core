@@ -470,7 +470,7 @@ protected:
     /** Get number of columns. Implemented by derived classes.                */
     virtual size_t implementGetNumColumns() const    = 0;
     
-    /** Check if metadata for independent column is valid . Implemented by 
+    /** Check if metadata for independent column is valid. Implemented by 
     derived classes.                                                          */
     virtual void validateIndependentMetaData() const = 0;
 

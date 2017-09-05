@@ -13,10 +13,12 @@ v4.0 (in development)
 
 Converting from v3.x to v4.0
 -----------------------------
+- A significant difference between v3.3 and 4.0 is the naming of dependencies. Unique names were not enforced in 3.3, which led to undefined behavior. In 4.0, Component pathnames must be unique. That is a Component must be unique with respect to its peers. A Model named *model* cannot have multiple subcomponents with the name *toes* either as bodies or joints, because the pathname */model/toes* will not uniquely identify the Component. However, multiple *toes* bodies can be used as long as they are not subcomponents of the same Component. For example, a *device* Component with a *toes* Body will have no issues since this *toes* Body has a unique pathname, */model/device/toes*, which is unambiguous. One could also create a multi-legged model, where each leg is identical, with *hip* and *knee* joints and *upper* and *lower* bodies, but each being unique because each `Leg` Component that contains the leg subcomponents, is uniquely named like */model/leg1* and */model/leg4/* and thus all of their subcomponents are unique, e.g.: */model/leg1/knee* vs. */model/leg4/knee*.        
 - The Actuator class has been renamed to ScalarActuator (and `Actuator_` has been renamed to `Actuator`) (PR #126).
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
 - Markers are now ModelComponents (PR #188). Code is included for conversion on serialization/de-serialization.
+- MarkerSet::addMarker() was removed (PR #1898). Please use Model::addMarker() to add markers to your model.
 - `Body::getMassCenter` now returns a `Vec3` instead of taking a `Vec3` reference as an argument (commit cb0697d98).
 - The following virtual methods in ModelComponent have been moved:
   - connectToModel -> extendConnectToModel
@@ -86,7 +88,8 @@ a parent Component are accessible this way. The Model's typed %Sets and `add####
 are no longer necessary to compose a Model, since any Component can now be composed of
 components. `Model` still supports `addd####()` methods and de/serialization of Sets,
 but components added via `addComponent` are NOT included in the Sets but contained
-in the Component's *components* property list. Details in PR#1014.
+in the Component's *components* property list. Details in PR#1014. **Note**, it is now
+strictly required that immediate subcomponents have unique names. For example, a Model cannot contain two bodies in its `BodySet` named *tibia* or a Body and a Joint named *toes*, since it is ambiguous as to which *tibia* `Body` or *toes* `Component` is being referenced.
 
 Bug Fixes
 ---------
@@ -97,6 +100,8 @@ Bug Fixes
 - Fixed a bug in the equilibrium solution of Millard and Thelen muscles, where the initial activation and fiber-length values (for solving for equilibrium) were always coming from the default values. This was unnecessary, because unless specified otherwise, the state automatically contains the default values. This fixes an issue where initial states activations from a file were not respected by the Forward Tool and instead, the initial activations would revert to the model defaults. (PR #272)
 - Fixed a bug where MuscleAnalysis was producing empty moment arm files. We now avoid creating empty Moment and MomentArm storage files when `_computeMoments` is False. (PR #324)
 - Fixed bug causing the muscle equilibrium solve routine in both Thelen2003Muscle and Millard2012EquilibriumMuscle to fail to converge and erroneously return the minimum fiber length. The fix added a proper reduction in step-size when errors increase and limiting the fiber-length to its minimum. (PR #1728)
+- Fixed a bug where Models with Bodies and Joints (and other component types) with the same name were loaded without error. Duplicately named Bodies were simply being ignored and only the first Body of that name in the BodySet was being used, for example, to connect a Body to its parent via its Joint, or to affix path points to its respective Body. Now, duplicate names are flagged and renamed so they are uniquely identified. (PR #1887)
+
 
 New Classes
 -----------
@@ -135,6 +140,7 @@ in Python.
 
 Other Changes
 -------------
+- Support for compiling the source code with Microsoft Visual Studio 2017.
 - There is now a formal CMake mechanism for using OpenSim in your own C++
   project. See cmake/SampleCMakeLists.txt. (PR #187)
 - Substantial cleanup of the internal CMake scripts.

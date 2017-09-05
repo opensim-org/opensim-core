@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 import os
+import sys
 
 from setuptools import setup
 
 # This provides the variable `__version__`.
-execfile('opensim/version.py')
+if sys.version_info[0] < 3:
+    execfile('opensim/version.py')
+else:
+    exec(compile(open('opensim/version.py').read(), 'opensim/version.py', 'exec'))
 
 setup(name='opensim',
       version=__version__,
@@ -23,6 +27,7 @@ setup(name='opensim',
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
           'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
           'Topic :: Scientific/Engineering :: Physics',
           ],
       )

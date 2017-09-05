@@ -965,7 +965,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
-    for (int i = 0; i < nstates; ++i) {
+    for (size_t i = 0; i < nstates; ++i) {
         s = statesTraj[i];
 
         // test a full sweep of default activations at each state
@@ -976,7 +976,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
             try {
                 muscle.computeEquilibrium(s);
             }
-            catch (const MuscleCannotEquilibrate& x) {
+            catch (const MuscleCannotEquilibrate&) {
                 // Write out the muscle equilibrium error as a function of
                 // fiber lengths.
                 if (const auto* thelen =

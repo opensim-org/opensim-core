@@ -237,21 +237,25 @@ void Mesh::extendFinalizeFromProperties() {
             std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
             return;   // Orphan Mesh not descendant of a model
         }
-        // Current interface to Visualizer calls generateDecorations on every frame.
-        // On first time through, load file and create DecorativeMeshFile and cache it
-        // so we don't load files from disk during live drawing/rendering.
+
+        // Current interface to Visualizer calls generateDecorations on every
+        // frame. On first time through, load file and create DecorativeMeshFile
+        // and cache it so we don't load files from disk during live rendering.
         const std::string& file = get_mesh_file();
+        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0)
+            return;  // Return immediately if no file has been specified.
+
         bool isAbsolutePath; string directory, fileName, extension;
         SimTK::Pathname::deconstructPathname(file,
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
             std::cout << "ModelVisualizer ignoring '" << file
-                << "'; only .vtp .stl and .obj files currently supported.\n";
+                << "'; only .vtp, .stl, and .obj files currently supported.\n";
             return;
         }
 
-        // File is a .vtp or .obj. See if we can find it.
+        // File is a .vtp, .stl, or .obj; attempt to find it.
         Array_<string> attempts;
         const Model& model = dynamic_cast<const Model&>(*rootModel);
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);

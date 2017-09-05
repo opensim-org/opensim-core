@@ -95,9 +95,8 @@ The layout of the distribution on macOS (and Linux) is as follows:
   - `bin/` opensim-cmd
   - `etc/OpenSim_buildinfo.txt` Describes the compiler used to build OpenSim.
   - `include/`
-    - `OpenSim/` OpenSim headers.
+    - `OpenSim/` OpenSim (and Lepton) headers.
     - `simbody/` Simbody headers.
-    - `Vendors/` Lepton headers.
   - `lib/` (on some Linux variants, `lib/<arch>/`) OpenSim, SimTK, and BTK  shared libraries.
     - `cmake/` OpenSimConfig.cmake, SimbodyConfig.cmake, etc.
     - `python2.7/site-packages/` OpenSim Python bindings.
