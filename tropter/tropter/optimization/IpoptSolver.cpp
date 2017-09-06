@@ -33,6 +33,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
         app->Options()->SetStringValue("hessian_approximation",
                 m_hessian_approximation);
     }
+    //app->Options()->SetStringValue("linear_solver", "ma97");
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
