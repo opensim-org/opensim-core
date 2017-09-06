@@ -62,9 +62,13 @@ public:
 
     // TODO use Eigen, not std::vector.
     // TODO must pass in the time.
+    // The initial values in `derivative` are arbitrary and cannot be assumed
+    // to be 0, etc. You must set entries to 0 explicitly if you want that.
     virtual void dynamics(const VectorX<T>& states,
                           const VectorX<T>& controls,
                           Eigen::Ref<VectorX<T>> derivative) const;
+    // The initial values in `constraints` are arbitrary and cannot be assumed
+    // to be 0, etc. You must set entries to 0 explicitly if you want that.
     virtual void path_constraints(unsigned index,
                                   const T& time,
                                   const VectorX<T>& states,
