@@ -257,6 +257,7 @@ private:
     Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
 
     // Working memory.
+    mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs;
     mutable MatrixX<T> m_path_constraints;
 };

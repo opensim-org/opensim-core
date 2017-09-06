@@ -208,6 +208,7 @@ void LowOrder<T>::set_ocproblem(
             0.5 * mesh_intervals;
 
     // Allocate working memory.
+    m_integrand.resize(m_num_mesh_points);
     m_derivs.resize(m_num_states, m_num_mesh_points);
     m_path_constraints.resize(m_num_path_constraints, m_num_mesh_points);
 
@@ -236,13 +237,12 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
 
     // Integral cost.
     // --------------
-    // TODO reuse memory; don't allocate every time.
-    VectorX<T> integrand = VectorX<T>::Zero(m_num_mesh_points);
+    m_integrand.setZero();
     // TODO parallelize.
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->integral_cost(time,
-                states.col(i_mesh), controls.col(i_mesh), integrand[i_mesh]);
+                states.col(i_mesh), controls.col(i_mesh), m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
     // Rectangle rule:
@@ -254,7 +254,7 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
     T integral_cost = 0;
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         integral_cost += m_trapezoidal_quadrature_coefficients[i_mesh] *
-                integrand[i_mesh];
+                m_integrand[i_mesh];
     }
     // The quadrature coefficients are fractions of the duration; multiply
     // by duration to get the correct units.
