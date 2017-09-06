@@ -88,8 +88,3 @@ install(TARGETS tropter EXPORT tropter-config
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${TROPTER_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h*")
-
-
-
-
-add_subdirectory(sandbox)

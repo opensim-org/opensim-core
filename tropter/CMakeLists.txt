@@ -99,6 +99,8 @@ add_subdirectory(tropter)
 
 add_subdirectory(tests)
 
+add_subdirectory(sandbox)
+
 
 # Allowing use of tropter in other libraries.
 # -------------------------------------------
