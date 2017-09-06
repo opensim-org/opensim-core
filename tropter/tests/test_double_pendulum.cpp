@@ -91,14 +91,11 @@ public:
         cost = 1000.0 * (actual_location - desired_location).squaredNorm() +
                 0.001 * final_time;
     }
-};
 
-TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
-{
-    SECTION("Ipopt") {
-        auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<adouble>>();
+    static void run_test(const std::string& solver) {
+        auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
-        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.optimization_solver().set_hessian_approximation(
                 "limited-memory");
         tropter::OptimalControlIterate guess;
@@ -118,19 +115,33 @@ TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
         ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
         OptimalControlSolution solution = dircol.solve(guess);
         solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
-        // Check the final state.
+        // Check the final states.
         INFO(solution.states);
         TROPTER_REQUIRE_EIGEN(solution.states.rightCols<1>(),
                 Eigen::Vector4d(-3./2.*pi, 2*pi, 0, 0), 1e-3);
+        // Check the initial and final controls (which are bang-bang).
+        TROPTER_REQUIRE_EIGEN(solution.controls.leftCols<1>(),
+                Eigen::Vector2d(-50, 50), 1e-2);
+        TROPTER_REQUIRE_EIGEN(solution.controls.rightCols<1>(),
+                Eigen::Vector2d(50, -50), 1e-2);
+    }
+};
 
+TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
+{
+    SECTION("Ipopt") {
+        SECTION("Finite differences") {
+            DoublePendulumSwingUpMinTime<double>::run_test("ipopt");
+        }
+        SECTION("ADOL-C") {
+            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt");
+        }
     }
     #if defined(MUSCOLLO_WITH_SNOPT)
     SECTION("SNOPT") {
-        auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<adouble>>();
-        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt",
-                100);
-        OptimalControlSolution solution = dircol.solve();
-        solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
+        SECTION("ADOL-C") {
+            DoublePendulumSwingUpMinTime<adouble>::run_test("snopt");
+        }
     }
     #endif
 }
