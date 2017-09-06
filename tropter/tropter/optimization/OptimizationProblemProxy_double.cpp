@@ -36,6 +36,22 @@ sparsity(const Eigen::VectorXd& /*x*/,
 {
     const auto num_vars = num_variables();
 
+    // Gradient.
+    // =========
+    // Determine the indicies of the variables used in the objective function
+    // (conservative estimate of the indicies of the gradient that are nonzero).
+    m_x_working = VectorXd::Zero(num_vars);
+    double obj_value;
+    for (int j = 0; j < (int)num_vars; ++j) {
+        obj_value = 0;
+        m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
+        m_problem.objective(m_x_working, obj_value);
+        m_x_working[j] = 0;
+        if (std::isnan(obj_value)) {
+            m_gradient_nonzero_indices.push_back(j);
+        }
+    }
+
     // Jacobian.
     // =========
     const auto num_jac_rows = num_constraints();
@@ -45,7 +61,7 @@ sparsity(const Eigen::VectorXd& /*x*/,
     // We do this by setting an element of x to NaN, and examining which
     // constraint equations end up as NaN (and therefore depend on that
     // element of x).
-    VectorXd x_working = VectorXd::Zero(num_vars);
+    m_x_working.setZero();
     VectorXd constr_working(num_jac_rows);
     // Initially, we store the sparsity structure in ADOL-C's compressed row
     // format, since this is what ColPack accepts.
@@ -59,9 +75,9 @@ sparsity(const Eigen::VectorXd& /*x*/,
     size_t num_jacobian_nonzeros = 0;
     for (int j = 0; j < (int)num_vars; ++j) {
         constr_working.setZero();
-        x_working[j] = std::numeric_limits<double>::quiet_NaN();
-        m_problem.constraints(x_working, constr_working);
-        x_working[j] = 0;
+        m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
+        m_problem.constraints(m_x_working, constr_working);
+        m_x_working[j] = 0;
         for (int i = 0; i < (int)num_jac_rows; ++i) {
             if (std::isnan(constr_working[i])) {
                 jacobian_sparsity_temp[i].push_back(j);
@@ -209,6 +225,10 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
     const double two_eps = 2 * eps;
 
+    // We only compute the entries that are nonzero, and we must make sure
+    // all other entries are 0.
+    std::fill(grad, grad + num_variables, 0);
+
     double obj_pos;
     double obj_neg;
     // TODO parallelize.
@@ -221,7 +241,7 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     //#pragma omp parallel for \
     //            firstprivate(m_x_working) \
     //            private(obj_pos, obj_neg)
-    for (Eigen::Index i = 0; i < num_variables; ++i) {
+    for (const auto& i : m_gradient_nonzero_indices) {
         // Perform a central difference.
         m_x_working[i] += eps;
         m_problem.objective(m_x_working, obj_pos);

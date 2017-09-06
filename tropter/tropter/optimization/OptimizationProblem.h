@@ -195,6 +195,15 @@ private:
     // TODO this could be a column vector unless we are using parallelization.
     mutable Eigen::MatrixXd m_jacobian_compressed_eigen;
 
+    // Gradient.
+    // ---------
+    // The indices of the variables used in the objective function
+    // (conservative estimate of the indicies of the gradient that are nonzero).
+    mutable std::vector<unsigned int> m_gradient_nonzero_indices;
+
+    // Jacobian.
+    // ---------
+
     // ColPack objects for (a) determining the directions in which to perturb
     // the variables to compute the Jacobian and (b) recovering the sparse
     // Jacobian (to pass to the optimization solver) after computing finite
