@@ -27,5 +27,3 @@ endif()
 
 install(TARGETS osimMuscollo DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-
-
