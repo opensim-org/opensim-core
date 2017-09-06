@@ -28,18 +28,30 @@ add_library(tropter
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
-target_link_libraries(tropter Eigen3::Eigen) # This takes care of includes.
+target_link_libraries(tropter PUBLIC Eigen3::Eigen)
+# This takes care of includes.
 
 target_include_directories(tropter SYSTEM PUBLIC ${COLPACK_INCLUDE_DIR})
-target_link_libraries(tropter ${COLPACK_LIBRARIES})
+target_link_libraries(tropter PUBLIC ${COLPACK_LIBRARIES})
 
 # This line was from when we used pkg-config to find ADOL-C.
 #target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
-target_link_libraries(tropter ${ADOLC_LIBRARIES})
+target_link_libraries(tropter PUBLIC ${ADOLC_LIBRARIES})
+
+if(OPENMP_FOUND)
+    target_compile_definitions(tropter PUBLIC TROPTER_WITH_OPENMP)
+    target_compile_options(tropter BEFORE PUBLIC
+            $<$<COMPILE_LANGUAGE:C>:${OpenMP_C_FLAGS}>
+            $<$<COMPILE_LANGUAGE:CXX>:${OpenMP_CXX_FLAGS}>)
+    if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        # Using LLVM Clang on Macs: having trouble finding the OpenMP library.
+        target_link_libraries(tropter PUBLIC iomp5)
+    endif()
+endif()
 
 target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
-target_link_libraries(tropter ${IPOPT_LIBRARIES})
+target_link_libraries(tropter PUBLIC ${IPOPT_LIBRARIES})
 
 if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
