@@ -58,8 +58,10 @@ createSTOFileAdapterForReading(const std::string& fileName) {
             }
         }
     }
-
-    OPENSIM_THROW(STODataTypeNotFound);
+    // The file does not seem to have a DataType field, and is therefore likely
+    // a version 1.0 STO file. These files only supported double as the column
+    // data type; try to read the file with type double.
+    return std::make_shared<STOFileAdapter_<double>>();
 }
 
 std::shared_ptr<DataAdapter>

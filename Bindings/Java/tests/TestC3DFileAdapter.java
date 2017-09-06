@@ -69,11 +69,11 @@ class TestC3DFileAdapter {
         StdVectorString units = forceTable.getDependentsMetaDataString("units");
         assert units.size() == 6;
         assert units.get(0).equals("N");
-        assert units.get(1).equals("Nmm");
-        assert units.get(2).equals("mm");
+        assert units.get(1).equals("mm");
+        assert units.get(2).equals("Nmm");
         assert units.get(3).equals("N");
-        assert units.get(4).equals("Nmm");
-        assert units.get(5).equals("mm");
+        assert units.get(4).equals("mm");
+        assert units.get(5).equals("Nmm");
             
 
         // Flatten forces data.

@@ -367,17 +367,28 @@ public:
         pd.setValue(6, array6);
     }
     //=================Vec3 Properties, treated as three Doubles ==================
-    static double getValueVec3(const AbstractProperty& p, int index) 
-    {   
+    static double getValueVec3(const AbstractProperty& p, int index)
+    {
         const Property<SimTK::Vec3>& pd = dynamic_cast<const Property<SimTK::Vec3>&>(p);
         const SimTK::Vec3& vec3 = pd.getValue();
-        return vec3[index]; 
+        return vec3[index];
     }
-    static void setValueVec3(double v, AbstractProperty& p, int index) 
-    {   
+    static void setValueVec3(double v, AbstractProperty& p, int index)
+    {
         Property<SimTK::Vec3>& pd = dynamic_cast<Property<SimTK::Vec3>&>(p);
         pd.updValue()[index] = v;
-     }
+    }
+    static double getValueVec6(const AbstractProperty& p, int index)
+    {
+        const Property<SimTK::Vec6>& pd = dynamic_cast<const Property<SimTK::Vec6>&>(p);
+        const SimTK::Vec6& vec6 = pd.getValue();
+        return vec6[index];
+    }
+    static void setValueVec6(double v, AbstractProperty& p, int index)
+    {
+        Property<SimTK::Vec6>& pd = dynamic_cast<Property<SimTK::Vec6>&>(p);
+        pd.updValue()[index] = v;
+    }
     // ================ String arrays ===================================================
     static OpenSim::Array<std::string> getValueStringArray(const AbstractProperty& p)
     {

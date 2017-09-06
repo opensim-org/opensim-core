@@ -197,7 +197,7 @@
 
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
-%template(ArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
+%template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
 %include <OpenSim/Simulation/MarkersReference.h>

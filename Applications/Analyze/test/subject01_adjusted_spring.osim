@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30513">
+<OpenSimDocument Version="30516">
 	<Model name="walk_subject01_ankle_spring">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
+			<!--The geometry used to display the axes of this Frame.-->
+			<FrameGeometry name="frame_geometry">
+				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+				<socket_frame_connectee_name>..</socket_frame_connectee_name>
+				<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+				<input_transform_connectee_name></input_transform_connectee_name>
+				<!--Scale factors in X, Y, Z directions respectively.-->
+				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+			</FrameGeometry>
 			<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 			<attached_geometry />
 			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
@@ -25,11 +34,22 @@
 		<BodySet>
 			<objects>
 				<Body name="pelvis">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="pelvis_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>pelvis</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -44,7 +64,9 @@
 						</Mesh>
 						<Mesh name="pelvis_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>pelvis</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -59,7 +81,9 @@
 						</Mesh>
 						<Mesh name="pelvis_geom_3">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>pelvis</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02458 1.02458 1.02458</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -86,11 +110,22 @@
 					<inertia>0.10423399999999999 0.088314699999999996 0.058707500000000003 0 0 0</inertia>
 				</Body>
 				<Body name="femur_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="femur_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>femur_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.14724 1.14724 1.14724</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -117,11 +152,22 @@
 					<inertia>0.17022100000000001 0.044621000000000001 0.17950099999999999 0 0 0</inertia>
 				</Body>
 				<Body name="tibia_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="tibia_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>tibia_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.98852300000000004 0.98852300000000004 0.98852300000000004</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -136,7 +182,9 @@
 						</Mesh>
 						<Mesh name="tibia_r_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>tibia_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.98852300000000004 0.98852300000000004 0.98852300000000004</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -163,11 +211,22 @@
 					<inertia>0.047569399999999998 0.0048135699999999997 0.048230099999999998 0 0 0</inertia>
 				</Body>
 				<Body name="talus_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="talus_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>talus_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.11398 1.11398 1.11398</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -194,11 +253,22 @@
 					<inertia>0.0011986099999999999 0.0011986099999999999 0.0011986099999999999 0 0 0</inertia>
 				</Body>
 				<Body name="calcn_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="calcn_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>calcn_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -225,11 +295,22 @@
 					<inertia>0.0014264600000000001 0.0039737100000000001 0.0041774899999999998 0 0 0</inertia>
 				</Body>
 				<Body name="toes_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="toes_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>toes_r</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -256,11 +337,22 @@
 					<inertia>0.00010189 0.00020378 0.00010189 0 0 0</inertia>
 				</Body>
 				<Body name="femur_l">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="femur_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>femur_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.14724 1.14724 1.14724</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -287,11 +379,22 @@
 					<inertia>0.17022100000000001 0.044621000000000001 0.17950099999999999 0 0 0</inertia>
 				</Body>
 				<Body name="tibia_l">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="tibia_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>tibia_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.98852300000000004 0.98852300000000004 0.98852300000000004</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -306,7 +409,9 @@
 						</Mesh>
 						<Mesh name="tibia_l_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>tibia_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>0.98852300000000004 0.98852300000000004 0.98852300000000004</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -333,11 +438,22 @@
 					<inertia>0.047569399999999998 0.0048135699999999997 0.048230099999999998 0 0 0</inertia>
 				</Body>
 				<Body name="talus_l">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="talus_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>talus_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.11398 1.11398 1.11398</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -364,11 +480,22 @@
 					<inertia>0.0011986099999999999 0.0011986099999999999 0.0011986099999999999 0 0 0</inertia>
 				</Body>
 				<Body name="calcn_l">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="calcn_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>calcn_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -395,11 +522,22 @@
 					<inertia>0.0014264600000000001 0.0039737100000000001 0.0041774899999999998 0 0 0</inertia>
 				</Body>
 				<Body name="toes_l">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="toes_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>toes_l</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -426,11 +564,22 @@
 					<inertia>0.00010189 0.00020378 0.00010189 0 0 0</inertia>
 				</Body>
 				<Body name="torso">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
 					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
 					<attached_geometry>
 						<Mesh name="torso_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>torso</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -445,7 +594,9 @@
 						</Mesh>
 						<Mesh name="torso_geom_2">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>torso</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -460,7 +611,9 @@
 						</Mesh>
 						<Mesh name="torso_geom_3">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>torso</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -475,7 +628,9 @@
 						</Mesh>
 						<Mesh name="torso_geom_4">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>torso</socket_frame_connectee_name>
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
 							<!--Scale factors in X, Y, Z directions respectively.-->
 							<scale_factors>1.07972 1.07972 1.07972</scale_factors>
 							<!--Default appearance attributes for this Geometry-->
@@ -509,9 +664,9 @@
 			<objects>
 				<CustomJoint name="ground_pelvis">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../ground</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>pelvis</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../pelvis</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="pelvis_tilt">
@@ -563,8 +718,6 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
 					<SpatialTransform>
 						<!--3 Axes for rotations are listed first.-->
@@ -640,7 +793,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>pelvis_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>femur_r</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../femur_r</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="hip_flexion_r">
@@ -660,13 +813,20 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>pelvis</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../pelvis</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.072437799999999997 -0.067724699999999999 0.085552400000000001</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -676,9 +836,9 @@
 				</PinJoint>
 				<CustomJoint name="knee_r">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>tibia_r</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../tibia_r</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="knee_angle_r">
@@ -698,8 +858,6 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
 					<SpatialTransform>
 						<!--3 Axes for rotations are listed first.-->
@@ -787,7 +945,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>tibia_r_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>talus_r</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../talus_r</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="ankle_angle_r">
@@ -807,13 +965,20 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="tibia_r_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>tibia_r</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../tibia_r</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.42506500000000003 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -825,14 +990,21 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>talus_r_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>calcn_r</socket_child_frame_connectee_name>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
+					<socket_child_frame_connectee_name>../calcn_r</socket_child_frame_connectee_name>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="talus_r_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>talus_r</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../talus_r</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.054328799999999997 -0.046731500000000002 0.0088227199999999992</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -844,14 +1016,21 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>calcn_r_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>toes_r</socket_child_frame_connectee_name>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
+					<socket_child_frame_connectee_name>../toes_r</socket_child_frame_connectee_name>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="calcn_r_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>calcn_r</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../calcn_r</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0.183642 -0.0020541600000000002 0.00110925</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -863,7 +1042,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>pelvis_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>femur_l</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../femur_l</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="hip_flexion_l">
@@ -883,13 +1062,20 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>pelvis</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../pelvis</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.072437799999999997 -0.067724699999999999 -0.085552400000000001</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -899,9 +1085,9 @@
 				</PinJoint>
 				<CustomJoint name="knee_l">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>tibia_l</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../tibia_l</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="knee_angle_l">
@@ -921,8 +1107,6 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Defines how the child body moves with respect to the parent as a function of the generalized coordinates.-->
 					<SpatialTransform>
 						<!--3 Axes for rotations are listed first.-->
@@ -1010,7 +1194,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>tibia_l_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>talus_l</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../talus_l</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="ankle_angle_l">
@@ -1030,13 +1214,20 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="tibia_l_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>tibia_l</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../tibia_l</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.42506500000000003 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -1048,14 +1239,21 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>talus_l_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>calcn_l</socket_child_frame_connectee_name>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
+					<socket_child_frame_connectee_name>../calcn_l</socket_child_frame_connectee_name>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="talus_l_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>talus_l</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../talus_l</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.054328799999999997 -0.046731500000000002 -0.0088227199999999992</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -1067,14 +1265,21 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>calcn_l_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>toes_l</socket_child_frame_connectee_name>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
+					<socket_child_frame_connectee_name>../toes_l</socket_child_frame_connectee_name>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="calcn_l_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>calcn_l</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../calcn_l</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0.183642 -0.0020541600000000002 -0.00110925</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -1086,7 +1291,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>pelvis_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>torso</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../torso</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="lumbar_extension">
@@ -1106,13 +1311,20 @@
 							<prescribed>false</prescribed>
 						</Coordinate>
 					</coordinates>
-					<!--Advanced option. Specify the direction of the joint in the multibody tree: parent->child (forward, reverse is false) or child->parent (reverse is true) NOTE: the Joint transform and its coordinates maintain a parent->child sense, even if the Joint is reversed.-->
-					<reverse>false</reverse>
 					<!--Physical frames owned by the Joint that are used to satisfy the Joint's parent and child frame connections. For examples, PhysicalOffsetFrames are often used to offset the connection from a Body's origin to another location of interest (e.g. the joint center). That offset can be added to the Joint. When the joint is delete so are the Frames in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="pelvis_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>pelvis</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../pelvis</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.103175 0.083503300000000003 0</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -1121,6 +1333,7 @@
 					</frames>
 				</PinJoint>
 			</objects>
+			<groups />
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
 		<ControllerSet>
@@ -1138,27 +1351,29 @@
 				<Millard2012EquilibriumMuscle name="hamstrings_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="bifemlh_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.129056 -0.105091 0.071146799999999996</location>
 								</PathPoint>
 								<PathPoint name="bifemlh_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0297545 -0.035586800000000002 0.029092199999999999</location>
 								</PathPoint>
 								<PathPoint name="bifemlh_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0231314 -0.055653800000000003 0.0339063</location>
 								</PathPoint>
 							</objects>
@@ -1169,6 +1384,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1187,9 +1407,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1222,27 +1440,29 @@
 				<Millard2012EquilibriumMuscle name="bifemsh_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="bifemsh_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0057362000000000003 -0.24218200000000001 0.026845399999999998</location>
 								</PathPoint>
 								<PathPoint name="bifemsh_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0297545 -0.035586800000000002 0.029092199999999999</location>
 								</PathPoint>
 								<PathPoint name="bifemsh_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0231314 -0.055653800000000003 0.0339063</location>
 								</PathPoint>
 							</objects>
@@ -1253,6 +1473,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1271,9 +1496,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1306,33 +1529,35 @@
 				<Millard2012EquilibriumMuscle name="glut_max_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="glut_max_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.134937 0.0089138499999999992 0.047335599999999999</location>
 								</PathPoint>
 								<PathPoint name="glut_max_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.13770399999999999 -0.062396899999999998 0.083298399999999995</location>
 								</PathPoint>
 								<PathPoint name="glut_max_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.051625799999999999 -0.066998799999999997 0.028910399999999999</location>
 								</PathPoint>
 								<PathPoint name="glut_max_r-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0178969 -0.11656 0.048069399999999998</location>
 								</PathPoint>
 							</objects>
@@ -1343,6 +1568,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1361,9 +1591,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1396,43 +1624,45 @@
 				<Millard2012EquilibriumMuscle name="iliopsoas_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="psoas_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.066290299999999996 0.090880199999999994 0.029610399999999999</location>
 								</PathPoint>
 								<PathPoint name="psoas_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.024385 -0.058401099999999997 0.077765600000000004</location>
 								</PathPoint>
 								<ConditionalPathPoint name="psoas_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0295079 -0.082478700000000002 0.083605700000000005</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>hip_flexion_r</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../hip_r/hip_flexion_r</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-1.5708 0.78539800000000004</range>
 								</ConditionalPathPoint>
 								<PathPoint name="psoas_r-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0018355800000000001 -0.058165099999999997 0.0043595099999999996</location>
 								</PathPoint>
 								<PathPoint name="psoas_r-P5">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0215681 -0.068490200000000001 0.011931300000000001</location>
 								</PathPoint>
 							</objects>
@@ -1443,6 +1673,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1461,9 +1696,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1496,38 +1729,38 @@
 				<Millard2012EquilibriumMuscle name="rect_fem_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="rect_fem_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.030225100000000001 -0.031864400000000001 0.099179299999999998</location>
 								</PathPoint>
 								<ConditionalPathPoint name="rect_fem_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.038317799999999999 -0.46233800000000003 0.0021797600000000002</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_r</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-2.6179899999999998 -1.45997</range>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
-									<location>0.0610488 0.0207432 0.00138393</location>
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'x_coordinate' of type Coordinate (description: The x_location function is a function of this coordinate's value.).-->
-									<socket_x_coordinate_connectee_name>knee_angle_r</socket_x_coordinate_connectee_name>
+									<socket_x_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_x_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'y_coordinate' of type Coordinate (description: The y_location function is a function of this coordinate's value.).-->
-									<socket_y_coordinate_connectee_name>knee_angle_r</socket_y_coordinate_connectee_name>
+									<socket_y_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_y_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'z_coordinate' of type Coordinate (description: The z_location function is a function of this coordinate's value.).-->
-									<socket_z_coordinate_connectee_name>knee_angle_r</socket_z_coordinate_connectee_name>
+									<socket_z_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_z_coordinate_connectee_name>
 									<!--Function defining the x component of the point's location expressed in the Frame of the Point.-->
 									<x_location>
 										<MultiplierFunction>
@@ -1573,6 +1806,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1591,9 +1829,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1626,44 +1862,44 @@
 				<Millard2012EquilibriumMuscle name="vasti_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="vas_int_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.033270000000000001 -0.22072900000000001 0.035564400000000003</location>
 								</PathPoint>
 								<PathPoint name="vas_int_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.038432500000000001 -0.23908499999999999 0.032696299999999998</location>
 								</PathPoint>
 								<ConditionalPathPoint name="vas_int_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.039350299999999998 -0.46233800000000003 0.0063098199999999998</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_r</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-2.6179899999999998 -1.4199999999999999</range>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_r-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
-									<location>0.054826600000000003 0.025002 0.0017793399999999999</location>
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'x_coordinate' of type Coordinate (description: The x_location function is a function of this coordinate's value.).-->
-									<socket_x_coordinate_connectee_name>knee_angle_r</socket_x_coordinate_connectee_name>
+									<socket_x_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_x_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'y_coordinate' of type Coordinate (description: The y_location function is a function of this coordinate's value.).-->
-									<socket_y_coordinate_connectee_name>knee_angle_r</socket_y_coordinate_connectee_name>
+									<socket_y_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_y_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'z_coordinate' of type Coordinate (description: The z_location function is a function of this coordinate's value.).-->
-									<socket_z_coordinate_connectee_name>knee_angle_r</socket_z_coordinate_connectee_name>
+									<socket_z_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_z_coordinate_connectee_name>
 									<!--Function defining the x component of the point's location expressed in the Frame of the Point.-->
 									<x_location>
 										<MultiplierFunction>
@@ -1709,6 +1945,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1727,9 +1968,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1762,31 +2001,33 @@
 				<Millard2012EquilibriumMuscle name="gastroc_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="med_gas_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0217976 -0.45075100000000001 -0.026960100000000001</location>
 								</PathPoint>
 								<ConditionalPathPoint name="med_gas_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.034417200000000002 -0.46142 -0.029598800000000001</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_r</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_r/knee_angle_r</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-0.78539800000000004 0.17453299999999999</range>
 								</ConditionalPathPoint>
 								<PathPoint name="med_gas_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0 0.0318395 -0.0054435200000000003</location>
 								</PathPoint>
 							</objects>
@@ -1797,6 +2038,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1815,9 +2061,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1850,21 +2094,23 @@
 				<Millard2012EquilibriumMuscle name="soleus_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="soleus_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0023724599999999998 -0.15154100000000001 0.0070185100000000004</location>
 								</PathPoint>
 								<PathPoint name="soleus_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0 0.0318395 -0.0054435200000000003</location>
 								</PathPoint>
 							</objects>
@@ -1875,6 +2121,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1893,9 +2144,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -1928,27 +2177,29 @@
 				<Millard2012EquilibriumMuscle name="tib_ant_r">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="tib_ant_r-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.017694600000000001 -0.16053600000000001 0.011368</location>
 								</PathPoint>
 								<PathPoint name="tib_ant_r-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0325224 -0.390565 -0.017496899999999999</location>
 								</PathPoint>
 								<PathPoint name="tib_ant_r-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_r</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.119758 0.018282 -0.031325899999999997</location>
 								</PathPoint>
 							</objects>
@@ -1959,6 +2210,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -1977,9 +2233,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2012,27 +2266,29 @@
 				<Millard2012EquilibriumMuscle name="hamstrings_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="bifemlh_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.129056 -0.105091 -0.071146799999999996</location>
 								</PathPoint>
 								<PathPoint name="bifemlh_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0297545 -0.035586800000000002 -0.029092199999999999</location>
 								</PathPoint>
 								<PathPoint name="bifemlh_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0231314 -0.055653800000000003 -0.0339063</location>
 								</PathPoint>
 							</objects>
@@ -2043,6 +2299,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2061,9 +2322,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2096,27 +2355,29 @@
 				<Millard2012EquilibriumMuscle name="bifemsh_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="bifemsh_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0057362000000000003 -0.24218200000000001 -0.026845399999999998</location>
 								</PathPoint>
 								<PathPoint name="bifemsh_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0297545 -0.035586800000000002 -0.029092199999999999</location>
 								</PathPoint>
 								<PathPoint name="bifemsh_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0231314 -0.055653800000000003 -0.0339063</location>
 								</PathPoint>
 							</objects>
@@ -2127,6 +2388,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2145,9 +2411,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2180,33 +2444,35 @@
 				<Millard2012EquilibriumMuscle name="glut_max_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="glut_max_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.134937 0.0089138499999999992 -0.047335599999999999</location>
 								</PathPoint>
 								<PathPoint name="glut_max_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.13770399999999999 -0.062396899999999998 -0.083298399999999995</location>
 								</PathPoint>
 								<PathPoint name="glut_max_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.051625799999999999 -0.066998799999999997 -0.028910399999999999</location>
 								</PathPoint>
 								<PathPoint name="glut_max_l-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0178969 -0.11656 -0.048069399999999998</location>
 								</PathPoint>
 							</objects>
@@ -2217,6 +2483,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2235,9 +2506,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2270,43 +2539,45 @@
 				<Millard2012EquilibriumMuscle name="iliopsoas_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="psoas_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.066290299999999996 0.090880199999999994 -0.029610399999999999</location>
 								</PathPoint>
 								<PathPoint name="psoas_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.024385 -0.058401099999999997 -0.077765600000000004</location>
 								</PathPoint>
 								<ConditionalPathPoint name="psoas_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0295079 -0.082478700000000002 -0.083605700000000005</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>hip_flexion_l</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../hip_l/hip_flexion_l</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-1.5708 0.78539800000000004</range>
 								</ConditionalPathPoint>
 								<PathPoint name="psoas_l-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0018355800000000001 -0.058165099999999997 -0.0043595099999999996</location>
 								</PathPoint>
 								<PathPoint name="psoas_l-P5">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0215681 -0.068490200000000001 -0.011931300000000001</location>
 								</PathPoint>
 							</objects>
@@ -2317,6 +2588,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2335,9 +2611,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2370,38 +2644,38 @@
 				<Millard2012EquilibriumMuscle name="rect_fem_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="rect_fem_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../pelvis</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.030225100000000001 -0.031864400000000001 -0.099179299999999998</location>
 								</PathPoint>
 								<ConditionalPathPoint name="rect_fem_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.038317799999999999 -0.46233800000000003 -0.0021797600000000002</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_l</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-2.6179899999999998 -1.45997</range>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="rect_fem_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
-									<location>0.0610488 0.0207432 -0.00138393</location>
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'x_coordinate' of type Coordinate (description: The x_location function is a function of this coordinate's value.).-->
-									<socket_x_coordinate_connectee_name>knee_angle_l</socket_x_coordinate_connectee_name>
+									<socket_x_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_x_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'y_coordinate' of type Coordinate (description: The y_location function is a function of this coordinate's value.).-->
-									<socket_y_coordinate_connectee_name>knee_angle_l</socket_y_coordinate_connectee_name>
+									<socket_y_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_y_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'z_coordinate' of type Coordinate (description: The z_location function is a function of this coordinate's value.).-->
-									<socket_z_coordinate_connectee_name>knee_angle_l</socket_z_coordinate_connectee_name>
+									<socket_z_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_z_coordinate_connectee_name>
 									<!--Function defining the x component of the point's location expressed in the Frame of the Point.-->
 									<x_location>
 										<MultiplierFunction>
@@ -2447,6 +2721,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2465,9 +2744,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2500,44 +2777,44 @@
 				<Millard2012EquilibriumMuscle name="vasti_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="vas_int_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.033270000000000001 -0.22072900000000001 -0.035564400000000003</location>
 								</PathPoint>
 								<PathPoint name="vas_int_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.038432500000000001 -0.23908499999999999 -0.032696299999999998</location>
 								</PathPoint>
 								<ConditionalPathPoint name="vas_int_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.039350299999999998 -0.46233800000000003 -0.0063098199999999998</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_l</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-2.6179899999999998 -1.4199999999999999</range>
 								</ConditionalPathPoint>
 								<MovingPathPoint name="vas_int_l-P4">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
-									<location>0.054826600000000003 0.025002 -0.0017793399999999999</location>
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'x_coordinate' of type Coordinate (description: The x_location function is a function of this coordinate's value.).-->
-									<socket_x_coordinate_connectee_name>knee_angle_l</socket_x_coordinate_connectee_name>
+									<socket_x_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_x_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'y_coordinate' of type Coordinate (description: The y_location function is a function of this coordinate's value.).-->
-									<socket_y_coordinate_connectee_name>knee_angle_l</socket_y_coordinate_connectee_name>
+									<socket_y_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_y_coordinate_connectee_name>
 									<!--Path to a Component that satisfies the Socket 'z_coordinate' of type Coordinate (description: The z_location function is a function of this coordinate's value.).-->
-									<socket_z_coordinate_connectee_name>knee_angle_l</socket_z_coordinate_connectee_name>
+									<socket_z_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_z_coordinate_connectee_name>
 									<!--Function defining the x component of the point's location expressed in the Frame of the Point.-->
 									<x_location>
 										<MultiplierFunction>
@@ -2583,6 +2860,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2601,9 +2883,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2636,31 +2916,33 @@
 				<Millard2012EquilibriumMuscle name="gastroc_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="med_gas_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0217976 -0.45075100000000001 0.026960100000000001</location>
 								</PathPoint>
 								<ConditionalPathPoint name="med_gas_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../femur_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.034417200000000002 -0.46142 0.029598800000000001</location>
 									<!--Path to a Component that satisfies the Socket 'coordinate' of type Coordinate (description: The coordinate whose value determines when the path point is active according to the specified range.).-->
-									<socket_coordinate_connectee_name>knee_angle_l</socket_coordinate_connectee_name>
+									<socket_coordinate_connectee_name>../../../knee_l/knee_angle_l</socket_coordinate_connectee_name>
 									<!--The minimum and maximum values that the coordinate can range between, for which the PathPoint is active. Angular coordinates in radians.-->
 									<range>-0.78539800000000004 0.17453299999999999</range>
 								</ConditionalPathPoint>
 								<PathPoint name="med_gas_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0 0.0318395 0.0054435200000000003</location>
 								</PathPoint>
 							</objects>
@@ -2671,6 +2953,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2689,9 +2976,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2724,21 +3009,23 @@
 				<Millard2012EquilibriumMuscle name="soleus_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="soleus_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>-0.0023724599999999998 -0.15154100000000001 -0.0070185100000000004</location>
 								</PathPoint>
 								<PathPoint name="soleus_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0 0.0318395 0.0054435200000000003</location>
 								</PathPoint>
 							</objects>
@@ -2749,6 +3036,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2767,9 +3059,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -2802,27 +3092,29 @@
 				<Millard2012EquilibriumMuscle name="tib_ant_l">
 					<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
 					<appliesForce>true</appliesForce>
-					<!--The set of points defining the path of the muscle.-->
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>0</min_control>
+					<!--The set of points defining the path of the actuator.-->
 					<GeometryPath>
 						<!--The set of points defining the path-->
 						<PathPointSet>
 							<objects>
 								<PathPoint name="tib_ant_l-P1">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.017694600000000001 -0.16053600000000001 -0.011368</location>
 								</PathPoint>
 								<PathPoint name="tib_ant_l-P2">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../tibia_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.0325224 -0.390565 0.017496899999999999</location>
 								</PathPoint>
 								<PathPoint name="tib_ant_l-P3">
-									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
-									<!--The fixed location of the station expressed in its parent frame.-->
+									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame in which this path point is defined.).-->
+									<socket_parent_frame_connectee_name>../../../calcn_l</socket_parent_frame_connectee_name>
+									<!--The fixed location of the path point expressed in its parent frame.-->
 									<location>0.119758 0.018282 0.031325899999999997</location>
 								</PathPoint>
 							</objects>
@@ -2833,6 +3125,11 @@
 							<objects />
 							<groups />
 						</PathWrapSet>
+						<!--Default appearance attributes for this GeometryPath-->
+						<Appearance>
+							<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
+						</Appearance>
 					</GeometryPath>
 					<!--The maximum force this actuator can produce.-->
 					<optimal_force>1</optimal_force>
@@ -2851,9 +3148,7 @@
 					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.040000000000000001</deactivation_time_constant>
 					<!--Activation lower bound.-->
-					<minimum_activation> 0.0 </minimum_activation>
-					<!--Minimum allowed value for the control signal.-->
-					<min_control> 0.0 </min_control>
+					<minimum_activation>0</minimum_activation>
 					<!--Active-force-length curve.-->
 					<ActiveForceLengthCurve>
 						<!--Minimum value of the active-force-length curve-->
@@ -3049,7 +3344,7 @@
 			<objects>
 				<Marker name="Sternum">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>torso</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../torso</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.103606 0.31243900000000002 1.0431799999999999e-06</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3057,7 +3352,7 @@
 				</Marker>
 				<Marker name="R.Acromium">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>torso</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../torso</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.024871799999999999 0.42644500000000002 0.16858500000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3065,7 +3360,7 @@
 				</Marker>
 				<Marker name="L.Acromium">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>torso</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../torso</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.022008900000000001 0.44078899999999999 -0.17197100000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3073,7 +3368,7 @@
 				</Marker>
 				<Marker name="Top.Head">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>torso</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../torso</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.059513299999999998 0.69959800000000005 0.010501699999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3081,7 +3376,7 @@
 				</Marker>
 				<Marker name="R.ASIS">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../pelvis</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0228989 0.035862400000000003 0.13011600000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3089,7 +3384,7 @@
 				</Marker>
 				<Marker name="L.ASIS">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../pelvis</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0291329 0.027659099999999999 -0.13189400000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3097,7 +3392,7 @@
 				</Marker>
 				<Marker name="V.Sacral">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>pelvis</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../pelvis</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.17209099999999999 0.040002900000000001 0.0061984300000000004</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3105,7 +3400,7 @@
 				</Marker>
 				<Marker name="R.Thigh.Upper">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.050711600000000003 -0.220081 0.088385500000000006</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3113,7 +3408,7 @@
 				</Marker>
 				<Marker name="R.Thigh.Front">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.107902 -0.28174700000000003 -0.0069011400000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3121,7 +3416,7 @@
 				</Marker>
 				<Marker name="R.Thigh.Rear">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.039510900000000002 -0.34091500000000002 0.078954300000000005</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3129,7 +3424,7 @@
 				</Marker>
 				<Marker name="R.Knee.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.00058641499999999996 -0.426232 0.0605411</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3137,7 +3432,7 @@
 				</Marker>
 				<Marker name="R.Knee.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.0024303100000000002 -0.44290800000000002 -0.060748200000000002</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3145,7 +3440,7 @@
 				</Marker>
 				<Marker name="R.Shank.Upper">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.023313899999999999 -0.0603613 0.070733000000000004</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3153,7 +3448,7 @@
 				</Marker>
 				<Marker name="R.Shank.Front">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.051675199999999998 -0.095429799999999995 0.016304599999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3161,7 +3456,7 @@
 				</Marker>
 				<Marker name="R.Shank.Rear">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.0073816400000000001 -0.14552599999999999 0.080002900000000002</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3169,7 +3464,7 @@
 				</Marker>
 				<Marker name="R.Ankle.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.0049054299999999997 -0.43084299999999998 0.054920700000000003</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3177,7 +3472,7 @@
 				</Marker>
 				<Marker name="R.Ankle.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0028625899999999999 -0.416327 -0.034325000000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3185,7 +3480,7 @@
 				</Marker>
 				<Marker name="R.Heel">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.020481900000000001 0.017288399999999999 -0.0050373500000000003</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3193,7 +3488,7 @@
 				</Marker>
 				<Marker name="R.Midfoot.Sup">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.122708 0.030965800000000002 -0.0403332</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3201,7 +3496,7 @@
 				</Marker>
 				<Marker name="R.Midfoot.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.117766 0.011129 0.066972599999999993</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3209,7 +3504,7 @@
 				</Marker>
 				<Marker name="R.Toe.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.20769299999999999 -0.011410699999999999 0.076066900000000007</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3217,7 +3512,7 @@
 				</Marker>
 				<Marker name="R.Toe.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.209814 0.0016980700000000001 -0.032368399999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3225,7 +3520,7 @@
 				</Marker>
 				<Marker name="R.Toe.Tip">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_r</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.27073399999999997 0.0031500500000000002 -0.00061229700000000004</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3233,7 +3528,7 @@
 				</Marker>
 				<Marker name="L.Thigh.Upper">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0358442 -0.20749000000000001 -0.093257300000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3241,7 +3536,7 @@
 				</Marker>
 				<Marker name="L.Thigh.Front">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.114084 -0.24917700000000001 -0.0175704</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3249,7 +3544,7 @@
 				</Marker>
 				<Marker name="L.Thigh.Rear">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.025891000000000001 -0.31621300000000002 -0.077853199999999997</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3257,7 +3552,7 @@
 				</Marker>
 				<Marker name="L.Knee.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.00075351300000000003 -0.44614199999999998 -0.062295999999999997</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3265,7 +3560,7 @@
 				</Marker>
 				<Marker name="L.Knee.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>femur_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../femur_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.00047251200000000002 -0.44543199999999999 0.053950600000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3273,7 +3568,7 @@
 				</Marker>
 				<Marker name="L.Shank.Upper">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0039858799999999998 -0.071610999999999994 -0.077708600000000003</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3281,7 +3576,7 @@
 				</Marker>
 				<Marker name="L.Shank.Front">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.048142699999999997 -0.12153600000000001 -0.022303699999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3289,7 +3584,7 @@
 				</Marker>
 				<Marker name="L.Shank.Rear">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.013243599999999999 -0.11473899999999999 -0.088507199999999994</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3297,7 +3592,7 @@
 				</Marker>
 				<Marker name="L.Ankle.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0038343100000000001 -0.42845100000000003 -0.054433799999999997</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3305,7 +3600,7 @@
 				</Marker>
 				<Marker name="L.Ankle.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>tibia_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../tibia_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0078901000000000006 -0.40516099999999999 0.036925300000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3313,7 +3608,7 @@
 				</Marker>
 				<Marker name="L.Heel">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.022619199999999999 0.026864300000000001 0.0078618799999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3321,7 +3616,7 @@
 				</Marker>
 				<Marker name="L.Midfoot.Sup">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.14970600000000001 0.030704499999999999 0.034260600000000002</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3329,7 +3624,7 @@
 				</Marker>
 				<Marker name="L.Midfoot.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.13132099999999999 0.030572599999999998 -0.064363000000000004</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3337,7 +3632,7 @@
 				</Marker>
 				<Marker name="L.Toe.Lat">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.194745 0.00778416 -0.074838600000000005</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3345,7 +3640,7 @@
 				</Marker>
 				<Marker name="L.Toe.Med">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.211787 0.0078861899999999995 0.027316500000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -3353,7 +3648,7 @@
 				</Marker>
 				<Marker name="L.Toe.Tip">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>calcn_l</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../calcn_l</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.26097799999999999 0.0090690700000000003 0.0020131799999999998</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
