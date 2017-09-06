@@ -133,11 +133,12 @@ public:
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
     /** Set the value of the Coordinate on to the state.
-        Optional flag to enforce the constraints immediately (true by default)
-        which will adjust its value in the state to satisfy model constraints.
-        Use getValue(s) to see if/how the value was adjusted to satisfy the
-        kinematic constraints. If setting multiple Coordinate values at a time,
-        set the flag to false and then call Model::assemble(state).
+        Optional flag to enforce the constraints immediately (true by default),
+        which can adjust all coordinate values in the state to satisfy model
+        constraints. Use getValue(s) to see if/how the value was adjusted to
+        satisfy the kinematic constraints. If setting multiple Coordinate values
+        consecutively, e.g. in a loop, set the flag to false and then call
+        Model::assemble(state) once all Coordinate values have been set.
         Alternatively, use Model::setStateVariableValues() to set all coordinate
         values and their speeds at once followed by Model::assemble(state).
         */
