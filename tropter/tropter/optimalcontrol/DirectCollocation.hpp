@@ -236,14 +236,11 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
 
     // Integral cost.
     // --------------
-    //m_integrand.setZero();
-    VectorX<T> integrand = VectorX<T>::Zero(m_num_mesh_points); // TODO;
-    // TODO parallelize.
+    m_integrand.setZero();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->integral_cost(time,
-                states.col(i_mesh), controls.col(i_mesh),
-                /*m_*/integrand[i_mesh]);
+                states.col(i_mesh), controls.col(i_mesh), m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
     // Rectangle rule:
@@ -255,7 +252,7 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
     T integral_cost = 0;
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         integral_cost += m_trapezoidal_quadrature_coefficients[i_mesh] *
-                /*m_*/integrand[i_mesh];
+                m_integrand[i_mesh];
     }
     // The quadrature coefficients are fractions of the duration; multiply
     // by duration to get the correct units.
@@ -297,12 +294,11 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     // TODO storing 1 too many derivatives trajectory; don't need the first
     // xdot (at t0). (TODO I don't think this is true anymore).
     // TODO tradeoff between memory and parallelism.
-    MatrixX<T> derivs(m_num_states, m_num_mesh_points); // TODO revert!!
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                              /*m_*/derivs.col(i_mesh));
+                              m_derivs.col(i_mesh));
         m_ocproblem->path_constraints(i_mesh, time,
                                       states.col(i_mesh), controls.col(i_mesh),
                                       constr_view.path_constraints.col(i_mesh));
@@ -315,11 +311,11 @@ void LowOrder<T>::constraints(const VectorX<T>& x,
     const unsigned N = m_num_mesh_points;
     const auto& x_i = states.rightCols(N - 1);
     const auto& x_im1 = states.leftCols(N - 1);
-    const auto& xdot_i = /*m_*/derivs.rightCols(N - 1);
+    const auto& xdot_i = m_derivs.rightCols(N - 1);
     const auto& h = step_size;
     //constr_view.defects = x_i-(x_im1+h*xdot_i);
     // TODO Trapezoidal:
-    const auto& xdot_im1 = /*m_*/derivs.leftCols(N-1);
+    const auto& xdot_im1 = m_derivs.leftCols(N-1);
     //constr_view.defects = x_i-(x_im1+h*xdot_im1);
     constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
     //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {

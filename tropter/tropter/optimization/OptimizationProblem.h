@@ -192,7 +192,8 @@ private:
     mutable Eigen::VectorXd m_x_working;
     mutable Eigen::VectorXd m_constr_pos;
     mutable Eigen::VectorXd m_constr_neg;
-    mutable Eigen::VectorXd m_jacobian_compressed_column;
+    // TODO this could be a column vector unless we are using parallelization.
+    mutable Eigen::MatrixXd m_jacobian_compressed_eigen;
 
     // ColPack objects for (a) determining the directions in which to perturb
     // the variables to compute the Jacobian and (b) recovering the sparse
