@@ -1,5 +1,5 @@
-project(tropter)
 cmake_minimum_required(VERSION 3.2)
+project(tropter)
 
 # Include CMake macros that we wrote to reduce duplication in this project.
 include(cmake/tropter_macros.cmake)
@@ -67,9 +67,9 @@ set(CMAKE_SHARED_LINKER_FLAGS
         "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
 tropter_copy_dlls(IPOPT "${IPOPT_DIR}/bin")
 
-# OpenMP allows parallelization (of evaluating dynaimcs and path constraints
-# across tropter points) and is usually a feature of a compiler. It's fine if the
-# compiler does not support OpenMP.
+# OpenMP allows parallelization (of evaluating dynamics and path constraints
+# across tropter points) and is usually a feature of a compiler. It's fine if
+# the compiler does not support OpenMP.
 # On macOS Sierra 10.12, AppleClang does not support OpenMP. You can install
 # LLVM 3.9 with Clang 3.9, which does support OpenMP:
 #    $ brew install llvm
@@ -78,14 +78,15 @@ tropter_copy_dlls(IPOPT "${IPOPT_DIR}/bin")
 #    $ cmake <source-dir> -DCMAKE_C_COMPILER=/usr/local/opt/llvm/bin/clang \
 #                         -DCMAKE_CXX_COMPILER=/usr/local/opt/llvm/bin/clang++ \
 #                         -DCMAKE_EXE_LINKER_FLAGS="-L/usr/local/opt/llvm/lib"
-#                         -DCMAKE_CXX_FLAGS="-std=c++11"
-# It seems like CMake doesn't know how to specify the C++11 standard flag for
-# LLVM Clang (non-AppleClang), so we do it manually.
 # However, Homebrew's ADOL-C and ColPack seem to be compiled with Homebrew's
 # GCC. If using ADOL-C and ColPack from Homebrew, then it is best to build
 # this project using Homebrew's GCC as well:
 #    $ cmake <source-dir> -DCMAKE_C_COMPILER=/usr/local/bin/gcc-6 \
 #                         -DCMAKE_CXX_COMPILER=/usr/local/bin/g++-6
+# Note that you can force Homebrew to build these libraries using Clang as
+# follows:
+#    $ brew install --cc=clang colpack
+#    $ brew install --cc=clang adol-c
 find_package(OpenMP)
 
 
