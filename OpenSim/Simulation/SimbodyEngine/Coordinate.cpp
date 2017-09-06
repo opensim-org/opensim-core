@@ -623,7 +623,7 @@ double Coordinate::CoordinateStateVariable::
 void Coordinate::CoordinateStateVariable::
     setValue(SimTK::State& state, double value) const
 {
-    ((Coordinate *)&getOwner())->setValue(state, value);
+    ((Coordinate *)&getOwner())->setValue(state, value, false);
 }
 
 double Coordinate::CoordinateStateVariable::

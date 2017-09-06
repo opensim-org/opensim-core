@@ -45,14 +45,15 @@ int main()
     try {
         LoadOpenSimLibrary("osimActuators");
 
-        //~3.5s with CoordinateStateVariable::setValue() enforcing constraints
+        //~3.5s for CoordinateStateVariable::setValue() enforcing constraints
+        //~0.18s for CoordinateStateVariable::setValue() NOT enforcing constraints
+        //       plus explicit Model::assemble() after model.setStateVariableValues()
         instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
-
-        }
+    }
     catch (const std::exception& e) {
         cout << "\ntestAssemblySolver FAILED " << e.what() <<endl;
         return 1;
@@ -82,16 +83,14 @@ void instrumentSetStateValues(const string& modelFile)
         // Direct set values for coordinates does not ensure they 
         // satisfy kinematic constraints. Explicitly enforce constraints
         // by performing and assembly, now.
-        //model.assemble(s);
+        model.assemble(s);
     }
 
     std::clock_t testEndTime = std::clock();
     double elapsed = testEndTime - testStartTime;
     cout << "model.setStateVariableValues elapsed time = "
         << elapsed / CLOCKS_PER_SEC << "s" << endl;
-
 }
-
 
 
 void testAssembleModelWithConstraints(string modelFile)
