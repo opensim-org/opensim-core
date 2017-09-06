@@ -80,9 +80,9 @@ void instrumentSetStateValues(const string& modelFile)
 
     for (int i = 0; i < numLoop; ++i) {
         model.setStateVariableValues(s, stateValues);
-        // Direct set values for coordinates does not ensure they 
+        // Directly setting values for coordinates does not ensure they 
         // satisfy kinematic constraints. Explicitly enforce constraints
-        // by performing and assembly, now.
+        // by performing an assembly, now.
         model.assemble(s);
     }
 
