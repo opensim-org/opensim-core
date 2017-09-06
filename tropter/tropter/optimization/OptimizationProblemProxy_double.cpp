@@ -1,6 +1,11 @@
 #include "OptimizationProblem.hpp"
 #include <ColPack/ColPackHeaders.h>
 
+#ifdef TROPTER_WITH_OPENMP
+// TODO only include ifdef _OPENMP
+    #include <omp.h>
+#endif
+
 using Eigen::VectorXd;
 
 // TODO leave all of this templatized, so floats can be used also.
@@ -198,18 +203,66 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     const double eps = std::sqrt(Eigen::NumTraits<double>::epsilon());
     const double two_eps = 2 * eps;
 
-    double obj_pos;
-    double obj_neg;
-    for (Eigen::Index i = 0; i < num_variables; ++i) {
-        // Perform a central difference.
-        m_x_working[i] += eps;
-        m_problem.objective(m_x_working, obj_pos);
-        m_x_working[i] = x[i] - eps;
-        m_problem.objective(m_x_working, obj_neg);
-        // Restore the original value.
-        m_x_working[i] = x[i];
-        grad[i] = (obj_pos - obj_neg) / two_eps;
+    // TODO parallelize.
+    // TODO "if(parallelize)"
+    // "firstprivate" means that each thread will get its own copy of
+    // m_x_working, and that it will be copy constructed from m_x_working.
+    // All other variables are shared across threads.
+    // TODO rather than copy-constructing, ensure the right size.
+    // TODO m_x_working.resize(num_variables);
+    #pragma omp parallel firstprivate(m_x_working)
+    {
+        double obj_pos;
+        double obj_neg;
+        #pragma omp for
+        for (Eigen::Index i = 0; i < num_variables; ++i) {
+            // Perform a central difference.
+            m_x_working[i] += eps;
+            m_problem.objective(m_x_working, obj_pos);
+            m_x_working[i] = x[i] - eps;
+            m_problem.objective(m_x_working, obj_neg);
+            // Restore the original value.
+            m_x_working[i] = x[i];
+            grad[i] = (obj_pos - obj_neg) / two_eps;
+        }
     }
+    /*
+    Eigen::VectorXd grad_temp = Eigen::VectorXd::Zero(num_variables);
+    #pragma omp parallel firstprivate(m_x_working)
+    {
+        Eigen::VectorXd grad_private = Eigen::VectorXd::Zero(num_variables);
+        double obj_pos;
+        double obj_neg;
+        #pragma omp for
+        for (Eigen::Index i = 0; i < num_variables; ++i) {
+            // Perform a central difference.
+            m_x_working[i] += eps;
+            m_problem.objective(m_x_working, obj_pos);
+            m_x_working[i] = x[i] - eps;
+            m_problem.objective(m_x_working, obj_neg);
+            // Restore the original value.
+            m_x_working[i] = x[i];
+            grad_private[i] = (obj_pos - obj_neg) / two_eps;
+        }
+        #pragma omp critical
+        grad_temp += grad_private;
+    }
+    // TODO
+    std::copy(grad_temp.data(), grad_temp.data() + num_variables, grad);
+    */
+
+    //double obj_pos;
+    //double obj_neg;
+    //for (Eigen::Index i = 0; i < num_variables; ++i) {
+    //    // Perform a central difference.
+    //    m_x_working[i] += eps;
+    //    m_problem.objective(m_x_working, obj_pos);
+    //    m_x_working[i] = x[i] - eps;
+    //    m_problem.objective(m_x_working, obj_neg);
+    //    // Restore the original value.
+    //    m_x_working[i] = x[i];
+    //    grad[i] = (obj_pos - obj_neg) / two_eps;
+    //}
 }
 
 void OptimizationProblem<double>::Proxy::
@@ -225,10 +278,33 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
     const Eigen::Index num_seeds = m_jacobian_seed.cols();
     Eigen::Map<const VectorXd> x0(variables, num_variables);
 
-    // TODO parallelize.
-
     // Compute the dense "compressed Jacobian" using the directions ColPack
     // told us to use.
+    Eigen::MatrixXd jacobian_compressed_eigen(num_constraints(), num_seeds);
+    // TODO OMP_WAIT_POLICY has huge effect.
+    #pragma omp parallel for firstprivate(m_constr_pos, m_constr_neg)
+    for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
+        const auto direction = m_jacobian_seed.col(iseed);
+        // Perturb x in the positive direction.
+        // TODO LowOrder has working memory!
+        m_problem.constraints(x0 + eps * direction, m_constr_pos);
+        // Perturb x in the negative direction.
+        m_problem.constraints(x0 - eps * direction, m_constr_neg);
+        // Compute central difference.
+        jacobian_compressed_eigen.col(iseed) =
+                (m_constr_pos - m_constr_neg) / two_eps;
+
+        // Store this column of the compressed Jacobian in the data structure
+        // that ColPack will use.
+        for (unsigned int i = 0; i < num_constraints(); ++i) {
+            m_jacobian_compressed[i][iseed] =
+                    jacobian_compressed_eigen(i, iseed);
+        }
+    }
+
+    //std::cout << "DEBUG " << jacobian_compressed_eigen << std::endl;
+    //std::exit(-1);
+    /*
     for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
         const auto direction = m_jacobian_seed.col(iseed);
         // Perturb x in the positive direction.
@@ -240,10 +316,12 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 
         // Store this column of the compressed Jacobian in the data structure
         // that ColPack will use.
+        #pragma omp ordered
         for (unsigned int i = 0; i < num_constraints(); ++i) {
             m_jacobian_compressed[i][iseed] = m_jacobian_compressed_column[i];
         }
     }
+     */
 
     // Convert the dense compressed Jacobian into the sparse Jacobian layout
     // (specified as triplets {row indices, column indices, values}).

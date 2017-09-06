@@ -259,7 +259,6 @@ private:
     // Working memory.
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs;
-    mutable MatrixX<T> m_path_constraints;
 };
 
 } // namespace transcription
