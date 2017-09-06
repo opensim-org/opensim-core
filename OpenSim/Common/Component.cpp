@@ -392,6 +392,10 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
         throw Exception(msg);
     }
 
+    // Clear cached list of all related StateVariables if any from a previous
+    // System.
+    _allStateVariables.clear();
+
     // Briefly get write access to the Component to record some
     // information associated with the System; that info is const after this.
     Component* mutableThis = const_cast<Component *>(this);
