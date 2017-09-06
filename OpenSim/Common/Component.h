@@ -1258,13 +1258,13 @@ public:
      * %Set all values of the state variables allocated by this Component.
      * Includes state variables allocated by its subcomponents. Note, this
      * method simply sets the values on the input State. If other conditions
-     * must be met (such as fiber and tendon equilibrium for muscles, or to
-     * satisfy kinematic constraints for Coordinates) you must invoke the
+     * must be met (such as satisfying kinematic constraints for Coordinates,
+     * or fiber and tendon equilibrium for muscles) you must invoke the
      * appropriate methods on Model (e.g. assemble() to satisfy constraints or
      * equilibrateMuscles()) to satisfy these conditions starting from the
      * State values provided by setStateVariableValues.
      *
-     * @param state   the State for which to set State values upon
+     * @param state   the State whose values are set
      * @param values  Vector of state variable values of length
      *                getNumStateVariables() in the order returned by
      *                getStateVariableNames()
