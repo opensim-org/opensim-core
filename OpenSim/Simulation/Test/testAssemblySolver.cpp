@@ -33,6 +33,9 @@
 using namespace OpenSim;
 using namespace std;
 
+// Measure how long it takes to perform model.setStateVariableValues() on a 
+// model with constraints to evaluate the effect of assembly in the process.
+void instrumentSetStateValues(const string& modelFile);
 void testAssembleModelWithConstraints(string modelFile);
 void testAssemblySatisfiesConstraints(string modelFile);
 double calcLigamentLengthError(const SimTK::State &s, const Model &model);
@@ -41,11 +44,15 @@ int main()
 {
     try {
         LoadOpenSimLibrary("osimActuators");
+
+        //~3.5s with CoordinateStateVariable::setValue() enforcing constraints
+        instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
         testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
-    }
+
+        }
     catch (const std::exception& e) {
         cout << "\ntestAssemblySolver FAILED " << e.what() <<endl;
         return 1;
@@ -57,6 +64,36 @@ int main()
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
+void instrumentSetStateValues(const string& modelFile)
+{
+    // Setup OpenSim model
+    Model model(modelFile);
+    SimTK::State &s = model.initSystem();
+
+    auto names = model.getStateVariableNames();
+    SimTK::Vector stateValues = model.getStateVariableValues(s);
+
+    int numLoop = 1000;
+
+    std::clock_t testStartTime = std::clock();
+
+    for (int i = 0; i < numLoop; ++i) {
+        model.setStateVariableValues(s, stateValues);
+        // Direct set values for coordinates does not ensure they 
+        // satisfy kinematic constraints. Explicitly enforce constraints
+        // by performing and assembly, now.
+        //model.assemble(s);
+    }
+
+    std::clock_t testEndTime = std::clock();
+    double elapsed = testEndTime - testStartTime;
+    cout << "model.setStateVariableValues elapsed time = "
+        << elapsed / CLOCKS_PER_SEC << "s" << endl;
+
+}
+
+
+
 void testAssembleModelWithConstraints(string modelFile)
 {
     double accuracy = 1e-5;
