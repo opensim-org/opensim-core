@@ -28,7 +28,7 @@ class TestEditMarkers {
         }
         // This exercises Marker -> delete
         context.cacheModelAndState();
-        // we use getComponent to make sure Marker is accessible thru model traversal
+        
         Marker findMarker = markerset.get(newMarkerName);
         assert (findMarker != null);
         markerset.remove(findMarker);
