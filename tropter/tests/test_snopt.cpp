@@ -167,7 +167,7 @@ TEST_CASE("First order minimum effort.", "[analytic]")
     ///              x(0) = 1
     ///              x(1) = 0
     class FirstOrderMinEffort
-            : public tropter::OptimalControlProblemNamed<adouble> {
+            : public tropter::OptimalControlProblem<adouble> {
     public:
         FirstOrderMinEffort()
         {
@@ -212,7 +212,7 @@ TEST_CASE("First order minimum effort.", "[analytic]")
 }
 
 template<typename T>
-class SlidingMassMinimumEffort : public tropter::OptimalControlProblemNamed<T> {
+class SlidingMassMinimumEffort : public tropter::OptimalControlProblem<T> {
 public:
     SlidingMassMinimumEffort()
     {

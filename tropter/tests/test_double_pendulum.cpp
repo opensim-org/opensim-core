@@ -20,7 +20,7 @@ using namespace tropter;
 /// an actual optimal control problem, one must derive from this class
 /// template and define boundary conditions, cost terms, etc.
 template<typename T>
-class DoublePendulum : public tropter::OptimalControlProblemNamed<T> {
+class DoublePendulum : public tropter::OptimalControlProblem<T> {
 public:
     constexpr static const double g = 9.81;
     double L0 = 1;

@@ -18,7 +18,7 @@ using namespace tropter;
 
 /// Kirk 1998, Example 5.1-1, page 198.
 template<typename T>
-class SecondOrderLinearMinEffort : public tropter::OptimalControlProblemNamed<T> {
+class SecondOrderLinearMinEffort : public tropter::OptimalControlProblem<T> {
 public:
     SecondOrderLinearMinEffort()
     {

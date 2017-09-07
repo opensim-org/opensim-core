@@ -34,12 +34,12 @@ void INDYGO::Solution::write(const std::string& prefix) const
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class INDYGOProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
+class INDYGOProblemSeparate : public tropter::OptimalControlProblem<T> {
 public:
     INDYGOProblemSeparate(const INDYGO& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
-            : tropter::OptimalControlProblemNamed<T>("INDYGO"),
+            : tropter::OptimalControlProblem<T>("INDYGO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 

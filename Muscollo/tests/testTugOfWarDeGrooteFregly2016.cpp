@@ -41,7 +41,7 @@ const double DISTANCE = 0.25;
 /// @endverbatim
 template <typename T>
 class DeGrooteFregly2016MuscleTugOfWarMinEffortStatic
-        : public tropter::OptimalControlProblemNamed<T> {
+        : public tropter::OptimalControlProblem<T> {
 public:
     const double d = DISTANCE;
     double mass = -1;
@@ -53,7 +53,7 @@ public:
     DeGrooteFregly2016Muscle<T> m_muscleR;
 
     DeGrooteFregly2016MuscleTugOfWarMinEffortStatic(const Model& model) :
-            tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+            tropter::OptimalControlProblem<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
                 this->add_state("position", {-0.02, 0.02}, -0.015, 0.015);
@@ -156,7 +156,7 @@ public:
 // Activation dynamics do *not* substantially slow down the solution process.
 template <typename T>
 class DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic
-        : public tropter::OptimalControlProblemNamed<T> {
+        : public tropter::OptimalControlProblem<T> {
 public:
     const double d = DISTANCE;
     double mass = -1;
@@ -177,7 +177,7 @@ public:
     DeGrooteFregly2016Muscle<T> m_muscleR;
 
     DeGrooteFregly2016MuscleTugOfWarMinEffortDynamic(const Model& model) :
-            tropter::OptimalControlProblemNamed<T>("tug_of_war_min_effort") {
+            tropter::OptimalControlProblem<T>("tug_of_war_min_effort") {
         this->set_time(0, 0.5);
         m_i_position =
                 this->add_state("position", {-0.02, 0.02}, -0.015, 0.015);
