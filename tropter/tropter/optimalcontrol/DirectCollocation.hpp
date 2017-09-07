@@ -477,7 +477,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     // Differential equation defects.
     // ------------------------------
     stream << "\nDifferential equation defects:" << std::endl;
-    stream << std::setw(max_name_length) << " " << "  norm across the tropter"
+    stream << std::setw(max_name_length) << " " << "  norm across the mesh"
            << std::endl;
     std::string spacer(7, ' ');
     for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {

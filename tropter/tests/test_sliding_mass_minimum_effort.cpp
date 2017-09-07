@@ -40,7 +40,7 @@ public:
     void integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
             const VectorX<T>& controls,
-            adouble& integrand) const override {
+            T& integrand) const override {
         integrand = controls[0] * controls[0];
     }
 };

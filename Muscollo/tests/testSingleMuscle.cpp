@@ -29,7 +29,6 @@ void testIsometricMuscleRoundtrip() {
         actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
         actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
         model.addComponent(actu);
-        // TODO make this a muscle, and set its muscle parameters.
 
         auto* contr = new PrescribedController();
         contr->setName("controller");
