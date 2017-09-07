@@ -717,6 +717,11 @@ void tableAndTrajectoryMatch(const Model& model,
 
     const auto& colNames = table.getColumnLabels();
 
+    std::vector<int> stateValueIndices(colNames.size());
+    for (size_t icol = 0; icol < colNames.size(); ++icol) {
+        stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
+    }
+
     SimTK::Vector stateValues; // working memory
 
     // Test that the data table has exactly the same numbers.
@@ -729,10 +734,7 @@ void tableAndTrajectoryMatch(const Model& model,
 
         // Test state values.
         for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
-            const auto& stateName = colNames[icol];
-
-            const auto stateIndex = stateNames.findIndex(stateName);
-            const auto& valueInStates = stateValues[stateIndex];
+            const auto& valueInStates = stateValues[stateValueIndices[icol]];
 
             const auto& column = table.getDependentColumnAtIndex(icol);
             const auto& valueInTable = column[static_cast<int>(itime)];
