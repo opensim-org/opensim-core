@@ -569,6 +569,10 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (connectorElement->getRequiredAttributeValue("name") == "parent_frame"){
                     parentNameElt = connectorElement->element_begin("connectee_name");
                     parentNameElt->getValueAs<std::string>(parentFrameName);
+
+                    const auto slashLoc = parentFrameName.rfind('/');
+                    if (slashLoc != std::string::npos)
+                        parentFrameName = parentFrameName.substr(slashLoc + 1);
                 }
                 if (connectorElement->getRequiredAttributeValue("name") == "child_body") {
                     connectorElement->setAttributeValue("name", "child_frame");
@@ -576,6 +580,9 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (connectorElement->getRequiredAttributeValue("name") == "child_frame") {
                     childNameElt =  connectorElement->element_begin("connectee_name");
                     childNameElt->getValueAs<std::string>(childFrameName);
+                    const auto slashLoc = childFrameName.rfind('/');
+                    if (slashLoc != std::string::npos)
+                        childFrameName = childFrameName.substr(slashLoc + 1);
                 }
                 ++connectorElement;
             }
@@ -611,7 +618,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // identity transforms.
             if ((location_in_parent.norm() > 0.0) ||
                 (orientation_in_parent.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, parentFrameName+"_offset",
+                XMLDocument::addPhysicalOffsetFrame30505(aNode, parentFrameName+"_offset",
                     parentFrameName, location_in_parent, orientation_in_parent);
                 parentNameElt->setValue(parentFrameName + "_offset");
             }
@@ -619,7 +626,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // again for the offset frame on the child
             if ((location_in_child.norm() > 0.0) ||
                 (orientation_in_child.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, childFrameName + "_offset",
+                XMLDocument::addPhysicalOffsetFrame30505(aNode, childFrameName + "_offset",
                     childFrameName, location_in_child, orientation_in_child);
                 childNameElt->setValue(childFrameName + "_offset");
             }

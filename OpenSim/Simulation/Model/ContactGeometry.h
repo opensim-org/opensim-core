@@ -123,9 +123,6 @@ public:
     */
     virtual void scale(const ScaleSet& aScaleSet);
 
-    // Override this method if geometry changes/deforms
-    virtual void updateGeometry() {};
-
     /** @name Deprecated */
     // @{
     /** <b>(Deprecated)</b> Use get_location() instead. */

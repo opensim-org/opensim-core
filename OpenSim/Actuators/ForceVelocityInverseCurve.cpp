@@ -193,6 +193,13 @@ calcDerivative(double aForceVelocityMultiplier, int order) const
     return m_curve.calcDerivative(aForceVelocityMultiplier,order);
 }
 
+double ForceVelocityInverseCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 SimTK::Vec2 ForceVelocityInverseCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),

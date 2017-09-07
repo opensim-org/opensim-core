@@ -110,6 +110,21 @@ public:
     }
 };
 
+class SubcomponentsWithDuplicateName : public Exception {
+public:
+    SubcomponentsWithDuplicateName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& duplicateName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' has subcomponents " +
+            "with duplicate name '" + duplicateName + "'. "
+            "Please supply unique names for immediate subcomponents.";
+        addMessage(msg);
+    }
+};
+
 class ComponentIsRootWithNoSubcomponents : public Exception {
 public:
     ComponentIsRootWithNoSubcomponents(const std::string& file,
@@ -600,8 +615,12 @@ public:
     template <typename T = Component>
     unsigned countNumComponents() const {
         unsigned count = 0u;
-        for (const auto& comp : getComponentList<T>())
+        const auto compList = getComponentList<T>();
+        auto it = compList.begin();
+        while (it != compList.end()) {
             ++count;
+            ++it;
+        }
         return count;
     }
 
@@ -614,16 +633,18 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete (absolute) pathname for this Component to its 
-     * ancestral Component, which is the root of the tree to which this 
-     * Component belongs.
-     * For example: a Coordinate Component would have an absolute path name 
-     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. */
+    /** Get the complete (absolute) pathname for this Component to its ancestral
+     * Component, which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Component would have an absolute path name
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its
+     * absolutePathName from root is guaranteed to be unique. The
+     * absolutePathName is generated on-the-fly by traversing the ownership tree
+     * and, therefore, calling this method is not "free". */
     std::string getAbsolutePathName() const;
 
 
-    /** Get the relative pathname of this Component with respect to another one */
+    /** Get the relative pathname of this Component with respect to another
+     * Component. */
     std::string getRelativePathName(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
@@ -1235,9 +1256,15 @@ public:
 
     /**
      * %Set all values of the state variables allocated by this Component.
-     * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents. Note, this
+     * method simply sets the values on the input State. If other conditions
+     * must be met (such as satisfying kinematic constraints for Coordinates,
+     * or fiber and tendon equilibrium for muscles) you must invoke the
+     * appropriate methods on Model (e.g. assemble() to satisfy constraints or
+     * equilibrateMuscles()) to satisfy these conditions starting from the
+     * State values provided by setStateVariableValues.
      *
-     * @param state   the State for which to get the value
+     * @param state   the State whose values are set
      * @param values  Vector of state variable values of length
      *                getNumStateVariables() in the order returned by
      *                getStateVariableNames()
@@ -1517,11 +1544,11 @@ public:
         // subcomponents and to find the longest concrete class name.
         const std::string concreteClassName = this->getConcreteClassName();
         unsigned numSubcomponents = 0;
-        unsigned maxlen = concreteClassName.length();
+        size_t maxlen = concreteClassName.length();
         for (const C& thisComp : compList) {
             ++numSubcomponents;
             auto len = thisComp.getConcreteClassName().length();
-            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+            maxlen = std::max(maxlen, len);
         }
 
         if (numSubcomponents == 0) {
@@ -2117,12 +2144,15 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsupported-friend"
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunsupported-friend"
+#endif
     template<class C>
     friend void Socket<C>::findAndConnect(const Component& root);
-#pragma clang diagnostic pop
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#endif
 
     /** Utility method to find a component in the list of sub components of this
         component and any of their sub components, etc..., by name or state variable name.
@@ -2947,8 +2977,13 @@ void Socket<C>::findAndConnect(const Component& root) {
             comp =  &getOwner().template getComponent<C>(path.toString());
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath&) {
-        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
+    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+        if (Object::getDebugLevel() > 0) {
+            // TODO once we fix how connections are established when building
+            // models programmatically, we should show this warning even for
+            // debug level 0.
+            std::cout << ex.getMessage() << std::endl;
+        }
         comp =  root.template findComponent<C>(path.toString());
     }
     if (comp)

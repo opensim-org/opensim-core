@@ -212,11 +212,13 @@ private:
         const SimTK::Vec6& outerTransform,
         SimTK::Xml::Element& geomSetElement);
 
-    /* Utility to construct a PhysicalOffsetFrame from properties of an
-       offset transform. */
+    /* Utility for updating XML: add a PhysicalOffsetFrame to the XML element
+    pointed to by ownerIter, and gives the frame the provided name, transform
+    (from the frame's parent frame), and the path (connectee name) to the
+    parent frame.*/
     static void createFrameForXform(const SimTK::Xml::element_iterator&,
         const std::string& frameName,
-        const SimTK::Vec6& localXform, const std::string& bodyName);
+        const SimTK::Vec6& localXform, const std::string& parentConnecteeName);
 
 
     /* ID for the underlying mobilized body in Simbody system.
