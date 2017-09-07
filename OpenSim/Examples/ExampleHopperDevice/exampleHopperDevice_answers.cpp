@@ -86,7 +86,7 @@ namespace OpenSim {
 
 // Forward declarations for methods used below.
 Model buildHopper(bool showVisualizer);    //defined in buildHopperModel.cpp
-Model buildTestbed(bool showVisualizer);   //defined in helperMethods.h
+Model buildTestbed(bool showVisualizer);   //defined in buildTestbedModel.cpp
 Device* buildDevice();  //defined in buildDevice.cpp
 
 

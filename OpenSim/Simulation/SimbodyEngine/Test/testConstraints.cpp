@@ -357,7 +357,7 @@ void testPointConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());

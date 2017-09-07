@@ -211,8 +211,8 @@ class TestInputsOutputs(unittest.TestCase):
         s = m.initSystem()
 
         # Access and iterate through AbstractInputs, using names.
-        expectedLabels = ['/model_/pin/pin_coord_0|value', 'spd',
-                          '/model_/source|column:col1', 'second_col']
+        expectedLabels = ['/model/pin/pin_coord_0|value', 'spd',
+                          '/model/source|column:col1', 'second_col']
         i = 0
         for name in rep.getInputNames():
             # Actually, there is only one input, which we connected to 4

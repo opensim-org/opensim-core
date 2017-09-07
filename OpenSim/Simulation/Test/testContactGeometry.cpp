@@ -133,15 +133,15 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0),
                                                    Vec3(0, 0, -0.5*SimTK_PI),
                                                    ground,
-                                                   "ground");
+                                                   "floor");
     osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
     if (useMesh){
         geometry = new ContactMesh(mesh_filename, Vec3(0), Vec3(0),
-                                   ball, "ball");
+                                   ball, "sphere");
     }
     else
-        geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
+        geometry = new ContactSphere(radius, Vec3(0), ball, "sphere");
     osimModel->addContactGeometry(geometry);
 
     OpenSim::Force* force;
@@ -151,8 +151,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         auto* contactParams =
             new OpenSim::ElasticFoundationForce::ContactParameters(
                     1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
-        contactParams->addGeometry("ball");
-        contactParams->addGeometry("ground");
+        contactParams->addGeometry("sphere");
+        contactParams->addGeometry("floor");
         force = new OpenSim::ElasticFoundationForce(contactParams);
         osimModel->addForce(force);
     }
@@ -162,8 +162,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
         auto* contactParams =
             new OpenSim::HuntCrossleyForce::ContactParameters(
                     1.0e6, 1e-5, 0.0, 0.0, 0.0);
-        contactParams->addGeometry("ball");
-        contactParams->addGeometry("ground");
+        contactParams->addGeometry("sphere");
+        contactParams->addGeometry("floor");
         force = new OpenSim::HuntCrossleyForce(contactParams);
         osimModel->addForce(force);
     }

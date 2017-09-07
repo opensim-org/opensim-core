@@ -208,11 +208,11 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         // Verify that the current computed and AnalyzeTool reported force are
         // equivalent for the provided motion file
         cout << s.getTime() << " :: muscle-fiber-force: " << mf <<
-            " Analyze reported force: " << forces[i] << endl;
-        ASSERT_EQUAL<double>(mf, forces[i], equilTol, __FILE__, __LINE__,
+            " Analyze reported force: " << forces[int(i)] << endl;
+        ASSERT_EQUAL<double>(mf, forces[int(i)], equilTol, __FILE__, __LINE__,
             "Total fiber force failed to match reported muscle force.");
 
-        double delta = (i > 0) ? abs(forces[i]-forces[i-1]) : 0;
+        double delta = (i > 0) ? abs(forces[int(i)]-forces[int(i-1)]) : 0;
 
         SimTK_ASSERT_ALWAYS(delta < maxDelta,
             "Force trajectory has unexplained discontinuity.");
