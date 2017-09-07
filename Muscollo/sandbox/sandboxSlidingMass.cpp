@@ -29,7 +29,7 @@ Model createModel() {
 }
 
 class SlidingMassMinEffort : public
-                             tropter::OptimalControlProblemNamed<double> {
+                             tropter::OptimalControlProblem<double> {
 public:
     SlidingMassMinEffort() {
         set_time(0, {0, 5});

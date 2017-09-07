@@ -12,7 +12,7 @@ using Eigen::MatrixXd;
 using Eigen::Ref;
 
 template<typename T>
-class SlidingMassPathConstraint : public tropter::OptimalControlProblemNamed<T> {
+class SlidingMassPathConstraint : public tropter::OptimalControlProblem<T> {
 public:
     const double mass = 10.0;
     const double Fmax = 10;

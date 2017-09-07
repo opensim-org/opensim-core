@@ -12,7 +12,7 @@ using Eigen::MatrixXd;
 using namespace tropter;
 
 template<typename T>
-class SlidingMassMinimumTime : public tropter::OptimalControlProblemNamed<T> {
+class SlidingMassMinimumTime : public tropter::OptimalControlProblem<T> {
 public:
     const double mass = 10.0;
     const double Fmax = 10;

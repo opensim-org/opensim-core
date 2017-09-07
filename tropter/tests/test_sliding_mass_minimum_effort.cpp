@@ -15,7 +15,7 @@ using Eigen::MatrixXd;
 using namespace tropter;
 
 template<typename T>
-class SlidingMassNew : public tropter::OptimalControlProblemNamed<T> {
+class SlidingMassNew : public tropter::OptimalControlProblem<T> {
 public:
     SlidingMassNew() {
         // TODO when time is a variable, this has to be more advanced:

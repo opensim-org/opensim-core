@@ -36,7 +36,7 @@ using namespace OpenSim;
 /// where lm and vm are determined from the muscle-tendon length and velocity
 /// with the assumption of a rigid tendon.
 class DeGrooteFregly2016MuscleLiftMinTimeStatic
-        : public tropter::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblem<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -50,7 +50,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MuscleLiftMinTimeStatic() :
-            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+            tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -181,7 +181,7 @@ solveForTrajectoryGSO() {
 /// Making the initial fiber velocity 0 helps avoid a sharp spike in fiber
 /// velocity at the beginning of the motion.
 class DeGrooteFregly2016MuscleLiftMinTimeDynamic
-        : public tropter::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblem<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -194,7 +194,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MuscleLiftMinTimeDynamic() :
-            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+            tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -488,7 +488,7 @@ int main() {
 // This is no longer used...it's just here for comparison and checking
 // performance.
 //class DeGrooteFregly2016MuscleTrajectoryOptimizationOrig
-//        : public tropter::OptimalControlProblemNamed<adouble> {
+//        : public tropter::OptimalControlProblem<adouble> {
 //public:
 //    using T = adouble;
 //    const double g = 9.81;
@@ -507,7 +507,7 @@ int main() {
 //    constexpr static const double c3 = 0.250;
 //
 //    DeGrooteFregly2016MuscleTrajectoryOptimizationOrig() :
-//            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time") {
+//            tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
 //        // The motion occurs in 1 second.
 //        this->set_time(0, {0.01, 1.0});
 //        // TODO these functions should return indices for these variables.

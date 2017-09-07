@@ -183,7 +183,7 @@ struct FinalBounds : public Bounds {
 };
 
 template<typename T>
-class OptimalControlProblemNamed : public OptimalControlProblemBase<T> {
+class OptimalControlProblem : public OptimalControlProblemBase<T> {
 private:
     struct ContinuousVariableInfo {
         std::string name;
@@ -196,8 +196,8 @@ private:
         Bounds bounds;
     };
 public:
-    OptimalControlProblemNamed() = default;
-    OptimalControlProblemNamed(const std::string& name) : m_name(name) {}
+    OptimalControlProblem() = default;
+    OptimalControlProblem(const std::string& name) : m_name(name) {}
 
     /// @name Assemble the problem
     /// @{

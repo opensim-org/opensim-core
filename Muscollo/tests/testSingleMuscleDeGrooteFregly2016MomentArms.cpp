@@ -54,7 +54,7 @@ using namespace OpenSim;
 /// @endverbatim
 /// This class can also solve the problem without muscle dynamics.
 class DeGrooteFregly2016MuscleLiftMinTime
-        : public tropter::OptimalControlProblemNamed<adouble> {
+        : public tropter::OptimalControlProblem<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -72,7 +72,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MuscleLiftMinTime(bool muscleDynamics) :
-            tropter::OptimalControlProblemNamed<T>("hanging_muscle_min_time"),
+            tropter::OptimalControlProblem<T>("hanging_muscle_min_time"),
             m_muscleDynamics(muscleDynamics) {
         this->set_time(0, {0.01, 1.0});
         this->add_state("angle", {-SimTK::Pi/2, SimTK::Pi/2}, 0, SimTK::Pi/4);

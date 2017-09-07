@@ -59,7 +59,7 @@ std::ostream& operator<<(std::ostream& stream, const adouble& v) {
 ///              vy(0.5) = 0
 /// @endverbatim
 template <typename T>
-class OCPStatic : public tropter::OptimalControlProblemNamed<T> {
+class OCPStatic : public tropter::OptimalControlProblem<T> {
 public:
     const double d = WIDTH;
     double mass = -1;
@@ -77,7 +77,7 @@ public:
     };
 
     OCPStatic(const Model& model) :
-            tropter::OptimalControlProblemNamed<T>("2musc2dofstatic") {
+            tropter::OptimalControlProblem<T>("2musc2dofstatic") {
         this->set_time(0, 0.2);
         m_i_x = this->add_state("x", {-0.03, 0.03}, -0.03, 0.03);
         m_i_y = this->add_state("y", {-2 * d, 0}, -d, -d + 0.05);
@@ -200,7 +200,7 @@ public:
 ///              vy(0.5) = 0
 /// @endverbatim
 template <typename T>
-class OCPDynamic : public tropter::OptimalControlProblemNamed<T> {
+class OCPDynamic : public tropter::OptimalControlProblem<T> {
 public:
     const double d = WIDTH;
     double mass = -1;
@@ -225,7 +225,7 @@ public:
         T y;
     };
     OCPDynamic(const Model& model) :
-            tropter::OptimalControlProblemNamed<T>("2musc2dofdynamic") {
+            tropter::OptimalControlProblem<T>("2musc2dofdynamic") {
         this->set_time(0, 0.5);
         m_i_x = this->add_state("x", {-0.03, 0.03}, -0.03, 0.03);
         m_i_y = this->add_state("y", {-2 * d, 0}, -d, -d + 0.05);

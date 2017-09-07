@@ -30,12 +30,12 @@ void GlobalStaticOptimization::Solution::write(const std::string& prefix)
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
 /// rather are coded separately.
 template<typename T>
-class GSOProblemSeparate : public tropter::OptimalControlProblemNamed<T> {
+class GSOProblemSeparate : public tropter::OptimalControlProblem<T> {
 public:
     GSOProblemSeparate(const GlobalStaticOptimization& mrs,
                        const Model& model,
                        const InverseMuscleSolverMotionData& motionData)
-            : tropter::OptimalControlProblemNamed<T>("GSO"),
+            : tropter::OptimalControlProblem<T>("GSO"),
               _mrs(mrs), _model(model), _motionData(motionData) {
         SimTK::State state = _model.initSystem();
 

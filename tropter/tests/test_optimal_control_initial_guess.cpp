@@ -23,7 +23,7 @@ using namespace Catch;
 /// equally desirable; the initial guess should determine which final position
 /// the optimizer finds.
 template<typename T>
-class FinalPositionLocalOptima : public tropter::OptimalControlProblemNamed<T> {
+class FinalPositionLocalOptima : public tropter::OptimalControlProblem<T> {
 public:
     FinalPositionLocalOptima()
     {
