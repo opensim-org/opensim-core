@@ -76,9 +76,7 @@ private:
     /** Simulation session name. */
     std::string _sessionName;
     /** Model for which the simulation is performed. */
-    Model* _model;
-    /** Keep a pointer to the State passed in so we can update it. */
-    SimTK::State* _state;
+    SimTK::ReferencePtr<Model> _model;
 
     /** Integrator. */
     // This is the actual integrator that is used when integrate() is called.
@@ -258,12 +256,10 @@ public:
     * @endcode
     *
     */
-    bool integrate(double finalTime);
+    SimTK::State integrate(double finalTime);
+
+    SimTK::State getState();
     
-    /** <b>(Deprecated)</b> Integrate to a specified finalTime using
-        Manager::integrate(SimTK::State&, double). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
-    bool integrate(SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
     // STATE STORAGE

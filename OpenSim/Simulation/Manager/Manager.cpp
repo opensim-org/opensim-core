@@ -625,7 +625,7 @@ hasStateStorage() const
 // INTEGRATION
 //-----------------------------------------------------------------------------
 
-bool Manager::
+SimTK::State Manager::
 integrate(double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
@@ -732,26 +732,17 @@ integrate(double finalTime)
         if (checkHalt()) break;
     }
     finalize(_integ->updAdvancedState());
-    *_state = _integ->getState();
 
     // CLEAR ANY INTERRUPT
     clearHalt();
 
-    return true;
+    return getState();
 
 }
 
-/**
- * Integrate the equations of motion for the specified model.
- *
- * This method starts the integration at the initial default states of
- * the model.
- */
-bool Manager::
-integrate(SimTK::State& s)
+SimTK::State Manager::getState()
 {
-    s.setTime( _ti );
-    return integrate(_tf);
+    return _integ->getState();
 }
 
 //_____________________________________________________________________________
@@ -817,8 +808,7 @@ void Manager::initialize(SimTK::State& s)
             "with an integrator, or call Manager::setIntegrator().");
     }
 
-    if (_timeStepper == NULL) {
-        _state = &s;
+    if (_timeStepper == nullptr) {
         _timeStepper.reset(
             new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
         _timeStepper->initialize(s);
