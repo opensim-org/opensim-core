@@ -32,10 +32,10 @@ class TestModelScaling {
         // calls below which exercise the "run" button
         Model processedModel = new Model(unscaledModel);
         processedModel.setName(scaleTool.getName());
-        OpenSimContext peocessedContext = new OpenSimContext(processedModel.initSystem(), processedModel);
-        peocessedContext.processModelScale(scaleTool.getModelScaler(), 
+        OpenSimContext processedContext = new OpenSimContext(processedModel.initSystem(), processedModel);
+        processedContext.processModelScale(scaleTool.getModelScaler(), 
                 processedModel, "", scaleTool.getSubjectMass());
-        peocessedContext.processModelMarkerPlacer(scaleTool.getMarkerPlacer(), processedModel, "");
+        processedContext.processModelMarkerPlacer(scaleTool.getMarkerPlacer(), processedModel, "");
         System.out.println("Test finished!");
     }
     catch (IOException ex){
