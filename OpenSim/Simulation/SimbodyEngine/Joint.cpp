@@ -267,8 +267,8 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 void Joint::scale(const ScaleSet& scaleSet)
 {
     // Scale the parent and/or child Frame, but only if owned by the Joint. The
-    // Joint owns Frames that appear in the Joint's "frames" list property,
-    // which can occur only if the Frame is a PhysicalOffsetFrame.
+    // Joint owns Frames that appear in the Joint's "frames" list property
+    // (which can occur only if the Frame is a PhysicalOffsetFrame).
     auto findIndexInFramesList = [&](const PhysicalFrame& frame) -> int
     {
         const PhysicalOffsetFrame* pof =
@@ -283,7 +283,7 @@ void Joint::scale(const ScaleSet& scaleSet)
     if (parentIndex < 0 && childIndex < 0)  // No scaling to do.
         return;
 
-    // If either parent or child is owned by the Joint, search the scaleSet once
+    // If parent and/or child is owned by the Joint, search the scaleSet *once*
     // to find the associated scale factors.
     const std::string& parentName = getParentFrame().findBaseFrame().getName();
     const std::string& childName  =  getChildFrame().findBaseFrame().getName();
@@ -313,11 +313,9 @@ void Joint::scale(const ScaleSet& scaleSet)
 
     // Scale the PhysicalOffsetFrames owned by this Joint.
     if (parentIndex >= 0)
-        updComponent<PhysicalOffsetFrame>(
-            upd_frames(parentIndex).getAbsolutePathName()).scale(parentFactors);
+        upd_frames(parentIndex).scale(parentFactors);
     if (childIndex >= 0)
-        updComponent<PhysicalOffsetFrame>(
-            upd_frames(childIndex).getAbsolutePathName()).scale(childFactors);
+        upd_frames(childIndex).scale(childFactors);
 }
 
 const SimTK::MobilizedBodyIndex Joint::
