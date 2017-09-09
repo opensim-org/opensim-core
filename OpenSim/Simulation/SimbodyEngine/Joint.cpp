@@ -266,43 +266,58 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 
 void Joint::scale(const ScaleSet& scaleSet)
 {
+    // Scale the parent and/or child Frame, but only if owned by the Joint. The
+    // Joint owns Frames that appear in the Joint's "frames" list property,
+    // which can occur only if the Frame is a PhysicalOffsetFrame.
+    auto findIndexInFramesList = [&](const PhysicalFrame& frame) -> int
+    {
+        const PhysicalOffsetFrame* pof =
+            dynamic_cast<const PhysicalOffsetFrame*>(&frame);
+        if (pof == nullptr)
+            return -1;
+        return getProperty_frames().findIndex(*pof);
+    };
+    const int parentIndex = findIndexInFramesList(getParentFrame());
+    const int childIndex  = findIndexInFramesList(getChildFrame());
+
+    if (parentIndex < 0 && childIndex < 0)  // No scaling to do.
+        return;
+
+    // If either parent or child is owned by the Joint, search the scaleSet once
+    // to find the associated scale factors.
+    const std::string& parentName = getParentFrame().findBaseFrame().getName();
+    const std::string& childName  =  getChildFrame().findBaseFrame().getName();
     SimTK::Vec3 parentFactors(1.0);
     SimTK::Vec3 childFactors(1.0);
+    bool seekingParent = (parentIndex >= 0);
+    bool seekingChild  = (childIndex  >= 0);
 
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& parentName = getParentFrame().findBaseFrame().getName();
-    const string& childName = getChildFrame().findBaseFrame().getName();
-    // Get scale factors
-    bool found_p = false;
-    bool found_b = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
+    for (int i=0; i<scaleSet.getSize(); ++i) {
         Scale& scale = scaleSet.get(i);
-        if (!found_p && (scale.getSegmentName() == parentName)) {
+        // TODO: The scaling infrastructure must be updated now that bodies can
+        //       have the same name (provided their absolute paths are unique).
+        if (seekingParent && (scale.getSegmentName() == parentName)) {
             scale.getScaleFactors(parentFactors);
-            found_p = true;
+            seekingParent = false;
         }
-        if (!found_b && (scale.getSegmentName() == childName)) {
+        if (seekingChild && (scale.getSegmentName() == childName)) {
             scale.getScaleFactors(childFactors);
-            found_b = true;
+            seekingChild = false;
         }
-        if (found_p && found_b)
+        if (!seekingParent && !seekingChild)
             break;
     }
 
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getParentFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(parentFactors);
-    }
-    found = getProperty_frames().findIndex(getChildFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(childFactors);
-    }
+    OPENSIM_THROW_IF(seekingParent || seekingChild, Exception,
+        "Expected scale factors not found in ScaleSet.");
+
+    // Scale the PhysicalOffsetFrames owned by this Joint.
+    if (parentIndex >= 0)
+        updComponent<PhysicalOffsetFrame>(
+            upd_frames(parentIndex).getAbsolutePathName()).scale(parentFactors);
+    if (childIndex >= 0)
+        updComponent<PhysicalOffsetFrame>(
+            upd_frames(childIndex).getAbsolutePathName()).scale(childFactors);
 }
 
 const SimTK::MobilizedBodyIndex Joint::
