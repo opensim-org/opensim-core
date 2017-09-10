@@ -26,7 +26,7 @@ class Transcription;
 template<typename T>
 class DirectCollocationSolver {
 public:
-    typedef OptimalControlProblemBase<T> OCProblem;
+    typedef OptimalControlProblem<T> OCProblem;
     DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem,
                             const std::string& transcription_method,
                             const std::string& optimization_solver,
@@ -150,7 +150,7 @@ class LowOrder : public Transcription<T> {
     // TODO should this *BE* an OptimizationProblem, or should it just
     // contain one?
 public:
-    typedef OptimalControlProblemBase<T> OCProblem;
+    typedef OptimalControlProblem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?

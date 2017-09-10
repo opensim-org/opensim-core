@@ -135,15 +135,15 @@ void LowOrder<T>::set_ocproblem(
     VectorXd final_controls_upper(m_num_controls);
     VectorXd path_constraints_lower(m_num_path_constraints);
     VectorXd path_constraints_upper(m_num_path_constraints);
-    m_ocproblem->bounds(initial_time_lower, initial_time_upper,
-                        final_time_lower, final_time_upper,
-                        states_lower, states_upper,
-                        initial_states_lower, initial_states_upper,
-                        final_states_lower, final_states_upper,
-                        controls_lower, controls_upper,
-                        initial_controls_lower, initial_controls_upper,
-                        final_controls_lower, final_controls_upper,
-                        path_constraints_lower, path_constraints_upper);
+    m_ocproblem->all_bounds(initial_time_lower, initial_time_upper,
+                            final_time_lower, final_time_upper,
+                            states_lower, states_upper,
+                            initial_states_lower, initial_states_upper,
+                            final_states_lower, final_states_upper,
+                            controls_lower, controls_upper,
+                            initial_controls_lower, initial_controls_upper,
+                            final_controls_lower, final_controls_upper,
+                            path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
     //m_initial_time = initial_time; // TODO make these variables.
     //m_final_time = final_time;

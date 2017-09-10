@@ -16,6 +16,8 @@ add_library(tropter
         optimalcontrol/DirectCollocation.hpp
         optimalcontrol/DirectCollocation.cpp
         optimalcontrol/OptimalControlProblem.h
+        optimalcontrol/OptimalControlProblem.hpp
+        optimalcontrol/OptimalControlProblem.cpp
         optimalcontrol/OptimalControlIterate.h
         optimalcontrol/OptimalControlIterate.cpp
         )
