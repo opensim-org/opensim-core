@@ -124,15 +124,13 @@ public:
 
 template<typename T>
 std::shared_ptr<OptimizationProblemDecorator>
-OptimizationProblem<T>::make_decorator() const
-{
+OptimizationProblem<T>::make_decorator() const {
     // TODO is this what we want? a shared_ptr??
     return std::make_shared<Decorator>(*this);
 }
 
 template<typename T>
-void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const
-{
+void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const {
     // TODO proper error messages.
     throw std::runtime_error("Not implemented.");
 }

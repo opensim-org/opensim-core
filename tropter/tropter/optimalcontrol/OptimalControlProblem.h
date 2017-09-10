@@ -132,30 +132,30 @@ void OptimalControlProblemBase<T>::print_description() const {
 }
 
 template<typename T>
-void OptimalControlProblemBase<T>::initialize_on_mesh(const Eigen::VectorXd&) const
+void OptimalControlProblemBase<T>::
+initialize_on_mesh(const Eigen::VectorXd&) const
 {}
 
 template<typename T>
-void OptimalControlProblemBase<T>::dynamics(const VectorX<T>&,
-                                        const VectorX<T>&,
-                                        Eigen::Ref<VectorX<T>>) const
+void OptimalControlProblemBase<T>::
+dynamics(const VectorX<T>&, const VectorX<T>&, Eigen::Ref<VectorX<T>>) const
 {}
 
 template<typename T>
-void OptimalControlProblemBase<T>::path_constraints(unsigned,
-                                                const T&,
-                                                const VectorX <T>&,
-                                                const VectorX <T>&,
-                                                Eigen::Ref<VectorX<T>>) const {}
+void OptimalControlProblemBase<T>::
+path_constraints(unsigned, const T&, const VectorX <T>&, const VectorX <T>&,
+        Eigen::Ref<VectorX<T>>) const
+{}
 
 template<typename T>
-void OptimalControlProblemBase<T>::endpoint_cost(const T&,
-                                             const VectorX<T>&, T&) const {}
+void OptimalControlProblemBase<T>::
+endpoint_cost(const T&, const VectorX<T>&, T&) const
+{}
 
 template<typename T>
-void OptimalControlProblemBase<T>::integral_cost(const T&,
-                                             const VectorX<T>&,
-                                             const VectorX<T>&, T&) const {}
+void OptimalControlProblemBase<T>::
+integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
+{}
 
 struct Bounds {
     Bounds() = default;
