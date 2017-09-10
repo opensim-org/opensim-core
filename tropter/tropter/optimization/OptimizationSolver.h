@@ -10,7 +10,7 @@ namespace tropter {
 
 class AbstractOptimizationProblem;
 
-class OptimizationProblemProxy;
+class OptimizationProblemDecorator;
 
 class OptimizationSolver {
 public:
@@ -41,7 +41,7 @@ public:
     double optimize(Eigen::VectorXd& variables) const;
 protected:
     virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
-    std::shared_ptr<const OptimizationProblemProxy> m_problem;
+    std::shared_ptr<const OptimizationProblemDecorator> m_problem;
     int m_max_iterations = -1;
     std::string m_hessian_approximation = "";
 };

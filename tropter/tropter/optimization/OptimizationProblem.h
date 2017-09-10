@@ -13,10 +13,14 @@ class JacobianRecovery1D;
 
 namespace tropter {
 
-class OptimizationProblemProxy {
+/// This class provides an interface of the OptimizationProblem to the
+/// OptimizationSolvers. The class has a derived type for each scalar type,
+/// and these derived classes compute the gradient, Jacobian, and Hessian
+/// (using either finite differences or automatic differentiation).
+class OptimizationProblemDecorator {
     // TODO rename all method names to verbs
 public:
-    OptimizationProblemProxy(const AbstractOptimizationProblem& problem) :
+    OptimizationProblemDecorator(const AbstractOptimizationProblem& problem) :
             m_problem(problem) {}
     unsigned num_variables() const
     {   return m_problem.get_num_variables(); }
@@ -58,7 +62,6 @@ public:
     virtual void jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const = 0;
-    // TODO this signature seems to be tailoring to Ipopt too much.
     virtual void hessian_lagrangian(
             unsigned num_variables, const double* variables,
             bool new_variables, double obj_factor,
@@ -73,72 +76,60 @@ private:
     const AbstractOptimizationProblem& m_problem;
 };
 
+/// Users define an optimization problem by deriving from this class template.
+/// The type T determines how the derivatives of the objective and constraint
+/// functions are computed: T = double for finite differences, T = adouble
+/// for automatic differentiation.
 template<typename T>
 class OptimizationProblem : public AbstractOptimizationProblem {
 public:
-    class Proxy;
+    /// The Decorator computes the gradient, Jacobian, and Hessian in a
+    /// generic way for the objective and constraint functions provided in
+    /// OptimizationProblem.
+    class Decorator;
 
     virtual ~OptimizationProblem() = default;
-
     OptimizationProblem() = default;
 
     OptimizationProblem(unsigned num_variables, unsigned num_constraints) :
             AbstractOptimizationProblem(num_variables, num_constraints) {}
 
-    std::shared_ptr<OptimizationProblemProxy> make_proxy() const override final;
+    /// Implement this function to compute the objective function.
+    /// @param variables This holds the values of the variables at the current
+    ///     iteration of the optimization problem.
+    /// @param constr Store the objective function value in this variable.
+    virtual void objective(const VectorX<T>& variables, T& obj_value) const;
+
+    /// Implement this function to compute the constraint function (no need
+    /// to implement if your problem has no constraints).
+    /// @param variables This holds the values of the variables at the current
+    ///     iteration of the optimization problem.
+    /// @param constr Store the constraint equation values in this vector,
+    ///     which has `num_constraints` elements.
+    virtual void constraints(const VectorX<T>& variables,
+            Eigen::Ref<VectorX<T>> constr) const;
+
+    /// Create an interface to this problem that can provide the derivatives
+    /// of the objective and constraint functions. This is for use by the
+    /// optimization solver, but users might call this if they are interested
+    /// in obtaining the sparsity pattern or derivatives for their problem.
+    std::shared_ptr<OptimizationProblemDecorator> make_decorator()
+            const override final;
 
     // TODO can override to provide custom derivatives.
     //virtual void gradient(const std::vector<T>& x, std::vector<T>& grad) const;
     //virtual void jacobian(const std::vector<T>& x, TODO) const;
     //virtual void hessian() const;
-
-    // TODO it might be weird for users to use/implement a method called "_impl"
-    virtual void objective(const VectorX<T>& x, T& obj_value) const;
-
-    virtual void constraints(const VectorX<T>& x,
-            Eigen::Ref<VectorX<T>> constr) const;
-
-    // TODO user may want to define gradient, jacobian, hessian on their own...
-
-//    void objective(const Eigen::VectorXd& variables, double& obj_value) const;
-//
-//    void constraints(const Eigen::VectorXd& variables,
-//            Eigen::Ref<Eigen::VectorXd> constr) const;
-//    void objective(const VectorX<T>& x, T& obj_value) const;
-//
-//    void constraints(const VectorX<T>& x,
-//            Eigen::Ref<VectorX<T>> constr) const;
-
-    // TODO for both hessian and jacobian.
-    // TODO what about multiple points used to determine sparsity?
-    // TODO this would move to a proxy class.
-//    void determine_sparsity(const Eigen::VectorXd& variables,
-//            std::vector<unsigned int>& jacobian_row_indices,
-//            std::vector<unsigned int>& jacobian_col_indices,
-//            std::vector<unsigned int>& hessian_row_indices,
-//            std::vector<unsigned int>& hessian_col_indices) const;
-
-private:
-
-    // TODO this feels too Ipopt-specific..obj_factor?
-	// TODO can delete this now; the TODO above is outdated.
-    // void lagrangian(double obj_factor, const VectorX<T>& x,
-    //         const Eigen::VectorXd& lambda, T& result) const;
-
 };
 
 template<typename T>
-std::shared_ptr<OptimizationProblemProxy> OptimizationProblem<T>::make_proxy()
-const
+std::shared_ptr<OptimizationProblemDecorator>
+OptimizationProblem<T>::make_decorator() const
 {
     // TODO is this what we want? a shared_ptr??
-    //auto* proxy = new Proxy(*this);
-    //return std::shared_ptr<OptimizationProblemProxy>
-    //        (proxy);
-    return std::make_shared<Proxy>(*this);
+    return std::make_shared<Decorator>(*this);
 }
 
-// TODO rename back to "objective()"
 template<typename T>
 void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const
 {
@@ -149,20 +140,19 @@ void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const
 template<typename T>
 void OptimizationProblem<T>::constraints(const VectorX<T>&,
         Eigen::Ref<VectorX<T>>) const
-{
-// TODO throw std::runtime_error("Not implemented.");
-}
+{}
 
-// TODO The non-specialized version is empty!
+/// We must specialize this template for each scalar type.
 template<typename T>
-class OptimizationProblem<T>::Proxy : public OptimizationProblemProxy {
+class OptimizationProblem<T>::Decorator : public OptimizationProblemDecorator {
 };
 
 template<>
-class OptimizationProblem<double>::Proxy : public OptimizationProblemProxy {
+class OptimizationProblem<double>::Decorator
+        : public OptimizationProblemDecorator {
 public:
-    Proxy(const OptimizationProblem<double>& problem);
-    ~Proxy();
+    Decorator(const OptimizationProblem<double>& problem);
+    ~Decorator();
     void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
@@ -242,12 +232,15 @@ private:
     mutable std::vector<unsigned int> m_jacobian_recovered_col_indices;
 };
 
+/// This specialization uses automatic differentiation (via ADOL-C) to
+/// compute the derivatives of the objective and constraints.
 template<>
-class OptimizationProblem<adouble>::Proxy : public OptimizationProblemProxy {
+class OptimizationProblem<adouble>::Decorator
+        : public OptimizationProblemDecorator {
 public:
-    Proxy(const OptimizationProblem<adouble>& problem);
+    Decorator(const OptimizationProblem<adouble>& problem);
     /// Delete memory allocated by ADOL-C.
-    virtual ~Proxy();
+    virtual ~Decorator();
     void sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,

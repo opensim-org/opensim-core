@@ -21,11 +21,11 @@ double SNOPTSolver::optimize_impl(VectorXd& /*variables*/) const
 
 namespace {
 // TODO this global is a big no-no. I thought of using a lambda that captures
-// the Proxy pointer; lambdas can be converted into C function pointers, but
-// not if they capture variables (like the Proxy pointer).
+// the Decorator pointer; lambdas can be converted into C function pointers, but
+// not if they capture variables (like the Decorator pointer).
 // TODO another option is to derive from snoptProblemA.
 // TODO another option is to pass the pointer within cu (see Drake).
-std::shared_ptr<const OptimizationProblemProxy> probproxy = nullptr;
+std::shared_ptr<const OptimizationProblemDecorator> probproxy = nullptr;
 }
 
 // TODO make this into a lambda?

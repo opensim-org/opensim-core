@@ -149,14 +149,14 @@ TEST_CASE("Generating an initial guess using problem bounds",
           "[initialguess]") {
     SECTION("double") {
         VarietyOfBounds<double> problem;
-        const auto proxy = problem.make_proxy();
-        VectorXd actual = proxy->initial_guess_from_bounds();
+        const auto decorator = problem.make_decorator();
+        VectorXd actual = decorator->initial_guess_from_bounds();
         Vector4d expected(0, -5, -8, 50);
         TROPTER_REQUIRE_EIGEN(actual, expected, 1e-10);
     }
     SECTION("adouble") {
         VarietyOfBounds<adouble> problem;
-        const auto proxy = problem.make_proxy();
+        const auto proxy = problem.make_decorator();
         VectorXd actual = proxy->initial_guess_from_bounds();
         Vector4d expected(0, -5, -8, 50);
         TROPTER_REQUIRE_EIGEN(actual, expected, 1e-10);

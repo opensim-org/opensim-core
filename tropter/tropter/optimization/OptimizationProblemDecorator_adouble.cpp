@@ -18,9 +18,9 @@ using Eigen::Ref;
 
 namespace tropter {
 
-OptimizationProblem<adouble>::Proxy::Proxy(
+OptimizationProblem<adouble>::Decorator::Decorator(
         const OptimizationProblem<adouble>& problem) :
-        OptimizationProblemProxy(problem), m_problem(problem)
+        OptimizationProblemDecorator(problem), m_problem(problem)
 {
     // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
     // [0]: Way of sparsity pattern computation (propagation of index domains).
@@ -39,7 +39,7 @@ OptimizationProblem<adouble>::Proxy::Proxy(
     m_sparse_hess_options[1] = 0;
 }
 
-OptimizationProblem<adouble>::Proxy::~Proxy() {
+OptimizationProblem<adouble>::Decorator::~Decorator() {
     if (m_jacobian_row_indices) {
         delete [] m_jacobian_row_indices;
         m_jacobian_row_indices = nullptr;
@@ -58,7 +58,7 @@ OptimizationProblem<adouble>::Proxy::~Proxy() {
     }
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
@@ -150,7 +150,7 @@ sparsity(const Eigen::VectorXd& x,
     }
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 objective(unsigned num_variables, const double* x,
         bool /*new_x*/,
         double& obj_value) const
@@ -168,7 +168,7 @@ objective(unsigned num_variables, const double* x,
     // TODO if status != 3, retape.
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
@@ -184,7 +184,7 @@ constraints(unsigned num_variables, const double* variables,
     assert(status >= 0);
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
@@ -192,7 +192,7 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     assert(status); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
@@ -210,7 +210,7 @@ jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
     // previous memory for row indices, etc.
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 hessian_lagrangian(unsigned num_variables, const double* x,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda,
@@ -265,7 +265,7 @@ hessian_lagrangian(unsigned num_variables, const double* x,
     assert(status >= 0);
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 trace_objective(short int tag,
         unsigned num_variables, const double* x,
         double& obj_value) const
@@ -285,7 +285,7 @@ trace_objective(short int tag,
     // =========================================================================
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 trace_constraints(short int tag,
         unsigned num_variables, const double* x,
         unsigned num_constraints, double* constr) const
@@ -307,7 +307,7 @@ trace_constraints(short int tag,
     // =========================================================================
 }
 
-void OptimizationProblem<adouble>::Proxy::
+void OptimizationProblem<adouble>::Decorator::
 trace_lagrangian(short int tag,
         unsigned num_variables, const double* x, const double& obj_factor,
         unsigned num_constraints, const double* lambda,

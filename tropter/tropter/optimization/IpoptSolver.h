@@ -26,7 +26,7 @@ class IpoptSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
-    TNLP(std::shared_ptr<const OptimizationProblemProxy> problem);
+    TNLP(std::shared_ptr<const OptimizationProblemDecorator> problem);
     void initialize(const Eigen::VectorXd& guess);
     const Eigen::VectorXd& get_solution() const
     {
@@ -91,9 +91,9 @@ private:
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
 
     // Members.
-//    const OptimizationProblemProxy& m_problem;
+//    const OptimizationProblemDecorator& m_problem;
     // TODO reconsider the type of this variable:
-    std::shared_ptr<const OptimizationProblemProxy> m_problem;
+    std::shared_ptr<const OptimizationProblemDecorator> m_problem;
 
     unsigned m_num_variables = std::numeric_limits<unsigned>::max();
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();

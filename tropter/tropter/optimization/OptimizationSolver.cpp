@@ -8,7 +8,7 @@ using namespace tropter;
 
 OptimizationSolver::OptimizationSolver(
         const AbstractOptimizationProblem& problem)
-        : m_problem(problem.make_proxy()) {}
+        : m_problem(problem.make_decorator()) {}
 
 int OptimizationSolver::get_max_iterations() const
 {

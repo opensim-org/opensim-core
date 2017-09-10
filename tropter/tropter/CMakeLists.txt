@@ -5,8 +5,8 @@ add_library(tropter
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.hpp
         optimization/OptimizationProblem.cpp
-        optimization/OptimizationProblemProxy_double.cpp
-        optimization/OptimizationProblemProxy_adouble.cpp
+        optimization/OptimizationProblemDecorator_double.cpp
+        optimization/OptimizationProblemDecorator_adouble.cpp
         optimization/OptimizationSolver.h
         optimization/OptimizationSolver.cpp
         optimization/SNOPTSolver.h
@@ -34,7 +34,7 @@ target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 target_include_directories(tropter SYSTEM PUBLIC ${COLPACK_INCLUDE_DIR})
 target_link_libraries(tropter PUBLIC ${COLPACK_LIBRARIES})
 
-# This line was from when we used pkg-config to find ADOL-C.
+# This line was from when we used pkg-config to find ADOL-C:
 #target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(tropter PUBLIC ${ADOLC_LIBRARIES})
@@ -52,11 +52,11 @@ endif()
 
 target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
 target_link_libraries(tropter PUBLIC ${IPOPT_LIBRARIES})
+# TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
 endif()
-# TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").

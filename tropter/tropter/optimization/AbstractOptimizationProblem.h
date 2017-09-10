@@ -6,7 +6,7 @@
 
 namespace tropter {
 
-class OptimizationProblemProxy;
+class OptimizationProblemDecorator;
 
 class AbstractOptimizationProblem {
 public:
@@ -27,7 +27,7 @@ public:
     get_constraint_lower_bounds() const { return m_constraint_lower_bounds; }
     const Eigen::VectorXd&
     get_constraint_upper_bounds() const { return m_constraint_upper_bounds; }
-    virtual std::shared_ptr<OptimizationProblemProxy> make_proxy() const = 0;
+    virtual std::shared_ptr<OptimizationProblemDecorator> make_decorator() const = 0;
 
 protected:
 

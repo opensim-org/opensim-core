@@ -21,13 +21,13 @@ namespace tropter {
 
 // We must implement the destructor in a context where ColPack's coloring
 // class is complete (since it's used in a unique ptr member variable.).
-OptimizationProblem<double>::Proxy::~Proxy() {}
+OptimizationProblem<double>::Decorator::~Decorator() {}
 
-OptimizationProblem<double>::Proxy::Proxy(
+OptimizationProblem<double>::Decorator::Decorator(
         const OptimizationProblem<double>& problem) :
-        OptimizationProblemProxy(problem), m_problem(problem) {}
+        OptimizationProblemDecorator(problem), m_problem(problem) {}
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 sparsity(const Eigen::VectorXd& /*x*/,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
@@ -191,7 +191,7 @@ sparsity(const Eigen::VectorXd& /*x*/,
     //hessian_col_indices.resize(num_hessian_elements);
 }
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 objective(unsigned num_variables, const double* variables,
         bool /*new_x*/,
         double& obj_value) const
@@ -201,7 +201,7 @@ objective(unsigned num_variables, const double* variables,
     m_problem.objective(xvec, obj_value);
 }
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
@@ -215,7 +215,7 @@ constraints(unsigned num_variables, const double* variables,
     std::copy(constrvec.data(), constrvec.data() + num_constraints, constr);
 }
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
@@ -253,7 +253,7 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     }
 }
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
@@ -300,7 +300,7 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
             &jacobian_values); // Corresponding values in the Jacobian.
 }
 
-void OptimizationProblem<double>::Proxy::
+void OptimizationProblem<double>::Decorator::
 hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
         bool /*new_x*/, double /*obj_factor*/,
         unsigned /*num_constraints*/, const double* /*lambda*/,

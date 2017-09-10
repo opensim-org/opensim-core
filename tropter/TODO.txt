@@ -7,7 +7,7 @@ time, in case they share a lot of the computaitonal graph.
 
 Move ADOL-C code from IpoptSolver::TNLP to OptimizationProblem<adouble>.
 
-Trying non-virtual interface for OptimizationProblem, but a Proxy class could
+Trying non-virtual interface for OptimizationProblem, but a Decorator class could
  be preferable.
 
  For finite diff version (with doubles), make SURE to use Map<Matrix> to

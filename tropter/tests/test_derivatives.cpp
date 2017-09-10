@@ -126,19 +126,19 @@ TEST_CASE("Check derivatives with analytical deriv.")
     // -------------------
     SECTION("Finite differences") {
         HS071<double> problemd;
-        auto proxy = problemd.make_proxy();
+        auto decorator = problemd.make_decorator();
         // Must first initialize.
         std::vector<unsigned int> jacobian_row_indices;
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        proxy->sparsity(proxy->initial_guess_from_bounds(),
+        decorator->sparsity(decorator->initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
-        proxy->gradient(problem.get_num_variables(), x.data(), false,
+        decorator->gradient(problem.get_num_variables(), x.data(), false,
                 fd_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-8);
 
@@ -152,7 +152,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
-        proxy->jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, fd_jacobian_values.data());
         INFO(analytical_jacobian);
         INFO(fd_jacobian_values);
@@ -168,19 +168,19 @@ TEST_CASE("Check derivatives with analytical deriv.")
     // ----------------------
     SECTION("ADOL-C") {
 
-        auto proxy = problem.make_proxy();
+        auto decorator = problem.make_decorator();
         // Must first initialize the ADOL-C tapes.
         std::vector<unsigned int> jacobian_row_indices;
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        proxy->sparsity(proxy->initial_guess_from_bounds(),
+        decorator->sparsity(decorator->initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
-        proxy->gradient(problem.get_num_variables(), x.data(), false,
+        decorator->gradient(problem.get_num_variables(), x.data(), false,
                 adolc_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
 
@@ -188,7 +188,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         const unsigned num_hessian_nonzeros =
                 (unsigned)hessian_row_indices.size();
         VectorXd adolc_hessian_values(num_hessian_nonzeros);
-        proxy->hessian_lagrangian(problem.get_num_variables(), x.data(), false,
+        decorator->hessian_lagrangian(problem.get_num_variables(), x.data(), false,
                 obj_factor, problem.get_num_constraints(), lambda.data(), false,
                 num_hessian_nonzeros, adolc_hessian_values.data());
         for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
@@ -204,7 +204,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd adolc_jacobian_values(num_jacobian_elem);
-        proxy->jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, adolc_jacobian_values.data());
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
@@ -318,7 +318,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
     // -------------------
     SECTION("Finite differences") {
         SparseJacobian<double> problemd;
-        auto proxy = problemd.make_proxy();
+        auto proxy = problemd.make_decorator();
         // Must first initialize.
         std::vector<unsigned int> jacobian_row_indices;
         std::vector<unsigned int> jacobian_col_indices;
@@ -359,7 +359,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
     // ----------------------
     SECTION("ADOL-C") {
 
-        auto proxy = problem.make_proxy();
+        auto proxy = problem.make_decorator();
         // Must first initialize the ADOL-C tapes.
         std::vector<unsigned int> jacobian_row_indices;
         std::vector<unsigned int> jacobian_col_indices;

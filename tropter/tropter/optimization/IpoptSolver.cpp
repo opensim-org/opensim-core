@@ -59,7 +59,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
 }
 
 IpoptSolver::TNLP::TNLP(
-        std::shared_ptr<const OptimizationProblemProxy> problem)
+        std::shared_ptr<const OptimizationProblemDecorator> problem)
         : m_problem(problem)
 {
     m_num_variables = m_problem->num_variables();

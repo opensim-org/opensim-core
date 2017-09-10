@@ -2,7 +2,7 @@
 
 namespace tropter {
 
-Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
+Eigen::VectorXd OptimizationProblemDecorator::initial_guess_from_bounds() const
 {
     const auto& lower = variable_lower_bounds();
     const auto& upper = variable_upper_bounds();
@@ -21,6 +21,7 @@ Eigen::VectorXd OptimizationProblemProxy::initial_guess_from_bounds() const
 }
 
 // Explicit instantiation.
+template class OptimizationProblem<double>;
 template class OptimizationProblem<adouble>;
 // TODO extern to avoid implicit instantiation and improve compile time?
 
