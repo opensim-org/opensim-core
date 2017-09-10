@@ -8,7 +8,7 @@ problems you will be able to solve with Muscollo:
 
 1. Solve for the muscle activity that tracks a known motion.
 2. Solve for a new motion that optimizes some objective functional.
-3. TODO add more to this list.
+3. Solve for mass properties that minimize residual "hand of God" forces.
 
 The optimal control problems are solved using the direct collocation method.
 
@@ -52,7 +52,10 @@ Design goals
    1. Solving for muscle activity from a known motion should be faster than 
       using OpenSim Computed Muscle Control.
       
-   2. Advanced users can construct optimal control problems programmatically in
+   2. Users should be able to solve for mass properties that minimize 
+      residual forces.
+      
+   3. Advanced users can construct optimal control problems programmatically in
       C++.
    
 3. Advanced users can create plugins to create custom cost terms and 
@@ -61,7 +64,9 @@ Design goals
 2. Allow biomechanists to customize an optimal control problem.
 
    1. Choose an objective functional (sum of squared muscle activation, 
-      metabolic cost, joint loads).
+      metabolic cost, joint loads, coordinate tracking, marker tracking).
+      
+   2. Choose constraints (activation within range of EMG).
       
 3. The software and its source code are made freely available in a way that 
    allows for commercial use (permissive licensing).
@@ -73,13 +78,37 @@ Design goals
       (derivatives computed with finite differences) or `adouble`s (allowing use
       of automatic differentiation).
 
+5. For advanced users, there should be utilities to easily debug issues with 
+   problem formulation (which variables are hitting their constraints?) and to 
+   improve performance (visualize sparsity pattern).
+   
+6. The software should fully exploit all cores available on a user's 
+   computer, but should provide the option to only use 1 thread (if the user is 
+   solving multiple problems in parallel).
+   
+7. Users can construct a Muscollo problem in MATLAB and Python.
+
+8. The software is easy to build from source.
+
+9. The software runs on Windows, macOS, and Linux (Ubuntu).
 
 Non-goals
 =========
 
-1.  We do not aim to provide a full-fledged direct collocation solver (in 
-    Tropter). Rather, we will decide what features to add to Tropter based on 
-    what is useful for solving biomechanics optimal control problems.
+1. We do not aim to provide a full-fledged direct collocation solver (in 
+   Tropter). Rather, we will decide what features to add to Tropter based on 
+   what is useful for solving biomechanics optimal control problems.
+    
+2. Specifying custom cost or constraint modules in MATLAB/Python.
 
+User stories
+============
 
-MATLAB, Python support?
+1. A user has joint angles from OpenSim and estimates muscle activity
+   that minimizes the sum of squared muscle activity.
+ 
+2. A user plots the solution to an optimal control problem in Python or MATLAB.
+   
+3. A user postprocesses their optimal control solution in OpenSim to compute 
+   metabolic cost across the trajectory.
+
