@@ -412,8 +412,8 @@ public:
      * option values, etc. Also, keep in mind that states Storage files usually
      * do not contain the state values to full precision, and thus cannot
      * exactly reproduce results from the initial state trajectory. Lastly,
-     * this function modifies each state to obey any constraints in the model
-     * (by calling Model::assemble()).
+     * this function optionally modifies each state to obey any constraints in
+     * the model (by calling Model::assemble()).
      *
      * The states in the resulting trajectory will be realized to
      * SimTK::Stage::Instance. You should not use the resulting trajectory with
@@ -438,6 +438,8 @@ public:
      *      columns in the Storage that do not correspond to continuous state
      *      variables in the Model. If true, such columns of the Storage are
      *      ignored.
+     * @param enforceConstraints Modify state variable values to satisfy
+     *      kinematic constraints (by calling Model::assemble()).
      *
      * #### Usage
      * Here is how you might use this function in python:
@@ -478,7 +480,8 @@ public:
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const Storage& sto,
             bool allowMissingColumns = false,
-            bool allowExtraColumns = false);
+            bool allowExtraColumns = false,
+            bool enforceConstraints = true);
 
     /** Convenience form of createFromStatesStorage() that takes the path to a
      * Storage file instead of a Storage object. This convenience form uses the

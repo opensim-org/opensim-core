@@ -161,35 +161,12 @@ TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
     return table;
 }
 
-/** The map provides the index of each state variable in
-SimTK::State::getY() from its each state variable path string. */
-std::map<std::string, int> createSystemYIndices(const Model& model) {
-    std::map<std::string, int> sysYIndices;
-    auto s = model.getWorkingState();
-    const auto svNames = model.getStateVariableNames();
-    s.updY() = 0;
-    for (int iy = 0; iy < s.getNY(); ++iy) {
-        s.updY()[iy] = SimTK::NaN;
-        const auto svValues = model.getStateVariableValues(s);
-        for (int isv = 0; isv < svNames.size(); ++isv) {
-            if (SimTK::isNaN(svValues[isv])) {
-                sysYIndices[svNames[isv]] = iy;
-                s.updY()[iy] = 0;
-                break;
-            }
-        }
-    }
-    SimTK_ASSERT2_ALWAYS(svNames.size() == sysYIndices.size(),
-        "Expected to find %i state indices but found %i.", svNames.size(),
-        sysYIndices.size());
-    return sysYIndices;
-}
-
 StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Model& model,
         const Storage& sto,
         bool allowMissingColumns,
-        bool allowExtraColumns) {
+        bool allowExtraColumns,
+        bool enforceConstraints) {
 
     // Assemble the required objects.
     // ==============================
@@ -228,7 +205,6 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Check if states are missing from the Storage.
     // ---------------------------------------------
     const auto& modelStateNames = localModel.getStateVariableNames();
-    const auto sysYIndices = createSystemYIndices(localModel);
     std::vector<std::string> missingColumnNames;
     // Also, assemble the indices of the states that we will actually set in the
     // trajectory.
@@ -239,7 +215,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         if (stateIndex == -1) {
             missingColumnNames.push_back(modelStateNames[is]);
         } else {
-            statesToFillUp[stateIndex] = sysYIndices.at(modelStateNames[is]);
+            statesToFillUp[stateIndex] = is;
         }
     }
     OPENSIM_THROW_IF(!allowMissingColumns && !missingColumnNames.empty(),
@@ -274,6 +250,10 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
     // Working memory for Storage.
     SimTK::Vector dependentValues(numDependentColumns);
 
+    // Working memory for state. Initialize so that missing columns end up as
+    // NaN.
+    SimTK::Vector statesValues(modelStateNames.getSize(), SimTK::NaN);
+
     // Initialize so that missing columns end up as NaN.
     state.updY().setToNaN();
 
@@ -288,10 +268,13 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
 
         // Fill up current State with the data for the current time.
         for (const auto& kv : statesToFillUp) {
-            // 'first': index for Storage; 'second': index for SimTK State.
-            state.updY()[kv.second] = dependentValues[kv.first];
+            // 'first': index for Storage; 'second': index for Model.
+            statesValues[kv.second] = dependentValues[kv.first];
         }
-        localModel.assemble(state);
+        localModel.setStateVariableValues(state, statesValues);
+        if (enforceConstraints) {
+            localModel.assemble(state);
+        }
 
         // Make a copy of the edited state and put it in the trajectory.
         states.append(state);
