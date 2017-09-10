@@ -1,4 +1,4 @@
-#include "OptimizationProblem.hpp"
+#include "OptimizationProblem.h"
 
 namespace tropter {
 

@@ -1,4 +1,4 @@
-#include "OptimizationProblem.hpp"
+#include "OptimizationProblem.h"
 
 #ifdef _MSC_VER
 // Ignore warnings from ADOL-C headers.

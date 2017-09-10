@@ -61,7 +61,7 @@ TEST_CASE("Sliding mass new interface Ipopt") {
     REQUIRE(Approx(solution.states(1, 0)) == 0.0);
     REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
 
-    int N = solution.time.size();
+    int N = (int)solution.time.size();
     std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
     // TODO is this really the correct solution?
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
@@ -88,7 +88,7 @@ TEST_CASE("Sliding mass new interface") {
     REQUIRE(Approx(solution.states(1, 0)) == 0.0);
     REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
 
-    int N = solution.time.size();
+    int N = (int)solution.time.size();
     std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
     // TODO is this really the correct solution?
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);

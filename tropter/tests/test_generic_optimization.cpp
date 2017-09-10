@@ -3,7 +3,6 @@
 #include <catch.hpp>
 
 #include <tropter/tropter.h>
-#include <tropter/legacy.h>
 
 #include "testing.h"
 
@@ -15,9 +14,6 @@ using namespace tropter;
 
 // TODO elegantly handle the case where the objective is not defined (do not
 // need ADOL-C to do a bunch of stuff.
-
-// TEST a problem without derivative information.
-
 
 // TODO test exceptions for upper bound < lower bound.
 

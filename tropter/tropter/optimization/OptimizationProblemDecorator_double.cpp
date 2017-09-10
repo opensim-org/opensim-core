@@ -1,4 +1,4 @@
-#include "OptimizationProblem.hpp"
+#include "OptimizationProblem.h"
 #include <ColPack/ColPackHeaders.h>
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP

@@ -3,7 +3,6 @@ add_library(tropter
         common.h
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
-        optimization/OptimizationProblem.hpp
         optimization/OptimizationProblem.cpp
         optimization/OptimizationProblemDecorator_double.cpp
         optimization/OptimizationProblemDecorator_adouble.cpp
@@ -19,8 +18,6 @@ add_library(tropter
         optimalcontrol/OptimalControlProblem.h
         optimalcontrol/OptimalControlIterate.h
         optimalcontrol/OptimalControlIterate.cpp
-        legacy.h
-        legacy.cpp
         )
 
 # PUBLIC means the headers are used in both of the following scenarios:
