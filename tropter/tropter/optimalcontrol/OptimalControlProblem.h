@@ -11,10 +11,6 @@ template <typename T>
 class OptimalControlProblemBase {
 public:
     virtual ~OptimalControlProblemBase() = default;
-    // TODO this is definitely not the interface I want.
-    // TODO difficult... virtual void initial_guess()
-    // TODO really want to declare each state variable individually, and give
-    // each one a name.
     virtual int num_states() const = 0;
     virtual int num_controls() const = 0;
     // TODO assume 0?
@@ -51,8 +47,8 @@ public:
     /// invoked every time there's a new mesh (e.g., in each mesh refinement
     /// iteration). Implementing this function probably only makes sense if
     /// your problem has fixed initial and final times.
-    /// To perform any caching in member variables, you have to use a
-    /// const_cast:
+    /// To perform any caching in member variables, you have to use *mutable*
+    /// member variables or a const_cast:
     /// @code{.cpp}
     /// const_cast<MyOCP*>(this)->data = ...;
     /// @endcode
@@ -60,7 +56,6 @@ public:
     ///             points are normalized and are thus within [0, 1].
     virtual void initialize_on_mesh(const Eigen::VectorXd& mesh) const;
 
-    // TODO use Eigen, not std::vector.
     // TODO must pass in the time.
     // The initial values in `derivative` are arbitrary and cannot be assumed
     // to be 0, etc. You must set entries to 0 explicitly if you want that.
@@ -355,17 +350,11 @@ public:
     /// @name Get information about the problem
     /// @{
     int num_states() const override final
-    {
-        return (int)m_state_infos.size();
-    }
+    {   return (int)m_state_infos.size(); }
     int num_controls() const override final
-    {
-        return (int)m_control_infos.size();
-    }
+    {   return (int)m_control_infos.size(); }
     int num_path_constraints() const override final
-    {
-        return (int)m_path_constraint_infos.size();
-    }
+    {   return (int)m_path_constraint_infos.size(); }
     std::vector<std::string> get_state_names() const override {
         std::vector<std::string> names;
         for (const auto& info : m_state_infos) {
@@ -387,8 +376,7 @@ public:
         }
         return names;
     }
-    void print_description() const override final
-    {
+    void print_description() const override final {
         using std::cout;
         using std::endl;
         auto print_continuous_var_info = [](
