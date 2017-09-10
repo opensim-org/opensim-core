@@ -536,7 +536,6 @@ record(const SimTK::State& s)
     }
     // VARIABLES
     const Ground& ground = _model->getGround();
-    int numJoints = _model->getNumJoints();
 
     _model->realizeAcceleration(s_analysis);
 

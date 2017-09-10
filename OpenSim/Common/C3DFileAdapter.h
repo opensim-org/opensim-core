@@ -46,6 +46,11 @@ public:
 
     C3DFileAdapter* clone() const override;
     
+    /** Read in a C3D file into separate markers and forces tables of type
+        TimeSeriesTableVec3. The markers table has each column labeled by its
+        corresponding marker name. For the forces table, the data are grouped
+        by sensor (force-plate #) in force, point and moment order, with the
+        respective *f#*, *p#* and *m#* column labels. */
     static
     Tables read(const std::string& fileName);
 

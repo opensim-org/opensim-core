@@ -1038,7 +1038,7 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
 
 void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
                                               double factor) const {
-    int ncols = table.getNumColumns();
+    size_t ncols = table.getNumColumns();
     if(ncols == 0)
         throw Exception("SimbodyEngine.scaleRotationalDofColumns: ERROR- storage has no labels, can't determine coordinate types for deg<->rad conversion",
                              __FILE__,__LINE__);
@@ -1052,7 +1052,7 @@ void SimbodyEngine::scaleRotationalDofColumns(TimeSeriesTable& table,
     const CoordinateSet& coordinateSet = _model->getCoordinateSet();
     
     // first column is time, so skip
-    for (int i = 0; i < ncols; i++) {
+    for (size_t i = 0; i < ncols; i++) {
         const std::string& name = table.getColumnLabel(i);
         index = coordinateSet.getIndex(name);
         if (index < 0){

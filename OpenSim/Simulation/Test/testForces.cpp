@@ -56,6 +56,7 @@ void testPathSpring();
 void testExternalForce();
 void testSpringMass();
 void testBushingForce();
+void testTwoFrameLinkerUpdateFromXMLNode();
 void testFunctionBasedBushingForce();
 void testExpressionBasedBushingForceTranslational();
 void testExpressionBasedBushingForceRotational();
@@ -89,6 +90,12 @@ int main()
     try { testBushingForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBushingForce");
+    }
+
+    try { testTwoFrameLinkerUpdateFromXMLNode(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl;
+        failures.push_back("testTwoFrameLinkerUpdateFromXMLNode");
     }
 
     try { testFunctionBasedBushingForce(); }
@@ -509,8 +516,6 @@ void testSpringMass()
 
     osimModel.addForce(&spring);
 
-    //osimModel.print("SpringMassModel.osim");
-
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
     osimModel.addAnalysis(reporter);
@@ -556,6 +561,14 @@ void testSpringMass()
     PointToPointSpring *copyOfSpring = spring.clone();
 
     ASSERT(*copyOfSpring == spring);
+
+    // Verify that the PointToPointSpring is correctly deserialized from
+    // previous major version of OpenSim.
+    Model bouncer("bouncing_block_30000.osim");
+    SimTK::State& s = bouncer.initSystem();
+    bouncer.realizeAcceleration(s);
+
+    /*Vec3 comA =*/ bouncer.calcMassCenterAcceleration(s);
 }
 
 void testBushingForce()
@@ -576,21 +589,23 @@ void testBushingForce()
     osimModel.setName("BushingTest");
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
-    OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(new Sphere{0.1});
-    ball.scale(Vec3(ball_radius), false);
+    auto* ball = new OpenSim::Body("ball", mass, Vec3(0),
+            mass*SimTK::Inertia::sphere(0.1));
+    ball->attachGeometry(new Sphere{0.1});
+    ball->scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    auto* slider = new SliderJoint("slider", ground, Vec3(0), Vec3(0,0,Pi/2),
+            *ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinate for the slider joint
-    auto& sliderCoord = slider.updCoordinate();
+    auto& sliderCoord = slider->updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
-    osimModel.addBody(&ball);
-    osimModel.addJoint(&slider);
+    osimModel.addBody(ball);
+    osimModel.addJoint(slider);
 
     Vec3 rotStiffness(0);
     Vec3 transStiffness(stiffness);
@@ -599,13 +614,16 @@ void testBushingForce()
 
     osimModel.setGravity(gravity_vec);
 
-    BushingForce spring("bushing", "ground", "ball",
+    auto* spring = new BushingForce("bushing", "ground", "ball",
         transStiffness, rotStiffness, transDamping, rotDamping);
 
-    osimModel.addForce(&spring);
+    osimModel.addForce(spring);
     const BushingForce& bushingForce =
         osimModel.getComponent<BushingForce>("bushing");
 
+    // To print (serialize) the latest connections of the model, it is 
+    // necessary to finalizeConnections() first.
+    osimModel.finalizeConnections(osimModel);
     osimModel.print("BushingForceModel.osim");
 
     Model previousVersionModel("BushingForceModel_30000.osim");
@@ -641,13 +659,13 @@ void testBushingForce()
     for(int i = 1; i <=nsteps; i++){
         manager.integrate(osim_state, dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
+        Vec3 pos = ball->findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
 
         //Now check that the force reported by spring
-        Array<double> model_force = spring.getRecordValues(osim_state);
+        Array<double> model_force = spring->getRecordValues(osim_state);
 
         // get the forces applied to the ground and ball
         double analytical_force = -stiffness*height;
@@ -661,11 +679,85 @@ void testBushingForce()
     reporter->getForceStorage().print("bushing_forces.mot");  
 
     // Before exiting lets see if copying the spring works
-    BushingForce *copyOfSpring = spring.clone();
+    BushingForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == spring);
+    ASSERT(*copyOfSpring == *spring);
+}
 
-    osimModel.disownAllComponents();
+// testBushingForce() performs similar checks as does this test, but this test
+// ensures intermediate offset frames are created correctly. This test still
+// uses BushingForce to test the TwoFrameLinker.
+void testTwoFrameLinkerUpdateFromXMLNode() {
+    using namespace SimTK;
+
+    double mass = 1;
+    double start_h = 0.5;
+    double ball_radius = 0.25;
+
+    // Setup OpenSim model
+    Model osimModel{};
+    osimModel.setName("TwoFrameLinkerUpdateFromXMLNodeTest");
+    //OpenSim bodies
+    const Ground& ground = osimModel.getGround();;
+    auto* ball = new OpenSim::Body("ball", mass, Vec3(0),
+            mass*SimTK::Inertia::sphere(0.1));
+    ball->attachGeometry(new Sphere{0.1});
+    ball->scale(Vec3(ball_radius), false);
+
+    // Add joints
+    auto* slider = new SliderJoint("slider", ground, Vec3(0), Vec3(0,0,Pi/2),
+            *ball, Vec3(0), Vec3(0,0,Pi/2));
+
+    double positionRange[2] = {-10, 10};
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
+
+    osimModel.addBody(ball);
+    osimModel.addJoint(slider);
+
+    Vec3 rotStiffness(15, 21, 30);
+    Vec3 transStiffness(10, 10, 10);
+    Vec3 rotDamping(0.4, 0.5, 0.6);
+    Vec3 transDamping(0.2, 0.3, 0.4);
+
+    osimModel.setGravity(gravity_vec);
+
+    auto* spring = new BushingForce("bushing",
+            "ground",
+            Transform(Rotation(BodyRotationSequence,
+                    -0.5, XAxis, 0, YAxis, 0.5, ZAxis),
+                Vec3(1, 2, 3)),
+            "ball",
+            Transform(Rotation(BodyRotationSequence,
+                    0.1, XAxis, 0.2, YAxis, 0.3, ZAxis), 
+                Vec3(4, 5, 6)),
+        transStiffness, rotStiffness, transDamping, rotDamping);
+
+    osimModel.addForce(spring);
+    const BushingForce& bushingForce =
+        osimModel.getComponent<BushingForce>("bushing");
+
+    // It's necessary to correct the connectee names in the BushingForce, which
+    // we can do with finalizeConnections() (they are incorrect otherwise
+    // because `spring` is initially orphaned).
+    osimModel.finalizeConnections(osimModel);
+    osimModel.print("BushingForceOffsetModel.osim");
+
+    Model previousVersionModel("BushingForceOffsetModel_30000.osim");
+    previousVersionModel.finalizeFromProperties();
+    // This line is necessary for wiring up the FrameGeometry of the
+    // OffsetFrames.
+    previousVersionModel.finalizeConnections(osimModel);
+    previousVersionModel.print("BushingForceOffsetModel_30000_in_Latest.osim");
+
+    const BushingForce& bushingForceFromPrevious =
+        previousVersionModel.getComponent<BushingForce>("bushing");
+
+    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
+        "current bushing force FAILED to match bushing force from previous "
+        "model.");
 }
 
 void testFunctionBasedBushingForce()

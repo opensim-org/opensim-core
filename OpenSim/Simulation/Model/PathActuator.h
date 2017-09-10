@@ -136,8 +136,6 @@ protected:
     virtual SimTK::Vec3 computePathColor(const SimTK::State& state) const;
 
     /** Extension of parent class method; derived classes may extend further. **/
-    void extendFinalizeFromProperties() override;
-    /** Extension of parent class method; derived classes may extend further. **/
     void extendRealizeDynamics(const SimTK::State& state) const override;
 
 private:

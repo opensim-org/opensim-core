@@ -85,9 +85,6 @@ protected:
     // ModelComponent Interface
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    // Update the geometry attached to the actuator. Use inertial frame.
-    virtual void updateGeometry();
-
 public:
 
     //Model building

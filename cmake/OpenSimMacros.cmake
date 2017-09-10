@@ -353,15 +353,17 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
             message(FATAL_ERROR "Zero DLLs found in directory "
                                 "${DEP_INSTALL_DIR}.")
         endif()
+        set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
             get_filename_component(DLL_NAME ${DLL} NAME)
-            set(DEST_DIR ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR})
-            add_custom_command(OUTPUT ${DLL_NAME}
-                               COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
-                               COMMENT "Copying ${DLL_NAME} to ${DEST_DIR}.")
-            list(APPEND DLL_NAMES ${DLL_NAME})
+            list(APPEND DLLS_DEST "${DEST_DIR}/${DLL_NAME}")
+            add_custom_command(OUTPUT "${DEST_DIR}/${DLL_NAME}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
+                COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
+                DEPENDS ${DLL}
+                COMMENT "Copying DLL from ${DEP_INSTALL_DIR}/${DLL_NAME} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLL_NAMES})
+        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
         set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
             PROJECT_LABEL "Copy ${DEP_NAME} DLLs")
         if(OPENSIM_COPY_DEPENDENCIES)
@@ -369,7 +371,6 @@ function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
         endif()
     endif()
 endfunction()
-
 
 # Discover the file dependencies for an invocation of swig, for use with the
 # DEPENDS field of an add_custom_command().

@@ -121,11 +121,6 @@ namespace {
             vec.push_back(strings[i]);
         return vec;
     }
-    template <>
-    std::vector<std::string> createVector(
-            const std::vector<std::string>& strings) {
-        return strings;
-    }
 }
 
 TimeSeriesTable StatesTrajectory::exportToTable(const Model& model,
