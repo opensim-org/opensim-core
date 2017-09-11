@@ -59,10 +59,7 @@ initialize_on_mesh(const Eigen::VectorXd&) const
 
 template<typename T>
 void OptimalControlProblem<T>::
-calc_differential_algebraic_equations(unsigned, const T&,
-        const VectorX<T>&, const VectorX<T>&,
-        Eigen::Ref<VectorX<T>>,
-        Eigen::Ref<VectorX<T>>) const
+calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
 {}
 
 template<typename T>

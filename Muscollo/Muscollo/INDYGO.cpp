@@ -225,12 +225,14 @@ public:
         }
     }
 
-    void calc_differential_algebraic_equations(unsigned i_mesh,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
+
+        const auto& i_mesh = in.mesh_index;
+        const auto& states = in.states;
+        const auto& controls = in.controls;
+
         // Actuator dynamics.
         // ==================
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
@@ -242,10 +244,10 @@ public:
 
             // Activation dynamics.
             _muscles[i_act].calcActivationDynamics(excitation, activation,
-                    derivatives[2 * i_act]);
+                    out.dynamics[2 * i_act]);
 
             // Fiber dynamics.
-            derivatives[2 * i_act + 1] =
+            out.dynamics[2 * i_act + 1] =
                     _muscles[i_act].get_max_contraction_velocity() * normFibVel;
         }
 
@@ -281,7 +283,7 @@ public:
                 T normTenForce;
                 _muscles[i_act].calcEquilibriumResidual(activation, musTenLen,
                         normFibLen, normFibVel,
-                        constraints[i_act],
+                        out.path[i_act],
                         normTenForce);
 
                 tendonForces[i_act] = _muscles[i_act].get_max_isometric_force()
@@ -296,7 +298,7 @@ public:
 
         // Achieve the motion.
         // ===================
-        constraints.segment(_numMuscles, _numCoordsToActuate)
+        out.path.segment(_numMuscles, _numCoordsToActuate)
                 = _desiredMoments.col(i_mesh).template cast<adouble>()
                 - genForce;
     }

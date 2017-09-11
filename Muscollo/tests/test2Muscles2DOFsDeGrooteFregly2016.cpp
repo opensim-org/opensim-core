@@ -107,30 +107,28 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> /*constraints*/) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
         // Unpack variables.
         // -----------------
-        const T& vx = states[m_i_vx];
-        const T& vy = states[m_i_vy];
+        const T& vx = in.states[m_i_vx];
+        const T& vy = in.states[m_i_vy];
 
         // Multibody kinematics.
         // ---------------------
-        derivatives[m_i_x] = vx;
-        derivatives[m_i_y] = vy;
+        out.dynamics[m_i_x] = vx;
+        out.dynamics[m_i_y] = vy;
 
         // Multibody dynamics.
         // -------------------
-        const auto netForce = calcNetForce(states, controls);
-        derivatives[m_i_vx] = netForce.x / mass;
-        derivatives[m_i_vy] = netForce.y / mass - ACCEL_GRAVITY;
+        const auto netForce = calcNetForce(in.states, in.controls);
+        out.dynamics[m_i_vx] = netForce.x / mass;
+        out.dynamics[m_i_vy] = netForce.y / mass - ACCEL_GRAVITY;
     }
-    NetForce calcNetForce(const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls) const {
+    NetForce calcNetForce(
+            const Eigen::Ref<const tropter::VectorX<T>>& states,
+            const Eigen::Ref<const tropter::VectorX<T>>& controls) const {
         const T& x = states[m_i_x];
         const T& y = states[m_i_y];
         const T& vx = states[m_i_vx];
@@ -272,69 +270,66 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
         // Unpack variables.
         // -----------------
-        const T& vx = states[m_i_vx];
-        const T& vy = states[m_i_vy];
+        const T& vx = in.states[m_i_vx];
+        const T& vy = in.states[m_i_vy];
 
         // Multibody kinematics.
         // ---------------------
-        derivatives[m_i_x] = vx;
-        derivatives[m_i_y] = vy;
+        out.dynamics[m_i_x] = vx;
+        out.dynamics[m_i_y] = vy;
 
         // Multibody dynamics.
         // -------------------
-        const auto netForce = calcNetForce(states);
-        derivatives[m_i_vx] = netForce.x / mass;
-        derivatives[m_i_vy] = netForce.y / mass - ACCEL_GRAVITY;
+        const auto netForce = calcNetForce(in.states);
+        out.dynamics[m_i_vx] = netForce.x / mass;
+        out.dynamics[m_i_vy] = netForce.y / mass - ACCEL_GRAVITY;
 
         // Activation dynamics.
         // --------------------
-        const T& activationL = states[m_i_activation_l];
-        const T& excitationL = controls[m_i_excitation_l];
+        const T& activationL = in.states[m_i_activation_l];
+        const T& excitationL = in.controls[m_i_excitation_l];
         m_muscleL.calcActivationDynamics(excitationL, activationL,
-                                         derivatives[m_i_activation_l]);
-        const T& activationR = states[m_i_activation_r];
-        const T& excitationR = controls[m_i_excitation_r];
+                                         out.dynamics[m_i_activation_l]);
+        const T& activationR = in.states[m_i_activation_r];
+        const T& excitationR = in.controls[m_i_excitation_r];
         m_muscleR.calcActivationDynamics(excitationR, activationR,
-                                         derivatives[m_i_activation_r]);
+                                         out.dynamics[m_i_activation_r]);
 
         // Fiber dynamics.
         // ---------------
-        const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
-        const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
-        derivatives[m_i_norm_fiber_length_l] =
+        const T& normFibVelL = in.controls[m_i_norm_fiber_velocity_l];
+        const T& normFibVelR = in.controls[m_i_norm_fiber_velocity_r];
+        out.dynamics[m_i_norm_fiber_length_l] =
                 m_muscleL.get_max_contraction_velocity() * normFibVelL;
-        derivatives[m_i_norm_fiber_length_r] =
+        out.dynamics[m_i_norm_fiber_length_r] =
                 m_muscleR.get_max_contraction_velocity() * normFibVelR;
 
         // Path constraints.
         // =================
-        const T& x = states[m_i_x];
-        const T& y = states[m_i_y];
+        const T& x = in.states[m_i_x];
+        const T& y = in.states[m_i_y];
         {
-            const T& activationL = states[m_i_activation_l];
-            const T& normFibLenL = states[m_i_norm_fiber_length_l];
-            const T& normFibVelL = controls[m_i_norm_fiber_velocity_l];
+            const T& activationL = in.states[m_i_activation_l];
+            const T& normFibLenL = in.states[m_i_norm_fiber_length_l];
+            const T& normFibVelL = in.controls[m_i_norm_fiber_velocity_l];
             const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
             m_muscleL.calcEquilibriumResidual(activationL, musTenLenL,
                     normFibLenL, normFibVelL,
-                    constraints[m_i_fiber_equilibrium_l]);
+                    out.path[m_i_fiber_equilibrium_l]);
         }
         {
-            const T& activationR = states[m_i_activation_r];
-            const T& normFibLenR = states[m_i_norm_fiber_length_r];
-            const T& normFibVelR = controls[m_i_norm_fiber_velocity_r];
+            const T& activationR = in.states[m_i_activation_r];
+            const T& normFibLenR = in.states[m_i_norm_fiber_length_r];
+            const T& normFibVelR = in.controls[m_i_norm_fiber_velocity_r];
             const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
             m_muscleR.calcEquilibriumResidual(activationR, musTenLenR,
                     normFibLenR, normFibVelR,
-                    constraints[m_i_fiber_equilibrium_r]);
+                    out.path[m_i_fiber_equilibrium_r]);
         }
     }
     NetForce calcNetForce(const tropter::VectorX<T>& states) const {

@@ -32,6 +32,54 @@ struct FinalBounds : public Bounds {
     using Bounds::Bounds;
 };
 
+/// This struct holds inputs to
+/// OptimalControlProblem::calc_differntial_algebraic_equations().
+template<typename T>
+struct DAEInput {
+    /// This index may be helpful for using a cache computed in
+    /// OptimalControlProblem::initialize_on_mesh().
+    const int mesh_index;
+    /// The current time for the provided states and controls.
+    const T& time;
+    /// The vector of states at time `time`. This stores a reference to an
+    /// Eigen matrix, thereby avoiding copying the memory.
+    /// @note If you pass this reference into multiple functions that take an
+    /// Eigen Vector as input, this could create multiple copies unnecessarily;
+    /// in this case, create one copy and pass that to the other functions:
+    /// @code{.cpp}
+    /// const tropter::VectorX<T> states = input.states;
+    /// calc_something(states);
+    /// calc_something_else(states);
+    /// @endcode
+    const Eigen::Ref<const VectorX<T>>& states;
+    /// The vector of controls at time `time`.
+    /// @note If you pass this into functions that take an Eigen Vector as
+    /// input, see the note above for the `states` variable.
+    const Eigen::Ref<const VectorX<T>>& controls;
+};
+/// This struct holds the outputs of
+/// OptimalControlProblem::calc_differntial_algebraic_equations().
+template<typename T>
+struct DAEOutput {
+    /// Store the right-hand-side of the differential equations in this
+    /// variable. The length of this vector is num_states.
+    /// This is a reference to memory that is managed by the direct
+    /// collocation solver. If you want to create a shorter variable name,
+    /// you could do something like this:
+    /// @code{.cpp}
+    /// auto& xdot = output.dynamics;
+    /// @endcode
+    /// Do *not* copy this variable into a new Eigen Vector; the direct
+    /// collocation solver will not be able to obtain your output.
+    /// @code{.cpp}
+    /// tropter::VectorX<T> xdot = output.dynamics;
+    /// @endcode
+    Eigen::Ref<VectorX<T>> dynamics;
+    /// Store the path constraint errors in this variable. The length of this
+    /// vector is num_path_constraints. See the notes above about using this
+    /// reference.
+    Eigen::Ref<VectorX<T>> path;
+};
 
 /// We use the following terms to describe an optimal control problem:
 /// - *state*: a single state variable.
@@ -56,6 +104,7 @@ private:
     };
 
 public:
+
     OptimalControlProblem() = default;
     OptimalControlProblem(const std::string& name) : m_name(name) {}
     virtual ~OptimalControlProblem() = default;
@@ -164,24 +213,18 @@ public:
     /// The initial values in `derivatives` and `constraints` are arbitrary and
     /// cannot be assumed to be 0, etc. You must set entries to 0 explicitly if
     /// you want that.
-    virtual void calc_differential_algebraic_equations(unsigned mesh_index,
-            const T& time,
-            const VectorX<T>& states,
-            const VectorX<T>& controls,
-            Eigen::Ref<VectorX<T>> derivatives,
-            Eigen::Ref<VectorX<T>> constraints) const;
-    // TODO alternate signature:
-    //void calc_differential_algebraic_equations(unsigned mesh_index,
-    //        const DAEVariables& var, DAEOutput& out) {
-    //    // Maybe this one signature could be used for both the "continuous,
-    //    // entire trajectory" mode or the "one time" mode.
+    virtual void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const;
+    // TODO alternate form that takes a matrix; state at every time.
+    //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
+    // TODO Maybe this one signature could be used for both the "continuous,
+    // entire trajectory" mode or the "one time" mode.
     //    var.states[0];
+    //    var.states_traj
     //    var.controls[0];
     //    out.derivatives[0] =
     //    out.constraints[0] = ...
     //}
-    // TODO alternate form that takes a matrix; state at every time.
-    //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     // TODO endpoint or terminal cost?
     virtual void calc_endpoint_cost(const T& final_time,
             const VectorX<T>& final_states,

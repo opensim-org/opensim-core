@@ -32,13 +32,10 @@ public:
         this->add_state("v", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
     }
-    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
-            const T& /*time*/,
-            const VectorX<T>& states, const VectorX<T>& controls,
-            Ref<VectorX<T>> derivatives,
-            Ref<VectorX<T>> /*constr*/) const override {
-        derivatives[0] = states[1];
-        derivatives[1] = controls[0];
+    void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const override {
+        out.dynamics[0] = in.states[1];
+        out.dynamics[1] = in.controls[0];
     }
     void calc_integral_cost(const T& /*time*/,
                        const VectorX<T>& /*states*/,

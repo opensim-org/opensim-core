@@ -90,21 +90,18 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
         // Unpack variables.
         // -----------------
-        const T& angle = states[0];
-        const T& speed = states[1];
-        const T& activation = m_muscleDynamics ? states[2] : controls[0];
+        const T& angle = in.states[0];
+        const T& speed = in.states[1];
+        const T& activation = m_muscleDynamics ? in.states[2] : in.controls[0];
 
         // Multibody kinematics.
         // ---------------------
-        derivatives[0] = speed;
+        out.dynamics[0] = speed;
 
         // Multibody dynamics.
         // -------------------
@@ -123,14 +120,14 @@ public:
         // Tendon force.
         T tendonForce;
         if (m_muscleDynamics) {
-            const T& activation = states[2];
-            const T& normFibLen = states[3];
-            const T& normFibVel = controls[1];
+            const T& activation = in.states[2];
+            const T& normFibLen = in.states[3];
+            const T& normFibVel = in.controls[1];
             T normTenForce;
             // This also provides the path constraint value.
             m_muscle.calcEquilibriumResidual(
                     activation, musTenLen, normFibLen, normFibVel,
-                    constraints[0], normTenForce);
+                    out.path[0], normTenForce);
             tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         } else {
             // Muscle-tendon velocity.
@@ -140,20 +137,20 @@ public:
                     activation, musTenLen, musTenVel);
         }
 
-        derivatives[1] = -g / d * sin(angle)                      // gravity
-                       - momArm * tendonForce / mass / pow(d, 2); // muscle
+        out.dynamics[1] = -g / d * sin(angle)                      // gravity
+                        - momArm * tendonForce / mass / pow(d, 2); // muscle
 
         if (m_muscleDynamics) {
             // Activation dynamics.
             // --------------------
-            const T& excitation = controls[0];
+            const T& excitation = in.controls[0];
             m_muscle.calcActivationDynamics(excitation, activation,
-                    derivatives[2]);
+                    out.dynamics[2]);
 
             // Fiber dynamics.
             // ---------------
-            const T& normFibVel = controls[1];
-            derivatives[3] = max_contraction_velocity * normFibVel;
+            const T& normFibVel = in.controls[1];
+            out.dynamics[3] = max_contraction_velocity * normFibVel;
         }
     }
     void calc_endpoint_cost(const T& final_time,
