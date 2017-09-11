@@ -186,42 +186,7 @@ public:
     ///     `guess.states`.
     void set_state_guess(OptimalControlIterate& guess,
             const std::string& name,
-            const Eigen::VectorXd& value) {
-        // Check for errors.
-        if (guess.time.size() == 0) {
-            throw std::runtime_error("[tropter] guess.time is empty.");
-        }
-        if (value.size() != guess.time.size()) {
-            throw std::runtime_error("[tropter] Expected value to have " +
-                    std::to_string(guess.time.size()) + " elements, but it has"
-                    " " + std::to_string(value.size()) + ".");
-        }
-        if (guess.states.rows() == 0) {
-            guess.states.resize(m_state_infos.size(), guess.time.size());
-        } else if (size_t(guess.states.rows()) != m_state_infos.size() ||
-                guess.states.cols() != guess.time.size()) {
-            throw std::runtime_error("[tropter] Expected guess.states to have "
-                    "dimensions " + std::to_string(m_state_infos.size()) + " x "
-                    + std::to_string(guess.time.size()) + ", but dimensions are "
-                    + std::to_string(guess.states.rows()) + " x "
-                    + std::to_string(guess.states.cols()) + ".");
-        }
-
-        // Find the state index.
-        size_t state_index = 0;
-        // TODO store state infos in a map.
-        for (const auto& info : m_state_infos) {
-            if (info.name == name) break;
-            state_index++;
-        }
-        if (state_index == m_state_infos.size()) {
-            throw std::runtime_error(
-                    "[tropter] State " + name + " does not exist.");
-        }
-
-        // Set the guess.
-        guess.states.row(state_index) = value;
-    }
+            const Eigen::VectorXd& value);
     /// Set a guess for the trajectory of a single control variable with name
     /// `name` to `value`. This function relieves you of the need to know the
     /// index of a control variable. The `guess` must already have its `time`
@@ -239,42 +204,7 @@ public:
     ///     `guess.controls`.
     void set_control_guess(OptimalControlIterate& guess,
             const std::string& name,
-            const Eigen::VectorXd& value) {
-        // Check for errors.
-        if (guess.time.size() == 0) {
-            throw std::runtime_error("[tropter] guess.time is empty.");
-        }
-        if (value.size() != guess.time.size()) {
-            throw std::runtime_error("[tropter] Expected value to have " +
-                    std::to_string(guess.time.size()) + " elements, but it has"
-                    " " + std::to_string(value.size()) + ".");
-        }
-        if (guess.controls.rows() == 0) {
-            guess.controls.resize(m_control_infos.size(), guess.time.size());
-        } else if (size_t(guess.controls.rows()) != m_control_infos.size() ||
-                guess.controls.cols() != guess.time.size()) {
-            throw std::runtime_error("[tropter] Expected guess.controls to have "
-                    "dimensions " + std::to_string(m_control_infos.size()) + " x "
-                    + std::to_string(guess.time.size()) + ", but dimensions are "
-                    + std::to_string(guess.controls.rows()) + " x "
-                    + std::to_string(guess.controls.cols()) + ".");
-        }
-
-        // Find the control index.
-        size_t control_index = 0;
-        // TODO store control infos in a map.
-        for (const auto& info : m_control_infos) {
-            if (info.name == name) break;
-            control_index++;
-        }
-        if (control_index == m_control_infos.size()) {
-            throw std::runtime_error(
-                    "[tropter] Control " + name + " does not exist.");
-        }
-
-        // Set the guess.
-        guess.controls.row(control_index) = value;
-    }
+            const Eigen::VectorXd& value);
     /// @}
 
     // TODO move to "getter" portion.
