@@ -22,10 +22,10 @@ public:
         this->set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
         this->set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
     }
-    void objective(const VectorX<T>& x, T& obj_value) const override {
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override {
         obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
     }
-    void constraints(
+    void calc_constraints(
             const VectorX<T>& x, Eigen::Ref<VectorX<T>> constr) const override {
         constr[0] = x.prod();
         constr[1] = x.squaredNorm();
@@ -132,13 +132,13 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        decorator->sparsity(decorator->initial_guess_from_bounds(),
+        decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
-        decorator->gradient(problem.get_num_variables(), x.data(), false,
+        decorator->calc_gradient(problem.get_num_variables(), x.data(), false,
                 fd_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-8);
 
@@ -152,7 +152,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
-        decorator->jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->calc_jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, fd_jacobian_values.data());
         INFO(analytical_jacobian);
         INFO(fd_jacobian_values);
@@ -174,13 +174,13 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        decorator->sparsity(decorator->initial_guess_from_bounds(),
+        decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
-        decorator->gradient(problem.get_num_variables(), x.data(), false,
+        decorator->calc_gradient(problem.get_num_variables(), x.data(), false,
                 adolc_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
 
@@ -188,7 +188,8 @@ TEST_CASE("Check derivatives with analytical deriv.")
         const unsigned num_hessian_nonzeros =
                 (unsigned)hessian_row_indices.size();
         VectorXd adolc_hessian_values(num_hessian_nonzeros);
-        decorator->hessian_lagrangian(problem.get_num_variables(), x.data(), false,
+        decorator->calc_hessian_lagrangian(problem.get_num_variables(),
+                x.data(), false,
                 obj_factor, problem.get_num_constraints(), lambda.data(), false,
                 num_hessian_nonzeros, adolc_hessian_values.data());
         for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
@@ -204,7 +205,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd adolc_jacobian_values(num_jacobian_elem);
-        decorator->jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->calc_jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, adolc_jacobian_values.data());
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
@@ -222,10 +223,10 @@ public:
         this->set_constraint_bounds(VectorXd::Ones(5) * -2e19,
                                     VectorXd::Ones(5) *  2e19);
     }
-    void objective(const VectorX<T>& x, T& obj_value) const override {
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override {
         obj_value = x.squaredNorm();
     }
-    void constraints(
+    void calc_constraints(
             const VectorX<T>& x, Eigen::Ref<VectorX<T>> constr) const override {
         const int m = this->get_num_constraints();
         const int n = (int)x.size();
@@ -324,13 +325,13 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        proxy->sparsity(proxy->initial_guess_from_bounds(),
+        proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
-        proxy->gradient(problem.get_num_variables(), x.data(), false,
+        proxy->calc_gradient(problem.get_num_variables(), x.data(), false,
                 fd_gradient.data());
         INFO(analytical_gradient);
         INFO(fd_gradient);
@@ -343,7 +344,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
-        proxy->jacobian(problem.get_num_variables(), x.data(), false,
+        proxy->calc_jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, fd_jacobian_values.data());
         INFO(analytical_jacobian);
         INFO(fd_jacobian_values);
@@ -365,13 +366,13 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        proxy->sparsity(proxy->initial_guess_from_bounds(),
+        proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
-        proxy->gradient(problem.get_num_variables(), x.data(), false,
+        proxy->calc_gradient(problem.get_num_variables(), x.data(), false,
                 adolc_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
 
@@ -379,7 +380,8 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         const unsigned num_hessian_nonzeros =
                 (unsigned)hessian_row_indices.size();
         VectorXd adolc_hessian_values(num_hessian_nonzeros);
-        proxy->hessian_lagrangian(problem.get_num_variables(), x.data(), false,
+        proxy->calc_hessian_lagrangian(problem.get_num_variables(), x.data(),
+                false,
                 obj_factor, problem.get_num_constraints(), lambda.data(), false,
                 num_hessian_nonzeros, adolc_hessian_values.data());
         for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
@@ -393,7 +395,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd adolc_jacobian_values(num_jacobian_elem);
-        proxy->jacobian(problem.get_num_variables(), x.data(), false,
+        proxy->calc_jacobian(problem.get_num_variables(), x.data(), false,
                 num_jacobian_elem, adolc_jacobian_values.data());
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
@@ -421,8 +423,6 @@ TEST_CASE("Check finite differences on bounds", "[finitediff][!mayfail]")
 }
 
 // TODO try x with a very different magnitude (x = 1000, x = 1e-4).
-
-// TODO try something with a sparse jacobian
 
 
 

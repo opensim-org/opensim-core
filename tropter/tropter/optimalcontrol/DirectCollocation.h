@@ -21,7 +21,7 @@ namespace transcription {
 template<typename T>
 class Transcription;
 
-}
+} // namespace transcription
 
 template<typename T>
 class DirectCollocationSolver {
@@ -36,12 +36,12 @@ public:
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
     /// non-const variant below if you need to change settings.
-    const OptimizationSolver& optimization_solver() const {
+    const OptimizationSolver& get_optimization_solver() const {
         return *m_optsolver.get();
     }
     /// Get the OptimizationSolver, through which you can set optimizer
     /// settings like maximum number of iterations.
-    OptimizationSolver& optimization_solver() {
+    OptimizationSolver& get_optimization_solver() {
         return *m_optsolver.get();
     }
     /// Solve the problem using an initial guess that is based on the bounds
@@ -164,8 +164,8 @@ public:
     void set_num_mesh_points(unsigned N) { m_num_mesh_points = N; }
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
-    void objective(const VectorX<T>& x, T& obj_value) const override;
-    void constraints(const VectorX<T>& x,
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override;
+    void calc_constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
 
     /// This function checks the dimensions of the matrices in traj.

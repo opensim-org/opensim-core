@@ -43,7 +43,7 @@ void OptimalControlProblem<T>::print_description() const {
     print_continuous_var_info("Controls", m_control_infos);
 
     cout << "Path constraints: (total number: "
-            << this->num_path_constraints() << ")" << endl;
+            << this->get_num_path_constraints() << ")" << endl;
     for (const auto& info : m_path_constraint_infos) {
         cout << "  " << info.name << ". bounds: ["
                 << info.bounds.lower << ", "
@@ -162,7 +162,7 @@ set_control_guess(OptimalControlIterate& guess,
 }
 
 template<typename T>
-void OptimalControlProblem<T>::all_bounds(
+void OptimalControlProblem<T>::get_all_bounds(
         double& initial_time_lower, double& initial_time_upper,
         double& final_time_lower, double& final_time_upper,
         Eigen::Ref<Eigen::VectorXd> states_lower,

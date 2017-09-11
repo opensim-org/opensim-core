@@ -28,13 +28,13 @@ OptimizationProblem<double>::Decorator::Decorator(
         OptimizationProblemDecorator(problem), m_problem(problem) {}
 
 void OptimizationProblem<double>::Decorator::
-sparsity(const Eigen::VectorXd& /*x*/,
+calc_sparsity(const Eigen::VectorXd& /*x*/,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const
 {
-    const auto num_vars = num_variables();
+    const auto num_vars = get_num_variables();
 
     // Gradient.
     // =========
@@ -45,7 +45,7 @@ sparsity(const Eigen::VectorXd& /*x*/,
     for (int j = 0; j < (int)num_vars; ++j) {
         obj_value = 0;
         m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
-        m_problem.objective(m_x_working, obj_value);
+        m_problem.calc_objective(m_x_working, obj_value);
         m_x_working[j] = 0;
         if (std::isnan(obj_value)) {
             m_gradient_nonzero_indices.push_back(j);
@@ -54,7 +54,7 @@ sparsity(const Eigen::VectorXd& /*x*/,
 
     // Jacobian.
     // =========
-    const auto num_jac_rows = num_constraints();
+    const auto num_jac_rows = get_num_constraints();
 
     // Determine the sparsity pattern.
     // -------------------------------
@@ -76,7 +76,7 @@ sparsity(const Eigen::VectorXd& /*x*/,
     for (int j = 0; j < (int)num_vars; ++j) {
         constr_working.setZero();
         m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
-        m_problem.constraints(m_x_working, constr_working);
+        m_problem.calc_constraints(m_x_working, constr_working);
         m_x_working[j] = 0;
         for (int i = 0; i < (int)num_jac_rows; ++i) {
             if (std::isnan(constr_working[i])) {
@@ -192,17 +192,17 @@ sparsity(const Eigen::VectorXd& /*x*/,
 }
 
 void OptimizationProblem<double>::Decorator::
-objective(unsigned num_variables, const double* variables,
+calc_objective(unsigned num_variables, const double* variables,
         bool /*new_x*/,
         double& obj_value) const
 {
     // TODO avoid copy.
     const VectorXd xvec = Eigen::Map<const VectorXd>(variables, num_variables);
-    m_problem.objective(xvec, obj_value);
+    m_problem.calc_objective(xvec, obj_value);
 }
 
 void OptimizationProblem<double>::Decorator::
-constraints(unsigned num_variables, const double* variables,
+calc_constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
 {
@@ -210,13 +210,13 @@ constraints(unsigned num_variables, const double* variables,
     m_x_working = Eigen::Map<const VectorXd>(variables, num_variables);
     VectorXd constrvec(num_constraints); // TODO avoid copy.
     // TODO at least keep constrvec as working memory.
-    m_problem.constraints(m_x_working, constrvec);
+    m_problem.calc_constraints(m_x_working, constrvec);
     // TODO avoid copy.
     std::copy(constrvec.data(), constrvec.data() + num_constraints, constr);
 }
 
 void OptimizationProblem<double>::Decorator::
-gradient(unsigned num_variables, const double* x, bool /*new_x*/,
+calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
     m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
@@ -244,9 +244,9 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     for (const auto& i : m_gradient_nonzero_indices) {
         // Perform a central difference.
         m_x_working[i] += eps;
-        m_problem.objective(m_x_working, obj_pos);
+        m_problem.calc_objective(m_x_working, obj_pos);
         m_x_working[i] = x[i] - eps;
-        m_problem.objective(m_x_working, obj_neg);
+        m_problem.calc_objective(m_x_working, obj_neg);
         // Restore the original value.
         m_x_working[i] = x[i];
         grad[i] = (obj_pos - obj_neg) / two_eps;
@@ -254,7 +254,7 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
 }
 
 void OptimizationProblem<double>::Decorator::
-jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
+calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
     // TODO give error message that sparsity() must be called first.
@@ -273,16 +273,16 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
     for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
         const auto direction = m_jacobian_seed.col(iseed);
         // Perturb x in the positive direction.
-        m_problem.constraints(x0 + eps * direction, m_constr_pos);
+        m_problem.calc_constraints(x0 + eps * direction, m_constr_pos);
         // Perturb x in the negative direction.
-        m_problem.constraints(x0 - eps * direction, m_constr_neg);
+        m_problem.calc_constraints(x0 - eps * direction, m_constr_neg);
         // Compute central difference.
         m_jacobian_compressed_eigen.col(iseed) =
                 (m_constr_pos - m_constr_neg) / two_eps;
 
         // Store this column of the compressed Jacobian in the data structure
         // that ColPack will use.
-        for (unsigned int i = 0; i < num_constraints(); ++i) {
+        for (unsigned int i = 0; i < get_num_constraints(); ++i) {
             m_jacobian_compressed[i][iseed] =
                     m_jacobian_compressed_eigen(i, iseed);
         }
@@ -301,7 +301,7 @@ jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 }
 
 void OptimizationProblem<double>::Decorator::
-hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
+calc_hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
         bool /*new_x*/, double /*obj_factor*/,
         unsigned /*num_constraints*/, const double* /*lambda*/,
         bool /*new_lambda TODO */,

@@ -25,7 +25,7 @@ public:
     Unconstrained() : OptimizationProblem<T>(2, 0) {
         this->set_variable_bounds(Vector2d(-5, -5), Vector2d(5, 5));
     }
-    void objective(
+    void calc_objective(
             const VectorX<T>& x, T& obj_value) const override {
         obj_value = (x[0] - 1.5) * (x[0] - 1.5)
                 + (x[1] + 2.0) * (x[1] + 2.0);
@@ -77,11 +77,11 @@ public:
         this->set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
         this->set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
     }
-    void objective(const VectorX<T>& x, T& obj_value) const override {
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override {
         obj_value = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
     }
-    void constraints(
-            const VectorX<T>& x, Eigen::Ref<VectorX<T>> constr) const override {
+    void calc_constraints(const VectorX<T>& x,
+            Eigen::Ref<VectorX<T>> constr) const override {
         constr[0] = x.prod();
         constr[1] = x.squaredNorm();
     }
@@ -136,7 +136,7 @@ public:
         this->set_variable_bounds(Vector4d(-inf, -20, -inf,  50),
                                   Vector4d( inf,  10,   -8, inf));
     }
-    void objective(const VectorX<T>& x, T& obj_value) const override {
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override {
         obj_value = x.squaredNorm();
     }
 };
@@ -146,14 +146,14 @@ TEST_CASE("Generating an initial guess using problem bounds",
     SECTION("double") {
         VarietyOfBounds<double> problem;
         const auto decorator = problem.make_decorator();
-        VectorXd actual = decorator->initial_guess_from_bounds();
+        VectorXd actual = decorator->make_initial_guess_from_bounds();
         Vector4d expected(0, -5, -8, 50);
         TROPTER_REQUIRE_EIGEN(actual, expected, 1e-10);
     }
     SECTION("adouble") {
         VarietyOfBounds<adouble> problem;
         const auto proxy = problem.make_decorator();
-        VectorXd actual = proxy->initial_guess_from_bounds();
+        VectorXd actual = proxy->make_initial_guess_from_bounds();
         Vector4d expected(0, -5, -8, 50);
         TROPTER_REQUIRE_EIGEN(actual, expected, 1e-10);
     }

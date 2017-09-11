@@ -59,15 +59,15 @@ OptimizationProblem<adouble>::Decorator::~Decorator() {
 }
 
 void OptimizationProblem<adouble>::Decorator::
-sparsity(const Eigen::VectorXd& x,
+calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const
 {
-    // TODO check their sizes.
-    assert(x.size() == num_variables());
-
+    const auto& num_variables = get_num_variables();
+    assert(x.size() == num_variables);
+    const auto& num_constraints = get_num_constraints();
 
     // This function also creates the ADOL-C tapes that are used in the other
     // function calls.
@@ -76,7 +76,7 @@ sparsity(const Eigen::VectorXd& x,
     // ----------
     {
         double obj_value; // We don't actually need the obj. value.
-        trace_objective(m_objective_tag, num_variables(), x.data(), obj_value);
+        trace_objective(m_objective_tag, num_variables, x.data(), obj_value);
     }
 
     // Jacobian.
@@ -85,15 +85,15 @@ sparsity(const Eigen::VectorXd& x,
     // sparsity?
     // TODO if (m_num_constraints)
     {
-        Eigen::VectorXd constraint_values(num_constraints()); // Unused.
+        Eigen::VectorXd constraint_values(num_constraints); // Unused.
         trace_constraints(m_constraints_tag,
-                num_variables(), x.data(),
-                num_constraints(), constraint_values.data());
+                num_variables, x.data(),
+                num_constraints, constraint_values.data());
 
         int repeated_call = 0; // No previous call, need to create tape.
         double* jacobian_values = nullptr; // Unused.
-        int success = ::sparse_jac(m_constraints_tag, num_constraints(),
-                num_variables(), repeated_call, x.data(),
+        int success = ::sparse_jac(m_constraints_tag, num_constraints,
+                num_variables, repeated_call, x.data(),
                 // The next 4 arguments are outputs.
                 &m_jacobian_num_nonzeros,
                 &m_jacobian_row_indices, &m_jacobian_col_indices,
@@ -118,13 +118,13 @@ sparsity(const Eigen::VectorXd& x,
     // Lagrangian.
     // -----------
     {
-        VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints());
+        VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints);
         double lagr_value; // Unused.
-        trace_lagrangian(m_lagrangian_tag, num_variables(), x.data(), 1.0,
-                num_constraints(), lambda_vector.data(), lagr_value);
+        trace_lagrangian(m_lagrangian_tag, num_variables, x.data(), 1.0,
+                num_constraints, lambda_vector.data(), lagr_value);
         int repeated_call = 0; // No previous call, need to create tape.
         double* hessian_values = nullptr; // Unused.
-        int status = ::sparse_hess(m_lagrangian_tag, num_variables(),
+        int status = ::sparse_hess(m_lagrangian_tag, num_variables,
                 repeated_call, x.data(), &m_hessian_num_nonzeros,
                 &m_hessian_row_indices, &m_hessian_col_indices,
                 &hessian_values,
@@ -146,12 +146,12 @@ sparsity(const Eigen::VectorXd& x,
         // pattern: store the pointer to Ipopt's sparsity pattern?
 
         // Working memory to hold obj_factor and lambda (multipliers).
-        m_hessian_obj_factor_lambda.resize(1 + num_constraints());
+        m_hessian_obj_factor_lambda.resize(1 + num_constraints);
     }
 }
 
 void OptimizationProblem<adouble>::Decorator::
-objective(unsigned num_variables, const double* x,
+calc_objective(unsigned num_variables, const double* x,
         bool /*new_x*/,
         double& obj_value) const
 {
@@ -169,7 +169,7 @@ objective(unsigned num_variables, const double* x,
 }
 
 void OptimizationProblem<adouble>::Decorator::
-constraints(unsigned num_variables, const double* variables,
+calc_constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
 {
@@ -185,7 +185,7 @@ constraints(unsigned num_variables, const double* variables,
 }
 
 void OptimizationProblem<adouble>::Decorator::
-gradient(unsigned num_variables, const double* x, bool /*new_x*/,
+calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
     int status = ::gradient(m_objective_tag, num_variables, x, grad);
@@ -193,11 +193,11 @@ gradient(unsigned num_variables, const double* x, bool /*new_x*/,
 }
 
 void OptimizationProblem<adouble>::Decorator::
-jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
+calc_jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
     int repeated_call = 1; // We already have the sparsity structure.
-    int status = ::sparse_jac(m_constraints_tag, num_constraints(),
+    int status = ::sparse_jac(m_constraints_tag, get_num_constraints(),
             num_variables, repeated_call, x,
             &m_jacobian_num_nonzeros,
             &m_jacobian_row_indices, &m_jacobian_col_indices,
@@ -211,7 +211,7 @@ jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
 }
 
 void OptimizationProblem<adouble>::Decorator::
-hessian_lagrangian(unsigned num_variables, const double* x,
+calc_hessian_lagrangian(unsigned num_variables, const double* x,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda,
         bool /*new_lambda TODO */,
@@ -277,7 +277,7 @@ trace_objective(short int tag,
     VectorXa x_adouble(num_variables);
     adouble f_adouble = 0;
     for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
-    m_problem.objective(x_adouble, f_adouble);
+    m_problem.calc_objective(x_adouble, f_adouble);
     f_adouble >>= obj_value;
     trace_off();
     // -------------------------------------------------------------------------
@@ -299,7 +299,7 @@ trace_constraints(short int tag,
     // TODO efficiently store this result so it can be used in grad_f, etc.
     for (unsigned i = 0; i < num_variables; ++i) x_adouble[i] <<= x[i];
     VectorXa g_adouble(num_constraints);
-    m_problem.constraints(x_adouble, g_adouble);
+    m_problem.calc_constraints(x_adouble, g_adouble);
     for (unsigned i = 0; i < num_constraints; ++i) g_adouble[i] >>= constr[i];
     trace_off();
     // -------------------------------------------------------------------------
@@ -327,7 +327,7 @@ trace_lagrangian(short int tag,
     //    objective(x, result);
     //    result *= obj_factor;
     //}
-    m_problem.objective(x_adouble, lagrangian_adouble);
+    m_problem.calc_objective(x_adouble, lagrangian_adouble);
     // TODO make sure not to create more params if trace_lagrangian is called
     // multiple times.
     lagrangian_adouble *= ::mkparam(obj_factor);
@@ -335,7 +335,7 @@ trace_lagrangian(short int tag,
     // TODO if (!m_num_constraints) return;
     VectorXa constr(num_constraints);
     // TODO ...might not need all constraints.
-    m_problem.constraints(x_adouble, constr);
+    m_problem.calc_constraints(x_adouble, constr);
     // TODO it's highly unlikely that this works (can't use with mkparam()).
     // TODO result += lambda.dot(constr);
     for (unsigned icon = 0; icon < num_constraints; ++icon) {

@@ -530,7 +530,7 @@ solveForTrajectory_INDYGO(const Model& model) {
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", N);
     // The quasi-Newton mode gives a big speedup for this problem.
-    dircol.optimization_solver().set_hessian_approximation("limited-memory");
+    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
 
     tropter::OptimalControlIterate guess(
             "test2Muscles2DOFsDeGrooteFregly2016_INDYGO_initial_guess.csv");

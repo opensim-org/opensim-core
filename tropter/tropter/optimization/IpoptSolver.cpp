@@ -62,8 +62,8 @@ IpoptSolver::TNLP::TNLP(
         std::shared_ptr<const OptimizationProblemDecorator> problem)
         : m_problem(problem)
 {
-    m_num_variables = m_problem->num_variables();
-    m_num_constraints = m_problem->num_constraints();
+    m_num_variables = m_problem->get_num_variables();
+    m_num_constraints = m_problem->get_num_constraints();
 }
 
 bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
@@ -72,8 +72,8 @@ bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
                                      Index& num_nonzeros_hessian,
                                      IndexStyleEnum& index_style)
 {
-    num_variables = m_problem->num_variables();
-    num_constraints = m_problem->num_constraints();
+    num_variables = m_problem->get_num_variables();
+    num_constraints = m_problem->get_num_constraints();
     num_nonzeros_jacobian = m_jacobian_num_nonzeros;
     num_nonzeros_hessian = m_hessian_num_nonzeros;
     index_style = TNLP::C_STYLE;
@@ -95,9 +95,9 @@ void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
     assert(guess.size() == m_num_variables);
 
     // TODO use VectorXi for the sparsity pattern? allows not initializing.
-    m_problem->sparsity(guess,
-                        m_jacobian_row_indices, m_jacobian_col_indices,
-                        m_hessian_row_indices,  m_hessian_col_indices);
+    m_problem->calc_sparsity(guess,
+            m_jacobian_row_indices, m_jacobian_col_indices,
+            m_hessian_row_indices, m_hessian_col_indices);
     m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
@@ -112,8 +112,8 @@ bool IpoptSolver::TNLP::get_bounds_info(
     // TODO efficient copying.
 
     // TODO make sure bounds have been set.
-    const auto& variable_lower = m_problem->variable_lower_bounds();
-    const auto& variable_upper = m_problem->variable_upper_bounds();
+    const auto& variable_lower = m_problem->get_variable_lower_bounds();
+    const auto& variable_upper = m_problem->get_variable_upper_bounds();
     assert((variable_lower.array() <= variable_upper.array()).all());
     for (Index ivar = 0; ivar < num_variables; ++ivar) {
         // TODO can get rid of this in favor of the vectorized version.
@@ -124,8 +124,8 @@ bool IpoptSolver::TNLP::get_bounds_info(
         x_upper[ivar] = variable_upper[ivar];
     }
     // TODO do not assume that there are no inequality constraints.
-    const auto& constraint_lower = m_problem->constraint_lower_bounds();
-    const auto& constraint_upper = m_problem->constraint_upper_bounds();
+    const auto& constraint_lower = m_problem->get_constraint_lower_bounds();
+    const auto& constraint_upper = m_problem->get_constraint_upper_bounds();
     if (    constraint_lower.size() != (unsigned)num_constraints ||
             constraint_upper.size() != (unsigned)num_constraints) {
         // TODO better error handling.
@@ -170,7 +170,7 @@ bool IpoptSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool new_x,
         Number& obj_value) {
     assert((unsigned)num_variables == m_num_variables);
-    m_problem->objective(num_variables, x, new_x, obj_value);
+    m_problem->calc_objective(num_variables, x, new_x, obj_value);
     return true;
 }
 
@@ -178,7 +178,7 @@ bool IpoptSolver::TNLP::eval_grad_f(
         Index num_variables, const Number* x, bool new_x,
         Number* grad_f) {
     assert((unsigned)num_variables == m_num_variables);
-    m_problem->gradient(num_variables, x, new_x, grad_f);
+    m_problem->calc_gradient(num_variables, x, new_x, grad_f);
     return true;
 }
 
@@ -188,7 +188,7 @@ bool IpoptSolver::TNLP::eval_g(
     assert((unsigned)num_variables   == m_num_variables);
     assert((unsigned)num_constraints == m_num_constraints);
     //// TODO if (!num_constraints) return true;
-    m_problem->constraints(num_variables, x, new_x, num_constraints, g);
+    m_problem->calc_constraints(num_variables, x, new_x, num_constraints, g);
     return true;
 }
 
@@ -209,7 +209,8 @@ bool IpoptSolver::TNLP::eval_jac_g(
         return true;
     }
 
-    m_problem->jacobian(num_variables, x, new_x, num_nonzeros_jacobian, values);
+    m_problem->calc_jacobian(num_variables, x, new_x, num_nonzeros_jacobian,
+            values);
 
     return true;
 }
@@ -230,9 +231,9 @@ bool IpoptSolver::TNLP::eval_h(
 
     // TODO use obj_factor here to determine what computation to do exactly.
 
-    m_problem->hessian_lagrangian(num_variables, x, new_x, obj_factor,
-                                  num_constraints, lambda, new_lambda,
-                                  num_nonzeros_hessian, values);
+    m_problem->calc_hessian_lagrangian(num_variables, x, new_x, obj_factor,
+            num_constraints, lambda, new_lambda,
+            num_nonzeros_hessian, values);
 
     return true;
 }

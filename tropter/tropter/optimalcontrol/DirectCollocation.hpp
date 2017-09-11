@@ -97,8 +97,8 @@ void LowOrder<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem)
 {
     m_ocproblem = ocproblem;
-    m_num_states = m_ocproblem->num_states();
-    m_num_controls = m_ocproblem->num_controls();
+    m_num_states = m_ocproblem->get_num_states();
+    m_num_controls = m_ocproblem->get_num_controls();
     m_num_continuous_variables = m_num_states+m_num_controls;
     m_num_time_variables = 2;
     int num_variables = m_num_time_variables
@@ -107,7 +107,7 @@ void LowOrder<T>::set_ocproblem(
     int num_bound_constraints = 2 * m_num_continuous_variables;
     m_num_defects = m_num_mesh_points - 1;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
-    m_num_path_constraints = m_ocproblem->num_path_constraints();
+    m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
     int num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
     int num_constraints = num_bound_constraints + m_num_dynamics_constraints +
@@ -135,15 +135,15 @@ void LowOrder<T>::set_ocproblem(
     VectorXd final_controls_upper(m_num_controls);
     VectorXd path_constraints_lower(m_num_path_constraints);
     VectorXd path_constraints_upper(m_num_path_constraints);
-    m_ocproblem->all_bounds(initial_time_lower, initial_time_upper,
-                            final_time_lower, final_time_upper,
-                            states_lower, states_upper,
-                            initial_states_lower, initial_states_upper,
-                            final_states_lower, final_states_upper,
-                            controls_lower, controls_upper,
-                            initial_controls_lower, initial_controls_upper,
-                            final_controls_lower, final_controls_upper,
-                            path_constraints_lower, path_constraints_upper);
+    m_ocproblem->get_all_bounds(initial_time_lower, initial_time_upper,
+            final_time_lower, final_time_upper,
+            states_lower, states_upper,
+            initial_states_lower, initial_states_upper,
+            final_states_lower, final_states_upper,
+            controls_lower, controls_upper,
+            initial_controls_lower, initial_controls_upper,
+            final_controls_lower, final_controls_upper,
+            path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
     //m_initial_time = initial_time; // TODO make these variables.
     //m_final_time = final_time;
@@ -215,7 +215,7 @@ void LowOrder<T>::set_ocproblem(
 }
 
 template<typename T>
-void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
+void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
 {
     // TODO move this to a "make_variables_view()"
     const T& initial_time = x[0];
@@ -261,7 +261,7 @@ void LowOrder<T>::objective(const VectorX<T>& x, T& obj_value) const
 }
 
 template<typename T>
-void LowOrder<T>::constraints(const VectorX<T>& x,
+void LowOrder<T>::calc_constraints(const VectorX<T>& x,
         Eigen::Ref<VectorX<T>> constraints) const
 {
     // TODO parallelize.
@@ -395,7 +395,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     // Gather and organize all constraint values and bounds.
     VectorX<T> vars = construct_iterate(ocp_vars).template cast<T>();
     VectorX<T> constraint_values(this->get_num_constraints());
-    constraints(vars, constraint_values);
+    calc_constraints(vars, constraint_values);
     ConstraintsView values = make_constraints_view(constraint_values);
 
     // TODO avoid cast by templatizing make_constraints_view().

@@ -18,60 +18,53 @@ namespace tropter {
 /// and these derived classes compute the gradient, Jacobian, and Hessian
 /// (using either finite differences or automatic differentiation).
 class OptimizationProblemDecorator {
-    // TODO rename all method names to verbs
 public:
-    OptimizationProblemDecorator(const AbstractOptimizationProblem& problem) :
-            m_problem(problem) {}
-    unsigned num_variables() const
+    OptimizationProblemDecorator(const AbstractOptimizationProblem& problem)
+            : m_problem(problem) {}
+    unsigned get_num_variables() const
     {   return m_problem.get_num_variables(); }
-    unsigned num_constraints() const
+    unsigned get_num_constraints() const
     {   return m_problem.get_num_constraints(); }
-    const Eigen::VectorXd& variable_lower_bounds() const
+    const Eigen::VectorXd& get_variable_lower_bounds() const
     {   return m_problem.get_variable_lower_bounds(); }
-    const Eigen::VectorXd& variable_upper_bounds() const
+    const Eigen::VectorXd& get_variable_upper_bounds() const
     {   return m_problem.get_variable_upper_bounds(); }
-    const Eigen::VectorXd& constraint_lower_bounds() const
+    const Eigen::VectorXd& get_constraint_lower_bounds() const
     {   return m_problem.get_constraint_lower_bounds(); }
-    const Eigen::VectorXd& constraint_upper_bounds() const
+    const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_problem.get_constraint_upper_bounds(); }
     /// Create an initial guess for this problem according to the
     /// following rules:
     ///   - unconstrained variable: 0.
     ///   - lower and upper bounds: midpoint of the bounds.
     ///   - only one bound: value of the bound.
-    Eigen::VectorXd initial_guess_from_bounds() const;
+    Eigen::VectorXd make_initial_guess_from_bounds() const;
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     // You must call this function first before calling objective(),
     // constraints(), etc.
-    virtual void sparsity(const Eigen::VectorXd& variables,
+    virtual void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const = 0;
-    // TODO provide alternatives that take raw buffers. This is the interface
-    // for optimizers, after all...
-    virtual void objective(unsigned num_variables, const double* variables,
+    virtual void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const = 0;
-    virtual void constraints(unsigned num_variables, const double* variables,
+    virtual void calc_constraints(unsigned num_variables,
+            const double* variables,
             bool new_variables,
             unsigned num_constraints, double* constr) const = 0;
-    virtual void gradient(unsigned num_variables, const double* variables,
+    virtual void calc_gradient(unsigned num_variables, const double* variables,
             bool new_variables,
             double* grad) const = 0;
-    virtual void jacobian(unsigned num_variables, const double* variables,
+    virtual void calc_jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const = 0;
-    virtual void hessian_lagrangian(
-            unsigned num_variables, const double* variables,
-            bool new_variables, double obj_factor,
-            unsigned num_constraints, const double* lambda,
-            bool new_lambda,
+    virtual void calc_hessian_lagrangian(
+            unsigned num_variables, const double* variables, bool new_variables,
+            double obj_factor,
+            unsigned num_constraints, const double* lambda, bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const = 0;
-    // TODO consider providing alternative signatures like:
-    // void objective(const Eigen::VectorXd& variables,
-    //         bool new_variables = true,
-    //         double& obj_value) const = 0;
 private:
     const AbstractOptimizationProblem& m_problem;
 };
@@ -98,7 +91,8 @@ public:
     /// @param variables This holds the values of the variables at the current
     ///     iteration of the optimization problem.
     /// @param constr Store the objective function value in this variable.
-    virtual void objective(const VectorX<T>& variables, T& obj_value) const;
+    virtual void calc_objective(const VectorX<T>& variables,
+            T& obj_value) const;
 
     /// Implement this function to compute the constraint function (no need
     /// to implement if your problem has no constraints).
@@ -106,7 +100,7 @@ public:
     ///     iteration of the optimization problem.
     /// @param constr Store the constraint equation values in this vector,
     ///     which has `num_constraints` elements.
-    virtual void constraints(const VectorX<T>& variables,
+    virtual void calc_constraints(const VectorX<T>& variables,
             Eigen::Ref<VectorX<T>> constr) const;
 
     /// Create an interface to this problem that can provide the derivatives
@@ -130,13 +124,13 @@ OptimizationProblem<T>::make_decorator() const {
 }
 
 template<typename T>
-void OptimizationProblem<T>::objective(const VectorX<T>&, T&) const {
+void OptimizationProblem<T>::calc_objective(const VectorX<T>&, T&) const {
     // TODO proper error messages.
     throw std::runtime_error("Not implemented.");
 }
 
 template<typename T>
-void OptimizationProblem<T>::constraints(const VectorX<T>&,
+void OptimizationProblem<T>::calc_constraints(const VectorX<T>&,
         Eigen::Ref<VectorX<T>>) const
 {}
 
@@ -151,24 +145,25 @@ class OptimizationProblem<double>::Decorator
 public:
     Decorator(const OptimizationProblem<double>& problem);
     ~Decorator();
-    void sparsity(const Eigen::VectorXd& variables,
+    void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const override;
-    void objective(unsigned num_variables, const double* variables,
+    void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const override;
-    void constraints(unsigned num_variables, const double* variables,
+    void calc_constraints(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_constraints, double* constr) const override;
-    void gradient(unsigned num_variables, const double* variables,
+    void calc_gradient(unsigned num_variables, const double* variables,
             bool new_variables,
             double* grad) const override;
-    void jacobian(unsigned num_variables, const double* variables,
+    void calc_jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const override;
-    void hessian_lagrangian(unsigned num_variables, const double* variables,
+    void calc_hessian_lagrangian(unsigned num_variables,
+            const double* variables,
             bool new_variables, double obj_factor,
             unsigned num_constraints, const double* lambda,
             bool new_lambda,
@@ -239,27 +234,26 @@ public:
     Decorator(const OptimizationProblem<adouble>& problem);
     /// Delete memory allocated by ADOL-C.
     virtual ~Decorator();
-    void sparsity(const Eigen::VectorXd& variables,
+    void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const override;
-    void objective(unsigned num_variables, const double* variables,
+    void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const override;
-    void constraints(unsigned num_variables, const double* variables,
+    void calc_constraints(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_constraints, double* constr) const override;
-    void gradient(unsigned num_variables, const double* variables,
+    void calc_gradient(unsigned num_variables, const double* variables,
             bool new_variables,
             double* grad) const override;
-    void jacobian(unsigned num_variables, const double* variables,
+    void calc_jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const override;
-    void hessian_lagrangian(unsigned num_variables, const double* variables,
-            bool new_variables, double obj_factor,
-            unsigned num_constraints, const double* lambda,
-            bool new_lambda,
+    void calc_hessian_lagrangian(unsigned num_variables,
+            const double* variables, bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda, bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const override;
 private:
     void trace_objective(short int tag,

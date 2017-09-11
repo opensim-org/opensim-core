@@ -32,6 +32,15 @@ struct FinalBounds : public Bounds {
     using Bounds::Bounds;
 };
 
+
+/// We use the following terms to describe an optimal control problem:
+/// - *state*: a single state variable.
+/// - *states*:  a vector of all state variables at a given time.
+/// - *states trajectory*: a trajectory through time of states (state vectors).
+/// - *control*: a single control variable.
+/// - *controls*:  a vector of all control variables at a given time.
+/// - *controls trajectory*: a trajectory through time of controls
+///   (control vectors).
 template <typename T>
 class OptimalControlProblem {
 private:
@@ -52,12 +61,15 @@ public:
     virtual ~OptimalControlProblem() = default;
     /// @name Get information about the problem
     /// @{
-    int num_states() const
+    int get_num_states() const
     {   return (int)m_state_infos.size(); }
-    int num_controls() const
+    int get_num_controls() const
     {   return (int)m_control_infos.size(); }
-    int num_path_constraints() const
+    int get_num_path_constraints() const
     {   return (int)m_path_constraint_infos.size(); }
+    /// Get the names of all the states in the order they appear in the
+    /// `states` input to dynamics(), path_constraints(), etc.
+    /// Note: this function is not free to call.
     std::vector<std::string> get_state_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_state_infos) {
@@ -65,6 +77,9 @@ public:
         }
         return names;
     }
+    /// Get the names of all the controls in the order they appear in
+    /// the `controls` input to dynamics(), path_constraints(), etc.
+    /// Note: this function is not free to call.
     std::vector<std::string> get_control_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_control_infos) {
@@ -72,6 +87,9 @@ public:
         }
         return names;
     }
+    /// Get the names of all the path constraints in the order they appear in
+    /// the `states` input to dynamics(), path_constraints(), etc.
+    /// Note: this function is not free to call.
     std::vector<std::string> get_path_constraint_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_path_constraint_infos) {
@@ -212,7 +230,7 @@ public:
     /// @{
     /// This function provides the bounds on time, states, and controls in a
     /// format that is easy for the direct collocation classes to use.
-    void all_bounds(
+    void get_all_bounds(
             double& initial_time_lower, double& initial_time_upper,
             double& final_time_lower, double& final_time_upper,
             Eigen::Ref<Eigen::VectorXd> states_lower,

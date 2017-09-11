@@ -2,10 +2,10 @@
 
 namespace tropter {
 
-Eigen::VectorXd OptimizationProblemDecorator::initial_guess_from_bounds() const
+Eigen::VectorXd OptimizationProblemDecorator::make_initial_guess_from_bounds() const
 {
-    const auto& lower = variable_lower_bounds();
-    const auto& upper = variable_upper_bounds();
+    const auto& lower = get_variable_lower_bounds();
+    const auto& upper = get_variable_upper_bounds();
     assert(lower.size() == upper.size());
     Eigen::VectorXd guess(lower.size());
     const auto inf = std::numeric_limits<double>::infinity();

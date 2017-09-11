@@ -96,7 +96,7 @@ public:
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.optimization_solver().set_hessian_approximation(
+        dircol.get_optimization_solver().set_hessian_approximation(
                 "limited-memory");
         tropter::OptimalControlIterate guess;
         guess.time.setLinSpaced(N, 0, 1);
