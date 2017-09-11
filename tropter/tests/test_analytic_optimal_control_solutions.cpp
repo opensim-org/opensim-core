@@ -20,8 +20,7 @@ using namespace tropter;
 template<typename T>
 class SecondOrderLinearMinEffort : public tropter::OptimalControlProblem<T> {
 public:
-    SecondOrderLinearMinEffort()
-    {
+    SecondOrderLinearMinEffort() {
         this->set_time(0, 2);
         this->add_state("x0", {-10, 10}, {0}, {5});
         this->add_state("x1", {-10, 10}, {0}, {2});
@@ -29,22 +28,19 @@ public:
     }
     void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
             const T& /*time*/, const VectorX<T>& x, const VectorX<T>& u,
-            Ref<VectorX<T>> xdot, Ref<VectorX<T>> /*constr*/) const override
-    {
+            Ref<VectorX<T>> xdot, Ref<VectorX<T>> /*constr*/) const override {
         xdot[0] = x[1];
         xdot[1] = -x[1] + u[0];
         // xdot.row(0) = x.row(1);
         // xdot.row(1) = -x.row(1) + u.row(0);
     }
-    void integral_cost(const T& /*t*/,
+    void calc_integral_cost(const T& /*t*/,
             const VectorX<T>& /*x*/,
             const VectorX<T>& u,
-            T& integrand) const override
-    {
+            T& integrand) const override {
         integrand = 0.5 * u[0] * u[0];
     }
-    MatrixXd states_solution(const VectorXd& time) const
-    {
+    MatrixXd states_solution(const VectorXd& time) const {
         using std::exp;
 
         MatrixXd result(2, time.size());

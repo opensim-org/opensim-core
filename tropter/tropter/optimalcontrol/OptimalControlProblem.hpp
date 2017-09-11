@@ -67,12 +67,12 @@ calc_differential_algebraic_equations(unsigned, const T&,
 
 template<typename T>
 void OptimalControlProblem<T>::
-endpoint_cost(const T&, const VectorX<T>&, T&) const
+calc_endpoint_cost(const T&, const VectorX<T>&, T&) const
 {}
 
 template<typename T>
 void OptimalControlProblem<T>::
-integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
+calc_integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
 {}
 
 template<typename T>

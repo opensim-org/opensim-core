@@ -34,13 +34,11 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void endpoint_cost(const T& final_time, const VectorX<T>&, T& cost)
-    const override
-    {
+    void calc_endpoint_cost(const T& final_time, const VectorX<T>&, T& cost)
+            const override {
         cost = final_time;
     }
-    OptimalControlSolution actual_solution(const VectorXd& time) const
-    {
+    OptimalControlSolution actual_solution(const VectorXd& time) const {
         OptimalControlSolution sol;
         sol.time = time;
         sol.states.resize(2, time.size());

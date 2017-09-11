@@ -40,7 +40,7 @@ public:
         derivatives[0] = states[1];
         derivatives[1] = controls[0];
     }
-    void integral_cost(const T& /*time*/,
+    void calc_integral_cost(const T& /*time*/,
                        const VectorX<T>& /*states*/,
                        const VectorX<T>& controls,
                        T& integrand) const override {
@@ -53,7 +53,7 @@ public:
         // between 0 and 1.
         return (x - 1) * (x + 1) * x*x;
     }
-    void endpoint_cost(const T& /*final_time*/,
+    void calc_endpoint_cost(const T& /*final_time*/,
                        const VectorX<T>& final_states,
                        T& cost) const override {
         cost = 100.0 * two_minima(final_states[0]);

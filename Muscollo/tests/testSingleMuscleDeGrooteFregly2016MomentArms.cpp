@@ -156,9 +156,9 @@ public:
             derivatives[3] = max_contraction_velocity * normFibVel;
         }
     }
-    void endpoint_cost(const T& final_time,
-                       const tropter::VectorX<T>& /*final_states*/,
-                       T& cost) const override {
+    void calc_endpoint_cost(const T& final_time,
+            const tropter::VectorX<T>& /*final_states*/,
+            T& cost) const override {
         cost = final_time;
     }
 private:

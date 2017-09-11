@@ -36,9 +36,8 @@ public:
         // F = ma
         constr[0] = controls[1] - mass*controls[0];
     }
-    void endpoint_cost(const T& final_time, const VectorX<T>&, T& cost)
-    const override
-    {
+    void calc_endpoint_cost(const T& final_time, const VectorX<T>&, T& cost)
+            const override {
         cost = final_time;
     }
     OptimalControlSolution actual_solution(const VectorXd& time) const

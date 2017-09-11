@@ -38,7 +38,7 @@ public:
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void integral_cost(const T& /*time*/,
+    void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
             const VectorX<T>& controls,
             T& integrand) const override {

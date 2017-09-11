@@ -300,10 +300,10 @@ public:
                 = _desiredMoments.col(i_mesh).template cast<adouble>()
                 - genForce;
     }
-    void integral_cost(const T& /*time*/,
-                       const tropter::VectorX<T>& /*states*/,
-                       const tropter::VectorX<T>& controls,
-                       T& integrand) const override {
+    void calc_integral_cost(const T& /*time*/,
+            const tropter::VectorX<T>& /*states*/,
+            const tropter::VectorX<T>& controls,
+            T& integrand) const override {
         // Use a map to skip over fiber velocities.
         using ExcitationsVector = Eigen::Map<const tropter::VectorX<T>,
                 /* pointer alignment: Unaligned */   0,

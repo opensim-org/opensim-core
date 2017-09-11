@@ -154,10 +154,10 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void integral_cost(const T& /*time*/,
-                       const tropter::VectorX<T>& /*states*/,
-                       const tropter::VectorX<T>& controls,
-                       T& integrand) const override {
+    void calc_integral_cost(const T& /*time*/,
+            const tropter::VectorX<T>& /*states*/,
+            const tropter::VectorX<T>& controls,
+            T& integrand) const override {
         const auto& controlL = controls[m_i_activation_l];
         const auto& controlR = controls[m_i_activation_r];
         integrand = controlL * controlL + controlR * controlR;
@@ -357,10 +357,10 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void integral_cost(const T& /*time*/,
-                       const tropter::VectorX<T>& /*states*/,
-                       const tropter::VectorX<T>& controls,
-                       T& integrand) const override {
+    void calc_integral_cost(const T& /*time*/,
+            const tropter::VectorX<T>& /*states*/,
+            const tropter::VectorX<T>& controls,
+            T& integrand) const override {
         const auto& controlL = controls[m_i_excitation_l];
         const auto& controlR = controls[m_i_excitation_r];
         integrand = controlL * controlL + controlR * controlR;

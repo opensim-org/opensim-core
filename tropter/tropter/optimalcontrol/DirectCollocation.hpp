@@ -231,7 +231,7 @@ void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // Endpoint cost.
     // --------------
     // TODO does this cause the final_states to get copied?
-    m_ocproblem->endpoint_cost(final_time, states.rightCols(1), obj_value);
+    m_ocproblem->calc_endpoint_cost(final_time, states.rightCols(1), obj_value);
 
 
     // Integral cost.
@@ -239,7 +239,7 @@ void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     m_integrand.setZero();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         const T time = step_size * i_mesh + initial_time;
-        m_ocproblem->integral_cost(time,
+        m_ocproblem->calc_integral_cost(time,
                 states.col(i_mesh), controls.col(i_mesh), m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?

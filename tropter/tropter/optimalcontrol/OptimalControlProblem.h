@@ -170,15 +170,23 @@ public:
             const VectorX<T>& controls,
             Eigen::Ref<VectorX<T>> derivatives,
             Eigen::Ref<VectorX<T>> constraints) const;
+    // TODO alternate signature:
+    //void calc_differential_algebraic_equations(unsigned mesh_index,
+    //        const DAEVariables& var, DAEOutput& out) {
+    //    // Maybe this one signature could be used for both the "continuous,
+    //    // entire trajectory" mode or the "one time" mode.
+    //    var.states[0];
+    //    var.controls[0];
+    //    out.derivatives[0] =
+    //    out.constraints[0] = ...
+    //}
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     // TODO endpoint or terminal cost?
-    //virtual void endpoint_cost(const T& final_time,
-    //        const VectorX<T>& final_states) const = 0;
-    virtual void endpoint_cost(const T& final_time,
-                               const VectorX<T>& final_states,
-                               T& cost) const;
-    virtual void integral_cost(const T& time,
+    virtual void calc_endpoint_cost(const T& final_time,
+            const VectorX<T>& final_states,
+            T& cost) const;
+    virtual void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
             T& integrand) const;

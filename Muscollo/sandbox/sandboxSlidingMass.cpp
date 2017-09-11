@@ -290,7 +290,7 @@ public:
         std::copy(&m_state.updYDot()[0], &m_state.updYDot()[0] + states.size(),
                 deriv.data());
     }
-    //void integral_cost(const double& /*time*/, const VectorXd& /*states*/,
+    //void calc_integral_cost(const double& /*time*/, const VectorXd& /*states*/,
     //        const VectorXd& controls, double& integrand) const override {
     //    integrand = controls[0] * controls[0];
     //}

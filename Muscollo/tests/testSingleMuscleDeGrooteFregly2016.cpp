@@ -81,9 +81,9 @@ public:
                                                               position, speed);
         derivatives[1] = g - tendonForce / mass;
     }
-    void endpoint_cost(const T& final_time,
-                       const tropter::VectorX<T>& /*final_states*/,
-                       T& cost) const override {
+    void calc_endpoint_cost(const T& final_time,
+            const tropter::VectorX<T>& /*final_states*/,
+            T& cost) const override {
         cost = final_time;
     }
 private:
@@ -245,9 +245,9 @@ public:
         // Fiber dynamics.
         derivatives[3] = max_contraction_velocity * normFibVel;
     }
-    void endpoint_cost(const T& final_time,
-                       const tropter::VectorX<T>& /*final_states*/,
-                       T& cost) const override {
+    void calc_endpoint_cost(const T& final_time,
+            const tropter::VectorX<T>& /*final_states*/,
+            T& cost) const override {
         cost = final_time;
     }
 private:
@@ -653,12 +653,12 @@ int main() {
 //
 //        constraints[0] = normFibForceAlongTen - normTenForce;
 //    }
-//    void endpoint_cost(const T& final_time,
+//    void calc_endpoint_cost(const T& final_time,
 //                       const tropter::VectorX<T>& /*final_states*/,
 //                       T& cost) const override {
 //        cost = final_time;
 //    }
-//    //void integral_cost(const T& /*time*/,
+//    //void calc_integral_cost(const T& /*time*/,
 //    //                   const tropter::VectorX<T>& /*states*/,
 //    //                   const tropter::VectorX<T>& controls,
 //    //                   T& integrand) const override {

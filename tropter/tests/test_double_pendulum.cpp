@@ -78,7 +78,7 @@ public:
         this->add_control("tau0", {-50, 50});
         this->add_control("tau1", {-50, 50});
     }
-    void endpoint_cost(const T& final_time, const VectorX<T>& final_states,
+    void calc_endpoint_cost(const T& final_time, const VectorX<T>& final_states,
             T& cost) const override
     {
         // TODO a final state constraint probably makes more sense.
