@@ -297,11 +297,9 @@ void LowOrder<T>::calc_constraints(const VectorX<T>& x,
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
-        m_ocproblem->dynamics(states.col(i_mesh), controls.col(i_mesh),
-                              m_derivs.col(i_mesh));
-        m_ocproblem->path_constraints(i_mesh, time,
-                                      states.col(i_mesh), controls.col(i_mesh),
-                                      constr_view.path_constraints.col(i_mesh));
+        m_ocproblem->calc_differential_algebraic_equations(i_mesh, time,
+                states.col(i_mesh), controls.col(i_mesh),
+                m_derivs.col(i_mesh), constr_view.path_constraints.col(i_mesh));
     }
 
     // Compute constraint defects.

@@ -28,8 +28,9 @@ public:
     double m0 = 1;
     double m1 = 1;
 
-    void dynamics(const VectorX<T>& x, const VectorX<T>& tau,
-            Ref<VectorX<T>> xdot) const override final
+    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
+            const T& /*time*/, const VectorX<T>& x, const VectorX<T>& tau,
+            Ref<VectorX<T>> xdot, Ref<VectorX<T>>) const override final
     {
         const auto& q0 = x[0];
         const auto& q1 = x[1];
@@ -145,5 +146,6 @@ TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
     }
     #endif
 }
+
 
 

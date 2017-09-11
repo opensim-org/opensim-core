@@ -68,7 +68,7 @@ public:
     int get_num_path_constraints() const
     {   return (int)m_path_constraint_infos.size(); }
     /// Get the names of all the states in the order they appear in the
-    /// `states` input to dynamics(), path_constraints(), etc.
+    /// `states` input to calc_differential_algebraic_equations(), etc.
     /// Note: this function is not free to call.
     std::vector<std::string> get_state_names() const {
         std::vector<std::string> names;
@@ -78,7 +78,7 @@ public:
         return names;
     }
     /// Get the names of all the controls in the order they appear in
-    /// the `controls` input to dynamics(), path_constraints(), etc.
+    /// the `controls` input to calc_differential_algebraic_equations(), etc.
     /// Note: this function is not free to call.
     std::vector<std::string> get_control_names() const {
         std::vector<std::string> names;
@@ -88,7 +88,7 @@ public:
         return names;
     }
     /// Get the names of all the path constraints in the order they appear in
-    /// the `states` input to dynamics(), path_constraints(), etc.
+    /// the `states` input to calc_differential_algebraic_equations(), etc.
     /// Note: this function is not free to call.
     std::vector<std::string> get_path_constraint_names() const {
         std::vector<std::string> names;
@@ -158,19 +158,18 @@ public:
     ///             points are normalized and are thus within [0, 1].
     virtual void initialize_on_mesh(const Eigen::VectorXd& mesh) const;
 
-    // TODO must pass in the time.
-    // The initial values in `derivative` are arbitrary and cannot be assumed
-    // to be 0, etc. You must set entries to 0 explicitly if you want that.
-    virtual void dynamics(const VectorX<T>& states,
-                          const VectorX<T>& controls,
-                          Eigen::Ref<VectorX<T>> derivative) const;
-    // The initial values in `constraints` are arbitrary and cannot be assumed
-    // to be 0, etc. You must set entries to 0 explicitly if you want that.
-    virtual void path_constraints(unsigned index,
-                                  const T& time,
-                                  const VectorX<T>& states,
-                                  const VectorX<T>& controls,
-                                  Eigen::Ref<VectorX<T>> constraints) const;
+    /// Compute the right-hand side of the differntial algebraic equations
+    /// (DAE) for the system you want to optimize. This is the function that
+    /// provides the dynamics and path constraints.
+    /// The initial values in `derivatives` and `constraints` are arbitrary and
+    /// cannot be assumed to be 0, etc. You must set entries to 0 explicitly if
+    /// you want that.
+    virtual void calc_differential_algebraic_equations(unsigned mesh_index,
+            const T& time,
+            const VectorX<T>& states,
+            const VectorX<T>& controls,
+            Eigen::Ref<VectorX<T>> derivatives,
+            Eigen::Ref<VectorX<T>> constraints) const;
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     // TODO endpoint or terminal cost?

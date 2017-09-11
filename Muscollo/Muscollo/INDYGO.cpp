@@ -225,9 +225,12 @@ public:
         }
     }
 
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned i_mesh,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Actuator dynamics.
         // ==================
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
@@ -239,7 +242,7 @@ public:
 
             // Activation dynamics.
             _muscles[i_act].calcActivationDynamics(excitation, activation,
-                                                   derivatives[2 * i_act]);
+                    derivatives[2 * i_act]);
 
             // Fiber dynamics.
             derivatives[2 * i_act + 1] =
@@ -247,13 +250,7 @@ public:
         }
 
         // TODO std::cout << "DEBUG dynamics " << derivatives << std::endl;
-    }
-    void path_constraints(unsigned i_mesh,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-            const override {
+
         // Actuator equilibrium.
         // =====================
 
@@ -283,9 +280,9 @@ public:
 
                 T normTenForce;
                 _muscles[i_act].calcEquilibriumResidual(activation, musTenLen,
-                                                        normFibLen, normFibVel,
-                                                        constraints[i_act],
-                                                        normTenForce);
+                        normFibLen, normFibVel,
+                        constraints[i_act],
+                        normTenForce);
 
                 tendonForces[i_act] = _muscles[i_act].get_max_isometric_force()
                         * normTenForce;

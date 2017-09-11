@@ -90,9 +90,12 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Unpack variables.
         // -----------------
         const T& angle = states[0];
@@ -120,8 +123,15 @@ public:
         // Tendon force.
         T tendonForce;
         if (m_muscleDynamics) {
+            const T& activation = states[2];
             const T& normFibLen = states[3];
-            m_muscle.calcTendonForce(musTenLen, normFibLen, tendonForce);
+            const T& normFibVel = controls[1];
+            T normTenForce;
+            // This also provides the path constraint value.
+            m_muscle.calcEquilibriumResidual(
+                    activation, musTenLen, normFibLen, normFibVel,
+                    constraints[0], normTenForce);
+            tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         } else {
             // Muscle-tendon velocity.
             // d(lMT)/dt = d(lMT)/dq * dq/dt
@@ -138,36 +148,12 @@ public:
             // --------------------
             const T& excitation = controls[0];
             m_muscle.calcActivationDynamics(excitation, activation,
-                                            derivatives[2]);
+                    derivatives[2]);
 
             // Fiber dynamics.
             // ---------------
             const T& normFibVel = controls[1];
             derivatives[3] = max_contraction_velocity * normFibVel;
-        }
-    }
-    void path_constraints(unsigned /*i_mesh*/,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-    const override {
-        if (m_muscleDynamics) {
-            // Unpack variables.
-            const T& angle = states[0];
-            const T& activation = states[2];
-            const T& normFibLen = states[3];
-            const T& normFibVel = controls[1];
-
-            // Muscle-tendon length.
-            // Law of cosines: lMT = sqrt(d^2 + d^2 - 2d*d cos(pi/2 - q))
-            // Duplicated from dynamics().
-            const T intAngle = SimTK::Pi / 2 - angle;
-            const T musTenLen = d * sqrt(2 * (1 - cos(intAngle)));
-
-            m_muscle.calcEquilibriumResidual(
-                    activation, musTenLen, normFibLen, normFibVel,
-                    constraints[0]);
         }
     }
     void endpoint_cost(const T& final_time,

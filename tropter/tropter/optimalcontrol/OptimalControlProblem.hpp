@@ -59,12 +59,9 @@ initialize_on_mesh(const Eigen::VectorXd&) const
 
 template<typename T>
 void OptimalControlProblem<T>::
-dynamics(const VectorX<T>&, const VectorX<T>&, Eigen::Ref<VectorX<T>>) const
-{}
-
-template<typename T>
-void OptimalControlProblem<T>::
-path_constraints(unsigned, const T&, const VectorX <T>&, const VectorX <T>&,
+calc_differential_algebraic_equations(unsigned, const T&,
+        const VectorX<T>&, const VectorX<T>&,
+        Eigen::Ref<VectorX<T>>,
         Eigen::Ref<VectorX<T>>) const
 {}
 

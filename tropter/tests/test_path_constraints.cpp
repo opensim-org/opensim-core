@@ -25,20 +25,14 @@ public:
         this->add_control("F", {-Fmax, Fmax});
         this->add_path_constraint("F=ma", 0);
     }
-    void dynamics(const VectorX<T>& states,
-                  const VectorX<T>& controls,
-                  Ref<VectorX<T>> derivatives) const override
-    {
+    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
+            const T& /*time*/,
+            const VectorX<T>& states, const VectorX<T>& controls,
+            Ref<VectorX<T>> derivatives,
+            Ref<VectorX<T>> constr) const override {
         derivatives[0] = states[1];
         // udot = a
         derivatives[1] = controls[0];
-}
-    void path_constraints(unsigned /*i_mesh*/,
-                          const T& /*time*/,
-                          const VectorX<T>& /*states*/,
-                          const VectorX<T>& controls,
-                          Ref<VectorX<T>> constr) const override
-    {
         // F = ma
         constr[0] = controls[1] - mass*controls[0];
     }

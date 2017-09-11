@@ -61,9 +61,12 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> /*constraints*/) const override {
         // Unpack variables.
         const T& position = states[0];
         const T& speed = states[1];
@@ -208,9 +211,12 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Unpack variables.
         const T& position = states[0];
         const T& speed = states[1];
@@ -223,8 +229,12 @@ public:
         derivatives[0] = speed;
 
         // Multibody dynamics.
-        T tendonForce;
-        m_muscle.calcTendonForce(position, normFibLen, tendonForce);
+        T normTenForce;
+        // This also computes the fiber equilibrium path constraint.
+        m_muscle.calcEquilibriumResidual(
+                activation, position, normFibLen, normFibVel, constraints[0],
+                normTenForce);
+        T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
         derivatives[1] = g - tendonForce / mass;
@@ -234,21 +244,6 @@ public:
 
         // Fiber dynamics.
         derivatives[3] = max_contraction_velocity * normFibVel;
-    }
-    void path_constraints(unsigned /*i_mesh*/,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-    const override {
-        // Unpack variables.
-        // -----------------
-        const T& position = states[0];
-        const T& activation = states[2];
-        const T& normFibLen = states[3];
-        const T& normFibVel = controls[1];
-        m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, constraints[0]);
     }
     void endpoint_cost(const T& final_time,
                        const tropter::VectorX<T>& /*final_states*/,

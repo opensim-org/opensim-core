@@ -107,9 +107,12 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> /*constraints*/) const override {
         // Unpack variables.
         // -----------------
         const T& vx = states[m_i_vx];
@@ -269,9 +272,12 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Unpack variables.
         // -----------------
         const T& vx = states[m_i_vx];
@@ -307,33 +313,9 @@ public:
                 m_muscleL.get_max_contraction_velocity() * normFibVelL;
         derivatives[m_i_norm_fiber_length_r] =
                 m_muscleR.get_max_contraction_velocity() * normFibVelR;
-    }
-    NetForce calcNetForce(const tropter::VectorX<T>& states) const {
-        const T& x = states[m_i_x];
-        const T& y = states[m_i_y];
 
-        T tensionL;
-        const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
-        const T& normFibLenL = states[m_i_norm_fiber_length_l];
-        m_muscleL.calcTendonForce(musTenLenL, normFibLenL, tensionL);
-
-        T tensionR;
-        const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
-        const T& normFibLenR = states[m_i_norm_fiber_length_r];
-        m_muscleR.calcTendonForce(musTenLenR, normFibLenR, tensionR);
-
-        const T netForceX = -tensionL * (d + x) / musTenLenL
-                            +tensionR * (d - x) / musTenLenR;
-        const T netForceY = +tensionL * (-y) / musTenLenL
-                            +tensionR * (-y) / musTenLenR;
-        return {netForceX,  netForceY};
-    }
-    void path_constraints(unsigned /*i_mesh*/,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-    const override {
+        // Path constraints.
+        // =================
         const T& x = states[m_i_x];
         const T& y = states[m_i_y];
         {
@@ -354,6 +336,26 @@ public:
                     normFibLenR, normFibVelR,
                     constraints[m_i_fiber_equilibrium_r]);
         }
+    }
+    NetForce calcNetForce(const tropter::VectorX<T>& states) const {
+        const T& x = states[m_i_x];
+        const T& y = states[m_i_y];
+
+        T tensionL;
+        const T musTenLenL = sqrt(pow(d + x, 2) + pow(y, 2));
+        const T& normFibLenL = states[m_i_norm_fiber_length_l];
+        m_muscleL.calcTendonForce(musTenLenL, normFibLenL, tensionL);
+
+        T tensionR;
+        const T musTenLenR = sqrt(pow(d - x, 2) + pow(y, 2));
+        const T& normFibLenR = states[m_i_norm_fiber_length_r];
+        m_muscleR.calcTendonForce(musTenLenR, normFibLenR, tensionR);
+
+        const T netForceX = -tensionL * (d + x) / musTenLenL
+                            +tensionR * (d - x) / musTenLenR;
+        const T netForceY = +tensionL * (-y) / musTenLenL
+                            +tensionR * (-y) / musTenLenR;
+        return {netForceX,  netForceY};
     }
     void integral_cost(const T& /*time*/,
                        const tropter::VectorX<T>& /*states*/,

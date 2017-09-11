@@ -28,10 +28,11 @@ public:
         // this->add_control("F", Bounds(-50, 50));
     }
     const double mass = 10.0;
-    void dynamics(const VectorX<T>& states,
-            const VectorX<T>& controls,
-            Ref<VectorX<T>> derivatives) const override
-    {
+    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
+            const T& /*time*/,
+            const VectorX<T>& states, const VectorX<T>& controls,
+            Ref<VectorX<T>> derivatives,
+            Ref<VectorX<T>> /*constr*/) const override {
         derivatives[0] = states[1];
         derivatives[1] = controls[0] / mass;
     }

@@ -27,8 +27,9 @@ public:
         this->add_state("x1", {-10, 10}, {0}, {2});
         this->add_control("u", {-50, 50});
     }
-    void dynamics(const VectorX<T>& x, const VectorX<T>& u,
-            Ref<VectorX<T>> xdot) const override
+    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
+            const T& /*time*/, const VectorX<T>& x, const VectorX<T>& u,
+            Ref<VectorX<T>> xdot, Ref<VectorX<T>> /*constr*/) const override
     {
         xdot[0] = x[1];
         xdot[1] = -x[1] + u[0];

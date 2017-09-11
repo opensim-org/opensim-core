@@ -185,12 +185,12 @@ public:
         // Multiply A and b by the moment arm matrix.
     }
 
-    void path_constraints(unsigned i_mesh,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& /*states*/,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-    const override {
+    void calc_differential_algebraic_equations(unsigned i_mesh,
+            const T& /*time*/,
+            const tropter::VectorX<T>& /*states*/,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> /*derivatives*/,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Actuator equilibrium.
         // =====================
         // TODO in the future, we want this to be:
