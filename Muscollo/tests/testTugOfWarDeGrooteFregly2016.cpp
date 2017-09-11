@@ -82,9 +82,12 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> /*constraints*/) const override {
         // Unpack variables.
         // -----------------
         const T& speed = states[m_i_speed];
@@ -221,9 +224,12 @@ public:
                     osimMuscleR.get_max_contraction_velocity());
         }
     }
-    void dynamics(const tropter::VectorX<T>& states,
-                  const tropter::VectorX<T>& controls,
-                  Eigen::Ref<tropter::VectorX<T>> derivatives) const override {
+    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
+            const T& /*time*/,
+            const tropter::VectorX<T>& states,
+            const tropter::VectorX<T>& controls,
+            Eigen::Ref<tropter::VectorX<T>> derivatives,
+            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
         // Unpack variables.
         // -----------------
         const T& speed = states[m_i_speed];
@@ -257,25 +263,9 @@ public:
                 m_muscleL.get_max_contraction_velocity() * normFibVelL;
         derivatives[m_i_norm_fiber_length_r] =
                 m_muscleR.get_max_contraction_velocity() * normFibVelR;
-    }
-    T calcNetForce(const tropter::VectorX<T>& states) const {
-        const T& position = states[m_i_position];
 
-        T forceL;
-        const T& normFibLenL = states[m_i_norm_fiber_length_l];
-        m_muscleL.calcTendonForce(d + position, normFibLenL, forceL);
-        T forceR;
-        const T& normFibLenR = states[m_i_norm_fiber_length_r];
-        m_muscleR.calcTendonForce(d - position, normFibLenR, forceR);
-
-        return -forceL + forceR;
-    }
-    void path_constraints(unsigned /*i_mesh*/,
-                          const T& /*time*/,
-                          const tropter::VectorX<T>& states,
-                          const tropter::VectorX<T>& controls,
-                          Eigen::Ref<tropter::VectorX<T>> constraints)
-    const override {
+        // Path constraints.
+        // =================
         const T& position = states[m_i_position];
         {
             const T& activationL = states[m_i_activation_l];
@@ -293,6 +283,18 @@ public:
                     normFibLenR, normFibVelR,
                     constraints[m_i_fiber_equilibrium_r]);
         }
+    }
+    T calcNetForce(const tropter::VectorX<T>& states) const {
+        const T& position = states[m_i_position];
+
+        T forceL;
+        const T& normFibLenL = states[m_i_norm_fiber_length_l];
+        m_muscleL.calcTendonForce(d + position, normFibLenL, forceL);
+        T forceR;
+        const T& normFibLenR = states[m_i_norm_fiber_length_r];
+        m_muscleR.calcTendonForce(d - position, normFibLenR, forceR);
+
+        return -forceL + forceR;
     }
     void integral_cost(const T& /*time*/,
                        const tropter::VectorX<T>& /*states*/,
