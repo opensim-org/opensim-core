@@ -88,18 +88,22 @@ public:
             AbstractOptimizationProblem(num_variables, num_constraints) {}
 
     /// Implement this function to compute the objective function.
-    /// @param variables This holds the values of the variables at the current
-    ///     iteration of the optimization problem.
-    /// @param constr Store the objective function value in this variable.
+    /// @param variables
+    ///     This holds the values of the variables at the current iteration of
+    ///     the optimization problem.
+    /// @param obj_value
+    ///     Store the objective function value in this variable.
     virtual void calc_objective(const VectorX<T>& variables,
             T& obj_value) const;
 
     /// Implement this function to compute the constraint function (no need
     /// to implement if your problem has no constraints).
-    /// @param variables This holds the values of the variables at the current
-    ///     iteration of the optimization problem.
-    /// @param constr Store the constraint equation values in this vector,
-    ///     which has `num_constraints` elements.
+    /// @param variables
+    ///     This holds the values of the variables at the current iteration of
+    ///     the optimization problem.
+    /// @param constr
+    ///     Store the constraint equation values in this vector, which has
+    ///     `num_constraints` elements.
     virtual void calc_constraints(const VectorX<T>& variables,
             Eigen::Ref<VectorX<T>> constr) const;
 

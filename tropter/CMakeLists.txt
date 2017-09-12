@@ -98,6 +98,8 @@ find_package(OpenMP)
 
 # Subdirectories.
 # ---------------
+add_subdirectory(doc)
+
 # Build external libraries.
 add_subdirectory(external)
 

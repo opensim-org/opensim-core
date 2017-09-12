@@ -195,6 +195,7 @@ public:
     /// These are the virtual functions you implement to define your optimal
     /// control problem.
     /// @{
+
     /// Perform any precalculations or caching (e.g., interpolating data)
     /// necessary before the optimal control problem is solved. This is
     /// invoked every time there's a new mesh (e.g., in each mesh refinement
@@ -239,6 +240,7 @@ public:
 
     /// @name Helpers for setting an initial guess
     /// @{
+
     /// Set a guess for the trajectory of a single state variable with name
     /// `name` to `value`. This function relieves you of the need to know the
     /// index of a state variable. The `guess` must already have its `time`
@@ -280,6 +282,7 @@ public:
     // TODO move to "getter" portion.
     /// @name For use by direct collocation solver
     /// @{
+
     /// This function provides the bounds on time, states, and controls in a
     /// format that is easy for the direct collocation classes to use.
     void get_all_bounds(
