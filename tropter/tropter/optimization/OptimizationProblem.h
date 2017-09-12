@@ -14,9 +14,12 @@ class JacobianRecovery1D;
 namespace tropter {
 
 /// This class provides an interface of the OptimizationProblem to the
-/// OptimizationSolvers. The class has a derived type for each scalar type,
-/// and these derived classes compute the gradient, Jacobian, and Hessian
-/// (using either finite differences or automatic differentiation).
+/// OptimizationSolvers.
+/// In general, users do not use this class directly.
+/// There is a derived type for each scalar type, and these derived classes
+/// compute the gradient, Jacobian, and Hessian (using either finite differences
+/// or automatic differentiation).
+/// @ingroup optimization
 class OptimizationProblemDecorator {
 public:
     OptimizationProblemDecorator(const AbstractOptimizationProblem& problem)
@@ -73,6 +76,7 @@ private:
 /// The type T determines how the derivatives of the objective and constraint
 /// functions are computed: T = double for finite differences, T = adouble
 /// for automatic differentiation.
+/// @ingroup optimization
 template<typename T>
 class OptimizationProblem : public AbstractOptimizationProblem {
 public:
@@ -139,10 +143,12 @@ void OptimizationProblem<T>::calc_constraints(const VectorX<T>&,
 {}
 
 /// We must specialize this template for each scalar type.
+/// @ingroup optimization
 template<typename T>
 class OptimizationProblem<T>::Decorator : public OptimizationProblemDecorator {
 };
 
+/// @ingroup optimization
 template<>
 class OptimizationProblem<double>::Decorator
         : public OptimizationProblemDecorator {
@@ -231,6 +237,7 @@ private:
 
 /// This specialization uses automatic differentiation (via ADOL-C) to
 /// compute the derivatives of the objective and constraints.
+/// @ingroup optimization
 template<>
 class OptimizationProblem<adouble>::Decorator
         : public OptimizationProblemDecorator {

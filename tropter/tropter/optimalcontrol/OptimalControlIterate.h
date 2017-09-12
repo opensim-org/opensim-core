@@ -17,6 +17,7 @@ namespace tropter {
 /// time,<state-var-0-name>,...,<control-var-0-name>,...
 /// <#>,<#>,...,<#>,...
 /// @endverbatim
+/// @ingroup optimalcontrol
 struct OptimalControlIterate {
     Eigen::RowVectorXd time;
     Eigen::MatrixXd states;

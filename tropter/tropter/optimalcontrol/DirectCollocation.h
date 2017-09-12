@@ -10,6 +10,7 @@ namespace tropter {
 
 class OptimizationSolver;
 
+/// @ingroup optimalcontrol
 struct OptimalControlSolution : public OptimalControlIterate {
     double objective;
     // TODO allow reading, to use this as an initial guess.
@@ -23,6 +24,7 @@ class Transcription;
 
 } // namespace transcription
 
+/// @ingroup optimalcontrol
 template<typename T>
 class DirectCollocationSolver {
 public:
@@ -114,6 +116,7 @@ private:
 
 namespace transcription {
 
+/// @ingroup optimalcontrol
 template<typename T>
 class Transcription : public OptimizationProblem<T> {
 public:
@@ -145,6 +148,7 @@ public:
     }
 };
 
+/// @ingroup optimalcontrol
 template<typename T>
 class LowOrder : public Transcription<T> {
     // TODO should this *BE* an OptimizationProblem, or should it just

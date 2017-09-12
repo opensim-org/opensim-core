@@ -7,6 +7,7 @@
 
 namespace tropter {
 
+/// @ingroup optimalcontrol
 struct Bounds {
     Bounds() = default;
     Bounds(double value) : lower(value), upper(value) {}
@@ -25,15 +26,18 @@ struct Bounds {
     double lower = std::numeric_limits<double>::quiet_NaN();
     double upper = std::numeric_limits<double>::quiet_NaN();
 };
+/// @ingroup optimalcontrol
 struct InitialBounds : public Bounds {
     using Bounds::Bounds;
 };
+/// @ingroup optimalcontrol
 struct FinalBounds : public Bounds {
     using Bounds::Bounds;
 };
 
 /// This struct holds inputs to
 /// OptimalControlProblem::calc_differntial_algebraic_equations().
+/// @ingroup optimalcontrol
 template<typename T>
 struct DAEInput {
     /// This index may be helpful for using a cache computed in
@@ -59,6 +63,7 @@ struct DAEInput {
 };
 /// This struct holds the outputs of
 /// OptimalControlProblem::calc_differntial_algebraic_equations().
+/// @ingroup optimalcontrol
 template<typename T>
 struct DAEOutput {
     /// Store the right-hand-side of the differential equations in this
@@ -89,6 +94,7 @@ struct DAEOutput {
 /// - *controls*:  a vector of all control variables at a given time.
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
+/// @ingroup optimalcontrol
 template <typename T>
 class OptimalControlProblem {
 private:
