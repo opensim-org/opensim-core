@@ -11,7 +11,8 @@
 #               test_eigen_adolc_reverse_model.cpp)
 
 tropter_add_test(test_derivatives tropter)
-tropter_add_test(test_eigen_adolc_reverse_mode tropter)
+# This test was more of a sandbox for learning ADOL-C:
+#tropter_add_test(test_eigen_adolc_reverse_mode tropter)
 tropter_add_test(test_generic_optimization tropter)
 tropter_add_test(test_sliding_mass_minimum_effort tropter)
 tropter_add_test(test_sliding_mass_minimum_time tropter)

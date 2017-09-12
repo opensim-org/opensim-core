@@ -5,15 +5,16 @@
 
 /// Compare any two Eigen matrices (their dimensions and each element)
 /// using Catch.
+// Extra parentheses are to avoid a warning from GCC 5.4.
 #define TROPTER_REQUIRE_EIGEN(actual, expected, abs_error_tolerance)         \
 do {                                                                         \
-    REQUIRE(actual.rows() == expected.rows());                               \
-    REQUIRE(actual.cols() == expected.cols());                               \
+    REQUIRE((actual.rows() == expected.rows()));                             \
+    REQUIRE((actual.cols() == expected.cols()));                             \
     for (int ir = 0; ir < actual.rows(); ++ir) {                             \
         for (int ic = 0; ic < actual.cols(); ++ic) {                         \
             INFO("Checking row " << ir << " column " << ic << ".");          \
-            REQUIRE(Approx(actual(ir, ic)).epsilon(abs_error_tolerance)      \
-                    == expected(ir, ic));                                    \
+            REQUIRE((Approx(actual(ir, ic)).epsilon(abs_error_tolerance)     \
+                    == expected(ir, ic)));                                   \
         }                                                                    \
     }                                                                        \
 } while (0)

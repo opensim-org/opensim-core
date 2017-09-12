@@ -8,7 +8,7 @@ project(MuscolloDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
 cmake_minimum_required(VERSION 3.2)
 
-if(NOT ${CMAKE_GENERATOR} MATCHES "Win64")
+if(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "Win64")
     # This requirement results from the use of 64-bit pre-built binaries for
     # ADOL-C and Ipopt.
     set(MSG "You must choose a 64-bit generator")
@@ -21,7 +21,9 @@ include(CMakeParseArguments)
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
-    get_filename_component(BASE_DIR ${CMAKE_BINARY_DIR} DIRECTORY)
+    get_filename_component(BASE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
+    # Move one directory up to (adjacent to the muscollo folder).
+    get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for Muscollo dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
     set(DEFAULT_CMAKE_INSTALL_PREFIX 
