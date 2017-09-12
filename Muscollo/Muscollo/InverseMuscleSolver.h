@@ -98,7 +98,7 @@ public:
     "The frequency (Hz) at which to filter inverse dynamics joint moments, "
     "which are computed internally from the kinematics if "
     "net generalized forces are not provided. "
-    "If net generalized forces are provided, this property is ignored."
+    "This is applied whether or not inverse dynamics is performed internally. "
     "(default is -1, which means no filtering; for walking, consider 6 Hz).");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(initial_time, double,

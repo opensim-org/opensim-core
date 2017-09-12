@@ -170,22 +170,57 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             lowpassCutoffJointMoments);
 }
 
+Storage convertTableToStorage(const TimeSeriesTable& table) {
+    Storage sto;
+    OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
+    labels[0] = "time";
+    for (int i = 0; i < (int)table.getNumColumns(); ++i) {
+        labels[i + 1] = table.getColumnLabel(i);
+    }
+    sto.setColumnLabels(labels);
+    const auto& times = table.getIndependentColumn();
+    for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
+        auto rowView = table.getRowAtIndex(i_time);
+        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+    }
+    return sto;
+}
+
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const Model& model,
         const std::vector<const Coordinate*>& coordsToActuate,
         const double& initialTime, const double& finalTime,
         const TimeSeriesTable& kinematicsData,
         const double& lowpassCutoffKinematics,
+        const double& lowpassCutoffJointMoments,
         const TimeSeriesTable& netGeneralizedForcesData) :
         InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematicsData, lowpassCutoffKinematics)
 {
     // Inverse dynamics.
+    // -----------------
+    TimeSeriesTable netGenForcesTableIfFiltering;
+    const TimeSeriesTable* netGenForcesTable;
+
+    if (lowpassCutoffJointMoments <= 0) {
+        netGenForcesTable = &netGeneralizedForcesData;
+    } else {
+        // We have to filter the net generalized forces, but the filtering
+        // ability is on Storage, not on TimeSeriesTable. Convert to a
+        // Storage, filter, then convert back.
+        auto netGenForcesSto = convertTableToStorage(netGeneralizedForcesData);
+        netGenForcesSto.pad(netGenForcesSto.getSize() / 2);
+        netGenForcesSto.lowpassIIR(lowpassCutoffJointMoments);
+        // TODO _netGeneralizedForces = GCVSplineSet(5, &forceTrajectorySto);
+        netGenForcesTableIfFiltering = netGenForcesSto.getAsTimeSeriesTable();
+        netGenForcesTable = &netGenForcesTableIfFiltering;
+    }
+
     // Only store the columns corresponding to coordsToActuate, and store
     // them in multibody tree order.
     // TODO better error handling for invalid column labels.
     try {
-        _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData,
+        _netGeneralizedForces = createGCVSplineSet(*netGenForcesTable,
                 _coordPathsToActuate);
     } catch (KeyNotFound&) {
         // The net generalized forces file's column labels do not seem to
@@ -202,7 +237,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
                     "_moment" : "_force");
             ++iCoord;
         }
-        _netGeneralizedForces = createGCVSplineSet(netGeneralizedForcesData,
+        _netGeneralizedForces = createGCVSplineSet(*netGenForcesTable,
                 invDynFormat);
         std::cout << "success!" << std::endl;
     }
@@ -212,9 +247,13 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& desiredMoments) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time is lower than permitted.");
-    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-            "Requested final time is greater than permitted.");
+            "Requested initial time (" + std::to_string(times[0])
+            + ") is lower than permitted (" + std::to_string(getInitialTime())
+            + ").");
+    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+            "Requested final time (" + std::to_string(times.tail<1>().value())
+            + ") is greater than permitted (" + std::to_string(getFinalTime())
+            + ").");
 
     desiredMoments.resize(_netGeneralizedForces.getSize(), times.size());
     for (size_t i_time = 0; i_time < size_t(times.size()); ++i_time) {
@@ -232,9 +271,13 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonLengths) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time is lower than permitted.");
-    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-            "Requested final time is greater than permitted.");
+            "Requested initial time (" + std::to_string(times[0])
+            + ") is lower than permitted (" + std::to_string(getInitialTime())
+            + ").");
+    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+            "Requested final time (" + std::to_string(times.tail<1>().value())
+            + ") is greater than permitted (" + std::to_string(getFinalTime())
+            + ").");
 
     muscleTendonLengths.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -251,9 +294,13 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
         const Eigen::VectorXd& times,
         Eigen::MatrixXd& muscleTendonVelocities) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time is lower than permitted.");
-    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-            "Requested final time is greater than permitted.");
+            "Requested initial time (" + std::to_string(times[0])
+            + ") is lower than permitted (" + std::to_string(getInitialTime())
+            + ").");
+    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+            "Requested final time (" + std::to_string(times.tail<1>().value())
+            + ") is greater than permitted (" + std::to_string(getFinalTime())
+            + ").");
 
     muscleTendonVelocities.resize(_numActiveMuscles, times.size());
     // The matrix is in column-major format.
@@ -275,9 +322,13 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
         const Eigen::VectorXd& times,
         std::vector<Eigen::MatrixXd>& momentArms) const {
     OPENSIM_THROW_IF(times[0] < getInitialTime(), Exception,
-            "Requested initial time is lower than permitted.");
-    OPENSIM_THROW_IF(times[times.size()-1] < getFinalTime(), Exception,
-            "Requested final time is greater than permitted.");
+            "Requested initial time (" + std::to_string(times[0])
+            + ") is lower than permitted (" + std::to_string(getInitialTime())
+            + ").");
+    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+            "Requested final time (" + std::to_string(times.tail<1>().value())
+            + ") is greater than permitted (" + std::to_string(getFinalTime())
+            + ").");
 
     momentArms.resize(times.size());
     for (size_t i_mesh = 0; i_mesh < size_t(times.size()); ++i_mesh) {

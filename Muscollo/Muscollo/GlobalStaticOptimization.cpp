@@ -466,18 +466,19 @@ GlobalStaticOptimization::solve() const {
             get_lowpass_cutoff_frequency_for_kinematics() != -1,
             Exception,
             "Invalid value for cutoff frequency for kinematics.");
+    OPENSIM_THROW_IF(
+            get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+            get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+            Exception,
+            "Invalid value for cutoff frequency for joint moments.");
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),
+                get_lowpass_cutoff_frequency_for_joint_moments(),
                 netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
-        OPENSIM_THROW_IF(
-                get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-                get_lowpass_cutoff_frequency_for_joint_moments() != -1,
-                Exception,
-                "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),

@@ -43,6 +43,7 @@ public:
             const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
             const double& lowpassCutoffKinematics,
+            const double& lowpassCutoffJointMoments,
             const TimeSeriesTable& netGeneralizedForcesData);
 
     /// Get the paths (relative to the model) of the coordinates that are to be
