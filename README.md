@@ -29,7 +29,16 @@ direct collocation. Currently, Tropter's source code is part of Muscollo.
 On **Linux** and **macOS**, you must obtain these packages on your own. Most of
 them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).
 
-In particular, if you are using Homebrew to obtain ColPack and ADOL-C, make 
+Ubuntu
+------
+
+```bash
+sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev libadolc-dev
+```
+
+macOS
+-----
+If you are using Homebrew to obtain ColPack and ADOL-C, make 
 sure they are compiled with the same compiler you will use for Muscollo and 
 tropter (by default, Homebrew compiles these with GCC):
 
