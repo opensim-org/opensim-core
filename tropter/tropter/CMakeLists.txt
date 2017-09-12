@@ -30,17 +30,17 @@ add_library(tropter
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
 
-target_include_directories(tropter SYSTEM PUBLIC ${COLPACK_INCLUDE_DIR})
+target_include_directories(tropter SYSTEM PRIVATE ${COLPACK_INCLUDE_DIR})
+# TODO PUBLIC or PRIVATE?
 target_link_libraries(tropter PUBLIC ${COLPACK_LIBRARIES})
 
-# This line was from when we used pkg-config to find ADOL-C:
-#target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDE_DIRS})
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(tropter PUBLIC ${ADOLC_LIBRARIES})
 
 if(OPENMP_FOUND)
     target_compile_definitions(tropter PUBLIC TROPTER_WITH_OPENMP)
-    target_compile_options(tropter BEFORE PUBLIC
+    # TODO PUBLIC or PRIVATE?
+    target_compile_options(tropter BEFORE PRIVATE
             $<$<COMPILE_LANGUAGE:C>:${OpenMP_C_FLAGS}>
             $<$<COMPILE_LANGUAGE:CXX>:${OpenMP_CXX_FLAGS}>)
     if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES Clang)
@@ -49,8 +49,15 @@ if(OPENMP_FOUND)
     endif()
 endif()
 
-target_include_directories(tropter SYSTEM PUBLIC ${IPOPT_INCLUDE_DIRS})
+target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
+# TODO PUBLIC or PRIVATE?
 target_link_libraries(tropter PUBLIC ${IPOPT_LIBRARIES})
+if(LINUX)
+    # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
+    # We only include Ipopt in cpp files, so our clients don't need
+    # this flag.
+    target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
+endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(MUSCOLLO_WITH_SNOPT)
