@@ -48,7 +48,9 @@ find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 # Avoid using pkg-config on Windows as it's not easy to get
 # on Windows. On Ubuntu, the pkg-config file for Ipopt provides
 # a flag that we must use.
-set(LINUX UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
 if(LINUX)
     find_package(PkgConfig REQUIRED)
 endif()
