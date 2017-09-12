@@ -146,6 +146,8 @@ public:
         }
         return names;
     }
+    /// Print (to std::cout) the number, names, and bounds of the states,
+    /// controls, and path constraints.
     void print_description() const;
     /// @}
 
