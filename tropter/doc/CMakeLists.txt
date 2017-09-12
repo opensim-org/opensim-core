@@ -16,6 +16,9 @@ if(DOXYGEN_FOUND)
 
     # TODO When tropter is moved to a separate repository, remove "tropter_".
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/"
-            DESTINATION "${CMAKE_INSTALL_DOCDIR}/tropter_api")
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/tropter_API")
+
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/tropter_API.html"
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/")
 
 endif()
