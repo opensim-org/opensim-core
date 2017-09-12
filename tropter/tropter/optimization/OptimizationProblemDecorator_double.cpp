@@ -238,8 +238,8 @@ calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     // TODO speedup in Release using OpenMP requires setting environment var
     // OMP_WAIT_POLICY=passive.
     // TODO add `if(parallel)`
-    //#pragma omp parallel for \
-    //            firstprivate(m_x_working) \
+    //#pragma omp parallel for
+    //            firstprivate(m_x_working)
     //            private(obj_pos, obj_neg)
     for (const auto& i : m_gradient_nonzero_indices) {
         // Perform a central difference.
