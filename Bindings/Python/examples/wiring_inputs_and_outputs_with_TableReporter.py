@@ -85,7 +85,7 @@ for i in range(reporter.getInput('inputs').getNumConnectees()):
 manager = osim.Manager(deserialized_model)
 state.setTime(0)
 manager.initialize(state)
-manager.integrate(1.0)
+state = manager.integrate(1.0)
 
 # Now that the simulation is done, get the table from the TableReporter and
 # write it to a file.

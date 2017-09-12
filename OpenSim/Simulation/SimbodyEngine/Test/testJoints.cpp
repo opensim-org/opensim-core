@@ -390,7 +390,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     //cout << osim_state.getQ()<<endl;
     //cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
 
-    manager.integrate(duration);
+    osim_state = manager.integrate(duration);
 }
 
 void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_sb, const SimTK::Vector &q_osim, const SimTK::Vector &u_osim, string errorMessagePrefix = "")

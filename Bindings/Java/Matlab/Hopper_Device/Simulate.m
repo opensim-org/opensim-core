@@ -106,8 +106,8 @@ while true
     % Simulate.
     state = State(initState);
     manager = Manager(model);
-	manager.initialize(state);
-    manager.integrate(5.0);
+    manager.initialize(state);
+    state = manager.integrate(5.0);
     simulatedAtLeastOnce = true;
 
     % If there is no visualizer, only simulate once.

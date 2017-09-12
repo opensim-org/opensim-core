@@ -217,7 +217,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     //Control *control;
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
-    manager.integrate(duration);
+    osim_state = manager.integrate(duration);
 }
 
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
@@ -552,7 +552,7 @@ void testCoordinateLocking()
     si2.setTime(0.0);
     manager.initialize(si2);
     cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
-    manager.integrate(duration);
+    si2 = manager.integrate(duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();

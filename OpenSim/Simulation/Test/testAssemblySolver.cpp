@@ -192,7 +192,7 @@ void testAssembleModelWithConstraints(string modelFile)
     manager.initialize(state);
 
     // Simulate forward in time
-    manager.integrate(0.05);
+    state = manager.integrate(0.05);
     model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
     Vector positionErr = state.getQErr();

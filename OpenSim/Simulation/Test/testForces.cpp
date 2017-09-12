@@ -239,7 +239,7 @@ void testExpressionBasedCoordinateForce()
     manager.initialize(osim_state);
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -330,7 +330,7 @@ void testExpressionBasedPointToPointForce()
     manager.initialize(state);
 
     double final_t = 1.0;
-    manager.integrate(final_t);
+    state = manager.integrate(final_t);
 
     //manager.getStateStorage().print("testExpressionBasedPointToPointForce.sto");
 
@@ -445,7 +445,7 @@ void testPathSpring()
     manager.initialize(osim_state);
 
     double final_t = 10.0;
-    manager.integrate(final_t);
+    osim_state = manager.integrate(final_t);
 
     // tension should only be velocity dependent
     osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
@@ -544,7 +544,7 @@ void testSpringMass()
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -656,7 +656,7 @@ void testBushingForce()
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball->findStationLocationInGround(osim_state, Vec3(0));
         
@@ -832,7 +832,7 @@ void testFunctionBasedBushingForce()
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -951,7 +951,7 @@ void testExpressionBasedBushingForceTranslational()
     double dt = final_t/nsteps;
     
     for(int i = 1; i <=nsteps; ++i){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -1074,7 +1074,7 @@ void testExpressionBasedBushingForceRotational()
     double omega = sqrt(stiffness / I_y);
 
     for (int i = 1; i <= nsteps; ++i) {
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         // compute the current rotation about the y axis
@@ -1150,7 +1150,7 @@ void testElasticFoundation()
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(final_t);
+    osim_state = manager.integrate(final_t);
 
     // end timing
     cout << "Elastic Foundation simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;;
@@ -1228,7 +1228,7 @@ void testHuntCrossleyForce()
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(final_t);
+    osim_state = manager.integrate(final_t);
 
     // end timing
     cout << "Hunt Crossley simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
@@ -1370,7 +1370,7 @@ void testCoordinateLimitForce()
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         
         double h = q_h.getValue(osim_state);
@@ -1514,7 +1514,7 @@ void testCoordinateLimitForceRotational()
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         double ediss = clf->getDissipatedEnergy(osim_state);
@@ -1602,7 +1602,7 @@ void testExternalForce()
     double tf = 2.0;
     s.setTime(0.0);
     manager.initialize(s);
-    manager.integrate(tf);
+    s = manager.integrate(tf);
 
     manager.getStateStorage().print("external_force_test_model_states.sto");;
 
@@ -1644,7 +1644,7 @@ void testExternalForce()
     Manager manager2(model, integrator2);
     s2.setTime(0.0);
     manager2.initialize(s2);
-    manager2.integrate(tf);
+    s2 = manager2.integrate(tf);
 
     // all dofs should remain constant
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1682,7 +1682,7 @@ void testExternalForce()
     Manager manager3(model, integrator3);
     s3.setTime(0.0);
     manager3.initialize(s3);
-    manager3.integrate(tf);
+    s3 = manager3.integrate(tf);
 
     // all dofs should remain constant except Y
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1732,7 +1732,7 @@ void testExternalForce()
     Manager manager4(model, integrator4);
     s4.setTime(0.0);
     manager4.initialize(s4);
-    manager4.integrate(tf);
+    s4 = manager4.integrate(tf);
 
     // all dofs should remain constant except X-translation
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){

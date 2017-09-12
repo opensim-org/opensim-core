@@ -160,7 +160,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     manager.initialize(osim_state);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
-        manager.integrate(times[i]);
+        osim_state = manager.integrate(times[i]);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
         Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];

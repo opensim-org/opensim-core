@@ -39,7 +39,7 @@ state = model.initSystem();
 manager = Manager(model);
 state.setTime(0);
 manager.initialize(state);
-manager.integrate(2);
+state = manager.integrate(2);
 
 % Get the states table from the manager and print the results.
 sTable = manager.getStatesTable();

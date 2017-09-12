@@ -481,7 +481,7 @@ resetTimeAndDTArrays(double aTime)
 void Manager::
 setModel(Model& aModel)
 {
-    if(_model!=NULL){
+    if(_model != nullptr){
         // May need to issue a warning here that model was already set to avoid a leak.
     }
 
@@ -630,7 +630,7 @@ integrate(double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
 
-    if (_timeStepper == NULL) {
+    if (_timeStepper == nullptr) {
         throw Exception("Manager::integrate(): Manager has not be "
             "initialized. Call Manager::initialize() first.");
     }
@@ -808,16 +808,16 @@ void Manager::initialize(SimTK::State& s)
             "with an integrator, or call Manager::setIntegrator().");
     }
 
-    if (_timeStepper == nullptr) {
+    if (_timeStepper) {
+        throw Exception("Manager::initialize(): "
+            "Cannot initialize a Manager multiple times.");
+    }
+
+    else {
         _timeStepper.reset(
             new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ));
         _timeStepper->initialize(s);
         _timeStepper->setReportAllSignificantStates(true);
-    }
-
-    else {
-        throw Exception("Manager::initialize(): "
-            "Cannot initialize a Manager multiple times.");
     }
 }
 

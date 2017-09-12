@@ -145,7 +145,7 @@ class TestReporter {
             Manager manager = new Manager(model);
             state.setTime(0);
             manager.initialize(state);
-            manager.integrate(n);
+            state = manager.integrate(n);
 
             TimeSeriesTable table = tableReporter.getTable();
             stoAdapter.write(table, "pendulum_coordinates.sto");
