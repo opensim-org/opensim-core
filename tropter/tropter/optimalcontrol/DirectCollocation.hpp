@@ -508,7 +508,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
                                   compare_size)->size();
     stream << std::setw(max_pathcon_name_length) << " "
-           << "  norm across the tropter" << std::endl;
+           << "  norm across the mesh" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         auto& norm = static_cast<const double&>(
                 values.path_constraints.row(i_pc).norm());
@@ -518,7 +518,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                 << std::setprecision(2) << std::scientific << std::setw(9)
                 << norm << std::endl;
     }
-    stream << "Path constraint values at each tropter point:" << std::endl;
+    stream << "Path constraint values at each mesh point:" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         stream << std::setw(9) << i_pc << "  ";
     }
