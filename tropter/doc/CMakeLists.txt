@@ -9,7 +9,7 @@ if(DOXYGEN_FOUND)
             COMMENT "tropter doxygen documentation"
             SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/doxyfile.in")
     set_target_properties(tropter_doxygen PROPERTIES
-            PROJECT_LABEL "tropter doxygen")
+            PROJECT_LABEL "tropter doxygen" FOLDER "tropter")
     add_custom_command(TARGET tropter_doxygen
             COMMENT "Running doxygen to build tropter documentation."
             COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile)
