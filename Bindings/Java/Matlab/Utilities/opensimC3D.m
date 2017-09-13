@@ -129,9 +129,4 @@ classdef opensimC3D < matlab.mixin.SetGet
             end
         end
    end
-end
-
-   
-    
-    
-    
+end 
