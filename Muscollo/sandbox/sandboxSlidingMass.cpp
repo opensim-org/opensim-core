@@ -90,13 +90,17 @@ public:
     double calcEndpointCost(const SimTK::State& finalState) const {
         return get_weight() * calcEndpointCostImpl(finalState);
     }
+    // TODO avoid this weirdness.
+    void setModel(const Model& model) const { m_model.reset(&model); }
 protected:
     virtual double calcEndpointCostImpl(const SimTK::State& finalState)
             const = 0;
+    const Model& getModel() const { return m_model.getRef(); }
 private:
     void constructProperties() {
         constructProperty_weight(1);
     }
+    mutable SimTK::ReferencePtr<const Model> m_model;
 };
 
 class MucoFinalTimeCost : public MucoCost {
@@ -104,6 +108,37 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:
     double calcEndpointCostImpl(const SimTK::State& finalState) const override {
         return finalState.getTime();
+    }
+};
+
+// TODO should these be added to the model? we might need access to
+// components, etc. Maybe these should have a method where they get to add
+// arbitrary components to the model.
+// TODO should also have an initialization routine to cache quantities.
+class MucoMarkerEndpointCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerEndpointCost, MucoCost);
+public:
+    OpenSim_DECLARE_PROPERTY(frame_name, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(point_on_frame, SimTK::Vec3, "TODO");
+    OpenSim_DECLARE_PROPERTY(point_to_track, SimTK::Vec3,
+            "TODO Expressed in ground.");
+    MucoMarkerEndpointCost() {
+        constructProperties();
+    }
+protected:
+    double calcEndpointCostImpl(const SimTK::State& finalState) const override {
+        getModel().realizePosition(finalState);
+        const auto& frame = getModel().getComponent<Frame>(get_frame_name());
+        auto actualLocation =
+                frame.findStationLocationInGround(finalState,
+                        get_point_on_frame());
+        return (actualLocation - get_point_to_track()).normSqr();
+    }
+private:
+    void constructProperties() {
+        constructProperty_frame_name("");
+        constructProperty_point_on_frame(SimTK::Vec3(0));
+        constructProperty_point_to_track(SimTK::Vec3(0));
     }
 };
 
@@ -170,14 +205,14 @@ public:
             const std::string& name) const {
         int idx = getProperty_state_info().findIndexForName(name);
         OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-                "Cannot find state info for '" + name + "'.");
+                "No info provided for state '" + name + "'.");
         return get_state_info(idx);
     }
     const MucoContinuousVariableInfo& getControlInfo(
             const std::string& name) const {
         int idx = getProperty_control_info().findIndexForName(name);
         OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-                "Cannot find control info for '" + name + "'.");
+                "No info provided for control for '" + name + "'.");
         return get_control_info(idx);
     }
 private:
@@ -264,12 +299,23 @@ public:
             this->add_control(actuName, info.getBounds(),
                     info.getInitialBounds(), info.getFinalBounds());
         }
+        const auto& costs = m_mucoProb.getProperty_costs();
+        // TODO avoid this weirdness; add the costs directly to the model.
+        for (int ic = 0; ic < costs.size(); ++ic) {
+            costs[ic].setModel(m_model);
+        }
     }
     // TODO rename argument "states" to "state".
-    void dynamics(const VectorX<T>& states, const VectorX<T>& controls,
-            Eigen::Ref<VectorX<T>> deriv) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
 
-        //m_state.setTime(TODO);
+        // TODO convert to implicit formulation.
+
+        const auto& states = in.states;
+        const auto& controls = in.controls;
+
+        m_state.setTime(in.time);
 
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
@@ -287,16 +333,16 @@ public:
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
         m_model.realizeAcceleration(m_state);
-        std::copy(&m_state.updYDot()[0], &m_state.updYDot()[0] + states.size(),
-                deriv.data());
+        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
+                out.dynamics.data());
+
     }
     //void calc_integral_cost(const double& /*time*/, const VectorXd& /*states*/,
     //        const VectorXd& controls, double& integrand) const override {
     //    integrand = controls[0] * controls[0];
     //}
-    void endpoint_cost(const double& final_time, const VectorX<T>& states,
-            double& cost) const override
-    {
+    void calc_endpoint_cost(const double& final_time, const VectorX<T>& states,
+            double& cost) const override {
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
@@ -317,10 +363,29 @@ void MucoSolver::solve() const {
     // TODO
     auto ocp = std::make_shared<OptimalControlProblem<double>>(*this);
     ocp->print_description();
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
-            "ipopt", 20);
+    int N = 100;
+    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
+            N);
     dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
-    auto solution = dircol.solve();
+
+    tropter::OptimalControlIterate guess;
+    guess.time.setLinSpaced(N, 0, 1);
+    const double pi = 3.14159;
+    // Give a hint (not the exact final state, but something close to it).
+    // I tried giving a guess where the final state guess was from the
+    // solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
+    // solution was all zeros.
+    ocp->set_state_guess(guess, "j0/q0/value",
+            Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
+    ocp->set_state_guess(guess, "j1/q1/value",
+            Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
+    ocp->set_state_guess(guess, "j0/q0/speed", Eigen::RowVectorXd::Zero(N));
+    ocp->set_state_guess(guess, "j1/q1/speed", Eigen::RowVectorXd::Zero(N));
+    ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
+    ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
+    auto solution = dircol.solve(guess);
+
+    //auto solution = dircol.solve();
     solution.write("DEBUG_sandboxSlidingMass.csv");
     dircol.print_constraint_values(solution);
 }
@@ -352,6 +417,55 @@ Model createModel() {
     return model;
 }
 
+Model createDoublePendulum() {
+    Model model;
+    model.setName("dp");
+
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    // Create two links, each with a mass of 1 kg, center of mass at the body's
+    // origin, and moments and products of inertia of zero.
+    auto* b0 = new OpenSim::Body("b0", 1, Vec3(0), Inertia(1));
+    model.addBody(b0);
+    auto* b1  = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
+    model.addBody(b1);
+
+    // Connect the bodies with pin joints. Assume each body is 1 m long.
+    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+            *b0, Vec3(-1, 0, 0), Vec3(0));
+    auto& q0 = j0->updCoordinate();
+    q0.setName("q0");
+    auto* j1 = new PinJoint("j1",
+            *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
+    auto& q1 = j1->updCoordinate();
+    q1.setName("q1");
+    model.addJoint(j0);
+    model.addJoint(j1);
+
+    auto* tau0 = new CoordinateActuator();
+    tau0->setCoordinate(&j0->updCoordinate());
+    tau0->setName("tau0");
+    tau0->setOptimalForce(1);
+    model.addComponent(tau0);
+
+    auto* tau1 = new CoordinateActuator();
+    tau1->setCoordinate(&j1->updCoordinate());
+    tau1->setName("tau1");
+    tau1->setOptimalForce(1);
+    model.addComponent(tau1);
+
+    return model;
+}
+
+SimTK::Vector linspace(int length, double start, double end) {
+    SimTK::Vector v(length);
+    for (int i = 0; i < length; ++i) {
+        v[i] = start + i * (end - start) / (length - 1);
+    }
+    return v;
+}
+
 int main() {
 
     /*
@@ -364,27 +478,81 @@ int main() {
     dircol.print_constraint_values(solution);
      */
 
-    MucoProblem mp;
-    mp.setModel(createModel());
-    mp.setTimeBounds(0, {0, 5});
-    mp.append_state_info({"joint/position/value", {-10, 10}, {0}, {1}});
-    mp.append_state_info({"joint/position/speed", {-10, 10}, {0}, {0}});
-    mp.append_control_info({"actuator", {-50, 50}});
-    //mp.setStateInfo("joint/position/value", {-10, 10}, {0}, {1});
-    //mp.setStateInfo("joint/position/speed", {-10, 10}, {0}, {0});
-    //mp.setControlInfo("actuator", {-50, 50});
+    /*{
+        MucoProblem mp;
+        mp.setModel(createModel());
+        mp.setTimeBounds(0, {0, 5});
+        mp.append_state_info({"joint/position/value", {-10, 10}, {0}, {1}});
+        mp.append_state_info({"joint/position/speed", {-10, 10}, {0}, {0}});
+        mp.append_control_info({"actuator", {-50, 50}});
+        //mp.setStateInfo("joint/position/value", {-10, 10}, {0}, {1});
+        //mp.setStateInfo("joint/position/speed", {-10, 10}, {0}, {0});
+        //mp.setControlInfo("actuator", {-50, 50});
 
-    mp.print("DEBUG_MucoProblem.xml");
+        mp.print("DEBUG_MucoProblem.xml");
 
-    // TODO specify guess.
+        // TODO specify guess.
 
-    mp.append_costs(MucoFinalTimeCost());
+        mp.append_costs(MucoFinalTimeCost());
 
-    MucoSolver ms(mp);
-    ms.solve();
+        MucoSolver ms(mp);
+        ms.solve();
+    }*/
+
+
+    // TODO setting an initial guess.
+
+    {
+        MucoProblem mp;
+        mp.setModel(createDoublePendulum());
+        mp.setTimeBounds(0, {0, 5});
+        //mp.append_state_info({"j0/q0/value", {-10, 10}, {0}});
+        mp.append_state_info({"j0/q0/value", {-10, 10}, {0}});
+        mp.append_state_info({"j0/q0/speed", {-50, 50}, {0}, {0}});
+        mp.append_state_info({"j1/q1/value", {-10, 10}, {0}});
+        mp.append_state_info({"j1/q1/speed", {-50, 50}, {0}, {0}});
+        mp.append_control_info({"tau0", {-50, 50}});
+        mp.append_control_info({"tau1", {-50, 50}});
+
+
+        //int N = 100;
+        //mp.setTimeGuess(linspace(N, 0, 1));
+        //const double pi = 3.14159;
+        //// Give a hint (not the exact final state, but something close to it).
+        //// I tried giving a guess where the final state guess was from the
+        //// solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
+        //// solution was all zeros.
+        //mp.setStateGuess("j0")
+        //ocp->set_state_guess(guess, "j0/q0/value",
+        //        Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
+        //ocp->set_state_guess(guess, "j1/q1/value",
+        //        Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
+        //ocp->set_state_guess(guess, "j0/q0/speed", Eigen::RowVectorXd::Zero(N));
+        //ocp->set_state_guess(guess, "j1/q1/speed", Eigen::RowVectorXd::Zero(N));
+        //ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
+        //ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
+
+        mp.print("DEBUG_MucoProblemDoublePendulumSwingUp.xml");
+
+        MucoMarkerEndpointCost endpointCost;
+        endpointCost.set_frame_name("b1");
+        endpointCost.set_weight(1000.0);
+        endpointCost.set_point_on_frame(SimTK::Vec3(0));
+        endpointCost.set_point_to_track(SimTK::Vec3(0, 2, 0));
+        mp.append_costs(endpointCost);
+
+        MucoFinalTimeCost ftCost;
+        ftCost.set_weight(0.001);
+        mp.append_costs(ftCost);
+
+        MucoSolver ms(mp);
+        ms.solve();
+
+
+        // TODO get solution, use it to solve the problem on a finer grid.
+    }
 
     return 0;
 }
-
 
 
