@@ -59,8 +59,8 @@ class ControllerSet;
  * we only create a TimeStepper once, specifically when we call
  * initialize(SimTK::State&). To ensure this, the Manager will throw
  * an exception if initialize(SimTK::State&) is called more than once. Note 
- * that any subsequent changes to the SimTK::State passed into 
- * initialize(SimTK::State&) will not affect the simulation.
+ * that editing the SimTK::State after calling  initialize(SimTK::State&) 
+ * will not affect the simulation.
  *
  * Note that this interface means that you cannot "reinitialize" a Manager.
  * If you make changes to the SimTK::State, a new Manager must be created
@@ -190,11 +190,11 @@ public:
     double getInitialTime() const;
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using 
         Manager::integrate(SimTK::State&, double). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
     void setFinalTime(double aTF);
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
         Manager::integrate(SimTK::State&, double). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(SimTK::State&, double).")
+    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
     double getFinalTime() const;
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -234,13 +234,18 @@ public:
     * state (at which the integration will start) and a finalTime. You must call
     * Manager::initialize(SimTK::State&) before calling this function.
     *
+    * If you must update states or controls in a loop, you must recreate the 
+    * manager within the loop (such discontinuous changes are considered "events"
+    * and cannot be handled during integration of the otherwise continuous system).
+    * The proper way to handle this situation is to create a SimTK::EventHandler.
+    *
     * Example: Integrating from time = 1s to time = 2s
     * @code
     * SimTK::State state = model.initSystem();
     * Manager manager(model);
     * state.setTime(1.0);
     * manager.initialize(state);
-    * manager.integrate(2.0);
+    * state = manager.integrate(2.0);
     * @endcode
     *
     * Example: Integrate from time = 0s to time = 10s, in 2s increments
@@ -251,7 +256,22 @@ public:
     * state.setTime(0.0);
     * manager.initialize(state);
     * for (int i = 1; i <= n; ++i) {
-    *     manager.integrate(i*dTime);
+    *     state = manager.integrate(i*dTime);
+    * }
+    * @endcode
+    *
+    * Example: Integrate from time = 0s to time = 10s, updating the
+    *          state at 2s increments
+    * @code
+    * dTime = 2.0;
+    * finalTime = 10.0;
+    * int n = int(round(finalTime/dTime));
+    * manager.initialize(state);
+    * for (int i = 0; i < n; ++i) {
+    *     Manager manager(model);
+    *     state.setTime(i*dTime);
+    *     manager.initialize(state);
+    *     state = manager.integrate((i+1)*dTime);
     * }
     * @endcode
     *
