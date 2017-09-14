@@ -600,27 +600,6 @@ MucoIterate MucoSolver::solve() const {
             N);
     dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
 
-    /*
-    tropter::OptimalControlIterate guess;
-    guess.time.setLinSpaced(N, 0, 1);
-    const double pi = 3.14159;
-    // Give a hint (not the exact final state, but something close to it).
-    // I tried giving a guess where the final state guess was from the
-    // solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
-    // solution was all zeros.
-    ocp->set_state_guess(guess, "j0/q0/value",
-            Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
-    ocp->set_state_guess(guess, "j1/q1/value",
-            Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
-    ocp->set_state_guess(guess, "j0/q0/speed", Eigen::RowVectorXd::Zero(N));
-    ocp->set_state_guess(guess, "j1/q1/speed", Eigen::RowVectorXd::Zero(N));
-    ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
-    ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
-    auto tropterSolution = dircol.solve(guess);
-    */
-
-    //auto solution = dircol.solve();
-
     using TropterIterate = tropter::OptimalControlIterate;
     tropter::OptimalControlSolution tropterSolution =
             m_guess ? dircol.solve(TropterIterate(m_guess.getRef()))
@@ -757,24 +736,6 @@ int main() {
         mp.append_control_info({"tau1", {-50, 50}});
 
 
-        //int N = 100;
-        //mp.setTimeGuess(linspace(N, 0, 1));
-        //const double pi = 3.14159;
-        //// Give a hint (not the exact final state, but something close to it).
-        //// I tried giving a guess where the final state guess was from the
-        //// solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
-        //// solution was all zeros.
-        //mp.setStateGuess("j0")
-        //ocp->set_state_guess(guess, "j0/q0/value",
-        //        Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
-        //ocp->set_state_guess(guess, "j1/q1/value",
-        //        Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
-        //ocp->set_state_guess(guess, "j0/q0/speed", Eigen::RowVectorXd::Zero(N));
-        //ocp->set_state_guess(guess, "j1/q1/speed", Eigen::RowVectorXd::Zero(N));
-        //ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
-        //ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
-
-
         mp.print("DEBUG_MucoProblemDoublePendulumSwingUp.xml");
 
         MucoMarkerEndpointCost endpointCost;
@@ -807,12 +768,11 @@ int main() {
         MucoIterate solution0 = ms.solve();
         solution0.write("DEBUG_sandboxSlidingMass_solution.sto");
 
+        // TODO the second problem never solves well...Ipopt keeps on iterating.
         ms.set_num_mesh_points(20);
         ms.setGuess(solution0);
         MucoIterate solution1 = ms.solve();
 
-
-        // TODO get solution, use it to solve the problem on a finer grid.
     }
 
     return 0;
