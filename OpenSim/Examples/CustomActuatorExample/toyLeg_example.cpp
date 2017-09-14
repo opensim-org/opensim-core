@@ -210,8 +210,9 @@ int main()
 
         // Integrate
         si.setTime(t0);
+        manager.initialize(si);
         std::cout<<"\n\nIntegrating from " << t0 << " to " << tf << std::endl;
-        manager.integrate(si, tf);
+        manager.integrate(tf);
 
         // Save results
         auto controlsTable = osimModel.getControlsTable();

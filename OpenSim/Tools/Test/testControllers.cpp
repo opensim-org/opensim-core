@@ -148,8 +148,9 @@ void testControlSetControllerOnBlock()
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
@@ -240,8 +241,9 @@ void testPrescribedControllerOnBlock(bool enabled)
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
 
@@ -348,8 +350,9 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
     // Save the simulation results
@@ -389,8 +392,9 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // Integrate from initial time to final time
     s2.setTime(initialTime);
+    manager2.initialize(s2);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager2.integrate(s2, finalTime);
+    s2 = manager2.integrate(finalTime);
 
     // Save the simulation results
     Storage states(manager2.getStateStorage());

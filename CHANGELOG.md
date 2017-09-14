@@ -57,15 +57,18 @@ Converting from v3.x to v4.0
   compatibility, a joint's parent and child PhysicalFrames are swapped when
   opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
-  `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
-  (see the documentation in the `Manager` class for more details):
+  `Manager::integrate(double)`. You must also now call 
+  `Manager::initialize(SimTK::State&)` before integrating. Here is a 
+   before-after example (see the documentation in the `Manager` class 
+   for more details):
   - Before:
-	- manager.setInitialTime(0.0);
-	- manager.setFinalTime(1.0);
-	- manager.integrate(state);
+    - manager.setInitialTime(0.0);
+    - manager.setFinalTime(1.0);
+    - manager.integrate(state);
   - After:
     - state.setTime(0.0);
-	- manager.integrate(state, 1.0);
+    - manager.initialize(state);
+    - manager.integrate(1.0);
 
 - `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
 - `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
