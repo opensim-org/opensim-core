@@ -1,5 +1,5 @@
-classdef opensimC3D < matlab.mixin.SetGet
-% opensimC3D C3D data into OpenSim Tables
+classdef osimC3D < matlab.mixin.SetGet
+% osimC3D C3D data into OpenSim Tables
 %   Utility  Class that uses OpenSim's C3DFileAdapter() class to produce
 %   OpenSim tables. Methods include Simbody rotation.
     properties (Access = private)
@@ -8,7 +8,7 @@ classdef opensimC3D < matlab.mixin.SetGet
         forces
     end
     methods
-        function obj = opensimC3D(path2c3d)
+        function obj = osimC3D(path2c3d)
             % Class Constructor: input is an absolute path to a C3D file. 
             
             % verify the file path is correct
