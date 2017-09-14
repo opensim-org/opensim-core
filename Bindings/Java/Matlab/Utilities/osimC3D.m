@@ -3,9 +3,9 @@ classdef opensimC3D < matlab.mixin.SetGet
 %   Utility  Class that uses OpenSim's C3DFileAdapter() class to produce
 %   OpenSim tables. Methods include Simbody rotation.
     properties (Access = private)
-    path
-    markers
-    forces
+        path
+        markers
+        forces
     end
     methods
         function obj = opensimC3D(path2c3d)
@@ -35,11 +35,11 @@ classdef opensimC3D < matlab.mixin.SetGet
         end
         function n = getNumTrajectories(obj)
             % Get the number of markers in the c3d file
-            n = obj.markers.getNumColumns;
+            n = obj.markers.getNumColumns();
         end
         function n = getNumForces(obj)
             % Get the number of forceplates in the c3d file
-            n = (obj.forces.getNumColumns)/3;
+            n = (obj.forces.getNumColumns())/3;
         end
         function t = getStartTime(obj)
             % Get the start time of the c3d file
@@ -47,7 +47,7 @@ classdef opensimC3D < matlab.mixin.SetGet
         end
         function t = getEndTime(obj)
             % Get the end time of the c3d file
-            t = obj.markers.getIndependentColumn().get(obj.markers.getNumRows - 1);
+            t = obj.markers.getIndependentColumn().get(obj.markers.getNumRows() - 1);
         end
         function name = getFileName(obj)
             % Get the name of the c3d file
@@ -58,12 +58,12 @@ classdef opensimC3D < matlab.mixin.SetGet
             [filedirectory, name, extension] = fileparts(obj.path);
         end
         function table = getTable_markers(obj)
-            table = obj.markers();
+            table = obj.markers().clone();
         end
         function table = getTable_forces(obj)
-            table = obj.forces();
+            table = obj.forces().clone();
         end
-        function [markerStruct, forcesStruct] = getAsStruct(obj)
+        function [markerStruct, forcesStruct] = getAsStructs(obj)
             % Convert the OpenSim tables into Matlab Structures
             markerStruct = osimTableToStruct(obj.markers);
             forcesStruct = osimTableToStruct(obj.forces);
@@ -78,15 +78,10 @@ classdef opensimC3D < matlab.mixin.SetGet
             if ~isnumeric(value)
                 error('value must be numeric (90, -90, 270, ...')
             end
-            
             % rotate the tables
-            markers_rot = obj.rotateTable(obj.markers, axis, value);
-            forces_rot = obj.rotateTable(obj.forces, axis, value);
-        
-            % set the internal tables to the new rotated ones
-            obj.setMarkers(markers_rot)
-            obj.setForces(forces_rot)
-        
+            obj.rotateTable(obj.markers, axis, value);
+            obj.rotateTable(obj.forces, axis, value);
+            
             disp('Marker and Force tables have been rotated')
         end
    end
@@ -100,7 +95,7 @@ classdef opensimC3D < matlab.mixin.SetGet
             % Private Method for setting the internal Force table
             obj.forces = a;
         end 
-        function table = rotateTable(obj, table, axisString, value) 
+        function rotateTable(obj, table, axisString, value) 
             % Private Method for doing the table rotation operations
             
             import org.opensim.modeling.*

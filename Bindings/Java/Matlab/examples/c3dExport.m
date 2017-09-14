@@ -2,6 +2,7 @@
 % operations
 
 %% Choose a c3d file
+% an example file is at opensim-core/OpenSim/Tests/shared/walking2.c3d
 [filename, path] = uigetfile('*.c3d');
 c3dpath = fullfile(path,filename);
 
@@ -33,14 +34,4 @@ c3d.rotateData('x',-90)
 markerTable = c3d.getTable_markers();
 forceTable = c3d.getTable_forces();
 % Get as Matlab Structures
-[markerStruct forceStruct] = c3d.getAsStruct();
-
-
-%% TODO write markers using a TRC class
-
-
-%% TODO Write a forces to file using a MOT class
-
-
-
-
+[markerStruct forceStruct] = c3d.getAsStructs();
