@@ -41,6 +41,7 @@ public:
     ///   - unconstrained variable: 0.
     ///   - lower and upper bounds: midpoint of the bounds.
     ///   - only one bound: value of the bound.
+    // TODO move to AbstractOptimizationProblem.
     Eigen::VectorXd make_initial_guess_from_bounds() const;
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     // You must call this function first before calling objective(),

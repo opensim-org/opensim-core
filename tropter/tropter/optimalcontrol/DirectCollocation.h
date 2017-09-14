@@ -34,6 +34,12 @@ public:
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
                             const unsigned& num_mesh_points = 20);
+    OptimalControlIterate make_initial_guess_from_bounds() const {
+        // We only need this decorator to form an initial guess from the bounds.
+        auto decorator = m_transcription->make_decorator();
+        return m_transcription->deconstruct_iterate(
+                decorator->make_initial_guess_from_bounds());
+    }
     /// Get the OptimizationSolver, through which you can query optimizer
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
@@ -50,8 +56,8 @@ public:
     /// on the variables.
     OptimalControlSolution solve() const;
     /// Solve the problem using the provided initial guess. See
-    /// OptimalControlProblemNamed_::set_state_guess() and
-    /// OptimalControlProblemNamed_::set_control_guess() for help with
+    /// OptimalControlProblem::set_state_guess() and
+    /// OptimalControlProblem::set_control_guess() for help with
     /// creating an initial guess.
     ///
     /// Example:
@@ -64,6 +70,9 @@ public:
     /// ...
     /// OptimalControlSolution solution = dircol.solve(guess);
     /// @endcode
+    ///
+    /// The guess will be linearly interpolated to have the requested number of
+    /// mesh points.
     /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
     // TODO make it even easier to create an initial guess; e.g., creating a
     // guess template.
@@ -130,7 +139,8 @@ public:
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
     virtual Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate&) const = 0;
+    construct_iterate(const OptimalControlIterate&,
+                      bool interpolate = false) const = 0;
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
     virtual OptimalControlIterate
@@ -174,7 +184,8 @@ public:
 
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate& traj) const override;
+    construct_iterate(const OptimalControlIterate& traj,
+                      bool interpolate = false) const override;
     // TODO can this have a generic implementation in the Transcription class?
     OptimalControlIterate
     deconstruct_iterate(const Eigen::VectorXd& x) const override;

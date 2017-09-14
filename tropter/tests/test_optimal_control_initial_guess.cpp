@@ -5,6 +5,8 @@
 
 #include <tropter/tropter.h>
 
+#include <unsupported/Eigen/Splines>
+
 using Eigen::Ref;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;
@@ -139,39 +141,40 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
-    // TODO when we are able to interpolate the guess, the checks should just
-    // be that the number of columns is consistent (and that the number of
-    // state and control rows is correct).
     guess.time.resize(N - 10);   // incorrect.
     guess.states.resize(2, N);   // correct.
     guess.controls.resize(1, N); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-                        Contains("Expected time to have 15 elements"));
+            Contains("Expected time, states, and controls to have"
+                    " the same number of columns (they have 5, "
+                    "15, 15 columns, respectively)."));
 
     guess.time.resize(N);        // correct.
     guess.states.resize(6, N);   // incorrect.
     guess.controls.resize(1, N); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-                        Contains("Expected states to have dimensions 2 x 15"));
+            Contains("Expected states to have 2 rows, but it has 6 rows."));
 
     guess.states.resize(2, N + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-                        Contains("Expected states to have dimensions 2 x 15"));
+            Contains("Expected time, states, and controls to have"
+                    " the same number of columns (they have 15, "
+                    "16, 15 columns, respectively)."));
 
     guess.states.resize(2, N);   // correct.
-    guess.controls.resize(4, N); // incorrect
+    guess.controls.resize(4, N); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected controls to have dimensions 1 x 15"));
+            Contains("Expected controls to have 1 rows, but it has 4 rows."));
 
     guess.controls.resize(1, N - 3); // incorrect
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected controls to have dimensions 1 x 15"));
-
+            Contains("Expected time, states, and controls to have"
+                    " the same number of columns (they have 15, "
+                    "15, 12 columns, respectively)."));
 }
 
 
-TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]")
-{
+TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     // Create an iterate.
     OptimalControlIterate it0;
     int num_times = 15;
@@ -205,5 +208,97 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]")
     REQUIRE(it0.control_names == it1.control_names);
 }
 
+TEST_CASE("Interpolating an initial guess") {
 
+    using namespace Eigen;
+    auto vec = [](const std::vector<double>& v) {
+        RowVectorXd ev = Map<const RowVectorXd>(v.data(), v.size());
+        return ev;
+    };
 
+    // We create an initial guess with 5 time points and upsample it.
+    SECTION("Upsampling") {
+        OptimalControlIterate it0;
+        int num_times = 5;
+        int num_states = 2;
+        int num_controls = 3;
+        it0.time.resize(num_times);
+        it0.time << 0, 1, 2, 3, 5; // non-uniform.
+
+        it0.states.resize(num_states, num_times);
+        it0.states << 0, 1, 4, 9,81,
+                      5, 4, 3, 2, 1;
+
+        it0.controls.resize(num_controls, num_times);
+        it0.controls << -1,   0, -1,  0, -1,
+                         0,   3, -3,  1,  1,
+                         5,   3,  3,  3,  3;
+
+        it0.state_names = {"alpha", "beta"};
+        it0.control_names = {"gamma", "rho", "phi"};
+
+        // Upsampling.
+        OptimalControlIterate it1 = it0.interpolate(9);
+        REQUIRE(it1.state_names == it0.state_names);
+        REQUIRE(it1.control_names == it0.control_names);
+        TROPTER_REQUIRE_EIGEN(it1.time,
+                vec({0, 0.625, 1.25, 1.875, 2.5, 3.125, 3.75, 4.375, 5}),
+                1e-15);
+        TROPTER_REQUIRE_EIGEN(it1.states.row(0),
+                vec({0, 0.625, 1.75, 3.625, 6.5, 13.5, 36, 58.5, 81}), 1e-15);
+        TROPTER_REQUIRE_EIGEN(it1.states.row(1),
+                vec({5, 4.375, 3.75, 3.125, 2.5, 1.9375, 1.625, 1.3125, 1}),
+                1e-15);
+
+        TROPTER_REQUIRE_EIGEN(it1.controls.row(0),
+                vec({-1, -.375, -.25, -.875, -.5, -.0625, -.375, -.6875, -1}),
+                1e-15);
+        TROPTER_REQUIRE_EIGEN(it1.controls.row(1),
+                vec({0, 1.875, 1.5, -2.25, -1, 1, 1, 1, 1}), 1e-15);
+        TROPTER_REQUIRE_EIGEN(it1.controls.row(2),
+                vec({5, 3.75, 3, 3, 3, 3, 3, 3, 3}), 1e-15);
+
+        SECTION("Requesting the same number of points") {
+            // We use it0 here.
+            auto it2 = it0.interpolate(5);
+            REQUIRE(it2.state_names == it0.state_names);
+            REQUIRE(it2.control_names == it0.control_names);
+            TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
+            TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
+            TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
+        }
+    }
+
+    // Re back to the original number of points; should recover it0.
+    SECTION("Roundtrip") {
+        OptimalControlIterate it0;
+        int num_times = 5;
+        int num_states = 2;
+        int num_controls = 3;
+        it0.time.resize(num_times);
+        it0.time << 0, 1, 2, 3, 4;
+        it0.states.resize(num_states, num_times);
+        it0.states << 0, 1, 4, 9,81,
+                      5, 4, 3, 2, 1;
+        it0.controls.resize(num_controls, num_times);
+        it0.controls << -1,   0, -1,  0, -1,
+                         0,   3, -3,  1,  1,
+                         5,   3,  3,  3,  3;
+        auto it1 = it0.interpolate(9);
+        auto it2 = it1.interpolate(5);
+        REQUIRE(it2.state_names == it0.state_names);
+        REQUIRE(it2.control_names == it0.control_names);
+        TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
+        TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
+        TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
+    }
+
+    SECTION("Original times must be sorted") {
+        OptimalControlIterate it;
+        it.time.resize(5);
+        it.time << 0, 1, 2, 1.5, 3;
+        REQUIRE_THROWS_WITH(it.interpolate(20),
+                Contains("Expected time to be non-decreasing"));
+    }
+
+}
