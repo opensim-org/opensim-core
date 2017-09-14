@@ -31,18 +31,22 @@ TimeStepper::initialize() would trigger cache validation improperly.
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
 using namespace OpenSim;
 using namespace std;
 void testStationCalcWithManager();
+void testStateChangesBetweenIntegration();
 
 int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try { testStationCalcWithManager(); }
+    try { testStationCalcWithManager(); 
+          testStateChangesBetweenIntegration(); 
+    }
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testStationCalcWithManager");
@@ -136,4 +140,84 @@ void testStationCalcWithManager()
         SimTK_TEST_EQ(v, vo);
         SimTK_TEST_EQ(a, ao);
     }
+}
+
+void testStateChangesBetweenIntegration()
+{
+    using SimTK::Vec3;
+
+    Model model;
+    model.setName("ball");
+
+    auto ball = new Body("ball", 0.7, Vec3(0.1),
+        SimTK::Inertia::sphere(0.5));
+    model.addBody(ball);
+
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
+        *ball, Vec3(0), Vec3(0));
+    model.addJoint(freeJoint);
+
+    double g = 9.81;
+    model.setGravity(Vec3(0, -g, 0));
+
+    Station* myStation = new Station();
+    const SimTK::Vec3 point(0);
+    myStation->set_location(point);
+    myStation->setParentFrame(*ball);
+    model.addModelComponent(myStation);
+
+    SimTK::State state = model.initSystem();
+
+    //auto sliderCoord = 
+    //    freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+    const Coordinate& sliderCoord = 
+        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+
+    std::vector<double> integInitTimes = {0.0, 1.0, 3.0};
+    std::vector<double> integFinalTimes = {1.0, 3.0, 6.0};
+    std::vector<double> initHeights = {0.0, 13.3, 6.5};
+    std::vector<double> initSpeeds = {0.0, 0.5, -0.5};
+    state.setTime(integInitTimes[0]);
+    int n = integFinalTimes.size();
+
+    for (int i = 0; i < n; ++i) {
+        // Set initial state for integration and check that it's correct
+        sliderCoord.setValue(state, initHeights[i]);
+        sliderCoord.setSpeedValue(state, initSpeeds[i]);
+        
+        Manager manager(model);
+        manager.initialize(state);
+        SimTK::State initState = manager.getState();
+        SimTK_TEST_EQ(initState.getTime(), integInitTimes[i]);
+        SimTK_TEST_EQ(sliderCoord.getValue(initState), initHeights[i]);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(initState), initSpeeds[i]);
+
+        state = manager.integrate(integFinalTimes[i]);
+        model.realizeVelocity(state);
+        double duration = integFinalTimes[i] - integInitTimes[i];
+        double finalHeight = 
+            initHeights[i] + initSpeeds[i]*duration - 0.5*g*duration*duration;
+        double finalSpeed = initSpeeds[i] - g*duration;
+        double sliderHeight = sliderCoord.getValue(state);
+        double sliderSpeed = sliderCoord.getSpeedValue(state);
+        cout << "Slider: t = " << state.getTime() << ", h = " << sliderHeight
+            << ", v = " << sliderSpeed << " | Eq: t = " << integFinalTimes[i]
+            << ", h = " << finalHeight << ", v = " << finalSpeed;
+
+        SimTK_TEST_EQ(state.getTime(), integFinalTimes[i]);
+        SimTK_TEST_EQ(sliderHeight, finalHeight);
+        SimTK_TEST_EQ(sliderSpeed, finalSpeed);
+
+        // Use Simbody to get the location, velocity & acceleration in ground.
+        double stationHeight = myStation->getLocationInGround(state)[1];
+        double stationSpeed = myStation->getVelocityInGround(state)[1];
+
+        cout << " | Station: t = " << state.getTime() << ", h = " 
+            << stationHeight << ", v = " << stationSpeed << endl;
+
+        // Compare Station values from equation values
+        SimTK_TEST_EQ(stationHeight, finalHeight);
+        SimTK_TEST_EQ(stationSpeed, finalSpeed);
+    }
+
 }
