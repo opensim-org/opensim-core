@@ -1,4 +1,6 @@
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/osimActuators.h>
 #include <tropter/tropter.h>
 
 using tropter::VectorX;
@@ -160,7 +162,8 @@ public:
         constructProperties();
     }
 
-    void setModel(const Model& model) { m_model = model; }
+    /// Further changes to the model have no effect.
+    void setModel(Model model) { m_model = std::move(model); }
     const Model& getModel() const { return m_model; }
 
     void setTimeBounds(
@@ -272,29 +275,115 @@ private:
     //    virtual void write(const std::string& filepath) const;
     //};
 };*/
-class MucoSolution {
+class MucoIterate {
 public:
-    MucoSolution(const tropter::OptimalControlSolution& tropSol) {
-        const auto& tropTime = tropSol.time;
+    /// Allow implicit conversion from tropter's iterate type to Muscollo's
+    /// iterate type.
+    MucoIterate(const tropter::OptimalControlIterate& tropIter) {
+        const auto& tropTime = tropIter.time;
         m_time = SimTK::Vector((int)tropTime.size(), tropTime.data());
-        int numTimes = (int)m_time.size();
-        m_state_names = tropSol.state_names;
-        m_control_names = tropSol.control_names;
+        m_state_names = tropIter.state_names;
+        m_control_names = tropIter.control_names;
 
-        int numStates = (int)tropSol.state_names.size();
-        int numControls = (int)tropSol.control_names.size();
+        int numTimes = (int)m_time.size();
+        int numStates = (int)tropIter.state_names.size();
+        int numControls = (int)tropIter.control_names.size();
         m_states = SimTK::Matrix(numTimes, numStates);
         for (int itime = 0; itime < numTimes; ++itime) {
             for (int istate = 0; istate < numStates; ++istate) {
-                m_states(itime, istate) = tropSol.states(itime, istate);
+                m_states(itime, istate) = tropIter.states(istate, itime);
             }
         }
         m_controls = SimTK::Matrix(numTimes, numControls);
         for (int itime = 0; itime < numTimes; ++itime) {
             for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-                m_controls(itime, icontrol) = tropSol.controls(itime, icontrol);
+                m_controls(itime, icontrol) = tropIter.controls(icontrol, itime);
             }
         }
+    }
+    MucoIterate* clone() const { return new MucoIterate(*this); }
+    /// Resize the time vector and the time dimension of the states and
+    /// controls trajectories.
+    /// This may erase any data that was previously stored.
+    // TODO change this to interpolate.
+    void setNumTimes(int numTimes) {
+        m_time.resize(numTimes);
+        m_states.resize(numTimes, m_states.ncol());
+        m_controls.resize(numTimes, m_controls.ncol());
+    }
+    void setTime(SimTK::Vector time) {
+        OPENSIM_THROW_IF(time.size() != m_time.size(), Exception,
+                "Expected " + std::to_string(m_time.size()) +
+                " times but got " + std::to_string(time.size()) + ".");
+        m_time = std::move(time);
+    }
+    void setState(const std::string& name, const SimTK::Vector& trajectory) {
+        OPENSIM_THROW_IF(trajectory.size() != m_states.nrow(), Exception,
+                "For state " + name + ", expected " +
+                std::to_string(m_states.nrow()) +
+                " elements but got " + std::to_string(trajectory.size()) + ".");
+
+        auto it = std::find(m_state_names.cbegin(), m_state_names.cend(), name);
+        OPENSIM_THROW_IF(it == m_state_names.cend(), Exception,
+                "Cannot find state named " + name + ".");
+        int index = (int)std::distance(m_state_names.cbegin(), it);
+        m_states.updCol(index) = trajectory;
+    }
+    void setControl(const std::string& name, const SimTK::Vector& trajectory) {
+        OPENSIM_THROW_IF(trajectory.size() != m_controls.nrow(), Exception,
+                "For control " + name + ", expected " +
+                std::to_string(m_controls.nrow()) +
+                " elements but got " + std::to_string(trajectory.size()) + ".");
+
+        auto it = std::find(m_control_names.cbegin(), m_control_names.cend(),
+                            name);
+        OPENSIM_THROW_IF(it == m_control_names.cend(), Exception,
+                "Cannot find control named " + name + ".");
+        int index = (int)std::distance(m_control_names.cbegin(), it);
+        m_controls.updCol(index) = trajectory;
+    }
+    /// This variant supports use of an initializer list. Example:
+    /// @code{.cpp}
+    /// iterate.setTime({0, 0.5, 1.0});
+    /// @endcode
+    void setTime_std(const std::vector<double>& time) {
+        setTime(SimTK::Vector((int)time.size(), time.data()));
+    }
+    /// This variant supports use of an initializer list.
+    void setState_std(const std::string& name,
+                  const std::vector<double>& trajectory) {
+        setState(name,
+                SimTK::Vector((int)trajectory.size(), trajectory.data()));
+    }
+    /// This variant supports use of an initializer list.
+    void setControl_std(const std::string& name,
+                  const std::vector<double>& trajectory) {
+        setControl(name,
+                SimTK::Vector((int)trajectory.size(), trajectory.data()));
+    }
+    // TODO this can't be here if we want to avoid putting tropter in our
+    // interface.
+    explicit operator tropter::OptimalControlIterate() const {
+        tropter::OptimalControlIterate tropIter;
+        using Eigen::Map;
+        using Eigen::RowVectorXd;
+        using Eigen::MatrixXd;
+        tropIter.time = Map<const RowVectorXd>(&m_time[0], m_time.size());
+
+
+        tropIter.state_names = m_state_names;
+        tropIter.control_names = m_control_names;
+
+        int numTimes = (int)m_time.size();
+        int numStates = (int)m_state_names.size();
+        int numControls = (int)m_control_names.size();
+        // Muscollo's matrix is numTimes x numStates;
+        // tropter's is numStates x numTimes.
+        tropIter.states = Map<const MatrixXd>(
+                &m_states(0, 0), numTimes, numStates).transpose();
+        tropIter.controls = Map<const MatrixXd>(
+                &m_controls(0, 0), numTimes, numControls).transpose();
+        return tropIter;
     }
     void write(const std::string& filepath) const {
         std::vector<double> time(&m_time[0], &m_time[0] + m_time.size());
@@ -332,23 +421,56 @@ private:
 class MucoSolver : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoSolver, Object);
 public:
+    OpenSim_DECLARE_PROPERTY(num_mesh_points, double, "TODO");
     // TODO should be a copy or reference to MucoProblem?
     MucoSolver(const MucoProblem& problem) {
+        constructProperties();
         m_problem.reset(&problem);
     }
 
-    MucoSolution solve() const;
+    /// Create a template for an initial guess for the related MucoProblem.
+    /// The number of times in the guess is based on num_mesh_points, and
+    /// the guess is based on the bounds on the MucoProblem.
+    MucoIterate createGuessTemplate() const {
+        // TODO throw error if MucoProblem is not set yet.
+        auto ocp = getOptimalControlProblem();
+        // Create a direct collocation solver to access a function that
+        // allows us to get an initial guess (we are NOT going to actually
+        // try solving a problem here).
+        int N = get_num_mesh_points();
+        OPENSIM_THROW_IF_FRMOBJ(N <= 0, Exception,
+                "Invalid number of mesh points (" + std::to_string(N) + ")");
+        tropter::DirectCollocationSolver<double> dircol(
+                ocp, "trapezoidal", "ipopt", N);
+        return dircol.make_initial_guess_from_bounds();
+    }
+    // TODO make sure time is nondecreasing and states/controls are within
+    // bounds.
+    void setGuess(const MucoIterate& guess) {
+        m_guess.reset(new MucoIterate(guess));
+    }
+
+    MucoIterate solve() const;
 
     const MucoProblem& getProblem() const { return m_problem.getRef(); }
 
     template<typename T>
-    class OptimalControlProblem;
+    class OCProblem;
+protected:
+    std::shared_ptr<const tropter::OptimalControlProblem<double>>
+    getOptimalControlProblem() const;
 private:
+    void constructProperties() {
+        constructProperty_num_mesh_points(100);
+    }
     SimTK::ReferencePtr<const MucoProblem> m_problem;
+    SimTK::ClonePtr<MucoIterate> m_guess;
+    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
+            m_ocproblem;
 };
 
-/** The map provides the index of each state variable in
- SimTK::State::getY() from its each state variable path string. */
+/// The map provides the index of each state variable in
+/// SimTK::State::getY() from its each state variable path string.
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model) {
     std::vector<std::string> svNamesInSysOrder;
@@ -375,10 +497,10 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 // TODO should these be copyable to support parallelization with finite
 // differences?
 template<typename T>
-class MucoSolver::OptimalControlProblem : public
+class MucoSolver::OCProblem : public
                                           tropter::OptimalControlProblem<T> {
 public:
-    OptimalControlProblem(const MucoSolver& solver)
+    OCProblem(const MucoSolver& solver)
             : m_mucoSolver(solver),
               m_mucoProb(solver.getProblem()) {
         m_model = m_mucoProb.getModel();
@@ -459,16 +581,26 @@ private:
     mutable SimTK::State m_state;
 };
 
+std::shared_ptr<const tropter::OptimalControlProblem<double>>
+MucoSolver::getOptimalControlProblem() const {
+    if (!m_ocproblem) {
+        m_ocproblem.reset(new OCProblem<double>(*this));
+    }
+    return m_ocproblem;
+}
 
-MucoSolution MucoSolver::solve() const {
+MucoIterate MucoSolver::solve() const {
     // TODO
-    auto ocp = std::make_shared<OptimalControlProblem<double>>(*this);
+    auto ocp = getOptimalControlProblem();
     ocp->print_description();
-    int N = 100;
+    int N = get_num_mesh_points();
+    OPENSIM_THROW_IF_FRMOBJ(N <= 0, Exception,
+            "Invalid number of mesh points (" + std::to_string(N) + ")");
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
             N);
     dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
 
+    /*
     tropter::OptimalControlIterate guess;
     guess.time.setLinSpaced(N, 0, 1);
     const double pi = 3.14159;
@@ -485,8 +617,15 @@ MucoSolution MucoSolver::solve() const {
     ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
     ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
     auto tropterSolution = dircol.solve(guess);
+    */
 
     //auto solution = dircol.solve();
+
+    using TropterIterate = tropter::OptimalControlIterate;
+    tropter::OptimalControlSolution tropterSolution =
+            m_guess ? dircol.solve(TropterIterate(m_guess.getRef()))
+                    : dircol.solve();
+
     tropterSolution.write("DEBUG_sandboxSlidingMass.csv");
     dircol.print_constraint_values(tropterSolution);
 
@@ -635,6 +774,7 @@ int main() {
         //ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
         //ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
 
+
         mp.print("DEBUG_MucoProblemDoublePendulumSwingUp.xml");
 
         MucoMarkerEndpointCost endpointCost;
@@ -649,8 +789,27 @@ int main() {
         mp.append_costs(ftCost);
 
         MucoSolver ms(mp);
-        MucoSolution solution = ms.solve();
-        solution.write("DEBUG_sandboxSlidingMass_solution.sto");
+
+        // TODO this uses the bounds to fill in guesses; not necessary to
+        // fill in a guess for *each* variable.
+        MucoIterate guess = ms.createGuessTemplate();
+        guess.setNumTimes(2);
+        guess.setTime_std({0, 1});
+        guess.setState_std("j0/q0/value", {0, -SimTK::Pi});
+        guess.setState_std("j1/q1/value", {0, 2 * SimTK::Pi});
+        guess.setState_std("j0/q0/speed", {0, 0});
+        guess.setState_std("j1/q1/speed", {0, 0});
+        guess.setControl_std("tau0", {0, 0});
+        guess.setControl_std("tau1", {0, 0});
+        ms.setGuess(guess);
+
+        ms.set_num_mesh_points(50);
+        MucoIterate solution0 = ms.solve();
+        solution0.write("DEBUG_sandboxSlidingMass_solution.sto");
+
+        ms.set_num_mesh_points(20);
+        ms.setGuess(solution0);
+        MucoIterate solution1 = ms.solve();
 
 
         // TODO get solution, use it to solve the problem on a finer grid.
