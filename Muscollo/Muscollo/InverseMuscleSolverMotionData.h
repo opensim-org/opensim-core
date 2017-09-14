@@ -4,6 +4,7 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
+// TODO should not expose Eigen. This whole file could be private.
 #include <Eigen/Dense>
 
 namespace OpenSim {
