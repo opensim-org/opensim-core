@@ -1,8 +1,11 @@
-#include <OpenSim/OpenSim.h>
 #include <GlobalStaticOptimization.h>
 #include <INDYGO.h>
 #include <DeGrooteFregly2016Muscle.h>
 #include <tropter/tropter.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 
 #include "testing.h"
 

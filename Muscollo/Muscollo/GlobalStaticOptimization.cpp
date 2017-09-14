@@ -6,6 +6,8 @@
 #include <tropter/tropter.h>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 #include <algorithm>
 

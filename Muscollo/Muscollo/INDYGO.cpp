@@ -4,6 +4,9 @@
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
 
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
+
 #include <tropter/tropter.h>
 
 #include <algorithm>

@@ -3,7 +3,7 @@
 
 #include "InverseMuscleSolver.h"
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
 
 namespace OpenSim {
 

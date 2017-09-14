@@ -3,9 +3,8 @@
 
 #include <tropter/tropter.h>
 
-#include <OpenSim/OpenSim.h>
-// TODO should not be needed after updating to a newer OpenSim:
-#include <OpenSim/Simulation/InverseDynamicsSolver.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 

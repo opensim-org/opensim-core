@@ -1,6 +1,9 @@
 
 #include <GlobalStaticOptimization.h>
 #include <INDYGO.h>
+
+#include <OpenSim/Simulation/osimSimulation.h>
+
 #include "testing.h"
 
 using namespace OpenSim;
