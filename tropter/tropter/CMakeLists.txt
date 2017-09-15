@@ -29,7 +29,7 @@ add_library(tropter
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
-target_link_libraries(tropter PRIVATE fmt::fmt)
+# TODO target_link_libraries(tropter PRIVATE fmt::fmt)
 
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
