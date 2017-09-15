@@ -42,6 +42,9 @@ endif()
 # ------------------
 # There are Moodule files in the cmake directory.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+find_package(FMT 4.0 REQUIRED)
+
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
 
@@ -55,8 +58,9 @@ if(LINUX)
     find_package(PkgConfig REQUIRED)
 endif()
 
-find_package(ColPack REQUIRED)
-tropter_copy_dlls(ColPack "${COLPACK_DIR}/bin")
+# ColPack can now use CMake to be built.
+find_package(ColPack 1.0.10 REQUIRED)
+tropter_copy_dlls(ColPack "${ColPack_ROOT_DIR}/bin")
 
 find_package(ADOLC REQUIRED)
 tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")

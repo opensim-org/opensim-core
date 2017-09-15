@@ -22,31 +22,34 @@ add_library(tropter
         optimalcontrol/OptimalControlIterate.cpp
         )
 
+# TODO generate_export_header() for exporting symbols on Windows.
+
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
+target_link_libraries(tropter PRIVATE fmt::fmt)
+
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
 
-target_include_directories(tropter SYSTEM PRIVATE ${COLPACK_INCLUDE_DIR})
-# TODO PUBLIC or PRIVATE?
-target_link_libraries(tropter PUBLIC ${COLPACK_LIBRARIES})
+# This was from when we used a Module file for ColPack:
+#target_include_directories(tropter SYSTEM PRIVATE ${COLPACK_INCLUDE_DIR})
+#target_link_libraries(tropter PRIVATE ${COLPACK_LIBRARIES})
+target_link_libraries(tropter PRIVATE ColPack_static)
 
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})
 target_link_libraries(tropter PUBLIC ${ADOLC_LIBRARIES})
 
 if(OPENMP_FOUND)
+    # Let clients know that tropter is using OpenMP (PUBLIC). They don't need
+    # use the OpenMP flag themselves, though.
     target_compile_definitions(tropter PUBLIC TROPTER_WITH_OPENMP)
-    # TODO PUBLIC or PRIVATE?
     target_compile_options(tropter BEFORE PRIVATE
             $<$<COMPILE_LANGUAGE:C>:${OpenMP_C_FLAGS}>
             $<$<COMPILE_LANGUAGE:CXX>:${OpenMP_CXX_FLAGS}>)
-    if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        # Using LLVM Clang on Macs: having trouble finding the OpenMP library.
-        target_link_libraries(tropter PUBLIC iomp5)
-    endif()
+    target_link_libraries(tropter PRIVATE ${OpenMP_CXX_FLAGS})
 endif()
 
 target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
