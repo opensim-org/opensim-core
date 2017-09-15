@@ -11,7 +11,6 @@ function(MuscolloAddTest)
     add_executable(${MUCOTEST_NAME} ${MUCOTEST_NAME}.cpp testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MUCOTEST_NAME} PROPERTIES FOLDER "Muscollo/Tests")
-        message("DEBUG ${MUCOTEST_NAME} ${MUCOTEST_LIB_DEPENDS}")
     target_link_libraries(${MUCOTEST_NAME} osimMuscollo ${MUCOTEST_LIB_DEPENDS})
     add_test(NAME ${MUCOTEST_NAME} COMMAND ${MUCOTEST_NAME})
     #if(WIN32) # Instead, we are copying dependencies' DLLs.
