@@ -227,7 +227,7 @@ public:
     * here will not affect the simulation. Calling this function multiple 
     * times with the same Manager will trigger an Exception.
     */
-    void initialize(SimTK::State& s);
+    void initialize(const SimTK::State& s);
     
     /**
     * Integrate the equations of motion for the specified model, given the current
@@ -276,9 +276,9 @@ public:
     * @endcode
     *
     */
-    SimTK::State integrate(double finalTime);
+    const SimTK::State& integrate(double finalTime);
 
-    SimTK::State getState();
+    const SimTK::State& getState() const;
     
     double getFixedStepSize(int tArrayStep) const;
 
@@ -303,7 +303,7 @@ private:
     Manager(Model& aModel, bool dummyVar);
 
     // Helper functions during initialization of integration
-    void initializeStorageAndAnalyses(SimTK::State& s);
+    void initializeStorageAndAnalyses(const SimTK::State& s);
     void initializeTimeStepper(const SimTK::State& s);
 
     // Helper functions for Manager::integrate()

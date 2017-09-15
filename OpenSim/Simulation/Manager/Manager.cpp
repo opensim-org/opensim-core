@@ -625,8 +625,7 @@ hasStateStorage() const
 // INTEGRATION
 //-----------------------------------------------------------------------------
 
-SimTK::State Manager::
-integrate(double finalTime)
+const SimTK::State& Manager::integrate(double finalTime)
 {
     int step = 0; // for AnalysisSet::step()
 
@@ -640,7 +639,7 @@ integrate(double finalTime)
     clearHalt();
 
     // CHECK SPECIFIED DT STEPPING
-    SimTK::State s = _integ->getState();
+    const SimTK::State& s = _integ->getState();
     double initialTime = s.getTime();
     if (_specifiedDT) {
         if (_tArray.getSize() <= 0) {
@@ -737,12 +736,11 @@ integrate(double finalTime)
     clearHalt();
 
     return getState();
-
 }
 
-SimTK::State Manager::getState()
+const SimTK::State& Manager::getState() const
 {
-    return _integ->getState();
+    return _timeStepper->getState();
 }
 
 //_____________________________________________________________________________
@@ -768,7 +766,7 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  * 
  * @param s system state before integration
  */
-void Manager::initializeStorageAndAnalyses(SimTK::State& s)
+void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
 {
     if( _writeToStorage && _performAnalyses ) { 
 
@@ -800,7 +798,7 @@ void Manager::initializeStorageAndAnalyses(SimTK::State& s)
 /**
 * set and initialize a SimTK::TimeStepper
 */
-void Manager::initialize(SimTK::State& s)
+void Manager::initialize(const SimTK::State& s)
 {
     if (!_integ) {
         throw Exception("Manager::initialize(): "
