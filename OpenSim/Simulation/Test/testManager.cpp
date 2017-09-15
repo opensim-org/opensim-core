@@ -178,12 +178,13 @@ void testStateChangesBetweenIntegration()
     std::vector<double> initHeights = {0.0, 13.3, 6.5};
     std::vector<double> initSpeeds = {0.0, 0.5, -0.5};
     state.setTime(integInitTimes[0]);
-    int n = integFinalTimes.size();
+    size_t n = integFinalTimes.size();
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         // Set initial state for integration and check that it's correct
         sliderCoord.setValue(state, initHeights[i]);
         sliderCoord.setSpeedValue(state, initSpeeds[i]);
+        model.realizeVelocity(state);
         
         Manager manager(model);
         manager.initialize(state);
@@ -194,6 +195,7 @@ void testStateChangesBetweenIntegration()
 
         state = manager.integrate(integFinalTimes[i]);
         model.realizeVelocity(state);
+
         double duration = integFinalTimes[i] - integInitTimes[i];
         double finalHeight = 
             initHeights[i] + initSpeeds[i]*duration - 0.5*g*duration*duration;
@@ -208,7 +210,7 @@ void testStateChangesBetweenIntegration()
         SimTK_TEST_EQ(sliderHeight, finalHeight);
         SimTK_TEST_EQ(sliderSpeed, finalSpeed);
 
-        // Use Simbody to get the location, velocity & acceleration in ground.
+        // Use Station to get the location, velocity & acceleration in ground.
         double stationHeight = myStation->getLocationInGround(state)[1];
         double stationSpeed = myStation->getVelocityInGround(state)[1];
 
