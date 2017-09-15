@@ -166,10 +166,8 @@ void testStateChangesBetweenIntegration()
     myStation->setParentFrame(*ball);
     model.addModelComponent(myStation);
 
-    SimTK::State state = model.initSystem();
+    SimTK::State& state = model.initSystem();
 
-    //auto sliderCoord = 
-    //    freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
     const Coordinate& sliderCoord = 
         freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
 
@@ -184,16 +182,24 @@ void testStateChangesBetweenIntegration()
         // Set initial state for integration and check that it's correct
         sliderCoord.setValue(state, initHeights[i]);
         sliderCoord.setSpeedValue(state, initSpeeds[i]);
-        model.realizeVelocity(state);
-        
+
         Manager manager(model);
         manager.initialize(state);
-        SimTK::State initState = manager.getState();
+        const SimTK::State& initState = manager.getState();
+
         SimTK_TEST_EQ(initState.getTime(), integInitTimes[i]);
         SimTK_TEST_EQ(sliderCoord.getValue(initState), initHeights[i]);
         SimTK_TEST_EQ(sliderCoord.getSpeedValue(initState), initSpeeds[i]);
 
+        // Use Station to get the location, velocity & acceleration in ground.
+        double stationHeight = myStation->getLocationInGround(initState)[1];
+        double stationSpeed = myStation->getVelocityInGround(initState)[1];
+
+        SimTK_TEST_EQ(stationHeight, initHeights[i]);
+        SimTK_TEST_EQ(stationSpeed, initSpeeds[i]);
+
         state = manager.integrate(integFinalTimes[i]);
+
         model.realizeVelocity(state);
 
         double duration = integFinalTimes[i] - integInitTimes[i];
@@ -211,8 +217,8 @@ void testStateChangesBetweenIntegration()
         SimTK_TEST_EQ(sliderSpeed, finalSpeed);
 
         // Use Station to get the location, velocity & acceleration in ground.
-        double stationHeight = myStation->getLocationInGround(state)[1];
-        double stationSpeed = myStation->getVelocityInGround(state)[1];
+        stationHeight = myStation->getLocationInGround(state)[1];
+        stationSpeed = myStation->getVelocityInGround(state)[1];
 
         cout << " | Station: t = " << state.getTime() << ", h = " 
             << stationHeight << ", v = " << stationSpeed << endl;
