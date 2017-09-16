@@ -47,9 +47,10 @@ if(OPENMP_FOUND)
     # use the OpenMP flag themselves, though.
     target_compile_definitions(tropter PUBLIC TROPTER_WITH_OPENMP)
     target_compile_options(tropter BEFORE PRIVATE
-            $<$<COMPILE_LANGUAGE:C>:${OpenMP_C_FLAGS}>
-            $<$<COMPILE_LANGUAGE:CXX>:${OpenMP_CXX_FLAGS}>)
-    target_link_libraries(tropter PRIVATE ${OpenMP_CXX_FLAGS})
+            ${OpenMP_CXX_FLAGS})
+    if(NOT MSVC)
+        target_link_libraries(tropter PRIVATE ${OpenMP_CXX_FLAGS})
+    endif()
 endif()
 
 target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
@@ -86,7 +87,8 @@ target_include_directories(tropter PUBLIC
 set_target_properties(tropter PROPERTIES FOLDER "tropter")
 
 if(WIN32)
-    add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 
 install(TARGETS tropter EXPORT tropter-config

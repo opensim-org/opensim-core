@@ -15,7 +15,11 @@ if(DOXYGEN_FOUND)
             COMMENT "Running doxygen to build Muscollo documentation."
             COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile)
 
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/"
+    set(html_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/html/")
+    # So that we can build the install target even if doxygen was not built.
+    file(MAKE_DIRECTORY ${html_binary_dir})
+
+    install(DIRECTORY "${html_binary_dir}"
             DESTINATION "${CMAKE_INSTALL_DOCDIR}/MuscolloAPI")
 
 endif()

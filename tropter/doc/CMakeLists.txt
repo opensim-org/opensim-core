@@ -14,8 +14,12 @@ if(DOXYGEN_FOUND)
             COMMENT "Running doxygen to build tropter documentation."
             COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxyfile)
 
+    set(html_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/html/")
+    # So that we can build the install target even if doxygen was not built.
+    file(MAKE_DIRECTORY ${html_binary_dir})
+
     # TODO When tropter is moved to a separate repository, remove "tropter_".
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html/"
+    install(DIRECTORY "${html_binary_dir}"
             DESTINATION "${CMAKE_INSTALL_DOCDIR}/tropter_API")
 
     install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/tropter_API.html"
