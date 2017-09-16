@@ -7,6 +7,8 @@
 #include <tropter/optimization/SNOPTSolver.h>
 #include <tropter/optimization/IpoptSolver.h>
 
+// TODO #include <fmt/format.h>
+
 #include <iomanip>
 
 namespace tropter {
@@ -330,6 +332,9 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     // TODO move some of this to OptimalControlIterate::validate().
     // Check rows.
     if (traj.states.rows() != m_num_states) {
+        //throw std::runtime_error(fmt::format("[tropter] Expected states to "
+        //        "have {} rows, but it has {} rows.", m_num_states, traj
+        //        .states.rows()));
         throw std::runtime_error("[tropter] Expected states to have " +
                 std::to_string(m_num_states) + " rows, but it has " +
                 std::to_string(traj.states.rows()) + " rows.");

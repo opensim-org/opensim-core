@@ -43,7 +43,7 @@ endif()
 # There are Moodule files in the cmake directory.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(FMT 4.0 REQUIRED)
+# TODO find_package(FMT 4.0 REQUIRED)
 
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
