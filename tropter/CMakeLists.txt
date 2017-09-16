@@ -60,7 +60,8 @@ endif()
 
 # ColPack can now use CMake to be built.
 find_package(ColPack 1.0.10 REQUIRED)
-tropter_copy_dlls(ColPack "${ColPack_ROOT_DIR}/bin")
+# No need, because we link with the static library:
+# tropter_copy_dlls(ColPack "${ColPack_ROOT_DIR}/bin")
 
 find_package(ADOLC REQUIRED)
 tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
