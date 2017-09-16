@@ -91,7 +91,7 @@ if(WIN32)
     #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 
-install(TARGETS tropter EXPORT tropter-config
+install(TARGETS tropter EXPORT tropter-config # TODO change to tropter-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
