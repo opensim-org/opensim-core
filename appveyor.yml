@@ -12,8 +12,9 @@ platform: x64
 
 shallow_clone: true
 
-nuget:
-  account_feed: true
+# TODO use project feed instead.
+#nuget:
+#  account_feed: true
 
 cache:
   ## Cache some dependencies.
@@ -34,6 +35,7 @@ install:
   # Install dependencies.
   # TODO use superbuild for opensim-core? that would allow specifying specific
   # commits to use.
+  # TODO - nuget sources add -name opensim-core --source https://ci.appveyor.com/nuget/opensim-core-kd63opes1em0
   # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
   #- dir C:\opensim-core
@@ -68,7 +70,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:minimal
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
 
 build_script:
 
@@ -80,8 +82,9 @@ build_script:
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
 
 test_script:
-  - ctest --build-config RelWithDebInfo --parallel 4
-  - cmake --build . --config RelWithDebInfo --target install -- /verbosity:quiet
+  - cmake . # TODO
+  #- ctest --build-config RelWithDebInfo --parallel 4 --output-on-failure
+  #- cmake --build . --config RelWithDebInfo --target install -- /verbosity:quiet
 
 #after_test:
 #  - cd %APPVEYOR_BUILD_FOLDER%
