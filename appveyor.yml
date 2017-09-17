@@ -51,8 +51,11 @@ install:
   - mkdir ..\muscollo_deps_build
   - cd ..\muscollo_deps_build
   # Potential cxx flags: /p:WarningLevel=0 /verbosity:quiet
-  # /w disables warnings.
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/verbosity:quiet /w" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  # /W0 disables warnings.
+  # The other CXX flags are copied from CMake's default CMAKE_CXX_FLAGS.
+  # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
+  - set CXXFLAGS="/WX"
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
