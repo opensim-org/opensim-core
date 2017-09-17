@@ -59,7 +59,7 @@ install:
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\adol-c cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  - IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core\NUL cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
 
@@ -91,6 +91,7 @@ after_test:
   - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
   # Create and upload NuGet package.
   #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
   #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg

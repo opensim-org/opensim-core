@@ -189,7 +189,7 @@ if (WIN32)
 
 
     set(SUPERBUILD_ipopt ON CACHE BOOL 
-        "Automatically download, configure, build and install adolc")
+        "Automatically download, configure, build and install ipopt")
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries from the YARP/iCub project.
         # This binary distribution comes with MUMPS (which contains Fortran
