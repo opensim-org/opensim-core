@@ -51,14 +51,15 @@ install:
   - mkdir ..\muscollo_deps_build
   - cd ..\muscollo_deps_build
   # Potential cxx flags: /p:WarningLevel=0 /verbosity:quiet
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/verbosity:quiet" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  # /w disables warnings.
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/verbosity:quiet /w" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\adolc cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
   # List the values of the CMake variables.
-  - cmake . -LH
+  - cmake . -LAH
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
