@@ -55,7 +55,7 @@ install:
   # - set CXXFLAGS="/W0"
   - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
-  - dir C:\projects\muscollo_deps_install
+  #- dir C:\projects\muscollo_deps_install
   - dir C:\projects\
   - IF EXIST C:\projects\muscollo_deps_install\eigen dir C:\projects\muscollo_deps_install\eigen
   - IF NOT EXIST C:\projects\eigen cmake . -DSUPERBUILD_eigen=ON
