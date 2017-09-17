@@ -35,6 +35,8 @@ install:
   # commits to use.
   - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
+  - dir C:\opensim-core
+
   # https://blogs.msdn.microsoft.com/vcblog/2016/09/19/vcpkg-a-tool-to-acquire-and-build-c-open-source-libraries-on-windows/
   # https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md
   # https://github.com/appveyor/ci/issues/1076
@@ -45,7 +47,8 @@ install:
 
   - mkdir ..\muscollo_deps_build
   - cd ..\muscollo_deps_build
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/p:WarningLevel=0 /vebosity:quiet" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  # Potential cxx flags: /p:WarningLevel=0 /verbosity:quiet
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
@@ -56,9 +59,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
-
-  - dir C:\projects\muscollo_deps_install\colpack # TODO
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:0
 
 
   # Install Muscollo.
