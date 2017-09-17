@@ -70,6 +70,7 @@ install:
   # difficult to read.
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:minimal
 
+build_script:
 
   # Install Muscollo.
   - mkdir ..\build
