@@ -34,7 +34,8 @@ install:
 
   # Install dependencies.
   # We are using superbuild for opensim-core, as that allows us to specify
-  # specific commits to use.
+  # specific commits to use. Also, for some reason, Muscollo couldn't find
+  # OpenSim headers when using NuGet.
   # TODO - nuget sources add -name opensim-core --source https://ci.appveyor.com/nuget/opensim-core-kd63opes1em0
   # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 

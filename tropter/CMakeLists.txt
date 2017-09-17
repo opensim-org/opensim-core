@@ -24,8 +24,8 @@ option(TROPTER_WITH_SNOPT
         "Compile support for the SNOPT optimization library; \
         requires Fortran compiler"
         OFF)
-add_feature_info(SNOPT TROPTER_WITH_SNOPT
-    "Support the SNOPT optimization library (requires Fortran compiler).")
+#add_feature_info(SNOPT TROPTER_WITH_SNOPT
+#    "Support the SNOPT optimization library (requires Fortran compiler).")
 if(TROPTER_WITH_SNOPT)
     enable_language(Fortran)
 endif()
