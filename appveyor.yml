@@ -53,6 +53,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
+  - dir .
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /consoleloggerparameters:ErrorsOnly
 
   # TODO DEBUG
@@ -74,6 +75,8 @@ test_script:
 
 after_test:
   - cd %APPVEYOR_BUILD_FOLDER%
+  # TODO consider using plain ZIP artifacts:
+  # https://www.appveyor.com/docs/packaging-artifacts/
   ## On master branch, create NuGet package for OpenSim.
   # Detect if we are on the master branch.
   # TODO change appveyor to master branch.
