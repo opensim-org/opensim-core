@@ -64,7 +64,7 @@ install:
   # Install Muscollo.
   - mkdir ..\build
   - cd ..\build
-  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="$pwd\..\muscollo_deps_install\colpack;$pwd\..\muscollo_deps_install\opensim_core"
+  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="$pwd\..\muscollo_deps_install\colpack;C:\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
 
