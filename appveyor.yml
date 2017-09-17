@@ -55,7 +55,8 @@ install:
   # /W0 disables warnings.
   # The other CXX flags are copied from CMake's default CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} /W0" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  # - set CXXFLAGS="/WX"
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
@@ -67,7 +68,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 # /verbosity:quiet
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:minimal
 
 
   # Install Muscollo.
@@ -79,18 +80,18 @@ install:
 
 test_script:
   - ctest --build-config RelWithDebInfo --parallel 4
-  - cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:4
+  - cmake --build . --config RelWithDebInfo --target install -- /verbosity:quiet
 
-after_test:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  # TODO consider using plain ZIP artifacts:
-  # https://www.appveyor.com/docs/packaging-artifacts/
-  ## On master branch, create NuGet package for OpenSim.
-  # Detect if we are on the master branch.
-  # TODO change appveyor to master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
-  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
-  # Create and upload NuGet package.
-  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
-  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+#after_test:
+#  - cd %APPVEYOR_BUILD_FOLDER%
+#  # TODO consider using plain ZIP artifacts:
+#  # https://www.appveyor.com/docs/packaging-artifacts/
+#  ## On master branch, create NuGet package for OpenSim.
+#  # Detect if we are on the master branch.
+#  # TODO change appveyor to master branch.
+#  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+#  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
+#  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+#  # Create and upload NuGet package.
+#  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
+#  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
