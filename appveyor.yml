@@ -25,7 +25,7 @@ cache:
   # invalidate these dependencies separately.
   - C:\projects\muscollo_deps_install\eigen -> C:\projects\muscollo\dependencies\CMakeLists.txt
   - C:\projects\muscollo_deps_install\colpack -> C:\projects\muscollo\dependencies\colpack.cmake
-  - C:\projects\muscollo_deps_install\adolc -> C:\projects\muscollo\dependencies\CMakeLists.txt
+  - C:\projects\muscollo_deps_install\adol-c -> C:\projects\muscollo\dependencies\CMakeLists.txt
   - C:\projects\muscollo_deps_install\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
   - C:\projects\muscollo_deps_install\opensim-core -> C:\projects\muscollo\dependencies\opensim-core.cmake
 
@@ -57,7 +57,7 @@ install:
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\adolc cmake . -DSUPERBUILD_adolc=ON
+  - IF NOT EXIST C:\projects\muscollo_deps_install\adol-c cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
