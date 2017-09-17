@@ -23,6 +23,10 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 include(GNUInstallDirs)
 set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR}/Muscollo)
 
+# This is used to provide the user with information about configuration
+# options.
+#include(FeatureSummary)
+
 # Muscollo settings.
 # ------------------
 # Copy dependencies' libraries into Muscollo's installation?
@@ -61,3 +65,7 @@ enable_testing()
 add_subdirectory(tropter)
 
 add_subdirectory(Muscollo)
+
+# Print a list of the dependencies that were found, and the features the user
+# chose.
+#feature_summary(WHAT ALL)
