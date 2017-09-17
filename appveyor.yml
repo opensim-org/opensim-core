@@ -12,6 +12,9 @@ platform: x64
 
 shallow_clone: true
 
+# No need to build the branch if building a PR.
+skip_branch_with_pr: true
+
 # TODO use project feed instead.
 #nuget:
 #  account_feed: true
@@ -84,10 +87,10 @@ build_script:
   # Install Muscollo.
   - mkdir ..\build
   - cd ..\build
-#  # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
-#  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\muscollo_deps_install\colpack;C:\projects\muscollo_deps_install\opensim-core"
-#  #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
-#  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
+  # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
+  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\muscollo_deps_install\colpack;C:\projects\muscollo_deps_install\opensim-core"
+  #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
 
 test_script:
   #- ctest --build-config RelWithDebInfo --parallel 4 --output-on-failure
