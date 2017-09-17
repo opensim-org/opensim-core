@@ -50,6 +50,8 @@ install:
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\adolc cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
+  # What are the variables' values?
+  - cmake . -LH
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
