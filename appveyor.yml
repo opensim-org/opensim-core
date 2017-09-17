@@ -56,7 +56,7 @@ install:
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
   - dir .
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /consoleloggerparameters:ErrorsOnly
+  - cmake --build . --config RelWithDebInfo # TODO -- /maxcpucount:4 /consoleloggerparameters:ErrorsOnly
 
   # TODO DEBUG
   - dir C:\projects\muscollo_deps_install\eigen
