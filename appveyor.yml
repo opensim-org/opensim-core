@@ -26,6 +26,7 @@ cache:
    C:\projects\muscollo_deps_install\colpack -> C:\projects\muscollo\dependencies\CMakeLists.txt
    C:\projects\muscollo_deps_install\adolc -> C:\projects\muscollo\dependencies\CMakeLists.txt
    C:\projects\muscollo_deps_install\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
+   C:\projects\muscollo_deps_install\opensim-core -> C:\projects\muscollo\dependencies\CMakeLists.txt
 
 install:
   - cmake --version
@@ -33,7 +34,7 @@ install:
   # Install dependencies.
   # TODO use superbuild for opensim-core? that would allow specifying specific
   # commits to use.
-  - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+  # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
   - dir C:\opensim-core
   - dir C:\opensim-core\sdk
@@ -54,13 +55,14 @@ install:
   # /W0 disables warnings.
   # The other CXX flags are copied from CMake's default CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-  - set CXXFLAGS="/WX"
+  #- set CXXFLAGS="/W0" # TODO "/WX"
   - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\adolc cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
+  - IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
 
@@ -72,24 +74,24 @@ install:
   # Install Muscollo.
   - mkdir ..\build
   - cd ..\build
-  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\muscollo_deps_install\colpack"
-  #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
-
-test_script:
-  - ctest --build-config RelWithDebInfo --parallel 4
-  - cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:4
-
-after_test:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  # TODO consider using plain ZIP artifacts:
-  # https://www.appveyor.com/docs/packaging-artifacts/
-  ## On master branch, create NuGet package for OpenSim.
-  # Detect if we are on the master branch.
-  # TODO change appveyor to master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
-  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
-  # Create and upload NuGet package.
-  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
-  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+    #  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\muscollo_deps_install\colpack;C:\projects\muscollo_deps_install\opensim-core"
+    #  #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
+    #  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
+    #
+    #test_script:
+    #  - ctest --build-config RelWithDebInfo --parallel 4
+    #  - cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:4
+    #
+    #after_test:
+    #  - cd %APPVEYOR_BUILD_FOLDER%
+    #  # TODO consider using plain ZIP artifacts:
+    #  # https://www.appveyor.com/docs/packaging-artifacts/
+    #  ## On master branch, create NuGet package for OpenSim.
+    #  # Detect if we are on the master branch.
+    #  # TODO change appveyor to master branch.
+    #  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+    #  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
+    #  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+    #  # Create and upload NuGet package.
+    #  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
+    #  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
