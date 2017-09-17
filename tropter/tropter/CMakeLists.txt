@@ -24,6 +24,8 @@ add_library(tropter
 
 # TODO generate_export_header() for exporting symbols on Windows.
 
+# Dependencies.
+# -------------
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
 #   b. when a client library links to this library ("INTERFACE").
@@ -68,6 +70,20 @@ if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
 endif()
 
+if(WIN32)
+    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+endif()
+
+# Target properties, etc.
+# -----------------------
+
+if(MSVC)
+    # Avoid warnings from our use of std::copy().
+    target_compile_options(tropter PRIVATE
+        "$<$<CONFIG:Debug>:/wd4996>")
+endif()
+
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").
 target_compile_definitions(tropter PUBLIC EIGEN_MPL2_ONLY)
@@ -84,12 +100,10 @@ target_include_directories(tropter PUBLIC
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
 
-set_target_properties(tropter PROPERTIES FOLDER "tropter")
+set_target_properties(tropter PROPERTIES PROJECT_LABEL "Library - tropter" FOLDER "tropter")
 
-if(WIN32)
-    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
-    #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
-endif()
+# Installing.
+# -----------
 
 install(TARGETS tropter EXPORT tropter-config # TODO change to tropter-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

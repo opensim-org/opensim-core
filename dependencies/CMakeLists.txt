@@ -210,10 +210,9 @@ AddDependency(NAME       docopt
               GIT_URL    https://github.com/docopt/docopt.cpp.git
               GIT_TAG    af03fa044ee1eff20819549b534ea86829a24a54)
 
-# StatesTrajectory::createFromStatesStorage() assemble.
-# https://github.com/opensim-org/opensim-core/archive/7513accaa13a9431cf37e2bbc35ee7111f50baa6.zip
 AddDependency(NAME       opensim_core
-              URL        https://github.com/opensim-org/opensim-core/archive/67e378b387f0601ce32ab4606ce6aa4b250b4bc4.zip
+              # StatesTrajectory::createFromStatesStorage() assembles the states.
+              URL        https://github.com/opensim-org/opensim-core/archive/7513accaa13a9431cf37e2bbc35ee7111f50baa6.zip
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody

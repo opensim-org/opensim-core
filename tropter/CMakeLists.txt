@@ -119,4 +119,6 @@ add_subdirectory(sandbox)
 # -------------------------------------------
 # export(TARGETS tropter FILE tropter-config.cmake)
 
+# TODO rename to tropter-targets and create proper tropter-config.cmake
+# and tropter-config-version.cmake files.
 install(EXPORT tropter-config DESTINATION ${TROPTER_INSTALL_CMAKEDIR})
