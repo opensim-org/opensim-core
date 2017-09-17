@@ -24,10 +24,10 @@ cache:
   # TODO split AddDependency() calls into separate cmake files so we can
   # invalidate these dependencies separately.
   - C:\projects\eigen -> C:\projects\muscollo\dependencies\CMakeLists.txt
-  - C:\projects\muscollo_deps_install\colpack -> C:\projects\muscollo\dependencies\colpack.cmake
-  - C:\projects\muscollo_deps_install\adol-c -> C:\projects\muscollo\dependencies\CMakeLists.txt
-  - C:\projects\muscollo_deps_install\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
-  - C:\projects\muscollo_deps_install\opensim-core -> C:\projects\muscollo\dependencies\opensim-core.cmake
+  #- C:\projects\muscollo_deps_install\colpack -> C:\projects\muscollo\dependencies\colpack.cmake
+  #- C:\projects\muscollo_deps_install\adol-c -> C:\projects\muscollo\dependencies\CMakeLists.txt
+  #- C:\projects\muscollo_deps_install\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
+  #- C:\projects\muscollo_deps_install\opensim-core -> C:\projects\muscollo\dependencies\opensim-core.cmake
 
 install:
   - cmake --version
@@ -66,13 +66,13 @@ install:
   #TODO- IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
 
   - IF NOT EXIST C:\projects\eigen cmake -E copy_directory C:\projects\muscollo_deps_install\eigen C:\projects\eigen
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 build_script:
 
