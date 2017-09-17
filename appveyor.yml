@@ -59,7 +59,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:0
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
 
 
   # Install Muscollo.
