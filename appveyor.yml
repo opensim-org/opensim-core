@@ -55,11 +55,11 @@ install:
   # - set CXXFLAGS="/W0"
   - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
-  - IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\adol-c cmake . -DSUPERBUILD_adolc=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  - IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core\NUL cmake . -DSUPERBUILD_opensim-core=ON
+  #- IF NOT EXIST C:\projects\muscollo_deps_install\eigen cmake . -DSUPERBUILD_eigen=ON
+  #- IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
+  #- IF NOT EXIST C:\projects\muscollo_deps_install\adol-c cmake . -DSUPERBUILD_adolc=ON
+  #- IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
+  #TODO- IF NOT EXIST C:\projects\muscollo_deps_install\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
 
