@@ -15,6 +15,9 @@ os: Visual Studio 2015
 
 platform: x64
 
+nuget:
+  disable_publish_on_pr: true
+
 environment:
   matrix:
     - CMAKE_GENERATOR: "Visual Studio 14 2015"
@@ -51,9 +54,6 @@ init:
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
 
-nuget:
-  account_feed: true
-
 cache:
   ## Cache swig, which we install via AppVeyor.
   # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
@@ -80,6 +80,8 @@ install:
   # chrisdembia once uploaded a simbody 3.5.0 nupkg.
   # Output directory must match how Simbody was packaged, otherwise
   # SimbodyConfig.cmake will have all the wrong paths.
+  # http://help.appveyor.com/discussions/problems/6024-build-stalled-prompting-for-nuget-permissions#comment_41867748
+  - nuget sources add -name simbody -source https://ci.appveyor.com/nuget/simbody-9iv11sycwdny
   - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
 build_script:
