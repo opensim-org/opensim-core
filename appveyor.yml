@@ -6,7 +6,7 @@
 # See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
 # command-line options to MSBuild.
 
-os: Visual Studio 2015
+image: Visual Studio 2015
 
 platform: x64
 
@@ -30,7 +30,7 @@ cache:
   - C:\projects\colpack -> C:\projects\muscollo\dependencies\colpack.cmake
   - C:\projects\adol-c -> C:\projects\muscollo\dependencies\CMakeLists.txt
   - C:\projects\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
-  #TODO- C:\projects\opensim-core -> C:\projects\muscollo\dependencies\opensim-core.cmake
+  - C:\projects\opensim-core -> C:\projects\muscollo\dependencies\opensim-core.cmake
 
 install:
   - cmake --version
@@ -63,7 +63,7 @@ install:
   - IF NOT EXIST C:\projects\colpack cmake . -DSUPERBUILD_colpack=ON
   - IF NOT EXIST C:\projects\adol-c cmake . -DSUPERBUILD_adolc=ON
   - IF NOT EXIST C:\projects\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  #TODO- IF NOT EXIST C:\projects\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  - IF NOT EXIST C:\projects\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
 
@@ -80,7 +80,7 @@ install:
   - IF NOT EXIST C:\projects\colpack cmake -E copy_directory C:\projects\muscollo_deps_install\colpack C:\projects\colpack
   - IF NOT EXIST C:\projects\adol-c cmake -E copy_directory C:\projects\muscollo_deps_install\adol-c C:\projects\adol-c
   - IF NOT EXIST C:\projects\ipopt cmake -E copy_directory C:\projects\muscollo_deps_install\ipopt C:\projects\ipopt
-  #TODO- IF NOT EXIST C:\projects\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\opensim-core
+  - IF NOT EXIST C:\projects\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\opensim-core
 
 build_script:
 
@@ -88,7 +88,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
-  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\muscollo_deps_install\colpack;C:\projects\muscollo_deps_install\opensim-core"
+  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\colpack;C:\projects\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
 
