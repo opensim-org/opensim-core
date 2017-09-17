@@ -20,6 +20,7 @@ namespace tropter {
 /// compute the gradient, Jacobian, and Hessian (using either finite differences
 /// or automatic differentiation).
 /// @ingroup optimization
+// TODO alternative name: OptimizationProblemDelegate
 class OptimizationProblemDecorator {
 public:
     OptimizationProblemDecorator(const AbstractOptimizationProblem& problem)

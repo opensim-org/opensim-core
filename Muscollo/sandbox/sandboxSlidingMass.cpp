@@ -87,16 +87,26 @@ public:
         constructProperties();
     }
     // TODO allow alternate interface that does not require creating a SimTK
-    // state.
+    // state (if just minimizing the control signal).
+    // TODO create separate integral and endpoint cost types?
+    double calcIntegralCost(const SimTK::State& state) const {
+        double integrand = 0;
+        calcIntegralCostImpl(state, integrand);
+        return get_weight() * integrand;
+    }
     /// This includes the weight.
     double calcEndpointCost(const SimTK::State& finalState) const {
-        return get_weight() * calcEndpointCostImpl(finalState);
+        double cost = 0;
+        calcEndpointCostImpl(finalState, cost);
+        return get_weight() * cost;
     }
     // TODO avoid this weirdness.
     void setModel(const Model& model) const { m_model.reset(&model); }
 protected:
-    virtual double calcEndpointCostImpl(const SimTK::State& finalState)
-            const = 0;
+    virtual void calcIntegralCostImpl(const SimTK::State& state,
+                                      double& integrand) const {}
+    virtual void calcEndpointCostImpl(const SimTK::State& finalState,
+                                      double& cost) const {}
     const Model& getModel() const { return m_model.getRef(); }
 private:
     void constructProperties() {
@@ -105,11 +115,40 @@ private:
     mutable SimTK::ReferencePtr<const Model> m_model;
 };
 
+class MucoSimpleTrackingCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoSimpleTrackingCost, MucoCost);
+public:
+    MucoSimpleTrackingCost() {
+        constructProperties();
+    }
+protected:
+    void calcIntegralCostImpl(const SimTK::State& state,
+                              double& integrand) const override {
+        //getModel().realizePosition(state);
+        //const auto& frame = getModel().getComponent<Frame>(get_frame_name());
+        //auto actualLocation =
+        //        frame.findStationLocationInGround(state,
+        //                get_point_on_frame());
+        const auto& time = state.getTime();
+        //SimTK::Vec3 desiredLocation(
+        //        (time / 5.0), 1, 0);
+        //integrand = (actualLocation - desiredLocation).normSqr();
+        SimTK::Vector Qdesired(2);
+        Qdesired[0] = (time / 1.0) * 0.5 * SimTK::Pi;
+        Qdesired[1] = (time / 1.0) * 0.5 * SimTK::Pi;
+        integrand = (state.getQ() - Qdesired).normSqr();
+    }
+private:
+    void constructProperties() {
+    }
+};
+
 class MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:
-    double calcEndpointCostImpl(const SimTK::State& finalState) const override {
-        return finalState.getTime();
+    void calcEndpointCostImpl(const SimTK::State& finalState,
+                              double& cost) const override {
+        cost = finalState.getTime();
     }
 };
 
@@ -128,13 +167,14 @@ public:
         constructProperties();
     }
 protected:
-    double calcEndpointCostImpl(const SimTK::State& finalState) const override {
+    void calcEndpointCostImpl(const SimTK::State& finalState,
+                              double& cost) const override {
         getModel().realizePosition(finalState);
         const auto& frame = getModel().getComponent<Frame>(get_frame_name());
         auto actualLocation =
                 frame.findStationLocationInGround(finalState,
                         get_point_on_frame());
-        return (actualLocation - get_point_to_track()).normSqr();
+        cost = (actualLocation - get_point_to_track()).normSqr();
     }
 private:
     void constructProperties() {
@@ -497,8 +537,7 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 // TODO should these be copyable to support parallelization with finite
 // differences?
 template<typename T>
-class MucoSolver::OCProblem : public
-                                          tropter::OptimalControlProblem<T> {
+class MucoSolver::OCProblem : public tropter::OptimalControlProblem<T> {
 public:
     OCProblem(const MucoSolver& solver)
             : m_mucoSolver(solver),
@@ -559,12 +598,25 @@ public:
                 out.dynamics.data());
 
     }
-    //void calc_integral_cost(const double& /*time*/, const VectorXd& /*states*/,
-    //        const VectorXd& controls, double& integrand) const override {
-    //    integrand = controls[0] * controls[0];
-    //}
+    void calc_integral_cost(const double& time,
+            const VectorX<T>& states,
+            const VectorX<T>& controls, double& integrand) const override {
+        integrand = 0;
+        m_state.setTime(time);
+        std::copy(states.data(), states.data() + states.size(),
+                &m_state.updY()[0]);
+        auto& osimControls = m_model.updControls(m_state);
+        std::copy(controls.data(), controls.data() + controls.size(),
+                &osimControls[0]);
+        m_model.realizePosition(m_state);
+        m_model.setControls(m_state, osimControls);
+        for (int i = 0; i < m_mucoProb.getProperty_costs().size(); ++i) {
+            integrand += m_mucoProb.get_costs(i).calcIntegralCost(m_state);
+        }
+    }
     void calc_endpoint_cost(const double& final_time, const VectorX<T>& states,
             double& cost) const override {
+        cost = 0;
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
@@ -723,7 +775,7 @@ int main() {
 
     // TODO setting an initial guess.
 
-    {
+    if (false) {
         MucoProblem mp;
         mp.setModel(createDoublePendulum());
         mp.setTimeBounds(0, {0, 5});
@@ -764,14 +816,46 @@ int main() {
         guess.setControl_std("tau1", {0, 0});
         ms.setGuess(guess);
 
-        ms.set_num_mesh_points(50);
+        ms.set_num_mesh_points(100);
         MucoIterate solution0 = ms.solve();
         solution0.write("DEBUG_sandboxSlidingMass_solution.sto");
 
         // TODO the second problem never solves well...Ipopt keeps on iterating.
-        ms.set_num_mesh_points(20);
-        ms.setGuess(solution0);
-        MucoIterate solution1 = ms.solve();
+        //ms.set_num_mesh_points(20);
+        //ms.setGuess(solution0);
+        //MucoIterate solution1 = ms.solve();
+
+    }
+
+    {
+        MucoProblem mp;
+        mp.setModel(createDoublePendulum());
+        mp.setTimeBounds(0, 1);
+        mp.append_state_info({"j0/q0/value", {-10, 10}});
+        mp.append_state_info({"j0/q0/speed", {-50, 50}});
+        mp.append_state_info({"j1/q1/value", {-10, 10}});
+        mp.append_state_info({"j1/q1/speed", {-50, 50}});
+        mp.append_control_info({"tau0", {-100, 100}});
+        mp.append_control_info({"tau1", {-100, 100}});
+
+        MucoSimpleTrackingCost tracking;
+        tracking.set_weight(1.0);
+        mp.append_costs(tracking);
+
+        MucoSolver ms(mp);
+        ms.set_num_mesh_points(100);
+        MucoIterate guess = ms.createGuessTemplate();
+        guess.setNumTimes(2);
+        guess.setTime_std({0, 1});
+        guess.setState_std("j0/q0/value", {0, 0.5 * SimTK::Pi});
+        guess.setState_std("j1/q1/value", {0, 0.5 * SimTK::Pi});
+        guess.setState_std("j0/q0/speed", {0, 0});
+        guess.setState_std("j1/q1/speed", {0, 0});
+        guess.setControl_std("tau0", {20, 1});
+        guess.setControl_std("tau1", {20, -2});
+        ms.setGuess(guess);
+        MucoIterate solution = ms.solve();
+        solution.write("DEBUG_double_pendulum_tracking.sto");
 
     }
 

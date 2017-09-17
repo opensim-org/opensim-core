@@ -126,6 +126,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
                 m_hessian_approximation);
     }
     //app->Options()->SetStringValue("linear_solver", "ma97");
+    //app->Options()->SetNumericValue("tol", 1e-5);
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
@@ -143,7 +144,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
             && status != Ipopt::Solved_To_Acceptable_Level) {
         // TODO give detailed diagnostics.
         // TODO throw exception.
-        throw std::runtime_error("[tropter] Failed to find a solution.");
+        //TODOthrow std::runtime_error("[tropter] Failed to find a solution.");
         //std::cerr << "[tropter] Failed to find a solution." << std::endl;
     }
     variables = nlp->get_solution();
