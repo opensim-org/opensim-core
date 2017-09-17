@@ -34,8 +34,9 @@ install:
   # https://blogs.msdn.microsoft.com/vcblog/2016/09/19/vcpkg-a-tool-to-acquire-and-build-c-open-source-libraries-on-windows/
   # https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md
   # https://github.com/appveyor/ci/issues/1076
-  - vcpkg install eigen:x64-windows
   - vcpkg integrate install
+  # TODO cache eigen, maybe use superbuild for eigen.
+  - vcpkg install eigen3:x64-windows
 
   - mkdir ..\muscollo_deps_build
   - cd ..\muscollo_deps_build
