@@ -1,0 +1,53 @@
+# Windows testing using Visual Studio.
+#
+# Syntax for this file:
+# http://www.appveyor.com/docs/appveyor-yml
+
+# See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
+# command-line options to MSBuild.
+
+os: Visual Studio 2015
+
+platform: x64
+
+nuget:
+  account_feed: true
+
+cache:
+  ## Cache some dependencies.
+  # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
+  # If the appveyor.yml script is changed, then the cache is invalidated.
+  # https://www.appveyor.com/docs/build-cache/
+  # TODO store commit hashes in separate text files so we can invalidate these
+  # dependencies separately.
+  - C:\projects\muscollo_deps_install\colpack -> C:\projects\muscollo\dependencies\CMakeLists.txt
+  - C:\projects\muscollo_deps_install\adolc -> C:\projects\muscollo\dependencies\CMakeLists.txt
+  - C:\projects\muscollo_deps_install\ipopt -> C:\projects\muscollo\dependencies\CMakeLists.txt
+
+install:
+  - cmake --version
+
+  # Install dependencies.
+  # TODO use superbuild for opensim-core?
+  - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+
+  - vcpkg install eigen:x64-windows
+  - vcpkg integrate install
+
+  - mkdir ..\muscollo_deps_build
+  - cd ..\muscollo_deps_build
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+
+  - IF NOT EXIST C:\projects\muscollo_deps_install\colpack cmake . -DSUPERBUILD_colpack=ON
+  - IF NOT EXIST C:\projects\muscollo_deps_install\adolc cmake . -DSUPERBUILD_adolc=ON
+  - IF NOT EXIST C:\projects\muscollo_deps_install\ipopt cmake . -DSUPERBUILD_ipopt=ON
+
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
+  - mkdir ..\build
+  - cd ..\build
+  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="..\muscollo_install" -DADOLC_DIR="..\muscollo_deps_install\adol-c" -DIPOPT_DIR="..\muscollo_deps_install\ipopt" -DCMAKE_PREFIX_PATH="$pwd\..\muscollo_deps_install\colpack;$pwd\..\muscollo_deps_install\opensim_core" -DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
+  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
+  - ctest --build-config RelWithDebInfo --parallel 4
+  - cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:4
+
+  # TODO deploy
