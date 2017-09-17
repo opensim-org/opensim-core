@@ -24,3 +24,4 @@ if(SUPERBUILD_opensim-core)
 
     add_dependencies(opensim-core simbody docopt)
 endif()
+

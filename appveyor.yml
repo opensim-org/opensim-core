@@ -14,10 +14,9 @@ shallow_clone: true
 
 # No need to build the branch if building a PR.
 skip_branch_with_pr: true
-
-# TODO use project feed instead.
-#nuget:
-#  account_feed: true
+ 
+init:
+  - SET BTYPE=Release
 
 cache:
   ## Cache some dependencies.
@@ -69,7 +68,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:quiet
   - dir C:\projects\
   - IF EXIST C:\projects\muscollo_deps_install dir C:\projects\muscollo_deps_install
 
@@ -90,12 +89,12 @@ build_script:
   # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
   - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\colpack;C:\projects\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
-  - cmake --build . --config RelWithDebInfo -- /maxcpucount:4
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4
 
 test_script:
-  #- ctest --build-config RelWithDebInfo --parallel 4 --output-on-failure
+  #- ctest --build-config %BTYPE% --parallel 4 --output-on-failure
   - echo TODO
-  #- cmake --build . --config RelWithDebInfo --target install -- /verbosity:quiet
+  #- cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
 
 #after_test:
 #  - cd %APPVEYOR_BUILD_FOLDER%
