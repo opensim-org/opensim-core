@@ -87,7 +87,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
-  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\colpack;C:\projects\opensim-core"
+  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4
 
