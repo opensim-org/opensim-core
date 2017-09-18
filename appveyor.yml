@@ -89,27 +89,25 @@ build_script:
   # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
   - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
-  - cmake --build . --config %BTYPE% -- /maxcpucount:4
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
 test_script:
-  #- ctest --build-config %BTYPE% --parallel 4 --output-on-failure
-  - echo TODO
-  #- cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
+  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure
+  - cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
 
-#after_test:
-#  - cd %APPVEYOR_BUILD_FOLDER%
-#  # TODO consider using plain ZIP artifacts:
-#  # https://www.appveyor.com/docs/packaging-artifacts/
-#  ## On master branch, create NuGet package for OpenSim.
-#  # Detect if we are on the master branch.
-#  # TODO change appveyor to master branch.
-#  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-#  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
-#  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
-#  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
-#  # Create and upload NuGet package.
-#  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
-#  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+after_test:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  ## On master branch, upload binaries to AppVeyor.
+  # https://www.appveyor.com/docs/packaging-artifacts/
+  # Detect if we are on the master branch.
+  # TODO change appveyor to master branch.
+  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
+  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
+  # Create and upload NuGet package.
+  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
+  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
  
  
 # The following, if uncommented, should allow you to remote-desktop into
