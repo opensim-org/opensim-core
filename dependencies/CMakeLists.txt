@@ -167,53 +167,49 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME eigen
               URL  http://bitbucket.org/eigen/eigen/get/3.3.4.zip)
 
+include(colpack.cmake)
+
 if (WIN32)
 
-    # ADOL-C: Download pre-built binaries.
-    # TODO allow building from source, so we can use a Debug version of ADOL-C.
-    set(ADOLC_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
-        "${CMAKE_INSTALL_PREFIX}/adol-c")
-    ExternalProject_Add(adolc
-        URL http://www2.math.uni-paderborn.de/fileadmin/Mathematik/AG-Walther/ADOL-C/adolc_sparse_x64.zip
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
+    set(SUPERBUILD_adolc ON CACHE BOOL 
+        "Automatically download, configure, build and install adolc")
+    if(SUPERBUILD_adolc)
+        # ADOL-C: Download pre-built binaries.
+        # TODO allow building from source, so we can use a Debug version of
+        # ADOL-C.
+        set(ADOLC_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_BINARY_DIR}/ADOLC-prefix/src/ADOLC"
+            "${CMAKE_INSTALL_PREFIX}/adol-c")
+        ExternalProject_Add(adolc
+            URL http://www2.math.uni-paderborn.de/fileadmin/Mathematik/AG-Walther/ADOL-C/adolc_sparse_x64.zip
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
+    endif()
 
-    # Ipopt: Download pre-built binaries from the YARP/iCub project.
-    # This binary distribution comes with MUMPS (which contains Fortran code
-    # compiled with the proprietary Intel Fortran compiler).
-    # TODO obtain from Microsoft's VCPKG package manager.
-    set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
-        "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
-        "${CMAKE_INSTALL_PREFIX}/ipopt")
-    ExternalProject_Add(ipopt
-        URL http://www.icub.org/download/3rd-party/ipopt-3.12.7_msvc14_x86_amd64.zip
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
+
+    set(SUPERBUILD_ipopt ON CACHE BOOL 
+        "Automatically download, configure, build and install ipopt")
+    if(SUPERBUILD_ipopt)
+        # Ipopt: Download pre-built binaries from the YARP/iCub project.
+        # This binary distribution comes with MUMPS (which contains Fortran
+        # code compiled with the proprietary Intel Fortran compiler).
+        # TODO obtain from Microsoft's VCPKG package manager.
+        set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
+            "${CMAKE_INSTALL_PREFIX}/ipopt")
+        ExternalProject_Add(ipopt
+            URL http://www.icub.org/download/3rd-party/ipopt-3.12.7_msvc14_x86_amd64.zip
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
+    endif()
 endif()
 
-# OpenSim (and OpenSim's dependencies).
-AddDependency(NAME simbody
-              GIT_URL https://github.com/simbody/simbody.git
-              GIT_TAG fd5c03115038a7398ed5ac04169f801a2aa737f2
-              CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
-                         -DBUILD_TESTING:BOOL=OFF)
+include(opensim-core.cmake)
 
-AddDependency(NAME       docopt
-              GIT_URL    https://github.com/docopt/docopt.cpp.git
-              GIT_TAG    af03fa044ee1eff20819549b534ea86829a24a54)
-
-AddDependency(NAME       opensim_core
-              URL        https://github.com/opensim-org/opensim-core/archive/67e378b387f0601ce32ab4606ce6aa4b250b4bc4.zip
-              CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
-                         -DBUILD_TESTING:BOOL=OFF
-                         -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
-                         -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
- 
-add_dependencies(opensim_core simbody docopt)
 
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")
+

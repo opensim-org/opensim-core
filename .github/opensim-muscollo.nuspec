@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>opensim-muscollo</id>
+    <version>0.0.0</version>
+    <authors>Christopher Lee Dembia</authors>
+    <owners>Christopher Lee Dembia</owners>
+    <licenseUrl>https://github.com/stanfordnmbl/muscollo/TODO</licenseUrl>
+    <projectUrl>https://github.com/stanfordnmbl/muscollo</projectUrl>
+    <iconUrl>TODO</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Solving Optimal control problems for musculoskeletal
+        systems.</description>
+    <releaseNotes>https://github.com/stanfordnmbl/muscollo/releases</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>multibody dynamics biomechanics trajectory optimization direct-collocation optimal-control</tags>
+  </metadata>
+  <files>
+    <file src="**" target="" />
+  </files>
+</package>

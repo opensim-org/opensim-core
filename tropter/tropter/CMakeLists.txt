@@ -24,6 +24,8 @@ add_library(tropter
 
 # TODO generate_export_header() for exporting symbols on Windows.
 
+# Dependencies.
+# -------------
 # PUBLIC means the headers are used in both of the following scenarios:
 #   a. when building the library ("PRIVATE"), and
 #   b. when a client library links to this library ("INTERFACE").
@@ -47,9 +49,10 @@ if(OPENMP_FOUND)
     # use the OpenMP flag themselves, though.
     target_compile_definitions(tropter PUBLIC TROPTER_WITH_OPENMP)
     target_compile_options(tropter BEFORE PRIVATE
-            $<$<COMPILE_LANGUAGE:C>:${OpenMP_C_FLAGS}>
-            $<$<COMPILE_LANGUAGE:CXX>:${OpenMP_CXX_FLAGS}>)
-    target_link_libraries(tropter PRIVATE ${OpenMP_CXX_FLAGS})
+            ${OpenMP_CXX_FLAGS})
+    if(NOT MSVC)
+        target_link_libraries(tropter PRIVATE ${OpenMP_CXX_FLAGS})
+    endif()
 endif()
 
 target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
@@ -65,6 +68,20 @@ endif()
 
 if(MUSCOLLO_WITH_SNOPT)
     target_link_libraries(tropter snopt7_cpp)
+endif()
+
+if(WIN32)
+    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+endif()
+
+# Target properties, etc.
+# -----------------------
+
+if(MSVC)
+    # Avoid warnings from our use of std::copy().
+    target_compile_options(tropter PRIVATE
+        "$<$<CONFIG:Debug>:/wd4996>")
 endif()
 
 # Only use the parts of Eigen that do not have a viral license.
@@ -83,13 +100,12 @@ target_include_directories(tropter PUBLIC
         # TODO use variable for the path.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
 
-set_target_properties(tropter PROPERTIES FOLDER "tropter")
+set_target_properties(tropter PROPERTIES PROJECT_LABEL "Library - tropter" FOLDER "tropter")
 
-if(WIN32)
-    add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
-endif()
+# Installing.
+# -----------
 
-install(TARGETS tropter EXPORT tropter-config
+install(TARGETS tropter EXPORT tropter-config # TODO change to tropter-targets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

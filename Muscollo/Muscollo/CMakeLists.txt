@@ -25,5 +25,12 @@ if(WIN32)
     add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
 endif()
 
-install(TARGETS osimMuscollo DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS osimMuscollo # EXPORT OpenSimTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION ${MUSCOLLO_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h*")

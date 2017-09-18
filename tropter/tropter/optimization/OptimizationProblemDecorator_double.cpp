@@ -15,8 +15,6 @@
 
 using Eigen::VectorXd;
 
-// TODO leave all of this templatized, so floats can be used also.
-
 namespace tropter {
 
 // We must implement the destructor in a context where ColPack's coloring

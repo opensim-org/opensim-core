@@ -5,6 +5,7 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 
 // TODO should not expose Eigen. This whole file could be private.
+// or forward declare MatrixXd.
 #include <Eigen/Dense>
 
 namespace OpenSim {
