@@ -34,6 +34,8 @@ cache:
 install:
   - cmake --version
 
+  - choco install doxygen.portable
+
   # Install dependencies.
   # We are using superbuild for opensim-core, as that allows us to specify
   # specific commits to use. Also, for some reason, Muscollo couldn't find
@@ -92,10 +94,17 @@ build_script:
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
 test_script:
-  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure
+  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
+
+   # Build doxygen.
+  - cmake --build . --config %BTYPE% --target tropter_doxygen -- /verbosity:minimal
+  - cmake --build . --config %BTYPE% --target Muscollo_doxygen -- /verbosity:minimal
+
+  # Install.
   - cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
 
 after_test:
+
   - cd %APPVEYOR_BUILD_FOLDER%
   ## On master branch, upload binaries to AppVeyor.
   # https://www.appveyor.com/docs/packaging-artifacts/
