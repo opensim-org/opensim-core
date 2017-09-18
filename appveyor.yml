@@ -23,8 +23,6 @@ cache:
   # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
   # If the appveyor.yml script is changed, then the cache is invalidated.
   # https://www.appveyor.com/docs/build-cache/
-  # TODO split AddDependency() calls into separate cmake files so we can
-  # invalidate these dependencies separately.
   - C:\projects\eigen -> dependencies\CMakeLists.txt
   - C:\projects\colpack -> dependencies\colpack.cmake
   - C:\projects\adol-c -> dependencies\CMakeLists.txt
@@ -88,8 +86,8 @@ build_script:
   # Install Muscollo.
   - mkdir ..\build
   - cd ..\build
-  # TODO turn warnings into errors: cmake -E env CXXFLAGS="/WX"
-  - cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
+  # Turn warnings into errors (/WX)
+  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
@@ -109,8 +107,7 @@ after_test:
   ## On master branch, upload binaries to AppVeyor.
   # https://www.appveyor.com/docs/packaging-artifacts/
   # Detect if we are on the master branch.
-  # TODO change appveyor to master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU appveyor IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
