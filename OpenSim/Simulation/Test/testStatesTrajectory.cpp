@@ -179,9 +179,8 @@ void testFromStatesStorageGivesCorrectStates() {
 
     Storage sto(statesStoFname);
 
-    // It's important that we have not yet initialized the model,
-    // since `createFromStatesStorage()` should be able to work with such a
-    // model.
+    // Note: we are verifying that we can load a trajectory without
+    // invoking model.initSystem() ourselves.
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
 
     // However, we eventually *do* need to call initSystem() to make use of the
