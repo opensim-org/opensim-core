@@ -5,6 +5,27 @@ import os, unittest
 import opensim as osim
 
 class TestDataTable(unittest.TestCase):
+    def test_clone(self):
+        # Make sure the clone() method works (we have to implement this in a
+        # SWIG interface file).
+        dt = osim.DataTable()
+        c = dt.clone()
+        assert c
+        dt = osim.DataTableVec3()
+        c = dt.clone()
+        assert c
+        dt = osim.DataTableUnitVec3()
+        c = dt.clone()
+        assert c
+        dt = osim.DataTableQuaternion()
+        c = dt.clone()
+        assert c
+        dt = osim.DataTableVec6()
+        c = dt.clone()
+        assert c
+        dt = osim.DataTableSpatialVec()
+        c = dt.clone()
+        assert c
     def test_vector_rowvector(self):
         print()
         print('Test transpose RowVector to Vector.')
