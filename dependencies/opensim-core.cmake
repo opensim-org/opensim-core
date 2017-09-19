@@ -10,10 +10,16 @@ AddDependency(NAME       opensim-core
 
 if(SUPERBUILD_opensim-core)
 
-    # OpenSim (and OpenSim's dependencies).
+    # OpenSim's dependencies.
+    if(LINUX AND NOT APPLE)
+        set(SIMBODY_GIT_TAG fix_Ipopt_symbols)
+    else()
+        set(SIMBODY_GIT_TAG fd5c03115038a7398ed5ac04169f801a2aa737f2)
+    endif()
+
     AddDependency(NAME simbody
-                  GIT_URL https://github.com/simbody/simbody.git
-                  GIT_TAG fd5c03115038a7398ed5ac04169f801a2aa737f2
+                  GIT_URL    https://github.com/simbody/simbody.git
+                  GIT_TAG    ${SIMBODY_GIT_TAG}
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
