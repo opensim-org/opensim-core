@@ -33,8 +33,12 @@ Ubuntu
 ------
 
 ```bash
-sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev libadolc-dev
+sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev
 ```
+
+For some reason, the ADOL-C in the Ubuntu packages repositories does not work well
+with Muscollo/tropter. You should compile ADOL-C yourself (make sure to use
+--enable-sparse).
 
 macOS
 -----
