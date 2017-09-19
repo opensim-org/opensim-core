@@ -11,7 +11,7 @@ AddDependency(NAME       opensim-core
 if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
-    if(LINUX AND NOT APPLE)
+    if(UNIX AND NOT APPLE)
         set(SIMBODY_GIT_TAG fix_Ipopt_symbols)
     else()
         set(SIMBODY_GIT_TAG fd5c03115038a7398ed5ac04169f801a2aa737f2)

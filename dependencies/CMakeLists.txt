@@ -169,10 +169,10 @@ AddDependency(NAME eigen
 
 include(colpack.cmake)
 
+set(SUPERBUILD_adolc ON CACHE BOOL 
+    "Automatically download, configure, build and install adolc")
 if (WIN32)
 
-    set(SUPERBUILD_adolc ON CACHE BOOL 
-        "Automatically download, configure, build and install adolc")
     if(SUPERBUILD_adolc)
         # ADOL-C: Download pre-built binaries.
         # TODO allow building from source, so we can use a Debug version of
@@ -204,6 +204,31 @@ if (WIN32)
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
     endif()
+else()
+
+    if(SUPERBUILD_adolc)
+        # TODO copy source code into dependencies dir. OR make clean.
+        # TODO rename to adol-c
+        # TODO add debug symbols if building in Debug (but ADOL-C doesn't
+        # compile with debug symbols right now).
+        # TODO for macOS, will need to make ADOL-C change where it expects to
+        # find ColPack's libraries (lib, not lib64).
+        # https://github.com/Homebrew/homebrew-science/blob/master/adol-c.rb
+        ExternalProject_Add(adolc
+            DEPENDS           colpack
+            GIT_REPOSITORY    https://gitlab.com/adol-c/adol-c.git
+            GIT_TAG           v2.6.3
+            #SOURCE_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
+            #BINARY_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
+            INSTALL_DIR       "${CMAKE_INSTALL_PREFIX}/adol-c"
+            CONFIGURE_COMMAND autoreconf -fi <SOURCE_DIR>
+                COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+                                               --enable-sparse
+                                               --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+    endif()
+
 endif()
 
 include(opensim-core.cmake)

@@ -36,9 +36,11 @@ Ubuntu
 sudo apt install git cmake pkg-config liblapack-dev coinor-libipopt-dev
 ```
 
-For some reason, the ADOL-C in the Ubuntu packages repositories does not work well
-with Muscollo/tropter. You should compile ADOL-C yourself (make sure to use
---enable-sparse).
+Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
+`dependencies` directory (TODO improve instructions).
+
+For some reason, the ADOL-C in the Ubuntu package repositories does not work well
+with Muscollo/tropter.
 
 macOS
 -----
@@ -50,6 +52,13 @@ tropter (by default, Homebrew compiles these with GCC):
 brew install --cc=clang colpack
 brew install --cc=clang adol-c
 ```
+
+You can use the CMake project in the `dependencies` directory to build some of
+these dependencies (TODO improve instructions).
+
+
+Windows
+-------
 
 On **Windows**, you can run the `build_on_windows.ps1` PowerShell script to 
 obtain Muscollo's dependencies and to build Muscollo. This script assumes you
