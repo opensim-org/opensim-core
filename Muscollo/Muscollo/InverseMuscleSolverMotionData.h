@@ -4,6 +4,8 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
+// TODO should not expose Eigen. This whole file could be private.
+// or forward declare MatrixXd.
 #include <Eigen/Dense>
 
 namespace OpenSim {
@@ -43,6 +45,7 @@ public:
             const double& initialTime, const double& finalTime,
             const TimeSeriesTable& kinematicsData,
             const double& lowpassCutoffKinematics,
+            const double& lowpassCutoffJointMoments,
             const TimeSeriesTable& netGeneralizedForcesData);
 
     /// Get the paths (relative to the model) of the coordinates that are to be

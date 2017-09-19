@@ -6,6 +6,8 @@
 #include <tropter/tropter.h>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 #include <algorithm>
 
@@ -185,12 +187,11 @@ public:
         // Multiply A and b by the moment arm matrix.
     }
 
-    void calc_differential_algebraic_equations(unsigned i_mesh,
-            const T& /*time*/,
-            const tropter::VectorX<T>& /*states*/,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> /*derivatives*/,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
+        const auto& i_mesh = in.mesh_index;
+
         // Actuator equilibrium.
         // =====================
         // TODO in the future, we want this to be:
@@ -205,7 +206,7 @@ public:
         // --------------------
         for (Eigen::Index i_act = 0; i_act < _numCoordActuators; ++i_act) {
             genForce[_coordActuatorDOFs[i_act]]
-                    += _optimalForce[i_act] * controls[i_act];
+                    += _optimalForce[i_act] * in.controls[i_act];
         }
 
         // Muscles.
@@ -214,7 +215,7 @@ public:
             tropter::VectorX<T> muscleForces(_numMuscles);
             for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
                 // Unpack variables.
-                const T& activation = controls[_numCoordActuators + i_act];
+                const T& activation = in.controls[_numCoordActuators + i_act];
 
                 // Get the total muscle-tendon length and velocity from the
                 // data.
@@ -233,8 +234,8 @@ public:
 
         // Achieve the motion.
         // ===================
-        constraints = _desiredMoments.col(i_mesh).template cast<adouble>()
-                    - genForce;
+        out.path = _desiredMoments.col(i_mesh).template cast<adouble>()
+                 - genForce;
     }
     void calc_integral_cost(const T& /*time*/,
             const tropter::VectorX<T>& /*states*/,
@@ -467,18 +468,19 @@ GlobalStaticOptimization::solve() const {
             get_lowpass_cutoff_frequency_for_kinematics() != -1,
             Exception,
             "Invalid value for cutoff frequency for kinematics.");
+    OPENSIM_THROW_IF(
+            get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+            get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+            Exception,
+            "Invalid value for cutoff frequency for joint moments.");
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),
+                get_lowpass_cutoff_frequency_for_joint_moments(),
                 netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
-        OPENSIM_THROW_IF(
-                get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-                get_lowpass_cutoff_frequency_for_joint_moments() != -1,
-                Exception,
-                "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),

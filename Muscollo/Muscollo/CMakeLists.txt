@@ -6,7 +6,8 @@ add_library(osimMuscollo
         DeGrooteFregly2016Muscle.h
         InverseMuscleSolverMotionData.h  InverseMuscleSolverMotionData.cpp
         )
-target_link_libraries(osimMuscollo osimTools tropter)
+target_link_libraries(osimMuscollo PUBLIC osimActuators
+                                   PRIVATE tropter)
 # Do not generate warnings from OpenSim headers ("SYSTEM").
 # No longer need to explicitly include OpenSim's headers;
 # this is handled by linking to OpenSim's libraries.
@@ -14,8 +15,7 @@ target_link_libraries(osimMuscollo osimTools tropter)
 # TODO         SYSTEM PUBLIC ${OpenSim_INCLUDE_DIRS})
 target_include_directories(osimMuscollo INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        # TODO this variable doesn't exist yet:
-        $<INSTALL_INTERFACE:${MUSCLEREDUNDANCYSOLVER_INSTALL_INCLUDEDIR}>)
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(osimMuscollo PROPERTIES
         PROJECT_LABEL "Library - osimMuscollo"
@@ -25,5 +25,12 @@ if(WIN32)
     add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
 endif()
 
-install(TARGETS osimMuscollo DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS osimMuscollo # EXPORT OpenSimTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+        DESTINATION ${MUSCOLLO_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h*")

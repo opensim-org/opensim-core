@@ -1,9 +1,10 @@
-#include <OpenSim/OpenSim.h>
-#include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <INDYGO.h>
 #include <GlobalStaticOptimization.h>
 #include <DeGrooteFregly2016Muscle.h>
 #include <tropter/tropter.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include "testing.h"
 
 using namespace OpenSim;
@@ -61,25 +62,22 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> /*constraints*/) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
         // Unpack variables.
-        const T& position = states[0];
-        const T& speed = states[1];
-        const T& activation = controls[0];
+        const T& position = in.states[0];
+        const T& speed = in.states[1];
+        const T& activation = in.controls[0];
 
         // Multibody kinematics.
-        derivatives[0] = speed;
+        out.dynamics[0] = speed;
 
         // Multibody dynamics.
         const T tendonForce =
                 m_muscle.calcRigidTendonFiberForceAlongTendon(activation,
                                                               position, speed);
-        derivatives[1] = g - tendonForce / mass;
+        out.dynamics[1] = g - tendonForce / mass;
     }
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& /*final_states*/,
@@ -211,39 +209,37 @@ public:
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
-    void calc_differential_algebraic_equations(unsigned /*i_mesh*/,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
         // Unpack variables.
-        const T& position = states[0];
-        const T& speed = states[1];
-        const T& activation = states[2];
-        const T& normFibLen = states[3];
-        const T& excitation = controls[0];
-        const T& normFibVel = controls[1];
+        const T& position = in.states[0];
+        const T& speed = in.states[1];
+        const T& activation = in.states[2];
+        const T& normFibLen = in.states[3];
+        const T& excitation = in.controls[0];
+        const T& normFibVel = in.controls[1];
 
         // Multibody kinematics.
-        derivatives[0] = speed;
+        out.dynamics[0] = speed;
 
         // Multibody dynamics.
         T normTenForce;
         // This also computes the fiber equilibrium path constraint.
         m_muscle.calcEquilibriumResidual(
-                activation, position, normFibLen, normFibVel, constraints[0],
+                activation, position, normFibLen, normFibVel, out.path[0],
                 normTenForce);
         T tendonForce = m_muscle.get_max_isometric_force() * normTenForce;
         // TODO might make more sense to use fiber force; might be a more
         // direct relationship (that, or make tendon length a variable).
-        derivatives[1] = g - tendonForce / mass;
+        out.dynamics[1] = g - tendonForce / mass;
 
         // Activation dynamics.
-        m_muscle.calcActivationDynamics(excitation, activation, derivatives[2]);
+        m_muscle.calcActivationDynamics(excitation, activation,
+                out.dynamics[2]);
 
         // Fiber dynamics.
-        derivatives[3] = max_contraction_velocity * normFibVel;
+        out.dynamics[3] = max_contraction_velocity * normFibVel;
     }
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& /*final_states*/,

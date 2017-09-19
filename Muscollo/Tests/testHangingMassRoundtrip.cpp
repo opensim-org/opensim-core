@@ -1,7 +1,7 @@
-
-#include <OpenSim/OpenSim.h>
-#include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <INDYGO.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/osimActuators.h>
 
 using namespace OpenSim;
 

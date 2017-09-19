@@ -12,6 +12,7 @@ class AbstractOptimizationProblem;
 
 class OptimizationProblemDecorator;
 
+/// @ingroup optimization
 class OptimizationSolver {
 public:
     /// Provide the problem to solve.

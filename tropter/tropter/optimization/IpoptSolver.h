@@ -5,6 +5,7 @@
 
 namespace tropter {
 
+/// @ingroup optimization
 class IpoptSolver : public OptimizationSolver {
 public:
     // TODO this means the IpoptSolver *would* get access to the Problem,

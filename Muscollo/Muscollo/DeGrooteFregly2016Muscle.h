@@ -55,13 +55,20 @@ public:
     double get_max_contraction_velocity() const
     { return _max_contraction_velocity; }
 
+private:
+    constexpr static double kT = 35;
+    constexpr static double c1 = 0.200;
+    constexpr static double c2 = 0.995;
+    constexpr static double c3 = 0.250;
+public:
+    // TODO rename to calcTendonForceLengthCurve().
     T calcNormTendonForce(const T& normTendonLength) const {
         // Tendon force-length curve.
-        static const double kT = 35;
-        static const double c1 = 0.200;
-        static const double c2 = 0.995;
-        static const double c3 = 0.250;
         return c1 * exp(kT * (normTendonLength - c2)) - c3;
+    }
+    /// For use with the tendon force state formulation.
+    T calcTendonForceLengthCurveInverse(const T& normTendonForce) const {
+        return 1.0 / kT * log(1 / c1 * (normTendonForce + c3)) + c2;
     }
     T calcNormTendonForce(const T& musTenLength,
                           const T& normFiberLength) const {
@@ -87,6 +94,14 @@ public:
                          T& tendonForce) const {
         tendonForce = _max_isometric_force
                 * calcNormTendonForce(musTenLength, normFiberLength);
+    }
+    /// If you differentiate the tendon force-length curve with respect to
+    /// normalized tendon length, and then solve for normalized tendon
+    /// lengthening rate, you get this function.
+    /// This function is for use with the tendon force state formulation.
+    T calcNormTendonVelocity(const T& normTenForceRate,
+            const T& normTendonLength) const {
+        return normTenForceRate / (c1 * kT * exp(kT * (normTendonLength - c2)));
     }
     T calcActiveForceLengthMultiplier(const T& normFiberLength) const {
         static const double b11 =  0.815;
@@ -249,6 +264,32 @@ public:
         T normTendonForce;
         calcEquilibriumResidual(activation, musTenLength, normFiberLength,
                                 normFiberVelocity, residual, normTendonForce);
+    }
+    /// Compute the equilibrium error where we know the normalized tendon
+    /// force but do not know the fiber length.
+    void calcTendonForceStateEquilibriumResidual(const T& activation,
+            const T& musTenLength,
+            const T& musTenVelocity,
+            const T& normTenForce,
+            const T& normTenForceRate,
+            T& residual,
+            T& tendonForce) const {
+        const T normTenLength = calcTendonForceLengthCurveInverse(normTenForce);
+        const T tendonLength = _tendon_slack_length * normTenLength;
+        const T fiberLength = sqrt(pow(musTenLength - tendonLength, 2)
+                + pow(_fiber_width, 2));
+
+        const T normFibLength = fiberLength / _optimal_fiber_length;
+        const T cosPenn = (musTenLength - tendonLength) / fiberLength;
+
+        const T tendonVelocity = calcNormTendonVelocity(normTenForceRate,
+                normTenLength);
+        const T normFibVelocity = (musTenVelocity - tendonVelocity) * cosPenn;
+
+        const T normFibForce = calcNormFiberForce(activation, normFibLength,
+                normFibVelocity);
+        tendonForce = _max_isometric_force * normTenForce;
+        residual = normFibForce * cosPenn - normTenForce;
     }
 
 protected:

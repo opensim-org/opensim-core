@@ -4,6 +4,9 @@
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
 
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
+
 #include <tropter/tropter.h>
 
 #include <algorithm>
@@ -225,12 +228,14 @@ public:
         }
     }
 
-    void calc_differential_algebraic_equations(unsigned i_mesh,
-            const T& /*time*/,
-            const tropter::VectorX<T>& states,
-            const tropter::VectorX<T>& controls,
-            Eigen::Ref<tropter::VectorX<T>> derivatives,
-            Eigen::Ref<tropter::VectorX<T>> constraints) const override {
+    void calc_differential_algebraic_equations(
+            const tropter::DAEInput<T>& in,
+            tropter::DAEOutput<T> out) const override {
+
+        const auto& i_mesh = in.mesh_index;
+        const auto& states = in.states;
+        const auto& controls = in.controls;
+
         // Actuator dynamics.
         // ==================
         for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
@@ -242,10 +247,10 @@ public:
 
             // Activation dynamics.
             _muscles[i_act].calcActivationDynamics(excitation, activation,
-                    derivatives[2 * i_act]);
+                    out.dynamics[2 * i_act]);
 
             // Fiber dynamics.
-            derivatives[2 * i_act + 1] =
+            out.dynamics[2 * i_act + 1] =
                     _muscles[i_act].get_max_contraction_velocity() * normFibVel;
         }
 
@@ -281,7 +286,7 @@ public:
                 T normTenForce;
                 _muscles[i_act].calcEquilibriumResidual(activation, musTenLen,
                         normFibLen, normFibVel,
-                        constraints[i_act],
+                        out.path[i_act],
                         normTenForce);
 
                 tendonForces[i_act] = _muscles[i_act].get_max_isometric_force()
@@ -296,7 +301,7 @@ public:
 
         // Achieve the motion.
         // ===================
-        constraints.segment(_numMuscles, _numCoordsToActuate)
+        out.path.segment(_numMuscles, _numCoordsToActuate)
                 = _desiredMoments.col(i_mesh).template cast<adouble>()
                 - genForce;
     }
@@ -691,18 +696,19 @@ INDYGO::Solution INDYGO::solve() const {
             get_lowpass_cutoff_frequency_for_kinematics() != -1,
             Exception,
             "Invalid value for cutoff frequency for kinematics.");
+    OPENSIM_THROW_IF(
+            get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
+            get_lowpass_cutoff_frequency_for_joint_moments() != -1,
+            Exception,
+            "Invalid value for cutoff frequency for joint moments.");
     if (netGeneralizedForces.getNumRows()) {
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),
+                get_lowpass_cutoff_frequency_for_joint_moments(),
                 netGeneralizedForces);
     } else {
         // We must perform inverse dynamics.
-        OPENSIM_THROW_IF(
-                get_lowpass_cutoff_frequency_for_joint_moments() <= 0 &&
-                get_lowpass_cutoff_frequency_for_joint_moments() != -1,
-                Exception,
-                "Invalid value for cutoff frequency for joint moments.");
         motionData = InverseMuscleSolverMotionData(model, coordsToActuate,
                 initialTime, finalTime, kinematics,
                 get_lowpass_cutoff_frequency_for_kinematics(),

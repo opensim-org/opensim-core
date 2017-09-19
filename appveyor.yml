@@ -1,0 +1,122 @@
+# Windows testing using Visual Studio.
+#
+# Syntax for this file:
+# http://www.appveyor.com/docs/appveyor-yml
+
+# See http://msdn.microsoft.com/en-us/library/ms164311.aspx for
+# command-line options to MSBuild.
+
+image: Visual Studio 2015
+
+platform: x64
+
+shallow_clone: true
+
+# No need to build the branch if building a PR.
+skip_branch_with_pr: true
+ 
+init:
+  - SET BTYPE=Release
+
+cache:
+  ## Cache some dependencies.
+  # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
+  # If the appveyor.yml script is changed, then the cache is invalidated.
+  # https://www.appveyor.com/docs/build-cache/
+  - C:\projects\eigen -> dependencies\CMakeLists.txt
+  - C:\projects\colpack -> dependencies\colpack.cmake
+  - C:\projects\adol-c -> dependencies\CMakeLists.txt
+  - C:\projects\ipopt -> dependencies\CMakeLists.txt
+  - C:\projects\opensim-core -> dependencies\opensim-core.cmake
+
+install:
+  - cmake --version
+
+  - choco install doxygen.portable
+
+  # Install dependencies.
+  # We are using superbuild for opensim-core, as that allows us to specify
+  # specific commits to use. Also, for some reason, Muscollo couldn't find
+  # OpenSim headers when using NuGet.
+  # TODO - nuget sources add -name opensim-core --source https://ci.appveyor.com/nuget/opensim-core-kd63opes1em0
+  # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+
+  # https://blogs.msdn.microsoft.com/vcblog/2016/09/19/vcpkg-a-tool-to-acquire-and-build-c-open-source-libraries-on-windows/
+  # https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md
+  # https://github.com/appveyor/ci/issues/1076
+  #- vcpkg integrate install
+  # TODO cache eigen.
+  # TODO vcpkg is pretty slow; using superbuild for now.
+  #- vcpkg install eigen3:x64-windows
+
+  - mkdir ..\muscollo_deps_build
+  - cd ..\muscollo_deps_build
+  # /W0 disables warnings. The other CXX flags are copied from CMake's default
+  # CMAKE_CXX_FLAGS.
+  # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
+  # - set CXXFLAGS="/W0"
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+
+  - dir C:\projects\
+  - IF NOT EXIST C:\projects\eigen cmake . -DSUPERBUILD_eigen=ON
+  - IF NOT EXIST C:\projects\colpack cmake . -DSUPERBUILD_colpack=ON
+  - IF NOT EXIST C:\projects\adol-c cmake . -DSUPERBUILD_adolc=ON
+  - IF NOT EXIST C:\projects\ipopt cmake . -DSUPERBUILD_ipopt=ON
+  - IF NOT EXIST C:\projects\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  # List the values of the CMake variables.
+  - cmake . -LAH
+
+  # The dependencies might spew out a lot of warnings that make the log
+  # difficult to read.
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:quiet
+  - dir C:\projects\
+  - IF EXIST C:\projects\muscollo_deps_install dir C:\projects\muscollo_deps_install
+
+  # To get the caching mechanism to work, we had to use a different directory
+  # for the cache (maybe b/c CMake makes empty folders in
+  # muscollo_deps_install?).
+  - IF NOT EXIST C:\projects\eigen cmake -E copy_directory C:\projects\muscollo_deps_install\eigen C:\projects\eigen
+  - IF NOT EXIST C:\projects\colpack cmake -E copy_directory C:\projects\muscollo_deps_install\colpack C:\projects\colpack
+  - IF NOT EXIST C:\projects\adol-c cmake -E copy_directory C:\projects\muscollo_deps_install\adol-c C:\projects\adol-c
+  - IF NOT EXIST C:\projects\ipopt cmake -E copy_directory C:\projects\muscollo_deps_install\ipopt C:\projects\ipopt
+  - IF NOT EXIST C:\projects\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\opensim-core
+
+build_script:
+
+  # Install Muscollo.
+  - mkdir ..\build
+  - cd ..\build
+  # Turn warnings into errors (/WX)
+  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
+  #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
+
+test_script:
+  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
+
+   # Build doxygen.
+  - cmake --build . --config %BTYPE% --target tropter_doxygen -- /verbosity:minimal
+  - cmake --build . --config %BTYPE% --target Muscollo_doxygen -- /verbosity:minimal
+
+  # Install.
+  - cmake --build . --config %BTYPE% --target install -- /verbosity:quiet
+
+after_test:
+
+  - cd %APPVEYOR_BUILD_FOLDER%
+  ## On master branch, upload binaries to AppVeyor.
+  # https://www.appveyor.com/docs/packaging-artifacts/
+  # Detect if we are on the master branch.
+  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
+  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
+  # Create and upload NuGet package.
+  #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
+  #- IF DEFINED DISTR appveyor PushArtifact opensim-muscollo.0.0.0.nupkg
+ 
+ 
+# The following, if uncommented, should allow you to remote-desktop into
+# the Appveyor build machine.
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

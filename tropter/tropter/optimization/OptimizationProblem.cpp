@@ -2,7 +2,8 @@
 
 namespace tropter {
 
-Eigen::VectorXd OptimizationProblemDecorator::make_initial_guess_from_bounds() const
+Eigen::VectorXd
+OptimizationProblemDecorator::make_initial_guess_from_bounds() const
 {
     const auto& lower = get_variable_lower_bounds();
     const auto& upper = get_variable_upper_bounds();

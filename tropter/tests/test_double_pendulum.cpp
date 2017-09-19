@@ -28,10 +28,10 @@ public:
     double m0 = 1;
     double m1 = 1;
 
-    void calc_differential_algebraic_equations(unsigned /*mesh_index*/,
-            const T& /*time*/, const VectorX<T>& x, const VectorX<T>& tau,
-            Ref<VectorX<T>> xdot, Ref<VectorX<T>>) const override final
-    {
+    void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const override final {
+        const auto& x = in.states;
+        const auto& tau = in.controls;
         const auto& q0 = x[0];
         const auto& q1 = x[1];
         const auto& u0 = x[2];
@@ -40,8 +40,8 @@ public:
         const auto& L1 = this->L1;
         const auto& m0 = this->m0;
         const auto& m1 = this->m1;
-        xdot[0] = u0;
-        xdot[1] = u1;
+        out.dynamics[0] = u0;
+        out.dynamics[1] = u1;
 
         const T z0 = m1 * L0 * L1 * cos(q1);
         const T M01 = m1 * L1*L1 + z0;
@@ -56,7 +56,7 @@ public:
 
         //Vector2<T> drag(-10 * u0, -10 * u1);
         // TODO xdot.tail<2>() =
-        xdot.tail(2) = M.inverse() * (tau - (V + G));
+        out.dynamics.tail(2) = M.inverse() * (tau - (V + G));
     }
 };
 

@@ -24,6 +24,8 @@ option(TROPTER_WITH_SNOPT
         "Compile support for the SNOPT optimization library; \
         requires Fortran compiler"
         OFF)
+#add_feature_info(SNOPT TROPTER_WITH_SNOPT
+#    "Support the SNOPT optimization library (requires Fortran compiler).")
 if(TROPTER_WITH_SNOPT)
     enable_language(Fortran)
 endif()
@@ -42,19 +44,36 @@ endif()
 # ------------------
 # There are Moodule files in the cmake directory.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+# TODO find_package(FMT 4.0 REQUIRED)
+
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
+#set_package_properties(Eigen3 PROPERTIES
+#    URL https://eigen.tuxfamily.org
+#    DESCRIPTION "Matrix library"
+#    TYPE REQUIRED
+#    PURPOSE "Numeric type used throughout the interface.")
 
 # Avoid using pkg-config on Windows as it's not easy to get
 # on Windows. On Ubuntu, the pkg-config file for Ipopt provides
 # a flag that we must use.
-set(LINUX UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE)
+    set(LINUX TRUE)
+endif()
 if(LINUX)
     find_package(PkgConfig REQUIRED)
 endif()
 
-find_package(ColPack REQUIRED)
-tropter_copy_dlls(ColPack "${COLPACK_DIR}/bin")
+# ColPack can now use CMake to be built.
+find_package(ColPack 1.0.10 REQUIRED)
+#set_package_properties(ColPack PROPERTIES
+#    URL https://github.com/CSCsw/ColPack
+#    DESCRIPTION "Graph coloring"
+#    TYPE REQUIRED
+#    PURPOSE "Exploiting sparsity structure of Jacobian")
+# No need, because we link with the static library:
+# tropter_copy_dlls(ColPack "${ColPack_ROOT_DIR}/bin")
 
 find_package(ADOLC REQUIRED)
 tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
@@ -96,6 +115,8 @@ find_package(OpenMP)
 
 # Subdirectories.
 # ---------------
+add_subdirectory(doc)
+
 # Build external libraries.
 add_subdirectory(external)
 
@@ -110,4 +131,6 @@ add_subdirectory(sandbox)
 # -------------------------------------------
 # export(TARGETS tropter FILE tropter-config.cmake)
 
+# TODO rename to tropter-targets and create proper tropter-config.cmake
+# and tropter-config-version.cmake files.
 install(EXPORT tropter-config DESTINATION ${TROPTER_INSTALL_CMAKEDIR})

@@ -2,6 +2,9 @@
 #include "GlobalStaticOptimization.h"
 #include "INDYGO.h"
 
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+
 using namespace OpenSim;
 
 // TODO

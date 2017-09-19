@@ -1,7 +1,7 @@
 #ifndef MUSCOLLO_TESTING_H
 #define MUSCOLLO_TESTING_H
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
 
 
 // Helper functions for comparing vectors.

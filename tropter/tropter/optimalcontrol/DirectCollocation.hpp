@@ -7,6 +7,8 @@
 #include <tropter/optimization/SNOPTSolver.h>
 #include <tropter/optimization/IpoptSolver.h>
 
+// TODO #include <fmt/format.h>
+
 #include <iomanip>
 
 namespace tropter {
@@ -55,21 +57,15 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
 
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve(
-        const OptimalControlIterate& initial_guess) const
-{
-    // TODO support interpolating the guess so that it does not need to be on
-    // the same tropter as specified for the optimal control problem.
-
-    // TODO make sure the dimensions all make sense. num rows/cols.
+        const OptimalControlIterate& initial_guess) const {
     Eigen::VectorXd variables =
-            m_transcription->construct_iterate(initial_guess);
+            m_transcription->construct_iterate(initial_guess, true);
     return solve_internal(variables);
 }
 
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
-        Eigen::VectorXd& variables) const
-{
+        Eigen::VectorXd& variables) const {
     double obj_value = m_optsolver->optimize(variables);
     OptimalControlIterate traj =
             m_transcription->deconstruct_iterate(variables);
@@ -78,15 +74,14 @@ OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
     solution.states = traj.states;
     solution.controls = traj.controls;
     solution.objective = obj_value;
-    solution.state_names = m_ocproblem->get_state_names();
-    solution.control_names = m_ocproblem->get_control_names();
+    solution.state_names = traj.state_names;
+    solution.control_names = traj.control_names;
     return solution;
 }
 
 template<typename T>
 void DirectCollocationSolver<T>::print_constraint_values(
-        const OptimalControlIterate& ocp_vars, std::ostream& stream) const
-{
+        const OptimalControlIterate& ocp_vars, std::ostream& stream) const {
     m_transcription->print_constraint_values(ocp_vars, stream);
 }
 
@@ -94,8 +89,7 @@ namespace transcription {
 
 template<typename T>
 void LowOrder<T>::set_ocproblem(
-        std::shared_ptr<const OCProblem> ocproblem)
-{
+        std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
     m_num_states = m_ocproblem->get_num_states();
     m_num_controls = m_ocproblem->get_num_controls();
@@ -297,9 +291,13 @@ void LowOrder<T>::calc_constraints(const VectorX<T>& x,
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
-        m_ocproblem->calc_differential_algebraic_equations(i_mesh, time,
-                states.col(i_mesh), controls.col(i_mesh),
-                m_derivs.col(i_mesh), constr_view.path_constraints.col(i_mesh));
+        m_ocproblem->calc_differential_algebraic_equations(
+                {i_mesh, time, states.col(i_mesh), controls.col(i_mesh)},
+                {m_derivs.col(i_mesh),
+                 constr_view.path_constraints.col(i_mesh)});
+        //m_ocproblem->calc_differential_algebraic_equations(i_mesh, time,
+        //        states.col(i_mesh), controls.col(i_mesh),
+        //        m_derivs.col(i_mesh), constr_view.path_constraints.col(i_mesh));
     }
 
     // Compute constraint defects.
@@ -327,39 +325,75 @@ void LowOrder<T>::calc_constraints(const VectorX<T>& x,
 
 template<typename T>
 Eigen::VectorXd LowOrder<T>::
-construct_iterate(const OptimalControlIterate& traj) const
+construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 {
     // Check for errors with dimensions.
-    if (traj.time.size() != m_num_mesh_points) {
-        throw std::runtime_error("[tropter] Expected time to have " +
-                std::to_string(m_num_mesh_points) + " elements, but it has " +
-                std::to_string(traj.time.size()) + ".");
+    // ---------------------------------
+    // TODO move some of this to OptimalControlIterate::validate().
+    // Check rows.
+    if (traj.states.rows() != m_num_states) {
+        //throw std::runtime_error(fmt::format("[tropter] Expected states to "
+        //        "have {} rows, but it has {} rows.", m_num_states, traj
+        //        .states.rows()));
+        throw std::runtime_error("[tropter] Expected states to have " +
+                std::to_string(m_num_states) + " rows, but it has " +
+                std::to_string(traj.states.rows()) + " rows.");
     }
-    if (traj.states.rows() != m_num_states ||
-            traj.states.cols() != m_num_mesh_points) {
-        throw std::runtime_error("[tropter] Expected states to have dimensions " +
-                std::to_string(m_num_states) + " x " +
-                std::to_string(m_num_mesh_points) + " but it has dimensions " +
-                std::to_string(traj.states.rows()) + " x " +
-                std::to_string(traj.states.cols()) + ".");
+    if (traj.controls.rows() != m_num_controls) {
+        throw std::runtime_error("[tropter] Expected controls to have " +
+                std::to_string(m_num_controls) + " rows, but it has " +
+                std::to_string(traj.controls.rows()) + " rows.");
     }
-    if (traj.controls.rows() != m_num_controls ||
-            traj.controls.cols() != m_num_mesh_points) {
-        throw std::runtime_error("[tropter] Expected controls to have dimensions "
-                + std::to_string(m_num_controls) + " x " +
-                std::to_string(m_num_mesh_points) + " but it has dimensions " +
-                std::to_string(traj.controls.rows()) + " x " +
-                std::to_string(traj.controls.cols()) + ".");
+    // Check columns.
+    if (interpolate) {
+        if (       traj.time.size() != traj.states.cols()
+                || traj.time.size() != traj.controls.cols()) {
+            throw std::runtime_error("[tropter] Expected time, states, and "
+                    "controls to have the same number of columns (they have " +
+                    std::to_string(traj.time.size()) + ", " +
+                    std::to_string(traj.states.cols()) + ", " +
+                    std::to_string(traj.controls.cols()) +
+                    " columns, respectively).");
+        }
+    } else {
+        if (traj.time.size() != m_num_mesh_points) {
+            throw std::runtime_error("[tropter] Expected time to have " +
+                    std::to_string(m_num_mesh_points) + " elements, but it has "
+                    + std::to_string(traj.time.size()) + " elements.");
+        }
+        if (traj.states.cols() != m_num_mesh_points) {
+            throw std::runtime_error("[tropter] Expected states to have " +
+                    std::to_string(m_num_mesh_points) + " columns, but it has "
+                    + std::to_string(traj.states.cols()) + " columns.");
+        }
+        if (traj.controls.cols() != m_num_mesh_points) {
+            throw std::runtime_error("[tropter] Expected controls to have " +
+                    std::to_string(m_num_mesh_points) + " columns, but it has "
+                    + std::to_string(traj.controls.cols()) + " columns.");
+        }
+    }
+
+    // Interpolate the guess, as it might have a different number of mesh
+    // points than m_num_mesh_points.
+    OptimalControlIterate traj_interp;
+    const OptimalControlIterate* traj_to_use;
+    if (interpolate) {
+        // TODO will actually need to provide the mesh spacing as well, when we
+        // no longer have uniform mesh spacing.
+        traj_interp = traj.interpolate(m_num_mesh_points);
+        traj_to_use = &traj_interp;
+    } else {
+        traj_to_use = &traj;
     }
 
     Eigen::VectorXd iterate(this->get_num_variables());
     // Initial and final time.
-    iterate[0] = traj.time[0];
-    iterate[1] = traj.time.tail<1>()[0];
+    iterate[0] = traj_to_use->time[0];
+    iterate[1] = traj_to_use->time.tail<1>()[0];
     // Create mutable views. This will probably fail miserably if the
     // dimensions do not match.
-    this->make_states_trajectory_view(iterate) = traj.states;
-    this->make_controls_trajectory_view(iterate) = traj.controls;
+    this->make_states_trajectory_view(iterate) = traj_to_use->states;
+    this->make_controls_trajectory_view(iterate) = traj_to_use->controls;
     return iterate;
 }
 
@@ -375,6 +409,9 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
+
+    traj.state_names = m_ocproblem->get_state_names();
+    traj.control_names = m_ocproblem->get_control_names();
 
     return traj;
 }
@@ -504,7 +541,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
                                   compare_size)->size();
     stream << std::setw(max_pathcon_name_length) << " "
-           << "  norm across the tropter" << std::endl;
+           << "  norm across the mesh" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         auto& norm = static_cast<const double&>(
                 values.path_constraints.row(i_pc).norm());
@@ -514,7 +551,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                 << std::setprecision(2) << std::scientific << std::setw(9)
                 << norm << std::endl;
     }
-    stream << "Path constraint values at each tropter point:" << std::endl;
+    stream << "Path constraint values at each mesh point:" << std::endl;
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         stream << std::setw(9) << i_pc << "  ";
     }

@@ -8,6 +8,7 @@ namespace tropter {
 
 class OptimizationProblemDecorator;
 
+/// @ingroup optimization
 class AbstractOptimizationProblem {
 public:
 
