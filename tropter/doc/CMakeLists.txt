@@ -1,4 +1,8 @@
 find_package(Doxygen)
+set_package_properties(Doxygen PROPERTIES
+        URL http://www.doxygen.org
+        TYPE OPTIONAL
+        PURPOSE "Generate C++ API documentation")
 
 if(DOXYGEN_FOUND)
 
