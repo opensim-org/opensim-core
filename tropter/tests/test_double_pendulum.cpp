@@ -16,6 +16,8 @@ using Eigen::Matrix2d;
 
 using namespace tropter;
 
+constexpr double PI = 3.14159;
+
 /// This class template defines the dynamics of a double pendulum. To create
 /// an actual optimal control problem, one must derive from this class
 /// template and define boundary conditions, cost terms, etc.
@@ -101,15 +103,14 @@ public:
                 "limited-memory");
         tropter::OptimalControlIterate guess;
         guess.time.setLinSpaced(N, 0, 1);
-        const double pi = 3.14159;
         // Give a hint (not the exact final state, but something close to it).
         // I tried giving a guess where the final state guess was from the
         // solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
         // solution was all zeros.
         ocp->set_state_guess(guess, "q0",
-                Eigen::RowVectorXd::LinSpaced(N, 0, -pi));
+                Eigen::RowVectorXd::LinSpaced(N, 0, -PI));
         ocp->set_state_guess(guess, "q1",
-                Eigen::RowVectorXd::LinSpaced(N, 0, 2*pi));
+                Eigen::RowVectorXd::LinSpaced(N, 0, 2*PI));
         ocp->set_state_guess(guess, "u0", Eigen::RowVectorXd::Zero(N));
         ocp->set_state_guess(guess, "u1", Eigen::RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
@@ -119,7 +120,7 @@ public:
         // Check the final states.
         INFO(solution.states);
         TROPTER_REQUIRE_EIGEN(solution.states.rightCols<1>(),
-                Eigen::Vector4d(-3./2.*pi, 2*pi, 0, 0), 1e-3);
+                Eigen::Vector4d(-3./2.*PI, 2*PI, 0, 0), 1e-3);
         // Check the initial and final controls (which are bang-bang).
         TROPTER_REQUIRE_EIGEN(solution.controls.leftCols<1>(),
                 Eigen::Vector2d(-50, 50), 1e-2);
@@ -148,4 +149,182 @@ TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 }
 
 
+template<typename T>
+class DoublePendulumCoordinateTracking : public DoublePendulum<T> {
+public:
+    DoublePendulumCoordinateTracking()
+    {
+        this->set_time(0, 1);
+        // TODO fix allowing final bounds to be unconstrained.
+        this->add_state("q0", {-10, 10});
+        this->add_state("q1", {-10, 10});
+        this->add_state("u0", {-50, 50});
+        this->add_state("u1", {-50, 50});
+        this->add_control("tau0", {-100, 100});
+        this->add_control("tau1", {-100, 100});
+    }
+    void calc_integral_cost(const T& time,
+            const VectorX<T>& states,
+            const VectorX<T>& /*controls*/,
+            T& integrand) const
+    {
+        VectorX<T> desired(2);
+        desired << (time / 1.0) * 0.50 * PI,
+                   (time / 1.0) * 0.25 * PI;
+        integrand = (states.head(2) - desired).squaredNorm();
 
+    }
+
+    static OptimalControlSolution run_test(const std::string& solver) {
+        auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
+        const int N = 100;
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        // Using an exact Hessian seems really important for this problem
+        // (solves in only 20 iterations). Even a limited-memory problem started
+        // from the solution using an exact Hessian does not converge.
+        dircol.get_optimization_solver().set_hessian_approximation("exact");
+        OptimalControlSolution solution = dircol.solve();
+        //solution.write("double_pendulum_coordinate_tracking.csv");
+
+        TROPTER_REQUIRE_EIGEN(solution.states.row(0),
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.50 * PI), 1e-3);
+        TROPTER_REQUIRE_EIGEN(solution.states.row(1),
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.25 * PI), 1e-3);
+
+        return solution;
+    }
+};
+
+/// This class template defines the dynamics of a double pendulum using an
+/// implicit formulation. To create an actual optimal control problem, one must
+/// derive from this class template and define boundary conditions, cost terms,
+/// etc.
+template<typename T>
+class ImplicitDoublePendulum : public tropter::OptimalControlProblem<T> {
+public:
+    constexpr static const double g = 9.81;
+    double L0 = 1;
+    double L1 = 1;
+    double m0 = 1;
+    double m1 = 1;
+    void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const override final {
+        const auto& x = in.states;
+        const auto& udot = in.controls.template head<2>();
+        const auto& tau = in.controls.template tail<2>();
+        const auto& q0 = x[0];
+        const auto& q1 = x[1];
+        const auto& u0 = x[2];
+        const auto& u1 = x[3];
+        const auto& L0 = this->L0;
+        const auto& L1 = this->L1;
+        const auto& m0 = this->m0;
+        const auto& m1 = this->m1;
+        out.dynamics[0] = u0;
+        out.dynamics[1] = u1;
+        out.dynamics[2] = udot[0];
+        out.dynamics[3] = udot[1];
+
+        const T z0 = m1 * L0 * L1 * cos(q1);
+        const T M01 = m1 * L1*L1 + z0;
+        Matrix2<T> M;
+        M << m0 * L0*L0 + m1 * (L0*L0 + L1*L1) + 2*z0,    M01,
+                M01,                                         m1 * L1*L1;
+        Vector2<T> V(-u1 * (2 * u0 + u1),
+                     u0 * u0);
+        V *= m1*L0*L1*sin(q1);
+        Vector2<T> G(g * ((m0 + m1) * L0 * cos(q0) + m1 * L1 * cos(q0 + q1)),
+                     g * m1 * L1 * cos(q0 + q1));
+
+        out.path = M * udot + V + G - tau;
+    }
+};
+
+template<typename T>
+class ImplicitDoublePendulumCoordinateTracking : public
+                                                 ImplicitDoublePendulum<T> {
+public:
+    ImplicitDoublePendulumCoordinateTracking() {
+        this->set_time(0, 1);
+        // TODO fix allowing final bounds to be unconstrained.
+        this->add_state("q0", {-10, 10});
+        this->add_state("q1", {-10, 10});
+        this->add_state("u0", {-50, 50});
+        this->add_state("u1", {-50, 50});
+        this->add_control("udot0", {-100, 100});
+        this->add_control("udot1", {-100, 100});
+        this->add_control("tau0", {-100, 100});
+        this->add_control("tau1", {-100, 100});
+        this->add_path_constraint("u0", 0);
+        this->add_path_constraint("u1", 0);
+    }
+    void calc_integral_cost(const T& time,
+            const VectorX<T>& states,
+            const VectorX<T>& /*controls*/,
+            T& integrand) const
+    {
+        VectorX<T> desired(2);
+        desired << (time / 1.0) * 0.50 * PI,
+                   (time / 1.0) * 0.25 * PI;
+        integrand = (states.template head<2>() - desired).squaredNorm();
+    }
+    static OptimalControlSolution run_test(const std::string& solver,
+            const std::string& hessian_approx) {
+        auto ocp =
+                std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
+        const int N = 100;
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        dircol.get_optimization_solver().set_hessian_approximation(
+                hessian_approx);
+        OptimalControlSolution solution = dircol.solve();
+        // dircol.print_constraint_values(solution);
+        solution.write("implicit_double_pendulum_coordinate_tracking.csv");
+
+        TROPTER_REQUIRE_EIGEN(solution.states.row(0),
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.50 * PI), 1e-3);
+        TROPTER_REQUIRE_EIGEN(solution.states.row(1),
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.25 * PI), 1e-3);
+
+        return solution;
+    }
+};
+
+TEST_CASE("Double pendulum coordinate tracking.",
+        "[trapezoidal][implicitdynamics]")
+{
+    // Make sure the solutions from the implicit and explicit
+    // formulations are similar.
+
+    // The explicit solution takes 20 iterations whereas the implicit
+    // solution takes 25 iterations.
+    const auto explicit_solution =
+            DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
+
+    const auto implicit_solution =
+            ImplicitDoublePendulumCoordinateTracking<adouble>::
+            run_test("ipopt", "exact");
+
+    TROPTER_REQUIRE_EIGEN(explicit_solution.time,
+            implicit_solution.time, 1e-10);
+    // q0 and q1
+    TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+            implicit_solution.states.bottomRows(2), 1e-2);
+    // u0 and u1
+    TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+            implicit_solution.states.bottomRows(2), 1e-2);
+    // tau0 and tau1
+    // The controls have the same shape but have a pretty large error
+    // between them.
+    // The peak magnitude of the torques is about 10-30 N-m, so a tolerance of
+    // 1.5 N-m means the shape of the torques is preserved.
+    CAPTURE(explicit_solution.controls);
+    CAPTURE(implicit_solution.controls);
+    TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
+            implicit_solution.controls.bottomRows(2), 1.5);
+
+    // TODO does not converge with limited memory.
+    // ImplicitDoublePendulumCoordinateTracking<adouble>::
+    // run_test("ipopt", "limited-memory");
+}
+
+// TODO include acceleration and deceleration.
