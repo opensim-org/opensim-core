@@ -1939,6 +1939,10 @@ void Model::formStateStorage(const Storage& originalStorage,
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
 
+    OPENSIM_THROW_IF_FRMOBJ(originalStorage.isInDegrees(), Exception,
+        "Input Storage must be in internal units (meters, radians). \n"
+        "Please convert Storage to internal units first.");
+
     // when the state value is not found in the storage use its default value in the State
     SimTK::Vector defaultStateValues = getStateVariableValues(getWorkingState());
 
