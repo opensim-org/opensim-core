@@ -20,12 +20,17 @@ set(TROPTER_COPY_DEPENDENCIES ON)
 
 # Configurable settings.
 # ----------------------
+option(TROPTER_WITH_OPENMP "Parallelize derivative calculations with OpenMP."
+        OFF)
+add_feature_info(OpenMP TROPTER_WITH_OPENMP
+        "Parallelize derivative calculations (TROPTER_WITH_OPENMP)")
+
 option(TROPTER_WITH_SNOPT
         "Compile support for the SNOPT optimization library; \
         requires Fortran compiler"
         OFF)
-#add_feature_info(SNOPT TROPTER_WITH_SNOPT
-#    "Support the SNOPT optimization library (requires Fortran compiler).")
+add_feature_info(SNOPT TROPTER_WITH_SNOPT
+    "Support the SNOPT optimization library (TROPTER_WITH_SNOPT)")
 if(TROPTER_WITH_SNOPT)
     enable_language(Fortran)
 endif()
@@ -49,11 +54,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Starting with version 3.3.1, Eigen provides a proper Config file.
 find_package(Eigen3 3.3.1 REQUIRED NO_MODULE)
-#set_package_properties(Eigen3 PROPERTIES
-#    URL https://eigen.tuxfamily.org
-#    DESCRIPTION "Matrix library"
-#    TYPE REQUIRED
-#    PURPOSE "Numeric type used throughout the interface.")
+set_package_properties(Eigen3 PROPERTIES
+        URL https://eigen.tuxfamily.org
+        TYPE REQUIRED
+        PURPOSE "Matrix library")
 
 # Avoid using pkg-config on Windows as it's not easy to get
 # on Windows. On Ubuntu, the pkg-config file for Ipopt provides
@@ -67,15 +71,16 @@ endif()
 
 # ColPack can now use CMake to be built.
 find_package(ColPack 1.0.10 REQUIRED)
-#set_package_properties(ColPack PROPERTIES
-#    URL https://github.com/CSCsw/ColPack
-#    DESCRIPTION "Graph coloring"
-#    TYPE REQUIRED
-#    PURPOSE "Exploiting sparsity structure of Jacobian")
-# No need, because we link with the static library:
-# tropter_copy_dlls(ColPack "${ColPack_ROOT_DIR}/bin")
+set_package_properties(ColPack PROPERTIES
+        URL https://github.com/CSCsw/ColPack
+        TYPE REQUIRED
+        PURPOSE "Exploiting sparsity structure of Jacobian")
 
 find_package(ADOLC REQUIRED)
+set_package_properties(ADOLC PROPERTIES
+        URL https://projects.coin-or.org/ADOL-C
+        TYPE REQUIRED
+        PURPOSE "Computing derivatives for optimization")
 tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
 
 if(LINUX)
@@ -83,6 +88,10 @@ if(LINUX)
     link_directories(${IPOPT_LIBRARY_DIRS})
 else()
     find_package(IPOPT REQUIRED)
+    set_package_properties(IPOPT PROPERTIES
+            URL https://projects.coin-or.org/Ipopt
+            TYPE REQUIRED
+            PURPOSE "Nonlinear optimization")
     # Flags to use when building a shared library.
     # TODO move these flags to a specific target.
     set(CMAKE_SHARED_LINKER_FLAGS
@@ -110,7 +119,10 @@ endif()
 # follows:
 #    $ brew install --cc=clang colpack
 #    $ brew install --cc=clang adol-c
-find_package(OpenMP)
+if(TROPTER_WITH_OPENMP)
+    message(WARNING "We don't actually make use of OpenMP yet.")
+    find_package(OpenMP REQUIRED)
+endif()
 
 
 # Subdirectories.
