@@ -214,9 +214,12 @@ public:
         // For caching desired joint moments.
         auto* mutableThis = const_cast<INDYGOProblemSeparate<T>*>(this);
 
-        const auto duration = _finalTime - _initialTime;
         // "array()" b/c Eigen matrix types do not support elementwise add.
-        Eigen::VectorXd times = _initialTime + (duration * mesh).array();
+        // Writing the equation this way (rather than tau*(t_f - t_i) + t_i)
+        // avoids issues with roundoff where times.tail(1) != _finalTime.
+        const auto meshArray = mesh.array();
+        Eigen::VectorXd times =
+                (1 - meshArray) * _initialTime + meshArray * _finalTime;
 
         _motionData.interpolateNetGeneralizedForces(times,
                 mutableThis->_desiredMoments);
