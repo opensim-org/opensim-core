@@ -249,7 +249,7 @@ void InverseMuscleSolverMotionData::interpolateNetGeneralizedForces(
             "Requested initial time (" + std::to_string(times[0])
             + ") is lower than permitted (" + std::to_string(getInitialTime())
             + ").");
-    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+    OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
             "Requested final time (" + std::to_string(times.tail<1>().value())
             + ") is greater than permitted (" + std::to_string(getFinalTime())
             + ").");
@@ -273,7 +273,7 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonLengths(
             "Requested initial time (" + std::to_string(times[0])
             + ") is lower than permitted (" + std::to_string(getInitialTime())
             + ").");
-    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+    OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
             "Requested final time (" + std::to_string(times.tail<1>().value())
             + ") is greater than permitted (" + std::to_string(getFinalTime())
             + ").");
@@ -296,7 +296,7 @@ void InverseMuscleSolverMotionData::interpolateMuscleTendonVelocities(
             "Requested initial time (" + std::to_string(times[0])
             + ") is lower than permitted (" + std::to_string(getInitialTime())
             + ").");
-    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+    OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
             "Requested final time (" + std::to_string(times.tail<1>().value())
             + ") is greater than permitted (" + std::to_string(getFinalTime())
             + ").");
@@ -324,7 +324,7 @@ void InverseMuscleSolverMotionData::interpolateMomentArms(
             "Requested initial time (" + std::to_string(times[0])
             + ") is lower than permitted (" + std::to_string(getInitialTime())
             + ").");
-    OPENSIM_THROW_IF(times.tail<1>().value() < getFinalTime(), Exception,
+    OPENSIM_THROW_IF(times.tail<1>().value() > getFinalTime(), Exception,
             "Requested final time (" + std::to_string(times.tail<1>().value())
             + ") is greater than permitted (" + std::to_string(getFinalTime())
             + ").");
