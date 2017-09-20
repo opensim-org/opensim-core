@@ -144,8 +144,8 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
             && status != Ipopt::Solved_To_Acceptable_Level) {
         // TODO give detailed diagnostics.
         // TODO throw exception.
-        //TODOthrow std::runtime_error("[tropter] Failed to find a solution.");
-        //std::cerr << "[tropter] Failed to find a solution." << std::endl;
+        std::cerr << "[tropter] Failed to find a solution." << std::endl;
+        throw std::runtime_error("[tropter] Failed to find a solution.");
     }
     variables = nlp->get_solution();
     return nlp->get_optimal_objective_value();
