@@ -1,5 +1,5 @@
 
-add_executable(opensim-muscollo ../executable/opensim-muscollo.cpp)
+add_executable(opensim-muscollo opensim-muscollo.cpp)
 target_link_libraries(opensim-muscollo osimMuscollo)
 
 install(TARGETS opensim-muscollo DESTINATION bin)
