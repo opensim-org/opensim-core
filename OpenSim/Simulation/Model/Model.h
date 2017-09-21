@@ -889,7 +889,7 @@ public:
     //--------------------------------------------------------------------------
     MarkerSet& updMarkerSet() { return upd_MarkerSet(); }
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
-    int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
+
     void writeMarkerFile(const std::string& aFileName);
 
     /**

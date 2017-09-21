@@ -1691,31 +1691,6 @@ void Model::writeMarkerFile(const string& aFileName)
     upd_MarkerSet().print(aFileName);
 }
 
-//_____________________________________________________________________________
-/**
- * Replace all markers in the model with the ones in the passed-in marker set.
- *
- * @param aMarkerSet The new marker set to copy.
- * @return Number of markers that were successfully added to the model.
- */
-int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
-{
-    int i, numAdded = 0;
-
-    // First remove all existing markers from the model.
-    upd_MarkerSet().clearAndDestroy();
-
-    // Now add the markers from aMarkerSet whose body names match bodies in the engine.
-    for (i = 0; i < aMarkerSet.getSize(); i++)
-    {
-        Marker* marker = aMarkerSet[i].clone();
-        upd_MarkerSet().adoptAndAppend(marker);
-        ++numAdded;
-    }
-
-    cout << "Replaced marker set in model " << getName() << endl;
-    return numAdded;
-}
 
 //_____________________________________________________________________________
 void Model::updateMarkerSet(MarkerSet& newMarkerSet)
