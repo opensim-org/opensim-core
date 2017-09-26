@@ -58,8 +58,8 @@ class ControllerSet;
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
  * we only create a TimeStepper once, specifically when we call
  * initialize(SimTK::State&). To ensure this, the Manager will throw
- * an exception if initialize(SimTK::State&) is called more than once. Note 
- * that editing the SimTK::State after calling  initialize(SimTK::State&) 
+ * an exception if initialize(SimTK::State&) is called more than once. Note
+ * that editing the SimTK::State after calling initialize(SimTK::State&)
  * will not affect the simulation.
  *
  * Note that this interface means that you cannot "reinitialize" a Manager.
@@ -189,11 +189,11 @@ public:
     DEPRECATED_14("Get the state's time using SimTK::State::getTime().")
     double getInitialTime() const;
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using 
-        Manager::integrate(SimTK::State&, double). */
+        Manager::integrate(double). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
     void setFinalTime(double aTF);
     /** <b>(Deprecated)</b> Integrate to a specified finalTime using
-        Manager::integrate(SimTK::State&, double). */
+        Manager::integrate(double). */
     DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
     double getFinalTime() const;
     // SPECIFIED TIME STEP
@@ -260,14 +260,16 @@ public:
     * }
     * @endcode
     *
-    * Example: Integrate from time = 0s to time = 10s, updating the
-    *          state at 2s increments
+    * Example: Integrate from time = 0s to time = 10s, updating the state
+    *          (e.g., the model's first coordinate value) every 2s
     * @code
     * dTime = 2.0;
     * finalTime = 10.0;
     * int n = int(round(finalTime/dTime));
+    * state.setTime(0.0);
     * manager.initialize(state);
     * for (int i = 0; i < n; ++i) {
+    *     model.getCoordinateSet().get(0).setValue(state, 0.1*i);
     *     Manager manager(model);
     *     state.setTime(i*dTime);
     *     manager.initialize(state);

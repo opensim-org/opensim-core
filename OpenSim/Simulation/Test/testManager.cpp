@@ -24,9 +24,16 @@
 /*=============================================================================
 
 Manager Tests:
-1. Calculate the location, velocity, and acceleration of a Station with the same
-Manager many times. Previously, this would fail as repeated callls of 
-TimeStepper::initialize() would trigger cache validation improperly.
+1. testStationCalcWithManager: Calculate the location, velocity, and
+   acceleration of a Station with the same Manager many times. Previously, this
+   would fail as repeated calls of TimeStepper::initialize() would trigger cache
+   validation improperly.
+2. testStateChangesBetweenIntegration: Change the initial value and speed of a
+   falling ball between integrating using the same State. This ensures that
+   integrating with the same State with different Managers triggers the cache
+   updates correctly.
+3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
+   arm26 model between subsequent integrations.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -34,22 +41,36 @@ TimeStepper::initialize() would trigger cache validation improperly.
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Common/Constant.h>
 
 using namespace OpenSim;
 using namespace std;
 void testStationCalcWithManager();
 void testStateChangesBetweenIntegration();
+void testExcitationUpdatesWithManager();
 
 int main()
 {
     SimTK::Array_<std::string> failures;
 
-    try { testStationCalcWithManager(); 
-          testStateChangesBetweenIntegration(); 
-    }
+    try { testStationCalcWithManager(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testStationCalcWithManager");
+    }
+
+    try { testStateChangesBetweenIntegration(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testStateChangesBetweenIntegration();");
+    }
+
+    try { testExcitationUpdatesWithManager(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testActivationUpdatesWithManager();");
     }
 
     if (!failures.empty()) {
@@ -144,6 +165,8 @@ void testStationCalcWithManager()
 
 void testStateChangesBetweenIntegration()
 {
+    cout << "Running testStateChangesBetweenIntegration" << endl;
+
     using SimTK::Vec3;
 
     Model model;
@@ -223,9 +246,54 @@ void testStateChangesBetweenIntegration()
         cout << " | Station: t = " << state.getTime() << ", h = " 
             << stationHeight << ", v = " << stationSpeed << endl;
 
-        // Compare Station values from equation values
+        // Compare Station values with equation values
         SimTK_TEST_EQ(stationHeight, finalHeight);
         SimTK_TEST_EQ(stationSpeed, finalSpeed);
     }
 
+}
+
+void testExcitationUpdatesWithManager()
+{
+    cout << "Running testExcitationUpdatesWithManager" << endl;
+    LoadOpenSimLibrary("osimActuators");
+    Model arm("arm26.osim");
+
+    const Set<Muscle> &muscleSet = arm.getMuscles();
+    PrescribedController* controller = new PrescribedController();
+    controller->addActuator(muscleSet.get(0));
+    Constant* fn = new Constant(0);
+    controller->prescribeControlForActuator(0, fn);
+    arm.addController(controller);
+
+    SimTK::State& state = arm.initSystem();
+    state.setTime(0);
+    double stepsize = 0.01;
+    muscleSet.get(0).setActivation(state, 0.1);
+    for (int i = 0; i < 3; ++i)
+    {
+        arm.realizeDynamics(state);
+        double initAct = muscleSet.get(0).getActivation(state);
+        double excitation = 0.2 + i*0.2;
+
+        FunctionSet& fnset = controller->upd_ControlFunctions();
+        Constant* fn = dynamic_cast<Constant*>(&fnset[0]);
+        fn->setValue(excitation);
+
+        Manager manager(arm);
+        manager.initialize(state);
+        state = manager.integrate(stepsize*(i + 1));
+
+        arm.realizeDynamics(state);
+        double finalAct = muscleSet.get(0).getActivation(state);
+        double finalExcitation = muscleSet.get(0).getExcitation(state);
+        cout << state.getTime() << " " << excitation;
+        cout << " " << finalAct << endl;
+        // Check if excitation is correct
+        SimTK_TEST_EQ(excitation, finalExcitation);
+        // If excitation is not set correctly, it will go back to the default
+        // after the first integration. We can check if this is happening by
+        // ensuring the activation is increasing on each integration.
+        SimTK_TEST(finalAct > initAct);
+    }
 }
