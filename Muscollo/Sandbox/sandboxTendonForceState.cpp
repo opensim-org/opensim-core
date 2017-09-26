@@ -321,11 +321,7 @@ int main() {
 //    fiberLengthStateSolution.states.row(0) << std::endl;
     SimTK_TEST(tendonForceStateSolution.states.row(0).isApprox(
                     fiberLengthStateSolution.states.row(0), 0.02));
-    SimTK_TEST(tendonForceStateSolution.states.row(0).isApprox(
-            fiberLengthStateSolution.states.row(0), 0.02));
 
-    SimTK_TEST(tendonForceStateSolution.controls.row(0).isApprox(
-            fiberLengthStateSolution.controls.row(0), 0.02));
     SimTK_TEST(tendonForceStateSolution.controls.row(0).isApprox(
             fiberLengthStateSolution.controls.row(0), 0.02));
 }
