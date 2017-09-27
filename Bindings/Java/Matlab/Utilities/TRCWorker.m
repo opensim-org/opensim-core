@@ -4,23 +4,23 @@ classdef TRCWorker  < matlab.mixin.SetGet
 %   and write OpenSim tables.
     properties
         table 
-        name
-        path
+        fileName
+        dirPath
     end
     methods
         function readTRC(obj)
             import org.opensim.modeling.*
-            if isempty(obj.name)
-                error('name not set. use setName() to set a file name')
-            elseif isempty(obj.path)
-                error('path not set. use setPath() to set a file path')
+            if isempty(obj.fileName)
+                error('File name not set. use setName() to set a file name')
+            elseif isempty(obj.dirPath)
+                error('Dir path not set. use setPath() to set a file path')
             end
             % define the absolute path to the file. Append file type (.trc)
             % if not included. 
-            if isempty(strfind(obj.name, '.trc'))
-                fullfilepath = fullfile(obj.path, [obj.name '.trc']);
+            if isempty(strfind(obj.fileName, '.trc'))
+                fullfilepath = fullfile(obj.dirPath, [obj.fileName '.trc']);
             else
-                fullfilepath = fullfile(obj.path, [obj.name]);
+                fullfilepath = fullfile(obj.dirPath, [obj.fileName]);
             end
             % Use the OpenSim adapter to read the file
             table = TRCFileAdapter().read(fullfilepath)
@@ -29,19 +29,19 @@ classdef TRCWorker  < matlab.mixin.SetGet
         end
         function writeTRC(obj)
             import org.opensim.modeling.*
-            if isempty(obj.name)
-                error('name not set. use setName() to set a file name')
-            elseif isempty(obj.path)
-                error('path not set. use setPath() to set a file path')
+            if isempty(obj.fileName)
+                error('File name not set. use setName() to set a file name')
+            elseif isempty(obj.dirPath)
+                error('Dir path not set. use setPath() to set a file path')
             end
             % edit the marker names for errors (spaces, *, ...)
             obj.updateMarkerNames()
             % define the absolute path to the file. Append file type (.trc)
             % if not included. 
-            if isempty(strfind(obj.name, '.trc'))
-                fullfilepath = fullfile(obj.path, [obj.name '.trc']);
+            if isempty(strfind(obj.fileName, '.trc'))
+                fullfilepath = fullfile(obj.dirPath, [obj.fileName '.trc']);
             else
-                fullfilepath = fullfile(obj.path, [obj.name]);
+                fullfilepath = fullfile(obj.dirPath, [obj.fileName]);
             end
             % use OpenSim file adapter to print the table to file
             TRCFileAdapter().write(obj.table, fullfilepath );
@@ -58,20 +58,20 @@ classdef TRCWorker  < matlab.mixin.SetGet
             % update the internal table
             obj.table = osimtable;
         end 
-        function setName(obj,name)
+        function setName(obj,fileName)
             % Set the filename 
-            obj.name = name;
+            obj.fileName = fileName;
         end
-        function name = getName(obj)
+        function fileName = getName(obj)
             % get the filename
-            name = obj.name;
+            fileName = obj.fileName;
         end
         function setPath(obj, dirPath)
             % set the directory path
-            obj.path = dirPath;
+            obj.dirPath = dirPath;
         end
         function dirPath = getPath(obj)
-           dirPath = obj.path; 
+           dirPath = obj.dirPath; 
         end
    end
     methods (Access = private, Hidden = true)
