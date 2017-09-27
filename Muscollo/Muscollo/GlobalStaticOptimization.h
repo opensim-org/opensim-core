@@ -31,9 +31,14 @@ public:
         /// This is not one of the variables in the optimization problem,
         /// but may be interesting nonetheless.
         TimeSeriesTable norm_fiber_velocity;
+        /// The force in each muscle's tendon, in units of Newtons.
         /// This is not one of the variables in the optimization problem,
-        /// but may be interesting nonetheless. In units of Newtons.
+        /// but may be interesting nonetheless.
         TimeSeriesTable tendon_force;
+        /// The force in each muscle's tendon, normalized by maximum isometric
+        /// force. This is not one of the variables in the optimization problem,
+        /// but may be interesting nonetheless.
+        TimeSeriesTable norm_tendon_force;
         void write(const std::string& prefix) const;
     };
 

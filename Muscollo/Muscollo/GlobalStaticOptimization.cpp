@@ -27,6 +27,7 @@ void GlobalStaticOptimization::Solution::write(const std::string& prefix)
     write(norm_fiber_length, "norm_fiber_length");
     write(norm_fiber_velocity, "norm_fiber_velocity");
     write(tendon_force, "tendon_force");
+    write(norm_tendon_force, "norm_tendon_force");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
@@ -258,6 +259,7 @@ public:
             vars.norm_fiber_length.setColumnLabels(_muscleLabels);
             vars.norm_fiber_velocity.setColumnLabels(_muscleLabels);
             vars.tendon_force.setColumnLabels(_muscleLabels);
+            vars.norm_tendon_force.setColumnLabels(_muscleLabels);
         }
 
         // TODO would it be faster to use vars.activation.updMatrix()?
@@ -291,6 +293,7 @@ public:
             SimTK::RowVector normFibLenRow(_numMuscles);
             SimTK::RowVector normFibVelRow(_numMuscles);
             SimTK::RowVector tenForceRow(_numMuscles);
+            SimTK::RowVector normTenForceRow(_numMuscles);
             for (int i_act = 0; i_act < _numMuscles; ++i_act) {
                 const auto& musTenLen = _muscleTendonLengths(i_act, i_time);
                 const auto& musTenVel = _muscleTendonVelocities(i_act, i_time);
@@ -306,10 +309,13 @@ public:
                 tenForceRow[i_act] =
                         muscle.calcRigidTendonFiberForceAlongTendon(
                                 activation, musTenLen, musTenVel);
+                normTenForceRow[i_act] =
+                        tenForceRow[i_act] / muscle.get_max_isometric_force();
             }
             vars.norm_fiber_length.appendRow(time, normFibLenRow);
             vars.norm_fiber_velocity.appendRow(time, normFibVelRow);
             vars.tendon_force.appendRow(time, tenForceRow);
+            vars.norm_tendon_force.appendRow(time, normTenForceRow);
         }
         return vars;
     }
