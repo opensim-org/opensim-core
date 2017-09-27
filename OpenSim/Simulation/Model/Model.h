@@ -400,7 +400,9 @@ public:
      * with values populated from originalStorage. Use the default state value if
      * a state is unspecified in the originalStorage. If warnUnspecifiedStates is
      * true then a warning is printed that includes the default value used for
-     * the state value unspecified in originalStorage.
+     * the state value unspecified in originalStorage. The input originalStorage 
+     * must be in meters or radians for Coordinate values and their speeds
+     * (m/s, rad/s) otherwise an Exception is thrown.
      */
     void formStateStorage(const Storage& originalStorage, 
                           Storage& statesStorage,
