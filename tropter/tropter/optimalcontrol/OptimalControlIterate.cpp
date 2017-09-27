@@ -167,23 +167,27 @@ void OptimalControlIterate::write(const std::string& filepath) const {
 
     // Column labels.
     f << "time";
-    for (int i_state = 0; i_state < states.rows(); ++i_state) {
-        f << "," << state_names[i_state];
-    }
-    for (int i_control = 0; i_control < controls.rows(); ++i_control) {
-        f << "," << control_names[i_control];
+    if (state_names.size() == (size_t)states.rows() &&
+            control_names.size() == (size_t)controls.rows()) {
+        for (int i_state = 0; i_state < states.rows(); ++i_state)
+            f << "," << state_names[i_state];
+        for (int i_control = 0; i_control < controls.rows(); ++i_control)
+            f << "," << control_names[i_control];
+    } else {
+        for (int i_state = 0; i_state < states.rows(); ++i_state)
+            f << ",state" << i_state;
+        for (int i_control = 0; i_control < controls.rows(); ++i_control)
+            f << ",control" << i_control;
     }
     f << std::endl;
 
     // Data.
     for (int i_mesh = 0; i_mesh < time.size(); ++i_mesh) {
         f << time[i_mesh];
-        for (int i_state = 0; i_state< states.rows(); ++i_state) {
+        for (int i_state = 0; i_state< states.rows(); ++i_state)
             f << "," << states(i_state, i_mesh);
-        }
-        for (int i_control = 0; i_control< controls.rows(); ++i_control) {
+        for (int i_control = 0; i_control< controls.rows(); ++i_control)
             f << "," << controls(i_control, i_mesh);
-        }
         f << std::endl;
     }
     f.close();
