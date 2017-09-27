@@ -416,16 +416,19 @@ All components are given the opportunity finalize their specification from their
   ~~~
 
   2. Similarly, Sockets are handled automatically by the base Component, which establishes that the dependency exists and is connected (throws an Exception otherwise).  Additional connection details or checks are often necessary, in which case you must override:
+  
   ~~~cpp
   void Component::extendConnect(Component& root)
   ~~~
 
-    for a Component, or
+  for a Component, or
+  
   ~~~cpp
   void ModelComponent::extendConnectToModel(Model& model)
   ~~~
 
-    for a ModelComponent. Here you can verify that the components that satisfy its sockets also satisfy other conditions: for example, that the connectees are unique (e.g. a Joint requires parent and child to not be the same PhysicalFrame). Inputs are automatically connected based on the Output name.   However, if you know the output you need (e.g. a Muscle for a MetabolicCalculator), you can directly form the Input connection like this:
+  for a ModelComponent. Here you can verify that the components that satisfy its sockets also satisfy other conditions: for example, that the connectees are unique (e.g. a Joint requires parent and child to not be the same PhysicalFrame). Inputs are automatically connected based on the Output name.   However, if you know the output you need (e.g. a Muscle for a MetabolicCalculator), you can directly form the Input connection like this:
+  
   ~~~cpp
   getInput("fiber_vel").connect(muscle.getOutput("fiber_velocity"));
   ~~~
