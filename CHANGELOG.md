@@ -58,18 +58,24 @@ Converting from v3.x to v4.0
   opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
   `Manager::integrate(double)`. You must also now call 
-  `Manager::initialize(SimTK::State&)` before integrating. Here is a 
+  `Manager::initialize(SimTK::State&)` before integrating or pass the
+  initialization state into a convenience constructor. Here is a 
    before-after example (see the documentation in the `Manager` class 
    for more details):
   - Before:
+    - Manager manager(model);
     - manager.setInitialTime(0.0);
     - manager.setFinalTime(1.0);
     - manager.integrate(state);
   - After:
+    - Manager manager(model);
     - state.setTime(0.0);
     - manager.initialize(state);
     - manager.integrate(1.0);
-
+  - After (using a convenience constructor):
+    - state.setTime(0.0);
+    - Manager manager(model, state);
+    - manager.integrate(1.0);
 - `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
 - `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`

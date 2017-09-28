@@ -91,11 +91,6 @@ private:
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
 
-    /** Initial time of the simulation. */
-    double _ti;
-    /** Final time of the simulation. */
-    double _tf;
-    
     /** Storage for the states. */
     std::unique_ptr<Storage> _stateStore;
 
@@ -143,10 +138,15 @@ public:
      * constraint tolerance, etc.). MATLAB/Python users must use this
      * constructor. */
     Manager(Model& model);
+    /** Convenience constructor for creating and initializing a Manager. */
+    Manager(Model& model, const SimTK::State& state);
+    /** Convenience constructor for creating and initializing a Manager with
+      * a specified integrator. */
+    Manager(Model& model, const SimTK::State& state, SimTK::Integrator& integ);
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
-     * two constructors. */
+     * constructors. */
     DEPRECATED_14("There will be no replacement for this constructor.")
     Manager();
 
@@ -163,7 +163,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     void setSessionName(const std::string &name);
-    void setModel(Model& aModel);
+    void setModel(Model& model);
     const std::string& getSessionName() const;
     const std::string& toString() const;
 
@@ -179,23 +179,6 @@ public:
      */
     void setIntegrator(SimTK::Integrator&);
 
-    // Initial and final times
-    /** <b>(Deprecated)</b> Set the state's time using 
-        SimTK::State::setTime(double). */
-    DEPRECATED_14("Set the state's time using SimTK::State::setTime(double).")
-    void setInitialTime(double aTI);
-    /** <b>(Deprecated)</b> Get the state's time using 
-        SimTK::State::getTime(). */
-    DEPRECATED_14("Get the state's time using SimTK::State::getTime().")
-    double getInitialTime() const;
-    /** <b>(Deprecated)</b> Integrate to a specified finalTime using 
-        Manager::integrate(double). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
-    void setFinalTime(double aTF);
-    /** <b>(Deprecated)</b> Integrate to a specified finalTime using
-        Manager::integrate(double). */
-    DEPRECATED_14("Integrate to a specified finalTime using Manager::integrate(double).")
-    double getFinalTime() const;
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
     bool getUseSpecifiedDT() const;
@@ -248,6 +231,15 @@ public:
     * state = manager.integrate(2.0);
     * @endcode
     *
+    * Example: Integrating from time = 1s to time = 2s using the
+    *          convenience constructor
+    * @code
+    * SimTK::State state = model.initSystem();
+    * state.setTime(1.0);
+    * Manager manager(model, state);
+    * state = manager.integrate(2.0);
+    * @endcode
+    *
     * Example: Integrate from time = 0s to time = 10s, in 2s increments
     * @code
     * dTime = 2.0;
@@ -267,7 +259,6 @@ public:
     * finalTime = 10.0;
     * int n = int(round(finalTime/dTime));
     * state.setTime(0.0);
-    * manager.initialize(state);
     * for (int i = 0; i < n; ++i) {
     *     model.getCoordinateSet().get(0).setValue(state, 0.1*i);
     *     Manager manager(model);
@@ -280,6 +271,8 @@ public:
     */
     const SimTK::State& integrate(double finalTime);
 
+    /** Get the current State from the Integrator associated with this 
+    Manager. */
     const SimTK::State& getState() const;
     
     double getFixedStepSize(int tArrayStep) const;
@@ -302,7 +295,7 @@ public:
 private:
 
     // Handles common tasks of some of the other constructors.
-    Manager(Model& aModel, bool dummyVar);
+    Manager(Model& model, bool dummyVar);
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(const SimTK::State& s);

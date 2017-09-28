@@ -51,7 +51,7 @@ std::string Manager::_displayName = "Simulator";
 // CONSTRUCTOR(S)
 //=============================================================================
 Manager::Manager(Model& model) 
-        : Manager(model,  true)
+        : Manager(model, true)
 {
     _defaultInteg.reset(
             new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
@@ -59,8 +59,22 @@ Manager::Manager(Model& model)
 }
 
 Manager::Manager(Model& model, SimTK::Integrator& integ)
-        : Manager(model, true) {
+        : Manager(model, true) 
+{
     setIntegrator(integ);
+}
+
+Manager::Manager(Model& model, const SimTK::State& state)
+        : Manager(model) 
+{
+    initialize(state);
+}
+
+Manager::Manager(Model& model, const SimTK::State& state, 
+    SimTK::Integrator& integ)
+    : Manager(model, integ) 
+{
+    initialize(state);
 }
 
 // Private constructor to handle common tasks of the two constructors above.
@@ -95,8 +109,6 @@ void Manager::
 setNull()
 {
     _sessionName = "";
-    _ti = 0.0;
-    _tf = 1.0;
     _halt = false;
     _specifiedDT = false;
     _constantDT = false;
@@ -479,7 +491,7 @@ resetTimeAndDTArrays(double aTime)
  * Sets the model  and initializes other entities that depend on it
  */
 void Manager::
-setModel(Model& aModel)
+setModel(Model& model)
 {
     if(_model != nullptr){
         // May need to issue a warning here that model was already set to avoid a leak.
@@ -491,7 +503,7 @@ setModel(Model& aModel)
         OPENSIM_THROW(Exception, msg);
     }
 
-    _model = &aModel;
+    _model = &model;
 
     // STORAGE
     constructStorage();
@@ -528,54 +540,6 @@ setIntegrator(SimTK::Integrator& integrator)
     _integ = &integrator;
     // If we had been using the _defaultInteg, we no longer need it.
     _defaultInteg.reset();
-}
-
-//-----------------------------------------------------------------------------
-// INITIAL AND FINAL TIME
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the initial time of the simulation.
- *
- * @param aTI Initial time.
- */
-void Manager::
-setInitialTime(double aTI)
-{
-    _ti = aTI;
-}
-//_____________________________________________________________________________
-/**
- * Get the initial time of the simulation.
- *
- * @return Initial time.
- */
-double Manager::
-getInitialTime() const
-{
-    return(_ti);
-}
-//_____________________________________________________________________________
-/**
- * Set the final time of the simulation.
- *
- * @param aTF Final time.
- */
-void Manager::
-setFinalTime(double aTF)
-{
-    _tf = aTF;
-}
-//_____________________________________________________________________________
-/**
- * Get the final time of the simulation.
- *
- * @return Final time.
- */
-double Manager::
-getFinalTime() const
-{
-    return(_tf);
 }
 
 

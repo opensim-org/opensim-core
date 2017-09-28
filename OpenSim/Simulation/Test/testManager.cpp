@@ -34,6 +34,7 @@ Manager Tests:
    updates correctly.
 3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
    arm26 model between subsequent integrations.
+4. testConstructors: Ensure different constructors work as intended.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -50,6 +51,7 @@ using namespace std;
 void testStationCalcWithManager();
 void testStateChangesBetweenIntegration();
 void testExcitationUpdatesWithManager();
+void testConstructors();
 
 int main()
 {
@@ -70,7 +72,13 @@ int main()
     try { testExcitationUpdatesWithManager(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testActivationUpdatesWithManager();");
+        failures.push_back("testExcitationUpdatesWithManager();");
+    }
+
+    try { testConstructors(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testConstructors();");
     }
 
     if (!failures.empty()) {
@@ -269,25 +277,29 @@ void testExcitationUpdatesWithManager()
     SimTK::State& state = arm.initSystem();
     state.setTime(0);
     double stepsize = 0.01;
-    muscleSet.get(0).setActivation(state, 0.1);
+    
     for (int i = 0; i < 3; ++i)
     {
-        arm.realizeDynamics(state);
-        double initAct = muscleSet.get(0).getActivation(state);
+        double initAct = 0.1 + i*0.1;
         double excitation = 0.2 + i*0.2;
-
+        
+        muscleSet.get(0).setActivation(state, initAct);
         FunctionSet& fnset = controller->upd_ControlFunctions();
         Constant* fn = dynamic_cast<Constant*>(&fnset[0]);
         fn->setValue(excitation);
 
         Manager manager(arm);
         manager.initialize(state);
-        state = manager.integrate(stepsize*(i + 1));
 
+        // Make sure we set activation correctly
+        arm.realizeDynamics(state);
+        SimTK_TEST_EQ(initAct, muscleSet.get(0).getActivation(state));
+
+        state = manager.integrate(stepsize*(i + 1));
         arm.realizeDynamics(state);
         double finalAct = muscleSet.get(0).getActivation(state);
         double finalExcitation = muscleSet.get(0).getExcitation(state);
-        cout << state.getTime() << " " << excitation;
+        cout << state.getTime() << " " << excitation << " " << initAct;
         cout << " " << finalAct << endl;
         // Check if excitation is correct
         SimTK_TEST_EQ(excitation, finalExcitation);
@@ -296,4 +308,64 @@ void testExcitationUpdatesWithManager()
         // ensuring the activation is increasing on each integration.
         SimTK_TEST(finalAct > initAct);
     }
+}
+
+void testConstructors()
+{
+    cout << "Running testConstructors" << endl;
+
+    using SimTK::Vec3;
+
+    Model model;
+    model.setName("ball");
+
+    auto ball = new Body("ball", 0.7, Vec3(0.1),
+        SimTK::Inertia::sphere(0.5));
+    model.addBody(ball);
+
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
+        *ball, Vec3(0), Vec3(0));
+    model.addJoint(freeJoint);
+
+    double g = 9.81;
+    model.setGravity(Vec3(0, -g, 0));
+
+    const Coordinate& sliderCoord =
+        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+
+    double initHeight = -0.5;
+    double initSpeed = 0.3;
+    SimTK::State initState = model.initSystem();
+    sliderCoord.setValue(initState, initHeight);
+    sliderCoord.setSpeedValue(initState, initSpeed);
+    initState.setTime(0.0);
+
+    double duration = 0.7;
+    double finalHeight = 
+        initHeight + initSpeed*duration - 0.5*g*duration*duration;
+    double finalSpeed = initSpeed - g*duration;
+
+    Manager manager1(model);
+    manager1.initialize(initState);
+    SimTK::State outState1 = manager1.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
+
+    SimTK::RungeKuttaMersonIntegrator integ2(model.getMultibodySystem());
+    Manager manager2(model, integ2);
+    manager2.initialize(initState);
+    SimTK::State outState2 = manager2.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
+
+    Manager manager3(model, initState);
+    SimTK::State outState3 = manager3.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState3), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState3), finalSpeed);
+
+    SimTK::RungeKuttaMersonIntegrator integ4(model.getMultibodySystem());
+    Manager manager4(model, initState, integ4);
+    SimTK::State outState4 = manager4.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
 }
