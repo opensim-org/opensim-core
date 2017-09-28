@@ -124,6 +124,8 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
+    assert(pathPoints.size() > 2);
+
     const AbstractPathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
 
