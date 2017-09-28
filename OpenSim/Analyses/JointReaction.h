@@ -180,6 +180,8 @@ public:
      /** Public accessors for the inFrame property */
     const Array<std::string>& getInFrame() const { return _inFrame; }
     void setInFrame( Array<std::string>& inFrame) { _inFrame = inFrame; }
+    /** Public accessors for the reaction loads storage */
+    const Storage& getReactionLoads() { return _storeReactionLoads; }
 
     //-------------------------------------------------------------------------
     // INTEGRATION

@@ -168,6 +168,17 @@ setNull()
     _inFrame[0] = "ground";
 
     _storeActuation = NULL;
+    /* [bug fix notes 4/5/17]
+    Storage reset should not be called in setupStorage which is called in
+    begin method. This can be problematic if Manager.integrate is called in an
+    iterative manner, due to the fact that each time the integrate is called
+    the initialize method is issued that calls begin. If the storage is reset
+    to 0 then at the end of the simulation only the last record will be kept. 
+    Instead reset(0) is moved in setNull from setupStorage. This is only 
+    observed for JointReaction and not for the rest of the Analysis that do 
+    not reset their storage in the begin method.
+    */
+    _storeReactionLoads.reset(0);
 
 }
 //_____________________________________________________________________________
@@ -444,7 +455,6 @@ void JointReaction::
 setupStorage()
 {
     // Reaction Loads
-    _storeReactionLoads.reset(0);
     _storeReactionLoads.setName("Joint Reaction Loads");
     _storeReactionLoads.setDescription(getDescription());
     _storeReactionLoads.setColumnLabels(getColumnLabels());

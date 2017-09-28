@@ -28,24 +28,32 @@
 using namespace OpenSim;
 using namespace std;
 
+void testJointReactionDuringIterativeForwardSimulation();
+
 int main()
 {
     try {
         AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
         analyze.run();
-        Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
+        Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), 
+            standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, 
-            std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "SinglePin failed");
+            std::vector<double>(standard1.getSmallestNumberOfStates(), 1e-5),
+            __FILE__, __LINE__, "SinglePin failed");
         cout << "SinglePin passed" << endl;
 
         AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
         analyze2.run();
-        Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
+        Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), 
+            standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, 
-            std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5), __FILE__, __LINE__,
-            "DoublePendulum3D failed");
+            std::vector<double>(standard2.getSmallestNumberOfStates(), 1e-5), 
+            __FILE__, __LINE__, "DoublePendulum3D failed");
         cout << "DoublePendulum3D passed" << endl;
+
+        // check if joint reaction analysis behaves correctly during
+        // iterative forward simulation
+        testJointReactionDuringIterativeForwardSimulation();
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -53,4 +61,54 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
+}
+
+void testJointReactionDuringIterativeForwardSimulation() {
+    Model model;
+
+    // toy model
+    auto ground = model.updGround();
+    double m = 1, r = 0.01, l = 1;
+    auto body = new OpenSim::Body("body1", m, SimTK::Vec3(0), 
+        m * SimTK::Inertia::cylinderAlongY(r, l / 2));
+    SimTK::Vec3 body_start(0, -l / 2, 0);
+    SimTK::Vec3 body_end(0, l / 2, 0);
+    auto joint = new OpenSim::PinJoint("joint1",
+        ground, SimTK::Vec3(0), SimTK::Vec3(0),
+        *body, body_start, SimTK::Vec3(0));
+    joint->upd_coordinates(0).
+        setDefaultValue(SimTK::convertDegreesToRadians(45));
+    auto geom = new OpenSim::Cylinder(r, l / 2);
+    geom->setName("cylinder");
+    body->attachGeometry(geom);
+    model.addBody(body);
+    model.addJoint(joint);
+
+    // analysis
+    JointReaction* reaction = new JointReaction(&model);
+    model.addAnalysis(reaction);
+
+    // build model
+    //model.setUseVisualizer(true);
+    auto s = model.initSystem();
+
+    double dt = 0.1;
+    double t_start = 0;
+    double t_end = 0.5;
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+    Manager manager(model, integrator);
+    s.setTime(t_start);
+
+    // iterative numerical integration  
+    for (unsigned int i = 1; i*dt <= t_end; ++i) {
+        double t0 = s.getTime();
+        double tf = i * dt;
+
+        // do something ...
+
+        manager.integrate(s, tf);
+    }
+    // if storage is reseted then it will not start from start time and the bug
+    // is exposed
+    ASSERT(reaction->getReactionLoads().getFirstTime() == t_start);
 }
