@@ -106,9 +106,9 @@ public:
     // UTILITY
     //--------------------------------------------------------------------------
     AbstractPathPoint* addPathPoint(const SimTK::State& s, int index,
-        PhysicalFrame& frame);
+        const PhysicalFrame& frame);
     AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
-        PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
+        const PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
     bool canDeletePathPoint( int index);
     bool deletePathPoint(const SimTK::State& s, int index);
     
