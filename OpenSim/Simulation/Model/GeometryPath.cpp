@@ -490,7 +490,7 @@ double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
  * @return Pointer to the newly created path point.
  */
 AbstractPathPoint* GeometryPath::
-addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
+addPathPoint(const SimTK::State& s, int aIndex, const PhysicalFrame& frame)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
@@ -519,7 +519,8 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
 
 AbstractPathPoint* GeometryPath::
 appendNewPathPoint(const std::string& proposedName, 
-                   PhysicalFrame& frame, const SimTK::Vec3& aPositionOnBody)
+                   const PhysicalFrame& frame,
+                   const SimTK::Vec3& aPositionOnBody)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
@@ -1180,6 +1181,10 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 void GeometryPath::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+
+    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2, Exception,
+        "A valid path requires at least two PathPoints.")
+
     for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
         if (upd_PathWrapSet()[i].getName().empty()) {
             std::stringstream label;
