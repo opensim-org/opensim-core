@@ -147,7 +147,7 @@ void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
     mrs.set_activation_dynamics_mode(activationDynamicsMode);
     mrs.set_mesh_point_frequency(meshPointFrequency);
     INDYGO::Solution solution = mrs.solve();
-    solution.write("testGait10dof18musc_INDYGO_solution");
+    //solution.write("testGait10dof18musc_INDYGO_solution");
 
     // Regression tests.
     TimeSeriesTable std_activation = STOFileAdapter_<double>::read
