@@ -20,7 +20,6 @@ namespace OpenSim {
 ///
 /// Mesh point frequency
 /// --------------------
-///
 /// This is a property in the base class, InverseMuscleSolver.
 /// For gait, you should use between 100-300 mesh points per second. Having too
 /// few mesh points may result in spiky solutions, especially for fiber
@@ -33,7 +32,11 @@ namespace OpenSim {
 ///
 /// Fiber dynamics mode
 /// -------------------
-/// TODO add more description
+/// This mode was shown to be the fastest of the 4 formulations in [1].
+/// Instead of using fiber length as a state variable, the (normalized
+/// tendon) force is used instead. We introduce a control variable,
+/// tendon_force_rate_control, that sets the derivative of the tendon force.
+/// Fiber-tendon equilibrium is still enforced.
 /// The tendon_force_rate_control variable has bounds [-50, 50], and the
 /// norm_tendon_force state variable has bounds [0, 5].
 ///
