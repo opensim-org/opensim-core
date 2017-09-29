@@ -268,7 +268,7 @@ On Windows using Visual Studio
    with OpenSim (see below). You should run this command for the release
    configuration *last* to ensure that you use the release version of the
    command-line applications instead of the slow debug versions.
-   
+
    * Note: Superbuild attempts to determine when dependencies are out of date
      but is not always successful. It is therefore recommended to build all
      dependencies from scratch when updating your installation.
@@ -530,13 +530,13 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
     below). You should install the release configuration *last* to ensure that
     you use the release version of the command-line applications instead of the
     slow debug versions.
+10. Compile. Run the Scheme **ALL_BUILD** by clicking the play button in the
+   upper left. If necessary, change the build configuration (previous step) and
+   run **ALL_BUILD** again.
 
     * Note: Superbuild attempts to determine when dependencies are out of date
       but is not always successful. It is therefore recommended to build all
       dependencies from scratch when updating your installation.
-10. Compile. Run the Scheme **ALL_BUILD** by clicking the play button in the
-   upper left. If necessary, change the build configuration (previous step) and
-   run **ALL_BUILD** again.
 
 #### Configure and generate project files
 
@@ -711,10 +711,6 @@ And you could get all the optional dependencies via:
     the same install directory for all build types. You should install the
     release build type *last* to ensure that you use the release version of
     the command-line applications instead of the slow debug versions.
-    
-    * Note: Superbuild attempts to determine when dependencies are out of date
-      but is not always successful. It is therefore recommended to build all
-      dependencies from scratch when updating your installation.
 8. Click the **Configure** button again. Then, click **Generate** to make Unix
    Makefiles in the build directory.
 9. Open a terminal and navigate to the build directory.
@@ -725,6 +721,10 @@ And you could get all the optional dependencies via:
    in parallel); this will greatly speed up your build. For example:
 
         $ make -j8
+
+    * Note: Superbuild attempts to determine when dependencies are out of date
+      but is not always successful. It is therefore recommended to build all
+      dependencies from scratch when updating your installation.
 11. If necessary, repeat this whole procedure for other build types.
 
 #### Configure and generate project files
