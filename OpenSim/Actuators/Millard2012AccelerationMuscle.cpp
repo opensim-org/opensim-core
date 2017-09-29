@@ -226,10 +226,6 @@ Millard2012AccelerationMuscle::Millard2012AccelerationMuscle()
 {    
     setNull();
     constructProperties();
-
-    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
-    //       MuscleFixedWidthPennationModel have been made into properties.
-    finalizeFromProperties();
 }
 
 Millard2012AccelerationMuscle::
@@ -245,10 +241,6 @@ Millard2012AccelerationMuscle(const std::string &aName,  double aMaxIsometricFor
     setOptimalFiberLength(aOptimalFiberLength);
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
-
-    // TODO: Remove this once MuscleFirstOrderActivationDynamicModel and
-    //       MuscleFixedWidthPennationModel have been made into properties.
-    finalizeFromProperties();
 }
 
 //=============================================================================
