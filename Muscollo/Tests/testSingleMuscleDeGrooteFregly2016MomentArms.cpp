@@ -443,6 +443,7 @@ void testLiftingMassINDYGO(
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
     mrs.set_create_reserve_actuators(0.001);
+    mrs.set_mesh_point_frequency(400);
     INDYGO::Solution solution = mrs.solve();
     solution.write("testSingleMuscleDeGrooteFregly2016MomentArms_INDYGO");
 

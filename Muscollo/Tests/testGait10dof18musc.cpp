@@ -116,12 +116,38 @@ void testGait10dof18musc_GSO() {
             std_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
     compare(solution.tendon_force, "/walk_subject01/tib_ant_r",
             std_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
+
+    TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
+            ("std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto");
+    compare(solution.norm_tendon_force, "/walk_subject01/hamstrings_r",
+            std_norm_tendon_force,      "/walk_subject01/hamstrings_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/bifemsh_r",
+            std_norm_tendon_force,      "/walk_subject01/bifemsh_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/glut_max_r",
+            std_norm_tendon_force,      "/walk_subject01/glut_max_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/iliopsoas_r",
+            std_norm_tendon_force,      "/walk_subject01/iliopsoas_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/rect_fem_r",
+            std_norm_tendon_force,      "/walk_subject01/rect_fem_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/vasti_r",
+            std_norm_tendon_force,      "/walk_subject01/vasti_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/gastroc_r",
+            std_norm_tendon_force,      "/walk_subject01/gastroc_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/soleus_r",
+            std_norm_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/tib_ant_r",
+            std_norm_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
 }
 
-void testGait10dof18musc_INDYGO() {
+void testGait10dof18musc_INDYGO(const std::string& fiberDynamicsMode,
+        const std::string& activationDynamicsMode,
+        const int& meshPointFrequency) {
     INDYGO mrs("testGait10dof18musc_INDYGO_setup.xml");
+    mrs.set_fiber_dynamics_mode(fiberDynamicsMode);
+    mrs.set_activation_dynamics_mode(activationDynamicsMode);
+    mrs.set_mesh_point_frequency(meshPointFrequency);
     INDYGO::Solution solution = mrs.solve();
-    // solution.write("testGait10dof18musc_INDYGO_solution");
+    solution.write("testGait10dof18musc_INDYGO_solution");
 
     // Regression tests.
     TimeSeriesTable std_activation = STOFileAdapter_<double>::read
@@ -165,7 +191,7 @@ void testGait10dof18musc_INDYGO() {
     compare(solution.other_controls,
             "/walk_subject01/reserve_ankle_r_ankle_angle_r",
             std_other_controls,
-            "/walk_subject01/reserve_ankle_r_ankle_angle_r", 1e-6);
+            "/walk_subject01/reserve_ankle_r_ankle_angle_r", 1e-4);
 
     TimeSeriesTable std_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_INDYGO_solution_tendon_force.sto");
@@ -176,11 +202,25 @@ void testGait10dof18musc_INDYGO() {
                    std_tendon_force,      "/walk_subject01/soleus_r", 0.5);
     rootMeanSquare(solution.tendon_force, "/walk_subject01/tib_ant_r",
                    std_tendon_force,      "/walk_subject01/tib_ant_r", 0.5);
+
+    TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
+            ("std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto");
+    compare(solution.norm_tendon_force, "/walk_subject01/gastroc_r",
+            std_norm_tendon_force,      "/walk_subject01/gastroc_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/soleus_r",
+            std_norm_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
+    compare(solution.norm_tendon_force, "/walk_subject01/tib_ant_r",
+            std_norm_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
 }
 
 int main() {
     SimTK_START_TEST("testGait10dof18musc");
         SimTK_SUBTEST(testGait10dof18musc_GSO);
-        SimTK_SUBTEST(testGait10dof18musc_INDYGO);
+        SimTK_SUBTEST3(testGait10dof18musc_INDYGO,
+                "fiber_length", "explicit", 300);
+        SimTK_SUBTEST3(testGait10dof18musc_INDYGO,
+                "tendon_force", "explicit", 300);
+//        SimTK_SUBTEST2(testGait10dof18musc_INDYGO, "fiber_length", "implicit");
+//        SimTK_SUBTEST2(testGait10dof18musc_INDYGO, "tendon_force", "implicit");
     SimTK_END_TEST();
 }

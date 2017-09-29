@@ -35,6 +35,12 @@ class Model;
 /// TODO explain the benefit of using filtering on kinematics and joint
 /// moments: must be smooth, otherwise will get noisy muscle activations, etc.
 ///
+/// ### Mesh point frequency
+///
+/// For gait, you should use between 100-300 mesh points per second.
+/// This setting has a greater effect for INDYGO than for Global Static
+/// Optimization; see INDYGO's documentation for more information.
+///
 /// ### Reserve actuators
 ///
 /// Sometimes it is not possible to achieve the desired net joint moments using
@@ -110,6 +116,10 @@ public:
     "The end of the time interval in which to solve for muscle activity. "
     "All data must end at or after this time. "
     "(default: latest time available in all provided data)");
+
+    OpenSim_DECLARE_PROPERTY(mesh_point_frequency, int,
+    "The number of mesh points per second of motion "
+    "(default: 200 mesh points / second).");
 
     OpenSim_DECLARE_PROPERTY(create_reserve_actuators, double,
     "Create a reserve actuator (CoordinateActuator) for each unconstrained "
@@ -189,8 +199,10 @@ protected:
     void processActuatorsToInclude(Model& model) const;
     void determineInitialAndFinalTimes(TimeSeriesTable& kinematics,
                                        TimeSeriesTable& netGeneralizedForces,
+                                       const int& meshPointFrequency,
                                        double& initialTime,
-                                       double& finalTime) const;
+                                       double& finalTime,
+                                       int& numMeshPoints) const;
     SimTK::ResetOnCopy<std::unique_ptr<Model>> _model;
     // TODO make this a StatesTrajectory?
     SimTK::ResetOnCopy<std::unique_ptr<TimeSeriesTable>> _kinematics;

@@ -32,6 +32,8 @@ void INDYGO::Solution::write(const std::string& prefix) const
     write(norm_fiber_velocity, "norm_fiber_velocity");
     write(other_controls, "other_controls");
     write(tendon_force, "tendon_force");
+    write(norm_tendon_force, "norm_tendon_force");
+    write(tendon_force_rate_control, "tendon_force_rate_control");
 }
 
 /// "Separate" denotes that the dynamics are not coming from OpenSim, but
@@ -41,9 +43,11 @@ class INDYGOProblemSeparate : public tropter::OptimalControlProblem<T> {
 public:
     INDYGOProblemSeparate(const INDYGO& mrs,
                        const Model& model,
-                       const InverseMuscleSolverMotionData& motionData)
+                       const InverseMuscleSolverMotionData& motionData,
+                       const std::string& fiberDynamicsMode)
             : tropter::OptimalControlProblem<T>("INDYGO"),
-              _mrs(mrs), _model(model), _motionData(motionData) {
+              _mrs(mrs), _model(model), _motionData(motionData),
+              _useFiberLengthState(fiberDynamicsMode == "fiber_length") {
         SimTK::State state = _model.initSystem();
 
         // Set the time bounds.
@@ -53,21 +57,7 @@ public:
 
         // States and controls for actuators.
         // ----------------------------------
-
         // TODO handle different actuator types more systematically.
-        auto actuators = _model.getComponentList<ScalarActuator>();
-        for (const auto& actuator : actuators) {
-            if (actuator.get_appliesForce() &&
-                    !dynamic_cast<const Muscle*>(&actuator) &&
-                    !dynamic_cast<const CoordinateActuator*>(&actuator)) {
-                throw std::runtime_error("[INDYGO] Only Muscles and "
-                        "CoordinateActuators are currently supported but the"
-                        " model contains an enabled "
-                        + actuator.getConcreteClassName() + ". Either set "
-                        "appliesForce=false for this actuator, or remove it "
-                        "from the model.");
-            }
-        }
 
         // CoordinateActuators.
         // --------------------
@@ -84,30 +74,6 @@ public:
             _otherControlsLabels.push_back(actuPath);
             _numCoordActuators++;
         }
-//        const auto coordsOrdered = _model.getCoordinatesInMultibodyTreeOrder();
-//        _optimalForce.resize(_numCoordActuators);
-//        _coordActuatorDOFs.resize(_numCoordActuators);
-//        int i_act = 0;
-//        for (const auto& actuator :
-//                _model.getComponentList<CoordinateActuator>()) {
-//            if (!actuator.get_appliesForce()) continue;
-//            _optimalForce[i_act] = actuator.getOptimalForce();
-//            // Figure out which DOF each coordinate actuator is actuating.
-//            const auto* coord = actuator.getCoordinate();
-//            size_t i_coord = 0;
-//            while (i_coord < coordsOrdered.size() &&
-//                    coordsOrdered[i_coord].get() != coord) {
-//                ++i_coord;
-//            }
-//            if (i_coord == coordsOrdered.size()) {
-//                throw std::runtime_error("[INDYGO] Could not find Coordinate '" +
-//                        coord->getAbsolutePathName() + "' used in "
-//                        "CoordinateActuator '" + actuator.getAbsolutePathName()
-//                                                 + "'.");
-//            }
-//            _coordActuatorDOFs[i_act] = i_coord;
-//            ++i_act;
-//        }
         const auto& coordPathsToActuate = motionData.getCoordinatesToActuate();
         _optimalForce.resize(_numCoordActuators);
         _coordActuatorDOFs.resize(_numCoordActuators);
@@ -142,7 +108,7 @@ public:
         // --------
         _numMuscles = 0;
         for (const auto& actuator : _model.getComponentList<Muscle>()) {
-            // TODO conslidate with MotionData.
+            // TODO consolidate with MotionData.
             if (!actuator.get_appliesForce()) continue;
 
             const auto& actuPath = actuator.getAbsolutePathName();
@@ -168,11 +134,18 @@ public:
                             //  actuator.get_max_control()},
 
             // Fiber dynamics.
-            // TODO initial value should be 0? That is what CMC does (via
-            // equilibrateMuscles()).
-            this->add_control(actuPath + "_norm_fiber_velocity", {-1, 1});
-            // These bounds come from simtk.org/projects/optcntrlmuscle.
-            this->add_state(actuPath + "_norm_fiber_length", {0.2, 1.8});
+            if (_useFiberLengthState) {
+                // TODO initial value should be 0? That is what CMC does (via
+                // equilibrateMuscles()).
+                this->add_control(actuPath + "_norm_fiber_velocity", {-1, 1});
+                // These bounds come from simtk.org/projects/optcntrlmuscle.
+                this->add_state(actuPath + "_norm_fiber_length", {0.2, 1.8});
+            } else {
+                // TODO play with these bounds.
+                this->add_control(actuPath + "_tendon_force_rate_control",
+                        {-50, 50});
+                this->add_state(actuPath + "_norm_tendon_force", {0, 5});
+            }
             this->add_path_constraint(
                     actuator.getAbsolutePathName() + "_equilibrium", 0);
 
@@ -196,12 +169,6 @@ public:
             i_mus++;
         }
 
-//        // Add a constraint for each joint moment.
-//        _numCoordsToActuate = 0;
-//        for (int i = 0; i < state.getNU(); ++i) {
-//            this->add_path_constraint("net_gen_force" + std::to_string(i), 0);
-//            _numCoordsToActuate++;
-//        }
         // Add a constraint for each coordinate we want to actuate.
         _numCoordsToActuate = (int)coordPathsToActuate.size();
         for (const auto& coordPath : coordPathsToActuate) {
@@ -228,6 +195,10 @@ public:
                      mutableThis->_muscleTendonLengths);
             _motionData.interpolateMomentArms(times,
                      mutableThis->_momentArms);
+            if (!_useFiberLengthState) {
+                _motionData.interpolateMuscleTendonVelocities(times,
+                        mutableThis->_muscleTendonVelocities);
+            }
         }
     }
 
@@ -280,20 +251,34 @@ public:
             for (Eigen::Index i_act = 0; i_act < _numMuscles; ++i_act) {
                 // Unpack variables.
                 const T& activation = states[2 * i_act];
-                const T& normFibVel = controls[_numCoordActuators+2*i_act+1];
-                const T& normFibLen = states[2 * i_act + 1];
-
                 // Get the total muscle-tendon length from the data.
                 const T& musTenLen = _muscleTendonLengths(i_act, i_mesh);
 
-                T normTenForce;
-                _muscles[i_act].calcEquilibriumResidual(activation, musTenLen,
-                        normFibLen, normFibVel,
-                        out.path[i_act],
-                        normTenForce);
+                if (_useFiberLengthState) {
+                    const T& normFibVel = controls[_numCoordActuators+2*i_act+1];
+                    const T& normFibLen = states[2 * i_act + 1];
+                    T normTenForce;
+                    _muscles[i_act].calcEquilibriumResidual(activation,
+                            musTenLen, normFibLen, normFibVel,
+                            out.path[i_act],
+                            normTenForce);
+                    tendonForces[i_act] =
+                            _muscles[i_act].get_max_isometric_force()
+                                    * normTenForce;
+                } else {
+                    const T& tenForceRateControl =
+                            controls[_numCoordActuators+2*i_act+1];
+                    const T& normTenForce = states[2 * i_act + 1];
+                    const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
 
-                tendonForces[i_act] = _muscles[i_act].get_max_isometric_force()
-                        * normTenForce;
+                    const T normTenForceRate =
+                            _tendonForceDynamicsScalingFactor
+                                    * tenForceRateControl;
+                    _muscles[i_act].calcTendonForceStateEquilibriumResidual(
+                            activation, musTenLen, musTenVel, normTenForce,
+                            normTenForceRate,
+                            out.path[i_act], tendonForces[i_act]);
+                }
             }
 
             // Compute generalized forces from muscles.
@@ -309,7 +294,7 @@ public:
                 - genForce;
     }
     void calc_integral_cost(const T& /*time*/,
-            const tropter::VectorX<T>& /*states*/,
+            const tropter::VectorX<T>& states,
             const tropter::VectorX<T>& controls,
             T& integrand) const override {
         // Use a map to skip over fiber velocities.
@@ -319,19 +304,18 @@ public:
         ExcitationsVector muscleExcit(controls.data() + _numCoordActuators,
                                       _numMuscles);
 
-        // We attempted to minimize activations to prevent the initial
-        // activation from being incorrectly large (b/c no penalty), but this
-        // did not end up being a solution to the problem.
+        // Minimize activations to prevent the initial
+        // activation from being incorrectly large (b/c no penalty)
         // TODO could also just minimize initial activation.
         // Use a map to skip over fiber lengths.
-        // using ActivationsVector = Eigen::Map<const tropter::VectorX<T>,
-        //         /* pointer alignment: Unaligned */   0,
-        //         /* pointer increment btn elements */ Eigen::InnerStride<2>>;
-        // ActivationsVector muscleActiv(states.data() + _numCoordActuators,
-        //                               _numMuscles);
+        using ActivationsVector = Eigen::Map<const tropter::VectorX<T>,
+                /* pointer alignment: Unaligned */   0,
+                /* pointer increment btn elements */ Eigen::InnerStride<2>>;
+        ActivationsVector muscleActiv(states.data(), _numMuscles);
 
         integrand = controls.head(_numCoordActuators).squaredNorm()
-                  + muscleExcit.squaredNorm();
+                  + muscleExcit.squaredNorm() +
+                  + muscleActiv.squaredNorm();
     }
     /// If mrsVars seems to be empty (no rows in either the
     /// mrsVars.activation or mrsVars.other_controls tables), then this returns
@@ -363,18 +347,47 @@ public:
             return vars;
         }
 
-        // Each muscle has excitation and norm. fiber velocity controls.
-        vars.controls.resize(_numCoordActuators + 2 * _numMuscles, numTimes);
-        // Each muscle has activation and fiber length states.
-        vars.states.resize(2 * _numMuscles, numTimes);
+        // Allocate memory.
+        // Each muscle has excitation and norm. fiber velocity (or tendon force
+        // rate) controls.
+        const int numControls = _numCoordActuators + 2 * _numMuscles;
+        // Each muscle has activation and fiber length (or tendon force) states.
+        const int numStates = 2 * _numMuscles;
+        vars.controls.resize(numControls, numTimes);
+        vars.states.resize(numStates, numTimes);
+        vars.control_names.resize(numControls);
+        vars.state_names.resize(2 * _numMuscles);
 
         if (_numCoordActuators) {
+            // Set control names.
+            const auto& otherControlsLabels =
+                    mrsVars.other_controls.getColumnLabels();
+            assert(_numCoordActuators == (int)otherControlsLabels.size());
+            for (int i_act = 0; i_act < _numCoordActuators; ++i_act) {
+                vars.control_names[i_act] =
+                        otherControlsLabels[i_act] + "_control";
+            }
             vars.controls.topRows(_numCoordActuators) = Map<const MatrixXd>(
                             &mrsVars.other_controls.getMatrix()(0, 0),
                             numTimes, _numCoordActuators).transpose();
         }
 
         if (_numMuscles) {
+            // Set state and control names.
+            const auto& muscleNames = mrsVars.activation.getColumnLabels();
+            for (int i_musc = 0; i_musc < _numMuscles; ++i_musc) {
+                const auto& muscleName = muscleNames[i_musc];
+                vars.control_names[_numCoordActuators + 2 * i_musc] =
+                        muscleName + "_excitation";
+                vars.control_names[_numCoordActuators + 2 * i_musc + 1] =
+                        muscleName +
+                        (_useFiberLengthState ? "_norm_fiber_velocity"
+                                              : "_tendon_force_rate_control");
+                vars.state_names[2 * i_musc] = muscleName + "_activation";
+                vars.state_names[2 * i_musc + 1] = muscleName +
+                        (_useFiberLengthState ? "_norm_fiber_length"
+                                              : "_norm_tendon_force");
+            }
             // SkipRowView is a view onto a Matrix wherein every other row of
             // the original matrix is skipped. We use this to edit every
             // other row using a single assignment. Eigen's inner stride (the
@@ -403,23 +416,39 @@ public:
                     &mrsVars.activation.getMatrix()(0, 0),
                     numTimes, _numMuscles).transpose();
 
-            SkipRowView fiberLengthView(
-                    // Skip the first state row, which has activations
-                    // for the first muscle.
-                    vars.states.bottomRows(2 * _numMuscles - 1).data(),
-                    _numMuscles, numTimes, statesStride);
-            fiberLengthView = Map<const MatrixXd>(
-                    &mrsVars.norm_fiber_length.getMatrix()(0, 0),
-                    numTimes, _numMuscles).transpose();
+            if (_useFiberLengthState) {
+                SkipRowView fiberLengthView(
+                        // Skip the first state row, which has activations
+                        // for the first muscle.
+                        vars.states.bottomRows(2 * _numMuscles - 1).data(),
+                        _numMuscles, numTimes, statesStride);
+                fiberLengthView = Map<const MatrixXd>(
+                        &mrsVars.norm_fiber_length.getMatrix()(0, 0),
+                        numTimes, _numMuscles).transpose();
 
-            SkipRowView fiberVelocityView(
-                    // Skip the coordinate actuator rows and the excitation
-                    // for the first muscle.
-                    vars.controls.bottomRows(2 * _numMuscles - 1).data(),
-                    _numMuscles, numTimes, controlsStride);
-            fiberVelocityView = Map<const MatrixXd>(
-                    &mrsVars.norm_fiber_velocity.getMatrix()(0, 0),
-                    numTimes, _numMuscles).transpose();
+                SkipRowView fiberVelocityView(
+                        // Skip the coordinate actuator rows and the excitation
+                        // for the first muscle.
+                        vars.controls.bottomRows(2 * _numMuscles - 1).data(),
+                        _numMuscles, numTimes, controlsStride);
+                fiberVelocityView = Map<const MatrixXd>(
+                        &mrsVars.norm_fiber_velocity.getMatrix()(0, 0),
+                        numTimes, _numMuscles).transpose();
+            } else {
+                SkipRowView tendonForceView(
+                        vars.states.bottomRows(2 * _numMuscles - 1).data(),
+                        _numMuscles, numTimes, statesStride);
+                tendonForceView = Map<const MatrixXd>(
+                        &mrsVars.norm_tendon_force.getMatrix()(0, 0),
+                        numTimes, _numMuscles).transpose();
+
+                SkipRowView tendonForceRateControlView(
+                        vars.controls.bottomRows(2 * _numMuscles - 1).data(),
+                        _numMuscles, numTimes, controlsStride);
+                tendonForceRateControlView = Map<const MatrixXd>(
+                        &mrsVars.tendon_force_rate_control.getMatrix()(0, 0),
+                        numTimes, _numMuscles).transpose();
+            }
         }
         return vars;
     }
@@ -427,6 +456,7 @@ public:
     /// expecting (for the current mesh refinement iteration); this is
     /// because computing tendon length requires on the cached muscle-tendon
     /// lengths.
+    // TODO rename to make_indygo_iterate and make_optimal_control_iterate
     INDYGO::Solution deconstruct_iterate(
             const tropter::OptimalControlIterate& ocpVars) const {
 
@@ -440,6 +470,10 @@ public:
             sol.norm_fiber_length.setColumnLabels(_muscleLabels);
             sol.norm_fiber_velocity.setColumnLabels(_muscleLabels);
             sol.tendon_force.setColumnLabels(_muscleLabels);
+            sol.norm_tendon_force.setColumnLabels(_muscleLabels);
+            if (!_useFiberLengthState) {
+                sol.tendon_force_rate_control.setColumnLabels(_muscleLabels);
+            }
         }
 
         for (int i_time = 0; i_time < ocpVars.time.cols(); ++i_time) {
@@ -473,30 +507,85 @@ public:
                                         true /* makes this a view */);
             sol.activation.appendRow(time, activation);
 
-            SimTK::RowVector fiber_length(_numMuscles, /*TODO*/
-                                          2 /* stride: skip over activation */,
-                                          states.data() + 1,
-                                          true /* makes this a view */);
-            sol.norm_fiber_length.appendRow(time, fiber_length);
+            if (_useFiberLengthState) {
+                SimTK::RowVector fiber_length(_numMuscles, /*TODO*/
+                        2 /* stride: skip over activation */,
+                        states.data() + 1,
+                        true /* makes this a view */);
+                sol.norm_fiber_length.appendRow(time, fiber_length);
 
-            SimTK::RowVector fiber_velocity(_numMuscles,
-                                       2 /* stride: skip over excit. */,
-                                       controls.data() + _numCoordActuators + 1,
-                                       true /* makes this a view */);
-            sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
+                SimTK::RowVector fiber_velocity(_numMuscles,
+                        2 /* stride: skip over excit. */,
+                        controls.data() + _numCoordActuators + 1,
+                        true /* makes this a view */);
+                sol.norm_fiber_velocity.appendRow(time, fiber_velocity);
 
-            // Compute other helpful quantities from the states.
-            SimTK::RowVector tendon_force(_numMuscles);
-            for (int i_musc = 0; i_musc < _numMuscles; ++i_musc) {
-                const auto muscle =
-                        _muscles[i_musc].convert_scalartype_double();
-                const auto& musTenLen = _muscleTendonLengths(i_musc, i_time);
-                const auto& normFibLen = states[2 * i_musc + 1];
+                // Compute other helpful quantities from the states.
+                SimTK::RowVector tendon_force(_numMuscles);
+                SimTK::RowVector norm_tendon_force(_numMuscles);
+                for (int i_musc = 0; i_musc < _numMuscles; ++i_musc) {
+                    const auto muscle =
+                            _muscles[i_musc].convert_scalartype_double();
+                    const auto& musTenLen = _muscleTendonLengths(i_musc, i_time);
+                    const auto& normFibLen = states[2 * i_musc + 1];
 
-                muscle.calcTendonForce(musTenLen, normFibLen,
-                                       tendon_force[i_musc]);
+                    norm_tendon_force[i_musc] =
+                            muscle.calcNormTendonForce(musTenLen, normFibLen);
+                    tendon_force[i_musc] = muscle.get_max_isometric_force() *
+                            norm_tendon_force[i_musc];
+                }
+                sol.tendon_force.appendRow(time, tendon_force);
+                sol.norm_tendon_force.appendRow(time, norm_tendon_force);
+
+                // Don't worry about tendon_force_rate_control. It's unlikely
+                // that users are interested in this. It will be necessary to
+                // carry over if one wants to first solve a problem with
+                // fiber length state and use the solution as an initial
+                // guess to a problem with tendon force state.
+            } else {
+                // TODO
+                SimTK::RowVector norm_tendon_force(_numMuscles,
+                        2, states.data() + 1, true);
+                sol.norm_tendon_force.appendRow(time, norm_tendon_force);
+
+                SimTK::RowVector tendon_force_rate_control(_numMuscles,
+                        2, controls.data() + _numCoordActuators + 1,
+                        true);
+                sol.tendon_force_rate_control.appendRow(time,
+                        tendon_force_rate_control);
+
+                // We must compute fiber length, fiber velocity, and tendon
+                // force from the states and controls.
+                SimTK::RowVector norm_fiber_length(_numMuscles);
+                SimTK::RowVector norm_fiber_velocity(_numMuscles);
+                SimTK::RowVector tendon_force(_numMuscles);
+                for (int i_musc = 0; i_musc < _numMuscles; ++i_musc) {
+                    const auto muscle =
+                            _muscles[i_musc].convert_scalartype_double();
+                    const auto& musTenLen =
+                            _muscleTendonLengths(i_musc, i_time);
+                    const auto& musTenVel =
+                            _muscleTendonVelocities(i_musc, i_time);
+                    const auto& normTenForce = states[2 * i_musc + 1];
+                    const auto& tendonForceRateControl =
+                            controls[_numCoordActuators + 2* i_musc + 1];
+
+                    const auto normTenForceRate =
+                            _tendonForceDynamicsScalingFactor *
+                                    tendonForceRateControl;
+                    double cosPenn; // unused.
+                    muscle.calcIntermediatesForTendonForceState(
+                            musTenLen, musTenVel,
+                            normTenForce, normTenForceRate,
+                            norm_fiber_length[i_musc],
+                            norm_fiber_velocity[i_musc],
+                            cosPenn,
+                            tendon_force[i_musc]);
+                }
+                sol.norm_fiber_length.appendRow(time, norm_fiber_length);
+                sol.norm_fiber_velocity.appendRow(time, norm_fiber_velocity);
+                sol.tendon_force.appendRow(time, tendon_force);
             }
-            sol.tendon_force.appendRow(time, tendon_force);
         }
         return sol;
     }
@@ -504,6 +593,7 @@ private:
     const INDYGO& _mrs;
     Model _model;
     const InverseMuscleSolverMotionData& _motionData;
+    const bool _useFiberLengthState;
     double _initialTime = SimTK::NaN;
     double _finalTime = SimTK::NaN;
 
@@ -521,6 +611,8 @@ private:
     Eigen::MatrixXd _muscleTendonLengths;
     // TODO use Eigen::SparseMatrixXd
     std::vector<Eigen::MatrixXd> _momentArms;
+    Eigen::MatrixXd _muscleTendonVelocities;
+    const double _tendonForceDynamicsScalingFactor = 10.0;
 
     // CoordinateActuator optimal forces.
     Eigen::VectorXd _optimalForce;
@@ -542,6 +634,8 @@ INDYGO::INDYGO(
 void INDYGO::constructProperties() {
     constructProperty_initial_guess("static_optimization");
     constructProperty_zero_initial_activation(false);
+    constructProperty_fiber_dynamics_mode("fiber_length");
+    constructProperty_activation_dynamics_mode("explicit");
 }
 
 INDYGO::Solution INDYGO::solve() const {
@@ -561,35 +655,6 @@ INDYGO::Solution INDYGO::solve() const {
     // TODO move to InverseMuscleSolver
     Model model(origModel);
     SimTK::State state = model.initSystem();
-    //// TODO Give error if coordinates_to_include are locked.
-    //std::vector<const Coordinate*> coordsToActuate;
-    //if (!getProperty_coordinates_to_include().empty()) {
-    //    auto numCoordsToInclude = getProperty_coordinates_to_include().size();
-    //    for (int iCoord = 0; iCoord < numCoordsToInclude; ++iCoord) {
-    //        // Make sure the coordinate exists and isn't constrained.
-    //        const auto coordPath = get_coordinates_to_include(iCoord);
-    //        const Coordinate* coord;
-    //        try {
-    //            coord = &model.getComponent<Coordinate>(coordPath);
-    //        } catch (Exception& e) {
-    //            OPENSIM_THROW_FRMOBJ(Exception,
-    //                    "Coordinate '" + coordPath + "' listed under '"
-    //                    "coordinates_to_include' not found in the model; "
-    //                    "make sure to provide an absolute path.");
-    //        }
-    //        OPENSIM_THROW_IF_FRMOBJ(coord->isConstrained(state), Exception,
-    //                "Coordinate '" + coordPath + "' is constrained and thus "
-    //                "cannot be listed under 'coordinates_to_include'.");
-
-    //        coordsToActuate.push_back(coord);
-    //    }
-    //} else {
-    //    for (auto& coord : model.getCoordinatesInMultibodyTreeOrder()) {
-    //        if (!coord->isConstrained(state)) {
-    //            coordsToActuate.push_back(coord.get());
-    //        }
-    //    }
-    //}
     std::vector<const Coordinate*> coordsToActuate;
     const auto coordsInOrder = model.getCoordinatesInMultibodyTreeOrder();
     const ComponentPath modelPath = model.getAbsolutePathName();
@@ -645,6 +710,22 @@ INDYGO::Solution INDYGO::solve() const {
     // -------------------------------------
     processActuatorsToInclude(model);
 
+    // Ensure that all enabled actuators are supported.
+    // ------------------------------------------------
+    auto actuators = model.getComponentList<ScalarActuator>();
+    for (const auto& actuator : actuators) {
+        if (actuator.get_appliesForce() &&
+                !dynamic_cast<const Muscle*>(&actuator) &&
+                !dynamic_cast<const CoordinateActuator*>(&actuator)) {
+            throw std::runtime_error("[INDYGO] Only Muscles and "
+                    "CoordinateActuators are currently supported but the"
+                    " model contains an enabled "
+                    + actuator.getConcreteClassName() + ". Either set "
+                    "appliesForce=false for this actuator, or remove it "
+                    "from the model.");
+        }
+    }
+
     // Create reserve actuators.
     // -------------------------
     if (get_create_reserve_actuators() != -1) {
@@ -687,8 +768,13 @@ INDYGO::Solution INDYGO::solve() const {
     // TODO check for errors in initial_time and final_time.
     double initialTime;
     double finalTime;
+    int numMeshPoints;
+    OPENSIM_THROW_IF(get_mesh_point_frequency() <= 0, Exception,
+            "Invalid value (" + std::to_string(get_mesh_point_frequency()) +
+                    ") for mesh_point_frequency; must be positive.");
     determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
-            initialTime, finalTime);
+            get_mesh_point_frequency(),
+            initialTime, finalTime, numMeshPoints);
 
     // Process experimental data.
     // --------------------------
@@ -718,18 +804,32 @@ INDYGO::Solution INDYGO::solve() const {
                 get_lowpass_cutoff_frequency_for_joint_moments());
     }
 
+    // Check for errors in formulation modes.
+    // --------------------------------------
+    OPENSIM_THROW_IF(get_fiber_dynamics_mode() != "fiber_length" &&
+                     get_fiber_dynamics_mode() != "tendon_force",
+            Exception, "Invalid value (" + get_fiber_dynamics_mode() + ") for"
+            "fiber_dynamics_model; should be 'fiber_length' or "
+            "'tendon_force'.");
+    OPENSIM_THROW_IF(get_activation_dynamics_mode() != "explicit" &&
+                     get_activation_dynamics_mode() != "implicit",
+            Exception, "Invalid value (" + get_activation_dynamics_mode() + ") "
+            "for activation_dynamics_model; should be 'explicit' or "
+            "'implicit'.");
+    OPENSIM_THROW_IF(get_activation_dynamics_mode() == "implicit", Exception,
+            "Implicit activation dynamics is not supported yet.");
+
     // Create the optimal control problem.
     // -----------------------------------
     auto ocp = std::make_shared<INDYGOProblemSeparate<adouble>>(*this,
-                                                             model, motionData);
+            model, motionData, get_fiber_dynamics_mode());
 
     // Solve for an initial guess with static optimization.
     // ----------------------------------------------------
     OPENSIM_THROW_IF(get_initial_guess() != "bounds" &&
                      get_initial_guess() != "static_optimization", Exception,
-            "Invalid value (" + get_initial_guess() + " for "
+            "Invalid value (" + get_initial_guess() + ") for "
             "initial_guess; should be 'static_optimization' or 'bounds'.");
-    const int num_mesh_points = 100;
     tropter::OptimalControlIterate guess;
     if (get_initial_guess() == "static_optimization") {
         std::cout << std::string(79, '=') << std::endl;
@@ -753,6 +853,7 @@ INDYGO::Solution INDYGO::solve() const {
         if (!getProperty_final_time().empty()) {
             gso.set_final_time(get_final_time());
         }
+        gso.set_mesh_point_frequency(get_mesh_point_frequency());
         if (!getProperty_coordinates_to_include().empty()) {
             gso.set_coordinates_to_include(
                     getProperty_coordinates_to_include());
@@ -770,6 +871,12 @@ INDYGO::Solution INDYGO::solve() const {
         mrsGuess.norm_fiber_length = gsoSolution.norm_fiber_length;
         mrsGuess.norm_fiber_velocity = gsoSolution.norm_fiber_velocity;
         mrsGuess.other_controls = gsoSolution.other_controls;
+        mrsGuess.tendon_force = gsoSolution.tendon_force;
+        mrsGuess.norm_tendon_force = gsoSolution.norm_tendon_force;
+        // We do not have a guess for this control variable, so we set it to
+        // zero (after getting a table with the correct dimensions).
+        mrsGuess.tendon_force_rate_control = gsoSolution.norm_tendon_force;
+        mrsGuess.tendon_force_rate_control.updMatrix().setToZero();
         guess = ocp->construct_iterate(mrsGuess);
         // guess.write("DEBUG_INDYGO_guess.csv");
     } else {
@@ -786,8 +893,8 @@ INDYGO::Solution INDYGO::solve() const {
     // Solve the optimal control problem.
     // ----------------------------------
     ocp->print_description();
-    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
-                                                  num_mesh_points);
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+            "ipopt", numMeshPoints);
     // TODO Consider trying using the quasi-Newton mode; it seems to work
     // well for some problems but not well for larger problems.
     // dircol.get_optimization_solver().set_hessian_approximation("limited-memory");

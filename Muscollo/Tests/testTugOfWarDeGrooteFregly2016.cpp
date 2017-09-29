@@ -584,6 +584,10 @@ void test2Muscles1DOFINDYGO(
     // activation). We tried setting initial fiber velocity to 0 instead, and
     // this also solved the problem but only if using the *exact* inverse
     // dynamics generalized forces (which are not available in practice).
+    // UPDATE: Now that the INDYGO cost includes activations, activation_l
+    // starts at nearly 0 but activation_r starts at 0.06, so it is still
+    // helpful to add this initial activation constraint, but it's not so
+    // necessary anymore.
     mrs.set_zero_initial_activation(true);
     INDYGO::Solution solution = mrs.solve();
     solution.write("testTugOfWarDeGrooteFregly2016_INDYGO");

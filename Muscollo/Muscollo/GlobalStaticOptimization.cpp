@@ -465,8 +465,13 @@ GlobalStaticOptimization::solve() const {
     // TODO check for errors in initial_time and final_time.
     double initialTime;
     double finalTime;
+    int numMeshPoints;
+    OPENSIM_THROW_IF(get_mesh_point_frequency() <= 0, Exception,
+            "Invalid value (" + std::to_string(get_mesh_point_frequency()) +
+            ") for mesh_point_frequency; must be positive.");
     determineInitialAndFinalTimes(kinematics, netGeneralizedForces,
-            initialTime, finalTime);
+            get_mesh_point_frequency(),
+            initialTime, finalTime, numMeshPoints);
 
     // Process experimental data.
     // --------------------------
@@ -501,8 +506,8 @@ GlobalStaticOptimization::solve() const {
     auto ocp = std::make_shared<GSOProblemSeparate<adouble>>(*this, model,
             motionData);
     ocp->print_description();
-    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt",
-                                                  100);
+    tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
+            "ipopt", numMeshPoints);
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
 
     // Return the solution.

@@ -625,6 +625,7 @@ void test2Muscles2DOFs_GSO(
     gso.set_lowpass_cutoff_frequency_for_joint_moments(80);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
+    gso.set_mesh_point_frequency(500);
     // gso.print("test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
     GlobalStaticOptimization::Solution solution = gso.solve();
     // solution.write("test2Muscles2DOFsDeGrooteFregly2016_GSO");
@@ -641,6 +642,7 @@ void test2Muscles2DOFs_GSO_Filebased(
 
     GlobalStaticOptimization gso(
             "test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml");
+    gso.set_mesh_point_frequency(500);
     double reserveOptimalForce = gso.get_create_reserve_actuators();
     GlobalStaticOptimization::Solution solution = gso.solve();
 
@@ -684,6 +686,7 @@ void test2Muscles2DOFs_GSO_GenForces(
     gso.setNetGeneralizedForcesData(netGenForces);
     double reserveOptimalForce = 0.001;
     gso.set_create_reserve_actuators(reserveOptimalForce);
+    gso.set_mesh_point_frequency(500);
     GlobalStaticOptimization::Solution solution = gso.solve();
 
     // Compare the solution to the initial trajectory optimization solution.

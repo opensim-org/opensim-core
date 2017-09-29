@@ -15,10 +15,6 @@ InverseMuscleSolver::InverseMuscleSolver(const std::string& setupFilePath) :
     constructProperties();
 }
 
-/// Set the model to use. If you set a model this way, make sure to set
-/// the model_file property to an empty string
-/// (`solver.set_model_file ("")`).
-
 void InverseMuscleSolver::constructProperties() {
     constructProperty_write_solution("./");
     constructProperty_model_file("");
@@ -28,6 +24,7 @@ void InverseMuscleSolver::constructProperties() {
     constructProperty_lowpass_cutoff_frequency_for_joint_moments(-1);
     constructProperty_initial_time();
     constructProperty_final_time();
+    constructProperty_mesh_point_frequency(200);
     constructProperty_create_reserve_actuators(-1);
     constructProperty_coordinates_to_include();
     constructProperty_actuators_to_include();
@@ -214,7 +211,8 @@ void InverseMuscleSolver::processActuatorsToInclude(Model& model) const {
 
 void InverseMuscleSolver::determineInitialAndFinalTimes(
         TimeSeriesTable& kinematics, TimeSeriesTable& netGeneralizedForces,
-        double& initialTime, double& finalTime) const {
+        const int& meshPointFrequency,
+        double& initialTime, double& finalTime, int& numMeshPoints) const {
 
     double initialTimeFromData = kinematics.getIndependentColumn().front();
     double finalTimeFromData = kinematics.getIndependentColumn().back();
@@ -247,4 +245,7 @@ void InverseMuscleSolver::determineInitialAndFinalTimes(
     OPENSIM_THROW_IF_FRMOBJ(finalTime < initialTime, Exception,
             "Initial time of " + std::to_string(initialTime) + " is greater "
             "than final time of " + std::to_string(finalTime) + ".");
+
+    // We do not want to end up with a lower mesh frequency than requested.
+    numMeshPoints = std::ceil((finalTime - initialTime) * meshPointFrequency);
 }

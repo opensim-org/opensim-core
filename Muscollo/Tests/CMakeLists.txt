@@ -51,8 +51,12 @@ MuscolloAddTest(NAME testGait10dof18musc RESOURCES
         std_testGait10dof18musc_INDYGO_solution_norm_fiber_velocity.sto
         std_testGait10dof18musc_INDYGO_solution_other_controls.sto
         std_testGait10dof18musc_INDYGO_solution_tendon_force.sto
+        std_testGait10dof18musc_INDYGO_solution_norm_tendon_force.sto
+        std_testGait10dof18musc_INDYGO_solution_tendon_force_rate_control.sto
         std_testGait10dof18musc_GSO_solution_activation.sto
         std_testGait10dof18musc_GSO_solution_norm_fiber_length.sto
         std_testGait10dof18musc_GSO_solution_norm_fiber_velocity.sto
         std_testGait10dof18musc_GSO_solution_other_controls.sto
-        std_testGait10dof18musc_GSO_solution_tendon_force.sto)
+        std_testGait10dof18musc_GSO_solution_tendon_force.sto
+        std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto
+        )

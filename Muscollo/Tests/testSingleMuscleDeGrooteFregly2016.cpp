@@ -378,6 +378,7 @@ void testLiftingMassGSO(
     gso.set_lowpass_cutoff_frequency_for_joint_moments(100);
     // TODO is the filtering necessary if we have reserve actuators?
     gso.set_create_reserve_actuators(0.001);
+    gso.set_mesh_point_frequency(800);
     GlobalStaticOptimization::Solution solution = gso.solve();
     solution.write("testSingleMuscleDeGrooteFregly2016_GSO");
 
