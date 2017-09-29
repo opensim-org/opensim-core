@@ -124,7 +124,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
-    assert(pathPoints.size() > 2);
+    assert(pathPoints.size() > 1);
 
     const AbstractPathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
@@ -1184,7 +1184,9 @@ void GeometryPath::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2, Exception,
+    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2,
+        InvalidPropertyValue,
+        getProperty_PathPointSet().getName(),
         "A valid path requires at least two PathPoints.")
 
     for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
