@@ -42,6 +42,7 @@ namespace OpenSim {
 ///
 /// Activation dynamics mode
 /// ------------------------
+/// TODO not implemented yet.
 /// There are two choices for the formulation of activation dynamics:
 /// "explicit" and "implicit". The implicit mode may be up to 2 times faster
 /// than the explicit mode, and you should try the implict mode first.
