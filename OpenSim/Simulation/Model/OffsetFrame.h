@@ -1,7 +1,7 @@
 #ifndef OPENSIM_OFFSET_FRAME_H_
 #define OPENSIM_OFFSET_FRAME_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  OffsetFrame.h                           
+ *                          OpenSim:  OffsetFrame.h                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Matt DeMers Ajay Seth, Ayman Habib                              *
+ * Author(s): Matt DeMers, Ajay Seth, Ayman Habib                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -64,12 +64,12 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3, 
-    "Translational offset of this frame's origin from the parent frame's origin, " 
-    "expressed in the parent frame.");
+    OpenSim_DECLARE_PROPERTY(translation, SimTK::Vec3,
+    "Translational offset (in meters) of this frame's origin from the parent "
+    "frame's origin, expressed in the parent frame.");
     OpenSim_DECLARE_PROPERTY(orientation, SimTK::Vec3,
-    "Orientation offset of this frame in its parent frame, expressed as a "
-    "frame-fixed x-y-z rotation sequence.");
+    "Orientation offset (in radians) of this frame in its parent frame, "
+    "expressed as a frame-fixed x-y-z rotation sequence.");
 
 //==============================================================================
 // SOCKETS
@@ -356,5 +356,3 @@ void OffsetFrame<C>::extendConnectToModel(Model& model)
 } // end of namespace OpenSim
 
 #endif // OPENSIM_OFFSET_FRAME_H_
-
-
