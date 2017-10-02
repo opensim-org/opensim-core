@@ -56,6 +56,8 @@ public:
     { return _max_contraction_velocity; }
 
 private:
+    // TODO allow users to set kT; it has a huge effect on the runtime of
+    // INDYGO.
     constexpr static double kT = 35;
     constexpr static double c1 = 0.200;
     constexpr static double c2 = 0.995;
