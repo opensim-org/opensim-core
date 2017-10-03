@@ -961,6 +961,10 @@ void testComponentPathNames()
     barWrtFoo = bar.getRelativePathName(foo);
     ASSERT(barWrtFoo == "../footConstraint");
 
+    // verify that these illegal names throw when we try to finalize
+    // the component from its property values
+    ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
+
     // Now build use real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
