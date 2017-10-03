@@ -167,6 +167,10 @@ void Component::finalizeFromProperties()
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
                       getConcreteClassName() );
 
+    ComponentPath cp;
+    OPENSIM_THROW_IF( !cp.isLegalPathElement(getName()), InvalidComponentName,
+        getName(), cp.getInvalidChars(), getConcreteClassName());
+
     for (auto& comp : _memberSubcomponents) {
         comp->setOwner(*this);
     }
