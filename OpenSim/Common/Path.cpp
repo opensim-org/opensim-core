@@ -227,7 +227,8 @@ bool Path::isLegalPathElement(const std::string& pathElement) const
 void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
+        OPENSIM_THROW(Exception, 
+            "Invalid character used in pathElement '" + pathElement + "'.");
     }
 
     if (pathElement.empty()) {
