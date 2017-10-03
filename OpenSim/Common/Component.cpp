@@ -1094,6 +1094,26 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30500) {
+            // In 3.3 and earlier, spaces in names were tolerated. Spaces are
+            // no longer acceptable in Component names.
+            if (node.hasAttribute("name")) {
+                auto name = node.getRequiredAttribute("name").getValue();
+                if (name.find_first_of("\n\t ") < std::string::npos) {
+                    std::cout << getConcreteClassName() << " name '" << name
+                        << "' contains whitespace. ";
+                    name.erase(
+                        std::remove_if(name.begin(), name.end(), ::isspace),
+                        name.end() );
+                    node.setAttributeValue("name", name);
+                    std::cout << "It is was renamed '" << name << "'." << std::endl;
+                }
+            }
+            else { // All Components should have a name. If none, assign one here.
+                node.setAttributeValue("name", 
+                    IO::Lowercase(getConcreteClassName()));
+            }
+        }
         if (versionNumber < 30508) {
             // Here's an example of the change this function might make:
             // Previous: <connectors>
