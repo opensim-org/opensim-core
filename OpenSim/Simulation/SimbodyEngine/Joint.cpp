@@ -269,9 +269,8 @@ void Joint::scale(const ScaleSet& scaleSet)
     auto scaleOffsetFrameIfOwned = [&](const PhysicalFrame& frame) -> void {
         // If the frame is owned and immediate subcomponent of this Joint then
         // scale it. Otherwise, let the immediate owner of the frame decide.
-        if (auto* offset = findComponent<PhysicalOffsetFrame>(frame.getName())
-            && (&(offset->getOwner()) == this))
-        {
+        auto* offset = findComponent<PhysicalOffsetFrame>(frame.getName());
+        if (offset && (&(offset->getOwner()) == this)) {
             // find the scale factors associated with the base PhysicalFrame
             // of this offset frame
             const string& baseFrameName = offset->findBaseFrame().getName();
