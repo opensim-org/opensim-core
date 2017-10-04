@@ -146,8 +146,7 @@ public:
                         {-50, 50});
                 this->add_state(actuPath + "_norm_tendon_force", {0, 5});
             }
-            this->add_path_constraint(
-                    actuator.getAbsolutePathName() + "_equilibrium", 0);
+            this->add_path_constraint(actuPath + "_equilibrium", 0);
 
             _muscleLabels.push_back(actuPath);
             _numMuscles++;
@@ -217,15 +216,24 @@ public:
             // Unpack variables.
             const T& excitation = controls[_numCoordActuators + 2 * i_act];
             const T& activation = states[2 * i_act];
-            const T& normFibVel = controls[_numCoordActuators + 2 * i_act + 1];
 
             // Activation dynamics.
             _muscles[i_act].calcActivationDynamics(excitation, activation,
                     out.dynamics[2 * i_act]);
 
             // Fiber dynamics.
-            out.dynamics[2 * i_act + 1] =
-                    _muscles[i_act].get_max_contraction_velocity() * normFibVel;
+            if (_useFiberLengthState) {
+                const T& normFibVel =
+                        controls[_numCoordActuators + 2 * i_act + 1];
+                out.dynamics[2 * i_act + 1] =
+                        _muscles[i_act].get_max_contraction_velocity()
+                                * normFibVel;
+            } else {
+                const T& tenForceRateControl =
+                        controls[_numCoordActuators + 2 * i_act + 1];
+                out.dynamics[2 * i_act + 1] = _tendonForceDynamicsScalingFactor
+                                * tenForceRateControl;
+            }
         }
 
         // TODO std::cout << "DEBUG dynamics " << derivatives << std::endl;
@@ -267,7 +275,7 @@ public:
                                     * normTenForce;
                 } else {
                     const T& tenForceRateControl =
-                            controls[_numCoordActuators+2*i_act+1];
+                            controls[_numCoordActuators + 2 * i_act + 1];
                     const T& normTenForce = states[2 * i_act + 1];
                     const T& musTenVel = _muscleTendonVelocities(i_act, i_mesh);
 
@@ -283,14 +291,15 @@ public:
 
             // Compute generalized forces from muscles.
             const auto& momArms = _momentArms[i_mesh];
-            genForce += momArms.template cast<adouble>() * tendonForces;
+            // TODO convert to type T once instead of in every iteration.
+            genForce += momArms.template cast<T>() * tendonForces;
         }
 
 
         // Achieve the motion.
         // ===================
         out.path.segment(_numMuscles, _numCoordsToActuate)
-                = _desiredMoments.col(i_mesh).template cast<adouble>()
+                = _desiredMoments.col(i_mesh).template cast<T>()
                 - genForce;
     }
     void calc_integral_cost(const T& /*time*/,
