@@ -113,6 +113,14 @@ calc_sparsity(const Eigen::VectorXd& x,
                 jacobian_col_indices.data());
         // TODO don't duplicate the memory consumption for storing the sparsity
         // pattern: store the pointer to Ipopt's sparsity pattern?
+
+        //std::ofstream file("DEBUG_jacobian_sparsity.csv");
+        //file << "row_indices,column_indices" << std::endl;
+        //for (int i = 0; i < (int)jacobian_row_indices.size(); ++i) {
+        //    file << jacobian_row_indices[i] << "," << jacobian_col_indices[i]
+        //            << std::endl;
+        //}
+        //file.close();
     }
 
     // Lagrangian.
@@ -147,6 +155,14 @@ calc_sparsity(const Eigen::VectorXd& x,
 
         // Working memory to hold obj_factor and lambda (multipliers).
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);
+
+        //std::ofstream file("DEBUG_hessian_lagrangian_sparsity.csv");
+        //file << "row_indices,column_indices" << std::endl;
+        //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
+        //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]
+        //            << std::endl;
+        //}
+        //file.close();
     }
 }
 
