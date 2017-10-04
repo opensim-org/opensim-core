@@ -158,7 +158,7 @@ before_install:
   # Initialize environment variable.
   - export TESTS_TO_EXCLUDE="unmatched" # This is just for the regex.
   ## If we are building in debug, there are some tests to ignore.
-  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testOptimizationExample|testCMCGait10dof18musc|testCMCWithControlConstraintsRunningModel"; fi
+  - if [ "$BTYPE" = "Debug" ]; then export TESTS_TO_EXCLUDE="$TESTS_TO_EXCLUDE|testOptimizationExample|testCMCGait10dof18musc|testCMCWithControlConstraintsRunningModel|testContactGeometry|testForward|testCMCArm26_Millard"; fi
   
   ## Set compiler flags.
   - export CXX_FLAGS="-Werror " # -Wno-tautological-undefined-compare -Wno-undefined-bool-conversion"
