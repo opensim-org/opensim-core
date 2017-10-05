@@ -280,8 +280,8 @@ void testExcitationUpdatesWithManager()
     
     for (int i = 0; i < 3; ++i)
     {
-        double initAct = 0.1 + i*0.1;
-        double excitation = 0.2 + i*0.2;
+        double initAct = 0.2 + i*0.2; // 0.2, 0.4, 0.6
+        double excitation = initAct + 0.1; // 0.3, 0.5, 0.7
         
         muscleSet.get(0).setActivation(state, initAct);
         FunctionSet& fnset = controller->upd_ControlFunctions();
@@ -299,14 +299,14 @@ void testExcitationUpdatesWithManager()
         arm.realizeDynamics(state);
         double finalAct = muscleSet.get(0).getActivation(state);
         double finalExcitation = muscleSet.get(0).getExcitation(state);
-        cout << state.getTime() << " " << excitation << " " << initAct;
+        cout << state.getTime() << " " << initAct << " " << excitation;
         cout << " " << finalAct << endl;
         // Check if excitation is correct
         SimTK_TEST_EQ(excitation, finalExcitation);
-        // If excitation is not set correctly, it will go back to the default
-        // after the first integration. We can check if this is happening by
-        // ensuring the activation is increasing on each integration.
+        // Also check if the final activation is between the initial
+        // activation and excitation
         SimTK_TEST(finalAct > initAct);
+        SimTK_TEST(finalAct < excitation);
     }
 }
 
