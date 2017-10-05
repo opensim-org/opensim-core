@@ -8,19 +8,19 @@ sudo: false
     
 matrix:
   include:
-    - if type != cron:
+    - if: type != cron
       os: linux
       compiler: clang
       env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=3 DEPLOY=yes
-    - if type != cron:
+    - if: type != cron
       os: linux
       compiler: gcc
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
-    - if type = cron:
+    - if: type = cron
       os: linux
       compiler: clang
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
-    - if type != cron:
+    - if: type != cron
       os: osx
       compiler: clang
       env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
