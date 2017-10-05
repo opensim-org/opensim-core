@@ -84,6 +84,8 @@ install:
   # Output directory must match how Simbody was packaged, otherwise
   # SimbodyConfig.cmake will have all the wrong paths.
   # http://help.appveyor.com/discussions/problems/6024-build-stalled-prompting-for-nuget-permissions#comment_41867748
+  # The URL is for the public project feed that AppVeyor creates for the simbody project, obtained
+  # from https://ci.appveyor.com/project/opensim-org/simbody/settings/nuget.
   - nuget sources add -name simbody -source https://ci.appveyor.com/nuget/simbody-9iv11sycwdny
   - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
