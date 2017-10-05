@@ -19,7 +19,7 @@ matrix:
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on DOXY=off NPROC=3 DEPLOY=yes # TODO DOXY=on
+      env: BTYPE=RelWithDebInfo WRAP=on DOXY=on NPROC=3 DEPLOY=yes
       
 branches:
   except:
@@ -129,9 +129,10 @@ before_install:
 
   ## Doxygen.
   # Need a doxygen that is more recent than that available through apt-get.
-  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
-  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
-  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
 
   ## Install Simbody.
   # The Simbody travis script uploads the simbody binaries to sourceforge.
@@ -141,7 +142,7 @@ before_install:
   - unzip -q $SIMBODYZIP -d ~
 
   ## Install SWIG to build Java/python wrapping.
-  - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
+  # - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
   - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
   - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
@@ -180,7 +181,8 @@ install:
   # Configure OpenSim.
   #############################################################################
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cmake $TRAVIS_BUILD_DIR -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen; fi
 
   #############################################################################
   # Build OpenSim.
