@@ -19,7 +19,7 @@ matrix:
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=on DOXY=off NPROC=3 DEPLOY=yes # TODO DOXY=on
       
 branches:
   except:
