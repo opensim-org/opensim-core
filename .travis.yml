@@ -8,6 +8,9 @@ sudo: false
     
 matrix:
   include:
+    # "cron" means periodic (e.g., daily) builds. 
+    # see https://travis-ci.org/opensim-org/opensim-core/settings
+    # for our scheduled cron jobs.
     - if: type != cron
       os: linux
       compiler: clang
