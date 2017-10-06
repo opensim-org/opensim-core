@@ -96,14 +96,14 @@ public:
 %include exception.i
 
 %extend SimTK::RowVectorBase<double> {
-     double get(size_t i) {
+     double get(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
          
          return $self->getElt(0, i);
      }
 
-     double set(size_t i, double value) {
+     double set(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -114,14 +114,14 @@ public:
 }
 
 %extend SimTK::VectorBase<double> {
-     double get(size_t i) {
+     double get(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     double set(size_t i, double value) {
+     double set(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -132,14 +132,14 @@ public:
 }
 
 %extend SimTK::RowVectorBase<SimTK::Vec3> {
-     Vec3 get(size_t i) {
+     Vec3 get(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     Vec3 set(size_t i, Vec3 value) {
+     Vec3 set(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -150,14 +150,14 @@ public:
 }
 
 %extend SimTK::VectorBase<SimTK::Vec3> {
-     Vec3 get(size_t i) {
+     Vec3 get(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     Vec3 set(size_t i, Vec3 value) {
+     Vec3 set(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
