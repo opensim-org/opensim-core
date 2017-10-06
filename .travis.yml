@@ -81,6 +81,10 @@ addons:
       - frs.sourceforge.net
 
 before_install:
+  # If the Mac builds take too long when building bindings, then we can have the bindings 
+  # (and doxygen) only build if we're going to deploy to sourceforge.
+  #- if [[ "$TRAVIS_BRANCH" != "master" || "$TRAVIS_PULL_REQUEST" != "false" ]]; then export WRAP=off; export DOXY=off; fi
+
   - cd $TRAVIS_BUILD_DIR
   # Stop build if comment contains [skip travis].
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
