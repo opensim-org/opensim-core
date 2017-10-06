@@ -20,13 +20,28 @@ public:
     unsigned get_num_variables() const { return m_num_variables; }
     unsigned get_num_constraints() const { return m_num_constraints; }
     const Eigen::VectorXd& get_variable_lower_bounds() const
-    { return m_variable_lower_bounds; }
+    {   return m_variable_lower_bounds; }
     const Eigen::VectorXd& get_variable_upper_bounds() const
-    { return m_variable_upper_bounds; }
+    {   return m_variable_upper_bounds; }
     const Eigen::VectorXd& get_constraint_lower_bounds() const
-    { return m_constraint_lower_bounds; }
+    {   return m_constraint_lower_bounds; }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
-    { return m_constraint_upper_bounds; }
+    {   return m_constraint_upper_bounds; }
+
+    // TODO
+    bool get_use_supplied_sparsity_hessian_lagrangian() const
+    {   return m_use_supplied_sparsity_hessian_lagrangian; }
+    // TODO
+    void set_use_supplied_sparsity_hessian_lagrangian(bool value)
+    {   m_use_supplied_sparsity_hessian_lagrangian = value; }
+    // TODO document
+    virtual void calc_sparsity_hessian_lagrangian(
+            const Eigen::VectorXd& variables, /*TODO templatize?*/
+            std::vector<unsigned int>& hessian_row_indices,
+            std::vector<unsigned int>& hessian_col_indices) const;
+    class CalcSparsityHessianLagrangianNotImplemented
+            : public std::exception {};
+
     virtual std::shared_ptr<OptimizationProblemDecorator>
     make_decorator() const = 0;
 
@@ -67,11 +82,18 @@ private:
     // TODO use safer types that will give exceptions for improper values.
     unsigned m_num_variables;
     unsigned m_num_constraints;
+    bool m_use_supplied_sparsity_hessian_lagrangian = false;
     Eigen::VectorXd m_variable_lower_bounds;
     Eigen::VectorXd m_variable_upper_bounds;
     Eigen::VectorXd m_constraint_lower_bounds;
     Eigen::VectorXd m_constraint_upper_bounds;
 };
+
+inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
+        const Eigen::VectorXd&,
+        std::vector<unsigned int>&, std::vector<unsigned int>&) const {
+    throw CalcSparsityHessianLagrangianNotImplemented();
+}
 
 } // namespace tropter
 

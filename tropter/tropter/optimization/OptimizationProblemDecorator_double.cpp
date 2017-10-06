@@ -26,7 +26,7 @@ OptimizationProblem<double>::Decorator::Decorator(
         OptimizationProblemDecorator(problem), m_problem(problem) {}
 
 void OptimizationProblem<double>::Decorator::
-calc_sparsity(const Eigen::VectorXd& /*x*/,
+calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         std::vector<unsigned int>& hessian_row_indices,
@@ -176,17 +176,32 @@ calc_sparsity(const Eigen::VectorXd& /*x*/,
     m_jacobian_recovered_row_indices.resize(num_jacobian_nonzeros);
     m_jacobian_recovered_col_indices.resize(num_jacobian_nonzeros);
 
+    // TODO move ColPack code into a separate file.
+
 
     // Hessian.
     // ========
     // Exact hessian mode is unsupported for now.
-    hessian_row_indices.clear();
-    hessian_col_indices.clear();
-    //const auto& num_vars = get_num_variables();
-    //// Dense upper triangle.
-    //unsigned int num_hessian_elements = num_vars * (num_vars - 1) / 2;
-    //hessian_row_indices.resize(num_hessian_elements);
-    //hessian_col_indices.resize(num_hessian_elements);
+    if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
+        m_problem.calc_sparsity_hessian_lagrangian(x,
+                hessian_row_indices, hessian_col_indices);
+        if (hessian_row_indices.size() != hessian_col_indices.size()) {
+            throw std::runtime_error("Expected hessian_row_indices (size " +
+                    std::to_string(hessian_row_indices.size()) + ") and "
+                    "hessian_col_indices (size " +
+                    std::to_string(hessian_col_indices.size()) +
+                    ") to have the same size.");
+        }
+    } else {
+        hessian_row_indices.clear();
+        hessian_col_indices.clear();
+        // TODO
+        //const auto& num_vars = get_num_variables();
+        //// Dense upper triangle.
+        //unsigned int num_hessian_elements = num_vars * (num_vars - 1) / 2;
+        //hessian_row_indices.resize(num_hessian_elements);
+        //hessian_col_indices.resize(num_hessian_elements);
+    }
 }
 
 void OptimizationProblem<double>::Decorator::

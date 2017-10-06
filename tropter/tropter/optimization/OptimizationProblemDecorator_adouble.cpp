@@ -125,6 +125,10 @@ calc_sparsity(const Eigen::VectorXd& x,
 
     // Lagrangian.
     // -----------
+    if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
+        throw std::runtime_error("Cannot use supplied sparsity pattern for "
+                "Hessian of Lagrangian when using automatic differentiation.");
+    }
     {
         VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints);
         double lagr_value; // Unused.
