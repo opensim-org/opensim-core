@@ -103,13 +103,11 @@ public:
          return $self->getElt(0, i);
      }
 
-     double set(int i, double value) {
+     void set(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
-         double prevValue = $self->getElt(0, i);
          $self->updElt(0, i) = value;
-         return prevValue;
      }
 }
 
@@ -121,13 +119,11 @@ public:
          return $self->getElt(i, 0);
      }
 
-     double set(int i, double value) {
+     void set(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
-         double prevValue = $self->getElt(i, 0);
          $self->updElt(i, 0) = value;
-         return prevValue;
      }
 }
 
@@ -139,13 +135,11 @@ public:
          return $self->getElt(0, i);
      }
 
-     Vec3 set(int i, Vec3 value) {
+     void set(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
-         Vec3 prevValue = $self->getElt(0, i);
          $self->updElt(0, i) = value;
-         return prevValue;
      }
 }
 
@@ -157,13 +151,11 @@ public:
          return $self->getElt(i, 0);
      }
 
-     Vec3 set(int i, Vec3 value) {
+     void set(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
-         Vec3 prevValue = $self->getElt(i, 0);
          $self->updElt(i, 0) = value;
-         return prevValue;
      }
 }
 
