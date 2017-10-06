@@ -109,6 +109,11 @@ test_script:
   ## Run tests.
   - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
+  ## Build doxygen (now that tests pass).
+  # http://help.appveyor.com/discussions/problems/863-doxygen-installed-via-chocolatey-not-found
+  - choco install doxygen.portable --yes
+  - cmake .
+  - cmake --build . --target doxygen --config Release
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
@@ -120,7 +125,7 @@ test_script:
   - "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
 
 after_test:
-  - cd %APPVEYOR_BUILD_FOLDER%
+  - cd %APPVEYOR_BUILD_FOLDER% 
   - ## On master branch, create NuGet package for OpenSim.
   - # Detect if we are on the master branch.
   - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
