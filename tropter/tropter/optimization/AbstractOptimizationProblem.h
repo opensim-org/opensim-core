@@ -28,13 +28,27 @@ public:
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_constraint_upper_bounds; }
 
-    // TODO
+    /// WHen using finite differences to compute derivatives, should we use
+    /// the user-supplied sparsity pattern of the Hessian (provided by
+    /// implementing calc_sparsity_hessian_lagrangian())? If false, then we
+    /// assume the Hessian is dense, which will have a very negative impact
+    /// on performance.
     bool get_use_supplied_sparsity_hessian_lagrangian() const
     {   return m_use_supplied_sparsity_hessian_lagrangian; }
-    // TODO
+    /// @copydoc get_use_supplied_sparsity_hessian_lagrangian()
+    /// If this is true and calc_sparsity_hessian_lagrangian() is not
+    /// implemented, an exception is thrown.
+    /// This must be false if using automatic differentiation.
     void set_use_supplied_sparsity_hessian_lagrangian(bool value)
     {   m_use_supplied_sparsity_hessian_lagrangian = value; }
-    // TODO document
+    /// If using finite differences (double) with a Newton method (exact
+    /// Hessian in Ipopt), then we require the sparsity pattern of the
+    /// Hessian of the Lagrangian. By default, we assume the Hessian is dense.
+    /// If you know the sparsity pattern of the Hessian, implement this
+    /// function to provide it. This has a *huge* impact on the speed
+    /// of the optimization for sparse problems.
+    // TODO do the elements need to be ordered in any particular way?
+    // TODO require ADOL-C's compressed row format.
     virtual void calc_sparsity_hessian_lagrangian(
             const Eigen::VectorXd& variables, /*TODO templatize?*/
             std::vector<unsigned int>& hessian_row_indices,

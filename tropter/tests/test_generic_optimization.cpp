@@ -34,14 +34,12 @@ public:
 
 TEST_CASE("Unconstrained, IpoptSolver", "[ipopt]") {
     // Make sure it's okay to not have constraints.
-    SECTION("Finite differences") {
+    SECTION("Finite differences, limited memory") {
         Unconstrained<double> problem;
         // TODO may not want user to directly use IpoptSolver; instead, use a
         // generic solver interface?
         IpoptSolver solver(problem);
         VectorXd variables = Vector2d(0, 0);
-        // Cannot use full Hessian with finite differences.
-        REQUIRE_THROWS_AS(solver.optimize(variables), std::runtime_error);
         solver.set_hessian_approximation("limited-memory");
         double obj_value = solver.optimize(variables);
 
@@ -51,6 +49,17 @@ TEST_CASE("Unconstrained, IpoptSolver", "[ipopt]") {
 
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.
+    }
+    SECTION("Finite differences, exact Hessian") {
+        Unconstrained<double> problem;
+        IpoptSolver solver(problem);
+        VectorXd variables = Vector2d(0, 0);
+        solver.set_hessian_approximation("exact");
+        double obj_value = solver.optimize(variables);
+
+        REQUIRE(Approx(variables[0]) == 1.5);
+        REQUIRE(Approx(variables[1]) == -2.0);
+        REQUIRE(Approx(obj_value)   == 0);
     }
     SECTION("ADOL-C") {
         // Make sure it's okay to not have constraints.

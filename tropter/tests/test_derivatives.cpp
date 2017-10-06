@@ -456,10 +456,12 @@ public:
         m_calc_sparsity_hessian_lagrangian_called = true;
         row_indices.clear();
         col_indices.clear();
-        // Treat the Hessian as dense (conservative estimate, to make sure
-        // that we are using the user-supplied sparsity).
+
+        // Treat the Hessian as dense but with a zero at (0, 3) (conservative
+        // estimate) so that we can detect that this function is called.
         for (int i = 0; i < x.size(); ++i) {
             for (int j = i; j < x.size(); ++j) {
+                if (i == 0 && j == 3) continue;
                 row_indices.push_back(i);
                 col_indices.push_back(j);
             }
@@ -505,17 +507,18 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             REQUIRE(problemd.m_calc_sparsity_hessian_lagrangian_called);
             REQUIRE(jac_row_indices == expected_jac_row_indices);
             REQUIRE(jac_col_indices == expected_jac_col_indices);
-            // TODO check that the pattern is as expected (dense).
+            // Check that the pattern is as expected (dense with a zero
+            // at (0, 3)).
             // TODO how do we ensure the seed recovery from ColPack uses the
             // same ordering?
             std::vector<unsigned int> expected_hess_row_indices{
-                    0, 0, 0, 0,
+                    0, 0, 0,
                        1, 1, 1,
                           2, 2,
                              3
             };
             std::vector<unsigned int> expected_hess_col_indices{
-                    0, 1, 2, 3,
+                    0, 1, 2,
                        1, 2, 3,
                           2, 3,
                              3
@@ -524,7 +527,6 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             REQUIRE(hess_col_indices == expected_hess_col_indices);
 
             // Evaluate Hessian to ensure entries are the desired order.
-            // Hessian (of the Lagrangian).
             const unsigned num_hessian_nonzeros =
                     (unsigned)hess_row_indices.size();
             VectorXd actual_hessian_values(num_hessian_nonzeros);
@@ -536,13 +538,13 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 const auto& i = hess_row_indices[inz];
                 const auto& j = hess_col_indices[inz];
                 REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-8));
+                        Approx(actual_hessian_values[inz]).epsilon(1e-9));
             }
         }
         {
             // Do not use supplied sparsity.
-            // Finite differences with IPOPT in exact Hessian mode requires
-            // users to supply sparsity.
+            // If user does not supply sparsity, then the Hessian is assumed
+            // to be dense.
             SparseJacUserSpecifiedSparsity<double> problemd;
             problemd.set_use_supplied_sparsity_hessian_lagrangian(false);
             auto decorator = problemd.make_decorator();
@@ -552,21 +554,36 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     decorator->make_initial_guess_from_bounds(),
                     jac_row_indices, jac_col_indices,
                     hess_row_indices, hess_col_indices);
-            // No sparsity for the Hessian is provided.
-            REQUIRE(hess_row_indices.size() == 0);
-            REQUIRE(hess_col_indices.size() == 0);
-            // TODO throw an error if trying to use an exact Hessian.
-            // TODO remove:
-            //REQUIRE(!problemd.m_calc_sparsity_hessian_lagrangian_called);
-            //REQUIRE(jac_row_idxs == expected_jac_row_indices);
-            //REQUIRE(jac_col_idxs == expected_jac_col_indices);
-            //// Not dense.
-            //std::vector<unsigned int> expected_hess_row_indices{0, 1, 2, 3};
-            //std::vector<unsigned int> expected_hess_col_indices{0, 1, 2, 3};
-            //REQUIRE(hess_row_idxs == expected_hess_row_indices);
-            //REQUIRE(hess_col_idxs == expected_hess_col_indices);
+            //
+            std::vector<unsigned int> expected_hess_row_indices{
+                    0,
+                    0, 1,
+                    0, 1, 2,
+                    0, 1, 2, 3
+            };
+            std::vector<unsigned int> expected_hess_col_indices{
+                    0,
+                    1, 1,
+                    2, 2, 2,
+                    3, 3, 3, 3
+            };
+            REQUIRE(hess_row_indices == expected_hess_row_indices);
+            REQUIRE(hess_col_indices == expected_hess_col_indices);
 
-            // TODO evaluate Hessian to ensure entries are the desired order.
+            // Evaluate Hessian to ensure entries are the desired order.
+            const unsigned num_hessian_nonzeros =
+                    (unsigned)hess_row_indices.size();
+            VectorXd actual_hessian_values(num_hessian_nonzeros);
+            decorator->calc_hessian_lagrangian(
+                    problemd.get_num_variables(), x.data(), false, obj_factor,
+                    problem.get_num_constraints(), lambda.data(), false,
+                    num_hessian_nonzeros, actual_hessian_values.data());
+            for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+                const auto& i = hess_row_indices[inz];
+                const auto& j = hess_col_indices[inz];
+                REQUIRE(analytical_hessian(i, j) ==
+                        Approx(actual_hessian_values[inz]).epsilon(1e-9));
+            }
         }
         {
             // Requesting use of supplied sparsity if none is provided causes
@@ -628,4 +645,4 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
     }
 }
 
-
+// TODO test reordering of sparsity pattern to match what ColPack likes.

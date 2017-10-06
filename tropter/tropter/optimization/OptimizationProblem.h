@@ -178,12 +178,17 @@ public:
             bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const override;
 private:
+
+    void calc_lagrangian(
+            const Eigen::VectorXd& variables,
+            double obj_factor,
+            const Eigen::Map<const Eigen::VectorXd>& lambda,
+            double& lagrangian_value) const;
+
     const OptimizationProblem<double>& m_problem;
 
     // Working memory shared by multiple functions.
     mutable Eigen::VectorXd m_x_working;
-    mutable Eigen::VectorXd m_constr_pos;
-    mutable Eigen::VectorXd m_constr_neg;
 
     // Gradient.
     // ---------
@@ -201,7 +206,17 @@ private:
     mutable std::unique_ptr<JacobianColoring> m_jacobian_coloring;
     // Working memory.
     // TODO this could be a column vector unless we are using parallelization.
+    mutable Eigen::VectorXd m_constr_pos;
+    mutable Eigen::VectorXd m_constr_neg;
     mutable Eigen::MatrixXd m_jacobian_compressed;
+
+    // Hessian/Lagrangian.
+    // -------------------
+    // TODO temporary until we use ColPack.
+    mutable std::vector<unsigned int> m_hessian_row_indices;
+    mutable std::vector<unsigned int> m_hessian_col_indices;
+    // Working memory.
+    mutable Eigen::VectorXd m_constr_working;
 };
 
 /// This specialization uses automatic differentiation (via ADOL-C) to
