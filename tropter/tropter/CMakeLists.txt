@@ -12,6 +12,8 @@ add_library(tropter
         optimization/SNOPTSolver.cpp
         optimization/IpoptSolver.h
         optimization/IpoptSolver.cpp
+        optimization/internal/GraphColoring.h
+        optimization/internal/GraphColoring.cpp
         optimalcontrol/DirectCollocation.h
         optimalcontrol/DirectCollocation.hpp
         optimalcontrol/DirectCollocation.cpp
@@ -19,8 +21,7 @@ add_library(tropter
         optimalcontrol/OptimalControlProblem.hpp
         optimalcontrol/OptimalControlProblem.cpp
         optimalcontrol/OptimalControlIterate.h
-        optimalcontrol/OptimalControlIterate.cpp
-        )
+        optimalcontrol/OptimalControlIterate.cpp)
 
 # TODO generate_export_header() for exporting symbols on Windows.
 
@@ -112,4 +113,5 @@ install(TARGETS tropter EXPORT tropter-config # TODO change to tropter-targets
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${TROPTER_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h*")
+        FILES_MATCHING PATTERN "*.h*"
+        PATTERN "*internal" EXCLUDE)
