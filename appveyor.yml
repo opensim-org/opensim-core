@@ -116,6 +116,7 @@ test_script:
   - IF DEFINED DISTR choco install doxygen.portable --yes
   - IF DEFINED DISTR cmake .
   - IF DEFINED DISTR cmake --build . --target doxygen --config Release
+  
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
