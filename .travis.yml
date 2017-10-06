@@ -19,7 +19,7 @@ matrix:
       env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
     - os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on DOXY=on NPROC=3 DEPLOY=yes
+      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
       
 branches:
   except:
@@ -181,14 +181,18 @@ install:
   # Configure OpenSim.
   #############################################################################
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  # TODO on Mac, use system python instead of homebrew python.
+  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then cmake $TRAVIS_BUILD_DIR -DBUILD_PYTHON_WRAPPING=$WRAP; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]];   then cmake $TRAVIS_BUILD_DIR -DBUILD_PYTHON_WRAPPING=$WRAP -DPYTHON_EXECUTABLE=/usr/bin/python; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cmake $TRAVIS_BUILD_DIR -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen; fi
 
   #############################################################################
   # Build OpenSim.
   #############################################################################
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  #- if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
+  # On OSX, building the bindings separately slows down the build too much.
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
@@ -217,7 +221,9 @@ script:
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.
-  - if [ "$WRAP" = "on" ]; then nosetests -v; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
   - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
