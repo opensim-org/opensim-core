@@ -188,7 +188,7 @@ install:
   # Build OpenSim.
   #############################################################################
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
+  #- if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
@@ -220,7 +220,7 @@ script:
   - if [ "$WRAP" = "on" ]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
-  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
   # Decrypt the private key stored in the repository to the tmp dir.
   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
   # Start the ssh agent.
@@ -232,12 +232,12 @@ script:
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
   # If we're uploading doxygen, we also want to delete old
   # doxygen files from the server so they don't build up indefinitely.
   # However, ssh'ing into the server takes a while, so we only do this
   # randomly (1% of the time).
-  - if [[ "$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then echo "This build is randomly selected to delete old folders from myosin.sourceforge.net."; fi
   # Creates an environment at sourceforge that we can ssh into.
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then ssh opensim-bot,myosin@shell.sourceforge.net create; fi
