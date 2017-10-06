@@ -56,6 +56,8 @@ init:
   # The CMake variable JAVA_HOME tells CMake where to look for Java.
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
+  # Detect if we are on the master branch; if so, we will deploy binaries.
+  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
 
 nuget:
   account_feed: true
@@ -111,9 +113,9 @@ test_script:
 
   ## Build doxygen (now that tests pass).
   # http://help.appveyor.com/discussions/problems/863-doxygen-installed-via-chocolatey-not-found
-  - choco install doxygen.portable --yes
-  - cmake .
-  - cmake --build . --target doxygen --config Release
+  - IF DEFINED DISTR choco install doxygen.portable --yes
+  - IF DEFINED DISTR cmake .
+  - IF DEFINED DISTR cmake --build . --target doxygen --config Release
   ## Ensure we have no trouble installing.
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
@@ -127,8 +129,6 @@ test_script:
 after_test:
   - cd %APPVEYOR_BUILD_FOLDER% 
   - ## On master branch, create NuGet package for OpenSim.
-  - # Detect if we are on the master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - # Create and upload NuGet package.
   - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%" -BasePath %OPENSIM_INSTALL_DIR%
   - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%.0.0.0.nupkg
