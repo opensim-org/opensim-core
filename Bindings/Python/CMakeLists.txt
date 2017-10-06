@@ -119,7 +119,8 @@ macro(OpenSimAddPythonModule)
         set(_COMPILE_FLAGS "/wd4996 /wd4114")
     endif()
     set_source_files_properties("${_output_cxx_file}"
-        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
+        PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}"
+                   GENERATED TRUE)
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 

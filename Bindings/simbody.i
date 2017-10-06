@@ -35,14 +35,14 @@ namespace SimTK {
 
 namespace SimTK {
 %extend RowVectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -61,14 +61,14 @@ namespace SimTK {
      }
  }
 %extend VectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -96,14 +96,14 @@ namespace SimTK {
 %template(RowVector)           SimTK::RowVector_<double>;
 
 %extend RowVectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -125,14 +125,14 @@ namespace SimTK {
      }
  }
 %extend VectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
