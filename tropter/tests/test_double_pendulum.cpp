@@ -175,14 +175,16 @@ public:
 
     }
 
-    static OptimalControlSolution run_test(const std::string& solver) {
+    static OptimalControlSolution run_test(const std::string& solver,
+            const std::string& hessian_approx) {
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
         // from the solution using an exact Hessian does not converge.
-        dircol.get_optimization_solver().set_hessian_approximation("exact");
+        dircol.get_optimization_solver().set_hessian_approximation(
+                hessian_approx);
         OptimalControlSolution solution = dircol.solve();
         //solution.write("double_pendulum_coordinate_tracking.csv");
 
@@ -289,7 +291,7 @@ public:
     }
 };
 
-TEST_CASE("Double pendulum coordinate tracking.",
+TEST_CASE("Double pendulum coordinate tracking",
         "[trapezoidal][implicitdynamics]")
 {
     // Make sure the solutions from the implicit and explicit
@@ -298,7 +300,8 @@ TEST_CASE("Double pendulum coordinate tracking.",
     // The explicit solution takes 20 iterations whereas the implicit
     // solution takes 25 iterations.
     const auto explicit_solution =
-            DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
+            DoublePendulumCoordinateTracking<adouble>::
+            run_test("ipopt", "exact");
 
     const auto implicit_solution =
             ImplicitDoublePendulumCoordinateTracking<adouble>::
@@ -322,8 +325,20 @@ TEST_CASE("Double pendulum coordinate tracking.",
     TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
             implicit_solution.controls.bottomRows(2), 1.5);
 
-    // TODO does not converge with limited memory.
+    // The following do not converge:
+    // EXIT: Maximum number of iterations exceeded.
+    // DoublePendulumCoordinateTracking<adouble>::
+    // run_test("ipopt", "limited-memory");
+    // EXIT: Solved to Acceptable Level, "Restoration phase is called at
+    // almost feasible point, but acceptable point from iteration 810 could
+    // be restored." After 812 iterations. But solution is pretty wrong.
+    // DoublePendulumCoordinateTracking<double>::
+    // run_test("ipopt", "limited-memory");
+    // EXIT: Maximum number of iterations exceeded.
     // ImplicitDoublePendulumCoordinateTracking<adouble>::
+    // run_test("ipopt", "limited-memory");
+    // EXIT: Restoration failed after 235 iterations.
+    // ImplicitDoublePendulumCoordinateTracking<double>::
     // run_test("ipopt", "limited-memory");
 }
 
