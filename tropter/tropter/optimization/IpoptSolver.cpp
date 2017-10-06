@@ -144,6 +144,8 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
             && status != Ipopt::Solved_To_Acceptable_Level) {
         // TODO give detailed diagnostics.
         // TODO throw exception.
+        // http://llvm.org/doxygen/classllvm_1_1ErrorOr.html
+        // https://akrzemi1.wordpress.com/2017/07/12/your-own-error-code/
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
         throw std::runtime_error("[tropter] Failed to find a solution.");
     }
