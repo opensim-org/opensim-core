@@ -5,7 +5,7 @@ This example demonstrates some of the new features of the OpenSim 4.0 API.
 The Component architecture allows us to join sub-assemblies using Sockets
 to form larger Models. Additionally, Components can pass information between
 each other using Inputs and Outputs. For more information, please refer to the
-[OpenSim doxygen](http://doxygen.opensim.community/) for the Component class.
+OpenSim doxygen for the Component class.
 
 This interactive example consists of three steps:
 

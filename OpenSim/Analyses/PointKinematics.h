@@ -45,7 +45,7 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
 //=============================================================================
 namespace OpenSim { 
 
-class Body;
+class PhysicalFrame;
 class Model;
 class Storage;
 
@@ -68,8 +68,8 @@ public:
 private:
     //char _buffer[PointKinematicsBUFFER_LENGTH];
     //char _tmp[PointKinematicsBUFFER_LENGTH];
-    Body *_body;
-    Body *_relativeToBody;
+    const PhysicalFrame *_body;
+    const PhysicalFrame *_relativeToBody;
 protected:
     // Properties
     PropertyStr _bodyNameProp;
@@ -121,10 +121,10 @@ public:
     //--------------------------------------------------------------------------
     // BODY
     void setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint);
-    void setBody(Body* aBody);
-    void setRelativeToBody(Body* aBody);
-    Body* getBody();
-    Body* getRelativeToBody();
+    void setBody(const PhysicalFrame* aBody);
+    void setRelativeToBody(const PhysicalFrame* aBody);
+    const PhysicalFrame* getBody() const;
+    const PhysicalFrame* getRelativeToBody() const;
     // POINT
     void setPoint(const SimTK::Vec3& aPoint);
     void getPoint(SimTK::Vec3& rPoint);
