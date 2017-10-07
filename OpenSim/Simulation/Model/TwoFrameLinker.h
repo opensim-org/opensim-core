@@ -386,7 +386,7 @@ void TwoFrameLinker<C, F>::scaleFrames(const ScaleSet& scaleSet)
     SimTK::Vec3 frame1Factors(1.0);
     SimTK::Vec3 frame2Factors(1.0);
 
-    // Find the factors associated with the PhysicalFrames this Joint connects
+    // Find the factors associated with the PhysicalFrames this Component connects
     const std::string& base1Name = this->getFrame1().findBaseFrame().getName();
     const std::string& base2Name = this->getFrame2().findBaseFrame().getName();
     // Get scale factors
@@ -406,7 +406,7 @@ void TwoFrameLinker<C, F>::scaleFrames(const ScaleSet& scaleSet)
             break;
     }
 
-    // if the frame is owned by this Joint scale it,
+    // if the frame is owned by this Component scale it,
     // otherwise let the owner of the frame decide.
     int found = getProperty_frames().findIndex(getFrame1());
     if (found >= 0) {

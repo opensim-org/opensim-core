@@ -179,13 +179,13 @@ void testFromStatesStorageGivesCorrectStates() {
 
     Storage sto(statesStoFname);
 
-    // This will fail because we have not yet called initSystem() on the model.
-    SimTK_TEST_MUST_THROW_EXC(
-            StatesTrajectory::createFromStatesStorage(model, sto),
-            OpenSim::ModelHasNoSystem);
-
-    model.initSystem();
+    // Note: we are verifying that we can load a trajectory without
+    // invoking model.initSystem() ourselves.
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+
+    // However, we eventually *do* need to call initSystem() to make use of the
+    // trajectory with the model.
+    model.initSystem();
 
     // Test that the states are correct, and also that the iterator works.
     // -------------------------------------------------------------------
@@ -399,7 +399,6 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
 void testFromStatesStorageUniqueColumnLabels() {
 
     Model model("gait2354_simbody.osim");
-    model.initSystem();
     Storage sto(statesStoFname);
     
     // Edit column labels so that they are not unique.
@@ -439,8 +438,8 @@ void testFromStatesStoragePre40CorrectStates() {
     Storage sto(pre40StoFname);
     // So the test doesn't take so long.
     sto.resampleLinear(0.01);
-    model.initSystem();
     auto states = StatesTrajectory::createFromStatesStorage(model, sto);
+    model.initSystem();
 
     // Test that the states are correct.
     // ---------------------------------
@@ -717,18 +716,25 @@ void tableAndTrajectoryMatch(const Model& model,
 
     const auto& colNames = table.getColumnLabels();
 
+    std::vector<int> stateValueIndices(colNames.size());
+    for (size_t icol = 0; icol < colNames.size(); ++icol) {
+        stateValueIndices[icol] = stateNames.findIndex(colNames[icol]);
+    }
+
+    SimTK::Vector stateValues; // working memory
+
     // Test that the data table has exactly the same numbers.
     for (size_t itime = 0; itime < states.getSize(); ++itime) {
         // Test time.
         SimTK_TEST(table.getIndependentColumn()[itime] ==
                    states[itime].getTime());
 
+        stateValues = model.getStateVariableValues(states[itime]);
+
         // Test state values.
         for (size_t icol = 0; icol < table.getNumColumns(); ++icol) {
-            const auto& stateName = colNames[icol];
+            const auto& valueInStates = stateValues[stateValueIndices[icol]];
 
-            const auto& valueInStates = model.getStateVariableValue(
-                    states[itime], stateName);
             const auto& column = table.getDependentColumnAtIndex(icol);
             const auto& valueInTable = column[static_cast<int>(itime)];
 

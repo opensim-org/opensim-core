@@ -85,7 +85,8 @@ macro(OpenSimAddJavaTest TESTNAME)
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestVisualization")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
-                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditProperties")
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditProperties")    file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditMarkers")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait2354_simbody.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestModelScaling")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait2354_Scale_MarkerSet.xml"
@@ -140,6 +141,7 @@ OpenSimAddJavaTest(TestVisualization)
 OpenSimAddJavaTest(TestEditProperties)
 OpenSimAddJavaTest(TestTables)
 OpenSimAddJavaTest(TestModelBuilding)
+OpenSimAddJavaTest(TestEditMarkers)
 OpenSimAddJavaTest(TestModelScaling)
 
 if(WITH_BTK)
