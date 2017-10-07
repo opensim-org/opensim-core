@@ -119,7 +119,7 @@ namespace SimTK {
 
      Vector_<Vec3> transpose() {
          Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
-         for(unsigned i = 0; i < colVec.nelt(); ++i)
+         for(int i = 0; i < colVec.nelt(); ++i)
              colVec[i] = $self->operator[](i);
          return colVec;
      }
@@ -147,7 +147,7 @@ namespace SimTK {
 
      RowVector_<Vec3> transpose() {
          RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
-         for(unsigned i = 0; i < rowVec.nelt(); ++i)
+         for(int i = 0; i < rowVec.nelt(); ++i)
              rowVec[i] = $self->operator[](i);
          return rowVec;
      }
