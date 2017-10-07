@@ -53,3 +53,19 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 %include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
+
+// When used from GUI or matlab ModelScaler takes ownership on these calls, 
+// communicate that fact to the interpreter to avoid Garbage Collection issues
+%rename OpenSim::ModelScaler::addMeasurement private_addMeasurement;
+%rename OpenSim::ModelScaler::addScale private_addScale;
+
+%typemap(javacode) OpenSim::ModelScaler %{
+    addScale(Scale scale){
+        scale.markAdopted();
+        private_addScale(scale);
+    }
+    addMeasurement(Measurement meas){
+        meas.markAdopted();
+        private_addMeasurement(meas);
+    }
+%}
