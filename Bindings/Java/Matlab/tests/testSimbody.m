@@ -43,3 +43,9 @@ for i = 0:residual.size()-1
     assert(abs(residual.get(i)) < 1e-10);
 end
 
+% Test Rotation.
+% --------------
+rot = Rotation()
+rot.setRotationFromTwoAxes(UnitVec3(1, 0, 0), CoordinateAxis(0), ...
+                           Vec3(0, 1, 0), CoordinateAxis(1));
+
