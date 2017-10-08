@@ -88,6 +88,7 @@ OpenSimAddMatlabTest(ConnectorsInputsOutputs testConnectorsInputsOutputs.m)
 OpenSimAddMatlabTest(AccessSubcomponents testAccessSubcomponents.m)
 OpenSimAddMatlabTest(Simbody testSimbody.m)
 OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
+OpenSimAddMatlabTest(testOsimVec3 testOsimVec3.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
