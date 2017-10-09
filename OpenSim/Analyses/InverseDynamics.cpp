@@ -458,7 +458,7 @@ begin(SimTK::State& s )
         for(size_t i=0u; i<coordinates.size(); ++i) {
             const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
-                _accelerationIndices.append(i);
+                _accelerationIndices.append(static_cast<int>(i));
             }
         }
 

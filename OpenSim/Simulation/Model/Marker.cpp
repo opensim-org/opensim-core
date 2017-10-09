@@ -73,76 +73,44 @@ void Marker::constructProperties()
     constructProperty_fixed(false);
 }
 
-//_____________________________________________________________________________
-/**
- * Set the 'frame name' field, which is used when the marker is added to
- * an existing model.
- *
- * @param  name of frame
- */
-void Marker::setFrameName(const string& name)
+void Marker::setParentFrameName(const string& name)
 {
-    const auto& refFrame = getModel().getComponent<PhysicalFrame>(name);
-    setParentFrame(refFrame);
+    updSocket<PhysicalFrame>("parent_frame").setConnecteeName(name);
 }
 
 //_____________________________________________________________________________
 /**
  * Get the 'frame name' field, which is used when the marker is added to
  * an existing model.
- *
- * @return aName frame name.
  */
-const string& Marker::getFrameName() const
-{
-    //if (_bodyNameProp.getValueIsDefault())
-    //  return NULL;
 
-    return getParentFrame().getName();
+const string& Marker::getParentFrameName() const
+{
+    return getSocket<PhysicalFrame>("parent_frame").getConnecteeName();
 }
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the frame is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param aFrame Reference to the PhysicalFrame.
- */
-void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
-{
 
-    if (aPhysicalFrame == getParentFrame())
+void Marker::changeFrame(const PhysicalFrame& parentFrame)
+{
+    if (&parentFrame == &getParentFrame())
         return;
 
-    setFrameName(aPhysicalFrame.getName());
-
-    extendConnectToModel(updModel());
+    setParentFrame(parentFrame);
 }
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the body is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param s State.
- * @param aBody Reference to the PhysicalFrame.
- */
-void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame)
+void Marker::changeFramePreserveLocation(const SimTK::State& s, 
+                                         const PhysicalFrame& parentFrame)
 {
 
-    if (aPhysicalFrame == getParentFrame())
+    if (&parentFrame == &getParentFrame())
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the marker in the inertial reference frame.
     Vec3 newLocation;
-    newLocation = findLocationInFrame(s, aPhysicalFrame);
+    newLocation = findLocationInFrame(s, parentFrame);
     set_location(newLocation);
-
-    setFrameName(aPhysicalFrame.getName());
-    extendConnectToModel(aPhysicalFrame.updModel());
+    setParentFrame(parentFrame);
 }
 
 //=============================================================================
@@ -179,6 +147,10 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
+            // Markers in pre-4.0 models are necessarily 1 level deep
+            // (model, markers), and Bodies were necessarily 1 level deep:
+            // prepend "../" to get the correct relative path.
+            if (!bName.empty()) bName = "../" + bName;
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);

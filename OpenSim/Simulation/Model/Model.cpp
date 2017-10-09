@@ -237,10 +237,22 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     SimTK::String parent_name = "ground";
                     parentBodyElement->getValueAs<SimTK::String>(parent_name);
 
+                    // In version 30501, this Joint is 1 level deep (in the
+                    // model's JointSet), and the Bodies are necessarily 1
+                    // level deep (in the model's BodySet). Prepend "../" to
+                    // get the correct relative path.
+                    std::string parent_frame = parent_name;
+                    if (!parent_frame.empty())
+                        parent_frame = "../" + parent_frame;
                     XMLDocument::addConnector(*concreteJointNode, 
-                        "Connector_PhysicalFrame_", "parent_frame", parent_name);
+                        "Connector_PhysicalFrame_", "parent_frame",
+                        parent_frame);
+                    std::string child_frame = body_name;
+                    if (!child_frame.empty())
+                        child_frame = "../" + child_frame;
                     XMLDocument::addConnector(*concreteJointNode, 
-                        "Connector_PhysicalFrame_", "child_frame", body_name);
+                        "Connector_PhysicalFrame_", "child_frame",
+                        child_frame);
                     concreteJointNode->eraseNode(parentBodyElement);
                     jointObjects.insertNodeAfter(jointObjects.node_end(),
                         *concreteJointNode);
@@ -1679,31 +1691,6 @@ void Model::writeMarkerFile(const string& aFileName)
     upd_MarkerSet().print(aFileName);
 }
 
-//_____________________________________________________________________________
-/**
- * Replace all markers in the model with the ones in the passed-in marker set.
- *
- * @param aMarkerSet The new marker set to copy.
- * @return Number of markers that were successfully added to the model.
- */
-int Model::replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet)
-{
-    int i, numAdded = 0;
-
-    // First remove all existing markers from the model.
-    upd_MarkerSet().clearAndDestroy();
-
-    // Now add the markers from aMarkerSet whose body names match bodies in the engine.
-    for (i = 0; i < aMarkerSet.getSize(); i++)
-    {
-        Marker* marker = aMarkerSet[i].clone();
-        upd_MarkerSet().adoptAndAppend(marker);
-        ++numAdded;
-    }
-
-    cout << "Replaced marker set in model " << getName() << endl;
-    return numAdded;
-}
 
 //_____________________________________________________________________________
 void Model::updateMarkerSet(MarkerSet& newMarkerSet)
@@ -1926,6 +1913,10 @@ void Model::formStateStorage(const Storage& originalStorage,
         cout << "Number of columns does not match in formStateStorage. Found "
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
+
+    OPENSIM_THROW_IF_FRMOBJ(originalStorage.isInDegrees(), Exception,
+        "Input Storage must have values for Coordinates in meters or radians (not degrees).\n"
+        "Please convert input Storage to meters and/or degrees first.");
 
     // when the state value is not found in the storage use its default value in the State
     SimTK::Vector defaultStateValues = getStateVariableValues(getWorkingState());

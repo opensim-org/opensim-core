@@ -219,7 +219,6 @@ int AnalysisPlugin_Template::
 record(const SimTK::State& s)
 {
     // VARIABLES
-    double dirCos[3][3];
     SimTK::Vec3 vec,angVec;
     double Mass = 0.0;
 

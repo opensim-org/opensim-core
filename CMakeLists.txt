@@ -801,7 +801,7 @@ set(OPENSIM_SYSTEM_INFO ${CMAKE_SYSTEM})
 set(OPENSIM_OS_NAME ${CMAKE_SYSTEM_NAME})
 
 if( WIN32 )
-    if (${MSVC_VERSION} GREATER 1910)
+    if (NOT (MSVC_VERSION LESS 2000))
         message(AUTHOR_WARNING "OpenSim::GetCompilerVersion() "
             "in OpenSim/version.h does not handle this newer version "
             "(v${MSVC_VERSION}) of Microsoft Visual C++. "

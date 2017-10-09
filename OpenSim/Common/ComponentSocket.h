@@ -797,7 +797,7 @@ public:
     SimTK::Vector_<T>. The elements are in the same order as the channels.
     */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
-        SimTK::Vector_<T> v(_connectees.size());
+        SimTK::Vector_<T> v(static_cast<int>(_connectees.size()));
         for (unsigned ichan = 0u; ichan < _connectees.size(); ++ichan) {
             v[ichan] = _connectees[ichan]->getValue(state);
         }

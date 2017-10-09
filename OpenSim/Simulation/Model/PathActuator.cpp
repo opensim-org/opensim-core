@@ -143,8 +143,7 @@ void PathActuator::addNewPathPoint(
          PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
-    AbstractPathPoint* newPathPoint = updGeometryPath()
-        .appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================
@@ -203,22 +202,6 @@ void PathActuator::computeForce( const SimTK::State& s,
 double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
     return getGeometryPath().computeMomentArm(s, aCoord);
-}
-
-//------------------------------------------------------------------------------
-//                            CONNECT TO MODEL
-//------------------------------------------------------------------------------
-/**
- * Perform some setup functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this PathActuator.
- */
-void PathActuator::extendFinalizeFromProperties()
-{
-    GeometryPath &path = updGeometryPath();
-
-    Super::extendFinalizeFromProperties();
 }
 
 //------------------------------------------------------------------------------

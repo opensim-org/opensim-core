@@ -55,7 +55,7 @@ int main()
         scaleModelWithLigament();
     }
     catch (const std::exception& e) {
-        cerr << e.what() << endl;
+        cout << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

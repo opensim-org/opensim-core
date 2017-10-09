@@ -781,6 +781,28 @@ void testMisc() {
     theWorld.print("Nested_" + modelFile);
 }
 
+void testThrowOnDuplicateNames() {
+    TheWorld theWorld;
+    theWorld.setName("World");
+    theWorld.finalizeFromProperties();
+
+    Foo* a = new Foo();
+    a->setName("A");
+
+    Foo* b = new Foo();
+    b->setName("B");
+
+    theWorld.addComponent(a);
+    theWorld.addComponent(b);
+
+    b->setName("A");
+
+    SimTK_TEST_MUST_THROW_EXC(
+        theWorld.finalizeFromProperties(),
+        OpenSim::SubcomponentsWithDuplicateName );
+
+}
+
 // In order to access subcomponents in a copy, One must invoke
 // finalizeFromProperties() after copying. This test makes sure that you get an
 // exception if you did not call finalizeFromProperties() before calling a
@@ -859,7 +881,6 @@ void testListInputs() {
     tabReporter->clearTable();
     ASSERT(tabReporter->getTable().getNumRows() == 0);
 }
-
 
 void testListSockets() {
     MultibodySystem system;
@@ -1182,7 +1203,6 @@ void testInputConnecteeNames() {
 
     // TODO test invalid names as well.
 }
-
 
 void testExceptionsForConnecteeTypeMismatch() {
     // Create Component classes for use in the following tests.
@@ -2004,6 +2024,8 @@ int main() {
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
+        // Uncomment test for duplicate names when we re-enable the exception
+        //SimTK_SUBTEST(testThrowOnDuplicateNames);
         SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
