@@ -44,6 +44,14 @@ using namespace SimTK;
     }
 }
 
+%pythonappend OpenSim::ModelScaler::addScale %{
+    aScale._markAdopted()
+%}
+
+%pythonappend OpenSim::ModelScaler::addMeasurement %{
+    aMeasurement._markAdopted()
+%}
+
 // Typemaps
 // ========
 // None.
