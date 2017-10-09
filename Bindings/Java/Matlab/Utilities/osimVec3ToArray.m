@@ -29,7 +29,7 @@ import org.opensim.modeling.*
 % Check the input type
 if strcmp(class(p), 'org.opensim.modeling.Vec3')
      % Convert the input Opensim Vec3 to a Matlab Vector
-     vec = [p().get(0) p().get(1) p().get(2)];
+     vec = [p.get(0) p.get(1) p.get(2)];
 else
     error('Incorrect class input. Must be type org.opensim.modeling.Vec3') 
 end
