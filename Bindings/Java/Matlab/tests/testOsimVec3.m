@@ -4,8 +4,10 @@ clear all;close all;clc;
 import org.opensim.modeling.*
 % Adding a call to Model(). If Model() is not instantiated, the test fails.
 m = Model();
-%% Define an abriatory an OpenSim Vec3 instance
-ov = Vec3(2,3,4);
+% Set the number format to long. Numbers have 15 decimal places. 
+format long
+%% Define an abriatory an OpenSim Vec3 instance.
+ov = Vec3(pi, -sqrt(2), inf);
 % Convert to a Matlab Vector
 mv = osimVec3ToArray(ov);
  % Convert back to an OpenSim Vec3
