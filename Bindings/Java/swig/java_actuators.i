@@ -60,11 +60,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %rename OpenSim::ModelScaler::addScale private_addScale;
 
 %typemap(javacode) OpenSim::ModelScaler %{
-    addScale(Scale scale){
+    public void addScale(Scale scale){
         scale.markAdopted();
         private_addScale(scale);
     }
-    addMeasurement(Measurement meas){
+
+    public void addMeasurement(Measurement meas){
         meas.markAdopted();
         private_addMeasurement(meas);
     }
