@@ -17,6 +17,22 @@
 
 using Eigen::VectorXd;
 
+
+// References for finite differences:
+// Nocedal and Wright
+// Betts 2010
+// https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19850025225.pdf
+// https://github.com/casadi/casadi/issues/1026
+//
+// Gebremedhin 2005
+// What color is your Jacobian? Graph coloring for computing derivatives
+//
+// https://cran.r-project.org/web/packages/sparseHessianFD/vignettes/sparseHessianFD.pdf
+
+// Requires a gradient:
+// Powell and Toint, ON THE ESTIMATION OF SPARSE HESSIAN MATRICES 1979
+// http://epubs.siam.org/doi/pdf/10.1137/0716078
+
 namespace tropter {
 
 // We must implement the destructor in a context where the JacobianColoring
@@ -70,7 +86,7 @@ calc_sparsity(const Eigen::VectorXd& x,
     // Each element represents a row and is a vector of the column indices of
     // the nonzeros in that row. The length of each row (the inner dimension) is
     // the number of nonzeros in that row.
-    std::vector<std::vector<unsigned int>> jacobian_sparsity(num_jac_rows);
+    CompressedRowSparsity jacobian_sparsity(num_jac_rows);
     for (int j = 0; j < (int)num_vars; ++j) {
         constr_working.setZero();
         m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
@@ -98,27 +114,49 @@ calc_sparsity(const Eigen::VectorXd& x,
 
     // Hessian.
     // ========
-    // TODO only compute Hessian sparsity if it's needed.
+    // TODO only compute Hessian sparsity if it's needed (for exact Hessian).
+    CompressedRowSparsity hessian_sparsity;
+    calc_sparsity_hessian_lagrangian(x, hessian_sparsity);
+
+    m_hessian_coloring.reset(
+            new HessianColoring(num_vars, hessian_sparsity));
+    m_hessian_coloring->get_coordinate_format(
+            hessian_row_indices, hessian_col_indices);
+    // TODO
+//    int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
+//    std::cout << "[tropter] Number of finite difference perturbations required "
+//            "for sparse Hessian: " << num_hessian_seeds << std::endl;
+    m_hessian_row_indices = hessian_row_indices;
+    m_hessian_col_indices = hessian_col_indices;
+
+    m_constr_working.resize(num_jac_rows);
+}
+
+void OptimizationProblem<double>::Decorator::
+calc_sparsity_hessian_lagrangian(
+        const VectorXd& x, CompressedRowSparsity& sparsity) const {
+    const auto num_vars = m_problem.get_num_variables();
+    sparsity.resize(num_vars);
+
     if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
 
         using CalcSparsityHessianLagrangianNotImplemented =
                 AbstractOptimizationProblem::
                 CalcSparsityHessianLagrangianNotImplemented;
         try {
-            m_problem.calc_sparsity_hessian_lagrangian(x,
-                    hessian_row_indices, hessian_col_indices);
+            m_problem.calc_sparsity_hessian_lagrangian(x, sparsity);
         } catch (const CalcSparsityHessianLagrangianNotImplemented& ex) {
             throw std::runtime_error("[tropter] User requested use of "
                     "user-supplied sparsity for the Hessian of the Lagrangian, "
                     "but calc_sparsity_hessian_lagrangian() is not "
                     "implemented.");
         }
-        if (hessian_row_indices.size() != hessian_col_indices.size()) {
-            throw std::runtime_error("Expected hessian_row_indices (size " +
-                    std::to_string(hessian_row_indices.size()) + ") and "
-                    "hessian_col_indices (size " +
-                    std::to_string(hessian_col_indices.size()) +
-                    ") to have the same size.");
+
+        if (sparsity.size() != num_vars) {
+            throw std::runtime_error("[tropter] Incorrect number of rows.");
+        }
+        for (int i = 0; i < (int)num_vars; ++i) {
+            assert(sparsity[i].size() < num_vars);
         }
         // TODO user must specify sparsity pattern in the order that
         // TODO sort what the user provided so that the ordering matches what
@@ -126,23 +164,12 @@ calc_sparsity(const Eigen::VectorXd& x,
         // TODO make sure there are no duplicates.
     } else {
         // Dense upper triangle.
-
-        const int num_hessian_nonzeros = num_vars * (num_vars + 1) / 2;
-        hessian_row_indices.resize(num_hessian_nonzeros);
-        hessian_col_indices.resize(num_hessian_nonzeros);
-        int inz = 0;
-        for (int j = 0; j < (int)num_vars; ++j) {
-            for (int i = 0; i <= j; ++i) {
-                hessian_row_indices[inz] = i;
-                hessian_col_indices[inz] = j;
-                ++inz;
+        for (int i = 0; i < (int)num_vars; ++i) {
+            for (int j = i; j < (int)num_vars; ++j) {
+                sparsity[i].push_back(j);
             }
         }
     }
-    m_hessian_row_indices = hessian_row_indices;
-    m_hessian_col_indices = hessian_col_indices;
-
-    m_constr_working.resize(num_jac_rows);
 }
 
 void OptimizationProblem<double>::Decorator::

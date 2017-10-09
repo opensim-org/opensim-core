@@ -450,20 +450,19 @@ public:
         }
     }
 
-    void calc_sparsity_hessian_lagrangian(const VectorXd& x,
-            std::vector<unsigned int>& row_indices,
-            std::vector<unsigned int>& col_indices) const override {
+    void calc_sparsity_hessian_lagrangian(const VectorXd&,
+            std::vector<std::vector<unsigned int>>& sparsity) const override {
         m_calc_sparsity_hessian_lagrangian_called = true;
-        row_indices.clear();
-        col_indices.clear();
+
+        assert(sparsity.size() == 4);
 
         // Treat the Hessian as dense but with a zero at (0, 3) (conservative
         // estimate) so that we can detect that this function is called.
-        for (int i = 0; i < x.size(); ++i) {
-            for (int j = i; j < x.size(); ++j) {
+        const int num_vars = (int)this->get_num_variables();
+        for (int i = 0; i < num_vars; ++i) {
+            for (int j = i; j < num_vars; ++j) {
                 if (i == 0 && j == 3) continue;
-                row_indices.push_back(i);
-                col_indices.push_back(j);
+                sparsity[i].push_back(j);
             }
         }
     }
@@ -554,18 +553,17 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     decorator->make_initial_guess_from_bounds(),
                     jac_row_indices, jac_col_indices,
                     hess_row_indices, hess_col_indices);
-            //
             std::vector<unsigned int> expected_hess_row_indices{
-                    0,
-                    0, 1,
-                    0, 1, 2,
-                    0, 1, 2, 3
+                    0, 0, 0, 0,
+                       1, 1, 1,
+                          2, 2,
+                             3
             };
             std::vector<unsigned int> expected_hess_col_indices{
-                    0,
-                    1, 1,
-                    2, 2, 2,
-                    3, 3, 3, 3
+                    0, 1, 2, 3,
+                       1, 2, 3,
+                          2, 3,
+                             3
             };
             REQUIRE(hess_row_indices == expected_hess_row_indices);
             REQUIRE(hess_col_indices == expected_hess_col_indices);
@@ -616,7 +614,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 Catch::Contains("Cannot use supplied sparsity pattern"));
     }
 
-    SECTION("Row and column indices must have same size") {
+    SECTION("Sparsity vector must have num_vars elements.") {
         class UserSpecifiedSparsityInconsistentSizes
                 : public OptimizationProblem<double> {
         public:
@@ -626,11 +624,11 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     override {}
             void calc_constraints(const VectorXd&,
                     Eigen::Ref<VectorXd>) const override {}
-            void calc_sparsity_hessian_lagrangian(const VectorXd&,
-                    std::vector<unsigned int>& row_indices,
-                    std::vector<unsigned int>& col_indices) const override {
-                row_indices.resize(5);
-                col_indices.resize(10);
+            void calc_sparsity_hessian_lagrangian(
+                    const VectorXd&,
+                    std::vector<std::vector<unsigned int>>& sparsity)
+                    const override {
+                sparsity.resize(3);
             }
         };
         UserSpecifiedSparsityInconsistentSizes problemd;
@@ -640,9 +638,11 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
                         jac_row, jac_col, hess_row, hess_col),
-                Catch::Contains("Expected hessian_row_indices"));
+                Catch::Contains("Incorrect number of rows"));
 
     }
+    // TODO check that no element is duplicated, that each element has less
+    // than num_vars elements.
 }
 
 // TODO test reordering of sparsity pattern to match what ColPack likes.

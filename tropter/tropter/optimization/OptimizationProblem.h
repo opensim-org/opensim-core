@@ -9,6 +9,7 @@
 namespace tropter {
 
 class JacobianColoring;
+class HessianColoring;
 
 /// This class provides an interface of the OptimizationProblem to the
 /// OptimizationSolvers.
@@ -179,6 +180,10 @@ public:
             unsigned num_nonzeros, double* nonzeros) const override;
 private:
 
+    using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
+    void calc_sparsity_hessian_lagrangian(
+            const Eigen::VectorXd&, CompressedRowSparsity&) const;
+
     void calc_lagrangian(
             const Eigen::VectorXd& variables,
             double obj_factor,
@@ -198,7 +203,6 @@ private:
 
     // Jacobian.
     // ---------
-
     // This class (a) determines the directions in which to perturb
     // the variables to compute the Jacobian and (b) recovers the sparse
     // Jacobian (to pass to the optimization solver) after computing finite
@@ -212,6 +216,7 @@ private:
 
     // Hessian/Lagrangian.
     // -------------------
+    mutable std::unique_ptr<HessianColoring> m_hessian_coloring;
     // TODO temporary until we use ColPack.
     mutable std::vector<unsigned int> m_hessian_row_indices;
     mutable std::vector<unsigned int> m_hessian_col_indices;

@@ -49,10 +49,9 @@ public:
     /// of the optimization for sparse problems.
     // TODO do the elements need to be ordered in any particular way?
     // TODO require ADOL-C's compressed row format.
-    virtual void calc_sparsity_hessian_lagrangian(
-            const Eigen::VectorXd& variables, /*TODO templatize?*/
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const;
+    // TODO sparsity will already have the correct outer dimension.
+    virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
+            std::vector<std::vector<unsigned int>>& sparsity) const;
     class CalcSparsityHessianLagrangianNotImplemented
             : public std::exception {};
 
@@ -104,8 +103,7 @@ private:
 };
 
 inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
-        const Eigen::VectorXd&,
-        std::vector<unsigned int>&, std::vector<unsigned int>&) const {
+        const Eigen::VectorXd&, std::vector<std::vector<unsigned int>>&) const {
     throw CalcSparsityHessianLagrangianNotImplemented();
 }
 

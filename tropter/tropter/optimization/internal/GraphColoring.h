@@ -8,9 +8,21 @@
 namespace ColPack {
 class BipartiteGraphPartialColoringInterface;
 class JacobianRecovery1D;
+class GraphColoringInterface;
+class HessianRecovery;
 }
 
 namespace tropter {
+
+namespace internal {
+// We resort to using a unique_ptr with a custom deleter because ColPack
+// requires that we provide the sparsity structure as two-dimensional C
+// array.
+using UnsignedInt2DPtr =
+        std::unique_ptr<unsigned* [], std::function<void(unsigned**)>>;
+using Double2DPtr =
+        std::unique_ptr<double*[], std::function<void(double**)>>;
+}
 
 /// This class determines the directions in which to perturb
 /// This class supports computing sparse finite differences of a Jacobian
@@ -78,29 +90,66 @@ private:
             m_coloring;
     mutable std::unique_ptr<ColPack::JacobianRecovery1D> m_recovery;
 
-    // This has dimensions num_variables x num_perturbation_directions. All
-    // entries are either 0 or 1, and each column is a direction in which we
-    // will perturb the variables. This matrix is computed for us by
-    // ColPack's graph coloring algorithms.
-    Eigen::MatrixXd m_seed;
-
     // We determine the sparsity structure of the Jacobian (by propagating
     // NaNs through the constraint function) and hold the result in this
     // variable to pass to ColPack methods.
-    // We resort to using a unique_ptr with a custom deleter because ColPack
-    // requires that we provide the sparsity structure as two-dimensional C
-    // array.
-    using UnsignedInt2DPtr =
-            std::unique_ptr<unsigned*[], std::function<void(unsigned**)>>;
-    UnsignedInt2DPtr m_sparsity_ADOLC_format;
+    internal::UnsignedInt2DPtr m_sparsity_ADOLC_format;
+
+    // This has dimensions num_variables x num_perturbation_directions. All
+    // entries are either 0 or 1, and each column is a direction in which we
+    // will perturb the variables.
+    Eigen::MatrixXd m_seed;
 
     // Working memory to hold onto the compressed Jacobian calculation to pass
     // to ColPack.
-    // We resort to using a unique_ptr with a custom deleter because ColPack
-    // requires that we provide the data as a two-dimensional C array.
-    using Double2DPtr =
-            std::unique_ptr<double*[], std::function<void(double**)>>;
-    mutable Double2DPtr m_jacobian_compressed;
+    mutable internal::Double2DPtr m_jacobian_compressed;
+
+    // These variables store the output of ColPack's recovery routine.
+    mutable std::vector<unsigned int> m_recovered_row_indices;
+    mutable std::vector<unsigned int> m_recovered_col_indices;
+
+};
+
+class HessianColoring {
+public:
+    HessianColoring(int num_vars,
+            const std::vector<std::vector<unsigned int>>& sparsity);
+
+    ~HessianColoring();
+
+    /// TODO
+    // TODO const Eigen::MatrixXd& get_seed_matrix() const { return m_seed; }
+
+    /// TODO
+    void get_coordinate_format(std::vector<unsigned int>& row_indices,
+            std::vector<unsigned int>& col_indices) const;
+
+    /// TODO
+    void recover(const Eigen::MatrixXd& hessian_compressed,
+            double* hessian_sparse_coordinate_format);
+
+private:
+
+    /// Recover from m_hessian_compressed.
+    void recover_internal(double* hessian_sparse_coordinate_format);
+
+    int m_num_nonzeros = 0;
+
+    // ColPack objects for (a) determining the directions in which to perturb
+    // the variables to compute the Hessian and (b) recovering the sparse
+    // Jacobian (to pass to the optimization solver) after computing finite
+    // differences.
+    mutable std::unique_ptr<ColPack::GraphColoringInterface> m_coloring;
+    mutable std::unique_ptr<ColPack::HessianRecovery> m_recovery;
+
+    internal::UnsignedInt2DPtr m_sparsity_ADOLC_format;
+
+    // This has dimensions num_variables x num_perturbation_directions. All
+    // entries are either 0 or 1, and each column is a direction in which we
+    // will perturb the variables.
+    Eigen::MatrixXd m_seed;
+
+    mutable internal::Double2DPtr m_hessian_compressed;
 
     // These variables store the output of ColPack's recovery routine.
     mutable std::vector<unsigned int> m_recovered_row_indices;
