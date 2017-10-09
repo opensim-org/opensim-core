@@ -19,20 +19,16 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function vec = osimVec3(p)
+function vec = osimVec3FromArray(p)
 % import Java Libraries
 import org.opensim.modeling.*
 if strcmp(class(p),'double')
-    % get the siize of the vector
-    [m n] = size(p);
-    if m ~= 1 | n ~= 3
+    % Check the size of the input vector is 1x3.
+    if size(p,1) ~= 1 | size(p,2) ~= 3
         error('Input vector needs to be a 1x3 sized vector')
     end
-    % convert the input Matlab Vector to a OpenSim Vec3
+    % Convert the input vector to an OpenSim Vec3.
     vec = Vec3( p(1), p(2), p(3) );
-elseif strcmp(class(p), 'org.opensim.modeling.Vec3')
-     % Convert the input Opensim Vec3 to a Matlab Vector
-     vec = [p().get(0) p().get(1) p().get(2)];
 else
-    error('Incorrect class input. Must be either type double or org.opensim.modeling.Vec3') 
+    error('Incorrect class input. Must be type double') 
 end

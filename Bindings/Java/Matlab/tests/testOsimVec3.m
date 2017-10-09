@@ -7,11 +7,11 @@ m = Model();
 %% Define an abriatory an OpenSim Vec3 instance
 ov = Vec3(2,3,4);
 % Convert to a Matlab Vector
-mv = osimVec3(ov);
+mv = osimVec3ToArray(ov);
  % Convert back to an OpenSim Vec3
-n_ov = osimVec3(mv);
+n_ov = osimVec3FromArray(mv);
 % Convert back to an OpenSim Vec3 Type
-n_mv = osimVec3(n_ov);
+n_mv = osimVec3ToArray(n_ov);
 
 %% Test the changes for consistency
 % Test OpenSim Vec3() instances
