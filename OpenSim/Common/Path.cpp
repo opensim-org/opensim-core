@@ -229,7 +229,7 @@ bool Path::isLegalPathElement(const std::string& pathElement) const
 
 bool Path::isLegalPathVec(const std::vector<std::string>& pathVec) const
 {
-    for (const std::string pathElement : pathVec) {
+    for (const std::string& pathElement : pathVec) {
         if (!isLegalPathElement(pathElement)) return false;
     }
     return true;

@@ -345,8 +345,8 @@ public:
         
         connectee = *objT;
 
-        std::string objPathName = objT->getAbsolutePathName();
-        std::string ownerPathName = getOwner().getAbsolutePathName();
+        std::string objPathName = objT->getAbsolutePathString();
+        std::string ownerPathName = getOwner().getAbsolutePathString();
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasOwner()) {

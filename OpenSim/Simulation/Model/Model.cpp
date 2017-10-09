@@ -656,12 +656,12 @@ void Model::createMultibodyTree()
 
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(ground.getAbsolutePathName(),
+    _multibodyTree.addBody(ground.getAbsolutePathString(),
                            0, false, &ground);
 
     auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
-        _multibodyTree.addBody( body.getAbsolutePathName(),
+        _multibodyTree.addBody( body.getAbsolutePathString(),
                                 body.getMass(), false,
                                 const_cast<Body*>(&body) );
     }
@@ -674,7 +674,7 @@ void Model::createMultibodyTree()
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     for (auto& joint : joints) {
-        std::string name = joint->getAbsolutePathName();
+        std::string name = joint->getAbsolutePathString();
         IO::TrimWhitespace(name);
 
         // Currently we need to take a first pass at connecting the joints
@@ -699,8 +699,8 @@ void Model::createMultibodyTree()
             joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
-            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
+            joint->getParentFrame().findBaseFrame().getAbsolutePathString(),
+            joint->getChildFrame().findBaseFrame().getAbsolutePathString(),
             false,
             joint.get());
     }
@@ -767,7 +767,7 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
-                std::string pathName = outb->getAbsolutePathName();
+                std::string pathName = outb->getAbsolutePathString();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 

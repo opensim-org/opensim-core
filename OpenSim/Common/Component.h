@@ -625,13 +625,15 @@ public:
      * absolutePathName from root is guaranteed to be unique. The
      * absolutePathName is generated on-the-fly by traversing the ownership tree
      * and, therefore, calling this method is not "free". */
-    std::string getAbsolutePathName() const;
+    std::string getAbsolutePathString() const;
 
     /** Return a ComponentPath of the absolute path of this Component. 
      * Note that this has more overhead than calling `getName()` because 
-     * it traverses up the tree to generate the absolute pathname (and 
-     * is thus a function of depth). Consider other options if this is
-     * repeatedly called and efficiency is important. */
+     * it traverses up the tree to generate the absolute pathname (and its
+     * computational cost is thus a function of depth). Consider other 
+     * options if this is repeatedly called and efficiency is important.
+     * For instance, `getAbsolutePathString()` is faster if you only
+     * need the path as a string. */
     ComponentPath getAbsolutePath() const;
 
     /** Get the relative pathname of this Component with respect to another
@@ -1556,7 +1558,7 @@ public:
 
         std::cout << std::string(maxlen-concreteClassName.length(), ' ')
                   << "[" << concreteClassName << "]"
-                  << "  " << getAbsolutePathName() << std::endl;
+                  << "  " << getAbsolutePathString() << std::endl;
 
         // Step through compList again to print.
         for (const C& thisComp : compList) {
