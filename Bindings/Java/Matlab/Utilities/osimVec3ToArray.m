@@ -1,3 +1,7 @@
+%% osimVec3ToArray converts OpenSim Vec3() to a 1x3 Matlab vector
+% Input   = OpenSim Vec3()
+% Output  = 1x3 Matlab matrix
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
