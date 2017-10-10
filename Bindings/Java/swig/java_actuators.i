@@ -47,15 +47,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 
 %include <Bindings/actuators.i>
 %include <Bindings/analyses.i>
-%include <Bindings/tools.i>
-%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
-
-%include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
-%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
-
+        
 // When used from GUI or matlab ModelScaler takes ownership on these calls, 
 // communicate that fact to the interpreter to avoid Garbage Collection issues
+%javamethodmodifiers OpenSim::ModelScaler::addMeasurement "private";
+%javamethodmodifiers OpenSim::ModelScaler::addScale "private";
+
 %rename OpenSim::ModelScaler::addMeasurement private_addMeasurement;
 %rename OpenSim::ModelScaler::addScale private_addScale;
 
@@ -70,3 +67,11 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         private_addMeasurement(meas);
     }
 %}
+
+%include <Bindings/tools.i>
+%include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
+
+%include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
+
+%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
+
