@@ -1,5 +1,7 @@
 
 #include "OptimalControlIterate.h"
+#include <tropter/Exception.hpp>
+
 #include <fstream>
 
 // For interpolating.
@@ -8,21 +10,21 @@
 using namespace tropter;
 
 OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
-    if (filepath.empty()) throw std::runtime_error("filepath is empty.");
+    TROPTER_THROW_IF(filepath.empty(), "filepath is empty.");
 
     std::ifstream f(filepath);
-    if (!f) throw std::runtime_error("Could not read '" + filepath + "'.");
+    TROPTER_THROW_IF(!f, "Could not read '%s'.", filepath);
 
     // Grab the number of state and control variables.
     // -----------------------------------------------
     std::string line;
-    if (!std::getline(f, line) || line.find("num_states=") != 0)
-        throw std::runtime_error("Could not read num_states.");
+    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_states=") != 0,
+            "Could not read num_states from '%s'.", filepath);
     std::string num_states_str = line.substr(line.find('=') + 1);
     int num_states = std::stoi(num_states_str);
 
-    if (!std::getline(f, line) || line.find("num_controls=") != 0)
-        throw std::runtime_error("Could not read num_controls.");
+    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_controls=") != 0,
+            "Could not read num_controls from '%s'.", filepath);
     std::string num_controls_str = line.substr(line.find('=') + 1);
     int num_controls = std::stoi(num_controls_str);
 
@@ -33,9 +35,9 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
     std::string label;
     // Get each label from column_labels, using "," as the delimiter.
     std::getline(column_labels, label, ','); // skip over "time"
-    if (label != "time")
-        throw std::runtime_error("Expected first column to be 'time', "
-                                         "but got '" + label + "'.");
+    TROPTER_THROW_IF(label != "time",
+            "In '%s', expected first column to be 'time', but got '%s'.",
+            filepath, label);
     int i_label = 0;
     while (std::getline(column_labels, label, ',')) {
         // States come first.
@@ -45,13 +47,10 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
             control_names.push_back(label);
         ++i_label;
     }
-    if (i_label != num_states + num_controls) {
-        // Add 1 for the time column.
-        throw std::runtime_error("Expected " +
-                std::to_string(1 + num_states + num_controls) +
-                " columns but got " + std::to_string(1 + i_label) +
-                " columns.");
-    }
+    TROPTER_THROW_IF(i_label != num_states + num_controls,
+            "In '%s', expected %i columns but got %i columns.",
+            // Add 1 for the time column.
+            filepath, 1 + num_states + num_controls, 1 + i_label);
 
     // Get number of times.
     // --------------------
@@ -141,11 +140,8 @@ OptimalControlIterate::interpolate(int desired_num_columns) const {
     if (time.size() == desired_num_columns) return *this;
 
     assert(desired_num_columns > 0);
-
-    if (!std::is_sorted(time.data(), time.data() + time.size())) {
-        throw std::runtime_error(
-                "[tropter] Expected time to be non-decreasing.");
-    }
+    TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
+            "Expected time to be non-decreasing.");
 
     OptimalControlIterate out;
     out.state_names = state_names;

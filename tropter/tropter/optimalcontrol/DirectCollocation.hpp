@@ -7,7 +7,7 @@
 #include <tropter/optimization/SNOPTSolver.h>
 #include <tropter/optimization/IpoptSolver.h>
 
-// TODO #include <fmt/format.h>
+#include <tropter/Exception.hpp>
 
 #include <iomanip>
 
@@ -29,8 +29,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
         m_transcription.reset(new transcription::LowOrder<T>(ocproblem,
                                                              num_mesh_points));
     } else {
-        throw std::runtime_error("Unrecognized transcription method '" +
-                transcrip + "'.");
+        TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }
 
     std::string optsolver_lower = optsolver;
@@ -43,8 +42,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     } else if (optsolver_lower == "snopt") {
         m_optsolver.reset(new SNOPTSolver(*m_transcription.get()));
     } else {
-        throw std::runtime_error("Unrecognized optimization solver '" +
-                optsolver + "'.");
+        TROPTER_THROW("Unrecognized optimization solver %s.", optsolver);
     }
 }
 
@@ -331,46 +329,30 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     // ---------------------------------
     // TODO move some of this to OptimalControlIterate::validate().
     // Check rows.
-    if (traj.states.rows() != m_num_states) {
-        //throw std::runtime_error(fmt::format("[tropter] Expected states to "
-        //        "have {} rows, but it has {} rows.", m_num_states, traj
-        //        .states.rows()));
-        throw std::runtime_error("[tropter] Expected states to have " +
-                std::to_string(m_num_states) + " rows, but it has " +
-                std::to_string(traj.states.rows()) + " rows.");
-    }
-    if (traj.controls.rows() != m_num_controls) {
-        throw std::runtime_error("[tropter] Expected controls to have " +
-                std::to_string(m_num_controls) + " rows, but it has " +
-                std::to_string(traj.controls.rows()) + " rows.");
-    }
+    TROPTER_THROW_IF(traj.states.rows() != m_num_states,
+            "Expected states to have %i row(s), but it has %i.",
+            m_num_states, traj.states.rows());
+    TROPTER_THROW_IF(traj.controls.rows() != m_num_controls,
+            "Expected controls to have %i row(s), but it has %i.",
+            m_num_controls, traj.controls.rows());
     // Check columns.
     if (interpolate) {
-        if (       traj.time.size() != traj.states.cols()
-                || traj.time.size() != traj.controls.cols()) {
-            throw std::runtime_error("[tropter] Expected time, states, and "
-                    "controls to have the same number of columns (they have " +
-                    std::to_string(traj.time.size()) + ", " +
-                    std::to_string(traj.states.cols()) + ", " +
-                    std::to_string(traj.controls.cols()) +
-                    " columns, respectively).");
-        }
+        TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
+                         || traj.time.size() != traj.controls.cols(),
+                "Expected time, states, and controls to have the same number "
+                "of columns (they have %i, %i, %i column(s), "
+                "respectively).", traj.time.size(), traj.states.cols(),
+                traj.controls.size());
     } else {
-        if (traj.time.size() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected time to have " +
-                    std::to_string(m_num_mesh_points) + " elements, but it has "
-                    + std::to_string(traj.time.size()) + " elements.");
-        }
-        if (traj.states.cols() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected states to have " +
-                    std::to_string(m_num_mesh_points) + " columns, but it has "
-                    + std::to_string(traj.states.cols()) + " columns.");
-        }
-        if (traj.controls.cols() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected controls to have " +
-                    std::to_string(m_num_mesh_points) + " columns, but it has "
-                    + std::to_string(traj.controls.cols()) + " columns.");
-        }
+        TROPTER_THROW_IF(traj.time.size() != m_num_mesh_points,
+                "Expected time to have %i element(s), but it has %i.",
+                m_num_mesh_points, traj.time.size());
+        TROPTER_THROW_IF(traj.states.cols() != m_num_mesh_points,
+                "Expected states to have %i column(s), but it has %i.",
+                m_num_mesh_points, traj.states.cols());
+        TROPTER_THROW_IF(traj.controls.cols() != m_num_mesh_points,
+                "Expected controls to have %i column(s), but it has %i.",
+                m_num_mesh_points, traj.controls.cols());
     }
 
     // Interpolate the guess, as it might have a different number of mesh

@@ -254,12 +254,8 @@ double IpoptSolver::optimize(Ref<VectorXd> variables) const {
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
-    //TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded, Exception,
-    //        "Error during initialization");
-    if (status != Ipopt::Solve_Succeeded) {
-        std::cerr << "Error during initialization" << std::endl;
-        // TODO throw exception.
-    }
+    TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded, Exception,
+            "Error during initialization");
 
     // Optimize!!!
     // -----------

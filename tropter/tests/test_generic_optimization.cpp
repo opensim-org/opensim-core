@@ -41,7 +41,8 @@ TEST_CASE("Unconstrained, IpoptSolver", "[ipopt]") {
         IpoptSolver solver(problem);
         VectorXd variables = Vector2d(0, 0);
         // Cannot use full Hessian with finite differences.
-        REQUIRE_THROWS_AS(solver.optimize(variables), std::runtime_error);
+        REQUIRE_THROWS_WITH(solver.optimize(variables),
+                Catch::Contains("Failed to find a solution"));
         solver.set_hessian_approximation("limited-memory");
         double obj_value = solver.optimize(variables);
 
@@ -159,6 +160,21 @@ TEST_CASE("Generating an initial guess using problem bounds",
     }
 }
 
+TEST_CASE("Test exceptions and error messages") {
+    SECTION("OptimizationSolver max_iterations") {
+        class Problem : public OptimizationProblem<double> {
+        public:
+            Problem() : OptimizationProblem<double>(2, 0)
+            {   set_variable_bounds(Vector2d(-5, -5), Vector2d(5, 5)); }
+            void calc_objective(const VectorXd& x, double& f) const override
+            {   f = x.squaredNorm(); }
+        };
 
+        Problem problem;
+        IpoptSolver solver(problem);
+        REQUIRE_THROWS_WITH(solver.set_max_iterations(0),
+                Catch::Contains("Invalid value for max_iterations"));
+    }
+}
 
 

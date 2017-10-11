@@ -1,5 +1,6 @@
 #include "IpoptSolver.h"
 #include "OptimizationProblem.h"
+#include <tropter/Exception.hpp>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 using Eigen::VectorXd;
@@ -115,13 +116,11 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
     }
     // TODO app->Options()->SetStringValue("derivative_test", "second-order");
     if (!m_hessian_approximation.empty()) {
-        if (m_hessian_approximation != "exact"
-                && m_hessian_approximation != "limited-memory") {
-            throw std::runtime_error("[tropter] When using Ipopt, the "
-                    "'hessian_approximation' setting must be either "
-                    "'exact' or 'limited-memory', but '" +
-                    m_hessian_approximation + "' was provided.");
-        }
+        TROPTER_THROW_IF(m_hessian_approximation != "exact"
+                && m_hessian_approximation != "limited-memory",
+                "When using Ipopt, the 'hessian_approximation' setting must be "
+                "either 'exact' or 'limited-memory', but '%s' was provided.",
+                m_hessian_approximation);
         app->Options()->SetStringValue("hessian_approximation",
                 m_hessian_approximation);
     }
@@ -145,7 +144,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
         // TODO give detailed diagnostics.
         // TODO throw exception.
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
-        throw std::runtime_error("[tropter] Failed to find a solution.");
+        TROPTER_THROW("Failed to find a solution.");
     }
     variables = nlp->get_solution();
     return nlp->get_optimal_objective_value();

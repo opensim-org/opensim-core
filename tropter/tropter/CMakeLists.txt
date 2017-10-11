@@ -1,6 +1,8 @@
 add_library(tropter
         tropter.h
         common.h
+        Exception.h Exception.hpp Exception.cpp
+        EigenUtilities.h
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp
@@ -31,7 +33,7 @@ add_library(tropter
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
-# TODO target_link_libraries(tropter PRIVATE fmt::fmt)
+#target_link_libraries(tropter PRIVATE fmt::fmt)
 
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
@@ -56,8 +58,7 @@ if(OPENMP_FOUND)
 endif()
 
 target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
-# TODO PUBLIC or PRIVATE?
-target_link_libraries(tropter PUBLIC ${IPOPT_LIBRARIES})
+target_link_libraries(tropter PRIVATE ${IPOPT_LIBRARIES})
 if(LINUX)
     # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
     # We only include Ipopt in cpp files, so our clients don't need

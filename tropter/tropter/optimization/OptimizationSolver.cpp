@@ -2,6 +2,8 @@
 #include "OptimizationSolver.h"
 #include "OptimizationProblem.h"
 
+#include <tropter/Exception.hpp>
+
 using Eigen::VectorXd;
 
 using namespace tropter;
@@ -16,11 +18,9 @@ int OptimizationSolver::get_max_iterations() const
 }
 void OptimizationSolver::set_max_iterations(int max_iterations)
 {
-    if (max_iterations < 0 && max_iterations != -1) {
-        throw std::runtime_error("[tropter] max iterations is set to " +
-                std::to_string(max_iterations) + ", but expected a "
-                "positive number or -1.");
-    }
+    TROPTER_VALUECHECK(max_iterations > 0 || max_iterations == -1,
+            "max_iterations", max_iterations, "positive or -1");
+
     m_max_iterations = max_iterations;
 }
 

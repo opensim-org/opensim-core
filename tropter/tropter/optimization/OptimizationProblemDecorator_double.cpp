@@ -1,4 +1,6 @@
 #include "OptimizationProblem.h"
+#include <tropter/Exception.hpp>
+
 #include <ColPack/ColPackHeaders.h>
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
@@ -307,9 +309,9 @@ calc_hessian_lagrangian(unsigned /*num_variables*/, const double* /*variables*/,
 {
     // TODO
     std::string msg =
-            "[tropter] Hessian not available with finite differences.";
+            "Hessian not available with finite differences.";
     std::cerr << msg << std::endl;
-    throw std::runtime_error(msg);
+    TROPTER_THROW(msg);
 }
 
 } // namespace tropter
