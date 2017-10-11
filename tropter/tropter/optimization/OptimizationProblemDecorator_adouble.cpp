@@ -151,7 +151,7 @@ calc_sparsity(const Eigen::VectorXd& x,
                 m_hessian_col_indices + m_hessian_num_nonzeros,
                 hessian_col_indices.data());
         // TODO don't duplicate the memory consumption for storing the sparsity
-        // pattern: store the pointer to Ipopt's sparsity pattern?
+        // pattern: store the pointer to IPOPT's sparsity pattern?
 
         // Working memory to hold obj_factor and lambda (multipliers).
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);

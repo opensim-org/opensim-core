@@ -9,7 +9,7 @@
 #include "optimization/OptimizationProblem.h"
 #include "optimization/OptimizationSolver.h"
 #include "optimization/SNOPTSolver.h"
-#include "optimization/IpoptSolver.h"
+#include "tropter/optimization/IPOPTSolver.h"
 
 #include "optimalcontrol/OptimalControlIterate.h"
 #include "optimalcontrol/OptimalControlProblem.h"

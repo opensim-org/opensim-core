@@ -12,8 +12,8 @@ add_library(tropter
         optimization/OptimizationSolver.cpp
         optimization/SNOPTSolver.h
         optimization/SNOPTSolver.cpp
-        optimization/IpoptSolver.h
-        optimization/IpoptSolver.cpp
+        optimization/IPOPTSolver.h
+        optimization/IPOPTSolver.cpp
         optimalcontrol/DirectCollocation.h
         optimalcontrol/DirectCollocation.hpp
         optimalcontrol/DirectCollocation.cpp

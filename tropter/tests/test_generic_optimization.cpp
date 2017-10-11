@@ -32,13 +32,13 @@ public:
     }
 };
 
-TEST_CASE("Unconstrained, IpoptSolver", "[ipopt]") {
+TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
     // Make sure it's okay to not have constraints.
     SECTION("Finite differences") {
         Unconstrained<double> problem;
-        // TODO may not want user to directly use IpoptSolver; instead, use a
+        // TODO may not want user to directly use IPOPTSolver; instead, use a
         // generic solver interface?
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         VectorXd variables = Vector2d(0, 0);
         // Cannot use full Hessian with finite differences.
         REQUIRE_THROWS_WITH(solver.optimize(variables),
@@ -56,7 +56,7 @@ TEST_CASE("Unconstrained, IpoptSolver", "[ipopt]") {
     SECTION("ADOL-C") {
         // Make sure it's okay to not have constraints.
         Unconstrained<adouble> problem;
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         VectorXd variables = Vector2d(0, 0);
         double obj_value = solver.optimize(variables);
 
@@ -88,10 +88,10 @@ public:
     }
 };
 
-TEST_CASE("Ipopt C++ tutorial problem HS071; has constraints.") {
+TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
     SECTION("Finite differences") {
         HS071<double> problem;
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         solver.set_hessian_approximation("limited-memory");
         VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
         double obj_value = solver.optimize(variables);
@@ -105,7 +105,7 @@ TEST_CASE("Ipopt C++ tutorial problem HS071; has constraints.") {
     }
     SECTION("ADOL-C") {
         HS071<adouble> problem;
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
         double obj_value = solver.optimize(variables);
 
@@ -171,7 +171,7 @@ TEST_CASE("Test exceptions and error messages") {
         };
 
         Problem problem;
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         REQUIRE_THROWS_WITH(solver.set_max_iterations(0),
                 Catch::Contains("Invalid value for max_iterations"));
     }

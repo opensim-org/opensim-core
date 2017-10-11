@@ -105,7 +105,7 @@ public:
         guess.time.setLinSpaced(N, 0, 1);
         // Give a hint (not the exact final state, but something close to it).
         // I tried giving a guess where the final state guess was from the
-        // solution (-3/2pi, -2pi), but then Ipopt incorrectly thought the
+        // solution (-3/2pi, -2pi), but then IPOPT incorrectly thought the
         // solution was all zeros.
         ocp->set_state_guess(guess, "q0",
                 Eigen::RowVectorXd::LinSpaced(N, 0, -PI));
@@ -131,7 +131,7 @@ public:
 
 TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 {
-    SECTION("Ipopt") {
+    SECTION("IPOPT") {
         SECTION("Finite differences") {
             DoublePendulumSwingUpMinTime<double>::run_test("ipopt");
         }
@@ -296,7 +296,7 @@ TEST_CASE("Double pendulum coordinate tracking.",
     // Make sure the solutions from the implicit and explicit
     // formulations are similar.
 
-    SECTION("Ipopt") {
+    SECTION("IPOPT") {
 
         // The explicit solution takes 20 iterations whereas the implicit
         // solution takes 25 iterations.

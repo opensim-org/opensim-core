@@ -1,4 +1,4 @@
-#include "IpoptSolver.h"
+#include "IPOPTSolver.h"
 #include "OptimizationProblem.h"
 #include <tropter/Exception.hpp>
 #include <IpTNLP.hpp>
@@ -11,7 +11,7 @@ using Ipopt::Number;
 
 using namespace tropter;
 
-class IpoptSolver::TNLP : public Ipopt::TNLP {
+class IPOPTSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
@@ -103,7 +103,7 @@ private:
     // TODO what about for lagrangian??
 };
 
-double IpoptSolver::optimize_impl(VectorXd& variables) const {
+double IPOPTSolver::optimize_impl(VectorXd& variables) const {
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
@@ -150,7 +150,7 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
     return nlp->get_optimal_objective_value();
 }
 
-IpoptSolver::TNLP::TNLP(
+IPOPTSolver::TNLP::TNLP(
         std::shared_ptr<const OptimizationProblemDecorator> problem)
         : m_problem(problem)
 {
@@ -158,7 +158,7 @@ IpoptSolver::TNLP::TNLP(
     m_num_constraints = m_problem->get_num_constraints();
 }
 
-bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
+bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
                                      Index& num_constraints,
                                      Index& num_nonzeros_jacobian,
                                      Index& num_nonzeros_hessian,
@@ -172,7 +172,7 @@ bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
     return true;
 }
 
-void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
+void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
     // TODO all of this content should be taken care of for us by
     // OptimizationProblem.
 
@@ -194,7 +194,7 @@ void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 
-bool IpoptSolver::TNLP::get_bounds_info(
+bool IPOPTSolver::TNLP::get_bounds_info(
         Index num_variables, Number* x_lower, Number* x_upper,
         Index num_constraints, Number* g_lower, Number* g_upper) {
     assert((unsigned)num_variables   == m_num_variables);
@@ -242,7 +242,7 @@ bool IpoptSolver::TNLP::get_bounds_info(
 
 // z: multipliers for bound constraints on x.
 // warmstart will require giving initial values for the multipliers.
-bool IpoptSolver::TNLP::get_starting_point(
+bool IPOPTSolver::TNLP::get_starting_point(
         Index num_variables, bool init_x, Number* x,
         bool init_z, Number* /*z_L*/, Number* /*z_U*/,
         Index num_constraints, bool init_lambda,
@@ -258,7 +258,7 @@ bool IpoptSolver::TNLP::get_starting_point(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_f(
+bool IPOPTSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool new_x,
         Number& obj_value) {
     assert((unsigned)num_variables == m_num_variables);
@@ -266,7 +266,7 @@ bool IpoptSolver::TNLP::eval_f(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_grad_f(
+bool IPOPTSolver::TNLP::eval_grad_f(
         Index num_variables, const Number* x, bool new_x,
         Number* grad_f) {
     assert((unsigned)num_variables == m_num_variables);
@@ -274,7 +274,7 @@ bool IpoptSolver::TNLP::eval_grad_f(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_g(
+bool IPOPTSolver::TNLP::eval_g(
         Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Number* g) {
     assert((unsigned)num_variables   == m_num_variables);
@@ -285,7 +285,7 @@ bool IpoptSolver::TNLP::eval_g(
 }
 
 // TODO can Ipopt do finite differencing for us?
-bool IpoptSolver::TNLP::eval_jac_g(
+bool IPOPTSolver::TNLP::eval_jac_g(
         Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Index num_nonzeros_jacobian,
         Index* iRow, Index *jCol, Number* values) {
@@ -307,7 +307,7 @@ bool IpoptSolver::TNLP::eval_jac_g(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_h(
+bool IPOPTSolver::TNLP::eval_h(
         Index num_variables, const Number* x, bool new_x,
         Number obj_factor, Index num_constraints, const Number* lambda,
         bool new_lambda, Index num_nonzeros_hessian,
@@ -330,7 +330,7 @@ bool IpoptSolver::TNLP::eval_h(
     return true;
 }
 
-void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
+void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
                                           Index num_variables,
                                           const Number* x,
                                           const Number* /*z_L*/, const Number* /*z_U*/,

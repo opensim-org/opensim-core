@@ -43,7 +43,7 @@ public:
     }
 };
 
-TEST_CASE("Sliding mass with Ipopt") {
+TEST_CASE("Sliding mass with IPOPT") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");

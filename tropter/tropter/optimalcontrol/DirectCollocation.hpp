@@ -5,7 +5,7 @@
 #include "OptimalControlProblem.h"
 #include <tropter/optimization/OptimizationSolver.h>
 #include <tropter/optimization/SNOPTSolver.h>
-#include <tropter/optimization/IpoptSolver.h>
+#include <tropter/optimization/IPOPTSolver.h>
 
 #include <tropter/Exception.hpp>
 
@@ -36,9 +36,9 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     std::transform(optsolver_lower.begin(), optsolver_lower.end(),
             optsolver_lower.begin(), ::tolower);
     if (optsolver_lower == "ipopt") {
-        // TODO this may not be good for IpoptSolver; IpoptSolver should
+        // TODO this may not be good for IPOPTSolver; IPOPTSolver should
         // have a shared_ptr??
-        m_optsolver.reset(new IpoptSolver(*m_transcription.get()));
+        m_optsolver.reset(new IPOPTSolver(*m_transcription.get()));
     } else if (optsolver_lower == "snopt") {
         m_optsolver.reset(new SNOPTSolver(*m_transcription.get()));
     } else {

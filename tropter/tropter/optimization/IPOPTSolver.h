@@ -6,11 +6,11 @@
 namespace tropter {
 
 /// @ingroup optimization
-class IpoptSolver : public OptimizationSolver {
+class IPOPTSolver : public OptimizationSolver {
 public:
-    // TODO this means the IpoptSolver *would* get access to the Problem,
+    // TODO this means the IPOPTSolver *would* get access to the Problem,
     // and we don't want that.
-    IpoptSolver(const AbstractOptimizationProblem& problem)
+    IPOPTSolver(const AbstractOptimizationProblem& problem)
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
