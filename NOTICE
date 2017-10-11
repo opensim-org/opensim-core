@@ -30,12 +30,12 @@ How to Acknowledge Us
 ---------------------
 Acknowledging the OpenSim project helps us and helps you. It allows us to track
 our impact, which is essential for securing funding to improve the software and
-provide support to our users (you).
+provide support to our users (you). We would be extremely grateful if you
+acknowledge us by citing the following papers.
 
-If you use the OpenSim GUI, you must acknowledge the OpenSim project where
-appropriate, by citing the following paper. If you only use the OpenSim API, you
-are not required to acknowledge us, but we would be extremely grateful if you
-did so anyway.
+Seth A, Sherman M, Reinbolt JA,  Delp SL. OpenSim: a musculoskeletal modeling
+and simulation framework for in silico investigations and exchange.
+Procedia IUTAM. (2011)
 
 Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen
 DG. OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of
