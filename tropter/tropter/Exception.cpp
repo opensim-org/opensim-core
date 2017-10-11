@@ -1,6 +1,9 @@
 
 #include "Exception.hpp"
 
+#include <memory>
+#include <cstdio>
+
 using namespace tropter;
 
 Exception::Exception(const std::string& msg) {
@@ -29,4 +32,20 @@ void Exception::set_message(const std::string& msg) {
 
 const char* Exception::what() const noexcept {
     return m_what.c_str();
+}
+
+/// Format a string in the style of sprintf.
+std::string Exception::format(const char* format, ...) {
+    // Get buffer size.
+    va_list args;
+    va_start(args, format);
+    int bufsize = vsnprintf(nullptr, 0, format, args) + 1; // +1 for '\0'
+    va_end(args);
+
+    // Create formatted string.
+    std::unique_ptr<char[]> buf(new char[bufsize]);
+    va_start(args, format);
+    vsnprintf(buf.get(), bufsize, format, args);
+    va_end(args);
+    return std::string(buf.get());
 }
