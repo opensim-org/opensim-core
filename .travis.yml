@@ -99,6 +99,10 @@ before_install:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
+  # Avoid "Homebrew must be run under Ruby 2.3!"
+  # https://github.com/PowerShell/PowerShell/issues/5062
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
   # we don't want any matches. If there are matches,
