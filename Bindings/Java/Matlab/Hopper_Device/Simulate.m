@@ -96,7 +96,7 @@ while true
     while ~compIter.equals(compList.end())
         if ~isempty(strfind(compIter.getConcreteClassName(), ...
                 'TableReporter__double_'))
-            comp = model.getComponent(compIter.getAbsolutePathName());
+            comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
         end
