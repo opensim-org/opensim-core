@@ -2,6 +2,7 @@
 #include "Exception.hpp"
 
 #include <memory>
+#include <cstdarg>
 #include <cstdio>
 
 using namespace tropter;
