@@ -640,8 +640,16 @@ public:
      * absolutePathName from root is guaranteed to be unique. The
      * absolutePathName is generated on-the-fly by traversing the ownership tree
      * and, therefore, calling this method is not "free". */
-    std::string getAbsolutePathName() const;
+    std::string getAbsolutePathString() const;
 
+    /** Return a ComponentPath of the absolute path of this Component. 
+     * Note that this has more overhead than calling `getName()` because 
+     * it traverses up the tree to generate the absolute pathname (and its
+     * computational cost is thus a function of depth). Consider other 
+     * options if this is repeatedly called and efficiency is important.
+     * For instance, `getAbsolutePathString()` is faster if you only
+     * need the path as a string. */
+    ComponentPath getAbsolutePath() const;
 
     /** Get the relative pathname of this Component with respect to another
      * Component. */
@@ -1571,14 +1579,14 @@ public:
 
         std::cout << std::string(maxlen-concreteClassName.length(), ' ')
                   << "[" << concreteClassName << "]"
-                  << "  " << getAbsolutePathName() << std::endl;
+                  << "  " << getAbsolutePathString() << std::endl;
 
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
             std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
                       << thisClass << "]  ";
-            auto path = ComponentPath(thisComp.getAbsolutePathName());
+            auto path = thisComp.getAbsolutePath();
             std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
                       << "/" << path.getComponentName() << std::endl;
         }
@@ -2181,7 +2189,7 @@ protected:
             throw Exception(msg);
         }
 
-        ComponentPath thisAbsPath(getAbsolutePathName());
+        ComponentPath thisAbsPath = getAbsolutePath();
         ComponentPath pathToFind(name);
 
         const C* found = NULL;
@@ -2205,8 +2213,8 @@ protected:
         for (const C& comp : compsList) {
             // if a child of this Component, one should not need
             // to specify this Component's absolute path name
-            ComponentPath compAbsPath(comp.getAbsolutePathName());
-            ComponentPath thisAbsPathPlusSubname(getAbsolutePathName());
+            ComponentPath compAbsPath = comp.getAbsolutePath();
+            ComponentPath thisAbsPathPlusSubname = getAbsolutePath();
             thisAbsPathPlusSubname.pushBack(subname);
             if (compAbsPath == thisAbsPathPlusSubname) {
                 foundCs.push_back(&comp);
@@ -2294,10 +2302,10 @@ protected:
                 }
                 auto compsList = current->getComponentList<Component>();
                 // descend to next component in the path otherwise not found
-                ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
+                ComponentPath currentAbsPathPlusSubpath = current->getAbsolutePath();
                 currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
                 for (const Component& comp : compsList) {
-                    ComponentPath compAbsPath(comp.getAbsolutePathName());
+                    ComponentPath compAbsPath = comp.getAbsolutePath();
                     std::string compName = comp.getName();
                     // Check if we're in the right component
                     if (compAbsPath == currentAbsPathPlusSubpath) {

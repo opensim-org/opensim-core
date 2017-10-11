@@ -478,7 +478,7 @@ void testMisc() {
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
+    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathString());
     bar.connectSocket_childFoo(foo);
         
     // add a subcomponent
@@ -491,19 +491,19 @@ void testMisc() {
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathString() << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -514,7 +514,7 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathString() << std::endl;
     }
 
     // Query existing components.
@@ -759,7 +759,7 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -772,11 +772,11 @@ void testMisc() {
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathString() << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathString() << endl;
 
     theWorld.print("Nested_" + modelFile);
 }
@@ -918,52 +918,15 @@ void testListSockets() {
 
 void testComponentPathNames()
 {
-    Foo foo;
-    Bar bar;
-    TheWorld top;
-
-    // These are not valid component names
-    // Only using for testing as surrogates for path names
-    // which are computed by the component. Just testing
-    // the relative path name facility here.
-    top.setName("Top");
-    foo.setName("A/B/C/D");
-    bar.setName("A/B/E");
-
-    std::string fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../C/D"); // "/A/B/" as common
-
-    std::string barWrtFoo= bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../../E"); // "/A/B/" as common
-
-    // null case foo wrt foo
-    std::string fooWrtFoo = foo.getRelativePathName(foo);
-    ASSERT(fooWrtFoo == "");
-
-    std::string topAbsPath = top.getAbsolutePathName();
-    std::string fooWrtTop = foo.getRelativePathName(top);
-    ASSERT(fooWrtTop == "../A/B/C/D");
-
-    std::string topWrtFoo = top.getRelativePathName(foo);
-    ASSERT(topWrtFoo== "../../../../Top");
-
-    foo.setName("World/Foo");
-    bar.setName("World3/bar2");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../../World/Foo");
-
-    foo.setName("World3/bar2/foo1");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "foo1");
-
-    bar.setName("LegWithConstrainedFoot/footConstraint");
-    foo.setName("LegWithConstrainedFoot/foot");
-    barWrtFoo = bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../footConstraint");
-
-    // Now build use real components and assemble them 
+    // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
+    TheWorld top;
+    TheWorld otherTop;
+
+    top.setName("Top");
+    otherTop.setName("OtherTop");
+
     TheWorld* A = new TheWorld();
     TheWorld* B = new TheWorld();
     TheWorld* C = new TheWorld();
@@ -984,11 +947,28 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
 
-    std::string absPathC = C->getAbsolutePathName();
+    std::string absPathC = C->getAbsolutePathString();
     ASSERT(absPathC == "/Top/A/B/C");
 
-    std::string absPathE = E->getAbsolutePathName();
+    std::string absPathE = E->getAbsolutePathString();
     ASSERT(absPathE == "/Top/A/D/E");
+
+    // Specific tests to relative path name facilities
+    std::string EWrtB = E->getRelativePathName(*B);
+    ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
+
+    std::string BWrtE = B->getRelativePathName(*E);
+    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+
+    // null case component wrt itself
+    std::string fooWrtFoo = D->getRelativePathName(*D);
+    ASSERT(fooWrtFoo == "");
+
+    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
+    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+
+    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
+    ASSERT(OtherTopWrtC == "../../../../OtherTop");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -1026,9 +1006,9 @@ void testComponentPathNames()
     top.printOutputInfo();
 
     std::string fFoo1AbsPath = 
-        F->getComponent<Foo>("Foo1").getAbsolutePathName();
+        F->getComponent<Foo>("Foo1").getAbsolutePathString();
     std::string aBar2AbsPath = 
-        A->getComponent<Bar>("Bar2").getAbsolutePathName();
+        A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo = 
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 
@@ -2015,6 +1995,64 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
+void testGetAbsolutePathStringSpeed() {
+    
+    std::clock_t constructStartTime = std::clock();
+
+    TheWorld* A = new TheWorld();
+    TheWorld* B = new TheWorld();
+    TheWorld* C = new TheWorld();
+    TheWorld* D = new TheWorld();
+    TheWorld* E = new TheWorld();
+    // Use longer names to avoid short string optimization
+    A->setName("a2345678901234567890");
+    B->setName("b2345678901234567890");
+    C->setName("c2345678901234567890");
+    D->setName("d2345678901234567890");
+    E->setName("e2345678901234567890");
+
+    A->add(B);
+    B->add(C);
+    C->add(D);
+    D->add(E);
+
+    double avgTime = 0;
+    int numTrials = 10;
+    int numLoops = 1000000;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getAbsolutePathString();
+            B->getAbsolutePathString();
+            C->getAbsolutePathString();
+            D->getAbsolutePathString();
+            E->getAbsolutePathString();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getAbsolutePathString avgTime = " << avgTime / numTrials << "s" << endl;
+
+    avgTime = 0;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getName();
+            B->getName();
+            C->getName();
+            D->getName();
+            E->getName();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getName avgTime = " << avgTime / numTrials << "s" << endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2043,6 +2081,11 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+
+        // This is commented out since it adds ~20-30sec without testing
+        // any new functionality. Make sure to uncomment to use (and
+        // consider commenting other subtests for more stable benchmark).
+        //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
 
     SimTK_END_TEST();
 }
