@@ -19,7 +19,6 @@
 #include "InverseMuscleSolver.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
-#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
@@ -31,6 +30,8 @@ InverseMuscleSolver::InverseMuscleSolver(const std::string& setupFilePath) :
         Object(setupFilePath) {
     constructProperties();
 }
+
+InverseMuscleSolver::~InverseMuscleSolver() {}
 
 void InverseMuscleSolver::constructProperties() {
     constructProperty_write_solution("./");

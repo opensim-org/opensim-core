@@ -23,9 +23,11 @@
 
 #include <SimTKcommon/internal/ResetOnCopy.h>
 
-namespace OpenSim {
+// TODO make this a forward declaration (ran into issues with unique_ptr's
+// destructor).
+#include <OpenSim/Simulation/Model/Model.h>
 
-class Model;
+namespace OpenSim {
 
 /// This is a base class for methods that solve for muscle activity for a
 /// known motion (kinematics) using direct collocation.
@@ -160,6 +162,8 @@ public:
     InverseMuscleSolver();
 
     explicit InverseMuscleSolver(const std::string& setupFilePath);
+
+    virtual ~InverseMuscleSolver();
 
     /// Set the model to use. If you set a model this way, make sure to set
     /// the model_file property to an empty string
