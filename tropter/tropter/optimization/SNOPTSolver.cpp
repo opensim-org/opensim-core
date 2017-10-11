@@ -7,7 +7,7 @@ using Eigen::VectorXd;
 using Eigen::VectorXi;
 
 // TODO building the tropter library should not *require* snopt.
-#if !defined(MUSCOLLO_WITH_SNOPT)
+#if !defined(TROPTER_WITH_SNOPT)
 
 double SNOPTSolver::optimize_impl(VectorXd& /*variables*/) const
 {
@@ -28,7 +28,6 @@ namespace {
 std::shared_ptr<const OptimizationProblemDecorator> probproxy = nullptr;
 }
 
-// TODO make this into a lambda?
 void snopt_userfunction(int*   /* Status */,
         int* num_variables, double x[],
         int*   needF, int* length_F  , double  F[],
@@ -41,16 +40,16 @@ void snopt_userfunction(int*   /* Status */,
     // TODO make use of needF, needG
     bool new_variables = true; // TODO can be smarter about this.
     if (*needF > 0) {
-        probproxy->objective(*num_variables, x, new_variables, F[0]);
-        probproxy->constraints(*num_variables, x, new_variables,
+        probproxy->calc_objective(*num_variables, x, new_variables, F[0]);
+        probproxy->calc_constraints(*num_variables, x, new_variables,
                 *length_F - 1, &F[1]);
     }
     if (*needG > 0) {
         if (*needF > 0) new_variables = false;
         // The first num_variables elements of G are the gradient.
-        probproxy->gradient(*num_variables, x, new_variables, &G[0]);
+        probproxy->calc_gradient(*num_variables, x, new_variables, &G[0]);
         // The jacobian's nonzeros start at G[n].
-        probproxy->jacobian(*num_variables, x, new_variables,
+        probproxy->calc_jacobian(*num_variables, x, new_variables,
                 *neG - *num_variables, &G[*num_variables]);
     }
 }
@@ -60,10 +59,10 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     probproxy = m_problem;
 
     // Allocate and initialize.
-    int num_variables = m_problem->num_variables();
+    int num_variables = m_problem->get_num_variables();
     // The F vector contains both the objective and constraints.
     // TODO handle the case that the user does not define an objective function.
-    int length_F = 1 + m_problem->num_constraints();
+    int length_F = 1 + m_problem->get_num_constraints();
 
     // TODO what does this do?
     VectorXi xstate = VectorXi::Zero(num_variables);
@@ -81,10 +80,10 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // Variable and constraint bounds.
     // -------------------------------
     // We make a copy of these because setX takes double*, not const double*.
-    auto xlow                    = m_problem->variable_lower_bounds();
-    auto xupp                    = m_problem->variable_upper_bounds();
-    const auto& constraint_lower = m_problem->constraint_lower_bounds();
-    const auto& constraint_upper = m_problem->constraint_upper_bounds();
+    auto xlow                    = m_problem->get_variable_lower_bounds();
+    auto xupp                    = m_problem->get_variable_upper_bounds();
+    const auto& constraint_lower = m_problem->get_constraint_lower_bounds();
+    const auto& constraint_upper = m_problem->get_constraint_upper_bounds();
     // There is no bound on the objective, thus the -1e20, 1e20.
     // The `finished()` is to get rid of Eigen's "expression templates."
     VectorXd Flow = (VectorXd(length_F) << -1e20, constraint_lower).finished();
@@ -101,9 +100,10 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // TODO do not need these:
     std::vector<unsigned int> hessian_row_indices;
     std::vector<unsigned int> hessian_col_indices;
-    m_problem->sparsity(variables, jacobian_row_indices, jacobian_col_indices,
+    m_problem->calc_sparsity(variables,
+            jacobian_row_indices, jacobian_col_indices,
             hessian_row_indices,  hessian_col_indices);
-    int jacobian_num_nonzeros = jacobian_row_indices.size();
+    int jacobian_num_nonzeros = (int)jacobian_row_indices.size();
     int length_G = num_variables + jacobian_num_nonzeros;
     int num_nonzeros_G = length_G;
     // Row indices of Jacobian G (rows correspond to "fun"ctions).
@@ -171,4 +171,4 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     return F[0];
 }
 
-#endif // !defined(MUSCOLLO_WITH_SNOPT)
+#endif // !defined(TROPTER_WITH_SNOPT)

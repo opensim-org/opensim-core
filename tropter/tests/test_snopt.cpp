@@ -4,7 +4,7 @@
 
 #include "testing.h"
 
-#include <tropter.h>
+#include <tropter/tropter.h>
 
 #include <snoptProblem.hpp>
 
@@ -131,22 +131,17 @@ TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example")
 {
     class SnoptA : public OptimizationProblem<adouble> {
     public:
-        SnoptA()
-                :OptimizationProblem(2, 2)
-        {
+        SnoptA() : OptimizationProblem(2, 2) {
             // TODO support an "infinity"
             set_variable_bounds(Vector2d(0, -1e20), Vector2d(1e20, 1e20));
             set_constraint_bounds(Vector2d(-1e20, -1e20), Vector2d(4, 5));
         }
-        void objective(const VectorXa& x, adouble& obj_value) const
-        override
-        {
+        void calc_objective(const VectorXa& x, adouble& obj_value) const
+                override {
             obj_value = x[1];
         }
-        void constraints(const VectorXa& x,
-                         Eigen::Ref<VectorXa> constr) const
-        override
-        {
+        void calc_constraints(const VectorXa& x,
+                         Eigen::Ref<VectorXa> constr) const override {
             constr[0] = x[0]*x[0] + 4*x[1]*x[1];
             constr[1] = (x[0] - 2)*(x[0] - 2) + x[1]*x[1];
         }
@@ -169,24 +164,20 @@ TEST_CASE("First order minimum effort.", "[analytic]")
     class FirstOrderMinEffort
             : public tropter::OptimalControlProblem<adouble> {
     public:
-        FirstOrderMinEffort()
-        {
+        using T = adouble;
+        FirstOrderMinEffort() {
             set_time(0, 1);
             add_state("x", {-5, 5}, 1, 0);
             add_control("u", {-10, 10});
         }
-        void dynamics(const VectorXa& states,
-                      const VectorXa& controls,
-                      Ref<VectorXa> derivatives) const
-        override
-        {
-            derivatives[0] = -2*states[0] + controls[0];
+        void calc_differential_algebraic_equations(
+                const DAEInput<T>& in, DAEOutput<T> out) const override {
+            out.dynamics[0] = -2*in.states[0] + in.controls[0];
         }
-        void integral_cost(const adouble& /*time*/,
+        void calc_integral_cost(const adouble& /*time*/,
                            const VectorXa& /*states*/,
                            const VectorXa& controls,
-                           adouble& integrand) const
-        override {
+                           adouble& integrand) const override {
             integrand = controls[0]*controls[0];
         }
     };
@@ -222,18 +213,15 @@ public:
         this->add_control("F", {-50, 50});
     }
     const double mass = 10.0;
-    void dynamics(const VectorX<T>& states,
-                  const VectorX<T>& controls,
-                  Ref<VectorX<T>> derivatives) const override
-    {
-        derivatives[0] = states[1];
-        derivatives[1] = controls[0]/mass;
+    void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const override {
+        out.dynamics[0] = in.states[1];
+        out.dynamics[1] = in.controls[0]/mass;
     }
-    void integral_cost(const T& /*time*/,
+    void calc_integral_cost(const T& /*time*/,
                        const VectorX<T>& /*states*/,
                        const VectorX<T>& controls,
-                       T& integrand) const override
-    {
+                       T& integrand) const override {
         integrand = controls.squaredNorm();
     }
 };
@@ -253,10 +241,11 @@ TEST_CASE("Sliding mass minimum effort with SNOPT.")
     REQUIRE(Approx(solution.states(1, 0)) == 0.0);
     REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
 
-    int N = solution.time.size();
+    int N = (int)solution.time.size();
     std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
     // TODO is this correct?
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.7448, -14.7448);
-    REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected, 0.1);
+    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+            0.1);
 }
 

@@ -69,7 +69,7 @@ TEST_CASE("Sliding mass with Ipopt") {
     //REQUIRE(Approx(errors.norm()) == 0);
 }
 
-#if defined(MUSCOLLO_WITH_SNOPT)
+#if defined(TROPTER_WITH_SNOPT)
 TEST_CASE("Sliding mass new interface") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();

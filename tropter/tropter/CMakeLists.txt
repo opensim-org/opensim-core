@@ -67,8 +67,8 @@ if(LINUX)
 endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
-if(MUSCOLLO_WITH_SNOPT)
-    target_link_libraries(tropter snopt7_cpp)
+if(TROPTER_WITH_SNOPT)
+    target_link_libraries(tropter PUBLIC snopt7_cpp) # PRIVATE
 endif()
 
 if(WIN32)
@@ -88,8 +88,8 @@ endif()
 # Only use the parts of Eigen that do not have a viral license.
 # Also, make sure client projects remain non-viral ("PUBLIC").
 target_compile_definitions(tropter PUBLIC EIGEN_MPL2_ONLY)
-if(MUSCOLLO_WITH_SNOPT)
-    target_compile_definitions(tropter PUBLIC MUSCOLLO_WITH_SNOPT)
+if(TROPTER_WITH_SNOPT)
+    target_compile_definitions(tropter PUBLIC TROPTER_WITH_SNOPT)
 endif()
 
 # Specify the include directories that the tropter target and client targets
@@ -98,10 +98,11 @@ target_include_directories(tropter PUBLIC
         # Used by other targets in this project:
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tropter>
         # Used by client projects using an installed version of Tropter.
-        # TODO use variable for the path.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
 
-set_target_properties(tropter PROPERTIES PROJECT_LABEL "Library - tropter" FOLDER "tropter")
+set_target_properties(tropter PROPERTIES
+        PROJECT_LABEL "Library - tropter"
+        FOLDER "tropter")
 
 # Installing.
 # -----------

@@ -139,13 +139,13 @@ TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
             DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt");
         }
     }
-    #if defined(MUSCOLLO_WITH_SNOPT)
-    SECTION("SNOPT") {
-        SECTION("ADOL-C") {
-            DoublePendulumSwingUpMinTime<adouble>::run_test("snopt");
-        }
-    }
-    #endif
+    // #if defined(TROPTER_WITH_SNOPT)
+    // SECTION("SNOPT") {
+    //     SECTION("ADOL-C") {
+    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt");
+    //     }
+    // }
+    // #endif
 }
 
 
@@ -184,7 +184,8 @@ public:
         // from the solution using an exact Hessian does not converge.
         dircol.get_optimization_solver().set_hessian_approximation("exact");
         OptimalControlSolution solution = dircol.solve();
-        //solution.write("double_pendulum_coordinate_tracking.csv");
+        //dircol.print_constraint_values(solution);
+        solution.write("double_pendulum_coordinate_tracking.csv");
 
         TROPTER_REQUIRE_EIGEN(solution.states.row(0),
                 Eigen::RowVectorXd::LinSpaced(N, 0, 0.50 * PI), 1e-3);
@@ -295,36 +296,72 @@ TEST_CASE("Double pendulum coordinate tracking.",
     // Make sure the solutions from the implicit and explicit
     // formulations are similar.
 
-    // The explicit solution takes 20 iterations whereas the implicit
-    // solution takes 25 iterations.
-    const auto explicit_solution =
-            DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
+    SECTION("Ipopt") {
 
-    const auto implicit_solution =
-            ImplicitDoublePendulumCoordinateTracking<adouble>::
-            run_test("ipopt", "exact");
+        // The explicit solution takes 20 iterations whereas the implicit
+        // solution takes 25 iterations.
+        const auto explicit_solution =
+                DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
 
-    TROPTER_REQUIRE_EIGEN(explicit_solution.time,
-            implicit_solution.time, 1e-10);
-    // q0 and q1
-    TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
-            implicit_solution.states.bottomRows(2), 1e-2);
-    // u0 and u1
-    TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
-            implicit_solution.states.bottomRows(2), 1e-2);
-    // tau0 and tau1
-    // The controls have the same shape but have a pretty large error
-    // between them.
-    // The peak magnitude of the torques is about 10-30 N-m, so a tolerance of
-    // 1.5 N-m means the shape of the torques is preserved.
-    CAPTURE(explicit_solution.controls);
-    CAPTURE(implicit_solution.controls);
-    TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
-            implicit_solution.controls.bottomRows(2), 1.5);
+        const auto implicit_solution =
+                ImplicitDoublePendulumCoordinateTracking<adouble>::
+                run_test("ipopt", "exact");
 
-    // TODO does not converge with limited memory.
-    // ImplicitDoublePendulumCoordinateTracking<adouble>::
-    // run_test("ipopt", "limited-memory");
+        TROPTER_REQUIRE_EIGEN(explicit_solution.time,
+                implicit_solution.time, 1e-10);
+        // q0 and q1
+        TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+                implicit_solution.states.bottomRows(2), 1e-2);
+        // u0 and u1
+        TROPTER_REQUIRE_EIGEN(explicit_solution.states.bottomRows(2),
+                implicit_solution.states.bottomRows(2), 1e-2);
+        // tau0 and tau1
+        // The controls have the same shape but have a pretty large error
+        // between them.
+        // The peak magnitude of the torques is about 10-30 N-m, so a tolerance of
+        // 1.5 N-m means the shape of the torques is preserved.
+        CAPTURE(explicit_solution.controls);
+        CAPTURE(implicit_solution.controls);
+        TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
+                implicit_solution.controls.bottomRows(2), 1.5);
+
+        // TODO does not converge with limited memory.
+        // ImplicitDoublePendulumCoordinateTracking<adouble>::
+        // run_test("ipopt", "limited-memory");
+
+    }
+
+
+    /*
+    #if defined(TROPTER_WITH_SNOPT)
+    SECTION("SNOPT") {
+        // TODO SNOPT will get the correct solution if the initial guess is the
+        // solution from IPOPT, but otherwise, the solution is off (u0/u1
+        // dynamics violation is 1e-7?).
+        //ImplicitDoublePendulumCoordinateTracking<adouble>::run_test("snopt",
+        //        "limited-memory");
+        const auto explicit_solution =
+                DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
+        auto ocp = std::make_shared<DoublePendulumCoordinateTracking<adouble>>();
+        tropter::OptimalControlIterate guess;
+
+        const int N = 100;
+        guess.time.setLinSpaced(N, 0, 1);
+        ocp->set_state_guess(guess, "q0",
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.5*PI));
+        ocp->set_state_guess(guess, "q1",
+                Eigen::RowVectorXd::LinSpaced(N, 0, 0.25*PI));
+        ocp->set_state_guess(guess, "u0", Eigen::RowVectorXd::Zero(N));
+        ocp->set_state_guess(guess, "u1", Eigen::RowVectorXd::Zero(N));
+        ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
+        ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
+        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", N);
+        OptimalControlSolution solution = dircol.solve(guess);
+        dircol.print_constraint_values(solution);
+        solution.write("double_pendulum_coordinate_tracking_snopt.csv");
+    }
+    #endif
+    */
 }
 
 // TODO include acceleration and deceleration.

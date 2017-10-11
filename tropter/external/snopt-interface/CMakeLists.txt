@@ -18,7 +18,7 @@ if (${SNOPT_LIBRARY} STREQUAL "SNOPT_LIBRARY-NOTFOUND")
 else()
     message(STATUS "SNOPT library located at ${SNOPT_LIBRARY}")
 
-    add_library(snopt7_cpp
+    add_library(snopt7_cpp SHARED
         include/snopt.h
         include/snopt_cwrap.h src/snopt_cwrap.c
         include/snoptProblem.hpp src/snoptProblem.cpp
