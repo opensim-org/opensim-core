@@ -268,7 +268,7 @@ calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 
     // Compute the dense "compressed Jacobian" using the directions ColPack
     // told us to use.
-    // TODO for OpenMP: LowOrder has working memory!
+    // TODO for OpenMP: Trapezoidal has working memory!
     //#pragma omp parallel for firstprivate(m_constr_pos, m_constr_neg)
     for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
         const auto direction = m_jacobian_seed.col(iseed);

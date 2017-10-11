@@ -8,8 +8,8 @@ template class DirectCollocationSolver<adouble>;
 
 namespace transcription {
 
-template class LowOrder<double>;
-template class LowOrder<adouble>;
+template class Trapezoidal<double>;
+template class Trapezoidal<adouble>;
 
 } // namespace transcription
 } // namespace tropter

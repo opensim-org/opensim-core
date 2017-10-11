@@ -26,7 +26,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     std::transform(transcrip_lower.begin(), transcrip_lower.end(),
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
-        m_transcription.reset(new transcription::LowOrder<T>(ocproblem,
+        m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
                                                              num_mesh_points));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
@@ -86,7 +86,7 @@ void DirectCollocationSolver<T>::print_constraint_values(
 namespace transcription {
 
 template<typename T>
-void LowOrder<T>::set_ocproblem(
+void Trapezoidal<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
     m_num_states = m_ocproblem->get_num_states();
@@ -207,7 +207,7 @@ void LowOrder<T>::set_ocproblem(
 }
 
 template<typename T>
-void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
+void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
 {
     // TODO move this to a "make_variables_view()"
     const T& initial_time = x[0];
@@ -253,7 +253,7 @@ void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
 }
 
 template<typename T>
-void LowOrder<T>::calc_constraints(const VectorX<T>& x,
+void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         Eigen::Ref<VectorX<T>> constraints) const
 {
     // TODO parallelize.
@@ -322,7 +322,7 @@ void LowOrder<T>::calc_constraints(const VectorX<T>& x,
 }
 
 template<typename T>
-Eigen::VectorXd LowOrder<T>::
+Eigen::VectorXd Trapezoidal<T>::
 construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 {
     // Check for errors with dimensions.
@@ -380,7 +380,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 }
 
 template<typename T>
-OptimalControlIterate LowOrder<T>::
+OptimalControlIterate Trapezoidal<T>::
 deconstruct_iterate(const Eigen::VectorXd& x) const
 {
     const double& initial_time = x[0];
@@ -399,7 +399,7 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
 }
 
 template<typename T>
-void LowOrder<T>::
+void Trapezoidal<T>::
 print_constraint_values(const OptimalControlIterate& ocp_vars,
                         std::ostream& stream) const
 {
@@ -557,8 +557,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryViewConst<S>
-LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryViewConst<S>
+Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
@@ -571,8 +571,8 @@ LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryViewConst<S>
-LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryViewConst<S>
+Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Start of controls for first tropter interval.
@@ -586,8 +586,8 @@ LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 // TODO avoid the duplication with the above.
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
-LowOrder<T>::make_states_trajectory_view(VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryView<S>
+Trapezoidal<T>::make_states_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
@@ -600,8 +600,8 @@ LowOrder<T>::make_states_trajectory_view(VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
-LowOrder<T>::make_controls_trajectory_view(VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryView<S>
+Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Start of controls for first tropter interval.
@@ -613,8 +613,8 @@ LowOrder<T>::make_controls_trajectory_view(VectorX<S>& x) const
 }
 
 template<typename T>
-typename LowOrder<T>::ConstraintsView
-LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
+typename Trapezoidal<T>::ConstraintsView
+Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
     const unsigned is = 0;                               // initial states.

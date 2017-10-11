@@ -20,7 +20,7 @@ struct OptimalControlSolution : public OptimalControlIterate {
 namespace transcription {
 
 template<typename T>
-class Transcription;
+class Base;
 
 } // namespace transcription
 
@@ -89,13 +89,13 @@ private:
     OptimalControlSolution solve_internal(Eigen::VectorXd& variables) const;
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
-    std::unique_ptr<transcription::Transcription<T>> m_transcription;
+    std::unique_ptr<transcription::Base<T>> m_transcription;
     std::unique_ptr<OptimizationSolver> m_optsolver;
 };
 
 //namespace transcription {
 //
-//class LowOrder;
+//class Trapezoidal;
 //
 //class Orthogonal;
 //
@@ -108,7 +108,7 @@ private:
 //};
 
 //template<typename T>
-//class LowOrder : public OptimizationProblem<T> {
+//class Trapezoidal : public OptimizationProblem<T> {
 //public:
 //    struct Trajectory {
 //        Eigen::RowVectorXd time;
@@ -127,7 +127,7 @@ namespace transcription {
 
 /// @ingroup optimalcontrol
 template<typename T>
-class Transcription : public OptimizationProblem<T> {
+class Base : public OptimizationProblem<T> {
 public:
     // TODO do we still need this type? Use OptimalControlIterate instead.
     //struct Trajectory {
@@ -160,15 +160,13 @@ public:
 
 /// @ingroup optimalcontrol
 template<typename T>
-class LowOrder : public Transcription<T> {
-    // TODO should this *BE* an OptimizationProblem, or should it just
-    // contain one?
+class Trapezoidal : public Base<T> {
 public:
     typedef OptimalControlProblem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     // TODO const OCProblem?
-    LowOrder(std::shared_ptr<const OCProblem> ocproblem,
+    Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
             unsigned num_mesh_points = 50) {
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
@@ -186,7 +184,7 @@ public:
     Eigen::VectorXd
     construct_iterate(const OptimalControlIterate& traj,
                       bool interpolate = false) const override;
-    // TODO can this have a generic implementation in the Transcription class?
+    // TODO can this have a generic implementation in the Base class?
     OptimalControlIterate
     deconstruct_iterate(const Eigen::VectorXd& x) const override;
     void print_constraint_values(
