@@ -1,5 +1,6 @@
 
 add_library(osimMuscollo
+        MucoProblem.h                    MucoProblem.cpp
         InverseMuscleSolver.h            InverseMuscleSolver.cpp
         GlobalStaticOptimization.h       GlobalStaticOptimization.cpp
         INDYGO.h                         INDYGO.cpp

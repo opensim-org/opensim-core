@@ -1,7 +1,8 @@
+#if ($HEADER_COMMENTS)
 // ----------------------------------------------------------------------------
-// tropter: DirectCollocation.cpp
+// tropter: $FILE_NAME 
 // ----------------------------------------------------------------------------
-// Copyright (c) 2017 tropter authors
+// Copyright (c) $YEAR tropter authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may
 // not use this file except in compliance with the License. You may obtain a
@@ -13,18 +14,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-
-#include "DirectCollocation.hpp"
-
-namespace tropter {
-
-template class DirectCollocationSolver<double>;
-template class DirectCollocationSolver<adouble>;
-
-namespace transcription {
-
-template class Trapezoidal<double>;
-template class Trapezoidal<adouble>;
-
-} // namespace transcription
-} // namespace tropter
+#end
