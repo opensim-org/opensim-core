@@ -72,6 +72,7 @@ Converting from v3.x to v4.0
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
 where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
 - `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
+- `Model::replaceMarkerSet()` was removed. (PR #1938) Please use `Model::updMarkerSet()` to edit the model's MarkerSet instead.
 
 Composing a Component from other components
 -------------------------------------------
