@@ -247,5 +247,6 @@ void InverseMuscleSolver::determineInitialAndFinalTimes(
             "than final time of " + std::to_string(finalTime) + ".");
 
     // We do not want to end up with a lower mesh frequency than requested.
-    numMeshPoints = std::ceil((finalTime - initialTime) * meshPointFrequency);
+    numMeshPoints =
+            (int)std::ceil((finalTime - initialTime) * meshPointFrequency);
 }
