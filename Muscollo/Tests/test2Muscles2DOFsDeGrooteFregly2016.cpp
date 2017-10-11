@@ -36,14 +36,6 @@ using namespace OpenSim;
 const double WIDTH = 0.2;
 const double ACCEL_GRAVITY = 9.81;
 
-// This allows us to print the value of adoubles, although ADOL-C is supposed
-// to provide this operator for us (I think Homebrew's version of ADOL-C is
-// missing some function definitions).
-std::ostream& operator<<(std::ostream& stream, const adouble& v) {
-    stream << v.value() << "(a)";
-    return stream;
-}
-
 /// Move a point mass from a fixed starting state to a fixed end
 /// position and velocity, in fixed time, with minimum effort. The point mass
 /// has 2 DOFs (x and y translation).
