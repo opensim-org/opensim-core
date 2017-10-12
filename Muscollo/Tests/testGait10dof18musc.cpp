@@ -16,8 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <GlobalStaticOptimization.h>
-#include <INDYGO.h>
+#include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include <Muscollo/InverseMuscleSolver/INDYGO.h>
 
 #include <OpenSim/Simulation/osimSimulation.h>
 

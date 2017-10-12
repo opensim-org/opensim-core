@@ -1,21 +1,24 @@
 
 add_library(osimMuscollo
-        MucoProblem.h                    MucoProblem.cpp
-        InverseMuscleSolver.h            InverseMuscleSolver.cpp
-        GlobalStaticOptimization.h       GlobalStaticOptimization.cpp
-        INDYGO.h                         INDYGO.cpp
-        DeGrooteFregly2016Muscle.h
-        InverseMuscleSolverMotionData.h  InverseMuscleSolverMotionData.cpp
+        #MucoProblem.h
+        #MucoProblem.cpp
+        #MucoTool.h
+        #MucoTool.cpp
+        InverseMuscleSolver/InverseMuscleSolver.h
+        InverseMuscleSolver/InverseMuscleSolver.cpp
+        InverseMuscleSolver/GlobalStaticOptimization.h
+        InverseMuscleSolver/GlobalStaticOptimization.cpp
+        InverseMuscleSolver/INDYGO.h
+        InverseMuscleSolver/INDYGO.cpp
+        InverseMuscleSolver/DeGrooteFregly2016Muscle.h
+        InverseMuscleSolver/InverseMuscleSolverMotionData.h
+        InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)
-# Do not generate warnings from OpenSim headers ("SYSTEM").
-# No longer need to explicitly include OpenSim's headers;
-# this is handled by linking to OpenSim's libraries.
-# TODO target_include_directories(osimMuscollo
-# TODO         SYSTEM PUBLIC ${OpenSim_INCLUDE_DIRS})
+
 target_include_directories(osimMuscollo INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Muscollo>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(osimMuscollo PROPERTIES
@@ -33,5 +36,5 @@ install(TARGETS osimMuscollo # EXPORT OpenSimTargets
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${MUSCOLLO_INSTALL_INCLUDEDIR}
+        DESTINATION ${MUSCOLLO_INSTALL_INCLUDEDIR}/Muscollo
         FILES_MATCHING PATTERN "*.h*")

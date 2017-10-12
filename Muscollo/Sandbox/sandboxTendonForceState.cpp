@@ -18,8 +18,8 @@
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <tropter/tropter.h>
-#include <INDYGO.h>
-#include <DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/INDYGO.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
 
 using namespace OpenSim;
 using tropter::VectorX;

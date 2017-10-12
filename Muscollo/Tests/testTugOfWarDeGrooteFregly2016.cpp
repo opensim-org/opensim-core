@@ -15,9 +15,9 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <GlobalStaticOptimization.h>
-#include <INDYGO.h>
-#include <DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include <Muscollo/InverseMuscleSolver/INDYGO.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
 #include <tropter/tropter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>

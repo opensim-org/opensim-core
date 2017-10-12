@@ -1,6 +1,6 @@
 #include <iostream>
-#include "GlobalStaticOptimization.h"
-#include "INDYGO.h"
+#include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include <Muscollo/InverseMuscleSolver/INDYGO.h>
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/osimSimulation.h>
