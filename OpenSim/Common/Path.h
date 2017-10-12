@@ -156,6 +156,10 @@ private:
         return subPath;
     }
 
+    /// Return true if all elements in pathVec do not contain any chars from
+    /// the list of _invalidChars
+    bool isLegalPathVec(const std::vector<std::string>& pathVec) const;
+
     // Path variables
     std::vector<std::string> _path;
     char _separator;

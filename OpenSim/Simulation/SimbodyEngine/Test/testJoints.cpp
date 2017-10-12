@@ -2174,8 +2174,8 @@ void testAutomaticJointReversal()
     auto& off2 = footConstraint->getFrame2();
     auto& sock2 = off2.getSocket<PhysicalFrame>("parent");
 
-    auto off1Path = off1.getAbsolutePathName();
-    auto off2Path = off2.getAbsolutePathName();
+    auto off1Path = off1.getAbsolutePathString();
+    auto off2Path = off2.getAbsolutePathString();
 
     /*auto& pathOff1 = */sock1.getConnecteeName();
     /*auto& pathOff2 = */sock2.getConnecteeName();
