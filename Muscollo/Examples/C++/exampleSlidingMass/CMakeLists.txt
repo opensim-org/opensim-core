@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.2)
+project(Muscollo_exampleSlidingMass)
+
+add_executable(exampleSlidingMass exampleSlidingMass.cpp)
+target_link_libraries(exampleSlidingMass osimMuscollo)
