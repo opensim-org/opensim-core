@@ -40,11 +40,18 @@ forceTable = c3d.getTable_forces();
 [markerStruct forceStruct] = c3d.getAsStructs();
 
 %% Write TRC to file
-trc = TRCWorker();
-trc.setName(name);
-trc.setPath(path);
-trc.setTable(markerTable);
-trc.writeTRC();
+% Replace any illegal column characters
+osimTable = UpdateMarkerNames(markerTable);
+% Replace [0,0,0] values with NaN's
+osimTable = zerosToNans(osimTable);
+
+% Make an export filename
+[pathstr,trcname,ext] = fileparts(fullfile(path,filename));
+% Print to file
+TRCFileAdapter().write(osimTable, fullfile(pathstr,[trcname '.trc']))
+
+
+
 
 
 
