@@ -1,4 +1,4 @@
-function osimTable = UpdateMarkerNames(osimTable)
+function osimTable = osimUpdateMarkerNames(osimTable)
 % UpdateMarkerNames used to replace illegal MatLab Struct char's from table
 % column names. Function replaces illegal char's with underscore. 
 

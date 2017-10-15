@@ -93,7 +93,7 @@ for iLabel = 0 : nLabels - 1
     col_label = strrep(col_label,'*', 'm');
     % Tell user that you have changed the name
     if ~strcmp(disp_label,col_label)
-        warning(['Illegal Coloumn label: ' disp_label ' changed to ' col_label ]);
+        disp(['Illegal Coloumn label: ' disp_label ' changed to ' col_label ]);
     end
     % Add the label and data to the data struct
     structdata.(col_label) = dataArray;

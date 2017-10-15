@@ -1,4 +1,4 @@
-function osimTable = zerosToNans(osimTable)
+function osimTable = osimZerosToNans(osimTable)
 %% replaceZerosWNaNs()
 %   btk outputs marker frames that have no vales as zero's. In openSim, 
 %   zero's are interpreted literally.
@@ -22,6 +22,6 @@ end
 % Send a notification to the console to warn the user that the data has
 % beeb changed. 
 if notifcation == 1
-    warning('Some Marker components were [0,0,0]. They were changed to [NaN,Nan,Nan]')
+    disp('Some Marker components were [0,0,0]. They were changed to [NaN,Nan,Nan]')
 end
 

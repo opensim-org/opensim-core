@@ -41,9 +41,9 @@ forceTable = c3d.getTable_forces();
 
 %% Write TRC to file
 % Replace any illegal column characters
-osimTable = UpdateMarkerNames(markerTable);
+osimTable = osimUpdateMarkerNames(markerTable);
 % Replace [0,0,0] values with NaN's
-osimTable = zerosToNans(osimTable);
+osimTable = osimZerosToNans(osimTable);
 
 % Make an export filename
 [pathstr,trcname,ext] = fileparts(fullfile(path,filename));
