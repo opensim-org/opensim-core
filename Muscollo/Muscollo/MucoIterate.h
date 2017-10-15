@@ -20,9 +20,11 @@
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
+#include "osimMuscolloDLL.h"
+
 namespace OpenSim {
 
-class MucoIterate {
+class OSIMMUSCOLLO_API MucoIterate {
 public:
     MucoIterate(const SimTK::Vector& time,
             std::vector<std::string> state_names,
@@ -85,7 +87,7 @@ private:
     SimTK::Matrix m_controls;
 };
 
-class MucoSolution : public MucoIterate {
+class OSIMMUSCOLLO_API MucoSolution : public MucoIterate {
     using MucoIterate::MucoIterate;
 };
 

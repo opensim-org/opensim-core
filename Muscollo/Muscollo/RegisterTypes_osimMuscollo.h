@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
+#ifndef MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H
+#define MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: RegisterTypes_osimMuscollo.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,11 +18,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
+#include "osimMuscolloDLL.h"
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+extern "C" {
+
+OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo();
+}
+
+class osimMuscolloInstantiator {
+public:
+    osimMuscolloInstantiator();
+private:
+    void registerDllClasses();
+};
+
+#endif // MUSCOLLO_REGISTERTYPES_OSIMMUSCOLLO_H

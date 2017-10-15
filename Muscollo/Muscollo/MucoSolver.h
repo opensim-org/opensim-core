@@ -41,7 +41,7 @@ public:
 };
  */
 
-class MucoSolver : public Object {
+class OSIMMUSCOLLO_API MucoSolver : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MucoSolver, Object);
 public:
 

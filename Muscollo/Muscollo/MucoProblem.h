@@ -27,7 +27,7 @@ namespace OpenSim {
 class MucoPhase;
 class MucoVariableInfo;
 
-struct MucoBounds {
+struct OSIMMUSCOLLO_API MucoBounds {
     MucoBounds() = default;
     MucoBounds(double value) : lower(value), upper(value) {}
     MucoBounds(double lower, double upper) {
@@ -64,10 +64,10 @@ private:
     friend MucoPhase;
     friend MucoVariableInfo;
 };
-struct MucoInitialBounds : public MucoBounds {
+struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
 };
-struct MucoFinalBounds : public MucoBounds {
+struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
 };
 
@@ -75,7 +75,7 @@ class MucoPhase;
 
 /// Bounds on continuous variables (states, controls). The name should
 /// correspond to path of a state variable or an actuator in the model.
-class MucoVariableInfo : public Object {
+class OSIMMUSCOLLO_API MucoVariableInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoVariableInfo, Object);
 public:
     MucoVariableInfo();
@@ -106,7 +106,7 @@ private:
     void constructProperties();
 };
 
-class MucoPhase : public Object {
+class OSIMMUSCOLLO_API MucoPhase : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoPhase, Object);
 public:
     MucoPhase();
@@ -148,7 +148,7 @@ private:
 
 
 /// TODO explain phases.
-class MucoProblem : public Object {
+class OSIMMUSCOLLO_API MucoProblem : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoProblem, Object);
 public:
     MucoProblem();

@@ -27,6 +27,8 @@
 // destructor).
 #include <OpenSim/Simulation/Model/Model.h>
 
+#include "../osimMuscolloDLL.h"
+
 namespace OpenSim {
 
 /// This is a base class for methods that solve for muscle activity for a
@@ -88,7 +90,7 @@ namespace OpenSim {
 /// If you need to customize the reserve actuators more than is possible via
 /// `create_reserve_actuators`, you can create your own and add them to your
 /// model.
-class InverseMuscleSolver : public OpenSim::Object {
+class OSIMMUSCOLLO_API InverseMuscleSolver : public OpenSim::Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(InverseMuscleSolver, Object);
 public:
 

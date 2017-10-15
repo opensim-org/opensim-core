@@ -31,7 +31,7 @@ namespace OpenSim {
 
 class MucoProblem;
 
-class MucoTropterSolver : public MucoSolver {
+class OSIMMUSCOLLO_API MucoTropterSolver : public MucoSolver {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoTropterSolver, MucoSolver);
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, double,

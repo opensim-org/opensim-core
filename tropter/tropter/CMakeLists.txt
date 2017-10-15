@@ -1,4 +1,4 @@
-add_library(tropter
+add_library(tropter SHARED
         tropter.h
         common.h
         Exception.h Exception.hpp Exception.cpp
@@ -102,7 +102,9 @@ target_include_directories(tropter PUBLIC
 
 set_target_properties(tropter PROPERTIES
         PROJECT_LABEL "Library - tropter"
-        FOLDER "tropter")
+        FOLDER "tropter"
+        # Avoid need for __declspec(dllexport), etc.
+        WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # Installing.
 # -----------

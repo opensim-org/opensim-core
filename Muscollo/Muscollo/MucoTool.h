@@ -35,7 +35,7 @@ class MucoTropterSolver;
 
 // TODO work flow.
 // TODO show diagram of composition of tool, solver, etc.
-class MucoTool : public Object {
+class OSIMMUSCOLLO_API MucoTool : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoTool, Object);
 public:
     MucoTool();

@@ -22,9 +22,11 @@
 
 #include <SimTKcommon/internal/State.h>
 
+#include "osimMuscolloDLL.h"
+
 namespace OpenSim {
 
-class MucoCost : public Object {
+class OSIMMUSCOLLO_API MucoCost : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double,
@@ -52,7 +54,7 @@ private:
 inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
         double&) const {}
 
-class MucoFinalTimeCost : public MucoCost {
+class OSIMMUSCOLLO_API MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,

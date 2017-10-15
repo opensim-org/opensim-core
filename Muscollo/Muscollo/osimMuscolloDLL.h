@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
+#ifndef MUSCOLLO_OSIMMUSCOLLODLL_H
+#define MUSCOLLO_OSIMMUSCOLLODLL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: osimMuscolloDLL.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,11 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
+#ifndef _WIN32
+    #define OSIMMUSCOLLO_API
+#else
+    #ifdef OSIMMUSCOLL_EXPORTS
+        #define OSIMMUSCOLLO_API __declspec(dllexport)
+    #else
+        #define OSIMMUSCOLLO_API __declspec(dllimport)
+    #endif
+#endif
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+#endif // MUSCOLLO_OSIMMUSCOLLODLL_H

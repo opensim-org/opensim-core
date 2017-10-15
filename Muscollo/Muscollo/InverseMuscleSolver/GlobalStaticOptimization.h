@@ -26,7 +26,7 @@ namespace OpenSim {
 
 // TODO document
 // TODO example usage.
-class GlobalStaticOptimization : public InverseMuscleSolver {
+class OSIMMUSCOLLO_API GlobalStaticOptimization : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(GlobalStaticOptimization,
             InverseMuscleSolver);
 public:

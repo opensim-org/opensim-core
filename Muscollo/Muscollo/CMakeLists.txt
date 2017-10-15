@@ -1,6 +1,9 @@
 
-add_library(osimMuscollo
+add_library(osimMuscollo SHARED
         osimMuscollo.h
+        osimMuscolloDLL.h
+        RegisterTypes_osimMuscollo.h
+        RegisterTypes_osimMuscollo.cpp
         MucoTool.h
         MucoTool.cpp
         MucoProblem.h
@@ -11,6 +14,8 @@ add_library(osimMuscollo
         MucoSolver.cpp
         MucoIterate.h
         MucoIterate.cpp
+        MucoTropterSolver.h
+        MucoTropterSolver.cpp
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h
@@ -20,7 +25,7 @@ add_library(osimMuscollo
         InverseMuscleSolver/DeGrooteFregly2016Muscle.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
-        MucoTropterSolver.cpp MucoTropterSolver.h)
+        )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)
 
@@ -29,6 +34,7 @@ target_include_directories(osimMuscollo INTERFACE
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(osimMuscollo PROPERTIES
+        DEFINE_SYMBOL OSIMMUSCOLLO_EXPORTS
         PROJECT_LABEL "Library - osimMuscollo"
         FOLDER "Muscollo")
 

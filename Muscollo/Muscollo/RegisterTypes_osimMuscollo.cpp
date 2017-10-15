@@ -1,7 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: RegisterTypes_osimMuscollo.cpp                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -17,12 +15,46 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "RegisterTypes_osimMuscollo.h"
+#include <OpenSim/Common/Object.h>
 
 #include "MucoCost.h"
-#include "MucoIterate.h"
 #include "MucoProblem.h"
 #include "MucoSolver.h"
 #include "MucoTool.h"
 #include "MucoTropterSolver.h"
+#include "InverseMuscleSolver/GlobalStaticOptimization.h"
+#include "InverseMuscleSolver/INDYGO.h"
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+#include <exception>
+#include <iostream>
+
+using namespace OpenSim;
+
+static osimMuscolloInstantiator instantiator;
+
+OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
+    try {
+        Object::registerType(MucoFinalTimeCost());
+        Object::registerType(MucoPhase());
+        Object::registerType(MucoVariableInfo());
+        Object::registerType(MucoProblem());
+        Object::registerType(MucoTool());
+        Object::registerType(MucoTropterSolver());
+
+        Object::registerType(GlobalStaticOptimization());
+        Object::registerType(INDYGO());
+    } catch (const std::exception& e) {
+        std::cerr << "ERROR during osimMuscollo Object registration:\n"
+                << e.what() << std::endl;
+    }
+
+}
+
+osimMuscolloInstantiator::osimMuscolloInstantiator() {
+    registerDllClasses();
+}
+
+void osimMuscolloInstantiator::registerDllClasses() {
+    RegisterTypes_osimMuscollo();
+}

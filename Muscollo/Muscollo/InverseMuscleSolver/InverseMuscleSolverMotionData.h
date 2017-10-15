@@ -25,6 +25,8 @@
 // or forward declare MatrixXd.
 #include <Eigen/Dense>
 
+#include "../osimMuscolloDLL.h"
+
 namespace OpenSim {
 
 class Model;
@@ -36,7 +38,7 @@ class Coordinate;
 ///   - muscle-tendon lengths
 ///   - moment arms
 /// This class also allows interpolating these data for use by solvers.
-class InverseMuscleSolverMotionData {
+class OSIMMUSCOLLO_API InverseMuscleSolverMotionData {
 public:
     InverseMuscleSolverMotionData() = default;
     /// From the given kinematics trajectory (joint angles), this constructor

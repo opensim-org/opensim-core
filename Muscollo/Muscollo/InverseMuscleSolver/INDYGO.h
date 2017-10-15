@@ -128,7 +128,7 @@ namespace OpenSim {
 ///
 /// [3] Raasch, Christine C., et al. "Muscle coordination of maximum-speed
 /// pedaling." Journal of biomechanics 30.6 (1997): 595-602.
-class INDYGO : public InverseMuscleSolver {
+class OSIMMUSCOLLO_API INDYGO : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(INDYGO, InverseMuscleSolver);
 public:
 
