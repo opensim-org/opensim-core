@@ -66,9 +66,13 @@ private:
 };
 struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
+    friend MucoPhase;
+    friend MucoVariableInfo;
 };
 struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
+    friend MucoPhase;
+    friend MucoVariableInfo;
 };
 
 class MucoPhase;
