@@ -58,7 +58,7 @@ classdef osimC3D < matlab.mixin.SetGet
             [filepath, name, extension] = fileparts(obj.filePath);
         end
         function filepath = getPath(obj)
-            % Get the path path for the c3d file
+            % Get the path for the c3d file
             [filepath, name, extension] = fileparts(obj.filePath);
         end
         function table = getTable_markers(obj)
