@@ -20,5 +20,7 @@
 
 #include "MucoProblem.h"
 #include "MucoTool.h"
+#include "MucoCost.h"
+#include "MucoTropterSolver.h"
 
 #endif // MUSCOLLO_OSIMMUSCOLLO_H

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCost.cpp                                             *
+ * OpenSim Muscollo: MucoTropterSolver.cpp                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,14 +15,26 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MucoCost.h"
+#include "MucoTropterSolver.h"
 
 using namespace OpenSim;
 
-MucoCost::MucoCost() {
+MucoTropterSolver::MucoTropterSolver() {
     constructProperties();
 }
 
-void MucoCost::constructProperties() {
-    constructProperty_weight(1);
+void MucoTropterSolver::constructProperties() {
+    constructProperty_num_mesh_points(100);
+}
+
+void MucoTropterSolver::resetProblemImpl() {
+
+}
+
+void MucoTropterSolver::resetProblemImpl(const MucoProblem& problem) {
+
+}
+
+MucoSolution MucoTropterSolver::solveImpl() const {
+
 }

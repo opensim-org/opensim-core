@@ -21,12 +21,12 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include "MucoSolution.h"
+#include "MucoSolver.h"
 
 namespace OpenSim {
 
 class MucoProblem;
-class MucoSolver;
+class MucoTropterSolver;
 
 /// Saving the tool setup to a file
 /// ===============================
@@ -34,6 +34,7 @@ class MucoSolver;
 /// MucoTool setup files have a `.omuco` extension.
 
 // TODO work flow.
+// TODO show diagram of composition of tool, solver, etc.
 class MucoTool : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoTool, Object);
 public:
@@ -44,14 +45,34 @@ public:
     MucoProblem& updProblem();
     /// If you want to tweak settings on the solver
     /// After calling this, you cannot
-    MucoSolver& initSolver();
+    MucoTropterSolver& initSolver();
+
+    template <typename SolverType>
+    SolverType& initSolver() {
+        // TODO what to do if we already have a solver (from cloning?)
+        // TODO how to persist Solver settings when solving multiple times.
+        auto& solver = upd_solver();
+        if (typeid(SolverType) != typeid(solver)) {
+            // TODO does this check work as expected?
+            std::cout << "Creating a new solver of type " <<
+                    SimTK::NiceTypeName<SolverType>::name() << "." << std::endl;
+            set_solver(SolverType());
+        }
+        solver.resetProblem(get_problem());
+        return static_cast<SolverType&>(solver);
+    }
+
     // TODO add a "reset()"
     MucoSolution solve();
 
-private:
-    OpenSim_DECLARE_PROPERTY(model, Model, "TODO");
 
-    SimTK::ClonePtr<MucoProblem> _problem;
+    // TODO should visualize be here?
+
+private:
+    OpenSim_DECLARE_PROPERTY(problem, MucoProblem, "TODO");
+    OpenSim_DECLARE_PROPERTY(solver, MucoSolver, "TODO");
+
+    void constructProperties();
 };
 
 } // namespace OpenSim

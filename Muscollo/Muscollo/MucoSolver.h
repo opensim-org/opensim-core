@@ -1,7 +1,8 @@
-#ifndef MUSCOLLO_MUCOCOST_H
-#define MUSCOLLO_MUCOCOST_H
+#ifndef MUSCOLLO_MUCOSOLVER_H
+#define MUSCOLLO_MUCOSOLVER_H
+
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCost.h                                               *
+ * OpenSim Muscollo: MucoSolver.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,45 +19,57 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MucoSolution.h"
+
 #include <OpenSim/Common/Object.h>
 
-#include <SimTKcommon/internal/State.h>
+#include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class MucoCost : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
+class MucoProblem;
+
+// TODO create typed versions?
+/*
+class MucoSolverOption : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MucoSolverOption, Object);
 public:
-    OpenSim_DECLARE_PROPERTY(weight, double,
-            "The cost value is multiplied by this weight (default: 1).");
-
-    MucoCost();
-
-    double calcEndpointCost(const SimTK::State& finalState) const {
-        double cost = 0;
-        calcEndpointCostImpl(finalState, cost);
-        return get_weight() * cost;
+    OpenSim_DECLARE_PROPERTY(value, std::string, "TODO");
+    MucoSolverOption() {
+        constructProperties();
     }
-protected:
-    virtual void calcEndpointCostImpl(const SimTK::State& finalState,
-            double& cost) const;
+};
+ */
+
+class MucoSolver : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(MucoSolver, Object);
+public:
+
+    MucoSolver();
+
+    /// Initialize the solver with the provided problem.
+    explicit MucoSolver(const MucoProblem& problem);
+
+    void resetProblem();
+
+    // TODO can only call once?
+    void resetProblem(const MucoProblem& problem);
+
+    // You can call this multiple times.
+    MucoSolution solve() const;
+
+    SimTK::ReferencePtr<const MucoProblem> _problem;
+
 private:
-    void constructProperties();
+
+    //OpenSim_DECLARE_LIST_PROPERTY(options, MucoSolverOption, "TODO");
+
+    virtual void resetProblemImpl() = 0;
+    virtual void resetProblemImpl(const MucoProblem& problem) = 0;
+    virtual MucoSolution solveImpl() const = 0;
+
 };
-
-inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
-        double&) const {}
-
-class MucoFinalTimeCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
-protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-            double& cost) const override {
-        cost = finalState.getTime();
-    }
-};
-
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOCOST_H
+#endif // MUSCOLLO_MUCOSOLVER_H

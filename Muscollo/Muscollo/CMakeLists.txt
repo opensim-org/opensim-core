@@ -1,12 +1,14 @@
 
 add_library(osimMuscollo
         osimMuscollo.h
-        MucoProblem.h
-        MucoProblem.cpp
         MucoTool.h
         MucoTool.cpp
+        MucoProblem.h
+        MucoProblem.cpp
         MucoCost.h
         MucoCost.cpp
+        MucoSolver.h
+        MucoSolver.cpp
         MucoSolution.h
         MucoSolution.cpp
         InverseMuscleSolver/InverseMuscleSolver.h
@@ -18,7 +20,7 @@ add_library(osimMuscollo
         InverseMuscleSolver/DeGrooteFregly2016Muscle.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.h
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
-        )
+        MucoTropterSolver.cpp MucoTropterSolver.h)
 target_link_libraries(osimMuscollo PUBLIC osimActuators
                                    PRIVATE tropter)
 

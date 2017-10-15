@@ -22,6 +22,7 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 # Define variables that help describe the layout of the installation.
 include(GNUInstallDirs)
 set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
+set(MUSCOLLO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)

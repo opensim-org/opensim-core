@@ -90,8 +90,6 @@ int main() {
 
     mp.print("DEBUG_exampleSlidingMass.xml");
 
-    /* TODO
-
     // Cost.
     // -----
     MucoFinalTimeCost ftCost;
@@ -99,8 +97,15 @@ int main() {
 
     // Configure the solver.
     // =====================
-    MucoSolver& ms = muco.initSolver();
-    ms.set_optimizer_algorithm("ipopt");
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+
+    muco.print("sliding_mass.omuco");
+    // TODO interface for setting these options:
+    // TODO ms.setOption("optim.hessian-approximation", "limited-memory");
+    // TODO ms.set_optimizer_algorithm("ipopt");
+
+    /* TODO
 
 
     // Now that we've finished setting up the tool, print it to a file.

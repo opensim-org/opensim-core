@@ -2,7 +2,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: $FILE_NAME                                               *
  * -------------------------------------------------------------------------- *
- * Copyright (c) $YEAR Stanford University and the Authors                   *
+ * Copyright (c) $YEAR Stanford University and the Authors                     *
  *                                                                            *
  * Author(s):                                                                 *
  *                                                                            *

@@ -17,25 +17,28 @@
  * -------------------------------------------------------------------------- */
 #include "MucoTool.h"
 #include "MucoProblem.h"
-
-namespace OpenSim {
-class MucoSolver { // TODO
-};
-}
+#include "MucoTropterSolver.h"
 
 using namespace OpenSim;
 
-MucoTool::MucoTool() : _problem(new MucoProblem()) {}
-
-MucoProblem& MucoTool::updProblem() {
-    return _problem.updRef();
+MucoTool::MucoTool() {
+    constructProperties();
 }
 
-MucoSolver& MucoTool::initSolver() {
-    MucoSolver ms;
-    return ms; /*TODO*/
+void MucoTool::constructProperties() {
+    constructProperty_problem(MucoProblem());
+    constructProperty_solver(MucoTropterSolver());
+}
+
+MucoProblem& MucoTool::updProblem() {
+    upd_solver().resetProblem();
+    return upd_problem();
+}
+
+MucoTropterSolver& MucoTool::initSolver() {
+    return initSolver<MucoTropterSolver>();
 }
 
 MucoSolution MucoTool::solve() {
-    return MucoSolution();
+    return get_solver().solve();
 }
