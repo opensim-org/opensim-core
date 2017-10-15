@@ -32,14 +32,19 @@ public:
 
     MucoCost();
 
-    double calcEndpointCost(const SimTK::State& finalState) const {
+    SimTK::Real calcIntegralCost(const SimTK::State& finalState) const {
+        // TODO
+        return 0;
+    }
+    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
         double cost = 0;
         calcEndpointCostImpl(finalState, cost);
         return get_weight() * cost;
     }
 protected:
+    /// Precondition: finalState is realized to SimTK::Stage::Position.
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
-            double& cost) const;
+            SimTK::Real& cost) const;
 private:
     void constructProperties();
 };
@@ -51,7 +56,7 @@ class MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
-            double& cost) const override {
+            SimTK::Real& cost) const override {
         cost = finalState.getTime();
     }
 };

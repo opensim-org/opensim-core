@@ -19,7 +19,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoSolution.h"
+#include "MucoIterate.h"
 
 #include <OpenSim/Common/Object.h>
 
@@ -55,10 +55,14 @@ public:
     // TODO can only call once?
     void resetProblem(const MucoProblem& problem);
 
+    const MucoProblem& getProblem() const {
+        OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set; call "
+                "resetProblem() with a problem.");
+        return m_problem.getRef();
+    }
+
     // You can call this multiple times.
     MucoSolution solve() const;
-
-    SimTK::ReferencePtr<const MucoProblem> _problem;
 
 private:
 
@@ -67,6 +71,8 @@ private:
     virtual void resetProblemImpl() = 0;
     virtual void resetProblemImpl(const MucoProblem& problem) = 0;
     virtual MucoSolution solveImpl() const = 0;
+
+    SimTK::ReferencePtr<const MucoProblem> m_problem;
 
 };
 

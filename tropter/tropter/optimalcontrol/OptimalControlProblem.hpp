@@ -22,6 +22,14 @@
 
 namespace tropter {
 
+Bounds::Bounds(double lower_bound, double upper_bound) {
+    TROPTER_THROW_IF(!std::isnan(lower_bound) && !std::isnan(upper_bound)
+            && lower_bound > upper_bound,
+            "Expected lower <= upper, but lower=%g, upper=%g.",
+            lower_bound, upper_bound);
+    lower = lower_bound;
+    upper = upper_bound;
+}
 
 template<typename T>
 void OptimalControlProblem<T>::print_description() const {

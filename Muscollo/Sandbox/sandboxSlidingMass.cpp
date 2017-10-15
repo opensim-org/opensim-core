@@ -369,6 +369,7 @@ public:
         m_controls.resize(numTimes, m_controls.ncol());
     }
     void setTime(SimTK::Vector time) {
+        // TODO I don't think SimTK::Vector has a mov
         OPENSIM_THROW_IF(time.size() != m_time.size(), Exception,
                 "Expected " + std::to_string(m_time.size()) +
                 " times but got " + std::to_string(time.size()) + ".");

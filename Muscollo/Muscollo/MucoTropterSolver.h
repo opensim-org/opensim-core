@@ -20,6 +20,13 @@
 
 #include "MucoSolver.h"
 
+#include <SimTKcommon/internal/ResetOnCopy.h>
+
+namespace tropter {
+template <typename T>
+class OptimalControlProblem;
+}
+
 namespace OpenSim {
 
 class MucoProblem;
@@ -37,13 +44,25 @@ public:
 
     explicit MucoTropterSolver(const MucoProblem& problem);
 
-private:
+protected:
+
+    /// Internal tropter optimal control problem.
+    template <typename T>
+    class OCProblem;
+
+    std::shared_ptr<const tropter::OptimalControlProblem<double>>
+    getOptimalControlProblem() const;
 
     void resetProblemImpl() override;
     void resetProblemImpl(const MucoProblem& problem) override;
     MucoSolution solveImpl() const override;
 
+private:
+
     void constructProperties();
+
+    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
+            _tropProblem;
 
 };
 

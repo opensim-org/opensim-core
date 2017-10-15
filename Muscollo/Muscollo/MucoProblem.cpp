@@ -81,6 +81,50 @@ void MucoPhase::addCost(const MucoCost& cost) {
     // TODO check if a cost with the provided name already exists.
     append_costs(cost);
 }
+MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
+    return MucoInitialBounds(getProperty_time_initial_bounds());
+}
+MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
+    return MucoFinalBounds(getProperty_time_final_bounds());
+}
+const MucoVariableInfo& MucoPhase::getStateInfo(
+        const std::string& name) const {
+    int idx = getProperty_state_infos().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No info available for state '" + name + "'.");
+    return get_state_infos(idx);
+}
+const MucoVariableInfo& MucoPhase::getControlInfo(
+        const std::string& name) const {
+
+    int idx = getProperty_control_infos().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No info provided for control for '" + name + "'.");
+    return get_control_infos(idx);
+}
+SimTK::Real MucoPhase::calcIntegralCost(const SimTK::State& state) const {
+    SimTK::Real integrand = 0;
+    for (int i = 0; i < getProperty_costs().size(); ++i) {
+        integrand += get_costs(i).calcIntegralCost(state);
+    }
+    return integrand;
+}
+SimTK::Real MucoPhase::calcEndpointCost(const SimTK::State& finalState) const {
+    SimTK::Real cost = 0;
+    // TODO cannot use controls.
+    for (int i = 0; i < getProperty_costs().size(); ++i) {
+        cost = get_costs(i).calcEndpointCost(finalState);
+    }
+    return cost;
+}
+
+
+
+
+
+
+
+
 
 
 MucoProblem::MucoProblem() {
@@ -107,7 +151,6 @@ void MucoProblem::setControlInfo(const std::string& name,
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
 }
-
 void MucoProblem::constructProperties() {
     constructProperty_phases(Array<MucoPhase>(MucoPhase(), 1));
 }

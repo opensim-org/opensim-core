@@ -47,7 +47,7 @@ Model createSlidingMassModel() {
     model.addComponent(body);
 
     // Allows translation along x.
-    auto* joint = new SliderJoint("joint", model.getGround(), *body);
+    auto* joint = new SliderJoint("slider", model.getGround(), *body);
     auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
     coord.setName("position");
     model.addComponent(joint);
@@ -80,13 +80,13 @@ int main() {
     mp.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 5));
 
     // Initial position must be 0, final position must be 1.
-    mp.setStateInfo("j0/x/value", MucoBounds(-5, 5),
+    mp.setStateInfo("slider/position/value", MucoBounds(-5, 5),
             MucoInitialBounds(0), MucoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
-    mp.setStateInfo("j0/x/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("slider/position/speed", {-50, 50}, 0, 0);
 
     // Applied force must be between -50 and 50.
-    mp.setControlInfo("F", MucoBounds(-50, 50));
+    mp.setControlInfo("actuator", MucoBounds(-50, 50));
 
     mp.print("DEBUG_exampleSlidingMass.xml");
 
@@ -100,12 +100,9 @@ int main() {
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
 
-    muco.print("sliding_mass.omuco");
     // TODO interface for setting these options:
     // TODO ms.setOption("optim.hessian-approximation", "limited-memory");
     // TODO ms.set_optimizer_algorithm("ipopt");
-
-    /* TODO
 
 
     // Now that we've finished setting up the tool, print it to a file.
@@ -114,7 +111,10 @@ int main() {
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
+
     solution.write("sliding_mass_solution.sto");
+
+    /* TODO
 
     // Visualize.
     // ==========

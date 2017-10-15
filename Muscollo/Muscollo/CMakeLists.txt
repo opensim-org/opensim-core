@@ -9,8 +9,8 @@ add_library(osimMuscollo
         MucoCost.cpp
         MucoSolver.h
         MucoSolver.cpp
-        MucoSolution.h
-        MucoSolution.cpp
+        MucoIterate.h
+        MucoIterate.cpp
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h

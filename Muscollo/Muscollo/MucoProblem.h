@@ -24,6 +24,9 @@
 
 namespace OpenSim {
 
+class MucoPhase;
+class MucoVariableInfo;
+
 struct MucoBounds {
     MucoBounds() = default;
     MucoBounds(double value) : lower(value), upper(value) {}
@@ -47,6 +50,19 @@ struct MucoBounds {
     }
     double lower = SimTK::NTraits<double>::getNaN();
     double upper = SimTK::NTraits<double>::getNaN();
+private:
+    /// Used internally to convert a list property to a
+    /// It's expected that the list property has either 0, 1 or 2 elements.
+    MucoBounds(const Property<double>& p) {
+        if (p.size() >= 1) {
+            lower = p[0];
+            if (p.size() == 2) upper = p[1];
+            else               upper = p[0];
+        }
+    }
+
+    friend MucoPhase;
+    friend MucoVariableInfo;
 };
 struct MucoInitialBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
@@ -55,6 +71,10 @@ struct MucoFinalBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
 };
 
+class MucoPhase;
+
+/// Bounds on continuous variables (states, controls). The name should
+/// correspond to path of a state variable or an actuator in the model.
 class MucoVariableInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoVariableInfo, Object);
 public:
@@ -62,8 +82,17 @@ public:
     MucoVariableInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds&, const MucoFinalBounds&);
 
+    MucoBounds getBounds() const
+    {   return MucoBounds(getProperty_bounds()); }
+    MucoInitialBounds getInitialBounds() const
+    {   return MucoInitialBounds(getProperty_initial_bounds()); }
+    MucoFinalBounds getFinalBounds() const
+    {   return MucoFinalBounds(getProperty_final_bounds()); }
+
 private:
+
     // TODO error if not defined.
+    // TODO change to RANGE (1, 2).
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
             "1 value: required value over all time. "
             "2 values: lower, upper bounds on value over all time.");
@@ -89,6 +118,14 @@ public:
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
     void addCost(const MucoCost&);
+
+    const Model& getModel() const { return get_model(); }
+    MucoInitialBounds getTimeInitialBounds() const;
+    MucoFinalBounds getTimeFinalBounds() const;
+    const MucoVariableInfo& getStateInfo(const std::string& name) const;
+    const MucoVariableInfo& getControlInfo(const std::string& name) const;
+    SimTK::Real calcIntegralCost(const SimTK::State& state) const;
+    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const;
 private:
     OpenSim_DECLARE_PROPERTY(model, Model,
             "OpenSim Model to provide dynamics.");
@@ -109,6 +146,8 @@ private:
     void constructProperties();
 };
 
+
+/// TODO explain phases.
 class MucoProblem : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoProblem, Object);
 public:
@@ -132,6 +171,9 @@ public:
     /// Add a cost term for phase 0.
     void addCost(const MucoCost&);
     /// @}
+
+    const MucoPhase& getPhase(int index) const
+    {   return get_phases(index); }
 
     // TODO
     //void checkWellPosed();

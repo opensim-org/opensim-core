@@ -28,12 +28,12 @@ MucoSolver::MucoSolver(const MucoProblem& problem) : MucoSolver() {
 }
 
 void MucoSolver::resetProblem() {
-    _problem.reset();
+    m_problem.reset();
     resetProblemImpl();
 }
 
 void MucoSolver::resetProblem(const MucoProblem& problem) {
-    _problem.reset(&problem);
+    m_problem.reset(&problem);
     resetProblemImpl(problem);
 }
 

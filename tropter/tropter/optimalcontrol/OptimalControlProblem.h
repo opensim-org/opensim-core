@@ -27,12 +27,7 @@ struct Bounds {
     Bounds() = default;
     Bounds(double value) : lower(value), upper(value) {}
     // TODO check here that lower <= upper.
-    Bounds(double lower_bound, double upper_bound)
-    {
-        assert(lower_bound <= upper_bound);
-        lower = lower_bound;
-        upper = upper_bound;
-    }
+    Bounds(double lower_bound, double upper_bound);
     bool is_set() const
     {
         return !std::isnan(lower) && !std::isnan(upper);
