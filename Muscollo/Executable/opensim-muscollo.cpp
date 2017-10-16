@@ -17,9 +17,16 @@ R"(OpenSim Muscollo. Use this command to run a setup file for the following:
 
 Usage:
   opensim-muscollo -h | --help
+
+    Print this help message.
+
   opensim-muscollo run-tool <setup-file>
+
+    Run the tool specified in the provided setup file.
+
   opensim-muscollo print-xml <tool>
 
+    Print a template XML file for the provided tool.
     <tool> can be "GlobalStaticOptimization", "INDYGO", or "MucoTool"
 )";
 
@@ -27,12 +34,18 @@ int main(int argc, char* argv[]) {
 
     try {
 
-        std::string arg1(argv[1]);
-        if (argc == 1 || arg1 == "-h" || arg1 == "--help") {
+        if (argc == 1) {
             std::cout << helpMessage << std::endl;
             return EXIT_SUCCESS;
+        }
 
-        } else if (arg1 == "print-xml") {
+        std::string arg1(argv[1]);
+        if (arg1 == "-h" || arg1 == "--help") {
+            std::cout << helpMessage << std::endl;
+            return EXIT_SUCCESS;
+        }
+
+        if (arg1 == "print-xml") {
             OPENSIM_THROW_IF(argc != 3, Exception,
                     "Incorrect number of arguments.");
 
