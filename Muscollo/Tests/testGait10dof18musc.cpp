@@ -21,7 +21,7 @@
 
 #include <OpenSim/Simulation/osimSimulation.h>
 
-#include "testing.h"
+#include "Testing.h"
 
 using namespace OpenSim;
 

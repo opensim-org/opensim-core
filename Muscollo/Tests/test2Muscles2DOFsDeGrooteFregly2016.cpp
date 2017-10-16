@@ -24,7 +24,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 
-#include "testing.h"
+#include "Testing.h"
 
 using namespace OpenSim;
 
