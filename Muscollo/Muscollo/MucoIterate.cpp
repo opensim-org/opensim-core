@@ -91,8 +91,8 @@ void MucoIterate::write(const std::string& filepath) const {
         }
     }
     TimeSeriesTable table0(time, data, labels);
-    OpenSim::DataAdapter::InputTables tables = {{"table", &table0}};
-    STOFileAdapter().writeFile(tables, filepath);
+    DataAdapter::InputTables tables = {{"table", &table0}};
+    FileAdapter::writeFile(tables, filepath);
 }
 
 Storage MucoIterate::exportToStatesStorage() const {

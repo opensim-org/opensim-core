@@ -167,7 +167,7 @@ public:
         "The implicit mode may be up to 2 times faster. "
         "Default: 'explicit'.");
 
-    struct Solution {
+    struct OSIMMUSCOLLO_API Solution {
         /// The excitation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable excitation;
