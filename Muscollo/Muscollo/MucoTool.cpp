@@ -50,5 +50,5 @@ void MucoTool::visualize(const MucoIterate& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MucoProblem.
     const auto& model = get_problem().getPhase(0).getModel();
-    OpenSim::visualize(it.exportToStatesTrajectory(model));
+    OpenSim::visualize(model, it.exportToStatesStorage());
 }

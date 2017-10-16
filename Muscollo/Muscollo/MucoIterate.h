@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Common/Storage.h>
 
 #include "osimMuscolloDLL.h"
 
@@ -82,6 +83,7 @@ public:
 
     void write(const std::string& filepath) const;
 
+    Storage exportToStatesStorage() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// TODO explain why Model is necessary.
     StatesTrajectory exportToStatesTrajectory(const Model&) const;

@@ -34,7 +34,7 @@ public:
 
     MucoCost();
 
-    SimTK::Real calcIntegralCost(const SimTK::State& finalState) const {
+    SimTK::Real calcIntegralCost(const SimTK::State& /*finalState*/) const {
         // TODO
         return 0;
     }

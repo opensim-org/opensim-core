@@ -95,13 +95,16 @@ void MucoIterate::write(const std::string& filepath) const {
     STOFileAdapter().writeFile(tables, filepath);
 }
 
+Storage MucoIterate::exportToStatesStorage() const {
+    TimeSeriesTable table(
+    std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+    m_states, m_state_names);
+    return convertTableToStorage(table);
+}
+
 StatesTrajectory MucoIterate::exportToStatesTrajectory(const Model& model)
         const {
-    TimeSeriesTable table(
-        std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
-        m_states, m_state_names);
-    Storage storage = convertTableToStorage(table);
-
+    Storage storage = exportToStatesStorage();
     return StatesTrajectory::createFromStatesStorage(model, storage);
 }
 

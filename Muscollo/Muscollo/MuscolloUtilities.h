@@ -25,11 +25,12 @@
 namespace OpenSim {
 
 class StatesTrajectory;
+class Model;
 
 // TODO move to the Storage class.
-OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable& table);
+OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
-OSIMMUSCOLLO_API void visualize(const StatesTrajectory& st);
+OSIMMUSCOLLO_API void visualize(Model, Storage);
 
 } // namespace OpenSim
 
