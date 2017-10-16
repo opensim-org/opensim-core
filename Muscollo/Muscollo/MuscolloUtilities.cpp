@@ -73,7 +73,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
-    auto& silo = model.updVisualizer().updInputSilo();
+    // auto& silo = model.updVisualizer().updInputSilo();
 
 
     // BodyWatcher to control camera.

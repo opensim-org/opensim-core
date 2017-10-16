@@ -163,7 +163,7 @@ void MucoTropterSolver::constructProperties() {
 }
 
 std::shared_ptr<const tropter::OptimalControlProblem<double>>
-MucoTropterSolver::getOptimalControlProblem() const {
+MucoTropterSolver::getTropterProblem() const {
     if (!_tropProblem) {
         _tropProblem = std::make_shared<OCProblem<double>>(*this);
     }
@@ -174,7 +174,7 @@ void MucoTropterSolver::resetProblemImpl() {
 
 }
 
-void MucoTropterSolver::resetProblemImpl(const MucoProblem& problem) {
+void MucoTropterSolver::resetProblemImpl(const MucoProblem& /*problem*/) {
 
 }
 
@@ -230,7 +230,7 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
 
 MucoSolution MucoTropterSolver::solveImpl() const {
 
-    auto ocp = getOptimalControlProblem();
+    auto ocp = getTropterProblem();
     ocp->print_description();
 
     int N = get_num_mesh_points();

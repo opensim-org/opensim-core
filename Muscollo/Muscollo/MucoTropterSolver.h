@@ -34,7 +34,7 @@ class MucoProblem;
 class OSIMMUSCOLLO_API MucoTropterSolver : public MucoSolver {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoTropterSolver, MucoSolver);
 public:
-    OpenSim_DECLARE_PROPERTY(num_mesh_points, double,
+    OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
             "The number of mesh points for discretizing the problem "
             "(default: 100).");
     // TODO must make more general for multiple phases, mesh refinement.
@@ -51,7 +51,7 @@ protected:
     class OCProblem;
 
     std::shared_ptr<const tropter::OptimalControlProblem<double>>
-    getOptimalControlProblem() const;
+    getTropterProblem() const;
 
     void resetProblemImpl() override;
     void resetProblemImpl(const MucoProblem& problem) override;
