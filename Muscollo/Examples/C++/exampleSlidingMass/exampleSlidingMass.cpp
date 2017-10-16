@@ -112,7 +112,7 @@ int main() {
     // ==================
     MucoSolution solution = muco.solve();
 
-    solution.write("sliding_mass_solution.sto");
+    //solution.write("sliding_mass_solution.sto");
 
     // Visualize.
     // ==========

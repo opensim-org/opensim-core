@@ -21,6 +21,7 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Common/IO.h>
 
 using namespace OpenSim;
 
@@ -29,21 +30,49 @@ MucoTool::MucoTool() {
 }
 
 void MucoTool::constructProperties() {
+    constructProperty_write_solution("./");
     constructProperty_problem(MucoProblem());
     constructProperty_solver(MucoTropterSolver());
 }
 
 MucoProblem& MucoTool::updProblem() {
+    m_solverInitialized = false;
     upd_solver().resetProblem();
     return upd_problem();
 }
 
-MucoTropterSolver& MucoTool::initSolver() {
-    return initSolver<MucoTropterSolver>();
+void MucoTool::ensureInitSolver() {
+    if (!m_solverInitialized) initSolverInternal();
 }
 
-MucoSolution MucoTool::solve() {
-    return get_solver().solve();
+MucoSolver& MucoTool::initSolverInternal() {
+    // TODO what to do if we already have a solver (from cloning?)
+    // TODO how to persist Solver settings when solving multiple times.
+    upd_solver().resetProblem(get_problem());
+    m_solverInitialized = true;
+    return upd_solver();
+}
+
+MucoTropterSolver& MucoTool::initSolver() {
+    return initCustomSolver<MucoTropterSolver>();
+}
+
+template <typename SolverType>
+void MucoTool::setCustomSolver() {
+    set_solver(SolverType());
+}
+
+MucoSolution MucoTool::solve() const {
+    // TODO avoid const_cast.
+    const_cast<Self*>(this)->ensureInitSolver();
+    MucoSolution solution = get_solver().solve();
+    if (get_write_solution() != "false") {
+        OpenSim::IO::makeDir(get_write_solution());
+        std::string prefix = getName().empty() ? "MucoTool" : getName();
+        solution.write(get_write_solution() +
+                SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto");
+    }
+    return solution;
 }
 
 void MucoTool::visualize(const MucoIterate& it) const {

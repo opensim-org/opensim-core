@@ -43,38 +43,43 @@ public:
     /// Throws an exception if you try calling this after initSolver() and
     /// before solve().
     MucoProblem& updProblem();
+
     /// If you want to tweak settings on the solver
-    /// After calling this, you cannot
+    /// After calling this, you cannot TODO.
     MucoTropterSolver& initSolver();
 
-    template <typename SolverType>
-    SolverType& initSolver() {
-        // TODO what to do if we already have a solver (from cloning?)
-        // TODO how to persist Solver settings when solving multiple times.
-        auto& solver = upd_solver();
-        if (typeid(SolverType) != typeid(solver)) {
-            // TODO does this check work as expected?
-            std::cout << "Creating a new solver of type " <<
-                    SimTK::NiceTypeName<SolverType>::name() << "." << std::endl;
-            set_solver(SolverType());
-        }
-        solver.resetProblem(get_problem());
-        return static_cast<SolverType&>(solver);
-    }
-
     // TODO add a "reset()"
-    MucoSolution solve();
+    MucoSolution solve() const;
 
     // TODO should visualize be here or in MucoProblem? Should MucoProblem
     // know aobut MucoIterate?
     void visualize(const MucoIterate& it) const;
 
+    /// @name Using solvers other than MucoTropterSolver
+    /// @{
+    // TODO untested.
+    template <typename SolverType>
+    void setCustomSolver();
+
+    template <typename SolverType>
+    SolverType& initCustomSolver() {
+        return dynamic_cast<SolverType&>(initSolverInternal());
+    }
+    /// @}
 
 private:
+    OpenSim_DECLARE_PROPERTY(write_solution, std::string,
+    "Provide the folder path (relative to working directory) to which the "
+    "solution files should be written. Set to 'false' to not write the "
+    "solution to disk.");
     OpenSim_DECLARE_PROPERTY(problem, MucoProblem, "TODO");
     OpenSim_DECLARE_PROPERTY(solver, MucoSolver, "TODO");
 
+    void ensureInitSolver();
+    MucoSolver& initSolverInternal();
     void constructProperties();
+
+    bool m_solverInitialized = false;
 };
 
 } // namespace OpenSim

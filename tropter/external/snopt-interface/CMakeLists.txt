@@ -33,4 +33,9 @@ else()
 
     target_link_libraries(snopt7_cpp ${SNOPT_LIBRARY})
 
+    install(TARGETS snopt7_cpp EXPORT tropter-config
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 endif()
