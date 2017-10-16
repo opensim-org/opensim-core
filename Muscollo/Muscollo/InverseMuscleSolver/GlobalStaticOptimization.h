@@ -32,7 +32,7 @@ class OSIMMUSCOLLO_API GlobalStaticOptimization : public InverseMuscleSolver {
 public:
 
     // TODO rename to Iterate?
-    struct Solution {
+    struct OSIMMUSCOLLO_API Solution {
         /// The activation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable activation;
