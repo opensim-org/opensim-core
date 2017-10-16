@@ -62,23 +62,24 @@ int main()
     return 0;
 }
 
-void compareModelProperties(const Model&        result,
+void compareModelProperties(const Model&        constResult,
                             const std::string&  targetFilename,
                             const double        tol)
 {
     using SimTK::Vec3;
 
-    // Load target model.
+    // Create a modifiable copy of the result model and load the target model.
+    std::unique_ptr<Model> result{ new Model(constResult) };
     std::unique_ptr<Model> target{ new Model(targetFilename) };
 
     // Component paths can be guaranteed to be equivalent only after connecting.
-    const_cast<Model&>(result).setup();
+    result->setup();
     target->setup();
 
     // Check number of Marker Components (otherwise, test will pass even if
     // markers are missing from result model).
     {
-        const unsigned nmResult = result.countNumComponents<Marker>();
+        const unsigned nmResult = result->countNumComponents<Marker>();
         const unsigned nmTarget = target->countNumComponents<Marker>();
         OPENSIM_THROW_IF(nmResult != nmTarget, Exception,
             "Incorrect number of Marker Components in result Model.");
@@ -86,7 +87,7 @@ void compareModelProperties(const Model&        result,
 
     // Check Marker locations.
     cout << "Checking marker locations..." << endl;
-    for (const Marker& mResult : result.getComponentList<Marker>())
+    for (const Marker& mResult : result->getComponentList<Marker>())
     {
         const std::string& path = mResult.getAbsolutePathString();
 
@@ -106,7 +107,7 @@ void compareModelProperties(const Model&        result,
     // Check number of GeometryPath Components (otherwise, test will pass even
     // if path actuators, ligaments, etc. are missing from result model).
     {
-        const unsigned ngpResult = result.countNumComponents<GeometryPath>();
+        const unsigned ngpResult = result->countNumComponents<GeometryPath>();
         const unsigned ngpTarget = target->countNumComponents<GeometryPath>();
         OPENSIM_THROW_IF(ngpResult != ngpTarget, Exception,
             "Incorrect number of GeometryPath Components in result Model.");
@@ -114,7 +115,9 @@ void compareModelProperties(const Model&        result,
 
     // Check GeometryPath path point locations.
     cout << "Checking path point locations..." << endl;
-    for (const GeometryPath& gpResult : result.getComponentList<GeometryPath>())
+    SimTK::State& sResult = result->initSystem();
+    SimTK::State& sTarget = target->initSystem();
+    for (const GeometryPath& gpResult : result->getComponentList<GeometryPath>())
     {
         const std::string& path = gpResult.getAbsolutePathString();
 
@@ -125,11 +128,11 @@ void compareModelProperties(const Model&        result,
         cout << "  '" << path << "'" << endl;
         for (int i = 0; i < gpResult.getPathPointSet().getSize(); ++i)
         {
-            const Vec3& result_loc = static_cast<const PathPoint&>(
-                gpResult.getPathPointSet()[i]).get_location();
-            const Vec3& target_loc = static_cast<const PathPoint&>(
-                target->getComponent<GeometryPath>(path).getPathPointSet()[i])
-                .get_location();
+            const Vec3& result_loc =
+                gpResult.getPathPointSet()[i].getLocation(sResult);
+            const Vec3& target_loc =
+                target->getComponent<GeometryPath>(path).getPathPointSet()[i]
+                .getLocation(sTarget);
 
             ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
                 "The location of point " + std::to_string(i)
