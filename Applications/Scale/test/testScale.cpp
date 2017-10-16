@@ -62,17 +62,18 @@ int main()
     return 0;
 }
 
-void compareModelProperties(const Model&        constResult,
+void compareModelToStandard(const std::string&  resultFilename,
                             const std::string&  targetFilename,
                             const double        tol)
 {
     using SimTK::Vec3;
 
-    // Create a modifiable copy of the result model and load the target model.
-    std::unique_ptr<Model> result{ new Model(constResult) };
+    // Load the result and target models.
+    std::unique_ptr<Model> result{ new Model(resultFilename) };
     std::unique_ptr<Model> target{ new Model(targetFilename) };
 
-    // Component paths can be guaranteed to be equivalent only after connecting.
+    // Component paths can be guaranteed to be equivalent only once connections
+    // have been made.
     result->setup();
     target->setup();
 
@@ -89,19 +90,20 @@ void compareModelProperties(const Model&        constResult,
     cout << "Checking marker locations..." << endl;
     for (const Marker& mResult : result->getComponentList<Marker>())
     {
-        const std::string& path = mResult.getAbsolutePathString();
+        const std::string& absPathStr = mResult.getAbsolutePathString();
 
         // Ensure marker exists in target model.
-        OPENSIM_THROW_IF(!target->hasComponent(path), Exception,
-            "Marker '" + path + "' not found in standard model.");
+        OPENSIM_THROW_IF(!target->hasComponent(absPathStr), Exception,
+            "Marker '" + absPathStr + "' not found in standard model.");
 
         const Vec3& result_loc = mResult.get_location();
-        const Vec3& target_loc = target->getComponent<Marker>(path).get_location();
+        const Vec3& target_loc =
+            target->getComponent<Marker>(absPathStr).get_location();
 
-        cout << "  '" << path << "' - location: " << result_loc << endl;
+        cout << "  '" << absPathStr << "' - location: " << result_loc << endl;
         ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
-            "Marker '" + path + "' location in scaled model does not match "
-            + "standard of " + target_loc.toString());
+            "Marker '" + absPathStr + "' location in scaled model does not "
+            + "match standard of " + target_loc.toString());
     }
 
     // Check number of GeometryPath Components (otherwise, test will pass even
@@ -119,25 +121,26 @@ void compareModelProperties(const Model&        constResult,
     SimTK::State& sTarget = target->initSystem();
     for (const GeometryPath& gpResult : result->getComponentList<GeometryPath>())
     {
-        const std::string& path = gpResult.getAbsolutePathString();
+        const std::string& absPathStr = gpResult.getAbsolutePathString();
 
         // Ensure GeometryPath exists in target model.
-        OPENSIM_THROW_IF(!target->hasComponent(path), Exception,
-            "GeometryPath '" + path + "' not found in standard model.");
+        OPENSIM_THROW_IF(!target->hasComponent(absPathStr), Exception,
+            "GeometryPath '" + absPathStr + "' not found in standard model.");
 
-        cout << "  '" << path << "'" << endl;
+        cout << "  '" << absPathStr << "'" << endl;
         for (int i = 0; i < gpResult.getPathPointSet().getSize(); ++i)
         {
             const Vec3& result_loc =
                 gpResult.getPathPointSet()[i].getLocation(sResult);
             const Vec3& target_loc =
-                target->getComponent<GeometryPath>(path).getPathPointSet()[i]
-                .getLocation(sTarget);
+                target->getComponent<GeometryPath>(absPathStr)
+                .getPathPointSet()[i].getLocation(sTarget);
 
             ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
                 "The location of point " + std::to_string(i)
-                + " in GeometryPath '" + path + "' is " + result_loc.toString()
-                + ", which does not match standard of " + target_loc.toString());
+                + " in GeometryPath '" + absPathStr + "' is "
+                + result_loc.toString() + ", which does not match standard of "
+                + target_loc.toString());
         }
     }
 }
@@ -183,9 +186,8 @@ void scaleGait2354()
         ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
     }
 
-    //Compare model markers to the standard
-    Model model(setupFilePath + "subject01_simbody.osim");
-    compareModelProperties(model, "std_subject01_simbody.osim", 1.0e-6);
+    compareModelToStandard(setupFilePath + "subject01_simbody.osim",
+                           "std_subject01_simbody.osim", 1.0e-6);
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)
@@ -235,9 +237,8 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
-    //Compare model markers to the standard
-    Model model(setupFilePath + "subject01_simbody.osim");
-    compareModelProperties(model, "std_subject01_simbody.osim", 1.0e-6);
+    compareModelToStandard(setupFilePath + "subject01_simbody.osim",
+                           "std_subject01_simbody.osim", 1.0e-6);
 }
 
 void scaleModelWithLigament()
@@ -295,7 +296,8 @@ void scaleModelWithLigament()
     ASSERT(std == comp, __FILE__, __LINE__, 
             "Standard model failed to match scaled.");
 
-    compareModelProperties(comp, std_scaledModelFile, 1.0e-6);
+    compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
+                           std_scaledModelFile, 1.0e-6);
 }
 
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
