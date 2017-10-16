@@ -16,10 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MucoIterate.h"
+#include "MuscolloUtilities.h"
 
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/STOFileAdapter.h>
-#include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
@@ -94,3 +94,29 @@ void MucoIterate::write(const std::string& filepath) const {
     OpenSim::DataAdapter::InputTables tables = {{"table", &table0}};
     STOFileAdapter().writeFile(tables, filepath);
 }
+
+StatesTrajectory MucoIterate::exportToStatesTrajectory(const Model& model)
+        const {
+    TimeSeriesTable table(
+        std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+        m_states, m_state_names);
+    Storage storage = convertTableToStorage(table);
+
+    return StatesTrajectory::createFromStatesStorage(model, storage);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

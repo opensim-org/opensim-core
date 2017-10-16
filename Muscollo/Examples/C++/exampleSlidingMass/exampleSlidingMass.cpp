@@ -114,61 +114,60 @@ int main() {
 
     solution.write("sliding_mass_solution.sto");
 
-    /* TODO
-
     // Visualize.
     // ==========
-    mp.visualize(solution);
-     */
+    // TODO move to MucoProblem.
+    muco.visualize(solution);
 
-/*    {
-        // Define the optimal control problem.
-        // ===================================
-        MucoProblem mp;
-        ms.setName("sliding_mass");
+    /*
+        {
+            // Define the optimal control problem.
+            // ===================================
+            MucoProblem mp;
+            ms.setName("sliding_mass");
 
-        // Model (dynamics).
-        // -----------------
-        mp.setModel(createModel());
+            // Model (dynamics).
+            // -----------------
+            mp.setModel(createModel());
 
-        // Bounds.
-        // -------
-        // Initial time must be 0, final time can be within [0, 5].
-        mp.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 5));
+            // Bounds.
+            // -------
+            // Initial time must be 0, final time can be within [0, 5].
+            mp.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 5));
 
-        // Initial position must be 0, final position must be 1.
-        mp.setStateInfo("j0/x/value", MucoBounds(-5, 5),
-                MucoInitialBounds(0), MucoFinalBounds(1));
-        // Initial and final speed must be 0. Use compact syntax.
-        mp.setStateInfo("j0/x/speed", {-50, 50}, 0, 0);
+            // Initial position must be 0, final position must be 1.
+            mp.setStateInfo("j0/x/value", MucoBounds(-5, 5),
+                    MucoInitialBounds(0), MucoFinalBounds(1));
+            // Initial and final speed must be 0. Use compact syntax.
+            mp.setStateInfo("j0/x/speed", {-50, 50}, 0, 0);
 
-        // Applied force must be between -50 and 50.
-        mp.setControlInfo("F", MucoBounds(-50, 50));
+            // Applied force must be between -50 and 50.
+            mp.setControlInfo("F", MucoBounds(-50, 50));
 
-        // Cost.
-        // -----
-        MucoFinalTimeCost ftCost;
-        mp.addCost(ftCost);
+            // Cost.
+            // -----
+            MucoFinalTimeCost ftCost;
+            mp.addCost(ftCost);
 
-        // Configure the solver.
-        // =====================
-        MucoSolver ms(mp);
-        ms.set_optimizer_algorithm("ipopt");
+            // Configure the solver.
+            // =====================
+            MucoSolver ms(mp);
+            ms.set_optimizer_algorithm("ipopt");
 
-        // Now that we've finished setting up the solver, print it to a file.
-        ms.print("sliding_mass.omuco");
+            // Now that we've finished setting up the solver, print it to a file.
+            ms.print("sliding_mass.omuco");
 
-        // Solve the problem.
-        // ==================
-        MucoSolution solution = ms.solve();
-        solution.write("sliding_mass_solution.sto");
+            // Solve the problem.
+            // ==================
+            MucoSolution solution = ms.solve();
+            solution.write("sliding_mass_solution.sto");
 
-        // Visualize.
-        // ==========
-        mp.visualize(solution);
+            // Visualize.
+            // ==========
+            mp.visualize(solution);
 
 
-    }*/
+        }*/
 
     return EXIT_SUCCESS;
 }

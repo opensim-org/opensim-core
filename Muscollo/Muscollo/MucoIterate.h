@@ -18,11 +18,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <SimTKcommon/internal/BigMatrix.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 #include "osimMuscolloDLL.h"
 
 namespace OpenSim {
+
+class Model;
 
 class OSIMMUSCOLLO_API MucoIterate {
 public:
@@ -79,6 +81,11 @@ public:
     {   return m_controls; }
 
     void write(const std::string& filepath) const;
+
+    /// Controls are not carried over to the StatesTrajectory.
+    /// TODO explain why Model is necessary.
+    StatesTrajectory exportToStatesTrajectory(const Model&) const;
+
 private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;

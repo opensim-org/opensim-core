@@ -65,8 +65,10 @@ public:
     // TODO add a "reset()"
     MucoSolution solve();
 
+    // TODO should visualize be here or in MucoProblem? Should MucoProblem
+    // know aobut MucoIterate?
+    void visualize(const MucoIterate& it) const;
 
-    // TODO should visualize be here?
 
 private:
     OpenSim_DECLARE_PROPERTY(problem, MucoProblem, "TODO");

@@ -50,7 +50,7 @@ struct OSIMMUSCOLLO_API MucoBounds {
     }
     double lower = SimTK::NTraits<double>::getNaN();
     double upper = SimTK::NTraits<double>::getNaN();
-private:
+protected:
     /// Used internally to convert a list property to a
     /// It's expected that the list property has either 0, 1 or 2 elements.
     MucoBounds(const Property<double>& p) {

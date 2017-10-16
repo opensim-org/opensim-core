@@ -4,6 +4,8 @@ add_library(osimMuscollo SHARED
         osimMuscolloDLL.h
         RegisterTypes_osimMuscollo.h
         RegisterTypes_osimMuscollo.cpp
+        MuscolloUtilities.h
+        MuscolloUtilities.cpp
         MucoTool.h
         MucoTool.cpp
         MucoProblem.h

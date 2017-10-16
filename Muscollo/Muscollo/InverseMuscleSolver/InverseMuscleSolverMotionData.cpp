@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "InverseMuscleSolverMotionData.h"
+#include "../MuscolloUtilities.h"
 
 #include <tropter/tropter.h>
 
@@ -184,22 +185,6 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // not make sense to pass in the Coordinate* from the original model.
     computeInverseDynamics(model, _coordPathsToActuate, kinematicsData,
             lowpassCutoffJointMoments);
-}
-
-Storage convertTableToStorage(const TimeSeriesTable& table) {
-    Storage sto;
-    OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
-    labels[0] = "time";
-    for (int i = 0; i < (int)table.getNumColumns(); ++i) {
-        labels[i + 1] = table.getColumnLabel(i);
-    }
-    sto.setColumnLabels(labels);
-    const auto& times = table.getIndependentColumn();
-    for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        auto rowView = table.getRowAtIndex(i_time);
-        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
-    }
-    return sto;
 }
 
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(

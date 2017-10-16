@@ -21,7 +21,7 @@
 #ifndef _WIN32
     #define OSIMMUSCOLLO_API
 #else
-    #ifdef OSIMMUSCOLL_EXPORTS
+    #ifdef OSIMMUSCOLLO_EXPORTS
         #define OSIMMUSCOLLO_API __declspec(dllexport)
     #else
         #define OSIMMUSCOLLO_API __declspec(dllimport)

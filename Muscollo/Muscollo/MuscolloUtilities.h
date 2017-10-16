@@ -1,5 +1,7 @@
+#ifndef MUSCOLLO_MUSCOLLOUTILITIES_H
+#define MUSCOLLO_MUSCOLLOUTILITIES_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoTool.cpp                                             *
+ * OpenSim Muscollo: MuscolloUtilities.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -15,40 +17,20 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MucoTool.h"
-#include "MucoProblem.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
 
-#include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Common/Storage.h>
 
-using namespace OpenSim;
+#include "osimMuscolloDLL.h"
 
-MucoTool::MucoTool() {
-    constructProperties();
-}
+namespace OpenSim {
 
-void MucoTool::constructProperties() {
-    constructProperty_problem(MucoProblem());
-    constructProperty_solver(MucoTropterSolver());
-}
+class StatesTrajectory;
 
-MucoProblem& MucoTool::updProblem() {
-    upd_solver().resetProblem();
-    return upd_problem();
-}
+// TODO move to the Storage class.
+OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable& table);
 
-MucoTropterSolver& MucoTool::initSolver() {
-    return initSolver<MucoTropterSolver>();
-}
+OSIMMUSCOLLO_API void visualize(const StatesTrajectory& st);
 
-MucoSolution MucoTool::solve() {
-    return get_solver().solve();
-}
+} // namespace OpenSim
 
-void MucoTool::visualize(const MucoIterate& it) const {
-    // TODO this does not need the Solver at all, so this could be moved to
-    // MucoProblem.
-    const auto& model = get_problem().getPhase(0).getModel();
-    OpenSim::visualize(it.exportToStatesTrajectory(model));
-}
+#endif // MUSCOLLO_MUSCOLLOUTILITIES_H
