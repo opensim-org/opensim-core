@@ -594,7 +594,7 @@ const SimTK::State& Manager::integrate(double finalTime)
     int step = 0; // for AnalysisSet::step()
 
     if (_timeStepper == nullptr) {
-        throw Exception("Manager::integrate(): Manager has not be "
+        throw Exception("Manager::integrate(): Manager has not been "
             "initialized. Call Manager::initialize() first.");
     }
 
