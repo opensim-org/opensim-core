@@ -23,6 +23,11 @@ set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 include(GNUInstallDirs)
 set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 set(MUSCOLLO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
+if(WIN32)
+    set(MUSCOLLO_INSTALL_CMAKEDIR cmake)
+else()
+    set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Muscollo)
+endif()
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)
@@ -66,6 +71,9 @@ add_subdirectory(tropter)
 
 add_subdirectory(Muscollo)
 
+add_subdirectory(cmake)
+
 # Print a list of the dependencies that were found, and the features the user
 # chose.
 feature_summary(WHAT ALL)
+

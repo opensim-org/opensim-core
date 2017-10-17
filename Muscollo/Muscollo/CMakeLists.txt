@@ -44,7 +44,7 @@ if(WIN32)
     add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
 endif()
 
-install(TARGETS osimMuscollo # EXPORT OpenSimTargets
+install(TARGETS osimMuscollo EXPORT MuscolloTargets
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

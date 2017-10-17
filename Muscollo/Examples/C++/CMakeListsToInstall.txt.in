@@ -1,0 +1,9 @@
+cmake_minimum_required(VERSION 3.2)
+project(Muscollo_@_example_name@)
+
+set(CMAKE_CXX_STANDARD 11)
+
+find_package(Muscollo REQUIRED HINTS @_muscollo_install_hint@)
+
+add_executable(@_example_name@ @_example_name@.cpp)
+target_link_libraries(@_example_name@ osimMuscollo)
