@@ -3,7 +3,16 @@ project(Muscollo_@_example_name@)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(Muscollo REQUIRED HINTS @_muscollo_install_hint@)
+find_package(Muscollo REQUIRED HINTS
+    "${CMAKE_SOURCE_DIR}/@_muscollo_install_hint@")
+include("${Muscollo_USE_FILE}")
 
 add_executable(@_example_name@ @_example_name@.cpp)
 target_link_libraries(@_example_name@ osimMuscollo)
+
+# For Windows: make sure DLLs for dependencies are available.
+MuscolloCopyDLLs(DEP_NAME Muscollo
+    DEP_BIN_DIR "${Muscollo_BIN_DIR}")
+if(WIN32)
+    add_dependencies(@_example_name@ Copy_Muscollo_DLLs)
+endif()
