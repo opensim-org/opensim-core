@@ -7,7 +7,7 @@ include(CMakeParseArguments)
 # only on Windows. The intention is to allow the runtime loader to find all 
 # the required DLLs without editing the PATH environment variable.
 # Copied from OpenSimMacros.cmake.
-function(MuscolloCopyDLLs DEP_NAME DEP_INSTALL_DIR)
+function(MuscolloCopyDLLs DEP_NAME DEP_INSTALL_DIR INSTALL_DLLS)
     # On Windows, copy dlls into the Tropter binary directory.
     if(WIN32)
         file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
@@ -28,7 +28,8 @@ function(MuscolloCopyDLLs DEP_NAME DEP_INSTALL_DIR)
         add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
         set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
             PROJECT_LABEL "Copy ${DEP_NAME} DLLs" FOLDER "Muscollo")
-        if(MUSCOLLO_COPY_DEPENDENCIES)
+        if(MUSCOLLO_COPY_DEPENDENCIES AND
+                NOT "${INSTALL_DLLS}" STREQUAL "FALSE")
             install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()

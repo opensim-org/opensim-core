@@ -41,7 +41,7 @@ set_target_properties(osimMuscollo PROPERTIES
         FOLDER "Muscollo")
 
 if(WIN32)
-    add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
+   add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
 endif()
 
 install(TARGETS osimMuscollo EXPORT MuscolloTargets

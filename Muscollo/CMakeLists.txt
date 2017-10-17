@@ -5,7 +5,7 @@ set_package_properties(OpenSim PROPERTIES
         URL http://opensim.stanford.edu
         TYPE REQUIRED
         PURPOSE "Musculoskeletal modeling")
-# MuscolloCopyDLLs(OpenSim "${OpenSim_ROOT_DIR}/bin")
+MuscolloCopyDLLs(OpenSim "${OpenSim_ROOT_DIR}/bin" FALSE)
 
 # Copy OpenSim into our installation.
 install(DIRECTORY "${OpenSim_ROOT_DIR}/"
