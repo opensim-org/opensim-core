@@ -30,6 +30,10 @@ class Model;
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
+/// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
+/// should contain all generalized coordinates. The visualizer window allows the
+/// user to control playback speed.
+/// This function blocks until the user exits the simbody-visualizer window.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
 } // namespace OpenSim

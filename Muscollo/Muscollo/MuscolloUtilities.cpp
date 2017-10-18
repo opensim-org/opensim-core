@@ -43,19 +43,30 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
 void OpenSim::visualize(Model model, Storage statesSto) {
-    model.setUseVisualizer(true);
-    model.initSystem();
 
-    const double dataRate = 90; // Hz.
+    const SimTK::Real initialTime = statesSto.getFirstTime();
+    const SimTK::Real finalTime = statesSto.getLastTime();
+    const SimTK::Real duration = finalTime - initialTime;
+
+    // A data rate of 300 Hz means we can maintain 30 fps down to
+    // realTimeScale = 0.1. But if we have more than 20 seconds of data, then
+    // we lower the data rate to avoid using too much memory.
+    const double desiredNumStates = std::min(300 * duration, 300.0 * 20.0);
+    const double dataRate = desiredNumStates / duration; // Hz
     const double frameRate = 30; // Hz.
-    // TODO rename.
-    // const double speedMultiplier = dataRate / frameRate;
 
     // Prepare data.
     // -------------
     statesSto.resample(1.0 / dataRate, 4 /* degree */);
     auto statesTraj =
             StatesTrajectory::createFromStatesStorage(model, statesSto);
+    const int numStates = (int)statesTraj.getSize();
+
+    // Must setUseVisualizer() *after* createFromStatesStorage(), otherwise
+    // createFromStatesStorage() spawns a visualizer.
+    model.setUseVisualizer(true);
+    model.initSystem();
+
     OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
             "Model is not compatible with the provided StatesTrajectory.");
 
@@ -69,103 +80,108 @@ void OpenSim::visualize(Model model, Storage statesSto) {
                                                          : statesSto.getName();
     viz.setWindowTitle("Visualizing model '" + modelName + "' with motion '" +
             motionName + "'.");
-    viz.setMode(SimTK::Visualizer::PassThrough);
+    viz.setMode(SimTK::Visualizer::RealTime);
+    // Buffering causes issues when the user adjusts the "Speed" slider.
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
-    // auto& silo = model.updVisualizer().updInputSilo();
+    //viz.setShowFrameRate(true);
+    //viz.setShowFrameNumber(true);
+    auto& silo = model.updVisualizer().updInputSilo();
 
 
     // BodyWatcher to control camera.
     // TODO
 
-
-    const int numFrames = (int)statesTraj.getSize();
-    /*
-    const SimTK::Real initialTime = statesTraj.front().getTime();
-    const SimTK::Real finalTime = statesTraj.back().getTime();
-     */
-
-    /*
     // Add sliders to control playback.
-    const int speedSliderIndex = 1;
-    const double minSpeed = 0;
-    const double maxSpeed = 4;
-    viz.addSlider("Speed", speedSliderIndex, minSpeed, maxSpeed, 1.0);
+    // Real-time factor:
+    //      1 means simulation-time = real-time
+    //      2 means playback is 2x faster.
+    const int realTimeScaleSliderIndex = 1;
+    const double minRealTimeScale = 0.01; // can't go to 0.
+    const double maxRealTimeScale = 4;
+    double realTimeScale = 1.0;
+    viz.addSlider("Speed", realTimeScaleSliderIndex,
+            minRealTimeScale, maxRealTimeScale, realTimeScale);
+
+    // TODO this slider results in choppy playback if not paused.
     const int timeSliderIndex = 2;
-    viz.addSlider("Time", timeSliderIndex, initialTime, finalTime, initialTime);
+    double time = initialTime;
+    viz.addSlider("Time", timeSliderIndex, initialTime, finalTime, time);
 
-    double speed = 1.0 * speedMultiplier;
-    SimTK::Real time = initialTime;
-    double prevSpeed = speed;
-    int prevFrame = -1;
-     */
+    SimTK::Array_<std::pair<SimTK::String, int>> keyBindingsMenu;
+    keyBindingsMenu.push_back(std::make_pair(
+        "Available key bindings (clicking these menu items has no effect):", 1));
+    keyBindingsMenu.push_back(std::make_pair(
+        "-----------------------------------------------------------------", 2));
+    keyBindingsMenu.push_back(std::make_pair("Pause: Space", 3));
+    keyBindingsMenu.push_back(std::make_pair("Zoom to fit: R", 4));
+    keyBindingsMenu.push_back(std::make_pair("Quit: Esc", 5));
+    viz.addMenu("Key bindings", 1, keyBindingsMenu);
 
-    int iframe = 0;
+    SimTK::DecorativeText pausedText("");
+    pausedText.setIsScreenText(true);
+    const int pausedIndex = viz.addDecoration(SimTK::MobilizedBodyIndex(0),
+            SimTK::Vec3(0), pausedText);
+
+    int istate = 0;
+
+    bool paused = false;
+
     while (true) {
-        /*
-        // TODO rename frame.
-        for (double frame = 0; frame < numFrames; frame += speed) {
-            time = frame / numFrames;
+        if (istate == numStates) istate = 0;
 
-            // Slider input.
-            int sliderIndex;
-            double sliderValue;
-            if (silo.takeSliderMove(sliderIndex, sliderValue)) {
-                if (sliderIndex == speedSliderIndex) {
-                    speed = speedMultiplier * sliderValue;
-                }
-                else if (sliderIndex == timeSliderIndex) {
-                    time = sliderValue;
-                    frame = time * dataRate;
-                } else {
-                    std::cout << "Internal error: unrecognized slider." <<
-                            std::endl;
-                }
+        // Slider input.
+        int sliderIndex;
+        double sliderValue;
+        if (silo.takeSliderMove(sliderIndex, sliderValue)) {
+            if (sliderIndex == realTimeScaleSliderIndex) {
+                viz.setRealTimeScale(sliderValue);
+            } else if (sliderIndex == timeSliderIndex) {
+                // index = [seconds] * [# states / second]
+                istate = SimTK::clamp(0, (sliderValue - initialTime) * dataRate,
+                        numStates - 1);
+                // Allow the user to drag this slider to visualize different
+                // times.
+                viz.drawFrameNow(statesTraj[istate]);
+            } else {
+                std::cout << "Internal error: unrecognized slider." <<
+                        std::endl;
             }
-
-            // Key input.
-            unsigned key, modifiers;
-            if (silo.takeKeyHit(key, modifiers)) {
-                // Exit.
-                if (key == SimTK::Visualizer::InputListener::KeyEsc) {
-                    std::cout << "Exiting visualization." << std::endl;
-                    return;
-                }
-                // Smart zoom.
-                else if (key == 'r') {
-                    viz.zoomCameraToShowAllGeometry();
-                }
-                // Pause.
-                else if (key == ' ') {
-                    if (speed != 0.0) {
-                        prevSpeed = speed;
-                        speed = 0.0;
-                    } else {
-                        speed = prevSpeed;
-                    }
-                }
-            }
-
-            if (frame < 0) frame = 0;
-            if ((int)frame == numFrames) frame = numFrames - 1;
-
-            // TODO rename to realTimeFactor.
-            viz.setSliderValue(speedSliderIndex, speed / speedMultiplier);
-            viz.setSliderValue(timeSliderIndex, time);
-
-            viz.report(statesTraj[(int)frame]);
-            prevFrame = frame;
         }
-        */
-        if (iframe == numFrames) iframe = 0;
-        // std::cout << "DEBUG " << iframe << std::endl;
 
-        // User input.
+        // Key input.
+        unsigned key, modifiers;
+        if (silo.takeKeyHit(key, modifiers)) {
+            // Exit.
+            if (key == SimTK::Visualizer::InputListener::KeyEsc) {
+                std::cout << "Exiting visualization." << std::endl;
+                return;
+            }
+            // Smart zoom.
+            else if (key == 'r') {
+                viz.zoomCameraToShowAllGeometry();
+            }
+            // Pause.
+            else if (key == ' ') {
+                paused = !paused;
+                auto& text = static_cast<SimTK::DecorativeText&>(
+                        viz.updDecoration(pausedIndex));
+                text.setText(paused ? "Paused (hit Space to resume)" : "");
+                // Show the updated text.
+                viz.drawFrameNow(statesTraj[istate]);
+            }
+        }
 
-        viz.report(statesTraj[iframe]);
+        viz.setSliderValue(realTimeScaleSliderIndex, viz.getRealTimeScale());
+        viz.setSliderValue(timeSliderIndex,
+                std::round((istate / dataRate + initialTime)*1000)/1000);
 
-        ++iframe;
+        if (paused) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        } else {
+            viz.report(statesTraj[istate]);
+            ++istate;
+        }
     }
-
 }

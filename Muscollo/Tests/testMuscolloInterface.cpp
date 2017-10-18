@@ -19,8 +19,6 @@
 #include <SimTKcommon/Testing.h>
 
 // TODO
-// - fix visualize()
-// - fix windows build
 // - add setGuess
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
