@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.2)
 project(Muscollo)
 
+# Muscollo settings.
+# ------------------
+# Copy dependencies' libraries into Muscollo's installation?
+set(MUSCOLLO_COPY_DEPENDENCIES ON)
+
+
 # CMake settings.
 # ---------------
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
@@ -12,7 +18,9 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 
 # Avoid need to set DYLD_LIBRARY_PATH on macOS.
 set(CMAKE_MACOSX_RPATH ON)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+if(NOT MUSCOLLO_COPY_DEPENDENCIES)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+endif()
 
 # Make targets go in the same binary directory.
 # These are CMake-defined variables.
@@ -31,11 +39,6 @@ endif()
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)
-
-# Muscollo settings.
-# ------------------
-# Copy dependencies' libraries into Muscollo's installation?
-set(MUSCOLLO_COPY_DEPENDENCIES ON)
 
 # Include CMake macros that we wrote to reduce duplication in this project.
 include(cmake/MuscolloMacros.cmake)

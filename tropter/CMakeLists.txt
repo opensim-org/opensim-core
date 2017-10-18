@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.2)
+# WINDOWS_EXPORT_ALL_SYMBOLS requires 3.4.
+cmake_minimum_required(VERSION 3.4)
 project(tropter)
 
 # Include CMake macros that we wrote to reduce duplication in this project.
@@ -138,7 +139,6 @@ add_subdirectory(tests)
 
 add_subdirectory(sandbox)
 
-
 # Allowing use of tropter in other libraries.
 # -------------------------------------------
 # export(TARGETS tropter FILE tropter-config.cmake)
@@ -146,3 +146,7 @@ add_subdirectory(sandbox)
 # TODO rename to tropter-targets and create proper tropter-config.cmake
 # and tropter-config-version.cmake files.
 install(EXPORT tropter-config DESTINATION ${TROPTER_INSTALL_CMAKEDIR})
+
+add_subdirectory(cmake)
+
+
