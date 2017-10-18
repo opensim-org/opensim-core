@@ -1,3 +1,25 @@
+
+if(MUSCOLLO_COPY_DEPENDENCIES AND APPLE)
+    # Temporary hack to package dependencies on Macs.
+    # TODO if we're building a standalone binary distribution, we should
+    # use superbuild to build the dependencies.
+    # TODO install(FILES
+    # TODO         /usr/local/opt/llvm/lib/libc++.1.dylib
+    # TODO         DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    # This command must be invoked from the cmake subdirectory so that the
+    # editing of libtropter's link libraries is done after libtropter.dylib
+    # is installed (add_subdirectory(cmake) must be after
+    # add_subdirectory(Muscollo)).
+    install(SCRIPT MuscolloInstallMacDependencyLibraries.cmake)
+
+endif()
+
+
+
+
+
+
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file(
