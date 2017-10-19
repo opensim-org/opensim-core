@@ -20,7 +20,7 @@ function(MuscolloAddTest)
     file(COPY ${MUCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
-# TODO MuscolloAddTest(NAME testMuscolloInterface)
+MuscolloAddTest(NAME testMuscolloInterface)
 
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 
