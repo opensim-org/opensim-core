@@ -108,7 +108,7 @@ void testSlidingMass() {
         SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
 
         double expectedForce = t < half ? 10 : -10;
-        SimTK_TEST_EQ_TOL(controls(itime, 1), expectedForce, 1e-2);
+        SimTK_TEST_EQ_TOL(controls(itime, 0), expectedForce, 1e-2);
     }
 }
 
