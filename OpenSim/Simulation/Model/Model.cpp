@@ -1428,54 +1428,49 @@ void Model::removeController(Controller *aController)
 
 
 
-//==========================================================================
+//==============================================================================
 // OPERATIONS
-//==========================================================================
-//--------------------------------------------------------------------------
-// SCALE
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Scale the model
- *
- * @param aScaleSet the set of XYZ scale factors for the bodies
- * @param aFinalMass the mass that the scaled model should have
- * @param aPreserveMassDist whether or not the masses of the
- *        individual bodies should be scaled with the body scale factors.
- * @return Whether or not scaling was successful.
- */
-bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
-{
-    int i;
+//==============================================================================
 
-    // 1. Save the current pose of the model, then put it in a
-    //    default pose, so pre- and post-scale muscle lengths
-    //    can be found.
+//------------------------------------------------------------------------------
+// SCALE
+//------------------------------------------------------------------------------
+bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
+                  bool preserveMassDist)
+{
+    // 1. Save the current pose of the model, then put it in a default pose so
+    //    that GeometryPath lengths can be stored now and updated after scaling.
     SimTK::Vector savedConfiguration = s.getY();
     applyDefaultConfiguration(s);
+
+    // 2. Call preScale() on all ModelComponents owned by the model.
+    for (ModelComponent& comp : updComponentList<ModelComponent>())
+        comp.preScale(s, scaleSet);
+
     // 2. For each Actuator, call its preScale method so it
     //    can calculate and store its pre-scale length in the
     //    current position, and then call its scale method to
     //    scale all of the muscle properties except tendon and
     //    fiber length.
-    for (i = 0; i < get_ForceSet().getSize(); i++)
+    for (int i = 0; i < get_ForceSet().getSize(); i++)
     {
         PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
         if( act ) {
-            act->preScale(s, aScaleSet);
-            act->scale(s, aScaleSet);
+            //act->preScale(s, scaleSet);
+            act->scale(s, scaleSet);
         }
         // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
         else {
             Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
             if (ligament){
-                ligament->preScale(s, aScaleSet);
-                ligament->scale(s, aScaleSet);
+                //ligament->preScale(s, scaleSet);
+                ligament->scale(s, scaleSet);
             }
         }
     }
+
     // 3. Scale the rest of the model
-    bool returnVal = updSimbodyEngine().scale(s, aScaleSet, aFinalMass, aPreserveMassDist);
+    bool returnVal = updSimbodyEngine().scale(s, scaleSet, finalMass, preserveMassDist);
 
     // 4. If the dynamics engine was scaled successfully,
     //    call each Muscle's postScale method so it
@@ -1486,16 +1481,16 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 
     if (returnVal)
     {
-        for (i = 0; i < get_ForceSet().getSize(); i++) {
+        for (int i = 0; i < get_ForceSet().getSize(); i++) {
             PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
             if( act ) {
-                act->postScale(s, aScaleSet);
+                act->postScale(s, scaleSet);
             }
             // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
             else {
                 Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
                 if (ligament){
-                    ligament->postScale(s, aScaleSet);
+                    ligament->postScale(s, scaleSet);
                 }
             }
         }

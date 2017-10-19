@@ -111,7 +111,6 @@ public:
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 

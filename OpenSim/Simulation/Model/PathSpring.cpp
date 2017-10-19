@@ -163,21 +163,9 @@ double PathSpring::getTension(const SimTK::State& s) const
 }
 
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the PathSpring is scaled.
- * For this object, that entails calculating and storing the
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathSpring::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
+//==============================================================================
 
 //_____________________________________________________________________________
 

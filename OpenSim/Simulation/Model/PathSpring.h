@@ -148,12 +148,6 @@ public:
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    /**
-     * Scale the PathSpring.
-     * @param s     the (SimTK::) State of system that defines the current pose
-     * @param scaleSet XYZ scale factors for all the bodies in the model
-     */
-    void preScale(const SimTK::State& s, const ScaleSet& scaleSet);
     void scale(const SimTK::State& s, const ScaleSet& scaleSet);
     void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
 

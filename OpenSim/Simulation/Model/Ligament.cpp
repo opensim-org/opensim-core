@@ -185,21 +185,9 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
     set_force_length_curve(aForceLengthCurve);
     return true;
 }
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the ligament is scaled.
- * For this object, that entails calculating and storing the
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
+//==============================================================================
 
 //_____________________________________________________________________________
 /**

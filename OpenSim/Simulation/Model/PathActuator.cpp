@@ -235,21 +235,9 @@ SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
 }
 
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the muscle-tendon
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
+//==============================================================================
 
 //_____________________________________________________________________________
 /**

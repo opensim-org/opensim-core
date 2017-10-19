@@ -766,20 +766,13 @@ void GeometryPath::deletePathWrap(const SimTK::State& s, int aIndex)
 
 }
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/*
- * Perform computations that need to happen before the path is scaled.
- * For this object, that entails calculating and storing the path
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+//==============================================================================
+void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    setPreScaleLength( s,  getLength(s) );
+    Super::preScale(s, scaleSet);
+    setPreScaleLength(s, getLength(s));
 }
 
 //_____________________________________________________________________________
