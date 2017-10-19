@@ -139,8 +139,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
                 viz.setRealTimeScale(sliderValue);
             } else if (sliderIndex == timeSliderIndex) {
                 // index = [seconds] * [# states / second]
-                istate = SimTK::clamp(0, (sliderValue - initialTime) * dataRate,
-                        numStates - 1);
+                istate = (int)SimTK::clamp(0,
+                        (sliderValue - initialTime) * dataRate, numStates - 1);
                 // Allow the user to drag this slider to visualize different
                 // times.
                 viz.drawFrameNow(statesTraj[istate]);
