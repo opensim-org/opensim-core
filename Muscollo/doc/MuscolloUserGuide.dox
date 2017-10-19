@@ -24,6 +24,15 @@ easy, and requires significant tuning of the direct collocation method's
 settings. Use the more specific interfaces if possible; and only create a custom
 problem as a last resort.
 
+Parts of the documentation:
+  - @ref userguide
+
+
+
+@page userguide User Guide
+
+@tableofcontents
+
 TODO
 
 MucoFramework
@@ -33,8 +42,6 @@ Example
 -------
 
 TODO
-
-
 
 The interface to Muscollo starts with the MucoTool. The MucoTool contains a
 MucoProblem and a MucoSolver.
@@ -60,8 +67,8 @@ After calling solve(), you can edit the MucoProblem and/or the MucoSolver.
 You can then call solve() again, if you wish.
 
 
-MucoProblem
------------
+%MucoProblem
+------------
 
 A MucoProblem contains multiple phases.
 
@@ -74,9 +81,12 @@ TODO describe bounds (set automatically based on the model).
     ///     true, then the bounds are set to the coordinate's **range** (see
     ///     Coordinate::clamped and Coordinate::range). (TODO)
 
+### Defining the cost functional
 
-MucoSolver
-----------
+See @ref mucocost for more information.
+
+%MucoSolver
+-----------
 
 A MucoSolver attempts to use an optimal control method to solve the MucoProblem,
 and exposes the settings that you can use to
@@ -87,6 +97,13 @@ Tips for solving a custom problem
 
 1. Make sure every variable has bounds.
 
+*/
+
+/**
+@defgroup mucocost Available cost terms
+
+These are the available cost terms you can use in your cost functional. If none
+of these satisfy your needs, you can define your own using a plugin.
 */
 }
 

@@ -106,6 +106,7 @@ public:
                 &m_state.updY()[0]);
         //
         // TODO do not copy? I think this will still make a copy:
+        // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
         auto& osimControls = m_model.updControls(m_state);

@@ -27,6 +27,7 @@
 namespace OpenSim {
 
 /// A term in the cost functional, to be minimized.
+/// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
 public:
@@ -58,6 +59,7 @@ inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
         double&) const {}
 
 /// Endpoint cost for final time.
+/// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:
