@@ -25,4 +25,6 @@
 #include "MucoTool.h"
 #include "MucoTropterSolver.h"
 
+#include "RegisterTypes_osimMuscollo.h"
+
 #endif // MUSCOLLO_OSIMMUSCOLLO_H

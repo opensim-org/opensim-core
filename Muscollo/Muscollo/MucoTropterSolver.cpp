@@ -164,10 +164,10 @@ void MucoTropterSolver::constructProperties() {
 
 std::shared_ptr<const tropter::OptimalControlProblem<double>>
 MucoTropterSolver::getTropterProblem() const {
-    if (!_tropProblem) {
-        _tropProblem = std::make_shared<OCProblem<double>>(*this);
+    if (!m_tropProblem) {
+        m_tropProblem = std::make_shared<OCProblem<double>>(*this);
     }
-    return _tropProblem;
+    return m_tropProblem;
 }
 
 void MucoTropterSolver::resetProblemImpl() {

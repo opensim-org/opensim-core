@@ -26,6 +26,7 @@
 
 namespace OpenSim {
 
+/// A term in the cost functional, to be minimized.
 class OSIMMUSCOLLO_API MucoCost : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
 public:
@@ -38,6 +39,8 @@ public:
         // TODO
         return 0;
     }
+    /// This includes the weight.
+    // We use SimTK::Real instead of double for when we support adoubles.
     SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
         double cost = 0;
         calcEndpointCostImpl(finalState, cost);
@@ -54,6 +57,7 @@ private:
 inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
         double&) const {}
 
+/// Endpoint cost for final time.
 class OSIMMUSCOLLO_API MucoFinalTimeCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalTimeCost, MucoCost);
 protected:

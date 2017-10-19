@@ -1,0 +1,16 @@
+Integrate into opensim-core?
+
+For:
+
+- more exposure to users; easier for users to obtain the software.
+- easier conceptually for users: not so many different pieces.
+- easier to maintain fewer separate projects
+- unified documentation
+- easier to build matlab/python bindings.
+
+
+Against:
+
+- must pass thorough review.
+- increases opensim-core build time
+- adds many dependencies to opensim-core.

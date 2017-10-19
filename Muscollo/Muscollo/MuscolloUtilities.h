@@ -27,6 +27,11 @@ namespace OpenSim {
 class StatesTrajectory;
 class Model;
 
+/// Create a Storage from a TimeSeriesTable. Metadata from the
+/// TimeSeriesTable is *not* copied to the Storage.
+/// You should use TimeSeriesTable if possible, as support for Storage may be
+/// reduced in future versions of OpenSim. However, Storage supports some
+/// operations not supported by TimeSeriesTable (e.g., filtering, resampling).
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 

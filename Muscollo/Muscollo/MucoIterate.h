@@ -25,8 +25,11 @@
 
 namespace OpenSim {
 
-class Model;
+class MucoProblem;
 
+/// The values of the variables in an optimal control problem.
+/// This can be used for specifying an initial guess, or holding the solution
+/// returned by a solver.
 class OSIMMUSCOLLO_API MucoIterate {
 public:
     MucoIterate(const SimTK::Vector& time,
@@ -36,9 +39,12 @@ public:
             const SimTK::Matrix& controlsTrajectory);
 
     MucoIterate* clone() const { return new MucoIterate(*this); }
-    /// Resize the time vector and the time dimension of the states and
-    /// controls trajectories.
-    /// This may erase any data that was previously stored.
+
+    /// @name Set the data
+    /// @{
+
+    /// Resize the time vector and the time dimension of the states and controls
+    /// trajectories. This may erase any data that was previously stored.
     // TODO change this to interpolate.
     void setNumTimes(int numTimes) {
         m_time.resize(numTimes);
@@ -49,7 +55,7 @@ public:
     void setState(const std::string& name, const SimTK::Vector& trajectory);
     void setControl(const std::string& name, const SimTK::Vector& trajectory);
 
-    /// These variants support use of an initializer list. Example:
+    /// This variant supports use of an initializer list. Example:
     /// @code{.cpp}
     /// iterate.setTime({0, 0.5, 1.0});
     /// @endcode
@@ -69,6 +75,11 @@ public:
                 SimTK::Vector((int)trajectory.size(), trajectory.data()));
     }
 
+    /// @}
+
+    /// @name Accessors
+    /// @{
+
     const SimTK::Vector& getTime() const
     {   return m_time; }
     // TODO inconsistent plural "state names" vs "states trajectory"
@@ -81,21 +92,39 @@ public:
     const SimTK::Matrix& getControlsTrajectory() const
     {   return m_controls; }
 
+    /// @}
+
+    /// @name Convert to other formats
+    /// @{
+
+    /// Save the iterate to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
+    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
+    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
+    ///
+    /// Controls are not carried over to the states storage.
     Storage exportToStatesStorage() const;
     /// Controls are not carried over to the StatesTrajectory.
-    /// TODO explain why Model is necessary.
-    StatesTrajectory exportToStatesTrajectory(const Model&) const;
+    /// The MucoProblem is necessary because we need the underlying Model to
+    /// order the state variables correctly.
+    StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
+    /// @}
 
 private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
+    // Dimensions: time x states
     SimTK::Matrix m_states;
+    // Dimensions: time x controls
     SimTK::Matrix m_controls;
 };
 
+/// Return type for MucoTool::solve().
+// TODO hold return status of optimizer.
+// Perhaps have the ability to "lock" or "unlock" the solution, so that
+// accessing a failed solution requires a user to first "unlock"?
 class OSIMMUSCOLLO_API MucoSolution : public MucoIterate {
     using MucoIterate::MucoIterate;
 };

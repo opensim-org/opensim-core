@@ -27,9 +27,15 @@ namespace OpenSim {
 class MucoPhase;
 class MucoVariableInfo;
 
+/// Small struct to handle bounds.
+/// You can access the bound values directly (.lower, .upper).
 struct OSIMMUSCOLLO_API MucoBounds {
+    /// The bounds are NaN, which means (-inf, inf).
     MucoBounds() = default;
+    /// The lower and upper bound are equal (the variable is constrained to this
+    /// single value).
     MucoBounds(double value) : lower(value), upper(value) {}
+    /// The variable is constrained to be within [lower, upper].
     MucoBounds(double lower, double upper) {
         OPENSIM_THROW_IF(lower > upper, Exception,
                 "Expected lower <= upper, but lower=" + std::to_string(lower)
@@ -37,9 +43,14 @@ struct OSIMMUSCOLLO_API MucoBounds {
         this->lower = lower;
         this->upper = upper;
     }
+    /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
         return !SimTK::isNaN(lower) && !SimTK::isNaN(upper);
     }
+    /// The returned array has either 0, 1, or 2 elements.
+    /// - 0 elements: bounds are not set.
+    /// - 1 element: equality constraint
+    /// - 2 elements: range (inequality constraint).
     Array<double> getAsArray() const {
         Array<double> vec;
         if (isSet()) {
@@ -51,9 +62,10 @@ struct OSIMMUSCOLLO_API MucoBounds {
     double lower = SimTK::NTraits<double>::getNaN();
     double upper = SimTK::NTraits<double>::getNaN();
 protected:
-    /// Used internally to convert a list property to a
-    /// It's expected that the list property has either 0, 1 or 2 elements.
+    /// Used internally to create Bounds from a list property.
+    /// The list property must have either 0, 1 or 2 elements.
     MucoBounds(const Property<double>& p) {
+        assert(p.size() <= 2);
         if (p.size() >= 1) {
             lower = p[0];
             if (p.size() == 2) upper = p[1];
@@ -64,11 +76,13 @@ protected:
     friend MucoPhase;
     friend MucoVariableInfo;
 };
+/// Used for specifying the bounds on a variable at the start of a phase.
 struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;
 };
+/// Used for specifying the bounds on a variable at the end of a phase.
 struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
     using MucoBounds::MucoBounds;
     friend MucoPhase;
@@ -76,6 +90,11 @@ struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
 };
 
 class MucoPhase;
+
+
+// ============================================================================
+// MucoVariableInfo
+// ============================================================================
 
 /// Bounds on continuous variables (states, controls). The name should
 /// correspond to path of a state variable or an actuator in the model.
@@ -86,17 +105,19 @@ public:
     MucoVariableInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds&, const MucoFinalBounds&);
 
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBounds() const
     {   return MucoBounds(getProperty_bounds()); }
+    /// @copydoc getBounds()
     MucoInitialBounds getInitialBounds() const
     {   return MucoInitialBounds(getProperty_initial_bounds()); }
+    /// @copydoc getBounds()
     MucoFinalBounds getFinalBounds() const
     {   return MucoFinalBounds(getProperty_final_bounds()); }
 
-private:
+protected:
 
-    // TODO error if not defined.
-    // TODO change to RANGE (1, 2).
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
             "1 value: required value over all time. "
             "2 values: lower, upper bounds on value over all time.");
@@ -107,30 +128,136 @@ private:
             "1 value: required final value. "
             "2 values: lower, upper bounds on final value.");
 
+private:
     void constructProperties();
 };
 
+
+// ============================================================================
+// MucoPhase
+// ============================================================================
+
+/// The states, controls, dynamics, and costs for a phase of the problem.
+/// The dynamics are provided by the %OpenSim Model.
+///
+/// Workflow
+/// --------
+/// 1. Set the model (setModel()).
+/// 2. Set time bounds, state and control information.
+/// 3. Add cost terms.
+///
+/// Supported %Model Component%s
+/// ----------------------------
+/// Muscollo does not support all types of models. Specifically, the
+/// following components are not supported:
+///   - Constraint%s
+///   - Actuator%s with multiple controls (non-ScalarActuator%s).
+// TODO documentation for properties.
 class OSIMMUSCOLLO_API MucoPhase : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoPhase, Object);
 public:
     MucoPhase();
 
+    /// Set the Model whose dynamics should be used for this phase.
+    /// The model is copied into the MucoPhase; further changes made to the
+    /// passed-in model will have no effect on this MucoPhase.
     void setModel(const Model&);
+    /// Set the bounds on the initial and final time for this phase.
+    /// If you want to constrain the initial time to a single value, pass
+    /// that value to the constructor of MucoInitialBounds. If you want the
+    /// initial time to fall within a range, pass the lower and upper bounds
+    /// to the constructor of MucoInitialBounds. Likewise for MucoFinalBounds.
+    /// This will overwrite bounds that were set previously, if any.
     void setTimeBounds(const MucoInitialBounds&, const MucoFinalBounds&);
-    void setStateInfo(const std::string& name, const MucoBounds&,
-            const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set information about a single state variable in this phase.
+    /// @param name
+    ///     The name must match the path of a state variable in the
+    ///     model (e.g., `hip/flexion/value` or `hip/flexion/speed`).
+    /// @param bounds
+    ///     The bounds on this state variable over the entire phase. If
+    ///     default-constructed (`{}`), then either no bounds are applied or
+    ///     bounds are taken from the model (depending on the type of state
+    ///     variable).
+    /// @param init
+    ///     The bounds on this state variable at the start of the phase.
+    ///     By default, there are no additional bounds on the initial value
+    ///     (though the `bounds` over the entire phase still apply to the
+    ///     initial value).
+    /// @param final
+    ///     Similar to `init` but for the value at the end of the phase.
+    ///
+    /// For all bounds arguments: if you want to constrain to a single value,
+    /// pass that single value. If you want to constrain to a range, pass
+    /// the lower and upper bounds to the constructor as two arguments.
+    ///
+    /// ### Examples
+    /// Set bounds over the entire phase, but do not specify additional
+    /// bounds on the value at the start and end of the phase.
+    /// @code{.cpp}
+    /// phase.setStateInfo("knee/flexion/value", {-1.5*SimTK::Pi, 0});
+    /// @endcode
+    ///
+    /// Allow any value throughout the phase (within the coordinate's range,
+    /// if clamped), but the initial value is 5.
+    /// @code{.cpp}
+    /// phase.setStateInfo("ankle/flexion/value", {}, 5);
+    /// @endcode
+    ///
+    /// Constrain the initial and final state to a single value of 0.
+    /// @code{.cpp}
+    /// phase.setStateInfo("ankle/flexion/speed", {}, 0, 0);
+    /// @endcode
+    ///
+    /// This function will overwrite any info that has previously been set for
+    /// this state variable.
+    ///
+    /// @precondition
+    ///     The completed model must be set.
+    void setStateInfo(const std::string& name, const MucoBounds& bounds,
+            const MucoInitialBounds& init = {},
+            const MucoFinalBounds& final = {});
+    /// Set information about a single control variable in this phase.
+    /// Similar to setStateInfo(). The name for a control is the path to the
+    /// associated ScalarActuator (e.g., "soleus_r").
+    ///
+    /// @precondition
+    ///     The completed model must be set.
+    // TODO by default, use the actuator's control_min and control_max.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Add a cost term to this phase. The passed-in cost is copied, and thus
+    /// any subsequent edits have no effect.
+    /// Cost terms must have a name (MucoCost::setName()), and it must be
+    /// unique. Note that costs have the name "cost" by default, so if you
+    /// only have one cost, you don't need to set its name manually.
+    ///
+    /// @precondition
+    ///     The completed model must be set.
     void addCost(const MucoCost&);
 
     const Model& getModel() const { return get_model(); }
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
     MucoInitialBounds getTimeInitialBounds() const;
+    /// @copydoc getTimeInitialBounds()
     MucoFinalBounds getTimeFinalBounds() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
+
+    // TODO add getCost() and/or updCost().
+
+
+    /// Calculate the sum of integrand over all the integral cost terms in this
+    /// phase for the provided state. That is, the returned value is *not* an
+    /// integral over time.
     SimTK::Real calcIntegralCost(const SimTK::State& state) const;
+    /// Calculate the sum of all the endpoint cost terms in this phase.
     SimTK::Real calcEndpointCost(const SimTK::State& finalState) const;
-private:
+
+    // TODO print list of state and control names.
+    //void printDescription();
+
+protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
             "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
@@ -147,11 +274,23 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
 
+private:
     void constructProperties();
 };
 
 
-/// TODO explain phases.
+// ============================================================================
+// MucoProblem
+// ============================================================================
+
+/// A description of an optimal control problem, backed by %OpenSim Model%s.
+/// A MucoProblem is composed as follows:
+///   - 1 or more MucoPhase%s (only 1 phase supported currently).
+///      - OpenSim Model
+///      - state and control variable info (e.g., bounds)
+///      - cost terms
+/// Most problems only have 1 phase. This class has convenience methods to
+/// configure the first (0-th) phase.
 class OSIMMUSCOLLO_API MucoProblem : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoProblem, Object);
 public:
@@ -176,16 +315,26 @@ public:
     void addCost(const MucoCost&);
     /// @}
 
-    const MucoPhase& getPhase(int index) const
+    // TODO access phase by name
+
+    /// Get a modifiable phase of the problem by index (starting index of 0).
+    /// This accesses the internal phases property.
+    MucoPhase& updPhase(int index = 0)
+    {   return upd_phases(index); }
+    /// Get a modifiable phase of the problem by index (starting index of 0).
+    /// This accesses the internal phases property.
+    const MucoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
 
     // TODO
+    // TODO check that
     //void checkWellPosed();
-private:
+protected: // We'd prefer private, but protected means it shows up in Doxygen.
     // TODO OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(phases, MucoPhase, 1,
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(phases, MucoPhase, 1,
-            "List of 1 or more (TODO) MucoPhases.");
+            "List of 1 or more MucoPhases.");
 
+private:
     void constructProperties();
 };
 

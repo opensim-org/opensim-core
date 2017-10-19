@@ -29,6 +29,11 @@ MucoTool::MucoTool() {
     constructProperties();
 }
 
+MucoTool::MucoTool(const std::string& omucoFile) : Object(omucoFile) {
+    constructProperties();
+    updateFromXMLDocument();
+}
+
 void MucoTool::constructProperties() {
     constructProperty_write_solution("./");
     constructProperty_problem(MucoProblem());
