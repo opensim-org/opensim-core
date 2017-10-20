@@ -164,6 +164,11 @@ class OptimizationProblem<T>::Decorator : public OptimizationProblemDecorator {
 };
 
 /// @ingroup optimization
+/// The gradient, Jacobian, and Hessian are computed in a way that exploits
+/// sparsity, using ColPack and graph coloring algorithms [1].
+/// [1] Gebremedhin, Assefaw Hadish, Fredrik Manne, and Alex Pothen. "What color
+/// is your Jacobian? Graph coloring for computing derivatives." SIAM review
+/// 47.4 (2005): 629-705.
 template<>
 class OptimizationProblem<double>::Decorator
         : public OptimizationProblemDecorator {
@@ -200,12 +205,6 @@ public:
             unsigned num_constraints, const double* lambda,
             bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const override;
-    void calc_hessian_lagrangian_slow(unsigned num_variables,
-            const double* variables,
-            bool new_variables, double obj_factor,
-            unsigned num_constraints, const double* lambda,
-            bool new_lambda,
-            unsigned num_nonzeros, double* nonzeros) const;
 private:
 
     using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
@@ -253,6 +252,14 @@ private:
     mutable std::vector<unsigned int> m_hessian_col_indices;
     // Working memory.
     mutable Eigen::VectorXd m_constr_working;
+
+    // Deprecated.
+    void calc_hessian_lagrangian_slow(unsigned num_variables,
+            const double* variables,
+            bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda,
+            bool new_lambda,
+            unsigned num_nonzeros, double* nonzeros) const;
 };
 
 /// This specialization uses automatic differentiation (via ADOL-C) to

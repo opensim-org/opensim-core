@@ -38,12 +38,9 @@ using Eigen::VectorXd;
 // Betts 2010
 // https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19850025225.pdf
 // https://github.com/casadi/casadi/issues/1026
-//
-// Gebremedhin 2005
-// What color is your Jacobian? Graph coloring for computing derivatives
-//
+// Gebremedhin 2005 What color is your Jacobian? Graph coloring for computing
+// derivatives
 // https://cran.r-project.org/web/packages/sparseHessianFD/vignettes/sparseHessianFD.pdf
-
 // Requires a gradient:
 // Powell and Toint, ON THE ESTIMATION OF SPARSE HESSIAN MATRICES 1979
 // http://epubs.siam.org/doi/pdf/10.1137/0716078
@@ -160,15 +157,14 @@ calc_sparsity_hessian_lagrangian(
         try {
             m_problem.calc_sparsity_hessian_lagrangian(x, sparsity);
         } catch (const CalcSparsityHessianLagrangianNotImplemented& ex) {
-            throw std::runtime_error("[tropter] User requested use of "
-                    "user-supplied sparsity for the Hessian of the Lagrangian, "
-                    "but calc_sparsity_hessian_lagrangian() is not "
-                    "implemented.");
+            TROPTER_THROW("User requested use of user-supplied sparsity for "
+                "the Hessian of the Lagrangian, but "
+                "calc_sparsity_hessian_lagrangian() is not implemented.")
         }
 
-        if (sparsity.size() != num_vars) {
-            throw std::runtime_error("[tropter] Incorrect number of rows.");
-        }
+        TROPTER_THROW_IF(sparsity.size() != num_vars, "Incorrect number of "
+                "rows in sparsity (actual: %i, expected: %i)",
+                sparsity.size(), num_vars);
         for (int i = 0; i < (int)num_vars; ++i) {
             assert(sparsity[i].size() < num_vars);
         }
@@ -372,12 +368,6 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         calc_hessian_objective(x0, eps, hessian_objective);
         // TODO the hessian_objective function is giving weird non-zero
         // values for elements that should be 0.
-        std::cout << "DEBUG hessian_objective\n";
-        for (int inz = 0; inz < (int)num_hes_nonzeros; ++inz) {
-            std::cout << "(" << m_hessian_row_indices[inz] << "," <<
-                    m_hessian_col_indices[inz] << "): " <<
-                    hessian_objective[inz] << std::endl;
-        }
         hessian_values += obj_factor * hessian_objective;
     }
 
@@ -443,6 +433,12 @@ calc_hessian_objective(const VectorXd& x0, double eps,
         }
 
     }
+    //std::cout << "DEBUG hessian_objective\n";
+    //for (int inz = 0; inz < (int)hessian_values.size(); ++inz) {
+    //    std::cout << "(" << m_hessian_row_indices[inz] << "," <<
+    //            m_hessian_col_indices[inz] << "): " <<
+    //            hessian_values[inz] << std::endl;
+    //}
 }
 
 void OptimizationProblem<double>::Decorator::

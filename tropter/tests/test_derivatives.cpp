@@ -629,12 +629,12 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             auto decorator = problemd.make_decorator();
             std::vector<unsigned int> jac_row_indices, jac_col_indices,
                     hess_row_indices, hess_col_indices;
-            REQUIRE_THROWS_AS(
+            REQUIRE_THROWS_WITH(
                     decorator->calc_sparsity(
                             decorator->make_initial_guess_from_bounds(),
                             jac_row_indices, jac_col_indices,
                             hess_row_indices, hess_col_indices),
-                    std::runtime_error);
+                    Catch::Contains("requested use of user-supplied sparsity"));
         }
     }
 
