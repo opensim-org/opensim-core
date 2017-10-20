@@ -1,3 +1,18 @@
+// ----------------------------------------------------------------------------
+// tropter: test_sliding_mass_minimum_effort.cpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include <tropter/tropter.h>
 
@@ -43,7 +58,7 @@ public:
     }
 };
 
-TEST_CASE("Sliding mass with Ipopt") {
+TEST_CASE("Sliding mass with IPOPT") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
@@ -69,7 +84,7 @@ TEST_CASE("Sliding mass with Ipopt") {
     //REQUIRE(Approx(errors.norm()) == 0);
 }
 
-#if defined(MUSCOLLO_WITH_SNOPT)
+#if defined(TROPTER_WITH_SNOPT)
 TEST_CASE("Sliding mass new interface") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();

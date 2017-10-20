@@ -1,5 +1,21 @@
-#include "IpoptSolver.h"
+// ----------------------------------------------------------------------------
+// tropter: IPOPTSolver.cpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
+#include "IPOPTSolver.h"
 #include "OptimizationProblem.h"
+#include <tropter/Exception.hpp>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 using Eigen::VectorXd;
@@ -10,7 +26,7 @@ using Ipopt::Number;
 
 using namespace tropter;
 
-class IpoptSolver::TNLP : public Ipopt::TNLP {
+class IPOPTSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
@@ -102,7 +118,7 @@ private:
     // TODO what about for lagrangian??
 };
 
-double IpoptSolver::optimize_impl(VectorXd& variables) const {
+double IPOPTSolver::optimize_impl(VectorXd& variables) const {
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
@@ -115,13 +131,11 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
     }
     // TODO app->Options()->SetStringValue("derivative_test", "second-order");
     if (!m_hessian_approximation.empty()) {
-        if (m_hessian_approximation != "exact"
-                && m_hessian_approximation != "limited-memory") {
-            throw std::runtime_error("[tropter] When using Ipopt, the "
-                    "'hessian_approximation' setting must be either "
-                    "'exact' or 'limited-memory', but '" +
-                    m_hessian_approximation + "' was provided.");
-        }
+        TROPTER_THROW_IF(m_hessian_approximation != "exact"
+                && m_hessian_approximation != "limited-memory",
+                "When using Ipopt, the 'hessian_approximation' setting must be "
+                "either 'exact' or 'limited-memory', but '%s' was provided.",
+                m_hessian_approximation);
         app->Options()->SetStringValue("hessian_approximation",
                 m_hessian_approximation);
     }
@@ -147,13 +161,13 @@ double IpoptSolver::optimize_impl(VectorXd& variables) const {
         // http://llvm.org/doxygen/classllvm_1_1ErrorOr.html
         // https://akrzemi1.wordpress.com/2017/07/12/your-own-error-code/
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
-        throw std::runtime_error("[tropter] Failed to find a solution.");
+        TROPTER_THROW("Failed to find a solution.");
     }
     variables = nlp->get_solution();
     return nlp->get_optimal_objective_value();
 }
 
-IpoptSolver::TNLP::TNLP(
+IPOPTSolver::TNLP::TNLP(
         std::shared_ptr<const OptimizationProblemDecorator> problem)
         : m_problem(problem)
 {
@@ -161,7 +175,7 @@ IpoptSolver::TNLP::TNLP(
     m_num_constraints = m_problem->get_num_constraints();
 }
 
-bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
+bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
                                      Index& num_constraints,
                                      Index& num_nonzeros_jacobian,
                                      Index& num_nonzeros_hessian,
@@ -175,7 +189,7 @@ bool IpoptSolver::TNLP::get_nlp_info(Index& num_variables,
     return true;
 }
 
-void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
+void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
     // TODO all of this content should be taken care of for us by
     // OptimizationProblem.
 
@@ -197,7 +211,7 @@ void IpoptSolver::TNLP::initialize(const VectorXd& guess) {
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 
-bool IpoptSolver::TNLP::get_bounds_info(
+bool IPOPTSolver::TNLP::get_bounds_info(
         Index num_variables, Number* x_lower, Number* x_upper,
         Index num_constraints, Number* g_lower, Number* g_upper) {
     assert((unsigned)num_variables   == m_num_variables);
@@ -245,7 +259,7 @@ bool IpoptSolver::TNLP::get_bounds_info(
 
 // z: multipliers for bound constraints on x.
 // warmstart will require giving initial values for the multipliers.
-bool IpoptSolver::TNLP::get_starting_point(
+bool IPOPTSolver::TNLP::get_starting_point(
         Index num_variables, bool init_x, Number* x,
         bool init_z, Number* /*z_L*/, Number* /*z_U*/,
         Index num_constraints, bool init_lambda,
@@ -261,7 +275,7 @@ bool IpoptSolver::TNLP::get_starting_point(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_f(
+bool IPOPTSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool new_x,
         Number& obj_value) {
     assert((unsigned)num_variables == m_num_variables);
@@ -269,7 +283,7 @@ bool IpoptSolver::TNLP::eval_f(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_grad_f(
+bool IPOPTSolver::TNLP::eval_grad_f(
         Index num_variables, const Number* x, bool new_x,
         Number* grad_f) {
     assert((unsigned)num_variables == m_num_variables);
@@ -277,7 +291,7 @@ bool IpoptSolver::TNLP::eval_grad_f(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_g(
+bool IPOPTSolver::TNLP::eval_g(
         Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Number* g) {
     assert((unsigned)num_variables   == m_num_variables);
@@ -288,7 +302,7 @@ bool IpoptSolver::TNLP::eval_g(
 }
 
 // TODO can Ipopt do finite differencing for us?
-bool IpoptSolver::TNLP::eval_jac_g(
+bool IPOPTSolver::TNLP::eval_jac_g(
         Index num_variables, const Number* x, bool new_x,
         Index num_constraints, Index num_nonzeros_jacobian,
         Index* iRow, Index *jCol, Number* values) {
@@ -310,7 +324,7 @@ bool IpoptSolver::TNLP::eval_jac_g(
     return true;
 }
 
-bool IpoptSolver::TNLP::eval_h(
+bool IPOPTSolver::TNLP::eval_h(
         Index num_variables, const Number* x, bool new_x,
         Number obj_factor, Index num_constraints, const Number* lambda,
         bool new_lambda, Index num_nonzeros_hessian,
@@ -333,7 +347,7 @@ bool IpoptSolver::TNLP::eval_h(
     return true;
 }
 
-void IpoptSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
+void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
                                           Index num_variables,
                                           const Number* x,
                                           const Number* /*z_L*/, const Number* /*z_U*/,

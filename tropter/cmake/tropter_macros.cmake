@@ -6,19 +6,24 @@ include(CMakeParseArguments)
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 # We expect that the test cases use the Catch testing framework, and
 # therefore we pass some command-line flags that Catch interprets.
-function(tropter_add_test TEST_NAME LIB_DEPENDENCIES)
-    add_executable(${TEST_NAME} ${TEST_NAME}.cpp)
+function(tropter_add_test)
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs LIB_DEPENDS)
+    cmake_parse_arguments(TROPTEST
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    add_executable(${TROPTEST_NAME} ${TROPTEST_NAME}.cpp)
     # To organize targets in Visual Studio's Solution Explorer.
-    set_target_properties(${TEST_NAME} PROPERTIES FOLDER "tropter/Tests")
-    target_link_libraries(${TEST_NAME} ${LIB_DEPENDENCIES})
+    set_target_properties(${TROPTEST_NAME} PROPERTIES FOLDER "tropter/Tests")
+    target_link_libraries(${TROPTEST_NAME} tropter ${TROPTEST_LIB_DEPENDS})
     # TODO Tropter shouldn't know that it's in a larger project.
-    target_include_directories(${TEST_NAME}
+    target_include_directories(${TROPTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
-    if(MUSCOLLO_WITH_SNOPT)
-        target_compile_definitions(${TEST_NAME} PRIVATE MUSCOLLO_WITH_SNOPT)
+    if(TROPTER_WITH_SNOPT)
+        target_compile_definitions(${TROPTEST_NAME} PRIVATE TROPTER_WITH_SNOPT)
     endif()
-    add_test(NAME ${TEST_NAME}
-             COMMAND ${TEST_NAME} --use-colour yes --durations yes)
+    add_test(NAME ${TROPTEST_NAME}
+             COMMAND ${TROPTEST_NAME} --use-colour yes --durations yes)
     #if(WIN32) # Instead, we are copying dependencies' DLLs into Tropter.
     #    set_property(TEST ${TEST_NAME} APPEND PROPERTY
     #        ENVIRONMENT "PATH=${IPOPT_DIR}/bin\;${ADOLC_DIR}/bin")

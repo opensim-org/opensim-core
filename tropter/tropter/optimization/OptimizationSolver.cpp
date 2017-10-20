@@ -1,6 +1,23 @@
+// ----------------------------------------------------------------------------
+// tropter: OptimizationSolver.cpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include "OptimizationSolver.h"
 #include "OptimizationProblem.h"
+
+#include <tropter/Exception.hpp>
 
 using Eigen::VectorXd;
 
@@ -16,11 +33,9 @@ int OptimizationSolver::get_max_iterations() const
 }
 void OptimizationSolver::set_max_iterations(int max_iterations)
 {
-    if (max_iterations < 0 && max_iterations != -1) {
-        throw std::runtime_error("[tropter] max iterations is set to " +
-                std::to_string(max_iterations) + ", but expected a "
-                "positive number or -1.");
-    }
+    TROPTER_VALUECHECK(max_iterations > 0 || max_iterations == -1,
+            "max_iterations", max_iterations, "positive or -1");
+
     m_max_iterations = max_iterations;
 }
 

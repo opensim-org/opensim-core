@@ -1,9 +1,30 @@
+// ----------------------------------------------------------------------------
+// tropter: OptimizationProblemDecorator_double.cpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 #include "OptimizationProblem.h"
+<<<<<<< HEAD
 #include "internal/GraphColoring.h"
 
 #include <Eigen/SparseCore>
 
 #include <iomanip>
+=======
+#include <tropter/Exception.hpp>
+
+#include <ColPack/ColPackHeaders.h>
+>>>>>>> 38c73ad7de80a67023d38c5029f3dba14af4af57
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
 //    // TODO only include ifdef _OPENMP
@@ -251,7 +272,7 @@ calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 
     // Compute the dense "compressed Jacobian" using the directions ColPack
     // told us to use.
-    // TODO for OpenMP: LowOrder has working memory!
+    // TODO for OpenMP: Trapezoidal has working memory!
     //#pragma omp parallel for firstprivate(m_constr_pos, m_constr_neg)
     for (Eigen::Index iseed = 0; iseed < num_seeds; ++iseed) {
         const auto direction = seed.col(iseed);
@@ -493,10 +514,9 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x,
 
     }
     // TODO
-//    std::string msg =
-//            "[tropter] Hessian not available with finite differences.";
-//    std::cerr << msg << std::endl;
-//    throw std::runtime_error(msg);
+    //std::string msg = "Hessian not available with finite differences.";
+    //std::cerr << msg << std::endl;
+    //TROPTER_THROW(msg);
 }
 
 void OptimizationProblem<double>::Decorator::

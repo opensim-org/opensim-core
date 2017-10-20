@@ -1,5 +1,22 @@
 #ifndef MUSCOLLO_INDYGO_H
 #define MUSCOLLO_INDYGO_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: INDYGO.h                                                 *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "InverseMuscleSolver.h"
 
@@ -111,7 +128,7 @@ namespace OpenSim {
 ///
 /// [3] Raasch, Christine C., et al. "Muscle coordination of maximum-speed
 /// pedaling." Journal of biomechanics 30.6 (1997): 595-602.
-class INDYGO : public InverseMuscleSolver {
+class OSIMMUSCOLLO_API INDYGO : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(INDYGO, InverseMuscleSolver);
 public:
 
@@ -150,7 +167,7 @@ public:
         "The implicit mode may be up to 2 times faster. "
         "Default: 'explicit'.");
 
-    struct Solution {
+    struct OSIMMUSCOLLO_API Solution {
         /// The excitation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable excitation;

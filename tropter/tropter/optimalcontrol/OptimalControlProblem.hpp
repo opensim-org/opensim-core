@@ -1,10 +1,35 @@
 #ifndef TROPTER_OPTIMALCONTROLPROBLEM_HPP
 #define TROPTER_OPTIMALCONTROLPROBLEM_HPP
+// ----------------------------------------------------------------------------
+// tropter: OptimalControlProblem.hpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include "OptimalControlProblem.h"
 
+#include <tropter/Exception.hpp>
+
 namespace tropter {
 
+Bounds::Bounds(double lower_bound, double upper_bound) {
+    TROPTER_THROW_IF(!std::isnan(lower_bound) && !std::isnan(upper_bound)
+            && lower_bound > upper_bound,
+            "Expected lower <= upper, but lower=%g, upper=%g.",
+            lower_bound, upper_bound);
+    lower = lower_bound;
+    upper = upper_bound;
+}
 
 template<typename T>
 void OptimalControlProblem<T>::print_description() const {
@@ -78,23 +103,18 @@ set_state_guess(OptimalControlIterate& guess,
         const std::string& name,
         const Eigen::VectorXd& value) {
     // Check for errors.
-    if (guess.time.size() == 0) {
-        throw std::runtime_error("[tropter] guess.time is empty.");
-    }
-    if (value.size() != guess.time.size()) {
-        throw std::runtime_error("[tropter] Expected value to have " +
-                std::to_string(guess.time.size()) + " elements, but it has"
-                " " + std::to_string(value.size()) + ".");
-    }
+    TROPTER_THROW_IF(guess.time.size() == 0, "guess.time is empty.");
+    TROPTER_THROW_IF(value.size() != guess.time.size(),
+            "Expected value to have %i elements, but it has %i elements.",
+            guess.time.size(), value.size());
     if (guess.states.rows() == 0) {
         guess.states.resize(m_state_infos.size(), guess.time.size());
     } else if (size_t(guess.states.rows()) != m_state_infos.size() ||
             guess.states.cols() != guess.time.size()) {
-        throw std::runtime_error("[tropter] Expected guess.states to have "
-                "dimensions " + std::to_string(m_state_infos.size()) + " x "
-                + std::to_string(guess.time.size()) + ", but dimensions are "
-                + std::to_string(guess.states.rows()) + " x "
-                + std::to_string(guess.states.cols()) + ".");
+        TROPTER_THROW("Expected guess.states to have dimensions %i x %i "
+                "but dimensions are %i x %i.",
+                m_state_infos.size(), guess.time.size(), guess.states.rows(),
+                guess.states.cols());
     }
 
     // Find the state index.
@@ -104,10 +124,8 @@ set_state_guess(OptimalControlIterate& guess,
         if (info.name == name) break;
         state_index++;
     }
-    if (state_index == m_state_infos.size()) {
-        throw std::runtime_error(
-                "[tropter] State " + name + " does not exist.");
-    }
+    TROPTER_THROW_IF(state_index == m_state_infos.size(),
+            "State '%s' does not exist.", name);
 
     // Set the guess.
     guess.states.row(state_index) = value;
@@ -120,24 +138,19 @@ set_control_guess(OptimalControlIterate& guess,
         const Eigen::VectorXd& value)
 {
     // Check for errors.
-    if (guess.time.size() == 0) {
-        throw std::runtime_error("[tropter] guess.time is empty.");
-    }
-    if (value.size() != guess.time.size()) {
-        throw std::runtime_error("[tropter] Expected value to have " +
-                std::to_string(guess.time.size()) + " elements, but it has"
-                " " + std::to_string(value.size()) + ".");
-    }
+    TROPTER_THROW_IF(guess.time.size() == 0, "guess.time is empty.");
+    TROPTER_THROW_IF(value.size() != guess.time.size(),
+            "Expected value to have %i elements, but it has %i elements.",
+            guess.time.size(), value.size());
     if (guess.controls.rows() == 0) {
         guess.controls.resize(m_control_infos.size(), guess.time.size());
     }
     else if (size_t(guess.controls.rows()) != m_control_infos.size() ||
             guess.controls.cols() != guess.time.size()) {
-        throw std::runtime_error("[tropter] Expected guess.controls to have "
-                "dimensions " + std::to_string(m_control_infos.size()) + " x "
-                + std::to_string(guess.time.size()) + ", but dimensions are "
-                + std::to_string(guess.controls.rows()) + " x "
-                + std::to_string(guess.controls.cols()) + ".");
+        TROPTER_THROW("Expected guess.controls to have dimensions %i x %i "
+                "but dimensions are %i x %i.",
+                m_control_infos.size(), guess.time.size(),
+                guess.controls.rows(), guess.controls.cols());
     }
     // Find the control index.
     size_t control_index = 0;
@@ -146,10 +159,8 @@ set_control_guess(OptimalControlIterate& guess,
         if (info.name == name) break;
         control_index++;
     }
-    if (control_index == m_control_infos.size()) {
-        throw std::runtime_error(
-                "[tropter] Control " + name + " does not exist.");
-    }
+    TROPTER_THROW_IF(control_index == m_control_infos.size(),
+                "Control '%s' does not exist.", name);
 
     // Set the guess.
     guess.controls.row(control_index) = value;

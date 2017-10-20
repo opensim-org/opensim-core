@@ -18,7 +18,7 @@ if (${SNOPT_LIBRARY} STREQUAL "SNOPT_LIBRARY-NOTFOUND")
 else()
     message(STATUS "SNOPT library located at ${SNOPT_LIBRARY}")
 
-    add_library(snopt7_cpp
+    add_library(snopt7_cpp SHARED
         include/snopt.h
         include/snopt_cwrap.h src/snopt_cwrap.c
         include/snoptProblem.hpp src/snoptProblem.cpp
@@ -32,5 +32,10 @@ else()
             INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
     target_link_libraries(snopt7_cpp ${SNOPT_LIBRARY})
+
+    install(TARGETS snopt7_cpp EXPORT tropter-config
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 endif()

@@ -8,7 +8,7 @@ function(MuscolloAddTest)
     set(multiValueArgs LIB_DEPENDS RESOURCES)
     cmake_parse_arguments(MUCOTEST
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    add_executable(${MUCOTEST_NAME} ${MUCOTEST_NAME}.cpp testing.h)
+    add_executable(${MUCOTEST_NAME} ${MUCOTEST_NAME}.cpp Testing.h)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MUCOTEST_NAME} PROPERTIES FOLDER "Muscollo/Tests")
     target_link_libraries(${MUCOTEST_NAME} osimMuscollo ${MUCOTEST_LIB_DEPENDS})
@@ -19,6 +19,8 @@ function(MuscolloAddTest)
     #endif()
     file(COPY ${MUCOTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
+
+MuscolloAddTest(NAME testMuscolloInterface)
 
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 

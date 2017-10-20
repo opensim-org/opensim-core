@@ -1,14 +1,35 @@
 #ifndef MUSCOLLO_INVERSEMUSCLESOLVER_H
 #define MUSCOLLO_INVERSEMUSCLESOLVER_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: InverseMuscleSolver.h                                    *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 
 #include <SimTKcommon/internal/ResetOnCopy.h>
 
-namespace OpenSim {
+// TODO make this a forward declaration (ran into issues with unique_ptr's
+// destructor).
+#include <OpenSim/Simulation/Model/Model.h>
 
-class Model;
+#include "../osimMuscolloDLL.h"
+
+namespace OpenSim {
 
 /// This is a base class for methods that solve for muscle activity for a
 /// known motion (kinematics) using direct collocation.
@@ -69,7 +90,7 @@ class Model;
 /// If you need to customize the reserve actuators more than is possible via
 /// `create_reserve_actuators`, you can create your own and add them to your
 /// model.
-class InverseMuscleSolver : public OpenSim::Object {
+class OSIMMUSCOLLO_API InverseMuscleSolver : public OpenSim::Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(InverseMuscleSolver, Object);
 public:
 
@@ -143,6 +164,8 @@ public:
     InverseMuscleSolver();
 
     explicit InverseMuscleSolver(const std::string& setupFilePath);
+
+    virtual ~InverseMuscleSolver();
 
     /// Set the model to use. If you set a model this way, make sure to set
     /// the model_file property to an empty string

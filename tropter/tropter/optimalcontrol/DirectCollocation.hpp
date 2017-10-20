@@ -1,13 +1,28 @@
 #ifndef TROPTER_DIRECTCOLLOCATION_HPP
 #define TROPTER_DIRECTCOLLOCATION_HPP
+// ----------------------------------------------------------------------------
+// tropter: DirectCollocation.hpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include "DirectCollocation.h"
 #include "OptimalControlProblem.h"
 #include <tropter/optimization/OptimizationSolver.h>
 #include <tropter/optimization/SNOPTSolver.h>
-#include <tropter/optimization/IpoptSolver.h>
+#include <tropter/optimization/IPOPTSolver.h>
 
-// TODO #include <fmt/format.h>
+#include <tropter/Exception.hpp>
 
 #include <iomanip>
 
@@ -26,25 +41,23 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     std::transform(transcrip_lower.begin(), transcrip_lower.end(),
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
-        m_transcription.reset(new transcription::LowOrder<T>(ocproblem,
+        m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
                                                              num_mesh_points));
     } else {
-        throw std::runtime_error("Unrecognized transcription method '" +
-                transcrip + "'.");
+        TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }
 
     std::string optsolver_lower = optsolver;
     std::transform(optsolver_lower.begin(), optsolver_lower.end(),
             optsolver_lower.begin(), ::tolower);
     if (optsolver_lower == "ipopt") {
-        // TODO this may not be good for IpoptSolver; IpoptSolver should
+        // TODO this may not be good for IPOPTSolver; IPOPTSolver should
         // have a shared_ptr??
-        m_optsolver.reset(new IpoptSolver(*m_transcription.get()));
+        m_optsolver.reset(new IPOPTSolver(*m_transcription.get()));
     } else if (optsolver_lower == "snopt") {
         m_optsolver.reset(new SNOPTSolver(*m_transcription.get()));
     } else {
-        throw std::runtime_error("Unrecognized optimization solver '" +
-                optsolver + "'.");
+        TROPTER_THROW("Unrecognized optimization solver %s.", optsolver);
     }
 }
 
@@ -88,7 +101,7 @@ void DirectCollocationSolver<T>::print_constraint_values(
 namespace transcription {
 
 template<typename T>
-void LowOrder<T>::set_ocproblem(
+void Trapezoidal<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
     m_num_states = m_ocproblem->get_num_states();
@@ -209,7 +222,7 @@ void LowOrder<T>::set_ocproblem(
 }
 
 template<typename T>
-void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
+void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
 {
     // TODO move this to a "make_variables_view()"
     const T& initial_time = x[0];
@@ -255,7 +268,7 @@ void LowOrder<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
 }
 
 template<typename T>
-void LowOrder<T>::calc_constraints(const VectorX<T>& x,
+void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         Eigen::Ref<VectorX<T>> constraints) const
 {
     // TODO parallelize.
@@ -324,53 +337,37 @@ void LowOrder<T>::calc_constraints(const VectorX<T>& x,
 }
 
 template<typename T>
-Eigen::VectorXd LowOrder<T>::
+Eigen::VectorXd Trapezoidal<T>::
 construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 {
     // Check for errors with dimensions.
     // ---------------------------------
     // TODO move some of this to OptimalControlIterate::validate().
     // Check rows.
-    if (traj.states.rows() != m_num_states) {
-        //throw std::runtime_error(fmt::format("[tropter] Expected states to "
-        //        "have {} rows, but it has {} rows.", m_num_states, traj
-        //        .states.rows()));
-        throw std::runtime_error("[tropter] Expected states to have " +
-                std::to_string(m_num_states) + " rows, but it has " +
-                std::to_string(traj.states.rows()) + " rows.");
-    }
-    if (traj.controls.rows() != m_num_controls) {
-        throw std::runtime_error("[tropter] Expected controls to have " +
-                std::to_string(m_num_controls) + " rows, but it has " +
-                std::to_string(traj.controls.rows()) + " rows.");
-    }
+    TROPTER_THROW_IF(traj.states.rows() != m_num_states,
+            "Expected states to have %i row(s), but it has %i.",
+            m_num_states, traj.states.rows());
+    TROPTER_THROW_IF(traj.controls.rows() != m_num_controls,
+            "Expected controls to have %i row(s), but it has %i.",
+            m_num_controls, traj.controls.rows());
     // Check columns.
     if (interpolate) {
-        if (       traj.time.size() != traj.states.cols()
-                || traj.time.size() != traj.controls.cols()) {
-            throw std::runtime_error("[tropter] Expected time, states, and "
-                    "controls to have the same number of columns (they have " +
-                    std::to_string(traj.time.size()) + ", " +
-                    std::to_string(traj.states.cols()) + ", " +
-                    std::to_string(traj.controls.cols()) +
-                    " columns, respectively).");
-        }
+        TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
+                         || traj.time.size() != traj.controls.cols(),
+                "Expected time, states, and controls to have the same number "
+                "of columns (they have %i, %i, %i column(s), "
+                "respectively).", traj.time.size(), traj.states.cols(),
+                traj.controls.size());
     } else {
-        if (traj.time.size() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected time to have " +
-                    std::to_string(m_num_mesh_points) + " elements, but it has "
-                    + std::to_string(traj.time.size()) + " elements.");
-        }
-        if (traj.states.cols() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected states to have " +
-                    std::to_string(m_num_mesh_points) + " columns, but it has "
-                    + std::to_string(traj.states.cols()) + " columns.");
-        }
-        if (traj.controls.cols() != m_num_mesh_points) {
-            throw std::runtime_error("[tropter] Expected controls to have " +
-                    std::to_string(m_num_mesh_points) + " columns, but it has "
-                    + std::to_string(traj.controls.cols()) + " columns.");
-        }
+        TROPTER_THROW_IF(traj.time.size() != m_num_mesh_points,
+                "Expected time to have %i element(s), but it has %i.",
+                m_num_mesh_points, traj.time.size());
+        TROPTER_THROW_IF(traj.states.cols() != m_num_mesh_points,
+                "Expected states to have %i column(s), but it has %i.",
+                m_num_mesh_points, traj.states.cols());
+        TROPTER_THROW_IF(traj.controls.cols() != m_num_mesh_points,
+                "Expected controls to have %i column(s), but it has %i.",
+                m_num_mesh_points, traj.controls.cols());
     }
 
     // Interpolate the guess, as it might have a different number of mesh
@@ -398,7 +395,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 }
 
 template<typename T>
-OptimalControlIterate LowOrder<T>::
+OptimalControlIterate Trapezoidal<T>::
 deconstruct_iterate(const Eigen::VectorXd& x) const
 {
     const double& initial_time = x[0];
@@ -417,7 +414,7 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
 }
 
 template<typename T>
-void LowOrder<T>::
+void Trapezoidal<T>::
 print_constraint_values(const OptimalControlIterate& ocp_vars,
                         std::ostream& stream) const
 {
@@ -575,8 +572,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryViewConst<S>
-LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryViewConst<S>
+Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
@@ -589,8 +586,8 @@ LowOrder<T>::make_states_trajectory_view(const VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryViewConst<S>
-LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryViewConst<S>
+Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Start of controls for first tropter interval.
@@ -604,8 +601,8 @@ LowOrder<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 // TODO avoid the duplication with the above.
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
-LowOrder<T>::make_states_trajectory_view(VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryView<S>
+Trapezoidal<T>::make_states_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
@@ -618,8 +615,8 @@ LowOrder<T>::make_states_trajectory_view(VectorX<S>& x) const
 
 template<typename T>
 template<typename S>
-typename LowOrder<T>::template TrajectoryView<S>
-LowOrder<T>::make_controls_trajectory_view(VectorX<S>& x) const
+typename Trapezoidal<T>::template TrajectoryView<S>
+Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Start of controls for first tropter interval.
@@ -631,8 +628,8 @@ LowOrder<T>::make_controls_trajectory_view(VectorX<S>& x) const
 }
 
 template<typename T>
-typename LowOrder<T>::ConstraintsView
-LowOrder<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
+typename Trapezoidal<T>::ConstraintsView
+Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
     const unsigned is = 0;                               // initial states.

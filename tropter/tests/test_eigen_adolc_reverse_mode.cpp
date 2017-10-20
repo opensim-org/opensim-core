@@ -1,3 +1,19 @@
+// ----------------------------------------------------------------------------
+// tropter: test_eigen_adolc_reverse_mode.cpp
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
+
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
@@ -254,12 +270,8 @@ double IpoptSolver::optimize(Ref<VectorXd> variables) const {
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
-    //TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded, Exception,
-    //        "Error during initialization");
-    if (status != Ipopt::Solve_Succeeded) {
-        std::cerr << "Error during initialization" << std::endl;
-        // TODO throw exception.
-    }
+    TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded, Exception,
+            "Error during initialization");
 
     // Optimize!!!
     // -----------

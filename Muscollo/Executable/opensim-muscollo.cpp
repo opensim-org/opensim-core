@@ -1,42 +1,105 @@
 #include <iostream>
-#include "GlobalStaticOptimization.h"
-#include "INDYGO.h"
+#include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include <Muscollo/InverseMuscleSolver/INDYGO.h>
+#include <Muscollo/MucoTool.h>
+#include <Muscollo/MucoProblem.h>
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 
-// TODO
-//const std::string helpMessage =
-//R("OpenSim Inverse Muscle Solvers (Global Static Optimization and Muscle "
-//        "Redundancy Solver");
+static const char helpMessage[] =
+R"(OpenSim Muscollo. Use this command to run a setup file for the following:
+  - Global Static Optimization,
+  - INDYGO: Inverse, Dynamic, Global Optimization (tracking),
+  - MucoTool: flexible optimal control framework (.omuco file).
+
+Usage:
+  opensim-muscollo -h | --help
+
+    Print this help message.
+
+  opensim-muscollo run-tool <setup-file>
+
+    Run the tool specified in the provided setup file.
+
+  opensim-muscollo print-xml <tool>
+
+    Print a template XML file for the provided tool.
+    <tool> can be "GlobalStaticOptimization", "INDYGO", or "MucoTool"
+)";
+
 int main(int argc, char* argv[]) {
 
     try {
-        OPENSIM_THROW_IF(argc != 2, Exception,
-            "opensim-muscollo requires exactly 1 argument (path to setup file)"
-                    ".");
 
-        Object::registerType(GlobalStaticOptimization());
-        Object::registerType(INDYGO());
+        if (argc == 1) {
+            std::cout << helpMessage << std::endl;
+            return EXIT_SUCCESS;
+        }
 
-        const std::string setupFile(argv[1]);
-        auto obj = std::unique_ptr<Object>(Object::makeObjectFromFile(setupFile));
+        std::string arg1(argv[1]);
+        if (arg1 == "-h" || arg1 == "--help") {
+            std::cout << helpMessage << std::endl;
+            return EXIT_SUCCESS;
+        }
 
-        OPENSIM_THROW_IF(obj == nullptr, Exception,
-            "A problem occurred when trying to load file '" + setupFile + "'.");
+        if (arg1 == "print-xml") {
+            OPENSIM_THROW_IF(argc != 3, Exception,
+                    "Incorrect number of arguments.");
 
-        if (const auto* gso =
-                dynamic_cast<const GlobalStaticOptimization*>(obj.get()))
-        {
-            auto solution = gso->solve();
-        } else if (const auto* mrs =
-                dynamic_cast<const INDYGO*>(obj.get())) {
-            auto solution = mrs->solve();
+            std::string className(argv[2]);
+            if (className != "GlobalStaticOptimization" &&
+                    className != "INDYGO" && className != "MucoTool") {
+                throw Exception("Unexpected argument: " + className);
+            }
+            const auto* obj = Object::getDefaultInstanceOfType(argv[2]);
+            if (!obj) {
+                throw Exception("Cannot create an instance of " + className +
+                        ".");
+            }
+            std::string fileName = "default_" + className;
+            if (className == "MucoTool") fileName += ".omuco";
+            else fileName += ".xml";
+            std::cout << "Printing '" << fileName << "'." << std::endl;
+            Object::setSerializeAllDefaults(true);
+            obj->print(fileName);
+            Object::setSerializeAllDefaults(false);
+
+        } else if (arg1 == "run-tool") {
+            OPENSIM_THROW_IF(argc != 3, Exception,
+                    "Incorrect number of arguments.");
+
+            const std::string setupFile(argv[2]);
+            auto obj = std::unique_ptr<Object>(
+                    Object::makeObjectFromFile(setupFile));
+
+            OPENSIM_THROW_IF(obj == nullptr, Exception,
+                    "A problem occurred when trying to load file '" + setupFile
+                            + "'.");
+
+            if (const auto* gso =
+                    dynamic_cast<const GlobalStaticOptimization*>(obj.get())) {
+                auto solution = gso->solve();
+            }
+            else if (const auto* mrs =
+                    dynamic_cast<const INDYGO*>(obj.get())) {
+                auto solution = mrs->solve();
+            }
+            else if (const auto* muco
+                    = dynamic_cast<const MucoTool*>(obj.get())) {
+                auto solution = muco->solve();
+            }
+            else {
+                throw Exception("The provided file '" + setupFile +
+                        "' yields a '" + obj->getConcreteClassName() +
+                        "' but only GlobalStaticOptimization, INDYGO, and "
+                        "MucoTool are acceptable.");
+            }
         } else {
-            throw Exception("The provided file '" + setupFile + "' does not "
-                    "define an InverseMuscleSolver.");
+            std::cout << "Unrecognized arguments. See usage with -h or --help"
+                    "." << std::endl;
         }
 
     } catch (const std::exception& exc) {

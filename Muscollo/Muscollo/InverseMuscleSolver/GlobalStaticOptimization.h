@@ -1,5 +1,22 @@
 #ifndef MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
 #define MUSCOLLO_GLOBALSTATICOPTIMIZATION_H
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: GlobalStaticOptimization.h                               *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "InverseMuscleSolver.h"
 
@@ -9,13 +26,13 @@ namespace OpenSim {
 
 // TODO document
 // TODO example usage.
-class GlobalStaticOptimization : public InverseMuscleSolver {
+class OSIMMUSCOLLO_API GlobalStaticOptimization : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(GlobalStaticOptimization,
             InverseMuscleSolver);
 public:
 
     // TODO rename to Iterate?
-    struct Solution {
+    struct OSIMMUSCOLLO_API Solution {
         /// The activation trajectories for all enabled (appliesForce) muscles.
         /// This will be empty if there are no enabled muscles.
         TimeSeriesTable activation;

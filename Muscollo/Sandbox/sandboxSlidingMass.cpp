@@ -1,3 +1,20 @@
+/* -------------------------------------------------------------------------- *
+ * OpenSim Muscollo: sandboxSlidingMass.cpp                                   *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
@@ -7,20 +24,20 @@ using tropter::VectorX;
 
 namespace OpenSim {
 
-class MucoContinuousVariableInfo : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoContinuousVariableInfo, Object);
+class MucoVariableInfo : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoVariableInfo, Object);
 public:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(initial_bounds, double, 2, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(final_bounds, double, 2, "TODO");
-    MucoContinuousVariableInfo() {
+    MucoVariableInfo() {
         constructProperties();
     }
-    MucoContinuousVariableInfo(const std::string& name,
+    MucoVariableInfo(const std::string& name,
             const tropter::Bounds& bounds,
             const tropter::InitialBounds& initialBounds = {},
-            const tropter::InitialBounds& finalBounds = {})
-            : MucoContinuousVariableInfo() {
+            const tropter::FinalBounds& finalBounds = {})
+            : MucoVariableInfo() {
         setName(name);
         if (bounds.is_set()) {
             append_bounds(bounds.lower);
@@ -244,14 +261,14 @@ public:
         return final;
     }
 
-    const MucoContinuousVariableInfo& getStateInfo(
+    const MucoVariableInfo& getStateInfo(
             const std::string& name) const {
         int idx = getProperty_state_info().findIndexForName(name);
         OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
                 "No info provided for state '" + name + "'.");
         return get_state_info(idx);
     }
-    const MucoContinuousVariableInfo& getControlInfo(
+    const MucoVariableInfo& getControlInfo(
             const std::string& name) const {
         int idx = getProperty_control_info().findIndexForName(name);
         OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
@@ -352,6 +369,7 @@ public:
         m_controls.resize(numTimes, m_controls.ncol());
     }
     void setTime(SimTK::Vector time) {
+        // TODO I don't think SimTK::Vector has a mov
         OPENSIM_THROW_IF(time.size() != m_time.size(), Exception,
                 "Expected " + std::to_string(m_time.size()) +
                 " times but got " + std::to_string(time.size()) + ".");
@@ -662,7 +680,6 @@ MucoIterate MucoSolver::solve() const {
 
     return {tropterSolution};
 }
-
 } // namespace OpenSim
 
 using namespace OpenSim;

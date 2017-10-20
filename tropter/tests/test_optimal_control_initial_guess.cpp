@@ -1,3 +1,18 @@
+// ----------------------------------------------------------------------------
+// tropter: test_optimal_control_initial_guess
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
@@ -125,10 +140,10 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     // Wrong state name.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "H", RowVectorXd::Zero(N)),
-                        Contains("State H does not exist"));
+                        Contains("State 'H' does not exist"));
     REQUIRE_THROWS_WITH(
             ocp->set_control_guess(guess, "H", RowVectorXd::Zero(N)),
-            Contains("Control H does not exist"));
+            Contains("Control 'H' does not exist"));
 
     guess.states.resize(10, N - 1);
     guess.controls.resize(9, N - 2);
@@ -147,30 +162,30 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 5, "
-                    "15, 15 columns, respectively)."));
+                    "15, 15 column(s), respectively)."));
 
     guess.time.resize(N);        // correct.
     guess.states.resize(6, N);   // incorrect.
     guess.controls.resize(1, N); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected states to have 2 rows, but it has 6 rows."));
+            Contains("Expected states to have 2 row(s), but it has 6."));
 
     guess.states.resize(2, N + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 15, "
-                    "16, 15 columns, respectively)."));
+                    "16, 15 column(s), respectively)."));
 
     guess.states.resize(2, N);   // correct.
     guess.controls.resize(4, N); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected controls to have 1 rows, but it has 4 rows."));
+            Contains("Expected controls to have 1 row(s), but it has 4."));
 
     guess.controls.resize(1, N - 3); // incorrect
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 15, "
-                    "15, 12 columns, respectively)."));
+                    "15, 12 column(s), respectively)."));
 }
 
 

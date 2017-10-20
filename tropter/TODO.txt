@@ -5,7 +5,7 @@ Nocedal's book says to use partial separability for auto diff, and also that
 you can get benefits by evalulating the objective and constraints at the same
 time, in case they share a lot of the computaitonal graph.
 
-Move ADOL-C code from IpoptSolver::TNLP to OptimizationProblem<adouble>.
+Move ADOL-C code from IPOPTSolver::TNLP to OptimizationProblem<adouble>.
 
 Trying non-virtual interface for OptimizationProblem, but a Decorator class could
  be preferable.
