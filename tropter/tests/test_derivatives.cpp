@@ -456,6 +456,13 @@ public:
 
         assert(sparsity.size() == 4);
 
+        // TODO
+        /*
+        const int num_vars = (int)this->get_num_variables();
+        for (int i = 0; i < num_vars; ++i) {
+            sparsity[i].push_back(i);
+        }
+         */
         // Treat the Hessian as dense but with a zero at (0, 3) (conservative
         // estimate) so that we can detect that this function is called.
         const int num_vars = (int)this->get_num_variables();
@@ -487,7 +494,8 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
     lambda << 0.5, 1.5, 2.5, 3.0, 0.19;
     problem.analytical_hessian_lagrangian(x, obj_factor, lambda,
             analytical_hessian);
-
+    std::cout << "DEBUG analytical_hessian\n" << analytical_hessian <<
+            std::endl;
     std::vector<unsigned int> expected_jac_row_indices{0, 1, 1, 2, 2, 3, 3, 4};
     std::vector<unsigned int> expected_jac_col_indices{0, 0, 1, 1, 2, 2, 3, 3};
 
@@ -522,6 +530,16 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                           2, 3,
                              3
             };
+            /*
+            std::vector<unsigned int> expected_hess_row_indices{
+                    0, 1, 2, 3
+            };
+            std::vector<unsigned int> expected_hess_col_indices{
+                    0, 1, 2, 3
+            };
+            */
+
+            // TODO elements that should be 0 are not coming out as exactly 0.
             REQUIRE(hess_row_indices == expected_hess_row_indices);
             REQUIRE(hess_col_indices == expected_hess_col_indices);
 
@@ -533,11 +551,14 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     problemd.get_num_variables(), x.data(), false, obj_factor,
                     problem.get_num_constraints(), lambda.data(), false,
                     num_hessian_nonzeros, actual_hessian_values.data());
+            CAPTURE(analytical_hessian);
+            CAPTURE(actual_hessian_values);
             for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
                 const auto& i = hess_row_indices[inz];
                 const auto& j = hess_col_indices[inz];
+                INFO(inz << " (" << i << " " << j << ")");
                 REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-9));
+                        Approx(actual_hessian_values[inz]).epsilon(1e-7));
             }
         }
         {
@@ -545,7 +566,9 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             // If user does not supply sparsity, then the Hessian is assumed
             // to be dense.
             SparseJacUserSpecifiedSparsity<double> problemd;
+            // *** KEY DIFFERENCE IN THIS TEST ***
             problemd.set_use_supplied_sparsity_hessian_lagrangian(false);
+            // ^^^ KEY DIFFERENCE IN THIS TEST ^^^
             auto decorator = problemd.make_decorator();
             std::vector<unsigned int> jac_row_indices, jac_col_indices,
                     hess_row_indices, hess_col_indices;
@@ -580,7 +603,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 const auto& i = hess_row_indices[inz];
                 const auto& j = hess_col_indices[inz];
                 REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-9));
+                        Approx(actual_hessian_values[inz]).epsilon(1e-7));
             }
         }
         {

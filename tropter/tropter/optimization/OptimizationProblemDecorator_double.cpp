@@ -1,6 +1,8 @@
 #include "OptimizationProblem.h"
 #include "internal/GraphColoring.h"
 
+#include <Eigen/SparseCore>
+
 #include <iomanip>
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
@@ -122,10 +124,9 @@ calc_sparsity(const Eigen::VectorXd& x,
             new HessianColoring(num_vars, hessian_sparsity));
     m_hessian_coloring->get_coordinate_format(
             hessian_row_indices, hessian_col_indices);
-    // TODO
-//    int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
-//    std::cout << "[tropter] Number of finite difference perturbations required "
-//            "for sparse Hessian: " << num_hessian_seeds << std::endl;
+    int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
+    std::cout << "[tropter] Number of finite difference perturbations required "
+            "for sparse Hessian: " << num_hessian_seeds << std::endl;
     m_hessian_row_indices = hessian_row_indices;
     m_hessian_col_indices = hessian_col_indices;
 
@@ -163,7 +164,7 @@ calc_sparsity_hessian_lagrangian(
         // ColPack will give us.
         // TODO make sure there are no duplicates.
     } else {
-        // Dense upper triangle.
+        // Dense upper triangle. TODO ColPack wants full sparsity
         for (int i = 0; i < (int)num_vars; ++i) {
             for (int j = i; j < (int)num_vars; ++j) {
                 sparsity[i].push_back(j);
@@ -267,7 +268,172 @@ calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 }
 
 void OptimizationProblem<double>::Decorator::
-calc_hessian_lagrangian(unsigned num_variables, const double* x,
+calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
+        bool /*new_x*/, double obj_factor,
+        unsigned num_constraints, const double* lambda_raw,
+        bool /*new_lambda */,
+        unsigned num_hes_nonzeros, double* hessian_values_raw) const {
+    // Bomhe book has guidelines for step size.
+    const double eps = 1e-3; // TODO
+    const double eps_squared = eps * eps;
+    // TODO m_x_working = Eigen::Map<const VectorXd>(xraw, num_variables);
+    Eigen::Map<const VectorXd> x0(x_raw, num_variables);
+
+    Eigen::Map<const VectorXd> lambda(lambda_raw, num_constraints);
+
+    // TODO improve variable names.
+
+    // TODO reuse perturbations between the Jacobian and Hessian calculations.
+
+    // Compute the unperturbed
+    VectorXd p1 = VectorXd::Zero(num_constraints);
+    m_problem.calc_constraints(x0, p1);
+
+    const auto& hes_seed = m_hessian_coloring->get_seed_matrix();
+    const Eigen::Index num_hes_seeds = hes_seed.cols();
+
+    const auto& jac_seed = m_jacobian_coloring->get_seed_matrix();
+    const Eigen::Index num_jac_seeds = jac_seed.cols();
+    // TODO don't really want these here.
+    std::vector<unsigned int> jac_row_indices;
+    std::vector<unsigned int> jac_col_indices;
+    m_jacobian_coloring->get_coordinate_format(
+            jac_row_indices, jac_col_indices);
+    int num_jac_nonzeros = m_jacobian_coloring->get_num_nonzeros();
+
+    Eigen::MatrixXd Bgc(num_variables, num_hes_seeds);
+
+    // TODO handle diagonal elements differently?
+
+    // Loop through Jacobian seeds.
+    for (int ihesseed = 0; ihesseed < num_hes_seeds; ++ihesseed) {
+        const auto hes_direction = hes_seed.col(ihesseed);
+        VectorXd xb = x0 + eps * hes_direction;
+        // TODO avoid reallocating, avoid initializing to 0.
+        VectorXd p2 = VectorXd::Zero(num_constraints);
+        m_problem.calc_constraints(xb, p2);
+
+        // TODO preallocate.
+        Eigen::MatrixXd Bgcc(num_constraints, num_jac_seeds);
+
+        for (int ijacseed = 0; ijacseed < num_jac_seeds; ++ijacseed) {
+            const auto jac_direction = jac_seed.col(ijacseed);
+            VectorXd p3 = VectorXd::Zero(num_constraints);
+            m_problem.calc_constraints(x0 + eps * jac_direction, p3);
+            VectorXd p4 = VectorXd::Zero(num_constraints);
+            m_problem.calc_constraints(xb + eps * jac_direction, p4);
+
+            Bgcc.col(ijacseed) = (p1 - p2 - p3 + p4) / eps_squared;
+        }
+//        std::cout << "DEBUG Bgcc\n" << Bgcc << std::endl;
+        // TODO clean up all this sparse matrix stuff.
+        Eigen::VectorXd jac_coeffs(num_jac_nonzeros);
+        m_jacobian_coloring->recover(Bgcc, jac_coeffs.data());
+        Eigen::SparseMatrix<double> Bgunc(num_constraints, num_variables);
+        Bgunc.reserve(num_jac_nonzeros);
+        for (int ijacnz = 0; ijacnz < num_jac_nonzeros; ++ijacnz) {
+            Bgunc.insert(jac_row_indices[ijacnz], jac_col_indices[ijacnz]) =
+                jac_coeffs[ijacnz];
+        }
+        Bgunc.makeCompressed();
+//        std::cout << "DEBUG Bgunc\n" << Bgunc << std::endl;
+
+        Bgc.col(ihesseed) = Bgunc.transpose() * lambda;
+    }
+
+    VectorXd Bg = VectorXd::Zero(num_hes_nonzeros);
+    m_hessian_coloring->recover(Bgc, Bg.data());
+
+    Eigen::Map<VectorXd> hessian_values(hessian_values_raw, num_hes_nonzeros);
+
+    // Add in Hessian of objective.
+    // ----------------------------
+    // TODO
+    hessian_values = Bg;
+    std::cout << "hessian seed\n" << hes_seed << std::endl;
+//    std::cout << "Bgc\n" << Bgc << std::endl;
+    std::cout << "DEBUG Bg\n" << Bg << std::endl;
+    if (obj_factor) {
+        // TODO initialize?
+        VectorXd hessian_objective = VectorXd::Zero(num_hes_nonzeros);
+        calc_hessian_objective(x0, eps, hessian_objective);
+        // TODO the hessian_objective function is giving weird non-zero
+        // values for elements that should be 0.
+        std::cout << "DEBUG hessian_objective\n";
+        for (int inz = 0; inz < (int)num_hes_nonzeros; ++inz) {
+            std::cout << "(" << m_hessian_row_indices[inz] << "," <<
+                    m_hessian_col_indices[inz] << "): " <<
+                    hessian_objective[inz] << std::endl;
+        }
+        hessian_values += obj_factor * hessian_objective;
+    }
+
+
+
+    // TODO do we really want hessian coloring for lagrangian or just the
+    // constraints portion?
+
+
+}
+
+void OptimizationProblem<double>::Decorator::
+calc_hessian_objective(const VectorXd& x0, double eps,
+        Eigen::Ref<VectorXd> hessian_values) const {
+
+    const double eps_squared = eps * eps;
+
+    VectorXd x(x0);
+
+    double obj_0;
+    m_problem.calc_objective(x0, obj_0);
+
+    assert(m_hessian_row_indices.size() == m_hessian_col_indices.size());
+
+    // TODO can avoid computing f(x + eps * x[i]) multiple times.
+    for (int inz = 0; inz < (int)m_hessian_row_indices.size(); ++inz) {
+        int i = m_hessian_row_indices[inz];
+        int j = m_hessian_col_indices[inz];
+
+        if (i == j) {
+
+            x[i] += eps;
+            double obj_pos;
+            m_problem.calc_objective(x, obj_pos);
+
+            x[i] = x0[i] - eps;
+            double obj_neg;
+            m_problem.calc_objective(x, obj_neg);
+
+            x[i] = x0[i];
+
+            hessian_values[inz] =
+                    (obj_pos + obj_neg - 2 * obj_0) / eps_squared;
+
+        } else {
+
+            x[i] += eps;
+            double obj_i;
+            m_problem.calc_objective(x, obj_i);
+
+            x[j] += eps;
+            double obj_ij;
+            m_problem.calc_objective(x, obj_ij);
+
+            x[i] = x0[i];
+            double obj_j;
+            m_problem.calc_objective(x, obj_j);
+
+            x[j] = x0[j];
+
+            hessian_values[inz] =
+                    (obj_ij - obj_i - obj_j + obj_0 ) / eps_squared;
+        }
+
+    }
+}
+
+void OptimizationProblem<double>::Decorator::
+calc_hessian_lagrangian_slow(unsigned num_variables, const double* x,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda_raw,
         bool /*new_lambda */,
@@ -349,6 +515,7 @@ calc_lagrangian(const Eigen::VectorXd& x, double obj_factor,
     m_problem.calc_constraints(x, m_constr_working);
     lagrangian_value += lambda.dot(m_constr_working);
 }
+
 
 } // namespace tropter
 

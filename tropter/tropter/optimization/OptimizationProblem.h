@@ -172,21 +172,37 @@ public:
     void calc_jacobian(unsigned num_variables, const double* variables,
             bool new_variables,
             unsigned num_nonzeros, double* nonzeros) const override;
+    /// The Hessian is computed in a way that exploits sparsity and requires
+    /// as few perturbations of the objective and constraint functions as
+    /// possible. This algorithm was taken from Algorithm 9.8 on page 294 of
+    /// [1].
+    ///
+    /// [1] Bohme TJ, Frank B. Hybrid Systems, Optimal Control and Hybrid
+    /// Vehicles: Theory, Methods and Applications. Springer 2017.
     void calc_hessian_lagrangian(unsigned num_variables,
             const double* variables,
             bool new_variables, double obj_factor,
             unsigned num_constraints, const double* lambda,
             bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const override;
+    void calc_hessian_lagrangian_slow(unsigned num_variables,
+            const double* variables,
+            bool new_variables, double obj_factor,
+            unsigned num_constraints, const double* lambda,
+            bool new_lambda,
+            unsigned num_nonzeros, double* nonzeros) const;
 private:
 
     using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
     void calc_sparsity_hessian_lagrangian(
             const Eigen::VectorXd&, CompressedRowSparsity&) const;
 
+    void calc_hessian_objective(const Eigen::VectorXd& x0, double eps,
+            Eigen::Ref<Eigen::VectorXd> hessian_values) const;
     void calc_lagrangian(
             const Eigen::VectorXd& variables,
             double obj_factor,
+            // TODO use Eigen::Ref?
             const Eigen::Map<const Eigen::VectorXd>& lambda,
             double& lagrangian_value) const;
 

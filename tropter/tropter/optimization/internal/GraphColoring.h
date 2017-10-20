@@ -56,6 +56,9 @@ public:
 
     ~JacobianColoring();
 
+    /// The number of nonzero entries in the Jacobian.
+    int get_num_nonzeros() const { return m_num_nonzeros; }
+
     /// This matrix has dimensions num_columns x num_seeds, where num_seeds is
     /// the ("minimal") number of directions in which to perturb (num_columns
     /// is the number of variables). Each column of this matrix is a
@@ -110,6 +113,11 @@ private:
 
 };
 
+/// [1] Bohme TJ, Frank B. Hybrid Systems, Optimal Control and Hybrid
+/// Vehicles: Theory, Methods and Applications. Springer 2017.
+/// [2] Gebremedhin, Assefaw Hadish, Fredrik Manne, and Alex Pothen. "What color
+/// is your Jacobian? Graph coloring for computing derivatives." SIAM review
+/// 47.4 (2005): 629-705.
 class HessianColoring {
 public:
     HessianColoring(int num_vars,
@@ -118,7 +126,7 @@ public:
     ~HessianColoring();
 
     /// TODO
-    // TODO const Eigen::MatrixXd& get_seed_matrix() const { return m_seed; }
+    const Eigen::MatrixXd& get_seed_matrix() const { return m_seed; }
 
     /// TODO
     void get_coordinate_format(std::vector<unsigned int>& row_indices,
@@ -132,6 +140,17 @@ private:
 
     /// Recover from m_hessian_compressed.
     void recover_internal(double* hessian_sparse_coordinate_format);
+
+    enum class Mode {
+        /// Results in fewer seeds but requires solving a linear system.
+        Indirect,
+        /// Star coloring. Results in more seeds.
+        Direct
+    };
+
+    // See ADOL-C documentation, Bohme and Frank 2017, and Gebremedhin 2005
+    // for guidance on choosing the mode.
+    Mode m_mode = Mode::Indirect;
 
     int m_num_nonzeros = 0;
 

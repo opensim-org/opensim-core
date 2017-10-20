@@ -11,6 +11,8 @@
 #               test_eigen_adolc_reverse_model.cpp)
 
 tropter_add_test(test_derivatives tropter)
+# TODO temp:
+tropter_add_test(test_derivatives_finite_diff_hessian tropter)
 # This test was more of a sandbox for learning ADOL-C:
 #tropter_add_test(test_eigen_adolc_reverse_mode tropter)
 tropter_add_test(test_generic_optimization tropter)

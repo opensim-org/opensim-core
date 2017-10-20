@@ -15,7 +15,16 @@ using namespace tropter;
 void convert_sparsity_format(
         const std::vector<std::vector<unsigned int>>& sparsity,
         internal::UnsignedInt2DPtr& ADOLC_format, int& num_nonzeros) {
-    int num_rows = sparsity.size();
+    int num_rows = (int)sparsity.size();
+    // TODO DEBUG
+    std::cout << "DEBUG sparsity\n" << std::endl;
+    for (int i = 0; i < (int)num_rows; ++i) {
+        std::cout << i << ":";
+        for (const auto& elem : sparsity[i]) {
+            std::cout << " " << elem;
+        }
+        std::cout << std::endl;
+    }
     // Create a lambda that deletes the 2D C array.
     auto unsigned_int_2d_deleter = [num_rows](unsigned** x) {
         std::for_each(x, x + num_rows, std::default_delete<unsigned[]>());
@@ -146,6 +155,53 @@ void JacobianColoring::recover_internal(
 
 
 
+// TODO document
+void convert_sparsity_format_symmetric(
+        const std::vector<std::vector<unsigned int>>& sparsity_upper,
+        internal::UnsignedInt2DPtr& ADOLC_format, int& num_upper_nonzeros) {
+    int num_rows = (int)sparsity_upper.size();
+    // TODO DEBUG
+    std::cout << "DEBUG symmetric sparsity\n" << std::endl;
+    for (int i = 0; i < num_rows; ++i) {
+        std::cout << i << ":";
+        for (const auto& elem : sparsity_upper[i]) {
+            std::cout << " " << elem;
+        }
+        std::cout << std::endl;
+    }
+    num_upper_nonzeros = 0;
+    for (int irow = 0; irow < num_rows; ++irow) {
+        for (const auto& icol : sparsity_upper[irow]) {
+            if ((int)icol < irow) {
+                throw std::runtime_error("Hessian sparsity should be "
+                        "upper triangular");
+            }
+            //TROPTER_THROW_IF(icol < irow, "Hessian sparsity pattern must "
+            //        "provide only the upper triangle, but specified a "
+            //        "nonzero for (%i, %i).", irow, icol);
+            //}
+        }
+        num_upper_nonzeros += sparsity_upper[irow].size();
+    }
+
+    // Create a full sparsity pattern by filling in the lower triangle.
+    std::vector<std::vector<unsigned int>> sparsity_full(num_rows);
+
+    for (int irow = 0; irow < num_rows; ++irow) {
+        for (const auto& icol : sparsity_upper[irow]) {
+            sparsity_full[irow].push_back(icol);
+            // Lower triangle:
+            if ((int)icol != irow)
+                sparsity_full[icol].push_back(irow);
+        }
+    }
+
+
+    // Delegate the creation of raw array.
+    // We are uninterested in the total number of nonzeros.
+    int dummy = 0;
+    convert_sparsity_format(sparsity_full, ADOLC_format, dummy);
+}
 
 
 HessianColoring::HessianColoring(int num_vars,
@@ -153,7 +209,8 @@ HessianColoring::HessianColoring(int num_vars,
 
     assert((int)sparsity.size() == num_vars);
 
-    convert_sparsity_format(sparsity, m_sparsity_ADOLC_format, m_num_nonzeros);
+    convert_sparsity_format_symmetric(sparsity, m_sparsity_ADOLC_format,
+            m_num_nonzeros);
 
     // Determine the efficient perturbation directions.
     // ------------------------------------------------
@@ -166,10 +223,17 @@ HessianColoring::HessianColoring(int num_vars,
     double** seed_raw = nullptr;
     int seed_num_rows; // Should be num_vars.
     int seed_num_cols; // Number of seeds.
+    std::string coloringVariant;
+    if (m_mode == Mode::Indirect) {
+        coloringVariant = "ACYCLIC_FOR_INDIRECT_RECOVERY";
+    } else if (m_mode == Mode::Direct) {
+        coloringVariant = "STAR";
+    } else {
+        assert(false);
+    }
     m_coloring->GenerateSeedHessian_unmanaged(&seed_raw,
             &seed_num_rows, &seed_num_cols, // Outputs.
-            // Copied from what ADOL-C uses in generate_seed_jac():
-            "SMALLEST_LAST", "ACYCLIC_FOR_INDIRECT_RECOVERY");
+            "SMALLEST_LAST", coloringVariant);
     assert(seed_num_rows == num_vars);
     // Convert the seed matrix into an Eigen Matrix for ease of use; delete
     // the memory that ColPack created for the seed matrix.
@@ -214,6 +278,7 @@ HessianColoring::HessianColoring(int num_vars,
 
     // This will set m_recovered_(row|col)_indices.
     recover_internal(hessian_values_dummy_ptr);
+
 }
 
 HessianColoring::~HessianColoring() {}
@@ -227,7 +292,16 @@ void HessianColoring::get_coordinate_format(
 
 void HessianColoring::recover(const Eigen::MatrixXd& hessian_compressed,
         double* hessian_sparse_coordinate_format) {
-    throw std::runtime_error("unimplemented.");
+    assert(hessian_compressed.cols() == m_seed.cols());
+
+    // Convert hessian_compressed into the format ColPack accepts.
+    for (Eigen::Index iseed = 0; iseed < m_seed.cols(); ++iseed) {
+        for (unsigned int i = 0; i < hessian_compressed.rows(); ++i) {
+            m_hessian_compressed[i][iseed] = hessian_compressed(i, iseed);
+        }
+    }
+
+    recover_internal(hessian_sparse_coordinate_format);
 }
 
 void HessianColoring::recover_internal(
@@ -236,11 +310,21 @@ void HessianColoring::recover_internal(
     // (specified as triplets {row indices, column indices, values}).
     unsigned int* row_ptr = m_recovered_row_indices.data();
     unsigned int* col_ptr = m_recovered_col_indices.data();
-    m_recovery->IndirectRecover_CoordinateFormat_usermem(
-            m_coloring.get(), // ColPack's graph coloring object.
-            m_hessian_compressed.get(), // Holds the finite differences.
-            m_sparsity_ADOLC_format.get(), // Input sparsity pattern.
-            &row_ptr, &col_ptr, // Row and col. indices of nonzeros.
-            // Corresponding values in the Jacobian.
-            &hessian_sparse_coordinate_format);
+    if (m_mode == Mode::Indirect) {
+        m_recovery->IndirectRecover_CoordinateFormat_usermem(
+                m_coloring.get(), // ColPack's graph coloring object.
+                m_hessian_compressed.get(), // Holds the finite differences.
+                m_sparsity_ADOLC_format.get(), // Input sparsity pattern.
+                &row_ptr, &col_ptr, // Row and col. indices of nonzeros.
+                // Corresponding values in the Jacobian.
+                &hessian_sparse_coordinate_format);
+    } else if (m_mode == Mode::Direct) {
+        m_recovery->DirectRecover_CoordinateFormat_usermem(
+                m_coloring.get(), // ColPack's graph coloring object.
+                m_hessian_compressed.get(), // Holds the finite differences.
+                m_sparsity_ADOLC_format.get(), // Input sparsity pattern.
+                &row_ptr, &col_ptr, // Row and col. indices of nonzeros.
+                // Corresponding values in the Jacobian.
+                &hessian_sparse_coordinate_format);
+    }
 }
