@@ -339,7 +339,7 @@ void scalePhysicalOffsetFrames()
 
     // Create ScaleSet to scale the OpenSim::Body named "body".
     const double scaleFactor = 1.234;
-    ScaleSet& scaleSet = ScaleSet();
+    ScaleSet scaleSet;
     Scale* scale = new Scale();
     scale->setSegmentName("body");
     scale->setScaleFactors(Vec3(scaleFactor));
