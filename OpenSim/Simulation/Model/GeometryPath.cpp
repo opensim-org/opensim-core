@@ -801,18 +801,9 @@ void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
     }
 }
 
-//_____________________________________________________________________________
-/*
- * Perform computations that need to happen after the path is scaled.
- * For this object, that entails updating the path.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    // Recalculate the path. This will also update the geometry.
-    // Done here since scale is invoked before bodies are scaled
-    // so we may not have enough info to update (e.g. wrapping, via points)
+    Super::postScale(s, scaleSet);
     computePath(s);
 }
 

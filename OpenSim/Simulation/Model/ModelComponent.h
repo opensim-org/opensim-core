@@ -145,7 +145,7 @@ public:
      * @see preScale()
      * @see scale()
      */
-    //virtual void postScale(const SimTK::State& s, const ScaleSet& scaleSet) {};
+    virtual void postScale(const SimTK::State& s, const ScaleSet& scaleSet) {};
 
 protected:
 template <class T> friend class ModelComponentSet;

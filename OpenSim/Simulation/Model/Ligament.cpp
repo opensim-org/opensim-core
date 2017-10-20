@@ -201,29 +201,17 @@ void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
     updGeometryPath().scale(s, aScaleSet);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the ligament is scaled.
- * For this object, that entails comparing the length before and after scaling,
- * and scaling the resting length a proportional amount.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void Ligament::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    GeometryPath& path          = updGeometryPath();
-    double&       restingLength = upd_resting_length();
+    Super::postScale(s, scaleSet);
 
-    path.postScale(s, aScaleSet);
-
+    GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_resting_length() *= scaleFactor;
 
-        // Scale resting length by the same amount as the change in
-        // total ligament length (in the current body position).
-        restingLength *= scaleFactor;
-
+        // Clear the pre-scale length that was stored in the GeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }

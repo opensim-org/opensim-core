@@ -192,7 +192,9 @@ public:
     void preScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+    /** Recalculate the path after the Model has been scaled. */
+    void postScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     //--------------------------------------------------------------------------
     // Visualization Support

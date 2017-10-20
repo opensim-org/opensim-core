@@ -112,7 +112,6 @@ public:
     // SCALING
     //--------------------------------------------------------------------------
     virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 protected:
     /** Override this method if you would like to calculate a color for use when

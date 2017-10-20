@@ -175,30 +175,21 @@ double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) con
 //==============================================================================
 // SCALING
 //==============================================================================
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
 void ActivationFiberLengthMuscle::
-postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::postScale(s, scaleSet);
+
     GeometryPath& path = upd_GeometryPath();
-
-    path.postScale(s, aScaleSet);
-
     if (path.getPreScaleLength(s) > 0.0)
-        {
-            double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-            upd_optimal_fiber_length() *= scaleFactor;
-            upd_tendon_slack_length() *= scaleFactor;
-            path.setPreScaleLength(s, 0.0) ;
-        }
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_optimal_fiber_length() *= scaleFactor;
+        upd_tendon_slack_length() *= scaleFactor;
+
+        // Clear the pre-scale length that was stored in the GeometryPath.
+        path.setPreScaleLength(s, 0.0);
+    }
 }
 
 //--------------------------------------------------------------------------

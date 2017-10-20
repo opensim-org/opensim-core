@@ -174,30 +174,20 @@ void PathSpring::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
     updGeometryPath().scale(s, aScaleSet);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the PathSpring is scaled.
- * For this object, that entails comparing the length before and after scaling,
- * and scaling the resting length a proportional amount.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathSpring::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void PathSpring::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    GeometryPath& path = updGeometryPath();
-    path.postScale(s, aScaleSet);
+    Super::postScale(s, scaleSet);
 
+    GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
-        // Scale resting length by the same amount as the change in
-        // total PathSpring length (in the current body position).
         upd_resting_length() *= scaleFactor;
 
+        // Clear the pre-scale length that was stored in the GeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }
-
 
 //=============================================================================
 // COMPUTATION

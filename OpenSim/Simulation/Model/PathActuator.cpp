@@ -250,17 +250,3 @@ void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
     updGeometryPath().scale(s, aScaleSet);
 }
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().postScale(s, aScaleSet);
-}
