@@ -14,17 +14,9 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #include "OptimizationProblem.h"
-<<<<<<< HEAD
-#include "internal/GraphColoring.h"
-
-#include <Eigen/SparseCore>
-
-#include <iomanip>
-=======
 #include <tropter/Exception.hpp>
-
-#include <ColPack/ColPackHeaders.h>
->>>>>>> 38c73ad7de80a67023d38c5029f3dba14af4af57
+#include "internal/GraphColoring.h"
+#include <Eigen/SparseCore>
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
 //    // TODO only include ifdef _OPENMP

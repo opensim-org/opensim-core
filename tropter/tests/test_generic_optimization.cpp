@@ -68,7 +68,7 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
     }
     SECTION("Finite differences, exact Hessian") {
         Unconstrained<double> problem;
-        IpoptSolver solver(problem);
+        IPOPTSolver solver(problem);
         VectorXd variables = Vector2d(0, 0);
         solver.set_hessian_approximation("exact");
         double obj_value = solver.optimize(variables);
