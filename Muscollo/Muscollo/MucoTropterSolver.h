@@ -31,6 +31,16 @@ namespace OpenSim {
 
 class MucoProblem;
 
+/// Solve the MucoProblem using the **tropter** direct collocation library.
+/// **tropter** is a free and open-source C++ library that supports computing
+/// the Jacobian and Hessian via either automatic differentiation or finite
+/// differences, and uses IPOPT for solving the nonlinear optimization problem.
+///
+/// This class allows you to configure tropter's settings.
+///
+/// Using this solver in C++ requires that a tropter shared library is
+/// available, but tropter header files are not required. No tropter symbols
+/// are exposed in Muscollo's interface.
 class OSIMMUSCOLLO_API MucoTropterSolver : public MucoSolver {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoTropterSolver, MucoSolver);
 public:
@@ -62,7 +72,7 @@ private:
     void constructProperties();
 
     mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-            _tropProblem;
+            m_tropProblem;
 
 };
 

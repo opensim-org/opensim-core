@@ -20,6 +20,11 @@
 
 using namespace OpenSim;
 
+
+// ============================================================================
+// MucoVariableInfo
+// ============================================================================
+
 MucoVariableInfo::MucoVariableInfo() {
     constructProperties();
 }
@@ -41,6 +46,10 @@ void MucoVariableInfo::constructProperties() {
 
 
 
+
+// ============================================================================
+// MucoPhase
+// ============================================================================
 MucoPhase::MucoPhase() {
     constructProperties();
 }
@@ -121,12 +130,9 @@ SimTK::Real MucoPhase::calcEndpointCost(const SimTK::State& finalState) const {
 
 
 
-
-
-
-
-
-
+// ============================================================================
+// MucoProblem
+// ============================================================================
 MucoProblem::MucoProblem() {
     constructProperties();
 }

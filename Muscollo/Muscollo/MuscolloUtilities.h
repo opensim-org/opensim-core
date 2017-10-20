@@ -27,9 +27,18 @@ namespace OpenSim {
 class StatesTrajectory;
 class Model;
 
+/// Create a Storage from a TimeSeriesTable. Metadata from the
+/// TimeSeriesTable is *not* copied to the Storage.
+/// You should use TimeSeriesTable if possible, as support for Storage may be
+/// reduced in future versions of OpenSim. However, Storage supports some
+/// operations not supported by TimeSeriesTable (e.g., filtering, resampling).
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
+/// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
+/// should contain all generalized coordinates. The visualizer window allows the
+/// user to control playback speed.
+/// This function blocks until the user exits the simbody-visualizer window.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
 } // namespace OpenSim
