@@ -113,10 +113,24 @@ public:
 };
 
 TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
-    SECTION("Finite differences") {
+    SECTION("Finite differences, limited memory") {
         HS071<double> problem;
         IPOPTSolver solver(problem);
         solver.set_hessian_approximation("limited-memory");
+        VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
+        double obj_value = solver.optimize(variables);
+
+        REQUIRE(       variables[0]  == 1.0);
+        REQUIRE(Approx(variables[1]) == 4.743);
+        REQUIRE(Approx(variables[2]) == 3.82115);
+        REQUIRE(Approx(variables[3]) == 1.379408);
+
+        REQUIRE(Approx(obj_value) == 17.014);
+    }
+    SECTION("Finite differences, exact Hessian") {
+        HS071<double> problem;
+        IPOPTSolver solver(problem);
+        solver.set_hessian_approximation("exact");
         VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
         double obj_value = solver.optimize(variables);
 
