@@ -5,6 +5,10 @@
 
 using namespace tropter;
 
+// ----------------------------------------------------------------------------
+// JacobianColoring
+// ----------------------------------------------------------------------------
+
 // Initially, we store the sparsity structure in ADOL-C's compressed row
 // format, since this is what ColPack accepts.
 // This format, as described in the ADOL-C manual, is a 2-Dish array.
@@ -50,7 +54,8 @@ void convert_sparsity_format(
 JacobianColoring::~JacobianColoring() {}
 
 JacobianColoring::JacobianColoring(int num_rows, int num_cols,
-        const std::vector<std::vector<unsigned int>>& sparsity) {
+        const std::vector<std::vector<unsigned int>>& sparsity)
+        : m_num_rows(num_rows), m_num_cols(num_cols) {
 
     assert((int)sparsity.size() == num_rows);
 
@@ -153,10 +158,27 @@ void JacobianColoring::recover_internal(
             &jacobian_sparse_coordinate_format);
 }
 
+Eigen::SparseMatrix<double> JacobianColoring::convert(
+        double* jacobian_sparse_coordinate_format) const {
+    Eigen::SparseMatrix<double> mat(m_num_rows, m_num_cols);
+    mat.reserve(m_num_nonzeros);
+    for (int ijacnz = 0; ijacnz < m_num_nonzeros; ++ijacnz) {
+        mat.insert(m_recovered_row_indices[ijacnz],
+                m_recovered_col_indices[ijacnz]) =
+                jacobian_sparse_coordinate_format[ijacnz];
+    }
+    mat.makeCompressed();
+    return mat;
+}
 
+// ----------------------------------------------------------------------------
+// HessianColoring
+// ----------------------------------------------------------------------------
 
-
-// TODO document
+/// Given a sparsity pattern for the upper triangle of a symmetric matrix,
+/// return an ADOL-C-formatted sparsity pattern that includes the lower
+/// triangle as well. The returned number of nonzeros is for only the upper
+/// triangle.
 void convert_sparsity_format_symmetric(
         const std::vector<std::vector<unsigned int>>& sparsity_upper,
         internal::UnsignedInt2DPtr& ADOLC_format, int& num_upper_nonzeros) {

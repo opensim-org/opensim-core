@@ -2,6 +2,7 @@
 #define TROPTER_GRAPHCOLORING_H
 
 #include <Eigen/Dense>
+#include <Eigen/SparseCore>
 #include <vector>
 #include <memory>
 
@@ -78,11 +79,18 @@ public:
     void recover(const Eigen::MatrixXd& jacobian_compressed,
             double* jacobian_sparse_coordinate_format);
 
+    /// Utility function to create an Eigen sparse matrix from the coordinate
+    /// format (perhaps as returned from recover()).
+    Eigen::SparseMatrix<double> convert(
+            double* jacobian_sparse_coordinate_format) const;
+
 private:
 
     /// Recover from m_jacobian_compressed.
     void recover_internal(double* jacobian_sparse_coordinate_format);
 
+    int m_num_rows = 0;
+    int m_num_cols = 0;
     int m_num_nonzeros = 0;
 
     // ColPack objects for (a) determining the directions in which to perturb

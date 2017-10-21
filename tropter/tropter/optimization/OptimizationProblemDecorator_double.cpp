@@ -287,7 +287,7 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
 
     // TODO reuse perturbations between the Jacobian and Hessian calculations.
 
-    // Compute the unperturbed
+    // Compute the unperturbed constraints value.
     VectorXd p1 = VectorXd::Zero(num_constraints);
     m_problem.calc_constraints(x0, p1);
 
@@ -303,11 +303,14 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
             jac_row_indices, jac_col_indices);
     int num_jac_nonzeros = m_jacobian_coloring->get_num_nonzeros();
 
+    // Hessian of constraints.
+    // -----------------------
+    // Compressed Hessian of constraints.
     Eigen::MatrixXd Bgc(num_variables, num_hes_seeds);
 
     // TODO handle diagonal elements differently?
 
-    // Loop through Jacobian seeds.
+    // Loop through Hessian seeds.
     for (int ihesseed = 0; ihesseed < num_hes_seeds; ++ihesseed) {
         const auto hes_direction = hes_seed.col(ihesseed);
         VectorXd xb = x0 + eps * hes_direction;
@@ -315,6 +318,8 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         VectorXd p2 = VectorXd::Zero(num_constraints);
         m_problem.calc_constraints(xb, p2);
 
+        // Double-compressed second derivatives; same shape as a compressed
+        // Jacobian.
         // TODO preallocate.
         Eigen::MatrixXd Bgcc(num_constraints, num_jac_seeds);
 
@@ -325,24 +330,23 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
             VectorXd p4 = VectorXd::Zero(num_constraints);
             m_problem.calc_constraints(xb + eps * jac_direction, p4);
 
+            // Finite difference.
             Bgcc.col(ijacseed) = (p1 - p2 - p3 + p4) / eps_squared;
         }
-//        std::cout << "DEBUG Bgcc\n" << Bgcc << std::endl;
+        // std::cout << "DEBUG Bgcc\n" << Bgcc << std::endl;
+
+        // Recover (uncompress).
         // TODO clean up all this sparse matrix stuff.
-        Eigen::VectorXd jac_coeffs(num_jac_nonzeros);
-        m_jacobian_coloring->recover(Bgcc, jac_coeffs.data());
-        Eigen::SparseMatrix<double> Bgunc(num_constraints, num_variables);
-        Bgunc.reserve(num_jac_nonzeros);
-        for (int ijacnz = 0; ijacnz < num_jac_nonzeros; ++ijacnz) {
-            Bgunc.insert(jac_row_indices[ijacnz], jac_col_indices[ijacnz]) =
-                jac_coeffs[ijacnz];
-        }
-        Bgunc.makeCompressed();
-//        std::cout << "DEBUG Bgunc\n" << Bgunc << std::endl;
+        Eigen::VectorXd Bgunc_coeffs(num_jac_nonzeros);
+        m_jacobian_coloring->recover(Bgcc, Bgunc_coeffs.data());
+        Eigen::SparseMatrix<double> Bgunc =
+                m_jacobian_coloring->convert(Bgunc_coeffs.data());
+        // std::cout << "DEBUG Bgunc\n" << Bgunc << std::endl;
 
         Bgc.col(ihesseed) = Bgunc.transpose() * lambda;
     }
 
+    // TODO preallocate.
     VectorXd Bg = VectorXd::Zero(num_hes_nonzeros);
     m_hessian_coloring->recover(Bgc, Bg.data());
 
@@ -352,15 +356,13 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     // ----------------------------
     // TODO
     hessian_values = Bg;
-    std::cout << "hessian seed\n" << hes_seed << std::endl;
+//    std::cout << "hessian seed\n" << hes_seed << std::endl;
 //    std::cout << "Bgc\n" << Bgc << std::endl;
-    std::cout << "DEBUG Bg\n" << Bg << std::endl;
+//    std::cout << "DEBUG Bg\n" << Bg << std::endl;
     if (obj_factor) {
-        // TODO initialize?
+        // TODO is initializing necessary?
         VectorXd hessian_objective = VectorXd::Zero(num_hes_nonzeros);
         calc_hessian_objective(x0, eps, hessian_objective);
-        // TODO the hessian_objective function is giving weird non-zero
-        // values for elements that should be 0.
         hessian_values += obj_factor * hessian_objective;
     }
 
@@ -423,6 +425,12 @@ calc_hessian_objective(const VectorXd& x0, double eps,
 
             hessian_values[inz] =
                     (obj_ij - obj_i - obj_j + obj_0 ) / eps_squared;
+
+            //std::cout << "DEBUG " << i << " " << j
+            //        << " obj_ij " << obj_ij
+            //        << " obj_i " << obj_i
+            //        << " obj_j " << obj_j
+            //        << " obj_0 " << obj_0 << std::endl;
         }
 
     }
