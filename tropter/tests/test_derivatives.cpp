@@ -149,7 +149,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
@@ -191,7 +191,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
@@ -342,7 +342,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         std::vector<unsigned int> hessian_col_indices;
         proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
@@ -383,7 +383,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         std::vector<unsigned int> hessian_col_indices;
         proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
@@ -525,7 +525,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             decorator->calc_sparsity(
                     decorator->make_initial_guess_from_bounds(),
                     jac_row_indices, jac_col_indices,
-                    hess_row_indices, hess_col_indices);
+                    true, hess_row_indices, hess_col_indices);
             REQUIRE(problemd.m_calc_sparsity_hessian_lagrangian_called);
             REQUIRE(jac_row_indices == expected_jac_row_indices);
             REQUIRE(jac_col_indices == expected_jac_col_indices);
@@ -590,7 +590,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             decorator->calc_sparsity(
                     decorator->make_initial_guess_from_bounds(),
                     jac_row_indices, jac_col_indices,
-                    hess_row_indices, hess_col_indices);
+                    true, hess_row_indices, hess_col_indices);
             std::vector<unsigned int> expected_hess_row_indices{
                     0, 0, 0, 0,
                        1, 1, 1,
@@ -633,7 +633,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     decorator->calc_sparsity(
                             decorator->make_initial_guess_from_bounds(),
                             jac_row_indices, jac_col_indices,
-                            hess_row_indices, hess_col_indices),
+                            true, hess_row_indices, hess_col_indices),
                     Catch::Contains("requested use of user-supplied sparsity"));
         }
     }
@@ -648,7 +648,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(
                         decorator->make_initial_guess_from_bounds(),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("Cannot use supplied sparsity pattern"));
     }
 }
@@ -679,7 +679,7 @@ TEST_CASE("Validate sparsity input") {
         auto decorator = problemd.make_decorator();
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("Incorrect number of rows"));
     }
 
@@ -689,7 +689,7 @@ TEST_CASE("Validate sparsity input") {
         auto decorator = problemd.make_decorator();
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("greater than number of columns"));
     }
 
@@ -701,7 +701,7 @@ TEST_CASE("Validate sparsity input") {
         auto decorator = problemd.make_decorator();
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("Entries of sparsity must be unique"));
     }
 
@@ -711,7 +711,7 @@ TEST_CASE("Validate sparsity input") {
         auto decorator = problemd.make_decorator();
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("Entries of sparsity must be sorted"));
     }
 
@@ -721,7 +721,7 @@ TEST_CASE("Validate sparsity input") {
         auto decorator = problemd.make_decorator();
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, hess_row, hess_col),
+                        jac_row, jac_col, true, hess_row, hess_col),
                 Catch::Contains("only the upper triangle"));
 
     }

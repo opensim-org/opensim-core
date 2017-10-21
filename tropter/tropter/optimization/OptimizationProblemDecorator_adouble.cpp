@@ -14,6 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #include "OptimizationProblem.h"
+#include <tropter/Exception.hpp>
 
 #ifdef _MSC_VER
 // Ignore warnings from ADOL-C headers.
@@ -77,6 +78,7 @@ void OptimizationProblem<adouble>::Decorator::
 calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
+        bool provide_hessian_indices,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const
 {
@@ -140,11 +142,10 @@ calc_sparsity(const Eigen::VectorXd& x,
 
     // Lagrangian.
     // -----------
-    if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
-        throw std::runtime_error("Cannot use supplied sparsity pattern for "
-                "Hessian of Lagrangian when using automatic differentiation.");
-    }
-    {
+    TROPTER_THROW_IF(m_problem.get_use_supplied_sparsity_hessian_lagrangian(),
+            "Cannot use supplied sparsity pattern for "
+            "Hessian of Lagrangian when using automatic differentiation.");
+    if (provide_hessian_indices) {
         VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints);
         double lagr_value; // Unused.
         trace_lagrangian(m_lagrangian_tag, num_variables, x.data(), 1.0,
@@ -158,29 +159,6 @@ calc_sparsity(const Eigen::VectorXd& x,
                 // TODO &hessian_values,
                 const_cast<int*>(m_sparse_hess_options.data()));
 
-        int optTODO = 0;
-        unsigned int** hess_pattern = (unsigned int **) malloc
-                (num_variables*sizeof(unsigned int*));
-        ::hess_pat(m_lagrangian_tag, num_variables, x.data(), hess_pattern,
-                optTODO);
-        int num_seeds;
-        double** seed;
-        std::cout << "DEBUG ADOL-C's hess_pat " << std::endl;
-        for (int ivar = 0; ivar < num_variables; ++ivar) {
-            for (int j = 0; j < hess_pattern[ivar][0]; ++j) {
-                std::cout << hess_pattern[ivar][j+1] << " ";
-            }
-            std::cout << std::endl;
-        }
-        ::generate_seed_hess(num_variables, hess_pattern, &seed, &num_seeds,
-                optTODO);
-        std::cout << "DEBUG ADOL-C's seed" << std::endl;
-        for (int ivar = 0; ivar < num_variables; ++ivar) {
-            for (int iseed = 0; iseed < num_seeds; ++iseed) {
-                std::cout << seed[ivar][iseed] << " ";
-            }
-            std::cout << std::endl;
-        }
         // TODO See ADOL-C manual Table 1 to interpret the return value.
         // TODO improve error handling.
         assert(status >= 0);

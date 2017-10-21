@@ -63,6 +63,7 @@ public:
     virtual void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
+            bool provide_hessian_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const = 0;
     virtual void calc_objective(unsigned num_variables, const double* variables,
@@ -178,6 +179,7 @@ public:
     void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
+            bool provide_hessian_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const override;
     void calc_objective(unsigned num_variables, const double* variables,
@@ -275,6 +277,7 @@ public:
     void calc_sparsity(const Eigen::VectorXd& variables,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
+            bool provide_hessian_indices,
             std::vector<unsigned int>& hessian_row_indices,
             std::vector<unsigned int>& hessian_col_indices) const override;
     void calc_objective(unsigned num_variables, const double* variables,

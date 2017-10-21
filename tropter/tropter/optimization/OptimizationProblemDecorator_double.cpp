@@ -59,6 +59,7 @@ void OptimizationProblem<double>::Decorator::
 calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
+        bool provide_hessian_indices,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const
 {
@@ -126,21 +127,23 @@ calc_sparsity(const Eigen::VectorXd& x,
 
     // Hessian.
     // ========
-    // TODO only compute Hessian sparsity if it's needed (for exact Hessian).
-    CompressedRowSparsity hessian_sparsity;
-    calc_sparsity_hessian_lagrangian(x, hessian_sparsity);
+    if (provide_hessian_indices) {
+        CompressedRowSparsity hessian_sparsity;
+        calc_sparsity_hessian_lagrangian(x, hessian_sparsity);
 
-    m_hessian_coloring.reset(
-            new HessianColoring(num_vars, hessian_sparsity));
-    m_hessian_coloring->get_coordinate_format(
-            hessian_row_indices, hessian_col_indices);
-    int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
-    std::cout << "[tropter] Number of finite difference perturbations required "
-            "for sparse Hessian: " << num_hessian_seeds << std::endl;
-    m_hessian_row_indices = hessian_row_indices;
-    m_hessian_col_indices = hessian_col_indices;
+        m_hessian_coloring.reset(
+                new HessianColoring(num_vars, hessian_sparsity));
+        m_hessian_coloring->get_coordinate_format(
+                hessian_row_indices, hessian_col_indices);
+        int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
+        std::cout << "[tropter] Number of finite difference perturbations "
+                "required for sparse Hessian: " << num_hessian_seeds
+                << std::endl;
+        m_hessian_row_indices = hessian_row_indices;
+        m_hessian_col_indices = hessian_col_indices;
+        m_constr_working.resize(num_jac_rows);
+    }
 
-    m_constr_working.resize(num_jac_rows);
 }
 
 void OptimizationProblem<double>::Decorator::

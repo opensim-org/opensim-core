@@ -31,7 +31,7 @@ public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
     TNLP(std::shared_ptr<const OptimizationProblemDecorator> problem);
-    void initialize(const Eigen::VectorXd& guess);
+    void initialize(const Eigen::VectorXd& guess, const bool&);
     const Eigen::VectorXd& get_solution() const
     {
         return m_solution;
@@ -119,10 +119,6 @@ private:
 };
 
 double IPOPTSolver::optimize_impl(VectorXd& variables) const {
-    Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
-    // TODO avoid copying x (initial guess).
-    // Determine sparsity pattern of Jacobian, Hessian, etc.
-    nlp->initialize(variables);
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
@@ -150,6 +146,13 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
         std::cerr << "Error during initialization" << std::endl;
         // TODO throw exception.
     }
+
+    // Create NLP.
+    // -----------
+    Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
+    // TODO avoid copying x (initial guess).
+    // Determine sparsity pattern of Jacobian, Hessian, etc.
+    nlp->initialize(variables, m_hessian_approximation != "limited-memory");
 
     // Optimize!!!
     // -----------
@@ -189,7 +192,8 @@ bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
     return true;
 }
 
-void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
+void IPOPTSolver::TNLP::initialize(const VectorXd& guess,
+        const bool& need_exact_hessian) {
     // TODO all of this content should be taken care of for us by
     // OptimizationProblem.
 
@@ -203,11 +207,14 @@ void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
     // TODO check their sizes.
     assert(guess.size() == m_num_variables);
 
-    // TODO use VectorXi for the sparsity pattern? allows not initializing.
     m_problem->calc_sparsity(guess,
             m_jacobian_row_indices, m_jacobian_col_indices,
-            m_hessian_row_indices, m_hessian_col_indices);
+            need_exact_hessian, m_hessian_row_indices, m_hessian_col_indices);
     m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
+
+    TROPTER_THROW_IF(!need_exact_hessian && (
+            m_hessian_row_indices.size() || m_hessian_col_indices.size()),
+            "Exact Hessian not needed but sparsity pattern was provided.");
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 

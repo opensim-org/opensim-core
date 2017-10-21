@@ -45,7 +45,7 @@ TEST_CASE("TODO")
     std::vector<unsigned int> hessian_col_indices;
     deca->calc_sparsity(deca->make_initial_guess_from_bounds(),
             jacobian_row_indices, jacobian_col_indices,
-            hessian_row_indices, hessian_col_indices);
+            true, hessian_row_indices, hessian_col_indices);
 
     // Hessian.
     const double obj_factor = 1.0;
@@ -71,7 +71,7 @@ TEST_CASE("TODO")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         std::vector<unsigned int> expected_hess_row_indices{
                 0, 0, 0,
@@ -223,7 +223,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         std::vector<unsigned int> expected_hess_row_indices{
                 0, 0, 0, 0,
