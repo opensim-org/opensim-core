@@ -468,16 +468,7 @@ public:
     void calc_sparsity_hessian_lagrangian(const VectorXd&,
             std::vector<std::vector<unsigned int>>& sparsity) const override {
         m_calc_sparsity_hessian_lagrangian_called = true;
-
         assert(sparsity.size() == 4);
-
-        // TODO
-        /*
-        const int num_vars = (int)this->get_num_variables();
-        for (int i = 0; i < num_vars; ++i) {
-            sparsity[i].push_back(i);
-        }
-         */
         // Treat the Hessian as dense but with a zero at (0, 3) (conservative
         // estimate) so that we can detect that this function is called.
         const int num_vars = (int)this->get_num_variables();
@@ -545,14 +536,6 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                           2, 3,
                              3
             };
-            /*
-            std::vector<unsigned int> expected_hess_row_indices{
-                    0, 1, 2, 3
-            };
-            std::vector<unsigned int> expected_hess_col_indices{
-                    0, 1, 2, 3
-            };
-            */
 
             // TODO elements that should be 0 are not coming out as exactly 0.
             REQUIRE(hess_row_indices == expected_hess_row_indices);
@@ -727,7 +710,3 @@ TEST_CASE("Validate sparsity input") {
     }
 
 }
-// TODO check that no element is duplicated, that each element has less
-// than num_vars elements.
-
-// TODO test reordering of sparsity pattern to match what ColPack likes.

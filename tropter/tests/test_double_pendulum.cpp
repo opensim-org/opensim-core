@@ -19,7 +19,6 @@
 #include "testing.h"
 
 #include <tropter/tropter.h>
-
 #include <Eigen/LU>
 
 using Eigen::Ref;
@@ -110,12 +109,12 @@ public:
                 0.001 * final_time;
     }
 
-    static void run_test(const std::string& solver) {
+    static void run_test(std::string solver, std::string hessian_approx) {
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation(
-                "limited-memory");
+        dircol.get_optimization_solver().set_hessian_approximation
+                (hessian_approx);
         tropter::OptimalControlIterate guess;
         guess.time.setLinSpaced(N, 0, 1);
         // Give a hint (not the exact final state, but something close to it).
@@ -148,10 +147,12 @@ TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 {
     SECTION("IPOPT") {
         SECTION("Finite differences") {
-            DoublePendulumSwingUpMinTime<double>::run_test("ipopt");
+            DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+                    "limited-memory");
         }
         SECTION("ADOL-C") {
-            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt");
+            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt",
+                    "limited-memory");
         }
     }
     // #if defined(TROPTER_WITH_SNOPT)
