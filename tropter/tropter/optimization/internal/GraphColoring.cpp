@@ -1,5 +1,6 @@
 
 #include "GraphColoring.h"
+#include <tropter/Exception.hpp>
 #include <ColPack/ColPackHeaders.h>
 
 using namespace tropter;
@@ -160,7 +161,6 @@ void convert_sparsity_format_symmetric(
         const std::vector<std::vector<unsigned int>>& sparsity_upper,
         internal::UnsignedInt2DPtr& ADOLC_format, int& num_upper_nonzeros) {
     int num_rows = (int)sparsity_upper.size();
-    // TODO DEBUG
     std::cout << "DEBUG symmetric sparsity\n" << std::endl;
     for (int i = 0; i < num_rows; ++i) {
         std::cout << i << ":";
@@ -170,21 +170,37 @@ void convert_sparsity_format_symmetric(
         std::cout << std::endl;
     }
     num_upper_nonzeros = 0;
+
+    // Check for errors.
+    // -----------------
     for (int irow = 0; irow < num_rows; ++irow) {
-        for (const auto& icol : sparsity_upper[irow]) {
-            if ((int)icol < irow) {
-                throw std::runtime_error("Hessian sparsity should be "
-                        "upper triangular");
-            }
-            //TROPTER_THROW_IF(icol < irow, "Hessian sparsity pattern must "
-            //        "provide only the upper triangle, but specified a "
-            //        "nonzero for (%i, %i).", irow, icol);
-            //}
+        const auto& row = sparsity_upper[irow];
+        if (row.size() > 0) {
+            TROPTER_THROW_IF(!std::is_sorted(row.begin(), row.end()),
+                    "Entries of sparsity must be sorted.");
+
+            // https://stackoverflow.com/questions/2769174/determining-if-an-unordered-vectort-has-all-unique-elements
+            // Test for uniqueness (since the row is sorted, we can simply
+            // check if any adjacent elements are the same)
+            TROPTER_THROW_IF(
+                    std::adjacent_find(row.begin(), row.end()) != row.end(),
+                    "Entries of sparsity must be unique, but are not.");
+
+            // Square matrix, so num_cols == num_rows
+            TROPTER_THROW_IF((int)row.back() >= num_rows,
+                    "Column index in sparsity, %i, is greater than number of "
+                    "columns, %i.", row.back(), num_rows);
+
+            TROPTER_THROW_IF((int)row[0] < irow, "Hessian sparsity pattern "
+                    "must provide only the upper triangle, but specified a "
+                    "nonzero for (%i, %i).", irow, row[0]);
         }
-        num_upper_nonzeros += sparsity_upper[irow].size();
+
+        num_upper_nonzeros += row.size();
     }
 
     // Create a full sparsity pattern by filling in the lower triangle.
+    // ----------------------------------------------------------------
     std::vector<std::vector<unsigned int>> sparsity_full(num_rows);
 
     for (int irow = 0; irow < num_rows; ++irow) {
@@ -207,7 +223,9 @@ void convert_sparsity_format_symmetric(
 HessianColoring::HessianColoring(int num_vars,
         const std::vector<std::vector<unsigned int>>& sparsity) {
 
-    assert((int)sparsity.size() == num_vars);
+    TROPTER_THROW_IF((int)sparsity.size() != num_vars, "Incorrect number "
+            "of rows in sparsity (actual: %i, expected: %i)",
+            sparsity.size(), num_vars);
 
     convert_sparsity_format_symmetric(sparsity, m_sparsity_ADOLC_format,
             m_num_nonzeros);

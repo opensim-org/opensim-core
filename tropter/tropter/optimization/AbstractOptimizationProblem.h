@@ -62,9 +62,24 @@ public:
     /// If you know the sparsity pattern of the Hessian, implement this
     /// function to provide it. This has a *huge* impact on the speed
     /// of the optimization for sparse problems.
-    // TODO do the elements need to be ordered in any particular way?
-    // TODO require ADOL-C's compressed row format.
-    // TODO sparsity will already have the correct outer dimension.
+    /// The sparsity pattern should be in ADOL-C's compressed row format.
+    /// This format is a 2-Dish array. The length of the first dimension is
+    /// the number of rows in the Hessian. Each element represents a row
+    /// and is a vector of the column indices of the nonzeros in that row.
+    /// The length of each row (the inner dimension) is the number of
+    /// nonzeros in that row. More information about this format can be
+    /// found in ADOL-C's manual.
+    /// Requirements:
+    ///  - Only supply nonzeros in the upper triangle (Hessian is symmetric).
+    ///  - Each row's elements should be unique, and must be between
+    ///    [row_index, num_variables).
+    ///  - Each row should be sorted.
+    ///  - The length of `sparsity` is the number of variables (this is true
+    ///    upon entry).
+    ///
+    /// An iterate is provided for use in detecting sparsity, if
+    /// necessary (e.g., by perturbing the objective or constraint functions).
+    /// TODO make it clear that it's the Hessian of the *Lagrangian*.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             std::vector<std::vector<unsigned int>>& sparsity) const;
     class CalcSparsityHessianLagrangianNotImplemented

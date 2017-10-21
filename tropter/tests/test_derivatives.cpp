@@ -651,36 +651,83 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                         jac_row, jac_col, hess_row, hess_col),
                 Catch::Contains("Cannot use supplied sparsity pattern"));
     }
+}
 
-    SECTION("Sparsity vector must have num_vars elements.") {
-        class UserSpecifiedSparsityInconsistentSizes
-                : public OptimizationProblem<double> {
-        public:
-            UserSpecifiedSparsityInconsistentSizes() :
-                    OptimizationProblem<double>(4, 0) {}
-            void calc_objective(const VectorXd&, double&) const
-                    override {}
-            void calc_constraints(const VectorXd&,
-                    Eigen::Ref<VectorXd>) const override {}
-            void calc_sparsity_hessian_lagrangian(
-                    const VectorXd&,
-                    std::vector<std::vector<unsigned int>>& sparsity)
-                    const override {
-                sparsity.resize(3);
-            }
-        };
-        UserSpecifiedSparsityInconsistentSizes problemd;
-        problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+TEST_CASE("Validate sparsity input") {
+    class ConfigurableUserSpecifiedSparsity
+            : public OptimizationProblem<double> {
+    public:
+        ConfigurableUserSpecifiedSparsity() :
+                OptimizationProblem<double>(4, 0) {}
+        void calc_objective(const VectorXd&, double&) const override {}
+        void calc_constraints(const VectorXd&,
+                Eigen::Ref<VectorXd>) const override {}
+        void calc_sparsity_hessian_lagrangian(
+                const VectorXd&,
+                std::vector<std::vector<unsigned int>>& sparsity)
+                const override {
+            sparsity = m_sparsity;
+        }
+        std::vector<std::vector<unsigned int>> m_sparsity;
+    };
+    ConfigurableUserSpecifiedSparsity problemd;
+    problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+    std::vector<unsigned int> jac_row, jac_col, hess_row, hess_col;
+
+    SECTION("Number of rows") {
+        problemd.m_sparsity.resize(3);
         auto decorator = problemd.make_decorator();
-        std::vector<unsigned int> jac_row, jac_col, hess_row, hess_col;
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
                         jac_row, jac_col, hess_row, hess_col),
                 Catch::Contains("Incorrect number of rows"));
+    }
+
+    SECTION("Column indices too large") {
+        problemd.m_sparsity.resize(4);
+        problemd.m_sparsity[0] = {4};
+        auto decorator = problemd.make_decorator();
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, hess_row, hess_col),
+                Catch::Contains("greater than number of columns"));
+    }
+
+    SECTION("Unique elements") {
+        problemd.m_sparsity.resize(4);
+        // Leave the first row empty, to make sure we can handle empty rows
+        // (which should be fine).
+        problemd.m_sparsity[1] = {0, 0};
+        auto decorator = problemd.make_decorator();
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, hess_row, hess_col),
+                Catch::Contains("Entries of sparsity must be unique"));
+    }
+
+    SECTION("Sorted elements") {
+        problemd.m_sparsity.resize(4);
+        problemd.m_sparsity[1] = {3, 2};
+        auto decorator = problemd.make_decorator();
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, hess_row, hess_col),
+                Catch::Contains("Entries of sparsity must be sorted"));
+    }
+
+    SECTION("Lower triangle") {
+        problemd.m_sparsity.resize(4);
+        problemd.m_sparsity[1] = {0};
+        auto decorator = problemd.make_decorator();
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, hess_row, hess_col),
+                Catch::Contains("only the upper triangle"));
 
     }
-    // TODO check that no element is duplicated, that each element has less
-    // than num_vars elements.
+
 }
+// TODO check that no element is duplicated, that each element has less
+// than num_vars elements.
 
 // TODO test reordering of sparsity pattern to match what ColPack likes.

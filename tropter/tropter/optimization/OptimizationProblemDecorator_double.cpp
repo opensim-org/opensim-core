@@ -162,16 +162,6 @@ calc_sparsity_hessian_lagrangian(
                 "calc_sparsity_hessian_lagrangian() is not implemented.")
         }
 
-        TROPTER_THROW_IF(sparsity.size() != num_vars, "Incorrect number of "
-                "rows in sparsity (actual: %i, expected: %i)",
-                sparsity.size(), num_vars);
-        for (int i = 0; i < (int)num_vars; ++i) {
-            assert(sparsity[i].size() < num_vars);
-        }
-        // TODO user must specify sparsity pattern in the order that
-        // TODO sort what the user provided so that the ordering matches what
-        // ColPack will give us.
-        // TODO make sure there are no duplicates.
     } else {
         // Dense upper triangle. TODO ColPack wants full sparsity
         for (int i = 0; i < (int)num_vars; ++i) {
