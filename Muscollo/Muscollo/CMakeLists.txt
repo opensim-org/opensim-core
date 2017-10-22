@@ -40,6 +40,16 @@ set_target_properties(osimMuscollo PROPERTIES
         PROJECT_LABEL "Library - osimMuscollo"
         FOLDER "Muscollo")
 
+if(MUSCOLLO_COPY_DEPENDENCIES)
+    if(APPLE)
+        set(rpath_macro "\@loader_path")
+    elseif(UNIX)
+        set(rpath_macro "\$ORIGIN")
+    endif()
+    set_property(TARGET osimMuscollo APPEND PROPERTY
+            INSTALL_RPATH "${rpath_macro}/")
+endif()
+
 if(WIN32)
    add_dependencies(osimMuscollo Copy_OpenSim_DLLs)
 endif()
