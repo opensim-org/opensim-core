@@ -36,8 +36,6 @@ install_name_tool_change(tropter dmumps /usr/local/opt/mumps/lib)
 install_name_tool_change(tropter mumps_common /usr/local/opt/mumps/lib)
 install_name_tool_change(tropter pord /usr/local/opt/mumps/lib)
 install_name_tool_change(tropter mpiseq /usr/local/opt/mumps/lib)
-# TODO will this work on other machines? link with Accelerate instead?
-install_name_tool_change(tropter openblasp-r0.2.20 /usr/local/opt/openblas/lib)
 install_name_tool_add_rpath(tropter)
 
 
@@ -54,7 +52,6 @@ install_name_tool_change(ipopt.1 dmumps /usr/local/opt/mumps/lib)
 install_name_tool_change(ipopt.1 mumps_common /usr/local/opt/mumps/lib)
 install_name_tool_change(ipopt.1 pord /usr/local/opt/mumps/lib)
 install_name_tool_change(ipopt.1 mpiseq /usr/local/opt/mumps/lib)
-install_name_tool_change(ipopt.1 openblasp-r0.2.20 /usr/local/opt/openblas/lib)
 
 # dmumps
 install_name_tool_id(dmumps)
@@ -83,12 +80,6 @@ install_name_tool_change(mpiseq gfortran.4 /usr/local/opt/gcc/lib/gcc/7)
 install_name_tool_change(mpiseq gcc_s.1 /usr/local/lib/gcc/7)
 install_name_tool_change(mpiseq quadmath.0 /usr/local/opt/gcc/lib/gcc/7)
 install_name_tool_add_rpath(mpiseq)
-
-# openblas
-install_name_tool_id(openblasp-r0.2.20)
-install_name_tool_change(openblasp-r0.2.20 gfortran.4 /usr/local/opt/gcc/lib/gcc/7)
-install_name_tool_change(openblasp-r0.2.20 quadmath.0 /usr/local/opt/gcc/lib/gcc/7)
-install_name_tool_add_rpath(openblasp-r0.2.20)
 
 # boost_system
 install_name_tool_id(boost_system)

@@ -18,7 +18,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             /usr/local/opt/mumps/lib/libmumps_common.dylib
             /usr/local/opt/mumps/lib/libpord.dylib
             /usr/local/opt/mumps/lib/libmpiseq.dylib
-            /usr/local/opt/openblas/lib/libopenblasp-r0.2.20.dylib
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     # This command must be invoked from the cmake subdirectory so that the
