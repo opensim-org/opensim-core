@@ -185,12 +185,11 @@ public:
     // SCALING
     //--------------------------------------------------------------------------
 
-    /**
-     * Calculate the path length in the current body position and store it for
-     * use after the Model has been scaled.
-     */
+    /** Calculate the path length in the current body position and store it for
+        use after the Model has been scaled. */
     void preScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
+    //TODO
     void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
     /** Recalculate the path after the Model has been scaled. */
