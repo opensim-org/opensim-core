@@ -157,8 +157,7 @@ public:
     /// of the objective and constraint functions. This is for use by the
     /// optimization solver, but users might call this if they are interested
     /// in obtaining the sparsity pattern or derivatives for their problem.
-    // TODO why can't this be a unique_ptr?
-    std::shared_ptr<OptimizationProblemDecorator> make_decorator()
+    std::unique_ptr<OptimizationProblemDecorator> make_decorator()
             const override final;
 
     // TODO can override to provide custom derivatives.
@@ -168,10 +167,9 @@ public:
 };
 
 template<typename T>
-std::shared_ptr<OptimizationProblemDecorator>
+std::unique_ptr<OptimizationProblemDecorator>
 OptimizationProblem<T>::make_decorator() const {
-    // TODO is this what we want? a shared_ptr??
-    return std::make_shared<Decorator>(*this);
+    return std::unique_ptr<Decorator>(new Decorator(*this));
 }
 
 template<typename T>

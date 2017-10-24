@@ -106,8 +106,7 @@ protected:
 
 
 
-    // TODO can this be a unique_ptr?
-    std::shared_ptr<OptimizationProblemDecorator> m_problem;
+    std::unique_ptr<OptimizationProblemDecorator> m_problem;
 
     template <typename T>
     using OptionsMap = std::unordered_map<std::string, Optional<T>>;

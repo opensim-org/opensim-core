@@ -40,7 +40,7 @@ namespace {
 // not if they capture variables (like the Decorator pointer).
 // TODO another option is to derive from snoptProblemA.
 // TODO another option is to pass the pointer within cu (see Drake).
-std::shared_ptr<const OptimizationProblemDecorator> probproxy = nullptr;
+const OptimizationProblemDecorator* probproxy = nullptr;
 }
 
 void snopt_userfunction(int*   /* Status */,
@@ -71,7 +71,7 @@ void snopt_userfunction(int*   /* Status */,
 
 double SNOPTSolver::optimize_impl(VectorXd& variables) const {
 
-    probproxy = m_problem;
+    probproxy = m_problem.get();
 
     // Allocate and initialize.
     int num_variables = m_problem->get_num_variables();
