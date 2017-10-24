@@ -112,6 +112,21 @@ void testSlidingMass() {
     }
 }
 
+void testSolverOptions() {
+    MucoTool muco = createSlidingMassMucoTool();
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_verbosity(3); // Invalid value.
+    SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
+
+    ms.set_optim_solver("nonexistant");
+    SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
+
+    // TODO MucoSolution does not give num_iterations yet.
+    //ms.set_max_iterations(1);
+    //MucoSolution solution = ms.solve();
+    //SimTK_TEST(solution.num_iterations == 1);
+}
+
 /*
 
 void testEmpty() {
@@ -270,6 +285,7 @@ void testBuildingProblem() {
 int main() {
     SimTK_START_TEST("testMuscolloInterface");
         SimTK_SUBTEST(testSlidingMass);
+        SimTK_SUBTEST(testSolverOptions);
         //SimTK_SUBTEST(testEmpty);
         //SimTK_SUBTEST(testCopy);
         //SimTK_SUBTEST(testSolveRepeatedly);

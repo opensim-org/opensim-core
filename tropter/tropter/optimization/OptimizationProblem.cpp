@@ -14,6 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #include "OptimizationProblem.h"
+#include <tropter/Exception.hpp>
 
 namespace tropter {
 
@@ -34,6 +35,12 @@ OptimizationProblemDecorator::make_initial_guess_from_bounds() const
         else guess[i] = 0;
     }
     return guess;
+}
+
+void OptimizationProblemDecorator::set_verbosity(int verbosity) {
+    TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
+            "verbosity", verbosity, "0 or 1");
+    m_verbosity = verbosity;
 }
 
 // Explicit instantiation.

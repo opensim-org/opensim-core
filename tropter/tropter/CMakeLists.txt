@@ -1,6 +1,7 @@
 add_library(tropter SHARED
         tropter.h
         common.h
+        utilities.h utilities.cpp
         Exception.h Exception.hpp Exception.cpp
         EigenUtilities.h
         optimization/AbstractOptimizationProblem.h
@@ -33,6 +34,9 @@ add_library(tropter SHARED
 #   b. when a client library links to this library ("INTERFACE").
 # SYSTEM means ignore compiler warnings; Ipopt presents warnings that we want
 # to avoid for our own code.
+
+target_link_libraries(tropter PUBLIC optional-lite)
+
 #target_link_libraries(tropter PRIVATE fmt::fmt)
 
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
@@ -97,7 +101,7 @@ endif()
 target_include_directories(tropter PUBLIC
         # Used by other targets in this project:
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tropter>
-        # Used by client projects using an installed version of Tropter.
+        # Used by client projects using an installed version of tropter.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(tropter PROPERTIES

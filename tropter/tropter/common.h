@@ -27,6 +27,8 @@
     #pragma warning(pop)
 #endif
 
+#include <tropter/optional-lite/optional.hpp>
+
 #include <Eigen/Dense>
 #include <fstream>
 
@@ -55,6 +57,13 @@ template<> struct NumTraits<adouble> : NumTraits<double>
 } // namespace Eigen
 
 namespace tropter {
+
+// optional-lite
+template <typename T>
+using Optional = nonstd::optional_lite::optional<T>;
+
+// Eigen
+// -----
 
 using VectorXa = Eigen::Matrix<adouble, Eigen::Dynamic, 1>;
 using MatrixXa = Eigen::Matrix<adouble, Eigen::Dynamic, Eigen::Dynamic>;

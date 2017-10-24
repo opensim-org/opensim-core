@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
+#include <tropter/utilities.h>
 #include "AbstractOptimizationProblem.h"
 #include <memory>
 #include <map>
@@ -85,9 +86,33 @@ public:
             double obj_factor,
             unsigned num_constraints, const double* lambda, bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const = 0;
+
+    /// 0 for silent, 1 for verbose.
+    void set_verbosity(int verbosity);
+    /// @copydoc set_verbosity()
+    int get_verbosity() const;
+
+protected:
+    template <typename ...Types>
+    void print(const std::string& format_string, Types... args) const;
 private:
     const AbstractOptimizationProblem& m_problem;
+
+    int m_verbosity = 1;
+
 };
+
+inline int OptimizationProblemDecorator::get_verbosity() const {
+    return m_verbosity;
+}
+
+template <typename ...Types>
+inline void OptimizationProblemDecorator::print(
+        const std::string& format_string, Types... args) const {
+    if (m_verbosity)
+        std::cout << "[tropter] " << format(format_string.c_str(), args...) <<
+                std::endl;
+}
 
 /// Users define an optimization problem by deriving from this class template.
 /// The type T determines how the derivatives of the objective and constraint
@@ -132,6 +157,7 @@ public:
     /// of the objective and constraint functions. This is for use by the
     /// optimization solver, but users might call this if they are interested
     /// in obtaining the sparsity pattern or derivatives for their problem.
+    // TODO why can't this be a unique_ptr?
     std::shared_ptr<OptimizationProblemDecorator> make_decorator()
             const override final;
 

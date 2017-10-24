@@ -20,6 +20,7 @@
 #include <Eigen/Dense>
 
 #include <memory>
+#include <unordered_map>
 
 namespace tropter {
 
@@ -32,19 +33,6 @@ class OptimizationSolver {
 public:
     /// Provide the problem to solve.
     OptimizationSolver(const AbstractOptimizationProblem& problem);
-    /// The maximum number of iterations the optimizer is allowed to take.
-    int get_max_iterations() const;
-    /// @copydoc get_max_iterations()
-    /// Set to -1 to use the optimizer's default setting.
-    void set_max_iterations(int setting);
-    /// Whether a full Hessian should be computed or if the Hessian
-    /// should be approximated from the gradient using BFGS updates.
-    /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
-    // TODO use enum.
-    const std::string& get_hessian_approximation() const;
-    /// @copydoc get_hessian_approximation()
-    /// Set to an empty string to use the optimizer's default.
-    void set_hessian_approximation(const std::string& setting);
     /// Optimize the optimization problem.
     /// @param[in,out] variables Pass in the initial guess to the problem, or
     ///     leave empty to use a naive initial guess based on the variables'
@@ -55,12 +43,96 @@ public:
     // TODO return struct that contains info about the optimizer's return
     // status.
     double optimize(Eigen::VectorXd& variables) const;
+
+    /// @name Set common options
+    /// @{
+
+    /// How much information should be spewed to the console?
+    /// 0: tropter and the underlying solver are silent.
+    /// 1: tropter is verbose, and the underlying solver uses its default
+    /// verbosity.
+    void set_verbosity(int value);
+    /// The maximum number of iterations the optimizer is allowed to take.
+    void set_max_iterations(int setting);
+    /// Whether a full Hessian should be computed or if the Hessian
+    /// should be approximated from the gradient using BFGS updates.
+    /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
+    void set_hessian_approximation(const std::string& setting);
+    /// @}
+
+    /// @name Set solver-specific advanced options.
+    /// @{
+
+    /// Print a list of the specific solver's available options (not
+    /// necessarily the ones you've set).
+    void print_available_options() const
+    {   print_available_options_impl(); }
+    /// If the name provided here maps onto the same option as one of the
+    /// non-advanced options above (e.g., set_max_iterations), then the value
+    /// set via set_option() overrides.
+    void set_advanced_option_string(const std::string& name,
+            const std::string& value);
+    /// If the name provided here maps onto the same option as one of the
+    /// non-advanced options above (e.g., set_max_iterations), then the value
+    /// set via set_option() overrides.
+    void set_advanced_option_int(const std::string& name, int value);
+    /// If the name provided here maps onto the same option as one of the
+    /// non-advanced options above (e.g., set_max_iterations), then the value
+    /// set via set_option() overrides.
+    void set_advanced_option_real(const std::string& name, double value);
+    /// @}
+
+    // TODO options for finite differeces.
+
+    /// @name Access values of options
+    /// @{
+
+    /// Print a list of options you've set and their current values.
+    void print_option_values() const;
+    /// @copydoc set_verbosity()
+    int get_verbosity() const;
+    /// @copydoc set_max_iterations()
+    Optional<int> get_max_iterations() const;
+    /// @copydoc set_hessian_approximation()
+    Optional<std::string> get_hessian_approximation() const;
+    /// @}
+
 protected:
     virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
-    std::shared_ptr<const OptimizationProblemDecorator> m_problem;
-    int m_max_iterations = -1;
-    std::string m_hessian_approximation = "";
+    virtual void get_available_options(
+            std::vector<std::string>& options_string,
+            std::vector<std::string>& options_int,
+            std::vector<std::string>& options_real) const;
+    virtual void print_available_options_impl() const {}
+
+
+
+    // TODO can this be a unique_ptr?
+    std::shared_ptr<OptimizationProblemDecorator> m_problem;
+
+    template <typename T>
+    using OptionsMap = std::unordered_map<std::string, Optional<T>>;
+
+    const OptionsMap<std::string>& get_advanced_options_string() const
+    {   return m_advanced_options_string; }
+    const OptionsMap<int>& get_advanced_options_int() const
+    {   return m_advanced_options_int; }
+    const OptionsMap<double>& get_advanced_options_real() const
+    {   return m_advanced_options_real; }
+
+private:
+    int m_verbosity;
+    Optional<int> m_max_iterations;
+    Optional<std::string> m_hessian_approximation;
+
+    OptionsMap<std::string> m_advanced_options_string;
+    OptionsMap<int> m_advanced_options_int;
+    OptionsMap<double> m_advanced_options_real;
 };
+
+inline void OptimizationSolver::get_available_options(
+        std::vector<std::string>&, std::vector<std::string>&,
+        std::vector<std::string>&) const {}
 
 } // namespace tropter
 
