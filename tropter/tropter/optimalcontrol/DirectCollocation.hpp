@@ -79,6 +79,7 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve(
         const OptimalControlIterate& initial_guess) const {
+    if (initial_guess.empty()) return solve();
     Eigen::VectorXd variables =
             m_transcription->construct_iterate(initial_guess, true);
     return solve_internal(variables);

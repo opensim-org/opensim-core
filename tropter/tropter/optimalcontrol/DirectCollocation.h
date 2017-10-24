@@ -95,6 +95,9 @@ public:
     ///
     /// The guess will be linearly interpolated to have the requested number of
     /// mesh points.
+    ///
+    /// If initial_guess is empty (see OptimalControlIterate::empty()), then
+    /// the no-argument solve() (above) is called.
     /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
     // TODO make it even easier to create an initial guess; e.g., creating a
     // guess template.

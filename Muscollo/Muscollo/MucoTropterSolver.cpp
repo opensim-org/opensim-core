@@ -294,17 +294,14 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     // TODO
 
-    /*
-    using TropterIterate = tropter::OptimalControlIterate;
-    tropter::OptimalControlSolution tropterSolution =
-            _guess ? dircol.solve(TropterIterate(_guess.getRef()))
-                   : dircol.solve();
-                   */
-    tropter::OptimalControlSolution tropterSolution = dircol.solve();
+    tropter::OptimalControlIterate tropIterate;
+    // TODO set based on guess if available. _guess.getRef().
+    // if (m_guess) tropIterate = m_guess.getRef();
+    tropter::OptimalControlSolution tropSolution = dircol.solve(tropIterate);
 
     if (get_verbosity()) {
-        dircol.print_constraint_values(tropterSolution);
+        dircol.print_constraint_values(tropSolution);
     }
 
-    return convert(tropterSolution);
+    return convert(tropSolution);
 }
