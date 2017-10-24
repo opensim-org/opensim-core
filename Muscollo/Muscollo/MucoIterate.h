@@ -128,6 +128,7 @@ private:
 class OSIMMUSCOLLO_API MucoSolution : public MucoIterate {
     using MucoIterate::MucoIterate;
     // TODO num_iterations
+    // TODO store the optimizer settings that were used.
 };
 
 } // namespace OpenSim

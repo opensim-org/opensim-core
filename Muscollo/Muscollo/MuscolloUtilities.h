@@ -55,10 +55,10 @@ void checkPropertyInSet(const Object& obj,
         }
         msg << obj.getConcreteClassName() << ") has invalid value "
                 << value << "; expected one of the following:";
-        std::string separator("");
+        std::string separator(" ");
         for (const auto& s : set) {
-            msg << " " << separator << s;
-            if (separator.empty()) separator = ",";
+            msg << separator << " " << s;
+            if (separator.empty()) separator = ", ";
         }
         msg << ".";
         OPENSIM_THROW(Exception, msg.str());

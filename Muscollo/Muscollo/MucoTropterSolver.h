@@ -51,6 +51,10 @@ public:
     "2 for output from tropter and the underlying solver (default: 2).");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
     "The optimization solver for tropter to use; ipopt (default), or snopt.");
+    OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
+    "Maximum number of iterations in the optimization solver.");
+    OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
+    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
     "IPOPT's verbosity (see IPOPT documentation).");
     // TODO must make more general for multiple phases, mesh refinement.

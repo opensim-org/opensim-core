@@ -164,6 +164,8 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
     constructProperty_verbosity(2);
     constructProperty_optim_solver("ipopt");
+    constructProperty_optim_max_iterations(-1);
+    constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_ipopt_print_level(-1);
 }
 
@@ -257,13 +259,20 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     int N = get_num_mesh_points();
 
     checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
             get_optim_solver(), N);
+
     dircol.set_verbosity(get_verbosity() >= 1);
 
     auto& optsolver = dircol.get_optimization_solver();
 
-    optsolver.set_hessian_approximation("limited-memory");
+    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
+            0, std::numeric_limits<int>::max(), {-1});
+    if (get_optim_max_iterations() != -1)
+        optsolver.set_max_iterations(get_optim_max_iterations());
+
+    optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {
         checkPropertyInRangeOrSet(*this, getProperty_optim_ipopt_print_level(),

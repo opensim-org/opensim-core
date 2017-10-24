@@ -58,6 +58,7 @@ public:
     /// should be approximated from the gradient using BFGS updates.
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
     void set_hessian_approximation(const std::string& setting);
+    // TODO void set_findiff_...
     /// @}
 
     /// @name Set solver-specific advanced options.
@@ -81,8 +82,6 @@ public:
     /// set via set_option() overrides.
     void set_advanced_option_real(const std::string& name, double value);
     /// @}
-
-    // TODO options for finite differeces.
 
     /// @name Access values of options
     /// @{

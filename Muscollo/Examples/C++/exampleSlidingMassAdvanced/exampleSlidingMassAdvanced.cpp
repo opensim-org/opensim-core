@@ -99,13 +99,13 @@ int main() {
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
-    // ms.set_optim_solver("ipopt");
-    ms.set_optim_ipopt_print_level(6);
-//    ms.set_optim_hessian_approximation("exact");
-//    ms.set_optim_max_iterations(50);
-//    ms.set_optim_constraint_tolerance(1e-5);
-//    ms.set_optim_convergence_tolerance(1e-5);
-//    ms.set_optim_finitediff_hessian_step_size(1e-3);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_ipopt_print_level(4);
+    ms.set_optim_max_iterations(50);
+    ms.set_optim_hessian_approximation("exact");
+    // ms.set_optim_constraint_tolerance(1e-5);
+    // ms.set_optim_convergence_tolerance(1e-5);
+    // ms.set_optim_findiff_hessian_step_size(1e-3);
 
     // Solve the problem.
     // ==================
