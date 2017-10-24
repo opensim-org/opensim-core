@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
+#include <tropter/Exception.h>
 #include <memory>
 
 namespace tropter {
@@ -43,7 +44,7 @@ public:
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_constraint_upper_bounds; }
 
-    /// WHen using finite differences to compute derivatives, should we use
+    /// When using finite differences to compute derivatives, should we use
     /// the user-supplied sparsity pattern of the Hessian (provided by
     /// implementing calc_sparsity_hessian_lagrangian())? If false, then we
     /// assume the Hessian is dense, which will have a very negative impact
@@ -82,8 +83,7 @@ public:
     /// TODO make it clear that it's the Hessian of the *Lagrangian*.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             std::vector<std::vector<unsigned int>>& sparsity) const;
-    class CalcSparsityHessianLagrangianNotImplemented
-            : public std::exception {};
+    class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
 
     virtual std::shared_ptr<OptimizationProblemDecorator>
     make_decorator() const = 0;
