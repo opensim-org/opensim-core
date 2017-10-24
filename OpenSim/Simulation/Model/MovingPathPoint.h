@@ -107,7 +107,9 @@ public:
 
     SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override; 
 
-   void scale(const SimTK::Vec3& aScaleFactors) override;
+    /** Scale the underlying MultiplierFunctions associated with the
+        MovingPathPoint. */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 private:
     void constructProperties();

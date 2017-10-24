@@ -109,6 +109,19 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
                                                 get_location(), aFrame);
 }
 
+void Station::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::scale(s, scaleSet);
+
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndex(getParentFrame().findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet.get(idx).getScaleFactors();
+
+    upd_location().elementwiseMultiply(scaleFactors);
+}
+
 SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
 {
     return getParentFrame().getTransformInGround(s)*get_location();

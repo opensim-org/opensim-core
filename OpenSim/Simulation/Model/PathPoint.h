@@ -66,7 +66,7 @@ public:
     void changeBodyPreserveLocation(const SimTK::State& s,
                                     const PhysicalFrame& body);
 
-    void scale(const SimTK::Vec3& scaleFactors) override;
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override {
         return SimTK::Vec3(0);

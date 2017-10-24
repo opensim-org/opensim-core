@@ -90,8 +90,20 @@ changeBodyPreserveLocation(const SimTK::State& s, const PhysicalFrame& frame)
     setParentFrame(frame);
 }
 
-void PathPoint::scale(const SimTK::Vec3& scaleFactors) {
-    auto& loc = upd_location();
-    loc = loc.elementwiseMultiply(scaleFactors);
-    updStation().upd_location() = loc;
+void PathPoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::scale(s, scaleSet);
+
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndex(getParentFrame().findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet.get(idx).getScaleFactors();
+
+    // Note: Currently, PathPoint and its Station subcomponent both have a
+    //       property named "location" and the values of these properties should
+    //       always match. We scale only PathPoint's "location" property here;
+    //       the "location" property on Station will be similarly adjusted when
+    //       Station's scale() method is called.
+    upd_location().elementwiseMultiply(scaleFactors);
 }
