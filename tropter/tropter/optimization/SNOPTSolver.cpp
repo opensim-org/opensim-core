@@ -40,7 +40,7 @@ namespace {
 // not if they capture variables (like the Decorator pointer).
 // TODO another option is to derive from snoptProblemA.
 // TODO another option is to pass the pointer within cu (see Drake).
-std::shared_ptr<const OptimizationProblemDecorator> probproxy = nullptr;
+const OptimizationProblemDecorator* probproxy = nullptr;
 }
 
 void snopt_userfunction(int*   /* Status */,
@@ -71,7 +71,7 @@ void snopt_userfunction(int*   /* Status */,
 
 double SNOPTSolver::optimize_impl(VectorXd& variables) const {
 
-    probproxy = m_problem;
+    probproxy = m_problem.get();
 
     // Allocate and initialize.
     int num_variables = m_problem->get_num_variables();
@@ -173,10 +173,24 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // The user has the option of calling  snJac  to define the
     // coordinate arrays (iAfun,jAvar,A) and (iGfun, jGvar).
     snopt_prob.setIntParameter("Derivative option", 0 /* TODO 1 */);
-    if (m_max_iterations != -1) { // TODO untested.
-        snopt_prob.setIntParameter("Iterations", m_max_iterations);
+    if (const auto opt = get_max_iterations()) { // TODO untested
+        snopt_prob.setIntParameter("Iterations", opt.value());
     }
     snopt_prob.setIntParameter("Verify level ", 3);
+
+    // TODO string options?
+    for (const auto& option : get_advanced_options_int()) {
+        if (option.second) {
+            snopt_prob.setIntParameter(option.first.c_str(),
+                    option.second.value());
+        }
+    }
+    for (const auto& option : get_advanced_options_real()) {
+        if (option.second) {
+            snopt_prob.setRealParameter(option.first.c_str(),
+                    option.second.value());
+        }
+    }
 
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
