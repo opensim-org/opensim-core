@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: exampleSlidingMass.cpp                                   *
+ * OpenSim Muscollo: exampleSlidingMassAdvanced.cpp                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,8 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// Translate a point mass in one dimension in minimum time. This is a very
-/// simple example that shows only the basics of Muscollo.
+/// Translate a point mass in one dimension in minimum time. This example
+/// also exhibits various features of the Muscollo interface.
 ///
 /// @verbatim
 /// minimize   t_f
@@ -98,24 +98,18 @@ int main() {
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
-
-    // TODO interface for setting these options:
-    // TODO ms.setOption("optim.hessian-approximation", "limited-memory");
-    // TODO ms.set_optimizer_algorithm("ipopt");
-
-
-    // Now that we've finished setting up the tool, print it to a file.
-    muco.print("sliding_mass.omuco");
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_ipopt_print_level(4);
+    ms.set_optim_max_iterations(50);
+    ms.set_optim_hessian_approximation("exact");
+    // ms.set_optim_constraint_tolerance(1e-5);
+    // ms.set_optim_convergence_tolerance(1e-5);
+    // ms.set_optim_findiff_hessian_step_size(1e-3);
 
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-
-    //solution.write("sliding_mass_solution.sto");
-
-    // Visualize.
-    // ==========
-    muco.visualize(solution);
 
     return EXIT_SUCCESS;
 }

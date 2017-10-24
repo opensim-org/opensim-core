@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include "Exception.h"
+#include "utilities.h"
 
 #include <sstream>
 

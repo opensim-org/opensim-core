@@ -117,8 +117,8 @@ calc_sparsity(const Eigen::VectorXd& x,
     m_jacobian_coloring->get_coordinate_format(
             jacobian_row_indices, jacobian_col_indices);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
-    std::cout << "[tropter] Number of finite difference perturbations required "
-            "for sparse Jacobian: " << num_jacobian_seeds << std::endl;
+    print("Number of finite difference perturbations required "
+            "for sparse Jacobian: %i", num_jacobian_seeds);
 
     // Allocate memory that is used in jacobian().
     m_constr_pos.resize(num_jac_rows);

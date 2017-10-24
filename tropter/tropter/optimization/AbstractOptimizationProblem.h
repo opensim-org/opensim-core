@@ -85,7 +85,7 @@ public:
             std::vector<std::vector<unsigned int>>& sparsity) const;
     class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
 
-    virtual std::shared_ptr<OptimizationProblemDecorator>
+    virtual std::unique_ptr<OptimizationProblemDecorator>
     make_decorator() const = 0;
 
 protected:

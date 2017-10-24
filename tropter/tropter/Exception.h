@@ -67,9 +67,6 @@ private:
         return filepath.substr(pos + 1);
     }
 
-    /// Format a string in the style of sprintf.
-    std::string format(const char* format, ...);
-
     std::string m_file;
     int m_line = -1;
     std::string m_func;
