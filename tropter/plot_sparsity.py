@@ -23,5 +23,5 @@ df = pd.read_csv(sys.argv[1])
 
 spmat = scipy.sparse.coo_matrix((np.ones_like(df.index),
         (df['row_indices'], df['column_indices'])))
-pl.spy(spmat)
+pl.spy(spmat, markersize=2, markeredgecolor='k', marker='.')
 pl.show()
