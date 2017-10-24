@@ -69,6 +69,7 @@ public:
 
     /// Get the sparsity pattern in coordinate (row, column) format.
     /// The length of both arguments will be the number of nonzeros.
+    /// This is the coordinate format used by ColPack in recover().
     void get_coordinate_format(std::vector<unsigned int>& row_indices,
             std::vector<unsigned int>& col_indices) const;
 
@@ -133,14 +134,20 @@ public:
 
     ~HessianColoring();
 
-    /// TODO
+    /// This matrix has dimensions num_variables x num_seeds, where num_seeds is
+    /// the ("minimal") number of directions in which to perturb. Each column of
+    /// this matrix is a perturbation direction.
     const Eigen::MatrixXd& get_seed_matrix() const { return m_seed; }
 
-    /// TODO
+    /// Get the sparsity pattern in coordinate (row, column) format.
+    /// The length of both arguments will be the number of nonzeros.
+    /// This is the coordinate format used by ColPack in recover().
     void get_coordinate_format(std::vector<unsigned int>& row_indices,
             std::vector<unsigned int>& col_indices) const;
 
-    /// TODO
+    /// Convert a compressed Hessian (num_variables x num_seeds) into the
+    /// corresponding coordinate format with (row, col) coordinates given by
+    /// get_coordinate_format().
     void recover(const Eigen::MatrixXd& hessian_compressed,
             double* hessian_sparse_coordinate_format);
 

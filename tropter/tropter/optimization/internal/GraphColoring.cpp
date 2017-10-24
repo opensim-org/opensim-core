@@ -21,7 +21,6 @@ void convert_sparsity_format(
         const std::vector<std::vector<unsigned int>>& sparsity,
         internal::UnsignedInt2DPtr& ADOLC_format, int& num_nonzeros) {
     int num_rows = (int)sparsity.size();
-    // TODO DEBUG
     //std::cout << "DEBUG sparsity\n" << std::endl;
     //for (int i = 0; i < (int)num_rows; ++i) {
     //    std::cout << i << ":";
