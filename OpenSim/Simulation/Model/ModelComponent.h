@@ -44,11 +44,11 @@
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Component.h>
-#include <OpenSim/Common/ScaleSet.h>
 
 namespace OpenSim {
 
 class Model;
+class ScaleSet;
 
 //==============================================================================
 //                            MODEL COMPONENT
