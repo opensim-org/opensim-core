@@ -91,6 +91,19 @@ public:
     /// @copydoc set_verbosity()
     int get_verbosity() const;
 
+    /// @name Options for finite differences
+    /// These options are only used when the scalar type is double.
+    /// @{
+
+    /// The finite difference step size used when approximating the Hessian.
+    /// (default: 1e-5, based on [1] section 9.2.4.4).
+    /// [1] Bohme TJ, Frank B. Hybrid Systems, Optimal Control and Hybrid
+    /// Vehicles: Theory, Methods and Applications. Springer 2017.
+    void set_findiff_hessian_step_size(double value);
+    /// @copydoc set_findiff_hessian_step_size()
+    double get_findiff_hessian_step_size() const;
+    /// @}
+
 protected:
     template <typename ...Types>
     void print(const std::string& format_string, Types... args) const;
@@ -98,11 +111,17 @@ private:
     const AbstractOptimizationProblem& m_problem;
 
     int m_verbosity = 1;
+    double m_findiff_hessian_step_size = 1e-5;
 
 };
 
 inline int OptimizationProblemDecorator::get_verbosity() const {
     return m_verbosity;
+}
+
+inline double OptimizationProblemDecorator::
+get_findiff_hessian_step_size() const {
+    return m_findiff_hessian_step_size;
 }
 
 template <typename ...Types>

@@ -275,8 +275,8 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         unsigned num_constraints, const double* lambda_raw,
         bool /*new_lambda */,
         unsigned num_hes_nonzeros, double* hessian_values_raw) const {
-    // Bomhe book has guidelines for step size.
-    const double eps = 1e-3; // TODO
+    // Bohme book has guidelines for step size (section 9.2.4.4).
+    const double eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
     // TODO m_x_working = Eigen::Map<const VectorXd>(xraw, num_variables);
     Eigen::Map<const VectorXd> x0(x_raw, num_variables);

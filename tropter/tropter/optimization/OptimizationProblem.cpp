@@ -43,6 +43,12 @@ void OptimizationProblemDecorator::set_verbosity(int verbosity) {
     m_verbosity = verbosity;
 }
 
+void OptimizationProblemDecorator::set_findiff_hessian_step_size(double value) {
+    TROPTER_VALUECHECK(value > 0, "findiff_hessian_step_size", value,
+            "positive");
+    m_findiff_hessian_step_size = value;
+}
+
 // Explicit instantiation.
 template class OptimizationProblem<double>;
 template class OptimizationProblem<adouble>;
