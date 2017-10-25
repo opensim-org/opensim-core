@@ -1,0 +1,109 @@
+namespace OpenSim {
+/** @mainpage
+
+OpenSim Muscollo is a software package for solving optimal control problems for
+musculoskeletal systems modeled in OpenSim.
+The package has Python, MATLAB, and XML (command-line) interfaces; the core
+library is written in C++. Here are some problems you can solve with Muscollo:
+
+1. Solve for the muscle activity that tracks a known motion.
+2. Solve for a new motion that optimizes some cost functional.
+3. Solve for mass properties that minimize residual "hand of God" forces.
+
+The optimal control problems are solved using the direct collocation method.
+Learning about direct collocation is beyond the scope of this documentation. See
+the following references:
+
+  - TODO Matt Kelly's paper.
+
+Muscollo can solve specific classes of problems, such as tracking, TODO, and
+also has a generic interface for solving custom optimal control problems.
+
+@note Solving a custom optimal control problem with direct collocation is not
+easy, and requires significant tuning of the direct collocation method's
+settings. Use the more specific interfaces if possible; and only create a custom
+problem as a last resort.
+
+Parts of the documentation:
+  - @ref userguide
+
+
+
+@page userguide User Guide
+
+@tableofcontents
+
+TODO
+
+MucoFramework
+MucoTrack
+
+Example
+-------
+
+TODO
+
+The interface to Muscollo starts with the MucoTool. The MucoTool contains a
+MucoProblem and a MucoSolver.
+
+  - MucoProblem: describes the variables, dynamics, constraints, and cost
+      functional of the optimal control problem.
+  - MucoSolver: solves the MucoProblem using direct collocation.
+
+
+Workflow
+--------
+When building a MucoTool programmatically (e.g., in C++), the workflow is as
+follows:
+
+1. Build the MucoProblem (set the model, constraints, etc.).
+2. Call MucoTool::initSolver(), which returns a reference to the MucoSolver.
+   After this, you cannot edit the MucoProblem.
+3. Edit the settings of the MucoSolver (returned by initSolver()).
+4. Call MucoTool::solve(). This returns the MucoSolution.
+5. (Optional) Postprocess the solution, perhaps using MucoTool::visualize().
+
+After calling solve(), you can edit the MucoProblem and/or the MucoSolver.
+You can then call solve() again, if you wish.
+
+
+%MucoProblem
+------------
+
+A MucoProblem contains multiple phases.
+
+TODO describe bounds (set automatically based on the model).
+
+    ///     The bounds on this state variable over the entire phase. If
+    ///     default-constructed (`{}`), and the state is *not* a coordinate
+    ///     value, then no bounds are applied. If default-constructed, the state
+    ///     *is* a coordinate value and the coordinate's **clamped** property is
+    ///     true, then the bounds are set to the coordinate's **range** (see
+    ///     Coordinate::clamped and Coordinate::range). (TODO)
+
+### Defining the cost functional
+
+See @ref mucocost for more information.
+
+%MucoSolver
+-----------
+
+A MucoSolver attempts to use an optimal control method to solve the MucoProblem,
+and exposes the settings that you can use to
+
+
+Tips for solving a custom problem
+---------------------------------
+
+1. Make sure every variable has bounds.
+
+*/
+
+/**
+@defgroup mucocost Available cost terms
+
+These are the available cost terms you can use in your cost functional. If none
+of these satisfy your needs, you can define your own using a plugin.
+*/
+}
+

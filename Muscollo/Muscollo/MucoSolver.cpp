@@ -38,5 +38,7 @@ void MucoSolver::resetProblem(const MucoProblem& problem) {
 }
 
 MucoSolution MucoSolver::solve() const {
+    OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set; perhaps you "
+            "called updProblem()? Call resetProblem() with a problem.");
     return solveImpl();
 }

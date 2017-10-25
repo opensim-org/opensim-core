@@ -29,8 +29,15 @@ public:
             : OptimizationSolver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
+    static void print_available_options();
 protected:
     double optimize_impl(Eigen::VectorXd& variables) const override;
+    void get_available_options(
+            std::vector<std::string>&, std::vector<std::string>&,
+            std::vector<std::string>&) const override;
+    void print_available_options_impl() const override {
+        IPOPTSolver::print_available_options();
+    }
 private:
     class TNLP;
 };

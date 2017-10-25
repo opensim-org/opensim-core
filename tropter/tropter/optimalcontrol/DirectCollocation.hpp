@@ -62,6 +62,14 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
 }
 
 template<typename T>
+void DirectCollocationSolver<T>::set_verbosity(int verbosity) {
+    TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
+            "verbosity", verbosity, "0 or 1");
+    m_optsolver->set_verbosity(verbosity);
+    m_verbosity = verbosity;
+}
+
+template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve() const
 {
     Eigen::VectorXd variables;
@@ -71,6 +79,7 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve(
         const OptimalControlIterate& initial_guess) const {
+    if (initial_guess.empty()) return solve();
     Eigen::VectorXd variables =
             m_transcription->construct_iterate(initial_guess, true);
     return solve_internal(variables);

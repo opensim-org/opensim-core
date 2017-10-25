@@ -30,7 +30,7 @@ class IPOPTSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
-    TNLP(std::shared_ptr<const OptimizationProblemDecorator> problem);
+    TNLP(const OptimizationProblemDecorator& problem);
     void initialize(const Eigen::VectorXd& guess);
     const Eigen::VectorXd& get_solution() const
     {
@@ -97,7 +97,7 @@ private:
     // Members.
 //    const OptimizationProblemDecorator& m_problem;
     // TODO reconsider the type of this variable:
-    std::shared_ptr<const OptimizationProblemDecorator> m_problem;
+    const OptimizationProblemDecorator& m_problem;
 
     unsigned m_num_variables = std::numeric_limits<unsigned>::max();
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
@@ -118,27 +118,56 @@ private:
     // TODO what about for lagrangian??
 };
 
+void IPOPTSolver::print_available_options() {
+    Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
+    app->Options()->SetStringValue("print_options_documentation", "yes");
+    app->Initialize();
+}
+
 double IPOPTSolver::optimize_impl(VectorXd& variables) const {
-    Ipopt::SmartPtr<TNLP> nlp = new TNLP(m_problem);
+    Ipopt::SmartPtr<TNLP> nlp = new TNLP(*m_problem.get());
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
     nlp->initialize(variables);
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
-    if (m_max_iterations != -1) {
-        app->Options()->SetIntegerValue("max_iter", m_max_iterations);
+    auto ipoptions = app->Options();
+    if (get_verbosity() == 0) {
+        ipoptions->SetIntegerValue("print_level", 0);
     }
-    // TODO app->Options()->SetStringValue("derivative_test", "second-order");
-    if (!m_hessian_approximation.empty()) {
-        TROPTER_THROW_IF(m_hessian_approximation != "exact"
-                && m_hessian_approximation != "limited-memory",
+    if (const auto opt = get_max_iterations()) {
+        ipoptions->SetIntegerValue("max_iter", opt.value());
+    }
+    if (const auto opt = get_hessian_approximation()) {
+        const auto& value = opt.value();
+        TROPTER_THROW_IF(value != "exact" && value != "limited-memory",
                 "When using Ipopt, the 'hessian_approximation' setting must be "
                 "either 'exact' or 'limited-memory', but '%s' was provided.",
-                m_hessian_approximation);
-        app->Options()->SetStringValue("hessian_approximation",
-                m_hessian_approximation);
+                value);
+        ipoptions->SetStringValue("hessian_approximation", value);
     }
+
+    // Set advanced options.
+    for (const auto& option : get_advanced_options_string()) {
+        if (option.second) {
+            ipoptions->SetStringValue(option.first, option.second.value());
+        }
+    }
+    for (const auto& option : get_advanced_options_int()) {
+        if (option.second) {
+            ipoptions->SetIntegerValue(option.first, option.second.value());
+        }
+    }
+    for (const auto& option : get_advanced_options_real()) {
+        if (option.second) {
+            ipoptions->SetNumericValue(option.first, option.second.value());
+        }
+    }
+    //std::string all_options;
+    //app->Options()->PrintList(all_options);
+    //std::cout << all_options << std::endl;
+    // TODO app->Options()->SetStringValue("derivative_test", "second-order");
     //app->Options()->SetStringValue("linear_solver", "ma97");
     //app->Options()->SetNumericValue("tol", 1e-5);
     Ipopt::ApplicationReturnStatus status;
@@ -166,11 +195,11 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
 }
 
 IPOPTSolver::TNLP::TNLP(
-        std::shared_ptr<const OptimizationProblemDecorator> problem)
+        const OptimizationProblemDecorator& problem)
         : m_problem(problem)
 {
-    m_num_variables = m_problem->get_num_variables();
-    m_num_constraints = m_problem->get_num_constraints();
+    m_num_variables = m_problem.get_num_variables();
+    m_num_constraints = m_problem.get_num_constraints();
 }
 
 bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
@@ -179,8 +208,8 @@ bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
                                      Index& num_nonzeros_hessian,
                                      IndexStyleEnum& index_style)
 {
-    num_variables = m_problem->get_num_variables();
-    num_constraints = m_problem->get_num_constraints();
+    num_variables = m_problem.get_num_variables();
+    num_constraints = m_problem.get_num_constraints();
     num_nonzeros_jacobian = m_jacobian_num_nonzeros;
     num_nonzeros_hessian = m_hessian_num_nonzeros;
     index_style = TNLP::C_STYLE;
@@ -202,7 +231,7 @@ void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
     assert(guess.size() == m_num_variables);
 
     // TODO use VectorXi for the sparsity pattern? allows not initializing.
-    m_problem->calc_sparsity(guess,
+    m_problem.calc_sparsity(guess,
             m_jacobian_row_indices, m_jacobian_col_indices,
             m_hessian_row_indices, m_hessian_col_indices);
     m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
@@ -219,8 +248,8 @@ bool IPOPTSolver::TNLP::get_bounds_info(
     // TODO efficient copying.
 
     // TODO make sure bounds have been set.
-    const auto& variable_lower = m_problem->get_variable_lower_bounds();
-    const auto& variable_upper = m_problem->get_variable_upper_bounds();
+    const auto& variable_lower = m_problem.get_variable_lower_bounds();
+    const auto& variable_upper = m_problem.get_variable_upper_bounds();
     assert((variable_lower.array() <= variable_upper.array()).all());
     for (Index ivar = 0; ivar < num_variables; ++ivar) {
         // TODO can get rid of this in favor of the vectorized version.
@@ -231,8 +260,8 @@ bool IPOPTSolver::TNLP::get_bounds_info(
         x_upper[ivar] = variable_upper[ivar];
     }
     // TODO do not assume that there are no inequality constraints.
-    const auto& constraint_lower = m_problem->get_constraint_lower_bounds();
-    const auto& constraint_upper = m_problem->get_constraint_upper_bounds();
+    const auto& constraint_lower = m_problem.get_constraint_lower_bounds();
+    const auto& constraint_upper = m_problem.get_constraint_upper_bounds();
     if (    constraint_lower.size() != (unsigned)num_constraints ||
             constraint_upper.size() != (unsigned)num_constraints) {
         // TODO better error handling.
@@ -277,7 +306,7 @@ bool IPOPTSolver::TNLP::eval_f(
         Index num_variables, const Number* x, bool new_x,
         Number& obj_value) {
     assert((unsigned)num_variables == m_num_variables);
-    m_problem->calc_objective(num_variables, x, new_x, obj_value);
+    m_problem.calc_objective(num_variables, x, new_x, obj_value);
     return true;
 }
 
@@ -285,7 +314,7 @@ bool IPOPTSolver::TNLP::eval_grad_f(
         Index num_variables, const Number* x, bool new_x,
         Number* grad_f) {
     assert((unsigned)num_variables == m_num_variables);
-    m_problem->calc_gradient(num_variables, x, new_x, grad_f);
+    m_problem.calc_gradient(num_variables, x, new_x, grad_f);
     return true;
 }
 
@@ -295,7 +324,7 @@ bool IPOPTSolver::TNLP::eval_g(
     assert((unsigned)num_variables   == m_num_variables);
     assert((unsigned)num_constraints == m_num_constraints);
     //// TODO if (!num_constraints) return true;
-    m_problem->calc_constraints(num_variables, x, new_x, num_constraints, g);
+    m_problem.calc_constraints(num_variables, x, new_x, num_constraints, g);
     return true;
 }
 
@@ -316,7 +345,7 @@ bool IPOPTSolver::TNLP::eval_jac_g(
         return true;
     }
 
-    m_problem->calc_jacobian(num_variables, x, new_x, num_nonzeros_jacobian,
+    m_problem.calc_jacobian(num_variables, x, new_x, num_nonzeros_jacobian,
             values);
 
     return true;
@@ -338,7 +367,7 @@ bool IPOPTSolver::TNLP::eval_h(
 
     // TODO use obj_factor here to determine what computation to do exactly.
 
-    m_problem->calc_hessian_lagrangian(num_variables, x, new_x, obj_factor,
+    m_problem.calc_hessian_lagrangian(num_variables, x, new_x, obj_factor,
             num_constraints, lambda, new_lambda,
             num_nonzeros_hessian, values);
 
@@ -374,3 +403,241 @@ void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
 }
 
 
+
+
+void IPOPTSolver::get_available_options(
+        std::vector<std::string>& options_string,
+        std::vector<std::string>& options_int,
+        std::vector<std::string>& options_real) const {
+    options_string = {
+            "output_file",
+            "print_user_options",
+            "print_options_documentation",
+            "print_timing_statistics",
+            "option_file_name",
+            "replace_bounds",
+            "skip_finalize_solution_call",
+            "print_info_string",
+            "inf_pr_output",
+            "nlp_scaling_method",
+            "fixed_variable_treatment",
+            "dependency_detector",
+            "dependency_detection_with_rhs",
+            "honor_original_bounds",
+            "check_derivatives_for_naninf",
+            "jac_c_constant",
+            "jac_d_constant",
+            "hessian_constant",
+            "bound_mult_init_method",
+            "least_square_init_primal",
+            "least_square_init_duals",
+            "adaptive_mu_globalization",
+            "adaptive_mu_restore_previous_iterate",
+            "adaptive_mu_kkt_norm_type",
+            "mu_strategy",
+            "mu_oracle",
+            "fixed_mu_oracle",
+            "mu_allow_fast_monotone_decrease",
+            "quality_function_norm_type",
+            "quality_function_centrality",
+            "quality_function_balancing_term",
+            "line_search_method",
+            "accept_every_trial_step",
+            "alpha_for_y",
+            "corrector_type",
+            "skip_corr_if_neg_curv",
+            "skip_corr_in_monotone_mode",
+            "recalc_y",
+            "constraint_violation_norm_type",
+            "warm_start_init_point",
+            "warm_start_same_structure",
+            "warm_start_entire_iterate",
+            "linear_solver",
+            "linear_system_scaling",
+            "linear_scaling_on_demand",
+            "mehrotra_algorithm",
+            "fast_step_computation",
+            "neg_curv_test_reg",
+            "perturb_always_cd",
+            "expect_infeasible_problem",
+            "start_with_resto",
+            "evaluate_orig_obj_at_resto_trial",
+            "derivative_test",
+            "derivative_test_print_all",
+            "jacobian_approximation",
+            "limited_memory_aug_solver",
+            "limited_memory_update_type",
+            "limited_memory_initialization",
+            "limited_memory_special_for_resto",
+            "hessian_approximation",
+            "hessian_approximation_space",
+            "ma27_skip_inertia_check",
+            "ma27_ignore_singularity",
+            "ma57_automatic_scaling",
+            "pardiso_matching_strategy",
+            "pardiso_redo_symbolic_fact_only_if_inertia_wrong",
+            "pardiso_repeated_perturbation_means_singular",
+            "pardiso_skip_inertia_check",
+            "pardiso_order",
+            "pardiso_iterative"
+    };
+    options_int = {
+            "print_level",
+            "file_print_level",
+            "print_frequency_iter",
+            "print_frequency_time",
+            "max_iter",
+            "acceptable_iter",
+            "num_linear_variables",
+            "adaptive_mu_kkterror_red_iters",
+            "quality_function_max_section_steps",
+            "accept_after_max_steps",
+            "watchdog_shortened_iter_trigger",
+            "watchdog_trial_iter_max",
+            "max_soc",
+            "max_filter_resets",
+            "filter_reset_trigger",
+            "soc_method",
+            "min_refinement_steps",
+            "max_refinement_steps",
+            "max_soft_resto_iters",
+            "max_resto_iter",
+            "derivative_test_first_index",
+            "limited_memory_max_history",
+            "limited_memory_max_skipping",
+            "ma57_pivot_order",
+            "ma57_block_size",
+            "ma57_node_amalgamation",
+            "ma57_small_pivot_flag",
+            "pardiso_msglvl",
+            "pardiso_max_iterative_refinement_steps",
+            "pardiso_max_iter",
+            "pardiso_iter_coarse_size",
+            "pardiso_iter_max_levels",
+            "pardiso_iter_max_row_fill",
+            "pardiso_max_droptol_corrections",
+            "mumps_permuting_scaling",
+            "mumps_pivot_order",
+            "mumps_scaling"
+    };
+    options_real = {
+            "tol",
+            "s_max",
+            "max_cpu_time",
+            "dual_inf_tol",
+            "constr_viol_tol",
+            "compl_inf_tol",
+            "acceptable_tol",
+            "acceptable_dual_inf_tol",
+            "acceptable_constr_viol_tol",
+            "acceptable_compl_inf_tol",
+            "acceptable_obj_change_tol",
+            "diverging_iterates_tol",
+            "mu_target",
+            "obj_scaling_factor",
+            "nlp_scaling_max_gradient",
+            "nlp_scaling_obj_target_gradient",
+            "nlp_scaling_constr_target_gradient",
+            "nlp_scaling_min_value",
+            "nlp_lower_bound_inf",
+            "nlp_upper_bound_inf",
+            "kappa_d",
+            "bound_relax_factor",
+            "bound_push",
+            "bound_frac",
+            "slack_bound_push",
+            "slack_bound_frac",
+            "constr_mult_init_max",
+            "bound_mult_init_val",
+            "mu_max_fact",
+            "mu_max",
+            "mu_min",
+            "adaptive_mu_kkterror_red_fact",
+            "filter_margin_fact",
+            "filter_max_margin",
+            "adaptive_mu_monotone_init_factor",
+            "mu_init",
+            "barrier_tol_factor",
+            "mu_linear_decrease_factor",
+            "mu_superlinear_decrease_power",
+            "tau_min",
+            "sigma_max",
+            "sigma_min",
+            "quality_function_section_sigma_tol",
+            "quality_function_section_qf_tol",
+            "alpha_red_factor",
+            "alpha_for_y_tol",
+            "tiny_step_tol",
+            "tiny_step_y_tol",
+            "theta_max_fact",
+            "theta_min_fact",
+            "eta_phi",
+            "delta",
+            "s_phi",
+            "s_theta",
+            "gamma_phi",
+            "gamma_theta",
+            "alpha_min_frac",
+            "kappa_soc",
+            "obj_max_inc",
+            "corrector_compl_avrg_red_fact",
+            "nu_init",
+            "nu_inc",
+            "rho",
+            "kappa_sigma",
+            "recalc_y_feas_tol",
+            "slack_move",
+            "warm_start_bound_push",
+            "warm_start_bound_frac",
+            "warm_start_slack_bound_push",
+            "warm_start_slack_bound_frac",
+            "warm_start_mult_bound_push",
+            "warm_start_mult_init_max",
+            "residual_ratio_max",
+            "residual_ratio_singular",
+            "residual_improvement_factor",
+            "neg_curv_test_tol",
+            "max_hessian_perturbation",
+            "min_hessian_perturbation",
+            "perturb_inc_fact_first",
+            "perturb_inc_fact",
+            "perturb_dec_fact",
+            "first_hessian_perturbation",
+            "jacobian_regularization_value",
+            "jacobian_regularization_exponent",
+            "expect_infeasible_problem_ctol",
+            "expect_infeasible_problem_ytol",
+            "soft_resto_pderror_reduction_factor",
+            "required_infeasibility_reduction",
+            "resto_penalty_parameter",
+            "resto_proximity_weight",
+            "bound_mult_reset_threshold",
+            "constr_mult_reset_threshold",
+            "resto_failure_feasibility_threshold",
+            "derivative_test_perturbation",
+            "derivative_test_tol",
+            "findiff_perturbation",
+            "point_perturbation_radius",
+            "limited_memory_init_val",
+            "limited_memory_init_val_max",
+            "limited_memory_init_val_min",
+            "ma27_pivtol",
+            "ma27_pivtolmax",
+            "ma27_liw_init_factor",
+            "ma27_la_init_factor",
+            "ma27_meminc_factor",
+            "ma57_pivtol",
+            "ma57_pivtolmax",
+            "ma57_pre_alloc",
+            "pardiso_iter_relative_tol",
+            "pardiso_iter_dropping_factor",
+            "pardiso_iter_dropping_schur",
+            "pardiso_iter_inverse_norm_factor",
+            "mumps_pivtol",
+            "mumps_pivtolmax",
+            "mumps_mem_percent",
+            "mumps_dep_tol",
+            "ma28_pivtol",
+            "warm_start_target_mu"
+    };
+}

@@ -16,9 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "MucoIterate.h"
+#include "MucoProblem.h"
 #include "MuscolloUtilities.h"
 
-#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/FileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -102,9 +103,11 @@ Storage MucoIterate::exportToStatesStorage() const {
     return convertTableToStorage(table);
 }
 
-StatesTrajectory MucoIterate::exportToStatesTrajectory(const Model& model)
-        const {
+StatesTrajectory MucoIterate::exportToStatesTrajectory(
+        const MucoProblem& problem) const {
     Storage storage = exportToStatesStorage();
+    // TODO update when we support multiple phases.
+    const auto& model = problem.getPhase(0).getModel();
     return StatesTrajectory::createFromStatesStorage(model, storage);
 }
 

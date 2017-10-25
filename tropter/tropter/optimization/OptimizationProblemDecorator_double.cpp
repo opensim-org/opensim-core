@@ -140,8 +140,8 @@ calc_sparsity(const Eigen::VectorXd& /*x*/,
     // Convert the seed matrix into an Eigen Matrix for ease of use; delete
     // the memory that ColPack created for the seed matrix.
     const int num_jacobian_seeds = jacobian_seed_num_cols;
-    std::cout << "[tropter] Number of finite difference perturbations required "
-            "for sparse Jacobian: " << num_jacobian_seeds << std::endl;
+    print("Number of finite difference perturbations required "
+            "for sparse Jacobian: %i", num_jacobian_seeds);
     m_jacobian_seed.resize(jacobian_seed_num_rows, jacobian_seed_num_cols);
     for (int i = 0; i < jacobian_seed_num_rows; ++i) {
         for (int j = 0; j < jacobian_seed_num_cols; ++j) {

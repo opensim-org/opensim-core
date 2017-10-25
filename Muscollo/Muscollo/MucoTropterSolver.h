@@ -31,18 +31,41 @@ namespace OpenSim {
 
 class MucoProblem;
 
+/// Solve the MucoProblem using the **tropter** direct collocation library.
+/// **tropter** is a free and open-source C++ library that supports computing
+/// the Jacobian and Hessian via either automatic differentiation or finite
+/// differences, and uses IPOPT for solving the nonlinear optimization problem.
+///
+/// This class allows you to configure tropter's settings.
+///
+/// Using this solver in C++ requires that a tropter shared library is
+/// available, but tropter header files are not required. No tropter symbols
+/// are exposed in Muscollo's interface.
 class OSIMMUSCOLLO_API MucoTropterSolver : public MucoSolver {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoTropterSolver, MucoSolver);
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_points, int,
-            "The number of mesh points for discretizing the problem "
-            "(default: 100).");
+    "The number of mesh points for discretizing the problem (default: 100).");
+    OpenSim_DECLARE_PROPERTY(verbosity, int,
+    "0 for silent. 1 for only Muscollo's own output. "
+    "2 for output from tropter and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
+    "The optimization solver for tropter to use; ipopt (default), or snopt.");
+    OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
+    "Maximum number of iterations in the optimization solver.");
+    OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
+    "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+    OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
+    "IPOPT's verbosity (see IPOPT documentation).");
     // TODO must make more general for multiple phases, mesh refinement.
     // TODO mesh_point_frequency if time is fixed.
 
     MucoTropterSolver();
 
     explicit MucoTropterSolver(const MucoProblem& problem);
+
+    /// Print the available options for the underlying optimization solver.
+    static void printOptimizationSolverOptions(std::string solver = "ipopt");
 
 protected:
 
@@ -62,7 +85,7 @@ private:
     void constructProperties();
 
     mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-            _tropProblem;
+            m_tropProblem;
 
 };
 

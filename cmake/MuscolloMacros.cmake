@@ -43,3 +43,44 @@ function(MuscolloCopyDLLs)
         endif()
     endif()
 endfunction()
+
+# Add a target to the Muscollo project for building an example with the given
+# NAME. The example must be within a source file named ${NAME}.cpp.
+# This function also installs the example file with a CMakeLists that can find
+# the Muscollo installation and build the example.
+#
+# This function can only be used from the source distribution of Muscollo
+# (e.g., not via the UseMuscollo.cmake file in a binary distribution).
+function(MuscolloAddExampleCXX)
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs)
+    cmake_parse_arguments(MUCOEX
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    add_executable(${MUCOEX_NAME} ${MUCOEX_NAME}.cpp)
+    set_target_properties(${MUCOEX_NAME} PROPERTIES
+            FOLDER "Muscollo/Examples")
+    target_link_libraries(${MUCOEX_NAME} osimMuscollo)
+
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            DESTINATION ${MUSCOLLO_INSTALL_EXAMPLEDIR}/C++
+            PATTERN "CMakeLists.txt" EXCLUDE)
+
+    set(_example_install_dir ${MUSCOLLO_INSTALL_EXAMPLEDIR}/C++/${MUCOEX_NAME})
+    # These next two variables are to be configured below (they are not used
+    # here, but within CMakeListsToInstall.txt.in).
+    set(_example_name ${MUCOEX_NAME})
+    file(RELATIVE_PATH _muscollo_install_hint
+            "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
+            "${CMAKE_INSTALL_PREFIX}")
+    configure_file(
+            "${CMAKE_SOURCE_DIR}/Muscollo/Examples/C++/CMakeListsToInstall.txt.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/CMakeListsToInstall.txt"
+            @ONLY)
+
+    install(FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/CMakeListsToInstall.txt"
+            DESTINATION ${_example_install_dir}
+            RENAME CMakeLists.txt)
+endfunction()

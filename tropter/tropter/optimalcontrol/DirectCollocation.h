@@ -67,6 +67,13 @@ public:
     OptimizationSolver& get_optimization_solver() {
         return *m_optsolver.get();
     }
+
+    /// 0 for silent, 1 for verbose. This setting is copied into the
+    /// underlying solver.
+    void set_verbosity(int verbosity);
+    /// @copydoc set_verbosity()
+    int get_verbosity() const { return m_verbosity; }
+
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
     OptimalControlSolution solve() const;
@@ -88,6 +95,9 @@ public:
     ///
     /// The guess will be linearly interpolated to have the requested number of
     /// mesh points.
+    ///
+    /// If initial_guess is empty (see OptimalControlIterate::empty()), then
+    /// the no-argument solve() (above) is called.
     /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
     // TODO make it even easier to create an initial guess; e.g., creating a
     // guess template.
@@ -106,6 +116,8 @@ private:
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Base<T>> m_transcription;
     std::unique_ptr<OptimizationSolver> m_optsolver;
+
+    int m_verbosity = 1;
 };
 
 //namespace transcription {

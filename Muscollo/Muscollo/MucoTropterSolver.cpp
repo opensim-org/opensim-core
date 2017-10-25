@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 #include "MucoTropterSolver.h"
 #include "MucoProblem.h"
+#include "MuscolloUtilities.h"
 
 #include <tropter/tropter.h>
 
@@ -106,6 +107,7 @@ public:
                 &m_state.updY()[0]);
         //
         // TODO do not copy? I think this will still make a copy:
+        // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
         auto& osimControls = m_model.updControls(m_state);
@@ -160,14 +162,19 @@ MucoTropterSolver::MucoTropterSolver() {
 
 void MucoTropterSolver::constructProperties() {
     constructProperty_num_mesh_points(100);
+    constructProperty_verbosity(2);
+    constructProperty_optim_solver("ipopt");
+    constructProperty_optim_max_iterations(-1);
+    constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_optim_ipopt_print_level(-1);
 }
 
 std::shared_ptr<const tropter::OptimalControlProblem<double>>
 MucoTropterSolver::getTropterProblem() const {
-    if (!_tropProblem) {
-        _tropProblem = std::make_shared<OCProblem<double>>(*this);
+    if (!m_tropProblem) {
+        m_tropProblem = std::make_shared<OCProblem<double>>(*this);
     }
-    return _tropProblem;
+    return m_tropProblem;
 }
 
 void MucoTropterSolver::resetProblemImpl() {
@@ -228,30 +235,73 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
     return tropIter;
 }
 
+void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
+    if (solver == "ipopt") {
+        tropter::IPOPTSolver::print_available_options();
+    } else {
+        std::cout << "No info available for " << solver << " options." <<
+                std::endl;
+    }
+}
+
 MucoSolution MucoTropterSolver::solveImpl() const {
 
     auto ocp = getTropterProblem();
-    ocp->print_description();
 
+    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+    if (get_verbosity()) {
+        ocp->print_description();
+    }
+
+    // Apply settings/options.
+    // -----------------------
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
     int N = get_num_mesh_points();
-    OPENSIM_THROW_IF_FRMOBJ(N <= 0, Exception,
-            "Invalid number of mesh points (" + std::to_string(N) + ")");
 
-    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
-            N);
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+
+    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
+            get_optim_solver(), N);
+
+    dircol.set_verbosity(get_verbosity() >= 1);
+
+    auto& optsolver = dircol.get_optimization_solver();
+
+    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
+            0, std::numeric_limits<int>::max(), {-1});
+    if (get_optim_max_iterations() != -1)
+        optsolver.set_max_iterations(get_optim_max_iterations());
+
+    optsolver.set_hessian_approximation(get_optim_hessian_approximation());
+
+    if (get_optim_solver() == "ipopt") {
+        checkPropertyInRangeOrSet(*this, getProperty_optim_ipopt_print_level(),
+                0, 12, {-1});
+        if (get_verbosity() < 2) {
+            optsolver.set_advanced_option_int("print_level", 0);
+        } else {
+            if (get_optim_ipopt_print_level() != -1) {
+                optsolver.set_advanced_option_int("print_level",
+                        get_optim_ipopt_print_level());
+            }
+        }
+    }
+
+    // Set advanced settings.
+    //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {
+    //    optsolver.set_advanced_option(TODO);
+    //}
 
     // TODO
-    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
 
-    /*
-    using TropterIterate = tropter::OptimalControlIterate;
-    tropter::OptimalControlSolution tropterSolution =
-            _guess ? dircol.solve(TropterIterate(_guess.getRef()))
-                   : dircol.solve();
-                   */
-    tropter::OptimalControlSolution tropterSolution = dircol.solve();
+    tropter::OptimalControlIterate tropIterate;
+    // TODO set based on guess if available. _guess.getRef().
+    // if (m_guess) tropIterate = m_guess.getRef();
+    tropter::OptimalControlSolution tropSolution = dircol.solve(tropIterate);
 
-    dircol.print_constraint_values(tropterSolution);
+    if (get_verbosity()) {
+        dircol.print_constraint_values(tropSolution);
+    }
 
-    return convert(tropterSolution);
+    return convert(tropSolution);
 }

@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include "common.h"
+#include "utilities.h"
 #include "Exception.h"
 #include "EigenUtilities.h"
 
@@ -24,7 +25,7 @@
 #include "optimization/OptimizationProblem.h"
 #include "optimization/OptimizationSolver.h"
 #include "optimization/SNOPTSolver.h"
-#include "tropter/optimization/IPOPTSolver.h"
+#include "optimization/IPOPTSolver.h"
 
 #include "optimalcontrol/OptimalControlIterate.h"
 #include "optimalcontrol/OptimalControlProblem.h"

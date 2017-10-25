@@ -42,7 +42,7 @@ public:
     { return m_constraint_lower_bounds; }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     { return m_constraint_upper_bounds; }
-    virtual std::shared_ptr<OptimizationProblemDecorator>
+    virtual std::unique_ptr<OptimizationProblemDecorator>
     make_decorator() const = 0;
 
 protected:
