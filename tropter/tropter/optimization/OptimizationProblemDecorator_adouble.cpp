@@ -156,7 +156,6 @@ calc_sparsity(const Eigen::VectorXd& x,
                 repeated_call, x.data(), &m_hessian_num_nonzeros,
                 &m_hessian_row_indices, &m_hessian_col_indices,
                 &hessian_values,
-                // TODO &hessian_values,
                 const_cast<int*>(m_sparse_hess_options.data()));
 
         // TODO See ADOL-C manual Table 1 to interpret the return value.
@@ -177,7 +176,7 @@ calc_sparsity(const Eigen::VectorXd& x,
         // Working memory to hold obj_factor and lambda (multipliers).
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);
 
-        //std::ofstream file("DEBUG_hessian_lagrangian_sparsity.csv");
+        //std::ofstream file("DEBUG_adolc_hessian_lagrangian_sparsity.csv");
         //file << "row_indices,column_indices" << std::endl;
         //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
         //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]

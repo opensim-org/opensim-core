@@ -76,20 +76,23 @@ public:
 
         return sol;
     }
+    static void run_test() {
+        auto ocp = std::make_shared<SlidingMassMinimumTime<T>>();
+        const int halfN = 25;
+        const int N = 2 * halfN;
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
+        OptimalControlSolution solution = dircol.solve();
+        solution.write("sliding_mass_minimum_time_solution.csv");
+
+        OptimalControlSolution expected = ocp->actual_solution(solution.time);
+
+        TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
+        TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+    }
 };
 
-TEST_CASE("Sliding mass minimum time.")
-{
-    auto ocp = std::make_shared<SlidingMassMinimumTime<adouble>>();
-    const int halfN = 25;
-    const int N = 2 * halfN;
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
-    OptimalControlSolution solution = dircol.solve();
-    solution.write("sliding_mass_minimum_time_solution.csv");
-
-    OptimalControlSolution expected = ocp->actual_solution(solution.time);
-
-    TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
-    TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+TEST_CASE("Sliding mass minimum time.") {
+    SlidingMassMinimumTime<adouble>::run_test();
+    SlidingMassMinimumTime<double>::run_test();
 }
 

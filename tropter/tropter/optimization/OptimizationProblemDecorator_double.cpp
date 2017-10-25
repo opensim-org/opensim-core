@@ -119,6 +119,13 @@ calc_sparsity(const Eigen::VectorXd& x,
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
     print("Number of finite difference perturbations required "
             "for sparse Jacobian: %i", num_jacobian_seeds);
+    // std::ofstream file("DEBUG_finitediff_jacobian_sparsity.csv");
+    // file << "row_indices,column_indices" << std::endl;
+    // for (int i = 0; i < (int)jacobian_row_indices.size(); ++i) {
+    //     file << jacobian_row_indices[i] << "," << jacobian_col_indices[i]
+    //             << std::endl;
+    // }
+    // file.close();
 
     // Allocate memory that is used in jacobian().
     m_constr_pos.resize(num_jac_rows);
@@ -167,12 +174,61 @@ calc_sparsity_hessian_lagrangian(
         }
 
     } else {
-        // Dense upper triangle. TODO ColPack wants full sparsity
-        for (int i = 0; i < (int)num_vars; ++i) {
-            for (int j = i; j < (int)num_vars; ++j) {
-                sparsity[i].push_back(j);
+        // Sparsity of Hessian of lambda*constraints
+        // -----------------------------------------
+        // Conservative estimate of sparsity of Hessian of lambda*constraints.
+        // See Patterson, Michael A., and Anil V. Rao. "GPOPS-II: A MATLAB
+        // software for solving multiple-phase optimal control problems using
+        // hp-adaptive Gaussian quadrature collocation methods and sparse
+        // nonlinear programming." ACM Transactions on Mathematical Software
+        // (TOMS) 41.1 (2014): 1.
+        VectorXd ones = VectorXd::Ones(m_jacobian_coloring->get_num_nonzeros());
+        // Represent the sparsity pattern as a binary sparsity matrix.
+        Eigen::SparseMatrix<bool> sparsity_mat =
+                m_jacobian_coloring->convert(ones.data()).cast<bool>();
+        // The estimate for the sparsity pattern of the Hessian of
+        // lambda*constraints. In Patterson 2013, this is S2 = S1^T * S1.
+        Eigen::SparseMatrix<bool> hes_constraints_sparsity_mat =
+                sparsity_mat.transpose() * sparsity_mat;
+
+        // Sparsity of Hessian of objective
+        // --------------------------------
+        Eigen::SparseMatrix<bool> gradient_sparsity_mat(1, num_vars);
+        gradient_sparsity_mat.reserve(m_gradient_nonzero_indices.size());
+        for (const auto& grad_index : m_gradient_nonzero_indices) {
+            gradient_sparsity_mat.insert(0, (int)grad_index) = 1;
+        }
+        gradient_sparsity_mat.makeCompressed();
+        Eigen::SparseMatrix<bool> hes_objective_sparsity_mat =
+                gradient_sparsity_mat.transpose() * gradient_sparsity_mat;
+
+        // Sparsity of Hessian of Lagrangian
+        Eigen::SparseMatrix<bool> hes_sparsity_mat =
+                hes_constraints_sparsity_mat || hes_objective_sparsity_mat;
+        // TODO this is non ideal as the hessian of objective sparsity might
+        // be much less. want to save both, but must allocate combined
+        // sparsity for IPOPT!
+
+        const auto& mat = hes_sparsity_mat;
+        using SparseMatrixIterator = Eigen::SparseMatrix<bool>::InnerIterator;
+        for (int i = 0; i < mat.outerSize(); ++i) {
+            for (SparseMatrixIterator it(mat, i); it; ++it) {
+                if (it.row() <= it.col()) // Upper triangle only.
+                    sparsity[it.row()].push_back((unsigned)it.col());
             }
         }
+//        std::ofstream file("DEBUG_finitediff_hessian_lagrangian_sparsity.csv");
+//        file << "row_indices,column_indices" << std::endl;
+//        for (int i = 0; i < mat.outerSize(); ++i) {
+//            for (Eigen::SparseMatrix<bool>::InnerIterator it(mat, i); it;
+//                 ++it) {
+//                // Upper triangle only.
+//                if (it.row() <= it.col()) {
+//                    file << it.row() << "," << it.col() << std::endl;
+//                }
+//            }
+//        }
+//        file.close();
     }
 }
 

@@ -158,7 +158,31 @@ TEST_CASE("Check derivatives with analytical deriv.")
         TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-8);
 
         // Hessian (of the Lagrangian).
-        // TODO
+        std::vector<unsigned int> expected_hess_row_indices{
+                0, 0, 0, 0,
+                   1, 1, 1,
+                      2, 2,
+                         3};
+        std::vector<unsigned int> expected_hess_col_indices{
+                0, 1, 2, 3,
+                   1, 2, 3,
+                      2, 3,
+                        3};
+        REQUIRE(hessian_row_indices == expected_hess_row_indices);
+        REQUIRE(hessian_col_indices == expected_hess_col_indices);
+        const unsigned num_hessian_nonzeros =
+                (unsigned)hessian_row_indices.size();
+        VectorXd fd_hessian_values(num_hessian_nonzeros);
+        decorator->calc_hessian_lagrangian(
+                problemd.get_num_variables(), x.data(), false, obj_factor,
+                problem.get_num_constraints(), lambda.data(), false,
+                num_hessian_nonzeros, fd_hessian_values.data());
+        for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+            const auto& i = hessian_row_indices[inz];
+            const auto& j = hessian_col_indices[inz];
+            REQUIRE(analytical_hessian(i, j) ==
+                    Approx(fd_hessian_values[inz]).epsilon(1e-5));
+        }
 
         // Jacobian.
         const auto num_jacobian_elem = problem.get_num_constraints() *
@@ -544,6 +568,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             // Evaluate Hessian to ensure entries are the desired order.
             const unsigned num_hessian_nonzeros =
                     (unsigned)hess_row_indices.size();
+            decorator->set_findiff_hessian_step_size(1e-3);
             VectorXd actual_hessian_values(num_hessian_nonzeros);
             decorator->calc_hessian_lagrangian(
                     problemd.get_num_variables(), x.data(), false, obj_factor,
@@ -556,13 +581,13 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                 const auto& j = hess_col_indices[inz];
                 INFO(inz << " (" << i << " " << j << ")");
                 REQUIRE(analytical_hessian(i, j) ==
-                        Approx(actual_hessian_values[inz]).epsilon(1e-7));
+                        Approx(actual_hessian_values[inz]).epsilon(1e-5));
             }
         }
         {
             // Do not use supplied sparsity.
-            // If user does not supply sparsity, then the Hessian is assumed
-            // to be dense.
+            // If user does not supply sparsity, then the Hessian sparsity is
+            // determined from the Jacobian sparsity pattern.
             SparseJacUserSpecifiedSparsity<double> problemd;
             // *** KEY DIFFERENCE IN THIS TEST ***
             problemd.set_use_supplied_sparsity_hessian_lagrangian(false);
@@ -575,14 +600,14 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
                     jac_row_indices, jac_col_indices,
                     true, hess_row_indices, hess_col_indices);
             std::vector<unsigned int> expected_hess_row_indices{
-                    0, 0, 0, 0,
-                       1, 1, 1,
+                    0, 0,
+                       1, 1,
                           2, 2,
                              3
             };
             std::vector<unsigned int> expected_hess_col_indices{
-                    0, 1, 2, 3,
-                       1, 2, 3,
+                    0, 1,
+                       1, 2,
                           2, 3,
                              3
             };
@@ -593,6 +618,7 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
             const unsigned num_hessian_nonzeros =
                     (unsigned)hess_row_indices.size();
             VectorXd actual_hessian_values(num_hessian_nonzeros);
+            decorator->set_findiff_hessian_step_size(1e-3);
             decorator->calc_hessian_lagrangian(
                     problemd.get_num_variables(), x.data(), false, obj_factor,
                     problem.get_num_constraints(), lambda.data(), false,
@@ -710,3 +736,7 @@ TEST_CASE("Validate sparsity input") {
     }
 
 }
+
+// TODO add test_derivatives_optimal_control
+// TODO ensure finitediff sparsity pattern is superset of adolc sparsity
+// pattern.
