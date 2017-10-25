@@ -148,7 +148,8 @@ calc_sparsity(const Eigen::VectorXd& x,
 
 void OptimizationProblem<double>::Decorator::
 calc_sparsity_hessian_lagrangian(
-        const VectorXd& x, CompressedRowSparsity& sparsity) const {
+        const VectorXd& x,
+        CompressedRowSparsity& sparsity) const {
     const auto num_vars = m_problem.get_num_variables();
     sparsity.resize(num_vars);
 

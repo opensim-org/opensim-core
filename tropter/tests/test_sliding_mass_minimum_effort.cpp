@@ -33,14 +33,10 @@ template<typename T>
 class SlidingMass : public tropter::OptimalControlProblem<T> {
 public:
     SlidingMass() {
-        // TODO when time is a variable, this has to be more advanced:
         this->set_time({0}, {2});
         this->add_state("x", {0, 2}, {0}, {1});
         this->add_state("u", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
-        // this->add_state("x", Bounds(  0,  2), InitialBounds(0), FinalBounds(1));
-        // this->add_state("u", Bounds(-10, 10), InitialBounds(0), FinalBounds(0));
-        // this->add_control("F", Bounds(-50, 50));
     }
     const double mass = 10.0;
     void calc_differential_algebraic_equations(
