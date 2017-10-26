@@ -43,9 +43,6 @@ target_link_libraries(tropter PUBLIC optional-lite)
 target_link_libraries(tropter PUBLIC Eigen3::Eigen)
 # This takes care of includes.
 
-# This was from when we used a Module file for ColPack:
-#target_include_directories(tropter SYSTEM PRIVATE ${COLPACK_INCLUDE_DIR})
-#target_link_libraries(tropter PRIVATE ${COLPACK_LIBRARIES})
 target_link_libraries(tropter PRIVATE ColPack_static)
 
 target_include_directories(tropter SYSTEM PUBLIC ${ADOLC_INCLUDES})

@@ -120,13 +120,12 @@ void Trapezoidal<T>::set_ocproblem(
     int num_variables = m_num_time_variables
             + m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    int num_bound_constraints = 2 * m_num_continuous_variables;
     m_num_defects = m_num_mesh_points - 1;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
     int num_path_traj_constraints = m_num_mesh_points * m_num_path_constraints;
-    int num_constraints = num_bound_constraints + m_num_dynamics_constraints +
+    int num_constraints = m_num_dynamics_constraints +
             num_path_traj_constraints;
     this->set_num_constraints(num_constraints);
 
@@ -135,7 +134,6 @@ void Trapezoidal<T>::set_ocproblem(
     double initial_time_upper;
     double final_time_lower;
     double final_time_upper;
-    // TODO these could be fixed sizes for certain types of problems.
     using Eigen::VectorXd;
     VectorXd states_lower(m_num_states);
     VectorXd states_upper(m_num_states);
@@ -161,25 +159,25 @@ void Trapezoidal<T>::set_ocproblem(
             final_controls_lower, final_controls_upper,
             path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
-    //m_initial_time = initial_time; // TODO make these variables.
-    //m_final_time = final_time;
     // Bounds on variables.
     VectorXd variable_lower(num_variables);
-    variable_lower[0] = initial_time_lower;
-    variable_lower[1] = final_time_lower;
-    variable_lower.tail(num_variables - m_num_time_variables) =
+    variable_lower <<
+            initial_time_lower, final_time_lower,
+            initial_states_lower, initial_controls_lower,
             (VectorXd(m_num_continuous_variables)
                     << states_lower, controls_lower)
                     .finished()
-                    .replicate(m_num_mesh_points, 1);
+                    .replicate(m_num_mesh_points - 2, 1),
+            final_states_lower, final_controls_lower;
     VectorXd variable_upper(num_variables);
-    variable_upper[0] = initial_time_upper;
-    variable_upper[1] = final_time_upper;
-    variable_upper.tail(num_variables - m_num_time_variables) =
+    variable_upper <<
+            initial_time_upper, final_time_upper,
+            initial_states_upper, initial_controls_upper,
             (VectorXd(m_num_continuous_variables)
                     << states_upper, controls_upper)
                     .finished()
-                    .replicate(m_num_mesh_points, 1);
+                    .replicate(m_num_mesh_points - 2, 1),
+            final_states_upper, final_controls_upper;
     this->set_variable_bounds(variable_lower, variable_upper);
     // Bounds for constraints.
     VectorXd constraint_lower(num_constraints);
@@ -190,18 +188,8 @@ void Trapezoidal<T>::set_ocproblem(
             path_constraints_lower.replicate(m_num_mesh_points, 1);
     VectorXd path_constraints_traj_upper =
             path_constraints_upper.replicate(m_num_mesh_points, 1);
-    constraint_lower << initial_states_lower,
-            initial_controls_lower,
-            final_states_lower,
-            final_controls_lower,
-            dynamics_bounds,
-            path_constraints_traj_lower;
-    constraint_upper << initial_states_upper,
-            initial_controls_upper,
-            final_states_upper,
-            final_controls_upper,
-            dynamics_bounds,
-            path_constraints_traj_upper;
+    constraint_lower << dynamics_bounds, path_constraints_traj_lower;
+    constraint_upper << dynamics_bounds, path_constraints_traj_upper;
     this->set_constraint_bounds(constraint_lower, constraint_upper);
     // TODO won't work if the bounds don't include zero!
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
@@ -289,17 +277,8 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
 
-    // Organize the constraints vector.
+    // Organize the constrants vector.
     ConstraintsView constr_view = make_constraints_view(constraints);
-
-    // Bounds on initial and final states and controls.
-    // ================================================
-    // TODO order these 4 assignments to reduce cache misses,
-    // based on the order of the constraint indices.
-    constr_view.initial_states = states.col(0);
-    constr_view.initial_controls = controls.col(0);
-    constr_view.final_states = states.rightCols(1);
-    constr_view.final_controls = controls.rightCols(1);
 
     // Dynamics and path constraints.
     // ==============================
@@ -407,6 +386,7 @@ template<typename T>
 OptimalControlIterate Trapezoidal<T>::
 deconstruct_iterate(const Eigen::VectorXd& x) const
 {
+    // TODO move time variables to the end.
     const double& initial_time = x[0];
     const double& final_time = x[1];
     OptimalControlIterate traj;
@@ -428,6 +408,10 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                         std::ostream& stream) const
 {
     // TODO also print_bounds() information.
+    // TODO allow passing an option for only showing when bounds are
+    // violated, not simply active.
+    // TODO allow passing a threshold to see if a value is within range of a
+    // bound.
 
     // We want to be able to restore the stream's original formatting.
     std::ios orig_fmt(nullptr);
@@ -442,12 +426,17 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     // TODO avoid cast by templatizing make_constraints_view().
     VectorX<T> lower_T =
             this->get_constraint_lower_bounds().template cast<T>();
-    ConstraintsView lower = make_constraints_view(lower_T);
+    //ConstraintsView lower = make_constraints_view(lower_T);
     VectorX<T> upper_T =
             this->get_constraint_upper_bounds().template cast<T>();
-    ConstraintsView upper = make_constraints_view(upper_T);
+    //ConstraintsView upper = make_constraints_view(upper_T);
     auto state_names = m_ocproblem->get_state_names();
     auto control_names = m_ocproblem->get_control_names();
+
+    OptimalControlIterate ocp_vars_lower = deconstruct_iterate(
+                    this->get_variable_lower_bounds());
+    OptimalControlIterate ocp_vars_upper = deconstruct_iterate(
+                    this->get_variable_upper_bounds());
 
     // TODO handle the case where there are no states or no controls.
 
@@ -468,52 +457,98 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                                  compare_size)->size());
     }
 
-    stream << "Total number of constraints: "
-            << constraint_values.size() << "." << std::endl;
-    stream << "L and U indicate which constraints are violated. " << std::endl;
+    stream << "\nActive or violated bounds" << std::endl;
+    stream << "L and U indicate which bound is active; "
+            "'*' indicates a bound is violated. " << std::endl;
+    stream << "The case of lower==upper==value is ignored." << std::endl;
 
-    // Initial and final bounds on state and control variables.
-    // --------------------------------------------------------
-    auto print_ifbounds = [&stream, max_name_length](
-            const std::string& description, Eigen::Map<VectorX<T>>& lower,
-            Eigen::Map<VectorX<T>>& values, Eigen::Map<VectorX<T>>& upper,
-            const std::vector<std::string>& names) {
-        stream << "\n" << description << ": " << std::endl;
-        stream << std::setw(max_name_length) << "  "
-               << std::setw(9) << "lower" << "    "
-               << std::setw(9) << "value" << "    "
-               << std::setw(9) << "upper" << " " << std::endl;
-        for (Eigen::Index i = 0; i < lower.size(); ++i) {
-            // The nasty static cast is because operator<< for badouble is
-            // undefined (though I see it in the ADOL-C source code).
-            auto& L = static_cast<const double&>(lower[i]);
-            auto& V = static_cast<const double&>(values[i]);
-            auto& U = static_cast<const double&>(upper[i]);
-            stream << std::setw(max_name_length) << names[i] << "  "
-                   << std::setprecision(2) << std::scientific
-                   << std::setw(9) << L << " <= "
-                   << std::setw(9) << V << " <= "
-                   << std::setw(9) << U << " ";
-            // Show if the constraint is violated.
-            if (L <= V) stream << " ";
-            else        stream << "L";
-            if (V <= U) stream << " ";
-            else        stream << "U";
-            stream << std::endl;
+    // TODO bounds on initial and final time.
+
+    // Bounds on state and control variables.
+    // --------------------------------------
+    using Eigen::RowVectorXd;
+    using Eigen::MatrixXd;
+    auto print_bounds = [&stream, max_name_length](
+            const std::string& description,
+            const std::vector<std::string>& names,
+            const RowVectorXd& times, const MatrixXd& values,
+            const MatrixXd& lower, const MatrixXd& upper) {
+        // TODO
+        stream << "\n" << description << ": ";
+
+        bool bounds_active = false;
+        bool bounds_violated = false;
+        for (Eigen::Index ivar = 0; ivar < values.rows(); ++ivar) {
+            for (Eigen::Index itime = 0; itime < times.size(); ++itime) {
+                const auto& L = lower(ivar, itime);
+                const auto& V = values(ivar, itime);
+                const auto& U = upper(ivar, itime);
+                if (V <= L || V >= U) {
+                    if (V == L && L == U) continue;
+                    bounds_active = true;
+                    if (V < L || V > U) {
+                        bounds_violated = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!bounds_active && !bounds_violated) {
+            stream << "no bounds active or violated" << std::endl;
+            return;
+        }
+
+        if (!bounds_violated) {
+            stream << "some bounds active but no bounds violated";
+        } else {
+            stream << "some bounds active or violated";
+
+        }
+
+        stream << "\n" << std::setw(max_name_length) << "  "
+                << std::setw(9) << "time " << "  "
+                << std::setw(9) << "lower" << "    "
+                << std::setw(9) << "value" << "    "
+                << std::setw(9) << "upper" << " " << std::endl;
+
+        for (Eigen::Index ivar = 0; ivar < values.rows(); ++ivar) {
+            for (Eigen::Index itime = 0; itime < times.size(); ++itime) {
+                const auto& L = lower(ivar, itime);
+                const auto& V = values(ivar, itime);
+                const auto& U = upper(ivar, itime);
+                if (V <= L || V >= U) {
+                    // In the case where lower==upper==value, there is no
+                    // issue; ignore.
+                    if (V == L && L == U) continue;
+                    const auto& time = times[itime];
+                    stream << std::setw(max_name_length) << names[ivar] << "  "
+                            << std::setprecision(2) << std::scientific
+                            << std::setw(9) << time << "  "
+                            << std::setw(9) << L << " <= "
+                            << std::setw(9) << V << " <= "
+                            << std::setw(9) << U << " ";
+                    // Show if the constraint is violated.
+                    if (V <= L) stream << " ";
+                    else        stream << "L";
+                    if (V >= U) stream << " ";
+                    else        stream << "U";
+                    if (V < L || V > U) stream << "*";
+                    stream << std::endl;
+                }
+            }
         }
     };
-    print_ifbounds("Initial state constraints",
-                   lower.initial_states, values.initial_states,
-                   upper.initial_states, state_names);
-    print_ifbounds("Initial control constraints",
-                   lower.initial_controls, values.initial_controls,
-                   upper.initial_controls, control_names);
-    print_ifbounds("Final state constraints",
-                   lower.final_states, values.final_states,
-                   upper.final_states, state_names);
-    print_ifbounds("Final control constraints",
-                   lower.final_controls, values.final_controls,
-                   upper.final_controls, control_names);
+    print_bounds("State bounds", state_names, ocp_vars.time,
+            ocp_vars.states, ocp_vars_lower.states, ocp_vars_upper.states);
+    print_bounds("Control bounds", control_names, ocp_vars.time,
+            ocp_vars.controls, ocp_vars_lower.controls, ocp_vars_upper.controls);
+
+    // Constraints.
+    // ============
+
+    stream << "\nTotal number of constraints: "
+            << constraint_values.size() << "." << std::endl;
 
     // Differential equation defects.
     // ------------------------------
@@ -584,6 +619,7 @@ template<typename S>
 typename Trapezoidal<T>::template TrajectoryViewConst<S>
 Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
+    // TODO move time variables to the end.
     return {
             // Pointer to the start of the states.
             x.data() + m_num_time_variables,
@@ -641,20 +677,12 @@ typename Trapezoidal<T>::ConstraintsView
 Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
-    const unsigned is = 0;                               // initial states.
-    const unsigned ic = is + m_num_states;               // initial controls.
-    const unsigned fs = ic + m_num_controls;             // final states.
-    const unsigned fc = fs + m_num_states;               // final controls.
-    const unsigned d  = fc + m_num_controls;             // defects.
+    const unsigned d  = 0;                               // defects.
     T* pc_ptr= m_num_path_constraints ?                  // path constraints.
                &constr[d + m_num_dynamics_constraints] : nullptr;
     //const unsigned pc =  // path
     // constraints.
-    return {StatesView(&constr[is], m_num_states),
-            ControlsView(&constr[ic], m_num_controls),
-            StatesView(&constr[fs], m_num_states),
-            ControlsView(&constr[fc], m_num_controls),
-            DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
+    return {DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
                                              m_num_mesh_points)};
 }

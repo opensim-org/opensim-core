@@ -132,7 +132,7 @@ void testGait10dof18musc_GSO() {
     compare(solution.tendon_force, "/walk_subject01/soleus_r",
             std_tendon_force,      "/walk_subject01/soleus_r", 1e-3);
     compare(solution.tendon_force, "/walk_subject01/tib_ant_r",
-            std_tendon_force,      "/walk_subject01/tib_ant_r", 1e-3);
+            std_tendon_force,      "/walk_subject01/tib_ant_r", 5e-3, 1);
 
     TimeSeriesTable std_norm_tendon_force = STOFileAdapter_<double>::read
             ("std_testGait10dof18musc_GSO_solution_norm_tendon_force.sto");
