@@ -276,7 +276,7 @@ solveForTrajectoryINDYGO() {
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                      "ipopt", N);
     // The quasi-Newton method gives a pretty good speedup for this problem.
-    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
+    dircol.get_opt_solver().set_hessian_approximation("limited-memory");
     // Create an initial guess.
     using Eigen::RowVectorXd;
     tropter::OptimalControlIterate guess;

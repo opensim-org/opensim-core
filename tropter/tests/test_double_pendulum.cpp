@@ -113,7 +113,7 @@ public:
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation
+        dircol.get_opt_solver().set_hessian_approximation
                 (hessian_approx);
         tropter::OptimalControlIterate guess;
         guess.time.setLinSpaced(N, 0, 1);
@@ -199,7 +199,7 @@ public:
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
         // from the solution using an exact Hessian does not converge.
-        dircol.get_optimization_solver().set_hessian_approximation(
+        dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
         OptimalControlSolution solution = dircol.solve();
         //dircol.print_constraint_values(solution);
@@ -293,7 +293,7 @@ public:
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation(
+        dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
         OptimalControlSolution solution = dircol.solve();
         // dircol.print_constraint_values(solution);

@@ -668,7 +668,7 @@ MucoIterate MucoSolver::solve() const {
             "Invalid number of mesh points (" + std::to_string(N) + ")");
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
             N);
-    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
+    dircol.get_opt_solver().set_hessian_approximation("limited-memory");
 
     using TropterIterate = tropter::OptimalControlIterate;
     tropter::OptimalControlSolution tropterSolution =
@@ -762,7 +762,7 @@ int main() {
     auto ocp = std::make_shared<OptimalControlProblem>();
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
             "ipopt", 20);
-    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
+    dircol.get_opt_solver().set_hessian_approximation("limited-memory");
     auto solution = dircol.solve();
     solution.write("DEBUG_sandboxSlidingMass.csv");
     dircol.print_constraint_values(solution);

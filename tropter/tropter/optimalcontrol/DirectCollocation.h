@@ -59,14 +59,12 @@ public:
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
     /// non-const variant below if you need to change settings.
-    const OptimizationSolver& get_optimization_solver() const {
-        return *m_optsolver.get();
-    }
+    const OptimizationSolver& get_opt_solver() const
+    {   return *m_optsolver.get(); }
     /// Get the OptimizationSolver, through which you can set optimizer
     /// settings like maximum number of iterations.
-    OptimizationSolver& get_optimization_solver() {
-        return *m_optsolver.get();
-    }
+    OptimizationSolver& get_opt_solver()
+    {   return *m_optsolver.get(); }
 
     /// 0 for silent, 1 for verbose. This setting is copied into the
     /// underlying solver.

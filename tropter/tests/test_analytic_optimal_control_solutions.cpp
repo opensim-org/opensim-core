@@ -89,7 +89,7 @@ public:
             std::string hessian_approx) {
         auto ocp = std::make_shared<SecondOrderLinearMinEffort<T>>();
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation
+        dircol.get_opt_solver().set_hessian_approximation
                 (hessian_approx);
         OptimalControlSolution solution = dircol.solve();
         //solution.write("second_order_linear_min_effort_solution.csv");
@@ -108,3 +108,5 @@ TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
     //}
 }
 
+
+// TODO add linear tangent steering (Bryson 1975). Also in Betts' book.
