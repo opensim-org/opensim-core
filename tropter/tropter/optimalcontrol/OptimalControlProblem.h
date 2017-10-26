@@ -109,14 +109,15 @@ template <typename T>
 class OptimalControlProblem {
 private:
     struct ContinuousVariableInfo {
-        std::string name;
-        Bounds bounds;
-        InitialBounds initial_bounds;
-        FinalBounds final_bounds;
+        ContinuousVariableInfo(std::string, Bounds, InitialBounds, FinalBounds);
+        const std::string name;
+        const Bounds bounds;
+        const InitialBounds initial_bounds;
+        const FinalBounds final_bounds;
     };
     struct PathConstraintInfo {
-        std::string name;
-        Bounds bounds;
+        const std::string name;
+        const Bounds bounds;
     };
 
 public:
@@ -187,6 +188,7 @@ public:
     /// This returns an index that can be used to access this specific control
     /// variable within `dynamics()` , `path_constraints()`, etc.
     /// TODO check if a control with the provided name already exists.
+    // TODO no initial, final bounds for controls.
     int add_control(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
             const FinalBounds& final_bounds = FinalBounds()) {

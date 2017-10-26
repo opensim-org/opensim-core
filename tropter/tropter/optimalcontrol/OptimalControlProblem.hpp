@@ -32,6 +32,33 @@ Bounds::Bounds(double lower_bound, double upper_bound) {
 }
 
 template<typename T>
+OptimalControlProblem<T>::ContinuousVariableInfo::
+ContinuousVariableInfo(std::string n, Bounds b,
+        InitialBounds ib, FinalBounds fb)
+        : name(n), bounds(b), initial_bounds(ib), final_bounds(fb) {
+    TROPTER_THROW_IF(ib.is_set() && ib.lower < b.lower,
+            "For variable %s, expected "
+            "[initial value lower bound] >= [lower bound], but "
+            "intial value lower bound=%g, lower bound=%g.",
+            n, ib.lower, b.lower);
+    TROPTER_THROW_IF(fb.is_set() && fb.lower < b.lower,
+            "For variable %s, expected "
+            "[final value lower bound] >= [lower bound], but "
+            "final value lower bound=%g, lower bound=%g.",
+            n, fb.lower, b.lower);
+    TROPTER_THROW_IF(ib.is_set() && ib.upper > b.upper,
+            "For variable %s, expected "
+            "[initial value upper bound] >= [upper bound], but "
+            "initial value upper bound=%g, upper bound=%g.",
+            n, ib.upper, b.upper);
+    TROPTER_THROW_IF(fb.is_set() && fb.upper > b.upper,
+            "For variable %s, expected "
+            "[final value upper bound] >= [upper bound], but "
+            "final value upper bound=%g, upper bound=%g.",
+            n, fb.upper, b.upper);
+}
+
+template<typename T>
 void OptimalControlProblem<T>::print_description() const {
     using std::cout;
     using std::endl;

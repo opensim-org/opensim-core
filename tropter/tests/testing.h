@@ -17,10 +17,14 @@
 // ----------------------------------------------------------------------------
 
 #include <catch.hpp>
+#include <Eigen/Dense>
 
 /// Compare any two Eigen matrices (their dimensions and each element)
 /// using Catch, with a given relative error tolerance.
 // Extra parentheses are to avoid a warning from GCC 5.4.
+
+namespace tropter {
+
 #define TROPTER_REQUIRE_EIGEN(actual, expected, rel_error_tolerance)         \
 do {                                                                         \
     REQUIRE((actual.rows() == expected.rows()));                             \
@@ -49,5 +53,14 @@ do {                                                                         \
         }                                                                    \
     }                                                                        \
 } while (0)
+
+template <typename TActual, typename TExpected>
+void testAlmostEqual(const Eigen::EigenBase<TActual>& a,
+        const Eigen::EigenBase<TExpected>& e,
+        double rel_error_tolerance) {
+    TROPTER_REQUIRE_EIGEN(a.derived(), e.derived(), rel_error_tolerance);
+}
+
+} // namespace tropter
 
 #endif // TROPTER_TESTING_H

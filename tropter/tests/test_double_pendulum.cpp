@@ -117,30 +117,34 @@ public:
         dircol.get_optimization_solver().set_hessian_approximation(
                 "limited-memory");
         tropter::OptimalControlIterate guess;
-        guess.time.setLinSpaced(N, 0, 1);
-        // Give a hint (not the exact final state, but something close to it).
-        // I tried giving a guess where the final state guess was from the
-        // solution (-3/2pi, -2pi), but then IPOPT incorrectly thought the
-        // solution was all zeros.
+        const int Nguess = 2;
+        guess.time.setLinSpaced(Nguess, 0, 1);
+        // Give a hint.
         ocp->set_state_guess(guess, "q0",
-                Eigen::RowVectorXd::LinSpaced(N, 0, -PI));
+                Eigen::RowVectorXd::LinSpaced(Nguess, 0, -3./2.*PI));
         ocp->set_state_guess(guess, "q1",
-                Eigen::RowVectorXd::LinSpaced(N, 0, 2*PI));
-        ocp->set_state_guess(guess, "u0", Eigen::RowVectorXd::Zero(N));
-        ocp->set_state_guess(guess, "u1", Eigen::RowVectorXd::Zero(N));
-        ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
-        ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
+                Eigen::RowVectorXd::LinSpaced(Nguess, 0, 2*PI));
+        ocp->set_state_guess(guess, "u0", Eigen::RowVectorXd::Zero(Nguess));
+        ocp->set_state_guess(guess, "u1", Eigen::RowVectorXd::Zero(Nguess));
+        ocp->set_control_guess(guess, "tau0",
+                Eigen::RowVectorXd::LinSpaced(Nguess, -50, 50));
+        ocp->set_control_guess(guess, "tau1",
+                Eigen::RowVectorXd::LinSpaced(Nguess, 50, -50));
         OptimalControlSolution solution = dircol.solve(guess);
         solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
         // Check the final states.
         INFO(solution.states);
         TROPTER_REQUIRE_EIGEN(solution.states.rightCols<1>(),
                 Eigen::Vector4d(-3./2.*PI, 2*PI, 0, 0), 1e-3);
-        // Check the initial and final controls (which are bang-bang).
-        TROPTER_REQUIRE_EIGEN(solution.controls.leftCols<1>(),
-                Eigen::Vector2d(-50, 50), 1e-2);
-        TROPTER_REQUIRE_EIGEN(solution.controls.rightCols<1>(),
-                Eigen::Vector2d(50, -50), 1e-2);
+        // Check the controls, which are bang-bang.
+        testAlmostEqual(solution.controls.topLeftCorner<1, 40>(),
+                Eigen::RowVectorXd::Constant(40, -50), 1e-2);
+        testAlmostEqual(solution.controls.topRightCorner<1, 40>(),
+                Eigen::RowVectorXd::Constant(40,  50), 1e-2);
+        testAlmostEqual(solution.controls.bottomLeftCorner<1, 15>(),
+                Eigen::RowVectorXd::Constant(15,  50), 1e-2);
+        testAlmostEqual(solution.controls.bottomRightCorner<1, 15>(),
+                Eigen::RowVectorXd::Constant(15, -50), 1e-2);
     }
 };
 
@@ -334,11 +338,11 @@ TEST_CASE("Double pendulum coordinate tracking.",
         // The controls have the same shape but have a pretty large error
         // between them.
         // The peak magnitude of the torques is about 10-30 N-m, so a tolerance of
-        // 1.5 N-m means the shape of the torques is preserved.
+        // 5.0 N-m means the shape of the torques is preserved.
         CAPTURE(explicit_solution.controls);
-        CAPTURE(implicit_solution.controls);
+        CAPTURE(implicit_solution.controls.bottomRows(2));
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
-                implicit_solution.controls.bottomRows(2), 1.5);
+                implicit_solution.controls.bottomRows(2), 5.0);
 
         // TODO does not converge with limited memory.
         // ImplicitDoublePendulumCoordinateTracking<adouble>::

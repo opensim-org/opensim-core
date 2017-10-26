@@ -256,22 +256,14 @@ protected:
     make_controls_trajectory_view(VectorX<S>& variables) const;
 
     // TODO templatize.
-    using StatesView = Eigen::Map<VectorX<T>>;
-    using ControlsView = Eigen::Map<VectorX<T>>;
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
     using PathConstraintsTrajectoryView = Eigen::Map<MatrixX<T>>;
 
     struct ConstraintsView {
-        ConstraintsView(StatesView is, ControlsView ic,
-                        StatesView fs, ControlsView fc, DefectsTrajectoryView d,
+        ConstraintsView(DefectsTrajectoryView d,
                         PathConstraintsTrajectoryView pc)
-                : initial_states(is), initial_controls(ic),
-                  final_states(fs), final_controls(fc), defects(d),
+                : defects(d),
                   path_constraints(pc) {}
-        StatesView initial_states = {nullptr, 0};
-        ControlsView initial_controls = {nullptr, 0};
-        StatesView final_states = {nullptr, 0};
-        ControlsView final_controls = {nullptr, 0};
         // TODO what is the proper name for this? dynamic defects?
         DefectsTrajectoryView defects = {nullptr, 0, 0};
         PathConstraintsTrajectoryView path_constraints = {nullptr, 0, 0};
