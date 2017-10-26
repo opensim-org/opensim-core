@@ -79,7 +79,8 @@ add_library(osim${KIT}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
     OpenSimContext.cpp
-    OpenSimContext.h)
+    OpenSimContext.h
+    SimbodyUtils.h)
 
 target_include_directories(osim${KIT} PRIVATE
                            ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})

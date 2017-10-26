@@ -72,6 +72,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
+%include <Bindings/Java/OpenSimJNI/SimbodyUtils.h>
 
 %include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
