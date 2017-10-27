@@ -17,26 +17,17 @@
 #define TROPTER_DIRECTCOLLOCATION_H
 
 #include <tropter/common.h>
-#include <tropter/optimization/OptimizationProblem.h>
 #include "OptimalControlProblem.h"
+#include "OptimalControlIterate.h"
 #include <fstream>
 
 namespace tropter {
 
 class OptimizationSolver;
 
-/// @ingroup optimalcontrol
-struct OptimalControlSolution : public OptimalControlIterate {
-    double objective;
-    // TODO allow reading, to use this as an initial guess.
-    // related class: OptimalControlIterate
-};
-
 namespace transcription {
-
 template<typename T>
 class Base;
-
 } // namespace transcription
 
 /// @ingroup optimalcontrol
@@ -120,180 +111,6 @@ private:
     int m_verbosity = 1;
 };
 
-//namespace transcription {
-//
-//class Trapezoidal;
-//
-//class Orthogonal;
-//
-//class Pseudospectral;
-//}
-
-//template<typename T>
-//class TrapezoidalTranscription : public OptimizationProblem<T> {
-//
-//};
-
-//template<typename T>
-//class Trapezoidal : public OptimizationProblem<T> {
-//public:
-//    struct Trajectory {
-//        Eigen::RowVectorXd time;
-//        Eigen::MatrixXd states;
-//        Eigen::MatrixXd controls;
-//    };
-//protected:
-//    virtual void integrate_integral_cost(const VectorX<T>& integrands,
-//            T& integral) const = 0;
-//    virtual void compute_defects(const StatesView& states,
-//            const MatrixX<T>& derivs,
-//            DefectsTrajectoryView& defects);
-//};
-
-namespace transcription {
-
-/// @ingroup optimalcontrol
-template<typename T>
-class Base : public OptimizationProblem<T> {
-public:
-    // TODO do we still need this type? Use OptimalControlIterate instead.
-    //struct Trajectory {
-    //    Eigen::RowVectorXd time;
-    //    Eigen::MatrixXd states;
-    //    Eigen::MatrixXd controls;
-    //};
-
-    /// Create a vector of optimization variables (for the generic
-    /// optimization problem) from an states and controls.
-    virtual Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate&,
-                      bool interpolate = false) const = 0;
-    // TODO change interface to be a templated function so users can pass in
-    // writeable blocks of a matrix.
-    virtual OptimalControlIterate
-    deconstruct_iterate(const Eigen::VectorXd& x) const = 0;
-
-    /// Print the value of constraint vector for the given iterate. This is
-    /// helpful for troubleshooting why a problem may be infeasible.
-    /// This function will try to give meaningful names to the
-    /// elements of the constraint vector.
-    virtual void print_constraint_values(
-            const OptimalControlIterate&,
-            std::ostream& stream = std::cout) const {
-        stream << "The function print_constraint_values() is unimplemented for "
-                "this transcription method." << std::endl;
-    }
-};
-
-/// @ingroup optimalcontrol
-template<typename T>
-class Trapezoidal : public Base<T> {
-public:
-    typedef OptimalControlProblem<T> OCProblem;
-
-    // TODO why would we want a shared_ptr? A copy would use the same Problem.
-    // TODO const OCProblem?
-    Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
-            unsigned num_mesh_points = 50) {
-        set_num_mesh_points(num_mesh_points);
-        set_ocproblem(ocproblem);
-    }
-    // TODO order of calls?
-    // TODO right now, must call this BEFORE set_problem.
-    void set_num_mesh_points(unsigned N) { m_num_mesh_points = N; }
-    void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
-
-    void calc_objective(const VectorX<T>& x, T& obj_value) const override;
-    void calc_constraints(const VectorX<T>& x,
-            Eigen::Ref<VectorX<T>> constr) const override;
-
-    /// This function checks the dimensions of the matrices in traj.
-    Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate& traj,
-                      bool interpolate = false) const override;
-    // TODO can this have a generic implementation in the Base class?
-    OptimalControlIterate
-    deconstruct_iterate(const Eigen::VectorXd& x) const override;
-    void print_constraint_values(
-            const OptimalControlIterate& vars,
-            std::ostream& stream = std::cout) const override;
-
-protected:
-    /// Eigen::Map is a view on other data, and allows "slicing" so that we can
-    /// view part of the vector of unknowns as a matrix of (num_states x
-    /// num_mesh_points).
-    /// The second template argument specifies memory alignment; the default is
-    /// Unaligned.
-    /// The third template argument allows us to specify a stride so that we can
-    /// skip over the elements that are the control values (or the state
-    /// values, if we seek the trajectory of the controls). The value of the
-    /// outer stride is dynamic, since we do not know it at compile-time.
-    /// The "outer" stride is the distance between columns and "inner" stride is
-    /// the distance between elements of each column (for column-major format).
-    template<typename S>
-    using TrajectoryViewConst = Eigen::Map<const MatrixX<S>,
-                                           Eigen::Unaligned,
-                                           Eigen::OuterStride<Eigen::Dynamic>>;
-    template<typename S>
-    using TrajectoryView = Eigen::Map<MatrixX<S>,
-                                      Eigen::Unaligned,
-                                      Eigen::OuterStride<Eigen::Dynamic>>;
-    // TODO move to a single "make_variables_view"
-    template<typename S>
-    TrajectoryViewConst<S>
-    make_states_trajectory_view(const VectorX<S>& variables) const;
-    template<typename S>
-    TrajectoryViewConst<S>
-    make_controls_trajectory_view(const VectorX<S>& variables) const;
-    template<typename S>
-    // TODO find a way to avoid these duplicated functions, using SFINAE.
-    /// This provides a view to which you can write.
-    TrajectoryView<S>
-    make_states_trajectory_view(VectorX<S>& variables) const;
-    /// This provides a view to which you can write.
-    template<typename S>
-    TrajectoryView<S>
-    make_controls_trajectory_view(VectorX<S>& variables) const;
-
-    // TODO templatize.
-    using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
-    using PathConstraintsTrajectoryView = Eigen::Map<MatrixX<T>>;
-
-    struct ConstraintsView {
-        ConstraintsView(DefectsTrajectoryView d,
-                        PathConstraintsTrajectoryView pc)
-                : defects(d),
-                  path_constraints(pc) {}
-        // TODO what is the proper name for this? dynamic defects?
-        DefectsTrajectoryView defects = {nullptr, 0, 0};
-        PathConstraintsTrajectoryView path_constraints = {nullptr, 0, 0};
-    };
-
-    ConstraintsView
-    make_constraints_view(Eigen::Ref<VectorX<T>> constraints) const;
-
-private:
-
-    std::shared_ptr<const OCProblem> m_ocproblem;
-    int m_num_mesh_points;
-    int m_num_time_variables = -1;
-    int m_num_defects = -1;
-    int m_num_states = -1;
-    int m_num_controls = -1;
-    int m_num_continuous_variables = -1;
-    int m_num_dynamics_constraints = -1;
-    int m_num_path_constraints = -1;
-    // TODO these should go eventually:
-    //double m_initial_time = -1;
-    //double m_final_time = -1;
-    Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
-
-    // Working memory.
-    mutable VectorX<T> m_integrand;
-    mutable MatrixX<T> m_derivs;
-};
-
-} // namespace transcription
 } // namespace tropter
 
 #endif // TROPTER_DIRECTCOLLOCATION_H
