@@ -305,6 +305,8 @@ public:
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
+        // dircol.get_opt_solver().set_advanced_option_string
+        //         ("print_timing_statistics", "yes");
         OptimalControlSolution solution = dircol.solve();
         // dircol.print_constraint_values(solution);
         solution.write("implicit_double_pendulum_coordinate_tracking.csv");
@@ -352,10 +354,10 @@ TEST_CASE("Double pendulum coordinate tracking",
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
                 implicit_solution.controls.bottomRows(2), 5.0);
 
-        // TODO DoublePendulumCoordinateTracking<double>::
-        // TODO run_test("ipopt", "exact");
-        // TODO ImplicitDoublePendulumCoordinateTracking<double>::
-        // TODO run_test("ipopt", "exact");
+        // DoublePendulumCoordinateTracking<double>::
+        // run_test("ipopt", "exact");
+        // ImplicitDoublePendulumCoordinateTracking<double>::
+        // run_test("ipopt", "exact");
 
         // The following do not converge:
         // EXIT: Maximum number of iterations exceeded.
