@@ -49,7 +49,7 @@ to the appropriate SimTK/Simbody classes
 
 class SimbodyUtils {
 public:
-    static const SimTK::Vector_<SimTK::SpatialVec>&  getGravityForce_getBodyForces(const Model& model, const SimTK::State& state) const {
+    static const SimTK::Vector_<SimTK::SpatialVec>&  getGravityForce_getBodyForces(const Model& model, const SimTK::State& state) {
         return model.getGravityForce().getBodyForces(state);
     };
 };
