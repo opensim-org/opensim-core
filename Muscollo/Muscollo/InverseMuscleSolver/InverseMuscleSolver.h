@@ -31,6 +31,8 @@
 
 namespace OpenSim {
 
+// TODO rename DynamicRedundancySolver or ActuatorRedundancySolver
+
 /// This is a base class for methods that solve for muscle activity for a
 /// known motion (kinematics) using direct collocation.
 /// Currently, the actuators that the inverse muscle solvers support are only

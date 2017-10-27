@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: DirectCollocation.cpp
+// tropter: Trapezoidal.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,11 +14,13 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "DirectCollocation.hpp"
+#include "Trapezoidal.hpp"
 
 namespace tropter {
+namespace transcription {
 
-template class DirectCollocationSolver<double>;
-template class DirectCollocationSolver<adouble>;
+template class Trapezoidal<double>;
+template class Trapezoidal<adouble>;
 
+} // namespace transcription
 } // namespace tropter

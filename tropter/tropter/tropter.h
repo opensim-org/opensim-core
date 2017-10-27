@@ -31,6 +31,8 @@
 #include "optimalcontrol/OptimalControlProblem.h"
 #include "optimalcontrol/DirectCollocation.h"
 
+#include "optimalcontrol/transcription/Trapezoidal.h"
+
 // http://www.coin-or.org/Ipopt/documentation/node23.html
 
 // TODO create my own "NonnegativeIndex" or Count type.
