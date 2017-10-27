@@ -7,6 +7,7 @@ add_library(tropter SHARED
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp
+        optimization/OptimizationProblemDecorator.h
         optimization/OptimizationProblemDecorator_double.h
         optimization/OptimizationProblemDecorator_double.cpp
         optimization/OptimizationProblemDecorator_adouble.h

@@ -17,6 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include "OptimizationProblem.h"
+#include "OptimizationProblemDecorator.h"
 
 namespace tropter {
 
