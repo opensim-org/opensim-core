@@ -15,14 +15,17 @@ add_library(tropter SHARED
         optimization/SNOPTSolver.cpp
         optimization/IPOPTSolver.h
         optimization/IPOPTSolver.cpp
-        optimalcontrol/DirectCollocation.h
-        optimalcontrol/DirectCollocation.hpp
-        optimalcontrol/DirectCollocation.cpp
         optimalcontrol/OptimalControlProblem.h
         optimalcontrol/OptimalControlProblem.hpp
         optimalcontrol/OptimalControlProblem.cpp
         optimalcontrol/OptimalControlIterate.h
         optimalcontrol/OptimalControlIterate.cpp
+        optimalcontrol/DirectCollocation.h
+        optimalcontrol/DirectCollocation.hpp
+        optimalcontrol/DirectCollocation.cpp
+        optimalcontrol/transcription/Base.h
+        optimalcontrol/transcription/Trapezoidal.h
+        optimalcontrol/transcription/Trapezoidal.cpp
         )
 
 # TODO generate_export_header() for exporting symbols on Windows.

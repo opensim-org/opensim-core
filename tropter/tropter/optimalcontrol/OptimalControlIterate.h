@@ -61,6 +61,13 @@ struct OptimalControlIterate {
     virtual void write(const std::string& filepath) const;
 };
 
+/// @ingroup optimalcontrol
+struct OptimalControlSolution : public OptimalControlIterate {
+    double objective;
+    // TODO allow reading, to use this as an initial guess.
+    // related class: OptimalControlIterate
+};
+
 } // namespace tropter
 
 #endif // TROPTER_OPTIMALCONTROLITERATE_H
