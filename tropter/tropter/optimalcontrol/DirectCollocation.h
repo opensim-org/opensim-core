@@ -20,6 +20,7 @@
 #include "OptimalControlProblem.h"
 #include "OptimalControlIterate.h"
 #include <fstream>
+#include <memory>
 
 namespace tropter {
 
