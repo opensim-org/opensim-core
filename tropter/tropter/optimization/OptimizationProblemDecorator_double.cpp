@@ -234,8 +234,10 @@ calc_sparsity_hessian_lagrangian(
         // (TOMS) 41.1 (2014): 1.
         VectorXd ones = VectorXd::Ones(m_jacobian_coloring->get_num_nonzeros());
         // Represent the sparsity pattern as a binary sparsity matrix.
+        Eigen::SparseMatrix<double> jac_sparsity_mat_d;
+        m_jacobian_coloring->convert(ones.data(), jac_sparsity_mat_d);
         Eigen::SparseMatrix<bool> jac_sparsity_mat =
-                m_jacobian_coloring->convert(ones.data()).cast<bool>();
+                jac_sparsity_mat_d.cast<bool>();
         // The estimate for the sparsity pattern of the Hessian of
         // lambda*constraints. In Patterson 2013, this is S2 = S1^T * S1.
         hescon_sparsity_mat = jac_sparsity_mat.transpose() * jac_sparsity_mat;
@@ -435,25 +437,28 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
 
     // Hessian of constraints.
     // -----------------------
+    // Allocate memory (TODO preallocate once in calc_sparsity()).
     // Compressed Hessian of constraints.
     Eigen::MatrixXd Bgc(num_variables, num_hes_seeds);
     // Double-compressed second derivatives; same shape as a compressed
     // Jacobian. Used in the inner loop.
     Eigen::MatrixXd Bgcc(num_constraints, num_jac_seeds);
+    VectorXd p2(num_constraints);
+    VectorXd p3(num_constraints);
+    VectorXd p4(num_constraints);
 
     // Loop through Hessian seeds.
     for (int ihesseed = 0; ihesseed < num_hes_seeds; ++ihesseed) {
         const auto hes_direction = hes_seed.col(ihesseed);
         VectorXd xb = x0 + eps * hes_direction;
-        // TODO avoid reallocating, simply initialize to 0.
-        VectorXd p2 = VectorXd::Zero(num_constraints);
+        p2.setZero();
         m_problem.calc_constraints(xb, p2);
 
         for (int ijacseed = 0; ijacseed < num_jac_seeds; ++ijacseed) {
             const auto jac_direction = jac_seed.col(ijacseed);
-            VectorXd p3 = VectorXd::Zero(num_constraints);
+            p3.setZero();
             m_problem.calc_constraints(x0 + eps * jac_direction, p3);
-            VectorXd p4 = VectorXd::Zero(num_constraints);
+            p4.setZero();
             m_problem.calc_constraints(xb + eps * jac_direction, p4);
 
             // Finite difference.
@@ -464,29 +469,28 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         Eigen::VectorXd Bgunc_coeffs(num_jac_nonzeros);
         m_jacobian_coloring->recover(Bgcc, Bgunc_coeffs.data());
         // TODO preallocate:
-        Eigen::SparseMatrix<double> Bgunc =
-                m_jacobian_coloring->convert(Bgunc_coeffs.data());
+        Eigen::SparseMatrix<double> Bgunc;
+        m_jacobian_coloring->convert(Bgunc_coeffs.data(), Bgunc);
 
         Bgc.col(ihesseed) = Bgunc.transpose() * lambda;
     }
 
-    // TODO preallocate.
-    VectorXd Bg = VectorXd::Zero(num_hes_nonzeros);
-    m_hescon_coloring->recover(Bgc, Bg.data());
-
-    Eigen::SparseMatrix<double> hessian =
-            m_hescon_coloring->convert(Bg.data());
+    // Convert the compressed Hessian of constraints into a SparseMatrix, for
+    // ease of combining with Hessian of objective.
+    Eigen::SparseMatrix<double> hessian;
+    m_hescon_coloring->recover(Bgc, hessian);
 
     // Add in Hessian of objective.
     // ----------------------------
     if (obj_factor) {
         Eigen::VectorXd hesobj_vec;
         calc_hessian_objective(x0, hesobj_vec);
-        Eigen::SparseMatrix<double> hesobj =
-                m_hesobj_coloring->convert(hesobj_vec.data());
+        Eigen::SparseMatrix<double> hesobj;
+        m_hesobj_coloring->convert(hesobj_vec.data(), hesobj);
         hessian += obj_factor * hesobj;
     }
 
+    // Convert the SparseMatrix into coordinate format.
     m_hessian_coloring->convert(hessian, hessian_values_raw);
 }
 

@@ -82,8 +82,8 @@ public:
 
     /// Utility function to create an Eigen sparse matrix from the coordinate
     /// format (perhaps as returned from recover()).
-    Eigen::SparseMatrix<double> convert(
-            const double* const jacobian_sparse_coordinate_format) const;
+    void convert(const double* const jacobian_sparse_coordinate_format,
+             Eigen::SparseMatrix<double>& mat) const;
 
 private:
 
@@ -151,11 +151,16 @@ public:
     void recover(const Eigen::MatrixXd& hessian_compressed,
             double* hessian_sparse_coordinate_format);
 
+    /// Convert a compressed Hessian (num_variables x num_seeds) into an
+    /// Eigen SparseMatrix.
+    void recover(const Eigen::MatrixXd& hessian_compressed,
+            Eigen::SparseMatrix<double>& hessian_recovered);
+
     /// Utility function to create an Eigen sparse matrix from the coordinate
     /// format (perhaps as returned from recover()). Only the upper triangle
     /// is filled.
-    Eigen::SparseMatrix<double> convert(
-            const double* const hessian_sparse_coordinate_format) const;
+    void convert(const double* const hessian_sparse_coordinate_format,
+            Eigen::SparseMatrix<double>& mat) const;
 
     /// Utility function to convert an Eigen sparse matrix into coordinate
     /// format. Only the elements known to this class as nonzeros are taken
