@@ -85,7 +85,6 @@ public:
     /// An iterate is provided for use in detecting sparsity, if
     /// necessary (e.g., by perturbing the objective or constraint functions).
     /// TODO make it clear that it's the Hessian of the *Lagrangian*.
-    // TODO update documentation for con and obj sparsity.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             std::vector<std::vector<unsigned int>>& hescon_sparsity,
             std::vector<std::vector<unsigned int>>& hesobj_sparsity) const;

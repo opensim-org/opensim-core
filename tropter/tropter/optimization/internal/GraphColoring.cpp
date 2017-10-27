@@ -36,6 +36,7 @@ void convert_sparsity_format(
     };
     ADOLC_format = internal::UnsignedInt2DPtr(new unsigned*[num_rows],
             unsigned_int_2d_deleter);
+    num_nonzeros = 0;
     for (int i = 0; i < (int)num_rows; ++i) {
         const auto& col_idx_for_nonzeros = sparsity[i];
         const auto num_nonzeros_this_row = col_idx_for_nonzeros.size();
@@ -44,7 +45,7 @@ void convert_sparsity_format(
         std::copy(col_idx_for_nonzeros.begin(), col_idx_for_nonzeros.end(),
                 // Skip over the first element.
                 ADOLC_format[i] + 1);
-        num_nonzeros += num_nonzeros_this_row;
+        num_nonzeros += (int)num_nonzeros_this_row;
     }
 }
 
@@ -218,7 +219,7 @@ void convert_sparsity_format_symmetric(
                     "nonzero for (%i, %i).", irow, row[0]);
         }
 
-        num_upper_nonzeros += row.size();
+        num_upper_nonzeros += (int)row.size();
     }
 
     // Create a full sparsity pattern by filling in the lower triangle.

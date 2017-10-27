@@ -158,7 +158,7 @@ Eigen::SparseMatrix<bool> convert_to_Eigen_SparseMatrix(
         const CompressedRowSparsity& sparsity) {
     Eigen::SparseMatrix<bool> mat(sparsity.size(), sparsity.size());
     int num_nonzeros = 0;
-    for (const auto& row : sparsity) num_nonzeros += row.size();
+    for (const auto& row : sparsity) num_nonzeros += (int)row.size();
     mat.reserve(num_nonzeros);
 
     for (int i = 0; i < (int)sparsity.size(); ++i) {
@@ -202,7 +202,7 @@ calc_sparsity_hessian_lagrangian(
             hesobj_sparsity.resize(num_vars);
             m_problem.calc_sparsity_hessian_lagrangian(x, hescon_sparsity,
                     hesobj_sparsity);
-        } catch (const CalcSparsityHessianLagrangianNotImplemented& ex) {
+        } catch (const CalcSparsityHessianLagrangianNotImplemented&) {
             TROPTER_THROW("User requested use of user-supplied sparsity for "
                 "the Hessian of the Lagrangian, but "
                 "calc_sparsity_hessian_lagrangian() is not implemented.")
