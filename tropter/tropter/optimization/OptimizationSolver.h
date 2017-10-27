@@ -59,6 +59,10 @@ public:
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
     void set_hessian_approximation(const std::string& setting);
     // TODO void set_findiff_...
+    /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_mode()
+    void set_findiff_hessian_mode(const std::string& setting);
+    /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_step_size()
+    void set_findiff_hessian_step_size(double setting);
     /// @}
 
     /// @name Set solver-specific advanced options.

@@ -176,13 +176,13 @@ calc_sparsity(const Eigen::VectorXd& x,
         // Working memory to hold obj_factor and lambda (multipliers).
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);
 
-        //std::ofstream file("DEBUG_adolc_hessian_lagrangian_sparsity.csv");
-        //file << "row_indices,column_indices" << std::endl;
-        //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
-        //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]
-        //            << std::endl;
-        //}
-        //file.close();
+        std::ofstream file("DEBUG_adolc_hessian_lagrangian_sparsity.csv");
+        file << "row_indices,column_indices" << std::endl;
+        for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
+            file << hessian_row_indices[i] << "," << hessian_col_indices[i]
+                    << std::endl;
+        }
+        file.close();
     }
 }
 

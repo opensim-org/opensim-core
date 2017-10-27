@@ -113,8 +113,7 @@ public:
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_opt_solver().set_hessian_approximation
-                (hessian_approx);
+        dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         tropter::OptimalControlIterate guess;
         const int Nguess = 2;
         guess.time.setLinSpaced(Nguess, 0, 1);
@@ -150,19 +149,26 @@ public:
 TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 {
     SECTION("IPOPT") {
-        SECTION("Finite differences") {
+        SECTION("Finite differences, limited-memory Hessian") {
             DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
                     "limited-memory");
         }
+        // This test passes but it's just really slow:
+        //SECTION("Finite differences, exact Hessian") {
+        //    DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+        //            "exact");
+        //}
         SECTION("ADOL-C") {
             DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt",
                     "limited-memory");
         }
     }
+    // Does not give desired answer (not fully bang-bang controls):
     // #if defined(TROPTER_WITH_SNOPT)
     // SECTION("SNOPT") {
     //     SECTION("ADOL-C") {
-    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt");
+    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt",
+    //                 "limited-memory");
     //     }
     // }
     // #endif
@@ -346,6 +352,11 @@ TEST_CASE("Double pendulum coordinate tracking",
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
                 implicit_solution.controls.bottomRows(2), 5.0);
 
+        // TODO DoublePendulumCoordinateTracking<double>::
+        // TODO run_test("ipopt", "exact");
+        // TODO ImplicitDoublePendulumCoordinateTracking<double>::
+        // TODO run_test("ipopt", "exact");
+
         // The following do not converge:
         // EXIT: Maximum number of iterations exceeded.
         // DoublePendulumCoordinateTracking<adouble>::
@@ -361,6 +372,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         // EXIT: Restoration failed after 235 iterations.
         // ImplicitDoublePendulumCoordinateTracking<double>::
         // run_test("ipopt", "limited-memory");
+
     }
     /*
     #if defined(TROPTER_WITH_SNOPT)

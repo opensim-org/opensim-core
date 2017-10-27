@@ -37,6 +37,16 @@ OptimizationProblemDecorator::make_initial_guess_from_bounds() const
     return guess;
 }
 
+Eigen::VectorXd
+OptimizationProblemDecorator::make_random_iterate_within_bounds() const {
+    const auto lower = get_variable_lower_bounds().array();
+    const auto upper = get_variable_upper_bounds().array();
+    // random's values are within [-1, 1]
+    Eigen::ArrayXd random = Eigen::ArrayXd::Random(lower.size());
+    // Get values between [0, 1], then scale by width and shift by lower.
+    return 0.5 * (random + 1.0) * (upper - lower) + lower;
+}
+
 void OptimizationProblemDecorator::set_verbosity(int verbosity) {
     TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
             "verbosity", verbosity, "0 or 1");
@@ -47,6 +57,13 @@ void OptimizationProblemDecorator::set_findiff_hessian_step_size(double value) {
     TROPTER_VALUECHECK(value > 0, "findiff_hessian_step_size", value,
             "positive");
     m_findiff_hessian_step_size = value;
+}
+
+void OptimizationProblemDecorator::set_findiff_hessian_mode(
+        const std::string& value) {
+    TROPTER_VALUECHECK(value == "fast" || value == "slow",
+            "findiff_hessian_mode", value, "'fast' or 'slow'");
+    m_findiff_hessian_mode = value;
 }
 
 // Explicit instantiation.

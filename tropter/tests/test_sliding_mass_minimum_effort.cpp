@@ -19,7 +19,7 @@
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
-#include "testing.h"
+#include "testing_optimalcontrol.h"
 
 using Eigen::Ref;
 using Eigen::VectorXd;
@@ -54,34 +54,76 @@ public:
     }
 };
 
-TEST_CASE("Sliding mass with IPOPT") {
+TEST_CASE("IPOPT") {
 
-    auto ocp = std::make_shared<SlidingMass<adouble>>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
-    OptimalControlSolution solution = dircol.solve();
-    solution.write("sliding_mass_solution.csv");
-    //OptimalControlIterate initial_guess = ocp->make_guess_template();
-    //OptimalControlSolution solution = dircol.solve(initial_guess);
+    SECTION("ADOL-C") {
+        auto ocp = std::make_shared<SlidingMass<adouble>>();
+        DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
+        OptimalControlSolution solution = dircol.solve();
+        solution.write("sliding_mass_solution.csv");
+        //OptimalControlIterate initial_guess = ocp->make_guess_template();
+        //OptimalControlSolution solution = dircol.solve(initial_guess);
 
-    // Initial and final position.
-    REQUIRE(Approx(solution.states(0, 0)) == 0.0);
-    REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
-    // Initial and final speed.
-    REQUIRE(Approx(solution.states(1, 0)) == 0.0);
-    REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+        // Initial and final position.
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
 
-    int N = (int)solution.time.size();
-    std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
-    // TODO is this really the correct solution?
-    RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
-    TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
-            0.1);
-    //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
-    //REQUIRE(Approx(errors.norm()) == 0);
+        int N = (int)solution.time.size();
+        //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+        // TODO is this really the correct solution?
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+                0.1);
+        //RowVectorXd errors = solution.controls.rightCols(N - 1) - expected;
+        //REQUIRE(Approx(errors.norm()) == 0);
+
+    }
+    SECTION("Compare derivatives") {
+        OCPDerivativesComparison<SlidingMass> comp;
+        comp.findiff_hessian_step_size = 1e-3;
+        comp.gradient_error_tolerance = 1e-5;
+        comp.hessian_error_tolerance = 1e-4;
+        comp.compare();
+    }
+    SECTION("Finite differences, limited memory") {
+        auto ocp = std::make_shared<SlidingMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+        OptimalControlSolution solution = dircol.solve();
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+        int N = (int)solution.time.size();
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+                0.1);
+    }
+    SECTION("Finite differences, exact Hessian") {
+        auto ocp = std::make_shared<SlidingMass<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("exact");
+        OptimalControlSolution solution = dircol.solve();
+        REQUIRE(Approx(solution.states(0, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
+        // Initial and final speed.
+        REQUIRE(Approx(solution.states(1, 0)) == 0.0);
+        REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
+        int N = (int)solution.time.size();
+        RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
+        TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,
+                0.1);
+    }
 }
 
 #if defined(TROPTER_WITH_SNOPT)
-TEST_CASE("Sliding mass new interface") {
+TEST_CASE("SNOPT") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt");
@@ -98,7 +140,7 @@ TEST_CASE("Sliding mass new interface") {
     REQUIRE(Approx(solution.states.rightCols<1>()[1]) == 0.0);
 
     int N = (int)solution.time.size();
-    std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
+    //std::cout << "DEBUG solution.controls " << solution.controls << std::endl;
     // TODO is this really the correct solution?
     RowVectorXd expected = RowVectorXd::LinSpaced(N - 2, 14.6119, -14.6119);
     TROPTER_REQUIRE_EIGEN(solution.controls.middleCols(1, N - 2), expected,

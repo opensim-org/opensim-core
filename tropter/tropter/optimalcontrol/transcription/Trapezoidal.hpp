@@ -111,11 +111,11 @@ void Trapezoidal<T>::set_ocproblem(
     // TODO set_initial_guess(std::vector<double>(num_variables)); // TODO user
     // input
 
-    // Set the tropter.
+    // Set the mesh.
     // -------------
     const unsigned num_mesh_intervals = m_num_mesh_points - 1;
     // For integrating the integral cost.
-    // The duration of each tropter interval.
+    // The duration of each mesh interval.
     VectorXd mesh = VectorXd::LinSpaced(m_num_mesh_points, 0, 1);
     VectorXd mesh_intervals = mesh.tail(num_mesh_intervals)
             - mesh.head(num_mesh_intervals);
@@ -200,7 +200,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     // ==============================
     // "Continuous function"
 
-    // Obtain state derivatives at each tropter point.
+    // Obtain state derivatives at each mesh point.
     // --------------------------------------------
     // TODO storing 1 too many derivatives trajectory; don't need the first
     // xdot (at t0). (TODO I don't think this is true anymore).
@@ -551,7 +551,7 @@ typename Trapezoidal<T>::template TrajectoryViewConst<S>
 Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return {
-            // Start of controls for first tropter interval.
+            // Start of controls for first mesh interval.
             x.data() + m_num_time_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
@@ -580,7 +580,7 @@ typename Trapezoidal<T>::template TrajectoryView<S>
 Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const
 {
     return {
-            // Start of controls for first tropter interval.
+            // Start of controls for first mesh interval.
             x.data() + m_num_time_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.

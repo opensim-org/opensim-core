@@ -32,6 +32,7 @@
 
 using Eigen::VectorXd;
 
+using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
 
 // References for finite differences:
 // Nocedal and Wright
@@ -117,8 +118,7 @@ calc_sparsity(const Eigen::VectorXd& x,
     m_jacobian_coloring->get_coordinate_format(
             jacobian_row_indices, jacobian_col_indices);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
-    print("Number of finite difference perturbations required "
-            "for sparse Jacobian: %i", num_jacobian_seeds);
+    print("Number of seeds for Jacobian: %i", num_jacobian_seeds);
     // std::ofstream file("DEBUG_finitediff_jacobian_sparsity.csv");
     // file << "row_indices,column_indices" << std::endl;
     // for (int i = 0; i < (int)jacobian_row_indices.size(); ++i) {
@@ -135,30 +135,62 @@ calc_sparsity(const Eigen::VectorXd& x,
     // Hessian.
     // ========
     if (provide_hessian_indices) {
-        CompressedRowSparsity hessian_sparsity;
-        calc_sparsity_hessian_lagrangian(x, hessian_sparsity);
-
-        m_hessian_coloring.reset(
-                new HessianColoring(num_vars, hessian_sparsity));
-        m_hessian_coloring->get_coordinate_format(
+        calc_sparsity_hessian_lagrangian(x,
                 hessian_row_indices, hessian_col_indices);
-        int num_hessian_seeds = (int)m_hessian_coloring->get_seed_matrix().cols();
-        std::cout << "[tropter] Number of finite difference perturbations "
-                "required for sparse Hessian: " << num_hessian_seeds
-                << std::endl;
-        m_hessian_row_indices = hessian_row_indices;
-        m_hessian_col_indices = hessian_col_indices;
+
+        int num_hessian_seeds =
+                (int)m_hessian_coloring->get_seed_matrix().cols();
+        // TODO produce a more informative number/description.
+        print("Number of seeds for Hessian: %i", num_hessian_seeds);
         m_constr_working.resize(num_jac_rows);
+
+        if (get_findiff_hessian_mode() == "slow") {
+            m_hessian_row_indices = hessian_row_indices;
+            m_hessian_col_indices = hessian_col_indices;
+        }
     }
 
 }
 
+
+namespace {
+Eigen::SparseMatrix<bool> convert_to_Eigen_SparseMatrix(
+        const CompressedRowSparsity& sparsity) {
+    Eigen::SparseMatrix<bool> mat(sparsity.size(), sparsity.size());
+    int num_nonzeros = 0;
+    for (const auto& row : sparsity) num_nonzeros += row.size();
+    mat.reserve(num_nonzeros);
+
+    for (int i = 0; i < (int)sparsity.size(); ++i) {
+        for (const auto& j : sparsity[i]) mat.insert(i, j) = 1;
+    }
+    mat.makeCompressed();
+    return mat;
+}
+CompressedRowSparsity convert_to_CompressedRowSparsity(
+        const Eigen::SparseMatrix<bool>& mat) {
+    CompressedRowSparsity sparsity(mat.rows());
+    for (int i = 0; i < mat.outerSize(); ++i) {
+        for (Eigen::SparseMatrix<bool>::InnerIterator it(mat, i); it; ++it) {
+            if (it.row() <= it.col()) // Upper triangle only.
+                sparsity[it.row()].push_back((unsigned)it.col());
+        }
+    }
+    return sparsity;
+}
+} // namespace
+
 void OptimizationProblem<double>::Decorator::
 calc_sparsity_hessian_lagrangian(
         const VectorXd& x,
-        CompressedRowSparsity& sparsity) const {
+        std::vector<unsigned int>& hessian_row_indices,
+        std::vector<unsigned int>& hessian_col_indices) const {
     const auto num_vars = m_problem.get_num_variables();
-    sparsity.resize(num_vars);
+
+    CompressedRowSparsity hescon_sparsity;
+    CompressedRowSparsity hesobj_sparsity;
+    Eigen::SparseMatrix<bool> hescon_sparsity_mat(num_vars, num_vars);
+    Eigen::SparseMatrix<bool> hesobj_sparsity_mat(num_vars, num_vars);
 
     if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
 
@@ -166,12 +198,25 @@ calc_sparsity_hessian_lagrangian(
                 AbstractOptimizationProblem::
                 CalcSparsityHessianLagrangianNotImplemented;
         try {
-            m_problem.calc_sparsity_hessian_lagrangian(x, sparsity);
+            hescon_sparsity.resize(num_vars);
+            hesobj_sparsity.resize(num_vars);
+            m_problem.calc_sparsity_hessian_lagrangian(x, hescon_sparsity,
+                    hesobj_sparsity);
         } catch (const CalcSparsityHessianLagrangianNotImplemented& ex) {
             TROPTER_THROW("User requested use of user-supplied sparsity for "
                 "the Hessian of the Lagrangian, but "
                 "calc_sparsity_hessian_lagrangian() is not implemented.")
         }
+
+        // Place these here to check for errors in the user-provided sparsity
+        // pattern.
+        m_hescon_coloring.reset(
+                new HessianColoring(num_vars, hescon_sparsity));
+        m_hesobj_coloring.reset(
+                new HessianColoring(num_vars, hesobj_sparsity));
+
+        hescon_sparsity_mat = convert_to_Eigen_SparseMatrix(hescon_sparsity);
+        hesobj_sparsity_mat = convert_to_Eigen_SparseMatrix(hesobj_sparsity);
 
     } else {
         // Sparsity of Hessian of lambda*constraints
@@ -184,12 +229,11 @@ calc_sparsity_hessian_lagrangian(
         // (TOMS) 41.1 (2014): 1.
         VectorXd ones = VectorXd::Ones(m_jacobian_coloring->get_num_nonzeros());
         // Represent the sparsity pattern as a binary sparsity matrix.
-        Eigen::SparseMatrix<bool> sparsity_mat =
+        Eigen::SparseMatrix<bool> jac_sparsity_mat =
                 m_jacobian_coloring->convert(ones.data()).cast<bool>();
         // The estimate for the sparsity pattern of the Hessian of
         // lambda*constraints. In Patterson 2013, this is S2 = S1^T * S1.
-        Eigen::SparseMatrix<bool> hes_constraints_sparsity_mat =
-                sparsity_mat.transpose() * sparsity_mat;
+        hescon_sparsity_mat = jac_sparsity_mat.transpose() * jac_sparsity_mat;
 
         // Sparsity of Hessian of objective
         // --------------------------------
@@ -199,38 +243,54 @@ calc_sparsity_hessian_lagrangian(
             gradient_sparsity_mat.insert(0, (int)grad_index) = 1;
         }
         gradient_sparsity_mat.makeCompressed();
-        Eigen::SparseMatrix<bool> hes_objective_sparsity_mat =
+        hesobj_sparsity_mat =
                 gradient_sparsity_mat.transpose() * gradient_sparsity_mat;
-
-        // Sparsity of Hessian of Lagrangian
-        Eigen::SparseMatrix<bool> hes_sparsity_mat =
-                hes_constraints_sparsity_mat || hes_objective_sparsity_mat;
-        // TODO this is non ideal as the hessian of objective sparsity might
-        // be much less. want to save both, but must allocate combined
-        // sparsity for IPOPT!
-
-        const auto& mat = hes_sparsity_mat;
-        using SparseMatrixIterator = Eigen::SparseMatrix<bool>::InnerIterator;
-        for (int i = 0; i < mat.outerSize(); ++i) {
-            for (SparseMatrixIterator it(mat, i); it; ++it) {
-                if (it.row() <= it.col()) // Upper triangle only.
-                    sparsity[it.row()].push_back((unsigned)it.col());
+        /*
+        for (int i = 0; i < (int)num_vars; ++i) {
+            for (int j = i; j < (int)num_vars; ++j) {
+                hescon_sparsity_mat.insert(i, j) = 1;
+                hesobj_sparsity_mat.insert(i, j) = 1;
             }
         }
-//        std::ofstream file("DEBUG_finitediff_hessian_lagrangian_sparsity.csv");
-//        file << "row_indices,column_indices" << std::endl;
-//        for (int i = 0; i < mat.outerSize(); ++i) {
-//            for (Eigen::SparseMatrix<bool>::InnerIterator it(mat, i); it;
-//                 ++it) {
-//                // Upper triangle only.
-//                if (it.row() <= it.col()) {
-//                    file << it.row() << "," << it.col() << std::endl;
-//                }
-//            }
-//        }
-//        file.close();
+        */
+
+        const CompressedRowSparsity hescon_sparsity =
+                convert_to_CompressedRowSparsity(hescon_sparsity_mat);
+        const CompressedRowSparsity hesobj_sparsity =
+                convert_to_CompressedRowSparsity(hesobj_sparsity_mat);
+
+        m_hescon_coloring.reset(
+                new HessianColoring(num_vars, hescon_sparsity));
+        m_hesobj_coloring.reset(
+                new HessianColoring(num_vars, hesobj_sparsity));
+
     }
+
+    // Create GraphColoring objects.
+    m_hesobj_coloring->get_coordinate_format(
+            m_hesobj_row_indices, m_hesobj_col_indices);
+
+    // Sparsity of Hessian of Lagrangian.
+    // ----------------------------------
+    Eigen::SparseMatrix<bool> hessian_sparsity_mat =
+            hescon_sparsity_mat || hesobj_sparsity_mat;
+    const CompressedRowSparsity hessian_sparsity =
+            convert_to_CompressedRowSparsity(hessian_sparsity_mat);
+
+    m_hessian_coloring.reset(
+            new HessianColoring(num_vars, hessian_sparsity));
+    m_hessian_coloring->get_coordinate_format(
+            hessian_row_indices, hessian_col_indices);
+
+    //std::ofstream file("DEBUG_finitediff_hessian_lagrangian_sparsity.csv");
+    //file << "row_indices,column_indices" << std::endl;
+    //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
+    //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]
+    //            << std::endl;
+    //}
+    //file.close();
 }
+
 
 void OptimizationProblem<double>::Decorator::
 calc_objective(unsigned num_variables, const double* variables,
@@ -283,6 +343,8 @@ calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     //            firstprivate(m_x_working)
     //            private(obj_pos, obj_neg)
     for (const auto& i : m_gradient_nonzero_indices) {
+        obj_pos = 0;
+        obj_neg = 0;
         // Perform a central difference.
         m_x_working[i] += eps;
         m_problem.calc_objective(m_x_working, obj_pos);
@@ -328,12 +390,21 @@ calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
 
 void OptimizationProblem<double>::Decorator::
 calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
-        bool /*new_x*/, double obj_factor,
+        bool new_x, double obj_factor,
         unsigned num_constraints, const double* lambda_raw,
-        bool /*new_lambda */,
+        bool new_lambda,
         unsigned num_hes_nonzeros, double* hessian_values_raw) const {
+
+    // TODO remove this string comparison.
+    if (get_findiff_hessian_mode() == "slow") {
+        calc_hessian_lagrangian_slow(num_variables, x_raw,
+                new_x, obj_factor, num_constraints, lambda_raw, new_lambda,
+                num_hes_nonzeros, hessian_values_raw);
+        return;
+    }
+
     // Bohme book has guidelines for step size (section 9.2.4.4).
-    const double eps = get_findiff_hessian_step_size();
+    const double& eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
     // TODO m_x_working = Eigen::Map<const VectorXd>(xraw, num_variables);
     Eigen::Map<const VectorXd> x0(x_raw, num_variables);
@@ -348,16 +419,12 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     VectorXd p1 = VectorXd::Zero(num_constraints);
     m_problem.calc_constraints(x0, p1);
 
-    const auto& hes_seed = m_hessian_coloring->get_seed_matrix();
+    const auto& hes_seed = m_hescon_coloring->get_seed_matrix();
     const Eigen::Index num_hes_seeds = hes_seed.cols();
 
     const auto& jac_seed = m_jacobian_coloring->get_seed_matrix();
     const Eigen::Index num_jac_seeds = jac_seed.cols();
     // TODO don't really want these here.
-    std::vector<unsigned int> jac_row_indices;
-    std::vector<unsigned int> jac_col_indices;
-    m_jacobian_coloring->get_coordinate_format(
-            jac_row_indices, jac_col_indices);
     int num_jac_nonzeros = m_jacobian_coloring->get_num_nonzeros();
 
     // Hessian of constraints.
@@ -405,83 +472,87 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
 
     // TODO preallocate.
     VectorXd Bg = VectorXd::Zero(num_hes_nonzeros);
-    m_hessian_coloring->recover(Bgc, Bg.data());
+    m_hescon_coloring->recover(Bgc, Bg.data());
 
-    Eigen::Map<VectorXd> hessian_values(hessian_values_raw, num_hes_nonzeros);
+    Eigen::SparseMatrix<double> hessian =
+            m_hescon_coloring->convert(Bg.data());
+
+    // TODO Eigen::Map<VectorXd> hessian_values(hessian_values_raw,
+    // num_hes_nonzeros);
 
     // Add in Hessian of objective.
     // ----------------------------
     // TODO
-    hessian_values = Bg;
+    // TODO hessian_values = Bg;
 //    std::cout << "hessian seed\n" << hes_seed << std::endl;
 //    std::cout << "Bgc\n" << Bgc << std::endl;
 //    std::cout << "DEBUG Bg\n" << Bg << std::endl;
     if (obj_factor) {
-        // TODO is initializing necessary?
-        VectorXd hessian_objective = VectorXd::Zero(num_hes_nonzeros);
-        calc_hessian_objective(x0, eps, hessian_objective);
-        hessian_values += obj_factor * hessian_objective;
+        Eigen::VectorXd hesobj_vec;
+        calc_hessian_objective(x0, hesobj_vec);
+        Eigen::SparseMatrix<double> hesobj =
+                m_hesobj_coloring->convert(hesobj_vec.data());
+        hessian += obj_factor * hesobj;
+        // TODO hessian_values += obj_factor * hessian_objective;
     }
 
-
-
-    // TODO do we really want hessian coloring for lagrangian or just the
-    // constraints portion?
-
-
+    m_hessian_coloring->convert(hessian, hessian_values_raw);
 }
 
 void OptimizationProblem<double>::Decorator::
-calc_hessian_objective(const VectorXd& x0, double eps,
-        Eigen::Ref<VectorXd> hessian_values) const {
+calc_hessian_objective(const VectorXd& x0,
+        VectorXd& hesobj_values) const {
+    assert(m_hesobj_row_indices.size() == m_hesobj_col_indices.size());
 
+    hesobj_values = VectorXd::Zero(m_hesobj_row_indices.size());
+
+    const double& eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
 
     VectorXd x(x0);
 
-    double obj_0;
+    double obj_0 = 0;
     m_problem.calc_objective(x0, obj_0);
 
-    assert(m_hessian_row_indices.size() == m_hessian_col_indices.size());
 
     // TODO can avoid computing f(x + eps * x[i]) multiple times.
-    for (int inz = 0; inz < (int)m_hessian_row_indices.size(); ++inz) {
-        int i = m_hessian_row_indices[inz];
-        int j = m_hessian_col_indices[inz];
+    for (int inz = 0; inz < (int)m_hesobj_row_indices.size(); ++inz) {
+        int i = m_hesobj_row_indices[inz];
+        int j = m_hesobj_col_indices[inz];
 
         if (i == j) {
 
             x[i] += eps;
-            double obj_pos;
+            double obj_pos = 0;
             m_problem.calc_objective(x, obj_pos);
 
             x[i] = x0[i] - eps;
-            double obj_neg;
+            double obj_neg = 0;
             m_problem.calc_objective(x, obj_neg);
 
             x[i] = x0[i];
 
-            hessian_values[inz] =
+            hesobj_values[inz] =
                     (obj_pos + obj_neg - 2 * obj_0) / eps_squared;
 
         } else {
 
             x[i] += eps;
-            double obj_i;
+            double obj_i = 0;
             m_problem.calc_objective(x, obj_i);
 
             x[j] += eps;
-            double obj_ij;
+            double obj_ij = 0;
             m_problem.calc_objective(x, obj_ij);
 
             x[i] = x0[i];
-            double obj_j;
+            double obj_j = 0;
             m_problem.calc_objective(x, obj_j);
 
             x[j] = x0[j];
 
-            hessian_values[inz] =
-                    (obj_ij - obj_i - obj_j + obj_0 ) / eps_squared;
+            hesobj_values[inz] =
+                    (obj_ij - obj_i - obj_j + obj_0) / eps_squared;
 
             //std::cout << "DEBUG " << i << " " << j
             //        << " obj_ij " << obj_ij
@@ -491,30 +562,33 @@ calc_hessian_objective(const VectorXd& x0, double eps,
         }
 
     }
-    //std::cout << "DEBUG hessian_objective\n";
-    //for (int inz = 0; inz < (int)hessian_values.size(); ++inz) {
-    //    std::cout << "(" << m_hessian_row_indices[inz] << "," <<
-    //            m_hessian_col_indices[inz] << "): " <<
-    //            hessian_values[inz] << std::endl;
-    //}
+    // std::cout << "DEBUG hessian_objective\n";
+    // for (int inz = 0; inz < (int)hesobj_values.size(); ++inz) {
+    //     std::cout << "(" << m_hesobj_row_indices[inz] << "," <<
+    //             m_hesobj_col_indices[inz] << "): " <<
+    //             hesobj_values[inz] << std::endl;
+    // }
 }
 
 void OptimizationProblem<double>::Decorator::
-calc_hessian_lagrangian_slow(unsigned num_variables, const double* x,
+calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda_raw,
         bool /*new_lambda */,
         unsigned /*num_nonzeros*/, double* hessian_values) const
 {
-    const double eps = 1e-2; // TODO
+    const double eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
 
-    m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
+//    m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
+    Eigen::VectorXd x = Eigen::Map<const VectorXd>(x_raw, num_variables);
+    // std::cout << "DEBUG x " << x << std::endl;
 
     Eigen::Map<const VectorXd> lambda(lambda_raw, num_constraints);
+    // std::cout << "DEBUG lambda " << lambda << std::endl;
 
     double lagr_0;
-    calc_lagrangian(m_x_working, obj_factor, lambda, lagr_0);
+    calc_lagrangian(x, obj_factor, lambda, lagr_0);
 
     assert(m_hessian_row_indices.size() == m_hessian_col_indices.size());
 
@@ -525,44 +599,40 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x,
 
         if (i == j) {
 
-            m_x_working[i] += eps;
+            x[i] += eps;
             double lagr_pos;
-            calc_lagrangian(m_x_working, obj_factor, lambda, lagr_pos);
+            calc_lagrangian(x, obj_factor, lambda, lagr_pos);
 
-            m_x_working[i] = x[i] - eps;
+            x[i] = x_raw[i] - eps;
             double lagr_neg;
-            calc_lagrangian(m_x_working, obj_factor, lambda, lagr_neg);
+            calc_lagrangian(x, obj_factor, lambda, lagr_neg);
 
-            m_x_working[i] = x[i];
+            x[i] = x_raw[i];
 
             hessian_values[inz] =
                     (lagr_pos + lagr_neg - 2 * lagr_0) / eps_squared;
 
         } else {
 
-            m_x_working[i] += eps;
+            x[i] += eps;
             double lagr_i;
-            calc_lagrangian(m_x_working, obj_factor, lambda, lagr_i);
+            calc_lagrangian(x, obj_factor, lambda, lagr_i);
 
-            m_x_working[j] += eps;
+            x[j] += eps;
             double lagr_ij;
-            calc_lagrangian(m_x_working, obj_factor, lambda, lagr_ij);
+            calc_lagrangian(x, obj_factor, lambda, lagr_ij);
 
-            m_x_working[i] = x[i];
+            x[i] = x_raw[i];
             double lagr_j;
-            calc_lagrangian(m_x_working, obj_factor, lambda, lagr_j);
+            calc_lagrangian(x, obj_factor, lambda, lagr_j);
 
-            m_x_working[j] = x[j];
+            x[j] = x_raw[j];
 
             hessian_values[inz] =
                     (lagr_ij + lagr_0 - lagr_i - lagr_j) / eps_squared;
         }
 
     }
-    // TODO
-    //std::string msg = "Hessian not available with finite differences.";
-    //std::cerr << msg << std::endl;
-    //TROPTER_THROW(msg);
 }
 
 void OptimizationProblem<double>::Decorator::
@@ -575,11 +645,12 @@ calc_lagrangian(const Eigen::VectorXd& x, double obj_factor,
     lagrangian_value = 0;
 
     if (obj_factor != 0) {
-        m_problem.calc_objective(m_x_working, lagrangian_value);
+        m_problem.calc_objective(x, lagrangian_value);
     }
 
-    m_problem.calc_constraints(x, m_constr_working);
-    lagrangian_value += lambda.dot(m_constr_working);
+    Eigen::VectorXd constr = Eigen::VectorXd::Zero(lambda.size());
+    m_problem.calc_constraints(x, constr);
+    lagrangian_value += lambda.dot(constr);
 }
 
 

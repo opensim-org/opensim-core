@@ -58,6 +58,9 @@ public:
     OptimizationSolver& get_opt_solver()
     {   return *m_optsolver.get(); }
 
+    const transcription::Base<T>& get_transcription() const
+    {   return *m_transcription.get(); }
+
     /// 0 for silent, 1 for verbose. This setting is copied into the
     /// underlying solver.
     void set_verbosity(int verbosity);

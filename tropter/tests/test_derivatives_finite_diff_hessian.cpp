@@ -5,6 +5,8 @@
 
 #include "testing.h"
 
+// TODO remove this test case, bring it into test_derivatives.cpp
+
 using Eigen::Ref;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;

@@ -361,7 +361,6 @@ bool IPOPTSolver::TNLP::eval_jac_g(
 
     m_problem.calc_jacobian(num_variables, x, new_x, num_nonzeros_jacobian,
             values);
-
     return true;
 }
 
@@ -384,7 +383,6 @@ bool IPOPTSolver::TNLP::eval_h(
     m_problem.calc_hessian_lagrangian(num_variables, x, new_x, obj_factor,
             num_constraints, lambda, new_lambda,
             num_nonzeros_hessian, values);
-
     return true;
 }
 

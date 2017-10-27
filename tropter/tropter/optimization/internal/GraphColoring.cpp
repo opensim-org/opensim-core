@@ -158,7 +158,7 @@ void JacobianColoring::recover_internal(
 }
 
 Eigen::SparseMatrix<double> JacobianColoring::convert(
-        double* jacobian_sparse_coordinate_format) const {
+        const double* const jacobian_sparse_coordinate_format) const {
     Eigen::SparseMatrix<double> mat(m_num_rows, m_num_cols);
     mat.reserve(m_num_nonzeros);
     for (int ijacnz = 0; ijacnz < m_num_nonzeros; ++ijacnz) {
@@ -242,7 +242,8 @@ void convert_sparsity_format_symmetric(
 
 
 HessianColoring::HessianColoring(int num_vars,
-        const std::vector<std::vector<unsigned int>>& sparsity) {
+        const std::vector<std::vector<unsigned int>>& sparsity)
+        : m_num_vars(num_vars) {
 
     TROPTER_THROW_IF((int)sparsity.size() != num_vars, "Incorrect number "
             "of rows in sparsity (actual: %i, expected: %i)",
@@ -365,5 +366,28 @@ void HessianColoring::recover_internal(
                 &row_ptr, &col_ptr, // Row and col. indices of nonzeros.
                 // Corresponding values in the Jacobian.
                 &hessian_sparse_coordinate_format);
+    }
+}
+
+Eigen::SparseMatrix<double> HessianColoring::convert(
+        const double* const hessian_sparse_coordinate_format) const {
+    // TODO see if setFromTriplets() is faster.
+    Eigen::SparseMatrix<double> mat(m_num_vars, m_num_vars);
+    mat.reserve(m_num_nonzeros);
+    for (int ijacnz = 0; ijacnz < m_num_nonzeros; ++ijacnz) {
+        mat.insert(m_recovered_row_indices[ijacnz],
+                m_recovered_col_indices[ijacnz]) =
+                hessian_sparse_coordinate_format[ijacnz];
+    }
+    mat.makeCompressed();
+    return mat;
+}
+
+void HessianColoring::convert(const Eigen::SparseMatrix<double>& mat,
+        double* hessian_sparse_coordinate_format) const {
+    for (int inz = 0; inz < m_num_nonzeros; ++inz) {
+        const auto& i = m_recovered_row_indices[inz];
+        const auto& j = m_recovered_col_indices[inz];
+        hessian_sparse_coordinate_format[inz] = mat.coeff(i,j);
     }
 }

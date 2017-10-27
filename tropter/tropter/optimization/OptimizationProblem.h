@@ -58,6 +58,8 @@ public:
     ///   - only one bound: value of the bound.
     // TODO move to AbstractOptimizationProblem.
     Eigen::VectorXd make_initial_guess_from_bounds() const;
+    // TODO document
+    Eigen::VectorXd make_random_iterate_within_bounds() const;
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     // You must call this function first before calling objective(),
     // constraints(), etc.
@@ -100,8 +102,13 @@ public:
     /// [1] Bohme TJ, Frank B. Hybrid Systems, Optimal Control and Hybrid
     /// Vehicles: Theory, Methods and Applications. Springer 2017.
     void set_findiff_hessian_step_size(double value);
+    ///  - "fast": default
+    ///  - "slow": Slower mode to be used only for debugging.
+    void set_findiff_hessian_mode(const std::string& setting);
+
     /// @copydoc set_findiff_hessian_step_size()
     double get_findiff_hessian_step_size() const;
+    const std::string& get_findiff_hessian_mode() const;
     /// @}
 
 protected:
@@ -112,6 +119,7 @@ private:
 
     int m_verbosity = 1;
     double m_findiff_hessian_step_size = 1e-5;
+    std::string m_findiff_hessian_mode = "fast";
 
 };
 
@@ -122,6 +130,11 @@ inline int OptimizationProblemDecorator::get_verbosity() const {
 inline double OptimizationProblemDecorator::
 get_findiff_hessian_step_size() const {
     return m_findiff_hessian_step_size;
+}
+
+inline const std::string& OptimizationProblemDecorator::
+get_findiff_hessian_mode() const {
+    return m_findiff_hessian_mode;
 }
 
 template <typename ...Types>
@@ -252,12 +265,12 @@ public:
             unsigned num_nonzeros, double* nonzeros) const override;
 private:
 
-    using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
     void calc_sparsity_hessian_lagrangian(
-            const Eigen::VectorXd&, CompressedRowSparsity&) const;
+            const Eigen::VectorXd&,
+            std::vector<unsigned int>&, std::vector<unsigned int>&) const;
 
-    void calc_hessian_objective(const Eigen::VectorXd& x0, double eps,
-            Eigen::Ref<Eigen::VectorXd> hessian_values) const;
+    void calc_hessian_objective(const Eigen::VectorXd& x0,
+            Eigen::VectorXd& hesobj_values) const;
     void calc_lagrangian(
             const Eigen::VectorXd& variables,
             double obj_factor,
@@ -291,8 +304,13 @@ private:
 
     // Hessian/Lagrangian.
     // -------------------
+    mutable std::unique_ptr<HessianColoring> m_hescon_coloring;
+    mutable std::unique_ptr<HessianColoring> m_hesobj_coloring;
     mutable std::unique_ptr<HessianColoring> m_hessian_coloring;
     // TODO temporary until we use ColPack.
+    mutable std::vector<unsigned int> m_hesobj_row_indices;
+    mutable std::vector<unsigned int> m_hesobj_col_indices;
+    // Only set if using the slow Hessian approximation.
     mutable std::vector<unsigned int> m_hessian_row_indices;
     mutable std::vector<unsigned int> m_hessian_col_indices;
     // Working memory.

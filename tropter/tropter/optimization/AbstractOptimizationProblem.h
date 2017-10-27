@@ -58,11 +58,15 @@ public:
     void set_use_supplied_sparsity_hessian_lagrangian(bool value)
     {   m_use_supplied_sparsity_hessian_lagrangian = value; }
     /// If using finite differences (double) with a Newton method (exact
-    /// Hessian in Ipopt), then we require the sparsity pattern of the
-    /// Hessian of the Lagrangian. By default, we assume the Hessian is dense.
+    /// Hessian in IPOPT), then we require the sparsity pattern of the
+    /// Hessian of the Lagrangian. By default, we estimate the Hessian's
+    /// sparsity pattern using estimates of the sparsity of the Jacobian of
+    /// the constraints and gradient of the objective.
     /// If you know the sparsity pattern of the Hessian, implement this
-    /// function to provide it. This has a *huge* impact on the speed
-    /// of the optimization for sparse problems.
+    /// function to provide it. This could have a *huge* impact on the speed
+    /// of the optimization for sparse problems. Provide the pattern for the
+    /// Hessian of the constraints (for lambda^T * constraints, or sum_i c_i(x))
+    /// and for the Hessian of the objective, separately.
     /// The sparsity pattern should be in ADOL-C's compressed row format.
     /// This format is a 2-Dish array. The length of the first dimension is
     /// the number of rows in the Hessian. Each element represents a row
@@ -81,8 +85,10 @@ public:
     /// An iterate is provided for use in detecting sparsity, if
     /// necessary (e.g., by perturbing the objective or constraint functions).
     /// TODO make it clear that it's the Hessian of the *Lagrangian*.
+    // TODO update documentation for con and obj sparsity.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
-            std::vector<std::vector<unsigned int>>& sparsity) const;
+            std::vector<std::vector<unsigned int>>& hescon_sparsity,
+            std::vector<std::vector<unsigned int>>& hesobj_sparsity) const;
     class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
 
     virtual std::unique_ptr<OptimizationProblemDecorator>
@@ -133,7 +139,9 @@ private:
 };
 
 inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
-        const Eigen::VectorXd&, std::vector<std::vector<unsigned int>>&) const {
+        const Eigen::VectorXd&,
+        std::vector<std::vector<unsigned int>>&,
+        std::vector<std::vector<unsigned int>>&) const {
     throw CalcSparsityHessianLagrangianNotImplemented();
 }
 
