@@ -7,10 +7,24 @@ For:
 - easier to maintain fewer separate projects
 - unified documentation
 - easier to build matlab/python bindings.
-
+- easier in dev b/c i can make changes to core as necessary.
 
 Against:
 
 - must pass thorough review.
 - increases opensim-core build time
 - adds many dependencies to opensim-core.
+- can swap out different versions of opensim-core.
+
+TBD:
+
+- would putting it in opensim-core make it public too soon?
+
+
+Use this as a model for how to handle contributions in the future.
+
+Muscollo could be an add-on, and if other pple pass some scrutiny, they can also
+be pulled into the distribution as an add-on.
+
+ opensim-core: more work int he review, but don't have to handle coordinating
+ multiple repos.
