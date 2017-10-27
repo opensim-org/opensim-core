@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <simbody/internal/MobilizedBody.h>
@@ -102,12 +103,12 @@ public:
         "List containing the generalized coordinates (q's) that parameterize "
         "this joint.");
 
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames owned by the Joint that are used to satisfy the Joint's "
-        "parent and child frame connections. For examples, PhysicalOffsetFrames "
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalOffsetFrame,
+        "Physical offset frames owned by the Joint that are used to satisfy "
+        "the Joint's parent and child frame connections. PhysicalOffsetFrames "
         "are often used to offset the connection from a Body's origin to another "
         "location of interest (e.g. the joint center). That offset can be added "
-        "to the Joint. When the joint is delete so are the Frames in this list.");
+        "to the Joint. When the joint is deleted so are the Frames in this list.");
 
 //==============================================================================
 // SOCKETS

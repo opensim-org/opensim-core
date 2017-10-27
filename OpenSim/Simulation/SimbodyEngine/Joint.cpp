@@ -266,43 +266,30 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
 
 void Joint::scale(const ScaleSet& scaleSet)
 {
-    SimTK::Vec3 parentFactors(1.0);
-    SimTK::Vec3 childFactors(1.0);
+    auto scaleOffsetFrameIfOwned = [&](const PhysicalFrame& frame) -> void {
+        // If the frame is owned and immediate subcomponent of this Joint then
+        // scale it. Otherwise, let the immediate owner of the frame decide.
+        auto* offset = findComponent<PhysicalOffsetFrame>(frame.getName());
+        if (offset && (&(offset->getOwner()) == this)) {
+            // find the scale factors associated with the base PhysicalFrame
+            // of this offset frame
+            const string& baseFrameName = offset->findBaseFrame().getName();
 
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& parentName = getParentFrame().findBaseFrame().getName();
-    const string& childName = getChildFrame().findBaseFrame().getName();
-    // Get scale factors
-    bool found_p = false;
-    bool found_b = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_p && (scale.getSegmentName() == parentName)) {
-            scale.getScaleFactors(parentFactors);
-            found_p = true;
+            // Get scale factors if they exist
+            for (int i = 0; i < scaleSet.getSize(); i++) {
+                Scale& scale = scaleSet.get(i);
+                if (scale.getSegmentName() == baseFrameName) {
+                    SimTK::Vec3 factors(1.0);
+                    scale.getScaleFactors(factors);
+                    const_cast<PhysicalOffsetFrame*>(offset)->scale(factors);
+                    return;
+                }
+            }
         }
-        if (!found_b && (scale.getSegmentName() == childName)) {
-            scale.getScaleFactors(childFactors);
-            found_b = true;
-        }
-        if (found_p && found_b)
-            break;
-    }
+    };
 
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getParentFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(parentFactors);
-    }
-    found = getProperty_frames().findIndex(getChildFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(childFactors);
-    }
+    scaleOffsetFrameIfOwned(getParentFrame());
+    scaleOffsetFrameIfOwned(getChildFrame());
 }
 
 const SimTK::MobilizedBodyIndex Joint::
