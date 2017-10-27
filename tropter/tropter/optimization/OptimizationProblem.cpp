@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblem.h"
+#include "OptimizationProblemDecorator_double.h"
+#include "OptimizationProblemDecorator_adouble.h"
 #include <tropter/Exception.hpp>
 
 namespace tropter {

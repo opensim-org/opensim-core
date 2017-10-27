@@ -17,7 +17,8 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
-#include <tropter/optimization/OptimizationProblem.h>
+#include <tropter/optimization/OptimizationProblemDecorator_double.h>
+#include <tropter/optimization/OptimizationProblemDecorator_adouble.h>
 #include <tropter/optimalcontrol/OptimalControlIterate.h>
 
 //namespace transcription {

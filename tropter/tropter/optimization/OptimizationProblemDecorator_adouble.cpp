@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblem.h"
+#include "OptimizationProblemDecorator_adouble.h"
 #include <tropter/Exception.hpp>
 
 #ifdef _MSC_VER

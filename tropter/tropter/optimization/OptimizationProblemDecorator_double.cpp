@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblem.h"
+#include "OptimizationProblemDecorator_double.h"
 #include <tropter/Exception.hpp>
 #include "internal/GraphColoring.h"
 #include <Eigen/SparseCore>
