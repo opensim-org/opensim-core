@@ -183,14 +183,14 @@ void convert_sparsity_format_symmetric(
         const std::vector<std::vector<unsigned int>>& sparsity_upper,
         internal::UnsignedInt2DPtr& ADOLC_format, int& num_upper_nonzeros) {
     int num_rows = (int)sparsity_upper.size();
-    std::cout << "DEBUG symmetric sparsity\n" << std::endl;
-    for (int i = 0; i < num_rows; ++i) {
-        std::cout << i << ":";
-        for (const auto& elem : sparsity_upper[i]) {
-            std::cout << " " << elem;
-        }
-        std::cout << std::endl;
-    }
+    //std::cout << "DEBUG symmetric sparsity\n" << std::endl;
+    //for (int i = 0; i < num_rows; ++i) {
+    //    std::cout << i << ":";
+    //    for (const auto& elem : sparsity_upper[i]) {
+    //        std::cout << " " << elem;
+    //    }
+    //    std::cout << std::endl;
+    //}
     num_upper_nonzeros = 0;
 
     // Check for errors.
