@@ -420,16 +420,15 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
 
     Eigen::Map<const VectorXd> lambda(lambda_raw, num_constraints);
 
-    // TODO improve variable names.
-
-    // TODO reuse perturbations between the Jacobian and Hessian calculations.
+    // TODO reuse perturbations between the Jacobian and Hessian calculations
+    // (if step size is the same).
 
     // Compute the unperturbed constraints value.
     VectorXd p1 = VectorXd::Zero(num_constraints);
     m_problem.calc_constraints(x0, p1);
 
-    const auto& hes_seed = m_hescon_coloring->get_seed_matrix();
-    const Eigen::Index num_hes_seeds = hes_seed.cols();
+    const auto& hescon_seed = m_hescon_coloring->get_seed_matrix();
+    const Eigen::Index num_hescon_seeds = hescon_seed.cols();
 
     const auto& jac_seed = m_jacobian_coloring->get_seed_matrix();
     const Eigen::Index num_jac_seeds = jac_seed.cols();
@@ -439,17 +438,18 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     // -----------------------
     // Allocate memory (TODO preallocate once in calc_sparsity()).
     // Compressed Hessian of constraints.
-    Eigen::MatrixXd Bgc(num_variables, num_hes_seeds);
+    Eigen::MatrixXd hescon_c(num_variables, num_hescon_seeds);
     // Double-compressed second derivatives; same shape as a compressed
     // Jacobian. Used in the inner loop.
-    Eigen::MatrixXd Bgcc(num_constraints, num_jac_seeds);
+    Eigen::MatrixXd hescon_cc(num_constraints, num_jac_seeds);
+    // Store perturbed values of constraints.
     VectorXd p2(num_constraints);
     VectorXd p3(num_constraints);
     VectorXd p4(num_constraints);
 
     // Loop through Hessian seeds.
-    for (int ihesseed = 0; ihesseed < num_hes_seeds; ++ihesseed) {
-        const auto hes_direction = hes_seed.col(ihesseed);
+    for (int ihesseed = 0; ihesseed < num_hescon_seeds; ++ihesseed) {
+        const auto hes_direction = hescon_seed.col(ihesseed);
         VectorXd xb = x0 + eps * hes_direction;
         p2.setZero();
         m_problem.calc_constraints(xb, p2);
@@ -462,23 +462,23 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
             m_problem.calc_constraints(xb + eps * jac_direction, p4);
 
             // Finite difference.
-            Bgcc.col(ijacseed) = (p1 - p2 - p3 + p4) / eps_squared;
+            hescon_cc.col(ijacseed) = (p1 - p2 - p3 + p4) / eps_squared;
         }
 
         // Recover (uncompress).
         Eigen::VectorXd Bgunc_coeffs(num_jac_nonzeros);
-        m_jacobian_coloring->recover(Bgcc, Bgunc_coeffs.data());
+        m_jacobian_coloring->recover(hescon_cc, Bgunc_coeffs.data());
         // TODO preallocate:
         Eigen::SparseMatrix<double> Bgunc;
         m_jacobian_coloring->convert(Bgunc_coeffs.data(), Bgunc);
 
-        Bgc.col(ihesseed) = Bgunc.transpose() * lambda;
+        hescon_c.col(ihesseed) = Bgunc.transpose() * lambda;
     }
 
     // Convert the compressed Hessian of constraints into a SparseMatrix, for
     // ease of combining with Hessian of objective.
     Eigen::SparseMatrix<double> hessian;
-    m_hescon_coloring->recover(Bgc, hessian);
+    m_hescon_coloring->recover(hescon_c, hessian);
 
     // Add in Hessian of objective.
     // ----------------------------
@@ -575,12 +575,10 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
     const double eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
 
-//    m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
+    // m_x_working = Eigen::Map<const VectorXd>(x, num_variables);
     Eigen::VectorXd x = Eigen::Map<const VectorXd>(x_raw, num_variables);
-    // std::cout << "DEBUG x " << x << std::endl;
 
     Eigen::Map<const VectorXd> lambda(lambda_raw, num_constraints);
-    // std::cout << "DEBUG lambda " << lambda << std::endl;
 
     double lagr_0;
     calc_lagrangian(x, obj_factor, lambda, lagr_0);
