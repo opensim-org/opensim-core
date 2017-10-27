@@ -44,7 +44,7 @@ class AbstractPathPoint;
  * @version 1.0
  */
 class OSIMSIMULATION_API WrapObject : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
