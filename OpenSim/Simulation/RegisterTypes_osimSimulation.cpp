@@ -248,6 +248,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ProbeSet() );
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
+    Object::registerType( ActuatorForceProbe());
     Object::registerType( Umberger2010MuscleMetabolicsProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter() );
