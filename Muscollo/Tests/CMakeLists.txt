@@ -41,6 +41,8 @@ MuscolloAddTest(NAME test2Muscles2DOFsDeGrooteFregly2016 LIB_DEPENDS tropter
         test2Muscles2DOFsDeGrooteFregly2016_GSO_setup.xml
         test2Muscles2DOFsDeGrooteFregly2016_INDYGO_setup.xml)
 
+MuscolloAddTest(NAME test2Muscles1DOFDeGrooteFregly2016 LIB_DEPENDS tropter)
+		
 MuscolloAddTest(NAME testGait10dof18musc RESOURCES
         testGait10dof18musc_subject01.osim
         testGait10dof18musc_kinematics.mot
