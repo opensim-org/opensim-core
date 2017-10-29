@@ -62,6 +62,11 @@ namespace tropter {
 template <typename T>
 using Optional = nonstd::optional_lite::optional<T>;
 
+// ADOL-C
+// ------
+// TODO move elsewhere.
+inline bool isnan(const adouble& v) { return std::isnan(v.value()); }
+
 // Eigen
 // -----
 

@@ -17,10 +17,12 @@
 // ----------------------------------------------------------------------------
 
 #include <string>
+#include <Eigen/SparseCore>
 
 namespace tropter {
-    /// Format a string in the style of sprintf.
-    std::string format(const char* format, ...);
+/// Format a string in the style of sprintf.
+std::string format(const char* format, ...);
+
 } //namespace tropter
 
 #endif // TROPTER_UTILITIES_H_

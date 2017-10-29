@@ -119,6 +119,9 @@ private:
     mutable std::vector<unsigned int> m_hessian_col_indices;
     // Working memory.
     // mutable Eigen::VectorXd m_constr_working;
+    mutable Eigen::Matrix<bool, Eigen::Dynamic, 1>
+            m_perturbed_objective_is_cached;
+    mutable Eigen::VectorXd m_perturbed_objective_cache;
 
     // Deprecated.
     void calc_hessian_lagrangian_slow(unsigned num_variables,

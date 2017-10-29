@@ -4,6 +4,8 @@ add_library(tropter SHARED
         utilities.h utilities.cpp
         Exception.h Exception.hpp Exception.cpp
         EigenUtilities.h
+        FiniteDifference.h
+        FiniteDifference.cpp
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp
@@ -33,6 +35,7 @@ add_library(tropter SHARED
         optimalcontrol/DirectCollocation.cpp
         optimalcontrol/transcription/Base.h
         optimalcontrol/transcription/Trapezoidal.h
+        optimalcontrol/transcription/Trapezoidal.hpp
         optimalcontrol/transcription/Trapezoidal.cpp
         )
 

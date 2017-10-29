@@ -15,8 +15,8 @@
 // ----------------------------------------------------------------------------
 #include "OptimizationProblemDecorator_double.h"
 #include <tropter/Exception.hpp>
+#include <tropter/FiniteDifference.h>
 #include "internal/GraphColoring.h"
-#include <Eigen/SparseCore>
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
 //    // TODO only include ifdef _OPENMP
@@ -31,8 +31,6 @@
 //#endif
 
 using Eigen::VectorXd;
-
-using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
 
 // References for finite differences:
 // Nocedal and Wright
@@ -138,10 +136,11 @@ calc_sparsity(const Eigen::VectorXd& x,
         calc_sparsity_hessian_lagrangian(x,
                 hessian_row_indices, hessian_col_indices);
 
-        int num_hessian_seeds =
-                (int)m_hessian_coloring->get_seed_matrix().cols();
         // TODO produce a more informative number/description.
-        print("Number of seeds for Hessian: %i", num_hessian_seeds);
+        print("Number of seeds for Hessian of constraints: %i",
+                m_hescon_coloring->get_seed_matrix().cols());
+        print("Number of seeds for Hessian of objective: %i",
+                m_hesobj_coloring->get_seed_matrix().cols());
         // m_constr_working.resize(num_jac_rows);
 
         if (get_findiff_hessian_mode() == "slow") {
@@ -152,33 +151,6 @@ calc_sparsity(const Eigen::VectorXd& x,
 
 }
 
-
-namespace {
-Eigen::SparseMatrix<bool> convert_to_Eigen_SparseMatrix(
-        const CompressedRowSparsity& sparsity) {
-    Eigen::SparseMatrix<bool> mat(sparsity.size(), sparsity.size());
-    int num_nonzeros = 0;
-    for (const auto& row : sparsity) num_nonzeros += (int)row.size();
-    mat.reserve(num_nonzeros);
-
-    for (int i = 0; i < (int)sparsity.size(); ++i) {
-        for (const auto& j : sparsity[i]) mat.insert(i, j) = 1;
-    }
-    mat.makeCompressed();
-    return mat;
-}
-CompressedRowSparsity convert_to_CompressedRowSparsity(
-        const Eigen::SparseMatrix<bool>& mat) {
-    CompressedRowSparsity sparsity(mat.rows());
-    for (int i = 0; i < mat.outerSize(); ++i) {
-        for (Eigen::SparseMatrix<bool>::InnerIterator it(mat, i); it; ++it) {
-            if (it.row() <= it.col()) // Upper triangle only.
-                sparsity[it.row()].push_back((unsigned)it.col());
-        }
-    }
-    return sparsity;
-}
-} // namespace
 
 void OptimizationProblem<double>::Decorator::
 calc_sparsity_hessian_lagrangian(
@@ -219,11 +191,11 @@ calc_sparsity_hessian_lagrangian(
         hesobj_sparsity_mat = convert_to_Eigen_SparseMatrix(hesobj_sparsity);
 
     } else {
-
         // We get the sparsity pattern of the Hessian of the objective and
         // the Hessian of lambda*constraints *separately* because we use
         // different algorithms to compute these two Hessians. However, we
         // have to report the total sparsity for use in the OptimizationSolver.
+
         // Sparsity of Hessian of lambda*constraints
         // -----------------------------------------
         // Conservative estimate of sparsity of Hessian of lambda*constraints.
@@ -510,21 +482,34 @@ calc_hessian_objective(const VectorXd& x0,
     m_problem.calc_objective(x0, obj_0);
 
 
-    // TODO can avoid computing f(x + eps * x[i]) multiple times.
+    // Avoid computing f(x + eps * e_i) multiple times.
+    // TODO preallocate these two vectors.
+    m_perturbed_objective_is_cached.resize(x0.size());
+    m_perturbed_objective_is_cached.setConstant(false);
+    m_perturbed_objective_cache.resize(x0.size());
+    auto get_perturbed_objective = [&](int i) {
+        if (!m_perturbed_objective_is_cached[i]) {
+            x[i] += eps;
+            m_perturbed_objective_cache[i] = 0;
+            m_problem.calc_objective(x, m_perturbed_objective_cache[i]);
+            x[i] = x0[i];
+            m_perturbed_objective_is_cached[i] = true;
+        }
+        return m_perturbed_objective_cache[i];
+    };
     for (int inz = 0; inz < (int)m_hesobj_row_indices.size(); ++inz) {
         int i = m_hesobj_row_indices[inz];
         int j = m_hesobj_col_indices[inz];
 
         if (i == j) {
 
-            x[i] += eps;
-            double obj_pos = 0;
-            m_problem.calc_objective(x, obj_pos);
+            // x + eps e_i
+            double obj_pos = get_perturbed_objective(i);
 
+            // x - eps e_i
             x[i] = x0[i] - eps;
             double obj_neg = 0;
             m_problem.calc_objective(x, obj_neg);
-
             x[i] = x0[i];
 
             hesobj_values[inz] =
@@ -532,19 +517,19 @@ calc_hessian_objective(const VectorXd& x0,
 
         } else {
 
-            x[i] += eps;
-            double obj_i = 0;
-            m_problem.calc_objective(x, obj_i);
+            // x + eps e_i
+            double obj_i = get_perturbed_objective(i);
 
+            // x + eps (e_i + e_j)
+            x[i] += eps;
             x[j] += eps;
             double obj_ij = 0;
             m_problem.calc_objective(x, obj_ij);
-
             x[i] = x0[i];
-            double obj_j = 0;
-            m_problem.calc_objective(x, obj_j);
-
             x[j] = x0[j];
+
+            // x + eps e_j
+            double obj_j = get_perturbed_objective(j);
 
             hesobj_values[inz] =
                     (obj_ij - obj_i - obj_j + obj_0) / eps_squared;
@@ -585,7 +570,7 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
 
     assert(m_hessian_row_indices.size() == m_hessian_col_indices.size());
 
-    // TODO can avoid computing f(x + eps * x[i]) multiple times.
+    // TODO can avoid computing f(x + eps * e_i) multiple times.
     for (int inz = 0; inz < (int)m_hessian_row_indices.size(); ++inz) {
         int i = m_hessian_row_indices[inz];
         int j = m_hessian_col_indices[inz];

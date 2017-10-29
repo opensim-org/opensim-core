@@ -34,4 +34,3 @@ std::string tropter::format(const char* format, ...) {
     va_end(args);
     return std::string(buf.get());
 }
-
