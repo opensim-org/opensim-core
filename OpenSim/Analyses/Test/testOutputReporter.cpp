@@ -50,11 +50,7 @@ static const double Activation0 = 0.01,
 Deactivation0 = 0.4;
 
 /*
-This function completes a controlled activation, controlled stretch simulation
-of a muscle. After the simulation has completed, the results can be
-tested in a number of different ways to ensure that the muscle model is
-functioning
-
+This function performs a simulation of a muscle.
 @param muscle   a muscle model that satisfies the Muscle interface
 @param startX   the starting position of the muscle anchor. I have no idea
 why this value is included.
@@ -67,7 +63,6 @@ void simulateMuscle(const Muscle& muscle,
                     double act0,
                     double integrationAccuracy,
                     bool printResults);
-
 
 int main()
 {
@@ -108,10 +103,9 @@ int main()
     return 0;
 }
 
-/*==============================================================================
-Main test driver to be used on any muscle model 
-================================================================================
-*/
+//=============================================================================
+// Main simulation driver used to generate Outputs and report them
+//=============================================================================
 void simulateMuscle(
         const Muscle &muscModel,
         double startX,
@@ -218,7 +212,6 @@ void simulateMuscle(
 
     // Add the control set controller to the model
     model.addController(muscleController);
-
 
     //==========================================================================
     // 2. OUTPUTREPORTER SETUP: create and add the OutputReporter
