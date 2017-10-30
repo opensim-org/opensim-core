@@ -52,15 +52,11 @@ Deactivation0 = 0.4;
 /*
 This function performs a simulation of a muscle.
 @param muscle   a muscle model that satisfies the Muscle interface
-@param startX   the starting position of the muscle anchor. I have no idea
-why this value is included.
 @param act0     the initial i of the muscle
 @param accuracy the desired accuracy of the integrated solution
 @param printResults print the osim model associated with this test.
 */
 void simulateMuscle(const Muscle& muscle,
-                    double startX,
-                    double act0,
                     double integrationAccuracy,
                     bool printResults);
 
@@ -78,18 +74,12 @@ int main()
         muscle.setActivationTimeConstant(Activation0);
         muscle.setDeactivationTimeConstant(Deactivation0);
 
-        double x0 = 1.0;
-        double act0 = 0.2;
-
-
         simulateMuscle( muscle,
-                        x0,
-                        act0,
                         IntegrationAccuracy,
-                    true);
+                        true);
     }
-    catch (const Exception& e) {
-        e.print(cout);
+    catch (const std::exception& e) {
+        cout << e.what();
         failures.push_back("testOutputReporter");
     }
 
@@ -108,8 +98,6 @@ int main()
 //=============================================================================
 void simulateMuscle(
         const Muscle &muscModel,
-        double startX,
-        double act0,
         double integrationAccuracy,
         bool printResults)
 {
@@ -178,26 +166,6 @@ void simulateMuscle(
     muscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
     muscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
 
-    ActivationFiberLengthMuscle_Deprecated *aflMuscle
-        = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(muscle);
-    if (aflMuscle){
-        // Define the default states for the muscle that has 
-        //activation and fiber-length states
-        aflMuscle->setDefaultActivation(act0);
-        aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
-    }
-    else{
-        ActivationFiberLengthMuscle *aflMuscle2
-            = dynamic_cast<ActivationFiberLengthMuscle *>(muscle);
-        if (aflMuscle2){
-            // Define the default states for the muscle 
-            //that has activation and fiber-length states
-            aflMuscle2->setDefaultActivation(act0);
-            aflMuscle2->setDefaultFiberLength(aflMuscle2
-                ->getOptimalFiberLength());
-        }
-    }
-
     model.addForce(muscle);
 
     // Create a prescribed controller that simply 
@@ -246,7 +214,7 @@ void simulateMuscle(
 
     // Define non-zero (defaults are 0) states for the free joint
     // set x-translation value
-    modelCoordinateSet[0].setValue(state, startX, true);
+    modelCoordinateSet[0].setValue(state, 1.0, true);
 
     //==========================================================================
     // 4. SIMULATION Integration
