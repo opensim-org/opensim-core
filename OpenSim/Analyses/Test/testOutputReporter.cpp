@@ -43,15 +43,12 @@ static const int CorrectnessTest        = 2;
 
 // MUSCLE CONSTANTS
 static const double MaxIsometricForce0 = 100.0,
-OptimalFiberLength0 = 0.1,
-TendonSlackLength0 = 0.2,
+    OptimalFiberLength0 = 0.1,
+    TendonSlackLength0 = 0.2,
     PennationAngle0 = 0.0;
-// PennationAngle1 = SimTK::Pi / 4;
 
 static const double Activation0 = 0.01,
-Deactivation0 = 0.4,
-ShutteDelpActivation1 = 7.6,
-ShutteDelpActivation2 = 2.5;
+Deactivation0 = 0.4;
 
 /*
 This function completes a controlled activation, controlled stretch simulation
@@ -59,7 +56,7 @@ of a muscle. After the simulation has completed, the results can be
 tested in a number of different ways to ensure that the muscle model is
 functioning
 
-@param aMuscle  a path actuator
+@param muscle   a muscle model that satisfies the Muscle interface
 @param startX   the starting position of the muscle anchor. I have no idea
 why this value is included.
 @param act0     the initial i of the muscle
@@ -68,7 +65,7 @@ why this value is included.
 @param accuracy the desired accuracy of the integrated solution
 @param printResults print the osim model associated with this test.
 */
-void simulateMuscle(const Muscle &aMuscle,
+void simulateMuscle(const Muscle &muscle,
                     double startX,
                     double act0,
                     const Function *motion,
@@ -112,8 +109,6 @@ int main()
         failures.push_back("testOutputReporter");
     }
 
-    cout << "************************************************************" << endl;
-
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
@@ -137,12 +132,7 @@ void simulateMuscle(
         double integrationAccuracy,
         bool printResults)
 {
-    string prescribed = (motion == NULL) ? "." : " with Prescribed Motion.";
 
-    cout << "\n******************************************************" << endl;
-    cout << "Test " << aMuscModel.getConcreteClassName()
-         << " Model" << prescribed << endl;
-    cout << "******************************************************" << endl;
     using SimTK::Vec3;
 
     //==========================================================================
@@ -151,7 +141,7 @@ void simulateMuscle(
 
     // Define the initial and final simulation times
     double initialTime = 0.0;
-    double finalTime = 4.0;
+    double finalTime = 0.5;
 
     //Physical properties of the model
     double ballMass = 10;
@@ -272,16 +262,16 @@ void simulateMuscle(
     //==========================================================================
 
     // Initialize the system and get the default state    
-    SimTK::State& si = model.initSystem();
+    SimTK::State& state = model.initSystem();
 
-    model.getMultibodySystem().realize(si, SimTK::Stage::Dynamics);
-    model.equilibrateMuscles(si);
+    model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
+    model.equilibrateMuscles(state);
 
     CoordinateSet& modelCoordinateSet = model.updCoordinateSet();
 
     // Define non-zero (defaults are 0) states for the free joint
     // set x-translation value
-    modelCoordinateSet[0].setValue(si, startX, true);
+    modelCoordinateSet[0].setValue(state, startX, true);
 
     //==========================================================================
     // 4. SIMULATION Integration
@@ -294,13 +284,13 @@ void simulateMuscle(
     Manager manager(model, integrator);
 
     // Integrate from initial time to final time
-    si.setTime(initialTime);
+    state.setTime(initialTime);
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si, finalTime);
+    manager.integrate(state, finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;
