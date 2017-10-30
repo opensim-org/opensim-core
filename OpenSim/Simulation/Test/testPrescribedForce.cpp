@@ -42,7 +42,6 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
