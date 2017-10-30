@@ -47,8 +47,13 @@ namespace OpenSim {
  * and writes TimeSeriesTables of Output values according to the names listed
  * as properties of the Analysis. OutputReporter enables the AnalyzeTool to
  * report on Outputs via the Analysis interface but backed by a TableReporter.
- * The OutputReporter currently only supports Outputs of type, double, Vec3
- * and SpatialVec.
+ * The OutputReporter currently only supports Outputs of type: double, Vec3
+ * and SpatialVec. The OutputReporter will automatically write multiple files-
+ * a file for each supported Output type: <results_file_name>.sto (as doubles),
+ * <results_file_name>Vec3.sto and <results_file_name>SpatialVec.sto.
+ *
+ * Note that the internal tables are reset at the beginning of a simulation or
+ * AnalyzeTool::run() and does not append results to previous tables.
  */
 class OSIMANALYSES_API OutputReporter : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(OutputReporter, Analysis);
