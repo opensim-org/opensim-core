@@ -22,7 +22,6 @@
 * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/osimCommon.h>
-#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -299,4 +298,27 @@ void simulateMuscle(
     // 4. Print the results
     //==========================================================================
     model.updAnalysisSet().printResults("testOutputReporter");
+
+    //==========================================================================
+    // 5. Verify files were written with correct values
+    //==========================================================================
+    auto tableD = STOFileAdapter::read("testOutputReporter.sto");
+    auto tableV3 = STOFileAdapter_<SimTK::Vec3>::
+        read("testOutputReporterVec3.sto");
+    auto tableSV = STOFileAdapter_<SimTK::SpatialVec>::
+        read("testOutputReporterSpatialVec.sto");
+
+    const SimTK::Real& val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
+    const Vec3& val_omega = tableV3.getRowAtIndex(tableV3.getNumRows() - 1)[1];
+    const SimTK::SpatialVec& val_jrf = 
+        tableSV.getRowAtIndex(tableSV.getNumRows() - 1)[1];
+
+    model.realizeReport(state);
+    auto ke = model.getMultibodySystem().calcKineticEnergy(state);
+    auto ang_acc = ball->getAngularAccelerationInGround(state);
+    auto reaction = slider->calcReactionOnChildExpressedInGround(state);
+
+    ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
+    ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
+    ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
 }
