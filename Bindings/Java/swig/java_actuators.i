@@ -13,6 +13,7 @@
 
 #include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
+#include <Bindings/Java/OpenSimJNI/SimbodyUtils.h>
 
 using namespace OpenSim;
 using namespace SimTK;

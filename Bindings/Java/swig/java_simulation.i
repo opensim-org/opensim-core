@@ -7,7 +7,7 @@
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-#include <Bindings/Java/OpenSimJNI/SimbodyUtils.h>
+
 
 using namespace OpenSim;
 using namespace SimTK;
