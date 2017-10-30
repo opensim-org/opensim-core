@@ -59,16 +59,12 @@ functioning
 @param startX   the starting position of the muscle anchor. I have no idea
 why this value is included.
 @param act0     the initial i of the muscle
-@param motion   the forced stretch of the simulation
-@param control  the activation control signal that is applied to the muscle
 @param accuracy the desired accuracy of the integrated solution
 @param printResults print the osim model associated with this test.
 */
-void simulateMuscle(const Muscle &muscle,
+void simulateMuscle(const Muscle& muscle,
                     double startX,
                     double act0,
-                    const Function *motion,
-                    const Function *control,
                     double integrationAccuracy,
                     bool printResults);
 
@@ -78,31 +74,25 @@ int main()
     SimTK::Array_<std::string> failures;
 
     try {
-    Millard2012EquilibriumMuscle muscle("muscle",
-                    MaxIsometricForce0,
-                    OptimalFiberLength0,
-                    TendonSlackLength0,
-                    PennationAngle0);
+        Millard2012EquilibriumMuscle muscle("muscle",
+                        MaxIsometricForce0,
+                        OptimalFiberLength0,
+                        TendonSlackLength0,
+                        PennationAngle0);
 
-    muscle.setActivationTimeConstant(Activation0);
-    muscle.setDeactivationTimeConstant(Deactivation0);
+        muscle.setActivationTimeConstant(Activation0);
+        muscle.setDeactivationTimeConstant(Deactivation0);
 
-    double x0 = 0;
-    double act0 = 0.2;
+        double x0 = 1.0;
+        double act0 = 0.2;
 
-    Constant control(0.5);
 
-    Sine motion(0.1, SimTK::Pi, 0);
-
-    simulateMuscle( muscle,
-                    x0,
-                    act0,
-                    &motion,
-                    &control,
-                    IntegrationAccuracy,
+        simulateMuscle( muscle,
+                        x0,
+                        act0,
+                        IntegrationAccuracy,
                     true);
     }
-
     catch (const Exception& e) {
         e.print(cout);
         failures.push_back("testOutputReporter");
@@ -123,11 +113,9 @@ Main test driver to be used on any muscle model
 ================================================================================
 */
 void simulateMuscle(
-    const Muscle &aMuscModel,
-    double startX,
-    double act0,
-        const Function *motion,  // prescribe motion of free end of muscle
-        const Function *control, // prescribed excitation signal to the muscle
+        const Muscle &muscModel,
+        double startX,
+        double act0,
         double integrationAccuracy,
         bool printResults)
 {
@@ -150,12 +138,12 @@ void simulateMuscle(
     // Create an OpenSim model
     Model model;
 
-    double optimalFiberLength = aMuscModel.getOptimalFiberLength();
-    double pennationAngle     = aMuscModel.getPennationAngleAtOptimalFiberLength();
-    double tendonSlackLength  = aMuscModel.getTendonSlackLength();
+    double optimalFiberLength = muscModel.getOptimalFiberLength();
+    double pennationAngle     = muscModel.getPennationAngleAtOptimalFiberLength();
+    double tendonSlackLength  = muscModel.getTendonSlackLength();
 
     // Use a copy of the muscle model passed in to add path points later
-    PathActuator *aMuscle = aMuscModel.clone();
+    Muscle *muscle = muscModel.clone();
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
@@ -183,26 +171,21 @@ void simulateMuscle(
     sliderCoord.setRangeMin(0);
     sliderCoord.setRangeMax(1.0);
 
-    if (motion != NULL){
-        sliderCoord.setPrescribedFunction(*motion);
-        sliderCoord.setDefaultIsPrescribed(true);
-    }
     // add ball to model
     model.addBody(ball);
     model.addJoint(slider);
-
 
     //==========================================================================
     // 1. SIMULATION SETUP: Add the muscle
     //==========================================================================
     //Attach the muscle
-    /*const string &actuatorType = */aMuscle->getConcreteClassName();
-    aMuscle->setName("muscle");
-    aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
-    aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
+    /*const string &actuatorType = */muscle->getConcreteClassName();
+    muscle->setName("muscle");
+    muscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
+    muscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
 
     ActivationFiberLengthMuscle_Deprecated *aflMuscle
-        = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);
+        = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(muscle);
     if (aflMuscle){
         // Define the default states for the muscle that has 
         //activation and fiber-length states
@@ -211,7 +194,7 @@ void simulateMuscle(
     }
     else{
         ActivationFiberLengthMuscle *aflMuscle2
-            = dynamic_cast<ActivationFiberLengthMuscle *>(aMuscle);
+            = dynamic_cast<ActivationFiberLengthMuscle *>(muscle);
         if (aflMuscle2){
             // Define the default states for the muscle 
             //that has activation and fiber-length states
@@ -221,20 +204,21 @@ void simulateMuscle(
         }
     }
 
-    model.addForce(aMuscle);
+    model.addForce(muscle);
 
     // Create a prescribed controller that simply 
     //applies controls as function of time
+    Constant control(0.5);
     PrescribedController * muscleController = new PrescribedController();
-    if (control != NULL){
-        muscleController->setActuators(model.updActuators());
-        // Set the individual muscle control functions 
-        //for the prescribed muscle controller
-        muscleController->prescribeControlForActuator("muscle", control->clone());
 
-        // Add the control set controller to the model
-        model.addController(muscleController);
-    }
+    muscleController->setActuators(model.updActuators());
+    // Set the individual muscle control functions 
+    //for the prescribed muscle controller
+    muscleController->prescribeControlForActuator("muscle", control.clone());
+
+    // Add the control set controller to the model
+    model.addController(muscleController);
+
 
     //==========================================================================
     // 2. OUTPUTREPORTER SETUP: create and add the OutputReporter
@@ -254,7 +238,6 @@ void simulateMuscle(
 
     model.finalizeFromProperties();
     model.printBasicInfo();
-
 
     //==========================================================================
     // 3. SIMULATION Initialization
