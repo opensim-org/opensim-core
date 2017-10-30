@@ -92,6 +92,8 @@ private:
     SimTK::ReferencePtr< TableReporter_<SimTK::SpatialVec> >
         _tableReporterSpatialVec;
 
+    SimTK::ResetOnCopy<std::unique_ptr<Model>> _pvtModel;
+
 //=============================================================================
 };  // END of class OutputReporter
 

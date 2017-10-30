@@ -39,29 +39,32 @@ int OutputReporter::begin(SimTK::State& s)
 {
     if (!proceed()) return(0);
 
-    _model = _model->clone();
+    _pvtModel.reset(_model->clone());
 
     _tableReporterDouble = new TableReporter_<double>();
     _tableReporterVec3 = new TableReporter_<SimTK::Vec3>();
     _tableReporterSpatialVec = new TableReporter_<SimTK::SpatialVec>();
 
-    _model->addComponent(_tableReporterDouble.get());
-    _model->addComponent(_tableReporterVec3.get());
-    _model->addComponent(_tableReporterSpatialVec.get());
+    _pvtModel->addComponent(_tableReporterDouble.get());
+    _pvtModel->addComponent(_tableReporterVec3.get());
+    _pvtModel->addComponent(_tableReporterSpatialVec.get());
 
     for (int i = 0; i < getProperty_output_paths().size(); ++i) {
         auto outpath = ComponentPath(get_output_paths(i));
         // assume that Outputs are for the Model
-        string compName = _model->getAbsolutePathString();
+        string compName = _pvtModel->getAbsolutePathString();
         // if a a ComponentPath is specified then use the parent path
         if (outpath.getNumPathLevels()) {
             compName = outpath.getParentPathString();
         }
         auto outputName = outpath.getComponentName();
 
-        const Component* comp = _model;
+        // In keeping with assumption of Outputs for the Model (Component)
+        const Component* comp = _pvtModel.get();
+
+        // If the ComponentPath has a Component name get that Component
         if (!compName.empty())
-            comp = &_model->getComponent(compName);
+            comp = &_pvtModel->getComponent(compName);
 
         auto& out = comp->getOutput(outputName);
         if (out.getTypeName() == "double") {
@@ -80,7 +83,7 @@ int OutputReporter::begin(SimTK::State& s)
         }
     }
 
-    _model->initSystem();
+    _pvtModel->initSystem();
 
     return 0;
 }
@@ -90,10 +93,10 @@ int OutputReporter::step(const SimTK::State& s, int stepNumber)
     if (!proceed(stepNumber)) {
         return 0;
     }
-    if (_model == nullptr)
+    if (_pvtModel == nullptr)
         return -1;
 
-    _model->realizeReport(s);
+    _pvtModel->realizeReport(s);
 
     return 0;
         
