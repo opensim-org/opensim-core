@@ -27,6 +27,7 @@
 //=============================================================================
 #include "OutputReporter.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/IO.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -75,7 +76,7 @@ int OutputReporter::begin(SimTK::State& s)
         else {
             cout << "Output '" << out.getPathName() << "' of type "
                 << out.getTypeName() << " is not supported by OutputReporter."
-                << "Consider adding a TableReporter_ to the Model." << endl;
+                << " Consider adding a TableReporter_ to the Model." << endl;
         }
     }
 
@@ -106,6 +107,9 @@ int OutputReporter::printResults(const std::string& baseName,
         printf("OutputReporter.printResults: Off- not printing.\n");
         return 0;
     }
+
+    OPENSIM_THROW_IF_FRMOBJ(IO::Lowercase(extension) != ".sto",
+        Exception, "Only writing results to '.sto' format is supported.");
 
     auto& tableD = _tableReporterDouble->getTable();
     if (tableD.getNumColumns()) {
