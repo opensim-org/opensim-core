@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Simbody.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
@@ -48,7 +49,7 @@ to the appropriate SimTK/Simbody classes
 
 class SimbodyUtils {
 public:
-    const SimTK::Vector_<SimTK::SpatialVec>&  getGravityForce_getBodyForces(const Model& model, const SimTK::State& state) const {
+    static const SimTK::Vector_<SimTK::SpatialVec>&  getGravityForce_getBodyForces(const Model& model, const SimTK::State& state) {
         return model.getGravityForce().getBodyForces(state);
     };
 };
