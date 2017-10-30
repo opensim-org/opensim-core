@@ -43,9 +43,9 @@
 namespace OpenSim { 
 
 /**
- * The OutputReporter Analysis is a wrapper for a TableReporter which
- * generates TimeSeriesTables of Output values that are listed by name 
- * as properties of this Analysis. OutputReporter enables the AnalyzeTool to
+ * The OutputReporter Analysis is a wrapper for a TableReporter. It generates
+ * and writes TimeSeriesTables of Output values according to the names listed
+ * as properties of the Analysis. OutputReporter enables the AnalyzeTool to
  * report on Outputs via the Analysis interface but backed by a TableReporter.
  * The OutputReporter currently only supports Outputs of type, double, Vec3
  * and SpatialVec.
@@ -55,13 +55,13 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OutputReporter, Analysis);
 
 public:
 OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
-    "The names of Outputs to be reported. To select specific Component outputs"
-    ", provide its path name");
+    "The names of Outputs to be reported. To select specific Component Outputs"
+    ", provide its path name. For example, 'slider/tx/value' is an Output for "
+    "the value of a Coordinate 'tx' belonging to the Joint 'slider'.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-
     OutputReporter(Model *model = nullptr) : Analysis(model) {
         constructProperty_output_paths();
         setName("OutputReporter");
