@@ -59,10 +59,6 @@ public:
 #ifndef SWIG
     JointSet& operator=(const JointSet &aJointSet);
 #endif
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-    void scale(const ScaleSet& aScaleSet);
 
 private:
     void setNull();
