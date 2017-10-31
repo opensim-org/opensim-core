@@ -58,6 +58,10 @@ public:
 #ifndef SWIG
     ScaleSet& operator=(const ScaleSet &aScaleSet);
 #endif
+
+    /** Get the index of the first Scale in the ScaleSet with the specified
+        segment name. Returns -1 if no such Scale exists. */
+    int getIndexBySegmentName(const std::string& segmentName) const;
 };
 
 }; //namespace
