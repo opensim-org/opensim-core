@@ -80,7 +80,10 @@ public:
     SimTK::Real getInnerRadius() const;
     SimTK::Real getOuterRadius() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors) override;
+    /** Scale the torus's dimensions. The base class (WrapObject) scales the
+        origin of the torus in the body's reference frame. */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,

@@ -28,6 +28,7 @@
 #include "WrapResult.h"
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 
 //=============================================================================
@@ -81,18 +82,18 @@ void WrapObject::setFrame(const PhysicalFrame& frame)
     _frame.reset(&frame);
 }
 
-/*
- * Scale the wrap object by aScaleFactors. This base class method scales
- * only the _translation property, which is a local member. The derived classes
- * are expected to scale the object itself, because they contain the object's
- * dimensions.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
+void WrapObject::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   for (int i=0; i<3; i++)
-      upd_translation()[i] *= aScaleFactors[i];
+    Super::scale(s, scaleSet);
+
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndexBySegmentName(getFrame()
+                                                   .findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
+
+    upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }
 
 void WrapObject::extendFinalizeFromProperties()

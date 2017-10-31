@@ -96,7 +96,7 @@ public:
 
     // Use default copy and assignment operator
 
-    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
     const PhysicalFrame& getFrame() const;

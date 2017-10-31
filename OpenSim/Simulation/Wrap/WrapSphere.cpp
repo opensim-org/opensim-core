@@ -31,6 +31,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -128,18 +129,18 @@ void WrapSphere::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the sphere by the average of the three scale factors. The base class
- * scales the origin of the sphere in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
+void WrapSphere::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   WrapObject::scale(aScaleFactors);
+    Super::scale(s, scaleSet);
 
-   _radius *= (aScaleFactors.sum() / 3.0);
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndexBySegmentName(getFrame()
+                                                   .findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
+
+    _radius *= (scaleFactors.sum() / 3.);
 }
 
 //_____________________________________________________________________________
