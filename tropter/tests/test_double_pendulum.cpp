@@ -202,9 +202,8 @@ public:
     }
 
     static OptimalControlSolution run_test(const std::string& solver,
-            const std::string& hessian_approx) {
+            const std::string& hessian_approx, int N = 50) {
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
-        const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
@@ -298,10 +297,9 @@ public:
         integrand = (states.template head<2>() - desired).squaredNorm();
     }
     static OptimalControlSolution run_test(const std::string& solver,
-            const std::string& hessian_approx) {
+            const std::string& hessian_approx, int N = 50) {
         auto ocp =
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
-        const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
@@ -355,6 +353,10 @@ TEST_CASE("Double pendulum coordinate tracking",
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
                 implicit_solution.controls.bottomRows(2), 5.0);
 
+
+        // Finite differences.
+        // -------------------
+        // Check that finite differences are correct.
         OCPDerivativesComparison<DoublePendulumCoordinateTracking> c;
         c.findiff_hessian_step_size = 1e-5;
         c.gradient_error_tolerance = 1e-5;
@@ -368,10 +370,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         ci.hessian_error_tolerance = 1e-2;
         ci.compare();
 
-        // TODO add derivative check (OCPDerivativeComparison). I think the
-        // derivatives with the implicit double pendulum are incorrect.
-        DoublePendulumCoordinateTracking<double>::
-        run_test("ipopt", "exact");
+        DoublePendulumCoordinateTracking<double>:: run_test("ipopt", "exact");
         ImplicitDoublePendulumCoordinateTracking<double>::
         run_test("ipopt", "exact");
 
