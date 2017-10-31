@@ -236,54 +236,43 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
     assignConstraintIndex(simtkCoordinateCoupler.getConstraintIndex());
 }
 
-//=============================================================================
+//==============================================================================
 // SCALE
-//=============================================================================
-/**
- * Scale the coordinate coupler constraint according to the mobilized body that
- * the dependent coordinate belongs too. The scale factor is determined by 
- * dotting the coordinate axis with that of the translation. Rotations are NOT
- * scaled.
- *
- * @param Scaleset
- */
-void CoordinateCouplerConstraint::scale(const ScaleSet& aScaleSet)
+//==============================================================================
+void CoordinateCouplerConstraint::
+scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Coordinate& depCoordinate = _model->updCoordinateSet().get(get_dependent_coordinate_name());
-    
-    // Only scale if the dependent coordinate is a translation
-    if (depCoordinate.getMotionType() == Coordinate::Translational){
-        // Constraint scale factor
-        double scaleFactor = 1.0;
-        // Get appropriate scale factors from parent body
-        Vec3 bodyScaleFactors(1.0); 
-        const string& parentName = depCoordinate.getJoint().getParentFrame().getName();
+    Super::scale(s, scaleSet);
 
-        // Cycle through the scale set to get the appropriate factors
-        for (int i=0; i<aScaleSet.getSize(); i++) {
-            Scale& scale = aScaleSet.get(i);
-            if (scale.getSegmentName()==parentName) {
-                scale.getScaleFactors(bodyScaleFactors);
-                break;
-            }
+    Coordinate& depCoordinate =
+        _model->updCoordinateSet().get(get_dependent_coordinate_name());
+
+    // Only scale if the dependent coordinate is a translation.
+    if (depCoordinate.getMotionType() != Coordinate::Translational)
+        return;
+
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const std::string& parentName =
+        depCoordinate.getJoint().getParentFrame().findBaseFrame().getName();
+    const int idx = scaleSet.getIndexBySegmentName(parentName);
+    if (idx < 0)
+        return;
+    const Vec3& parentScaleFactors = scaleSet[idx].getScaleFactors();
+
+    // Constraint scale factor. Assume uniform scaling unless proven otherwise.
+    const double scaleFactor = parentScaleFactors[0];
+
+    // We can handle non-uniform scaling along transform axes of custom joints
+    // ONLY at this time.
+    const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
+    if (joint) {
+        if (parentScaleFactors[0] != parentScaleFactors[1] ||
+            parentScaleFactors[0] != parentScaleFactors[2] )
+        {
+            // TODO: Non-uniform scaling remains undefined! - ASeth
+            throw(Exception("Non-uniform scaling of CoordinateCoupler constraints not implemented."));
         }
-
-        // Assume uniform scaling unless proven otherwise
-        scaleFactor = bodyScaleFactors[0];
-
-        // We can handle non-uniform scaling along transform axes of custom joints ONLY at this time
-        const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
-        // Simplifies things if we have uniform scaling so check first
-
-        if(joint) {
-            if (bodyScaleFactors[0] != bodyScaleFactors[1] ||  bodyScaleFactors[0] != bodyScaleFactors[2] ) {
-                // TODO: Non-uniform scaling remains undefined! - ASeth
-                throw(Exception("Non-uniform scaling of CoordinateCoupler constraints not implemented."));
-            }
-        }
-
-        // scale the user-defined OpenSim 
-        set_scale_factor(get_scale_factor() * scaleFactor);
     }
-}
 
+    upd_scale_factor() *= scaleFactor;
+}

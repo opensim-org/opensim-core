@@ -113,8 +113,11 @@ public:
     void setFunction(Function *aFunction)
         { set_coupled_coordinates_function(*aFunction); }
 
-    // SCALE
-    void scale(const ScaleSet& aScaleSet) override;
+    /** Scale the CoordinateCouplerConstraint using the scale factors assigned
+        to the Body associated with the CoordinateCouplerConstraint's dependent
+        coordinate. Scaling is performed only if the dependent coordinate is a
+        translation. */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;
