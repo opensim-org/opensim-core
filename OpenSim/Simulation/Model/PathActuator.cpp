@@ -233,20 +233,3 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
 }
-
-
-//==============================================================================
-// SCALING
-//==============================================================================
-
-//_____________________________________________________________________________
-/**
- * Scale the muscle based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether muscle was successfully scaled or not.
- */
-void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}

@@ -106,11 +106,10 @@ public:
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
     /** Adjust the resting length of the ligament after the model has been
-        scaled. The `resting_length` property is multiplied by the ratio of the
-        current path length and the path length before scaling. */
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
     void postScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:

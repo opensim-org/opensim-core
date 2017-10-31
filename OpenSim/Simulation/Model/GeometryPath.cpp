@@ -775,32 +775,6 @@ void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
     setPreScaleLength(s, getLength(s));
 }
 
-//_____________________________________________________________________________
-/*
- * Scale the path based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether path was successfully scaled or not.
- */
-void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    for (int i = 0; i < get_PathPointSet().getSize(); i++)
-    {
-        const string& bodyName = 
-            get_PathPointSet()[i].getParentFrame().getName();
-        for (int j = 0; j < aScaleSet.getSize(); j++)
-        {
-            Scale& aScale = aScaleSet.get(j);
-            if (bodyName == aScale.getSegmentName())
-            {
-                Vec3 scaleFactors(1.0);
-                aScale.getScaleFactors(scaleFactors);
-                upd_PathPointSet().get(i).scale(scaleFactors);
-            }
-        }
-    }
-}
-
 void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::postScale(s, scaleSet);

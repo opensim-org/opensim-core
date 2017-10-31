@@ -188,19 +188,6 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 //==============================================================================
 // SCALING
 //==============================================================================
-
-//_____________________________________________________________________________
-/**
- * Scale the ligament.
- *
- * @param aScaleSet XYZ scale factors for the bodies
- * @return Whether or not the ligament was scaled successfully
- */
-void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
 void Ligament::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::postScale(s, scaleSet);

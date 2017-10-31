@@ -166,14 +166,6 @@ double PathSpring::getTension(const SimTK::State& s) const
 //==============================================================================
 // SCALING
 //==============================================================================
-
-//_____________________________________________________________________________
-
-void PathSpring::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
 void PathSpring::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::postScale(s, scaleSet);
