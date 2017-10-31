@@ -387,8 +387,6 @@ void scalePhysicalOffsetFrames()
     //         (a) PinJoint's "frames" list property (i==0)
     //         (b) PinJoint's "components" list property (i==1)
     //         (c) Model's "components" list property (i==2)
-
-    // TODO: Currently fails for (b) and (c).
     for (int i=0; i<3; ++i)
     {
         cout << "- case 2(" << std::string("abc").substr(i,1) << ")" << endl;
@@ -413,16 +411,18 @@ void scalePhysicalOffsetFrames()
         pin->connectSocket_child_frame(*pof);
 
         State& s = model->initSystem();
-        if (i==0) //TODO
-            testScaling(model, s);
+        testScaling(model, s);
     }
 
     // Case 3: Create the child POF manually and store it in
     //         (a) a different PinJoint's "frames" list property (i==0)
     //         (b) a different PinJoint's "components" list property (i==1)
 
-    // TODO: Currently throws "Assigned an invalid SimTK::MobilizedBodyIndex"
-    //       Exception on initSystem(). See GitHub Issue #1970.
+    // TODO: These cases currently throw "Assigned an invalid
+    //       SimTK::MobilizedBodyIndex" Exception on initSystem(). See GitHub
+    //       Issue #1970.
+
+    /*
     for (int i=0; i<2; ++i)
     {
         cout << "- case 3(" << std::string("ab").substr(i,1) << ")" << endl;
@@ -456,9 +456,8 @@ void scalePhysicalOffsetFrames()
         pin->connectSocket_parent_frame(model->getGround());
         pin->connectSocket_child_frame(*pof);
 
-        if (false) { //TODO
-            State& s = model->initSystem();
-            testScaling(model, s);
-        }
+        State& s = model->initSystem();
+        testScaling(model, s);
     }
+    */
 }
