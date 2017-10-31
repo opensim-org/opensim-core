@@ -848,6 +848,14 @@ void Manager::finalize(SimTK::State& s )
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.end(s);
     }
+    if (_writeToStorage) {
+        SimTK::Vector stateValues = _model->getStateVariableValues(s);
+        StateVector vec;
+        vec.setStates(s.getTime(), stateValues);
+        getStateStorage().append(vec);
+        if (_model->isControlled())
+            _controllerSet->storeControls(s, getStateStorage().getSize());
+    }
 
     return;
 }
