@@ -38,6 +38,9 @@ class SparsityPattern {
 public:
     SparsityPattern(int num_rows, int num_cols)
             : m_num_rows(num_rows), m_num_cols(num_cols) {}
+    SparsityPattern(int num_rows, int num_cols,
+            const std::vector<unsigned int>& row_indices,
+            const std::vector<unsigned int>& col_indices);
     /// Construct a sparsity pattern of a matrix with dimensions 1 x
     /// num_cols, whose nonzero entries are specified by nonzero_col_indices.
     SparsityPattern(int num_cols,
@@ -56,12 +59,17 @@ public:
 
     CompressedRowSparsity convert_to_CompressedRowSparsity() const;
 
+    /// Write the sparsity pattern to a file, which can be plotted with the
+    /// plot_sparsity.py script that comes with tropter.
+    void write(const std::string& filename);
+
 protected:
     int m_num_rows;
     int m_num_cols;
     friend class SymmetricSparsityPattern;
     std::set<std::pair<unsigned int, unsigned int>> m_sparsity;
 };
+
 
 /// This class represents the sparsity pattern of a (square) symmetric
 /// matrix (the nonzeros are only provided for the upper triangle).
@@ -95,6 +103,84 @@ public:
     static SymmetricSparsityPattern create_from_jacobian_sparsity(
             const SparsityPattern& jac_sparsity);
 };
+
+
+/// Detect the sparsity pattern of a gradient vector by setting an element of
+/// x to NaN and examining if the function value ends up as NaN.
+template <typename T>
+SparsityPattern
+calc_gradient_sparsity_with_nan(const Eigen::VectorXd& x0,
+        std::function<T(const VectorX<T>&)>& function) {
+    using std::isnan;
+    using tropter::isnan;
+    SparsityPattern sparsity(1, (int)x0.size());
+    VectorX<T> x = x0.cast<T>();
+    T f;
+    for (int i = 0; i < (int)x.size(); ++i) {
+        x[i] = std::numeric_limits<double>::quiet_NaN();
+        f = function(x);
+        x[i] = x0[i];
+        if (isnan(f)) sparsity.set_nonzero(0, i);
+    }
+    return sparsity;
+}
+
+/// Detect the sparsity pattern of a Jacobian matrix by setting an element of x
+/// to NaN and examining which constraint equations end up as NaN (and therefore
+/// depend on that element of x).
+template <typename T>
+SparsityPattern
+calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
+        int num_outputs,
+        std::function<void(const VectorX<T>&, VectorX<T>&)> function) {
+    using std::isnan;
+    using tropter::isnan;
+    SparsityPattern sparsity(num_outputs, (int)x0.size());
+    VectorX<T> x = x0.cast<T>();
+    VectorX<T> output(num_outputs);
+    for (int j = 0; j < (int)x0.size(); ++j) {
+        output.setZero();
+        x[j] = std::numeric_limits<double>::quiet_NaN();
+        function(x, output);
+        x[j] = x0[j];
+        for (int i = 0; i < (int)num_outputs; ++i) {
+            if (isnan(output[i])) sparsity.set_nonzero(i, j);
+        }
+    }
+    return sparsity;
+}
+
+/// Detect the sparsity pattern of a Hessian matrix by perturbing x and
+/// examining if the function value is affected by the perturbation.
+template <typename T>
+SymmetricSparsityPattern
+calc_hessian_sparsity_with_perturbation(
+        const Eigen::VectorXd& x0,
+        const std::function<T(const VectorX<T>&)>& function) {
+    SymmetricSparsityPattern sparsity((int)x0.size());
+    VectorX<T> x = x0.cast<T>();
+    double eps = 1e-5;
+    T f0 = function(x);
+    // TODO cache evaluations.
+    for (int i = 0; i < (int)x0.size(); ++i) {
+        for (int j = i; j < (int)x0.size(); ++j) {
+            x[i] += eps;
+            T f_i = function(x);
+            x[j] += eps;
+            T f_ij = function(x);
+            x[i] = x0[i];
+            T f_j = function(x);
+            x[j] = x0[j];
+            // Finite difference numerator.
+            //std::cout << "DEBUG " << i << " " << j << " " <<
+            //        f_ij - f_i - f_j + f0 << std::endl;
+            if ((f_ij - f_i - f_j + f0) != 0)
+                sparsity.set_nonzero(i, j);
+        }
+    }
+    // TODO std::cout << "DEBUG " << sparsity << std::endl;
+    return sparsity;
+}
 
 } // tropter
 

@@ -73,6 +73,10 @@ public:
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;
     void calc_constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
+    /// Use knowledge of the repeated structure of the optimization problem
+    /// to efficiently determine the sparsity pattern of the entire Hessian.
+    /// We only need to perturb the optimal control functions at one mesh point,
+    /// not the entire NLP objective and constraint functions.
     void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             SymmetricSparsityPattern&,
             SymmetricSparsityPattern&) const override;

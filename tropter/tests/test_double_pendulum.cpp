@@ -375,15 +375,6 @@ TEST_CASE("Double pendulum coordinate tracking",
         ImplicitDoublePendulumCoordinateTracking<double>::
         run_test("ipopt", "exact");
 
-
-        /** TODO
-        1. clean up code
-        2. test implicit double pendulum.
-        3. more strict sparsity for t0, tf.
-        4. create Muscollo double pendulum example.
-        4. manually differentiate objective function.
-         */
-
         // The following do not converge:
         // EXIT: Maximum number of iterations exceeded.
         // DoublePendulumCoordinateTracking<adouble>::

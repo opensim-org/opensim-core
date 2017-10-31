@@ -6,8 +6,6 @@ add_library(tropter SHARED
         EigenUtilities.h
         SparsityPattern.h
         SparsityPattern.cpp
-        FiniteDifference.h
-        FiniteDifference.cpp
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp

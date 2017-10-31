@@ -15,13 +15,22 @@
 // ----------------------------------------------------------------------------
 
 #include "SparsityPattern.h"
-#include "FiniteDifference.h"
 
 #include "Exception.hpp"
 
 #include <Eigen/SparseCore>
 
 using namespace tropter;
+
+SparsityPattern::SparsityPattern(int num_rows, int num_cols,
+        const std::vector<unsigned int>& row_indices,
+        const std::vector<unsigned int>& col_indices)
+        : m_num_rows(num_rows), m_num_cols(num_cols) {
+    TROPTER_THROW_IF(row_indices.size() != col_indices.size(),
+            "Expected row_indices and col_indices to have the same size.");
+    for (int inz = 0; inz < (int)row_indices.size(); ++inz)
+        set_nonzero(row_indices[inz], col_indices[inz]);
+}
 
 SparsityPattern::SparsityPattern(int num_cols,
         const std::vector<unsigned int>& nonzero_col_indices)
@@ -63,6 +72,16 @@ SparsityPattern::convert_to_CompressedRowSparsity() const {
         crs[irow] = nonzeros_this_row;
     }
     return crs;
+}
+
+void SparsityPattern::write(const std::string& filename) {
+    std::ofstream file(filename);
+    file << "num_rows=" << m_num_rows << std::endl;
+    file << "num_cols=" << m_num_cols << std::endl;
+    file << "row_indices,column_indices" << std::endl;
+    for (const auto& entry : m_sparsity)
+        file << entry.first << "," << entry.second << std::endl;
+    file.close();
 }
 
 

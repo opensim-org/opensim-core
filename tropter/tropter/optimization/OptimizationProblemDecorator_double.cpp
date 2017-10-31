@@ -15,7 +15,6 @@
 // ----------------------------------------------------------------------------
 #include "OptimizationProblemDecorator_double.h"
 #include <tropter/Exception.hpp>
-#include <tropter/FiniteDifference.h>
 #include "internal/GraphColoring.h"
 
 //#if defined(TROPTER_WITH_OPENMP) && _OPENMP
@@ -63,22 +62,22 @@ calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& hessian_col_indices) const
 {
     const auto num_vars = get_num_variables();
+    m_x_working = VectorXd::Zero(num_vars);
 
     // Gradient.
     // =========
     // Determine the indicies of the variables used in the objective function
     // (conservative estimate of the indicies of the gradient that are nonzero).
-    m_x_working = VectorXd::Zero(num_vars);
-    double obj_value;
-    for (int j = 0; j < (int)num_vars; ++j) {
-        obj_value = 0;
-        m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
-        m_problem.calc_objective(m_x_working, obj_value);
-        m_x_working[j] = 0;
-        if (std::isnan(obj_value)) {
-            m_gradient_nonzero_indices.push_back(j);
-        }
-    }
+    std::function<double(const VectorXd&)> calc_objective =
+            [this](const VectorXd& vars) {
+                double obj_value = 0;
+                m_problem.calc_objective(vars, obj_value);
+                return obj_value;
+            };
+    SparsityPattern gradient_sparsity =
+            calc_gradient_sparsity_with_nan(x, calc_objective);
+    m_gradient_nonzero_indices =
+            gradient_sparsity.convert_to_CompressedRowSparsity()[0];
 
     // Jacobian.
     // =========
@@ -90,8 +89,8 @@ calc_sparsity(const Eigen::VectorXd& x,
     // constraint equations end up as NaN (and therefore depend on that
     // element of x).
     std::function<void(const VectorXd&, VectorXd&)> calc_constraints =
-            [this](const VectorXd& x, VectorXd& constr) {
-                m_problem.calc_constraints(x, constr);
+            [this](const VectorXd& vars, VectorXd& constr) {
+                m_problem.calc_constraints(vars, constr);
             };
     SparsityPattern jacobian_sparsity = calc_jacobian_sparsity_with_nan(x,
             num_jac_rows, calc_constraints);
@@ -101,13 +100,7 @@ calc_sparsity(const Eigen::VectorXd& x,
             jacobian_row_indices, jacobian_col_indices);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
     print("Number of seeds for Jacobian: %i", num_jacobian_seeds);
-    // std::ofstream file("DEBUG_finitediff_jacobian_sparsity.csv");
-    // file << "row_indices,column_indices" << std::endl;
-    // for (int i = 0; i < (int)jacobian_row_indices.size(); ++i) {
-    //     file << jacobian_row_indices[i] << "," << jacobian_col_indices[i]
-    //             << std::endl;
-    // }
-    // file.close();
+    // jacobian_sparsity.write("DEBUG_findiff_jacobian_sparsity.csv");
 
     // Allocate memory that is used in jacobian().
     m_constr_pos.resize(num_jac_rows);
@@ -201,13 +194,7 @@ calc_sparsity_hessian_lagrangian(
     m_hessian_coloring->get_coordinate_format(
             hessian_row_indices, hessian_col_indices);
 
-    //std::ofstream file("DEBUG_finitediff_hessian_lagrangian_sparsity.csv");
-    //file << "row_indices,column_indices" << std::endl;
-    //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
-    //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]
-    //            << std::endl;
-    //}
-    //file.close();
+    hessian_sparsity.write("DEBUG_findiff_hessian_lagrangian_sparsity.csv");
 }
 
 
