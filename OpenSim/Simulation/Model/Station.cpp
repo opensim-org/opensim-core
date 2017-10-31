@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Station.h"
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -114,12 +115,13 @@ void Station::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::scale(s, scaleSet);
 
     // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndex(getParentFrame().findBaseFrame().getName());
+    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
+                                                   .findBaseFrame().getName());
     if (idx < 0)
         return;
-    const Vec3& scaleFactors = scaleSet.get(idx).getScaleFactors();
+    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
-    upd_location().elementwiseMultiply(scaleFactors);
+    upd_location() = get_location().elementwiseMultiply(scaleFactors);
 }
 
 SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const
