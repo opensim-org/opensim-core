@@ -1438,38 +1438,20 @@ void Model::removeController(Controller *aController)
 bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
                   bool preserveMassDist)
 {
-    // Save the current pose of the model, then put it in a default pose so that
-    // GeometryPath lengths can be stored now and adjusted after scaling.
+    // Save the model's current pose.
     SimTK::Vector savedConfiguration = s.getY();
+
+    // Put the model in a default pose so that GeometryPath lengths can be
+    // computed and stored. These lengths will be required for adjusting
+    // properties after the rest of the model has been scaled.
     applyDefaultConfiguration(s);
 
-    // Call preScale() on all ModelComponents owned by the model.
+    // Call preScale() on each ModelComponent owned by the model to store
+    // GeometryPath lengths (and perform any other necessary computations).
     for (ModelComponent& comp : updComponentList<ModelComponent>())
         comp.preScale(s, scaleSet);
 
-    // 2. For each Actuator, call its preScale method so it
-    //    can calculate and store its pre-scale length in the
-    //    current position, and then call its scale method to
-    //    scale all of the muscle properties except tendon and
-    //    fiber length.
-    for (int i = 0; i < get_ForceSet().getSize(); i++)
-    {
-        PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
-        if( act ) {
-            //act->preScale(s, scaleSet);
-            act->scale(s, scaleSet);
-        }
-        // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
-        else {
-            Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
-            if (ligament){
-                //ligament->preScale(s, scaleSet);
-                ligament->scale(s, scaleSet);
-            }
-        }
-    }
-
-    // Scale the rest of the model.
+    // Scale the model.
     if (!updSimbodyEngine().scale(s, scaleSet, finalMass, preserveMassDist))
         return false;
 
@@ -1482,7 +1464,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
     // Changed the model after scaling path actuators. Have to recreate system!
     s = initSystem();
 
-    // 5. Put the model back in whatever pose it was in.
+    // Put the model back in its original pose.
     s.updY() = savedConfiguration;
     getMultibodySystem().realize( s, SimTK::Stage::Velocity );
 

@@ -798,65 +798,51 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 //--- Private Utility Methods Below Here ---
 
 
-//_____________________________________________________________________________
-/**
- * Scale the dynamics engine
- *
- * @param aScaleSet the set of XYZ scale factors for the bodies
- * @param aFinalMass the mass that the scaled model should have
- * @param aPreserveMassDist whether or not the masses of the
- *        individual bodies should be scaled with the body scale factors.
- * @return Whether or not scaling was successful.
- */
-bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
+bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& scaleSet,
+                          double finalMass, bool preserveMassDist)
 {
-    // second argument is a flag to scale the masses of the bodies along with their
-    // geometry. If preserve mass distribution is true then the masses are not scaled.
-    _model->updBodySet().scale(aScaleSet, !aPreserveMassDist);
+    // Call scale() on each ModelComponent owned by the model. Each
+    // ModelComponent is responsible for scaling itself. All scaling operations
+    // are performed here except scaling inertial properties of bodies, which is
+    // done below.
+    for (ModelComponent& comp : _model->updComponentList<ModelComponent>())
+        comp.scale(s, scaleSet);
 
-    // When bodies are scaled, the properties of the model are changed.
-    // The general rule is that you MUST recreate and initialize the system 
-    // when properties of the model change. We must do that here or
-    // we will be querying a stale system (e.g. wrong body properties!).
+    // Scale the inertial properties of bodies. If "preserve mass distribution"
+    // is true, then the masses are not scaled (but inertias are still updated).
+    for (Body& body : _model->updComponentList<Body>())
+        body.scaleInertialProperties(scaleSet, !preserveMassDist);
+
+    // When bodies are scaled, the properties of the model are changed. The
+    // general rule is that you MUST recreate and initialize the system when
+    // properties of the model change. We must do that here or we will be
+    // querying a stale system (e.g., wrong body properties!).
     s = _model->initSystem();
 
-    // Now that the masses of the individual bodies have
-    // been scaled (if aPreserveMassDist == false), get the
-    // total mass and compare it to aFinalMass in order to
-    // determine how much to scale the body masses again,
-    // so that the total model mass comes out to aFinalMass.
-    if (aFinalMass > 0.0)
+    // Now that the masses of the individual bodies have been scaled (if
+    // preserveMassDist == false), get the total mass and compare it to
+    // finalMass in order to determine how much to scale the body masses again,
+    // so that the total model mass comes out to finalMass.
+    if (finalMass > 0.0)
     {
-        double mass = _model->getTotalMass(s);
+        const double mass = _model->getTotalMass(s);
         if (mass > 0.0)
         {
-            double factor = aFinalMass / mass;
-            for (int i = 0; i < _model->getBodySet().getSize(); i++){
-                _model->getBodySet().get(i).scaleMass(factor);
-            }
-            
-            // recreate system and update state after updating masses
+            const double factor = finalMass / mass;
+            for (Body& body : _model->updComponentList<Body>())
+                body.scaleMass(factor);
+
+            // Recreate the system and update the state after updating masses.
             s = _model->initSystem();
 
-            double newMass = _model->getTotalMass(s);
-            double normDiffMass = abs(aFinalMass - newMass) / aFinalMass;
-
-            // check if the difference in after scale mass and the specified 
-            // subject (target) mass is significant
+            // Ensure the final model mass is correct.
+            const double newMass = _model->getTotalMass(s);
+            const double normDiffMass = abs(finalMass - newMass) / finalMass;
             if (normDiffMass > SimTK::SignificantReal) {
                 throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
             }
         }
     }
-    
-    // Now scale the joints.
-    _model->updJointSet().scale(aScaleSet);
-
-    // Now scale translational coupled coordinate constraints.
-    _model->updConstraintSet().scale(aScaleSet);
-
-    // Now scale the markers.
-    _model->updMarkerSet().scale(aScaleSet);
 
     return true;
 }

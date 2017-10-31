@@ -112,7 +112,15 @@ public:
     // SCALING
     //--------------------------------------------------------------------------
 #ifndef SWIG
-    virtual bool  scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
+    /** Scale the dynamics engine.
+     *
+     * @param scaleSet the set of XYZ scale factors for the bodies.
+     * @param finalMass the mass that the scaled model should have.
+     * @param preserveMassDist whether or not the masses of the individual
+     *        bodies should be scaled with the body scale factors.
+     * @return Whether or not scaling was successful.
+     */
+    bool scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass = -1.0, bool preserveMassDist = false);
 #endif
 
     //--------------------------------------------------------------------------
