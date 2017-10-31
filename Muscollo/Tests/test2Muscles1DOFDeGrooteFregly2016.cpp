@@ -314,9 +314,6 @@ solveForTrajectoryINDYGO() {
         kinematics.appendRow(ocpSolution.getIndependentColumn()[iRow], row);
     }
 
-    // TODO: compute actual inverse dynamics moment, for debugging.
-    // TODO: add regression test
-
     return{ocpSolution, kinematics};
 }
 
@@ -418,7 +415,6 @@ void testLiftingMassINDYGO(
     // probably related to unfiltered generalized coordinates and getting
     // accelerations from a spline fit.
     mrs.set_lowpass_cutoff_frequency_for_joint_moments(80);
-    // TODO is the filtering necessary if we have reserve actuators?
     mrs.set_create_reserve_actuators(0.001);
     if (useStaticOptiGuess) {
         mrs.set_initial_guess("static_optimization");
@@ -472,9 +468,7 @@ int main() {
             auto mrsData = solveForTrajectoryINDYGO();
             // Without using static optimization to obtain an initial guess.
             SimTK_SUBTEST2(testLiftingMassINDYGO, mrsData, false);
-            // Use static optimization to obtain an initial guess; this
-            // should take under ?? second(s), compare to ?? seconds for using
-            // the more naive guess above.
+            // Use static optimization to obtain an initial guess.
             SimTK_SUBTEST2(testLiftingMassINDYGO, mrsData, true);
         }
         
