@@ -194,7 +194,7 @@ calc_sparsity_hessian_lagrangian(
     m_hessian_coloring->get_coordinate_format(
             hessian_row_indices, hessian_col_indices);
 
-    hessian_sparsity.write("DEBUG_findiff_hessian_lagrangian_sparsity.csv");
+    //hessian_sparsity.write("DEBUG_findiff_hessian_lagrangian_sparsity.csv");
 }
 
 

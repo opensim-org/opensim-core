@@ -19,9 +19,15 @@ import sys
 import numpy as np
 import pylab as pl
 
-df = pd.read_csv(sys.argv[1])
+df = pd.read_csv(sys.argv[1], skiprows=2)
+
+with file(sys.argv[1]) as f:
+    line0 = f.readline()
+    num_rows = line0.split('=')[1]
+    line1 = f.readline()
+    num_cols = line1.split('=')[1]
 
 spmat = scipy.sparse.coo_matrix((np.ones_like(df.index),
-        (df['row_indices'], df['column_indices'])))
+        (df['row_indices'], df['column_indices'])), shape=(num_rows, num_cols))
 pl.spy(spmat, markersize=2, markeredgecolor='k', marker='.')
 pl.show()
