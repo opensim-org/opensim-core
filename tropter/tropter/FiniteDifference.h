@@ -18,41 +18,12 @@
 
 #include "common.h"
 #include <Eigen/SparseCore>
+#include "SparsityPattern.h"
 
+/// The functions here are for internal use when computing derivatives via
+/// finite differences; accordingly, this header is not included in tropter.h.
 namespace tropter {
 
-using CompressedRowSparsity = std::vector<std::vector<unsigned int>>;
-
-Eigen::SparseMatrix<bool> convert_to_Eigen_SparseMatrix(
-        const CompressedRowSparsity& sparsity);
-
-// TODO only takes the upper triangle.
-CompressedRowSparsity convert_to_CompressedRowSparsity(
-        const Eigen::SparseMatrix<bool>& mat);
-
-// TODO
-inline void add_in_sparsity(
-        std::vector<Eigen::Triplet<bool>>& triplets,
-        const CompressedRowSparsity& sub,
-        int irowstart, int icolstart) {
-    for (int isubrow = 0; isubrow < (int)sub.size(); ++isubrow) {
-        for (const auto& isubcol : sub[isubrow]) {
-            triplets.push_back({isubrow + irowstart, isubcol + icolstart, 1});
-        }
-    }
-}
-
-inline void add_in_sparsity(
-        std::vector<Eigen::Triplet<bool>>& triplets,
-        const Eigen::SparseMatrix<bool>& sub,
-        int irowstart, int icolstart) {
-    for (int i = 0; i < sub.outerSize(); ++i) {
-        for (Eigen::SparseMatrix<bool>::InnerIterator it(sub, i); it; ++it) {
-            triplets.push_back(
-                    {(int)it.row() + irowstart, (int)it.col() + icolstart, 1});
-        }
-    }
-}
 
 // TODO print dimensions dimensions.
 inline void write_sparsity(const Eigen::SparseMatrix<bool>& mat,
@@ -85,14 +56,17 @@ calc_gradient_sparsity_with_nan(const Eigen::VectorXd& x0,
     return sparsity;
 }
 
+/// Detect the sparsity pattern of a Jacobian matrix by setting an element of x
+/// to NaN and examining which constraint equations end up as NaN (and therefore
+/// depend on that element of x).
 template <typename T>
-Eigen::SparseMatrix<bool>
+SparsityPattern
 calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
         int num_outputs,
         std::function<void(const VectorX<T>&, VectorX<T>&)> function) {
     using std::isnan;
     using tropter::isnan;
-    Eigen::SparseMatrix<bool> sparsity(num_outputs, x0.size());
+    SparsityPattern sparsity(num_outputs, (int)x0.size());
     VectorX<T> x = x0.cast<T>();
     VectorX<T> output(num_outputs);
     for (int j = 0; j < (int)x0.size(); ++j) {
@@ -101,13 +75,14 @@ calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
         function(x, output);
         x[j] = x0[j];
         for (int i = 0; i < (int)num_outputs; ++i) {
-            if (isnan(output[i])) sparsity.insert(i, j) = 1;
+            if (isnan(output[i])) sparsity.set_nonzero(i, j);
         }
     }
     return sparsity;
 }
 
 // TODO upper triangular. TODO return compressed row sparsity?
+/* TODO
 template <typename T>
 Eigen::SparseMatrix<bool>
 calc_hessian_sparsity_with_nan(
@@ -119,13 +94,16 @@ calc_hessian_sparsity_with_nan(
     return (grad_sparsity.transpose() * grad_sparsity)
             .triangularView<Eigen::Upper>();
 }
+*/
 
+/// Detect the sparsity pattern of a Hessian matrix by perturbing x and
+/// examining if the function value is affected by the perturbation.
 template <typename T>
-Eigen::SparseMatrix<bool>
+SymmetricSparsityPattern
 calc_hessian_sparsity_with_perturbation(
         const Eigen::VectorXd& x0,
         const std::function<T(const VectorX<T>&)>& function) {
-    Eigen::SparseMatrix<bool> sparsity(x0.size(), x0.size());
+    SymmetricSparsityPattern sparsity((int)x0.size());
     VectorX<T> x = x0.cast<T>();
     double eps = 1e-5;
     T f0 = function(x);
@@ -140,11 +118,13 @@ calc_hessian_sparsity_with_perturbation(
             T f_j = function(x);
             x[j] = x0[j];
             // Finite difference numerator.
+            //std::cout << "DEBUG " << i << " " << j << " " <<
+            //        f_ij - f_i - f_j + f0 << std::endl;
             if ((f_ij - f_i - f_j + f0) != 0)
-                sparsity.insert(i, j) = 1;
+                sparsity.set_nonzero(i, j);
         }
     }
-    std::cout << "DEBUG " << sparsity << std::endl;
+    // TODO std::cout << "DEBUG " << sparsity << std::endl;
     return sparsity;
 }
 

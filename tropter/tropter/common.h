@@ -59,6 +59,7 @@ template<> struct NumTraits<adouble> : NumTraits<double>
 namespace tropter {
 
 // optional-lite
+// -------------
 template <typename T>
 using Optional = nonstd::optional_lite::optional<T>;
 

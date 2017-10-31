@@ -18,8 +18,9 @@ using namespace tropter;
 // nonzeros. The length of each row (the second dimension) is
 // num_nonzeros_in_the_row + 1.
 void convert_sparsity_format(
-        const std::vector<std::vector<unsigned int>>& sparsity,
-        internal::UnsignedInt2DPtr& ADOLC_format, int& num_nonzeros) {
+        const SparsityPattern& sparsity0,
+        internal::UnsignedInt2DPtr& ADOLC_format) {
+    auto sparsity = sparsity0.convert_to_CompressedRowSparsity();
     int num_rows = (int)sparsity.size();
     //std::cout << "DEBUG sparsity\n" << std::endl;
     //for (int i = 0; i < (int)num_rows; ++i) {
@@ -36,7 +37,6 @@ void convert_sparsity_format(
     };
     ADOLC_format = internal::UnsignedInt2DPtr(new unsigned*[num_rows],
             unsigned_int_2d_deleter);
-    num_nonzeros = 0;
     for (int i = 0; i < (int)num_rows; ++i) {
         const auto& col_idx_for_nonzeros = sparsity[i];
         const auto num_nonzeros_this_row = col_idx_for_nonzeros.size();
@@ -45,7 +45,6 @@ void convert_sparsity_format(
         std::copy(col_idx_for_nonzeros.begin(), col_idx_for_nonzeros.end(),
                 // Skip over the first element.
                 ADOLC_format[i] + 1);
-        num_nonzeros += (int)num_nonzeros_this_row;
     }
 }
 
@@ -53,20 +52,21 @@ void convert_sparsity_format(
 // class is complete (since it's used in a unique ptr member variable.).
 JacobianColoring::~JacobianColoring() {}
 
-JacobianColoring::JacobianColoring(int num_rows, int num_cols,
-        const std::vector<std::vector<unsigned int>>& sparsity)
-        : m_num_rows(num_rows), m_num_cols(num_cols) {
+JacobianColoring::JacobianColoring(SparsityPattern sparsity)
+        : m_sparsity(std::move(sparsity)),
+          m_num_rows(m_sparsity.get_num_rows()),
+          m_num_cols(m_sparsity.get_num_cols()),
+          m_num_nonzeros(m_sparsity.get_num_nonzeros()) {
 
-    assert((int)sparsity.size() == num_rows);
-
-    convert_sparsity_format(sparsity, m_sparsity_ADOLC_format, m_num_nonzeros);
+    // TODO m_sparsity.check();
+    convert_sparsity_format(m_sparsity, m_sparsity_ADOLC_format);
 
     // Determine the efficient perturbation directions.
     // ------------------------------------------------
     m_coloring.reset(new ColPack::BipartiteGraphPartialColoringInterface(
                     SRC_MEM_ADOLC, // We're using the ADOLC sparsity format.
                     m_sparsity_ADOLC_format.get(), // Sparsity.
-                    num_rows, num_cols));
+                    m_num_rows, m_num_cols));
 
     // ColPack will allocate and store the seed matrix in jacobian_seed_raw.
     double** seed_raw = nullptr;
@@ -76,7 +76,7 @@ JacobianColoring::JacobianColoring(int num_rows, int num_cols,
             &seed_num_rows, &seed_num_cols, // Outputs.
             // Copied from what ADOL-C uses in generate_seed_jac():
             "SMALLEST_LAST", "COLUMN_PARTIAL_DISTANCE_TWO");
-    assert(seed_num_rows == num_cols);
+    assert(seed_num_rows == m_num_cols);
     // Convert the seed matrix into an Eigen Matrix for ease of use; delete
     // the memory that ColPack created for the seed matrix.
     const int num_seeds = seed_num_cols;
@@ -99,13 +99,14 @@ JacobianColoring::JacobianColoring(int num_rows, int num_cols,
     m_recovery.reset(new ColPack::JacobianRecovery1D());
     // Allocate memory for the compressed jacobian; we use this in recover().
     // Create a lambda that deletes the 2D C array.
+    const int num_rows = m_num_rows;
     auto double_2d_deleter = [num_rows](double** x) {
         std::for_each(x, x + num_rows, std::default_delete<double[]>());
         delete [] x;
     };
-    m_jacobian_compressed = internal::Double2DPtr(new double*[num_rows],
+    m_jacobian_compressed = internal::Double2DPtr(new double*[m_num_rows],
             double_2d_deleter);
-    for (int i = 0; i < (int)num_rows; ++i) {
+    for (int i = 0; i < (int)m_num_rows; ++i) {
         // We don't actually care about the value of m_jacobian_compressed here;
         // no need to set values.
         m_jacobian_compressed[i] = new double[num_seeds];
@@ -176,90 +177,18 @@ void JacobianColoring::convert(
 // HessianColoring
 // ----------------------------------------------------------------------------
 
-/// Given a sparsity pattern for the upper triangle of a symmetric matrix,
-/// return an ADOL-C-formatted sparsity pattern that includes the lower
-/// triangle as well. The returned number of nonzeros is for only the upper
-/// triangle.
-void convert_sparsity_format_symmetric(
-        const std::vector<std::vector<unsigned int>>& sparsity_upper,
-        internal::UnsignedInt2DPtr& ADOLC_format, int& num_upper_nonzeros) {
-    int num_rows = (int)sparsity_upper.size();
-    //std::cout << "DEBUG symmetric sparsity\n" << std::endl;
-    //for (int i = 0; i < num_rows; ++i) {
-    //    std::cout << i << ":";
-    //    for (const auto& elem : sparsity_upper[i]) {
-    //        std::cout << " " << elem;
-    //    }
-    //    std::cout << std::endl;
-    //}
-    num_upper_nonzeros = 0;
+HessianColoring::HessianColoring(const SymmetricSparsityPattern& sparsity)
+        : m_num_vars(sparsity.get_num_cols()),
+          m_num_nonzeros(sparsity.get_num_nonzeros()) {
 
-    // Check for errors.
-    // -----------------
-    for (int irow = 0; irow < num_rows; ++irow) {
-        const auto& row = sparsity_upper[irow];
-        if (row.size() > 0) {
-            TROPTER_THROW_IF(!std::is_sorted(row.begin(), row.end()),
-                    "Entries of sparsity must be sorted.");
-
-            // https://stackoverflow.com/questions/2769174/determining-if-an-unordered-vectort-has-all-unique-elements
-            // Test for uniqueness (since the row is sorted, we can simply
-            // check if any adjacent elements are the same)
-            TROPTER_THROW_IF(
-                    std::adjacent_find(row.begin(), row.end()) != row.end(),
-                    "Entries of sparsity must be unique, but are not.");
-
-            // Square matrix, so num_cols == num_rows
-            TROPTER_THROW_IF((int)row.back() >= num_rows,
-                    "Column index in sparsity, %i, is greater than number of "
-                    "columns, %i.", row.back(), num_rows);
-
-            TROPTER_THROW_IF((int)row[0] < irow, "Hessian sparsity pattern "
-                    "must provide only the upper triangle, but specified a "
-                    "nonzero for (%i, %i).", irow, row[0]);
-        }
-
-        num_upper_nonzeros += (int)row.size();
-    }
-
-    // Create a full sparsity pattern by filling in the lower triangle.
-    // ----------------------------------------------------------------
-    std::vector<std::vector<unsigned int>> sparsity_full(num_rows);
-
-    for (int irow = 0; irow < num_rows; ++irow) {
-        for (const auto& icol : sparsity_upper[irow]) {
-            sparsity_full[irow].push_back(icol);
-            // Lower triangle:
-            if ((int)icol != irow)
-                sparsity_full[icol].push_back(irow);
-        }
-    }
-
-
-    // Delegate the creation of raw array.
-    // We are uninterested in the total number of nonzeros.
-    int dummy = 0;
-    convert_sparsity_format(sparsity_full, ADOLC_format, dummy);
-}
-
-
-HessianColoring::HessianColoring(int num_vars,
-        const std::vector<std::vector<unsigned int>>& sparsity)
-        : m_num_vars(num_vars) {
-
-    TROPTER_THROW_IF((int)sparsity.size() != num_vars, "Incorrect number "
-            "of rows in sparsity (actual: %i, expected: %i)",
-            sparsity.size(), num_vars);
-
-    convert_sparsity_format_symmetric(sparsity, m_sparsity_ADOLC_format,
-            m_num_nonzeros);
+    convert_sparsity_format(sparsity.convert_full(), m_sparsity_ADOLC_format);
 
     // Determine the efficient perturbation directions.
     // ------------------------------------------------
     m_coloring.reset(new ColPack::GraphColoringInterface(
             SRC_MEM_ADOLC, // We're using the ADOLC sparsity format.
             m_sparsity_ADOLC_format.get(), // Sparsity.
-            num_vars));
+            m_num_vars));
 
     // ColPack will allocate and store the seed matrix in seed_raw.
     double** seed_raw = nullptr;
@@ -276,7 +205,7 @@ HessianColoring::HessianColoring(int num_vars,
     m_coloring->GenerateSeedHessian_unmanaged(&seed_raw,
             &seed_num_rows, &seed_num_cols, // Outputs.
             "SMALLEST_LAST", coloringVariant);
-    assert(seed_num_rows == num_vars);
+    assert(seed_num_rows == m_num_vars);
     // Convert the seed matrix into an Eigen Matrix for ease of use; delete
     // the memory that ColPack created for the seed matrix.
     const int num_seeds = seed_num_cols;
@@ -299,6 +228,7 @@ HessianColoring::HessianColoring(int num_vars,
     m_recovery.reset(new ColPack::HessianRecovery());
     // Allocate memory for the compressed Hessian; we use this in recover().
     // Create a lambda that deletes the 2D C array.
+    const int num_vars = m_num_vars;
     auto double_2d_deleter = [num_vars](double** x) {
         std::for_each(x, x + num_vars, std::default_delete<double[]>());
         delete [] x;

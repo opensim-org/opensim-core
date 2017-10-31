@@ -18,6 +18,10 @@
 
 #include "testing.h"
 
+#include <tropter/optimization/OptimizationProblemDecorator.h>
+#include <tropter/optimalcontrol/DirectCollocation.h>
+#include <tropter/optimalcontrol/transcription/Base.h>
+
 #include <Eigen/SparseCore>
 
 namespace tropter {
@@ -30,6 +34,7 @@ struct OCPDerivativesComparison {
     std::string findiff_hessian_mode = "fast";
     double findiff_hessian_step_size = 1e-3;
     double gradient_error_tolerance = 1e-7;
+    double jacobian_error_tolerance = 1e-6;
     double hessian_error_tolerance = 1e-7;
     void compare() const {
         using Eigen::VectorXd;
@@ -61,8 +66,14 @@ struct OCPDerivativesComparison {
         calc_derivatives(anlp.get(), x, agrad, ajac, ahes);
 
         // Test.
+        CAPTURE(dgrad);
+        CAPTURE(agrad);
         TROPTER_REQUIRE_EIGEN(dgrad, agrad, gradient_error_tolerance);
-        compare_sparse(djac, ajac, 1e-6);
+        CAPTURE(djac);
+        CAPTURE(ajac);
+        compare_sparse(djac, ajac, jacobian_error_tolerance);
+        CAPTURE(dhes);
+        CAPTURE(ahes);
         compare_sparse(dhes, ahes, hessian_error_tolerance);
         //    std::cout << "DEBUGdhes\n" << Eigen::MatrixXd(dhes) << std::endl;
         //    std::cout << "DEBUGahes\n" << Eigen::MatrixXd(ahes) << std::endl;

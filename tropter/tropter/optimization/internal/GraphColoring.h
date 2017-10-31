@@ -1,6 +1,8 @@
 #ifndef TROPTER_GRAPHCOLORING_H
 #define TROPTER_GRAPHCOLORING_H
 
+#include <tropter/SparsityPattern.h>
+
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <vector>
@@ -40,10 +42,6 @@ public:
 
     /// Compute a graph coloring for from the given Jacobian sparsity pattern.
     ///
-    /// @param num_rows
-    ///     The number of rows in the Jacobian.
-    /// @param num_cols
-    ///     The number of columms in the Jacobian.
     /// @param sparsity
     ///     The sparsity pattern should be in ADOL-C's compressed row format.
     ///     This format is a 2-Dish array. The length of the first dimension is
@@ -52,13 +50,15 @@ public:
     ///     The length of each row (the inner dimension) is the number of
     ///     nonzeros in that row. More information about this format can be
     ///     found in ADOL-C's manual.
-    JacobianColoring(int num_rows, int num_cols,
-            const std::vector<std::vector<unsigned int>>& sparsity);
+    ///     TODO update comment.
+    JacobianColoring(SparsityPattern sparsity);
 
     ~JacobianColoring();
 
     /// The number of nonzero entries in the Jacobian.
     int get_num_nonzeros() const { return m_num_nonzeros; }
+
+    const SparsityPattern& get_sparsity() const { return m_sparsity; }
 
     /// This matrix has dimensions num_columns x num_seeds, where num_seeds is
     /// the ("minimal") number of directions in which to perturb (num_columns
@@ -90,9 +90,10 @@ private:
     /// Recover from m_jacobian_compressed.
     void recover_internal(double* jacobian_sparse_coordinate_format);
 
+    const SparsityPattern m_sparsity;
     const int m_num_rows = 0;
     const int m_num_cols = 0;
-    int m_num_nonzeros = 0;
+    const int m_num_nonzeros = 0;
 
     // ColPack objects for (a) determining the directions in which to perturb
     // the variables to compute the Jacobian and (b) recovering the sparse
@@ -129,8 +130,7 @@ private:
 /// 47.4 (2005): 629-705.
 class HessianColoring {
 public:
-    HessianColoring(int num_vars,
-            const std::vector<std::vector<unsigned int>>& sparsity);
+    HessianColoring(const SymmetricSparsityPattern& sparsity);
 
     ~HessianColoring();
 

@@ -74,8 +74,8 @@ public:
     void calc_constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
     void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
-            std::vector<std::vector<unsigned int>>&,
-            std::vector<std::vector<unsigned int>>&) const override;
+            SymmetricSparsityPattern&,
+            SymmetricSparsityPattern&) const override;
 
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd

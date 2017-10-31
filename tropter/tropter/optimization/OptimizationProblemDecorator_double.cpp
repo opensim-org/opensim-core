@@ -89,30 +89,14 @@ calc_sparsity(const Eigen::VectorXd& x,
     // We do this by setting an element of x to NaN, and examining which
     // constraint equations end up as NaN (and therefore depend on that
     // element of x).
-    m_x_working.setZero();
-    VectorXd constr_working(num_jac_rows);
-    // Initially, we store the sparsity structure in ADOL-C's compressed row
-    // format, since this is what ColPack accepts.
-    // This format, as described in the ADOL-C manual, is a 2-Dish array.
-    // The length of the first dimension is the number of rows in the Jacobian.
-    // Each element represents a row and is a vector of the column indices of
-    // the nonzeros in that row. The length of each row (the inner dimension) is
-    // the number of nonzeros in that row.
-    CompressedRowSparsity jacobian_sparsity(num_jac_rows);
-    for (int j = 0; j < (int)num_vars; ++j) {
-        constr_working.setZero();
-        m_x_working[j] = std::numeric_limits<double>::quiet_NaN();
-        m_problem.calc_constraints(m_x_working, constr_working);
-        m_x_working[j] = 0;
-        for (int i = 0; i < (int)num_jac_rows; ++i) {
-            if (std::isnan(constr_working[i])) {
-                jacobian_sparsity[i].push_back(j);
-            }
-        }
-    }
+    std::function<void(const VectorXd&, VectorXd&)> calc_constraints =
+            [this](const VectorXd& x, VectorXd& constr) {
+                m_problem.calc_constraints(x, constr);
+            };
+    SparsityPattern jacobian_sparsity = calc_jacobian_sparsity_with_nan(x,
+            num_jac_rows, calc_constraints);
 
-    m_jacobian_coloring.reset(
-            new JacobianColoring(num_jac_rows, num_vars, jacobian_sparsity));
+    m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
     m_jacobian_coloring->get_coordinate_format(
             jacobian_row_indices, jacobian_col_indices);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
@@ -157,12 +141,10 @@ calc_sparsity_hessian_lagrangian(
         const VectorXd& x,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const {
-    const auto num_vars = m_problem.get_num_variables();
+    const int num_vars = (int)m_problem.get_num_variables();
 
-    CompressedRowSparsity hescon_sparsity;
-    CompressedRowSparsity hesobj_sparsity;
-    Eigen::SparseMatrix<bool> hescon_sparsity_mat(num_vars, num_vars);
-    Eigen::SparseMatrix<bool> hesobj_sparsity_mat(num_vars, num_vars);
+    SymmetricSparsityPattern hescon_sparsity(num_vars);
+    SymmetricSparsityPattern hesobj_sparsity(num_vars);
 
     if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
 
@@ -170,25 +152,21 @@ calc_sparsity_hessian_lagrangian(
                 AbstractOptimizationProblem::
                 CalcSparsityHessianLagrangianNotImplemented;
         try {
-            hescon_sparsity.resize(num_vars);
-            hesobj_sparsity.resize(num_vars);
             m_problem.calc_sparsity_hessian_lagrangian(x, hescon_sparsity,
                     hesobj_sparsity);
+            TROPTER_THROW_IF(hescon_sparsity.get_num_rows() != num_vars,
+                    "Expected sparsity pattern of Hessian of constraints to "
+                    "have dimensions %i, but it has dimensions %i.",
+                    num_vars, hescon_sparsity.get_num_rows());
+            TROPTER_THROW_IF(hesobj_sparsity.get_num_rows() != num_vars,
+                    "Expected sparsity pattern of Hessian of objective to "
+                    "have dimensions %i, but it has dimensions %i.",
+                    num_vars, hesobj_sparsity.get_num_rows());
         } catch (const CalcSparsityHessianLagrangianNotImplemented&) {
             TROPTER_THROW("User requested use of user-supplied sparsity for "
                 "the Hessian of the Lagrangian, but "
                 "calc_sparsity_hessian_lagrangian() is not implemented.")
         }
-
-        // Place these here to check for errors in the user-provided sparsity
-        // pattern.
-        m_hescon_coloring.reset(
-                new HessianColoring(num_vars, hescon_sparsity));
-        m_hesobj_coloring.reset(
-                new HessianColoring(num_vars, hesobj_sparsity));
-
-        hescon_sparsity_mat = convert_to_Eigen_SparseMatrix(hescon_sparsity);
-        hesobj_sparsity_mat = convert_to_Eigen_SparseMatrix(hesobj_sparsity);
 
     } else {
         // We get the sparsity pattern of the Hessian of the objective and
@@ -196,70 +174,30 @@ calc_sparsity_hessian_lagrangian(
         // different algorithms to compute these two Hessians. However, we
         // have to report the total sparsity for use in the OptimizationSolver.
 
-        // Sparsity of Hessian of lambda*constraints
-        // -----------------------------------------
-        // Conservative estimate of sparsity of Hessian of lambda*constraints.
-        // See Patterson, Michael A., and Anil V. Rao. "GPOPS-II: A MATLAB
-        // software for solving multiple-phase optimal control problems using
-        // hp-adaptive Gaussian quadrature collocation methods and sparse
-        // nonlinear programming." ACM Transactions on Mathematical Software
-        // (TOMS) 41.1 (2014): 1.
-        VectorXd ones = VectorXd::Ones(m_jacobian_coloring->get_num_nonzeros());
-        // Represent the sparsity pattern as a binary sparsity matrix.
-        Eigen::SparseMatrix<double> jac_sparsity_mat_d;
-        m_jacobian_coloring->convert(ones.data(), jac_sparsity_mat_d);
-        Eigen::SparseMatrix<bool> jac_sparsity_mat =
-                jac_sparsity_mat_d.cast<bool>();
-        // The estimate for the sparsity pattern of the Hessian of
-        // lambda*constraints. In Patterson 2013, this is S2 = S1^T * S1.
-        hescon_sparsity_mat = jac_sparsity_mat.transpose() * jac_sparsity_mat;
+        // Sparsity of Hessian of lambda*constraints; conservative estimate.
+        hescon_sparsity =
+                SymmetricSparsityPattern::create_from_jacobian_sparsity(
+                        m_jacobian_coloring->get_sparsity());
 
-        // Sparsity of Hessian of objective
-        // --------------------------------
-        /*
-        */
-        Eigen::SparseMatrix<bool> gradient_sparsity_mat(1, num_vars);
-        gradient_sparsity_mat.reserve(m_gradient_nonzero_indices.size());
-        for (const auto& grad_index : m_gradient_nonzero_indices) {
-            gradient_sparsity_mat.insert(0, (int)grad_index) = 1;
-        }
-        gradient_sparsity_mat.makeCompressed();
-        hesobj_sparsity_mat =
-                gradient_sparsity_mat.transpose() * gradient_sparsity_mat;
-        /* Assume the objective function has no cross terms.
-        VectorX<bool> gradient_sparsity_mat(num_vars);
-        for (const auto& grad_index : m_gradient_nonzero_indices) {
-            gradient_sparsity_mat[grad_index] = 1;
-        }
-        hesobj_sparsity_mat = gradient_sparsity_mat.asDiagonal();
-         * TODO
-         */
-
-        const CompressedRowSparsity hescon_sparsity =
-                convert_to_CompressedRowSparsity(hescon_sparsity_mat);
-        const CompressedRowSparsity hesobj_sparsity =
-                convert_to_CompressedRowSparsity(hesobj_sparsity_mat);
-
-        m_hescon_coloring.reset(
-                new HessianColoring(num_vars, hescon_sparsity));
-        m_hesobj_coloring.reset(
-                new HessianColoring(num_vars, hesobj_sparsity));
-
+        // Sparsity of Hessian of objective.
+        SparsityPattern gradient_sparsity(num_vars, m_gradient_nonzero_indices);
+        hesobj_sparsity =
+                SymmetricSparsityPattern::create_from_jacobian_sparsity(
+                        gradient_sparsity);
     }
 
     // Create GraphColoring objects.
+    m_hescon_coloring.reset(new HessianColoring(hescon_sparsity));
+    m_hesobj_coloring.reset(new HessianColoring(hesobj_sparsity));
     m_hesobj_coloring->get_coordinate_format(
             m_hesobj_row_indices, m_hesobj_col_indices);
 
     // Sparsity of Hessian of Lagrangian.
     // ----------------------------------
-    Eigen::SparseMatrix<bool> hessian_sparsity_mat =
-            hescon_sparsity_mat || hesobj_sparsity_mat;
-    const CompressedRowSparsity hessian_sparsity =
-            convert_to_CompressedRowSparsity(hessian_sparsity_mat);
+    SymmetricSparsityPattern hessian_sparsity = hescon_sparsity;
+    hessian_sparsity.add_in_nonzeros(hesobj_sparsity);
 
-    m_hessian_coloring.reset(
-            new HessianColoring(num_vars, hessian_sparsity));
+    m_hessian_coloring.reset(new HessianColoring(hessian_sparsity));
     m_hessian_coloring->get_coordinate_format(
             hessian_row_indices, hessian_col_indices);
 

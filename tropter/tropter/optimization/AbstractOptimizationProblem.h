@@ -23,6 +23,7 @@
 namespace tropter {
 
 class OptimizationProblemDecorator;
+class SymmetricSparsityPattern;
 
 /// @ingroup optimization
 class AbstractOptimizationProblem {
@@ -73,7 +74,7 @@ public:
     /// and is a vector of the column indices of the nonzeros in that row.
     /// The length of each row (the inner dimension) is the number of
     /// nonzeros in that row. More information about this format can be
-    /// found in ADOL-C's manual.
+    /// found in ADOL-C's manual. TODO remove this documentation.
     /// Requirements:
     ///  - Only supply nonzeros in the upper triangle (Hessian is symmetric).
     ///  - Each row's elements should be unique, and must be between
@@ -86,8 +87,8 @@ public:
     /// necessary (e.g., by perturbing the objective or constraint functions).
     /// TODO make it clear that it's the Hessian of the *Lagrangian*.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
-            std::vector<std::vector<unsigned int>>& hescon_sparsity,
-            std::vector<std::vector<unsigned int>>& hesobj_sparsity) const;
+            SymmetricSparsityPattern& hescon_sparsity,
+            SymmetricSparsityPattern& hesobj_sparsity) const;
     class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
 
     virtual std::unique_ptr<OptimizationProblemDecorator>
@@ -139,8 +140,8 @@ private:
 
 inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
         const Eigen::VectorXd&,
-        std::vector<std::vector<unsigned int>>&,
-        std::vector<std::vector<unsigned int>>&) const {
+        SymmetricSparsityPattern&,
+        SymmetricSparsityPattern&) const {
     throw CalcSparsityHessianLagrangianNotImplemented();
 }
 

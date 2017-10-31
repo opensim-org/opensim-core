@@ -16,7 +16,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-#include "testing.h"
+#include "testing_optimalcontrol.h"
 
 #include <tropter/tropter.h>
 #include <Eigen/LU>
@@ -332,7 +332,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         const auto explicit_solution =
                 DoublePendulumCoordinateTracking<adouble>::
                 run_test("ipopt", "exact");
-        /*TODO
+
         const auto implicit_solution =
                 ImplicitDoublePendulumCoordinateTracking<adouble>::
                 run_test("ipopt", "exact");
@@ -354,14 +354,35 @@ TEST_CASE("Double pendulum coordinate tracking",
         CAPTURE(implicit_solution.controls.bottomRows(2));
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
                 implicit_solution.controls.bottomRows(2), 5.0);
-                */
+
+        OCPDerivativesComparison<DoublePendulumCoordinateTracking> c;
+        c.findiff_hessian_step_size = 1e-5;
+        c.gradient_error_tolerance = 1e-5;
+        c.hessian_error_tolerance = 1e-2;
+        c.compare();
+
+        OCPDerivativesComparison<ImplicitDoublePendulumCoordinateTracking> ci;
+        ci.findiff_hessian_step_size = 1e-5;
+        ci.gradient_error_tolerance = 1e-5;
+        ci.jacobian_error_tolerance = 1e-5;
+        ci.hessian_error_tolerance = 1e-2;
+        ci.compare();
 
         // TODO add derivative check (OCPDerivativeComparison). I think the
         // derivatives with the implicit double pendulum are incorrect.
-         DoublePendulumCoordinateTracking<double>::
-         run_test("ipopt", "exact");
-//        ImplicitDoublePendulumCoordinateTracking<double>::
-//        run_test("ipopt", "exact");
+        DoublePendulumCoordinateTracking<double>::
+        run_test("ipopt", "exact");
+        ImplicitDoublePendulumCoordinateTracking<double>::
+        run_test("ipopt", "exact");
+
+
+        /** TODO
+        1. clean up code
+        2. test implicit double pendulum.
+        3. more strict sparsity for t0, tf.
+        4. create Muscollo double pendulum example.
+        4. manually differentiate objective function.
+         */
 
         // The following do not converge:
         // EXIT: Maximum number of iterations exceeded.

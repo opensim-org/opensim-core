@@ -16,31 +16,8 @@
 
 #include "FiniteDifference.h"
 
+#include "Exception.hpp"
+
 namespace tropter {
-
-Eigen::SparseMatrix<bool> convert_to_Eigen_SparseMatrix(
-        const CompressedRowSparsity& sparsity) {
-    Eigen::SparseMatrix<bool> mat(sparsity.size(), sparsity.size());
-    int num_nonzeros = 0;
-    for (const auto& row : sparsity) num_nonzeros += (int)row.size();
-    mat.reserve(num_nonzeros);
-
-    for (int i = 0; i < (int)sparsity.size(); ++i) {
-        for (const auto& j : sparsity[i]) mat.insert(i, j) = 1;
-    }
-    mat.makeCompressed();
-    return mat;
-}
-CompressedRowSparsity convert_to_CompressedRowSparsity(
-        const Eigen::SparseMatrix<bool>& mat) {
-    CompressedRowSparsity sparsity(mat.rows());
-    for (int i = 0; i < mat.outerSize(); ++i) {
-        for (Eigen::SparseMatrix<bool>::InnerIterator it(mat, i); it; ++it) {
-            if (it.row() <= it.col()) // Upper triangle only.
-                sparsity[it.row()].push_back((unsigned)it.col());
-        }
-    }
-    return sparsity;
-}
 
 } // namespace tropter

@@ -20,6 +20,7 @@
 #include "utilities.h"
 #include "Exception.h"
 #include "EigenUtilities.h"
+#include "SparsityPattern.h"
 
 #include "optimization/AbstractOptimizationProblem.h"
 #include "optimization/OptimizationProblem.h"

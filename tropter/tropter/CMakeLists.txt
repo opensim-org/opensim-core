@@ -4,6 +4,8 @@ add_library(tropter SHARED
         utilities.h utilities.cpp
         Exception.h Exception.hpp Exception.cpp
         EigenUtilities.h
+        SparsityPattern.h
+        SparsityPattern.cpp
         FiniteDifference.h
         FiniteDifference.cpp
         optimization/AbstractOptimizationProblem.h

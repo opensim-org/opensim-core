@@ -20,6 +20,7 @@
 
 #include <tropter/Exception.hpp>
 #include <tropter/FiniteDifference.h>
+#include <tropter/SparsityPattern.h>
 
 #include <iomanip>
 
@@ -238,8 +239,8 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
 template<typename T>
 void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
         const Eigen::VectorXd& x,
-        std::vector<std::vector<unsigned int>>& hescon_sparsity,
-        std::vector<std::vector<unsigned int>>& hesobj_sparsity) const {
+        SymmetricSparsityPattern& hescon_sparsity,
+        SymmetricSparsityPattern& hesobj_sparsity) const {
     const auto& num_constraints = this->get_num_constraints();
     const auto& num_variables = this->get_num_variables();
 
@@ -250,29 +251,30 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     // if-statements.
 
     // TODO determine sparsity template!
-    std::function<void(const VectorX<T>&, VectorX<T>&)> calc_dae =
-            [this, &x](const VectorX<T>& vars, VectorX<T>& output) {
-                T t = x[0]; // initial time.
-                VectorX<T> s = vars.head(m_num_states);
-                VectorX<T> c = vars.tail(m_num_controls);
-                m_ocproblem->calc_differential_algebraic_equations(
-                        {0, t, s, c},
-                        {output.head(m_num_states),
-                         output.tail(m_num_path_constraints)});
-            };
-    Eigen::SparseMatrix<bool> dae_sparsity_mat =
-//    CompressedRowSparsity dae_sparsity =
-            // TODO wouldn't work, b/c it only takes the upper triangle.
-//            convert_to_CompressedRowSparsity(
-                    calc_jacobian_sparsity_with_nan(
-                            // Grab the first state and first controls.
-                            x.segment(m_num_time_variables, num_con_vars),
-                            m_num_states + m_num_path_constraints,
-                            calc_dae)/*)*/;
-    std::cout << "DEBUG dae " << dae_sparsity_mat << std::endl;
+//    std::function<void(const VectorX<T>&, VectorX<T>&)> calc_dae =
+//            [this, &x](const VectorX<T>& vars, VectorX<T>& output) {
+//                T t = x[0]; // initial time.
+//                VectorX<T> s = vars.head(m_num_states);
+//                VectorX<T> c = vars.tail(m_num_controls);
+//                m_ocproblem->calc_differential_algebraic_equations(
+//                        {0, t, s, c},
+//                        {output.head(m_num_states),
+//                         output.tail(m_num_path_constraints)});
+//            };
+//    Eigen::SparseMatrix<bool> dae_sparsity_mat =
+////    CompressedRowSparsity dae_sparsity =
+//            // TODO wouldn't work, b/c it only takes the upper triangle.
+////            convert_to_CompressedRowSparsity(
+//                    calc_jacobian_sparsity_with_nan(
+//                            // Grab the first state and first controls.
+//                            x.segment(m_num_time_variables, num_con_vars),
+//                            m_num_states + m_num_path_constraints,
+//                            calc_dae)/*)*/;
+//    std::cout << "DEBUG dae " << dae_sparsity_mat << std::endl;
 
 
-    std::function<T(const VectorX<T>&, int)> calc_TODO =
+    // TODO document.
+    std::function<T(const VectorX<T>&, int)> calc_dae =
             [this, &x](const VectorX<T>& vars, int idx) {
                 T t = x[0]; // initial time.
                 VectorX<T> s = vars.head(m_num_states);
@@ -284,40 +286,39 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 return idx < m_num_states ? deriv[idx]
                                           : path[idx - m_num_states];
             };
-    Eigen::SparseMatrix<bool> TODOTODO(m_num_continuous_variables,
-            m_num_continuous_variables);
-    TODOTODO.setZero();
+
+    SymmetricSparsityPattern dae_sparsity(m_num_continuous_variables);
     for (int i = 0; i < (m_num_states + m_num_path_constraints); ++i) {
-        std::function<T(const VectorX<T>&)> TODO0 =
-                std::bind(calc_TODO, std::placeholders::_1, i);
-        TODOTODO = TODOTODO || calc_hessian_sparsity_with_perturbation(
+        std::function<T(const VectorX<T>&)> calc_dae_i =
+                std::bind(calc_dae, std::placeholders::_1, i);
+        auto block_sparsity = calc_hessian_sparsity_with_perturbation(
                 x.segment(m_num_time_variables, m_num_continuous_variables),
-                TODO0);
+                calc_dae_i);
+        dae_sparsity.add_in_nonzeros(block_sparsity);
     }
     // TODO this produces the wrong sparsity pattern for the implicit double
     // pendulum.
-    std::cout << "DEBUG TODOTODO " << TODOTODO << std::endl;
+//    std::cout << "DEBUG TODOTODO " << TODOTODO << std::endl;
 
 
     // time is coupled to all other variables.
+    // TODO can be smarter about interaction of variables with time; implicit
+    // formulations give additional sparsity here.
     std::vector<Eigen::Triplet<bool>> hescon_sparsity_triplets;
     for (int irow = 0; irow < m_num_time_variables; ++irow) {
         for (int icol = irow; icol < (int)num_variables; ++icol) {
-            hescon_sparsity_triplets.push_back({irow, icol, 1});
+            hescon_sparsity.set_nonzero(irow, icol);
         }
     }
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
         const auto istart = m_num_time_variables + imesh * num_con_vars;
-        add_in_sparsity(hescon_sparsity_triplets, TODOTODO,
-                istart, istart);
-        //        hesobj_sparsity_mat.block(istart, istart, num_con_vars, num_con_vars) =
-        //                integral_cost_sparsity;
+        hescon_sparsity.set_nonzero_block(istart, istart, dae_sparsity);
     }
-    Eigen::SparseMatrix<bool> hescon_sparsity_mat(num_variables, num_variables);
-    hescon_sparsity_mat.setFromTriplets(hescon_sparsity_triplets.begin(),
-            hescon_sparsity_triplets.end());
-    hescon_sparsity = convert_to_CompressedRowSparsity(hescon_sparsity_mat);
-    write_sparsity(hescon_sparsity_mat, "DEBUG_TODO_hescon_direct.csv");
+//    Eigen::SparseMatrix<bool> hescon_sparsity_mat(num_variables, num_variables);
+//    hescon_sparsity_mat.setFromTriplets(hescon_sparsity_triplets.begin(),
+//            hescon_sparsity_triplets.end());
+//    hescon_sparsity = SymmetricSparsityPattern(hescon_sparsity_mat);
+//    write_sparsity(hescon_sparsity_mat, "DEBUG_TODO_hescon_direct.csv");
 
     //TODO std::exit(-1);
 
@@ -403,12 +404,13 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     // Objective. We'll only fill up the upper triangle.
     // TODOEigen::SparseMatrix<bool> hesobj_sparsity_mat(num_variables,
     // num_variables);
-    std::vector<Eigen::Triplet<bool>> obj_sparsity_triplets;
+//    std::vector<Eigen::Triplet<bool>> obj_sparsity_triplets;
+
 
     // time is coupled to all other variables.
     for (int irow = 0; irow < m_num_time_variables; ++irow) {
         for (int icol = irow; icol < (int)num_variables; ++icol) {
-            obj_sparsity_triplets.push_back({irow, icol, 1});
+            hesobj_sparsity.set_nonzero(irow, icol);
         }
     }
 
@@ -422,20 +424,21 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
         m_ocproblem->calc_integral_cost(t, s, c, integrand);
         return integrand;
     };
-    CompressedRowSparsity integral_cost_sparsity =
-            convert_to_CompressedRowSparsity(
+    SymmetricSparsityPattern integral_cost_sparsity =
+//    CompressedRowSparsity integral_cost_sparsity =
+//            convert_to_CompressedRowSparsity(
                 //TODO    calc_hessian_sparsity_with_nan(
                     calc_hessian_sparsity_with_perturbation(
                     // Grab the first state and first controls.
                     x.segment(m_num_time_variables, num_con_vars),
-                    calc_integral_cost));
+                    calc_integral_cost);
     // TODOstd::cout << "DEBUG " << integral_cost_sparsity << std::endl;
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
         const auto istart = m_num_time_variables + imesh * num_con_vars;
-        add_in_sparsity(obj_sparsity_triplets, integral_cost_sparsity, istart,
-                istart);
-//        hesobj_sparsity_mat.block(istart, istart, num_con_vars, num_con_vars) =
-//                integral_cost_sparsity;
+        hesobj_sparsity.set_nonzero_block(istart, istart,
+                integral_cost_sparsity);
+//        add_in_sparsity(obj_sparsity_triplets, integral_cost_sparsity, istart,
+//                istart);
     }
     const auto lastmeshstart =
             m_num_time_variables + (m_num_mesh_points - 1) * num_con_vars;
@@ -448,20 +451,23 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 m_ocproblem->calc_endpoint_cost(t, s, cost);
                 return cost;
             };
-    CompressedRowSparsity endpoint_cost_sparsity =
-            convert_to_CompressedRowSparsity(
-                    calc_hessian_sparsity_with_nan(
+//    CompressedRowSparsity endpoint_cost_sparsity =
+//            convert_to_CompressedRowSparsity(
+    SymmetricSparsityPattern endpoint_cost_sparsity =
+                    calc_hessian_sparsity_with_perturbation(
                             // Grab the first state and first controls.
                             x.segment(lastmeshstart, m_num_states),
-                            calc_endpoint_cost));
-    add_in_sparsity(obj_sparsity_triplets, endpoint_cost_sparsity,
-            lastmeshstart, lastmeshstart);
+                            calc_endpoint_cost);
+//    add_in_sparsity(obj_sparsity_triplets, endpoint_cost_sparsity,
+//            lastmeshstart, lastmeshstart);
+    hesobj_sparsity.set_nonzero_block(lastmeshstart, lastmeshstart,
+            endpoint_cost_sparsity);
 
-    Eigen::SparseMatrix<bool> hesobj_sparsity_mat(num_variables, num_variables);
-    hesobj_sparsity_mat.setFromTriplets(obj_sparsity_triplets.begin(),
-            obj_sparsity_triplets.end());
-    //std::cout << "DEBUG hesobj_sparsity_mat " << hesobj_sparsity_mat << std::endl;
-    write_sparsity(hesobj_sparsity_mat, "DEBUG_TODO.csv");
+//    Eigen::SparseMatrix<bool> hesobj_sparsity_mat(num_variables, num_variables);
+//    hesobj_sparsity_mat.setFromTriplets(obj_sparsity_triplets.begin(),
+//            obj_sparsity_triplets.end());
+//    //std::cout << "DEBUG hesobj_sparsity_mat " << hesobj_sparsity_mat << std::endl;
+//    write_sparsity(hesobj_sparsity_mat, "DEBUG_TODO.csv");
     //const auto lastmesh =
     //        m_num_time_variables + (m_num_mesh_points - 1) * num_con_vars;
     // TODO
@@ -485,7 +491,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     }
      */
 
-    hesobj_sparsity = convert_to_CompressedRowSparsity(hesobj_sparsity_mat);
+//    hesobj_sparsity = SymmetricSparsityPattern(hesobj_sparsity_mat);
 
 
     // TODO most objectives do *NOT* depend on time.

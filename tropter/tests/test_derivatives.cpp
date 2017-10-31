@@ -491,22 +491,21 @@ public:
     }
 
     void calc_sparsity_hessian_lagrangian(const VectorXd&,
-            std::vector<std::vector<unsigned int>>& hescon_sparsity,
-            std::vector<std::vector<unsigned int>>& hesobj_sparsity)
-            const override {
+            SymmetricSparsityPattern& hescon_sparsity,
+            SymmetricSparsityPattern& hesobj_sparsity) const override {
         m_calc_sparsity_hessian_lagrangian_called = true;
-        assert(hescon_sparsity.size() == 4);
-        assert(hesobj_sparsity.size() == 4);
+        assert(hescon_sparsity.get_num_rows() == 4);
+        assert(hesobj_sparsity.get_num_rows() == 4);
         // Treat the Hessian as dense but with a zero at (0, 3) (conservative
         // estimate) so that we can detect that this function is called.
         const int num_vars = (int)this->get_num_variables();
         for (int i = 0; i < num_vars; ++i) {
             for (int j = i; j < num_vars; ++j) {
                 if (i == 0 && j == 3) continue;
-                hescon_sparsity[i].push_back(j);
+                hescon_sparsity.set_nonzero(i, j);
             }
             // Hessian of objective is diagonal.
-            hesobj_sparsity[i].push_back(i);
+            hesobj_sparsity.set_nonzero(i, i);
         }
     }
     mutable bool m_calc_sparsity_hessian_lagrangian_called = false;
@@ -667,123 +666,83 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
 }
 
 TEST_CASE("Validate sparsity input") {
-    class ConfigurableUserSpecifiedSparsity
-            : public OptimizationProblem<double> {
-    public:
-        ConfigurableUserSpecifiedSparsity() :
-                OptimizationProblem<double>(4, 0) {}
-        void calc_objective(const VectorXd&, double&) const override {}
-        void calc_constraints(const VectorXd&,
-                Eigen::Ref<VectorXd>) const override {}
-        void calc_sparsity_hessian_lagrangian(
-                const VectorXd&,
-                std::vector<std::vector<unsigned int>>& hescon_sparsity,
-                std::vector<std::vector<unsigned int>>& hesobj_sparsity)
-                const override {
-            hescon_sparsity = m_hescon_sparsity;
-            hesobj_sparsity = m_hesobj_sparsity;
-        }
-        std::vector<std::vector<unsigned int>> m_hescon_sparsity;
-        std::vector<std::vector<unsigned int>> m_hesobj_sparsity;
-    };
-    ConfigurableUserSpecifiedSparsity problemd;
-    problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
-    std::vector<unsigned int> jac_row, jac_col, hess_row, hess_col;
-
-    problemd.m_hescon_sparsity.resize(4);
-    problemd.m_hesobj_sparsity.resize(4);
-
-    auto decorator = problemd.make_decorator();
 
     SECTION("Number of rows") {
-        problemd.m_hescon_sparsity.resize(3);
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Incorrect number of rows"));
+        class ConfigurableUserSpecifiedSparsity
+                : public OptimizationProblem<double> {
+        public:
+            ConfigurableUserSpecifiedSparsity() :
+                    OptimizationProblem<double>(4, 0) {}
+            void calc_objective(const VectorXd&, double&) const override {}
+            void calc_constraints(const VectorXd&,
+                    Eigen::Ref<VectorXd>) const override {}
+            void calc_sparsity_hessian_lagrangian(
+                    const VectorXd&, SymmetricSparsityPattern& hescon_sparsity,
+                    SymmetricSparsityPattern& hesobj_sparsity) const override {
+                hescon_sparsity = m_hescon_sparsity;
+                hesobj_sparsity = m_hesobj_sparsity;
+            }
+            SymmetricSparsityPattern m_hescon_sparsity =
+                    SymmetricSparsityPattern(4);
+            SymmetricSparsityPattern m_hesobj_sparsity =
+                    SymmetricSparsityPattern(4);
+        };
+        ConfigurableUserSpecifiedSparsity problemd;
+        problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+        std::vector<unsigned int> jac_row, jac_col, hess_row, hess_col;
 
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hesobj_sparsity.resize(3);
+        auto decorator = problemd.make_decorator();
+
+        problemd.m_hescon_sparsity = SymmetricSparsityPattern(3);
         REQUIRE_THROWS_WITH(
                 decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
                         jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Incorrect number of rows"));
+                Catch::Contains("Expected sparsity pattern of Hessian of "
+                        "constraints to have dimensions 4"));
+
+        problemd.m_hescon_sparsity = SymmetricSparsityPattern(4);
+        problemd.m_hesobj_sparsity = SymmetricSparsityPattern(5);
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, true, hess_row, hess_col),
+                Catch::Contains("Expected sparsity pattern of Hessian of "
+                        "objective to have dimensions 4"));
     }
 
     SECTION("Column indices too large") {
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hescon_sparsity[0] = {4};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("greater than number of columns"));
-
-        problemd.m_hescon_sparsity.clear();
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hesobj_sparsity.resize(4);
-        problemd.m_hesobj_sparsity[0] = {4};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("greater than number of columns"));
+        {
+            SparsityPattern s(2, 3);
+            REQUIRE_THROWS_WITH(s.set_nonzero(2, 0),
+                    Catch::Contains("Expected row_index to be in [0, 2)"));
+            REQUIRE_THROWS_WITH(s.set_nonzero(0, 3),
+                    Catch::Contains("Expected col_index to be in [0, 3)"));
+        }
+        {
+            SymmetricSparsityPattern s(5);
+            REQUIRE_THROWS_WITH(s.set_nonzero(0, 5),
+                    Catch::Contains("Expected col_index to be in [0, 5)"));
+        }
     }
 
-    SECTION("Unique elements") {
-        problemd.m_hescon_sparsity.resize(4);
-        // Leave the first row empty, to make sure we can handle empty rows
-        // (which should be fine).
-        problemd.m_hescon_sparsity[1] = {0, 0};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Entries of sparsity must be unique"));
-
-        problemd.m_hescon_sparsity.clear();
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hesobj_sparsity.resize(4);
-        // Leave the first row empty, to make sure we can handle empty rows
-        // (which should be fine).
-        problemd.m_hesobj_sparsity[1] = {0, 0};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Entries of sparsity must be unique"));
-    }
-
-    SECTION("Sorted elements") {
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hescon_sparsity[1] = {3, 2};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Entries of sparsity must be sorted"));
-
-        problemd.m_hescon_sparsity.clear();
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hesobj_sparsity.resize(4);
-        problemd.m_hesobj_sparsity[1] = {3, 2};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("Entries of sparsity must be sorted"));
+    SECTION("Idempotency") {
+        {
+            SparsityPattern s(2, 2);
+            s.set_nonzero(0, 0);
+            s.set_nonzero(0, 0);
+            REQUIRE(s.get_num_nonzeros() == 1);
+        }
+        {
+            SymmetricSparsityPattern sparsity(2);
+            sparsity.set_nonzero(1, 1);
+            sparsity.set_nonzero(1, 1);
+            REQUIRE(sparsity.get_num_nonzeros() == 1);
+        }
     }
 
     SECTION("Lower triangle") {
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hescon_sparsity[1] = {0};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("only the upper triangle"));
-
-        problemd.m_hescon_sparsity.clear();
-        problemd.m_hescon_sparsity.resize(4);
-        problemd.m_hesobj_sparsity.resize(4);
-        problemd.m_hesobj_sparsity[1] = {0};
-        REQUIRE_THROWS_WITH(
-                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
-                        jac_row, jac_col, true, hess_row, hess_col),
-                Catch::Contains("only the upper triangle"));
+        SymmetricSparsityPattern sparsity(2);
+        REQUIRE_THROWS_WITH(sparsity.set_nonzero(1, 0),
+                Catch::Contains("must be in the upper triangle"));
     }
 
 }
