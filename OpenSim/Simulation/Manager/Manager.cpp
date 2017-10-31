@@ -635,6 +635,9 @@ integrate(SimTK::State& s, double finalTime)
             "with an integrator, or call Manager::setIntegrator().");
     }
 
+    // Set the final time on the integrator so it can signal EndOfSimulation
+    _integ->setFinalTime(finalTime);
+
     // CLEAR ANY INTERRUPT
     // Halts must arrive during an integration.
     clearHalt();
@@ -670,7 +673,7 @@ integrate(SimTK::State& s, double finalTime)
     // Only initialize a TimeStepper if it hasn't been done yet
     if (_timeStepper == NULL) initializeTimeStepper(s);
 
-    SimTK::Integrator::SuccessfulStepStatus status;
+    auto status{ SimTK::Integrator::InvalidSuccessfulStepStatus };
 
     if (!fixedStep) {
         _integ->setReturnEveryInternalStep(true);
@@ -697,7 +700,7 @@ integrate(SimTK::State& s, double finalTime)
     double stepToTime = finalTime;
 
     // LOOP
-    while (time < finalTime) {
+    while (status != SimTK::Integrator::EndOfSimulation) {
         double fixedStepSize;
         if (fixedStep) {
             fixedStepSize = getNextTimeArrayTime(time) - time;
@@ -712,7 +715,7 @@ integrate(SimTK::State& s, double finalTime)
         // need to record it again.
         status = _timeStepper->stepTo(stepToTime);
 
-        if (status != SimTK::Integrator::EndOfSimulation) {
+        if (status == SimTK::Integrator::TimeHasAdvanced) {
             const SimTK::State& s = _integ->getState();
             if (_performAnalyses) _model->updAnalysisSet().step(s, step);
             if (_writeToStorage) {
@@ -725,21 +728,35 @@ integrate(SimTK::State& s, double finalTime)
             }
             step++;
         }
-        else
-            halt();
+        // Check if simulation has terminated for some reason
+        else if (_integ->isSimulationOver() &&
+                    _integ->getTerminationReason() !=
+                        SimTK::Integrator::ReachedFinalTime) {
+            cout << "Integration failed due to the following reason: "
+                << _integ->getTerminationReasonString(_integ->getTerminationReason())
+                << endl;
+            return false;
+        }
 
         time = _integ->getState().getTime();
         // CHECK FOR INTERRUPT
         if (checkHalt()) break;
     }
-    finalize(_integ->updAdvancedState());
-    s = _integ->getState();
 
     // CLEAR ANY INTERRUPT
     clearHalt();
 
-    return true;
+    // If all is good we should hit EndOfSimulation
+    status = _timeStepper->stepTo(stepToTime);
 
+    if (status == SimTK::Integrator::EndOfSimulation) {
+        finalize(_integ->updAdvancedState());
+        s = _integ->getState();
+        return true;
+    }
+    
+    // Was not able to reach EndOfSimulation
+    return false;
 }
 
 /**
