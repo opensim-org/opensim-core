@@ -92,8 +92,18 @@ public:
      */
     SimTK::MassProperties getMassProperties() const;
 
-    void scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass = false);
-    void scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass = true);
+    /** Scale the Body's center of mass location and its inertial properties. */
+    void scale(const SimTK::Vec3& scaleFactors, bool scaleMass = false);
+
+    /** Scale the Body's center of mass location only. Note that
+        scaleInertialProperties() must be called after this method to update the
+        Body's mass and inertia tensor. */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
+    /** Scale the Body's mass and inertia tensor. */
+    void scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass = true);
+    void scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass = true);
+
     void scaleMass(double aScaleFactor);
  protected:
 

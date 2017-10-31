@@ -25,6 +25,7 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 namespace OpenSim {
 
@@ -149,9 +150,8 @@ public:
     */
     void setOffsetTransform(const SimTK::Transform& offset);
 
-
-    /** Scale the offset given scale factors for spatial (XYZ) dimensions */
-    void scale(const SimTK::Vec3& scaleFactors);
+    /** Scale the offset given scale factors for spatial (XYZ) dimensions. */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     /** Extend how OffsetFrame determines its base Frame. */
@@ -317,8 +317,15 @@ void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 }
 
 template<class C>
-inline void OffsetFrame<C>::scale(const SimTK::Vec3 & scaleFactors)
+inline void OffsetFrame<C>::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
+                                                   .findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const SimTK::Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
+
     upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }
 

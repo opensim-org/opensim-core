@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Frame.h"
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -179,6 +180,31 @@ void Frame::attachGeometry(OpenSim::Geometry* geom)
 
     geom->setFrame(*this);
     updProperty_attached_geometry().adoptAndAppendValue(geom);
+}
+
+void Frame::scale(const SimTK::Vec3& scaleFactors)
+{
+    for (int i = 0; i < getProperty_attached_geometry().size(); ++i) {
+        Geometry& geo = upd_attached_geometry(i);
+        geo.upd_scale_factors() = geo.get_scale_factors()
+                                  .elementwiseMultiply(scaleFactors);
+    }
+}
+
+void Frame::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::scale(s, scaleSet);
+
+    if (getProperty_attached_geometry().size() == 0)
+        return;
+
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndexBySegmentName(findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
+
+    scale(scaleFactors);
 }
 
 //=============================================================================
