@@ -1,7 +1,5 @@
 
 tropter_add_test(NAME test_derivatives)
-# TODO temp:
-tropter_add_test(NAME test_derivatives_finite_diff_hessian)
 # This test was more of a sandbox for learning ADOL-C:
 #tropter_add_test(NAME test_eigen_adolc_reverse_mode)
 tropter_add_test(NAME test_generic_optimization)
