@@ -79,7 +79,7 @@ int main()
                         true);
     }
     catch (const std::exception& e) {
-        cout << e.what();
+        cout << e.what() << endl;
         failures.push_back("testOutputReporter");
     }
 
@@ -101,13 +101,11 @@ void simulateMuscle(
         double integrationAccuracy,
         bool printResults)
 {
-
     using SimTK::Vec3;
 
     //==========================================================================
     // 0. SIMULATION SETUP: Create the block and ground
     //==========================================================================
-
     // Define the initial and final simulation times
     double initialTime = 0.0;
     double finalTime = 0.5;
@@ -216,6 +214,13 @@ void simulateMuscle(
     // set x-translation value
     modelCoordinateSet[0].setValue(state, 1.0, true);
 
+    // Get Initial reported values
+    model.realizeReport(state);
+    double t0 = state.getTime();
+    auto ke0 = model.getMultibodySystem().calcKineticEnergy(state);
+    auto ang_acc0 = ball->getAngularAccelerationInGround(state);
+    auto reaction0 = slider->calcReactionOnChildExpressedInGround(state);
+
     //==========================================================================
     // 4. SIMULATION Integration
     //==========================================================================
@@ -252,6 +257,17 @@ void simulateMuscle(
     auto tableSV = STOFileAdapter_<SimTK::SpatialVec>::
         read("testOutputReporterSpatialVec.sto");
 
+    double val_t0 = tableD.getIndependentColumn()[0];
+    const SimTK::Real& val_ke0 = tableD.getRowAtIndex(0)[0];
+    const Vec3& val_omega0 = tableV3.getRowAtIndex(01)[1];
+    const SimTK::SpatialVec& val_jrf0 = tableSV.getRowAtIndex(0)[1];
+
+    ASSERT_EQUAL(t0, val_t0, SimTK::Eps);
+    ASSERT_EQUAL(ke0, val_ke0, SimTK::Eps);
+    ASSERT_EQUAL(ang_acc0, val_omega0, SimTK::Eps);
+    ASSERT_EQUAL(reaction0, val_jrf0, SimTK::Eps);
+
+    double val_tf = tableD.getIndependentColumn()[tableD.getNumRows() - 1];
     const SimTK::Real& val_ke = tableD.getRowAtIndex(tableD.getNumRows() - 1)[0];
     const Vec3& val_omega = tableV3.getRowAtIndex(tableV3.getNumRows() - 1)[1];
     const SimTK::SpatialVec& val_jrf = 
@@ -262,6 +278,7 @@ void simulateMuscle(
     auto ang_acc = ball->getAngularAccelerationInGround(state);
     auto reaction = slider->calcReactionOnChildExpressedInGround(state);
 
+    ASSERT_EQUAL(state.getTime(), val_tf, SimTK::Eps);
     ASSERT_EQUAL(ke, val_ke, SimTK::Eps);
     ASSERT_EQUAL(ang_acc, val_omega, SimTK::Eps);
     ASSERT_EQUAL(reaction, val_jrf, SimTK::Eps);
