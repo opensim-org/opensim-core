@@ -103,11 +103,12 @@ public:
         "this joint.");
 
     OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalOffsetFrame,
-        "Physical offset frames owned by the Joint that are used to satisfy "
-        "the Joint's parent and child frame connections. PhysicalOffsetFrames "
-        "are often used to offset the connection from a Body's origin to another "
-        "location of interest (e.g. the joint center). That offset can be added "
-        "to the Joint. When the joint is deleted so are the Frames in this list.");
+        "Physical offset frames owned by the Joint that are typically used to "
+        "satisfy the owning Joint's parent and child frame connections "
+        "(sockets). PhysicalOffsetFrames are often used to describe the fixed "
+        "transformation from a Body's origin to another location of interest "
+        "on the Body (e.g., the joint center). When the joint is deleted, so "
+        "are the PhysicalOffsetFrame components in this list.");
 
 //==============================================================================
 // SOCKETS
