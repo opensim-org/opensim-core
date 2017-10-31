@@ -37,7 +37,7 @@ using namespace std;
 //=============================================================================
 int OutputReporter::begin(SimTK::State& s)
 {
-    if (!proceed()) return(0);
+    if (!proceed()) return 0;
 
     _pvtModel.reset(_model->clone());
 
@@ -84,6 +84,7 @@ int OutputReporter::begin(SimTK::State& s)
     }
 
     _pvtModel->initSystem();
+    _pvtModel->realizeReport(s);
 
     return 0;
 }
@@ -99,9 +100,14 @@ int OutputReporter::step(const SimTK::State& s, int stepNumber)
     _pvtModel->realizeReport(s);
 
     return 0;
-        
 }
 
+int OutputReporter::end(SimTK::State& s)
+{
+    if (!proceed()) return 0;
+    _pvtModel->realizeReport(s);
+    return 0;
+}
 
 int OutputReporter::printResults(const std::string& baseName,
     const std::string& dir,  double dT, const std::string& extension)
@@ -117,19 +123,19 @@ int OutputReporter::printResults(const std::string& baseName,
     auto& tableD = _tableReporterDouble->getTable();
     if (tableD.getNumColumns()) {
         STOFileAdapter_<double>::write(tableD,
-            dir + baseName + extension);
+            dir + "/"+ baseName + "_Outputs" + extension);
     }
 
     auto& tableV3 = _tableReporterVec3->getTable();
     if (tableV3.getNumColumns()) {
         STOFileAdapter_<SimTK::Vec3>::write(tableV3,
-            dir + baseName + "Vec3" + extension);
+            dir + "/" + baseName + "_OutputsVec3" + extension);
     }
 
     auto& tableSV = _tableReporterSpatialVec->getTable();
     if (tableSV.getNumColumns()) {
         STOFileAdapter_<SimTK::SpatialVec>::write(tableSV,
-            dir + baseName + "SpatialVec" + extension);
+            dir + "/" + baseName + "_OutputsSpatialVec" + extension);
     }
 
     return 0;
