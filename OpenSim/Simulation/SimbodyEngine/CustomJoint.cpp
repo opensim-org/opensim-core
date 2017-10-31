@@ -125,38 +125,18 @@ void CustomJoint::extendConnectToModel(Model& aModel)
     updSpatialTransform().connectToJoint(*this);
 }
 
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void CustomJoint::scale(const ScaleSet& aScaleSet)
+void CustomJoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Vec3 scaleFactors(1.0);
+    Super::scale(s, scaleSet);
 
-    // Joint knows how to scale locations of the joint in parent and on the body
-    Super::scale(aScaleSet);
+    // Get scale factors for base frame (if an entry for the base frame exists).
+    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
+                                                   .findBaseFrame().getName());
+    if (idx < 0)
+        return;
+    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
-    // SCALING TO DO WITH THE PARENT BODY -----
-    // Joint kinematics are scaled by the scale factors for the
-    // parent body, so get those body's factors
-    const string& parentName = getParentFrame().getName();
-    for (int i=0; i<aScaleSet.getSize(); i++) {
-        Scale& scale = aScaleSet.get(i);
-        if (scale.getSegmentName()==parentName) {
-            scale.getScaleFactors(scaleFactors);
-            break;
-        }
-    }
-
+    //TODO: Need to scale transforms appropriately, given an arbitrary axis.
     updSpatialTransform().scale(scaleFactors);
 }
 

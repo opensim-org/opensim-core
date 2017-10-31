@@ -141,7 +141,7 @@ public:
     }
 
     // SCALE
-    void scale(const ScaleSet& aScaleSet) override;
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     // ModelComponent interface.

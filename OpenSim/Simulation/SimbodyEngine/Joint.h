@@ -31,7 +31,6 @@
 namespace OpenSim {
 
 class Model;
-class ScaleSet;
 
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
@@ -260,19 +259,6 @@ public:
         must already have been realized to %Acceleration stage so that 
         constraint forces are available. */
     virtual double calcPower(const SimTK::State &s) const;
-
-    // SCALE
-    /**
-    * Scale a joint based on XYZ scale factors for PhysicalFrames.
-    * Generic behavior is to scale the locations of parent and child offsets
-    * according to scale factors of the physical frame upon which they are located.
-    *
-    * Joint subclasses should invoke this method before scaling joint specific
-    * properties
-    *
-    * @param aScaleSet Set of XYZ scale factors for the bodies.
-    */
-    virtual void scale(const ScaleSet& aScaleSet);
 
 #ifndef SWIG
     /// @class CoordinateIndex

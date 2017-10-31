@@ -28,7 +28,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "simbody/internal/Constraint.h"
 #include "simbody/internal/MobilizedBody_Ground.h"
 
@@ -257,52 +256,6 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
     }
 
     return false;
-}
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-
-void Joint::scale(const ScaleSet& scaleSet)
-{
-    SimTK::Vec3 parentFactors(1.0);
-    SimTK::Vec3 childFactors(1.0);
-
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& parentName = getParentFrame().findBaseFrame().getName();
-    const string& childName = getChildFrame().findBaseFrame().getName();
-    // Get scale factors
-    bool found_p = false;
-    bool found_b = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_p && (scale.getSegmentName() == parentName)) {
-            scale.getScaleFactors(parentFactors);
-            found_p = true;
-        }
-        if (!found_b && (scale.getSegmentName() == childName)) {
-            scale.getScaleFactors(childFactors);
-            found_b = true;
-        }
-        if (found_p && found_b)
-            break;
-    }
-
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getParentFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(parentFactors);
-    }
-    found = getProperty_frames().findIndex(getChildFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(childFactors);
-    }
 }
 
 const SimTK::MobilizedBodyIndex Joint::
