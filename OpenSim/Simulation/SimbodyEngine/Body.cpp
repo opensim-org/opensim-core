@@ -185,7 +185,7 @@ void Body::setInertia(const SimTK::Inertia& inertia)
 //==============================================================================
 void Body::scale(const SimTK::Vec3& scaleFactors, bool scaleMass)
 {
-    Super::scale(scaleFactors);
+    Super::scaleAttachedGeometry(scaleFactors);
     upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
     scaleInertialProperties(scaleFactors, scaleMass);
 }

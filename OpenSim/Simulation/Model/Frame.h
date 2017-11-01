@@ -329,8 +329,7 @@ public:
         transform used to position the Geometry is that of this Frame. */
     void attachGeometry(OpenSim::Geometry* geom);
 
-    /** Scale any Geometry attached to this Frame. */
-    void scale(const SimTK::Vec3& scaleFactors);
+    void scaleAttachedGeometry(const SimTK::Vec3& scaleFactors);
     void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:

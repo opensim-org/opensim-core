@@ -182,7 +182,7 @@ void Frame::attachGeometry(OpenSim::Geometry* geom)
     updProperty_attached_geometry().adoptAndAppendValue(geom);
 }
 
-void Frame::scale(const SimTK::Vec3& scaleFactors)
+void Frame::scaleAttachedGeometry(const SimTK::Vec3& scaleFactors)
 {
     for (int i = 0; i < getProperty_attached_geometry().size(); ++i) {
         Geometry& geo = upd_attached_geometry(i);
@@ -204,7 +204,7 @@ void Frame::scale(const SimTK::State& s, const ScaleSet& scaleSet)
         return;
     const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
-    scale(scaleFactors);
+    scaleAttachedGeometry(scaleFactors);
 }
 
 //=============================================================================
