@@ -39,6 +39,9 @@ int OutputReporter::begin(const SimTK::State& s)
 {
     if (!proceed()) return 0;
 
+    if (_pvtModel == nullptr)
+        return -1;
+
     _pvtModel.reset(_model->clone());
 
     _tableReporterDouble = new TableReporter_<double>();
@@ -94,8 +97,6 @@ int OutputReporter::step(const SimTK::State& s, int stepNumber)
     if (!proceed(stepNumber)) {
         return 0;
     }
-    if (_pvtModel == nullptr)
-        return -1;
 
     _pvtModel->realizeReport(s);
 
