@@ -597,6 +597,11 @@ const SimTK::State& Manager::integrate(double finalTime)
             "initialized. Call Manager::initialize() first.");
     }
 
+    // Make sure that integrator is not stuck in a EndOfSimulation from
+    // a previous integrate call with the final state (last integrated).
+    const SimTK::State& s = _integ->getState();
+    _integ->initialize(s);
+
     // Set the final time on the integrator so it can signal EndOfSimulation
     _integ->setFinalTime(finalTime);
 
@@ -605,7 +610,6 @@ const SimTK::State& Manager::integrate(double finalTime)
     clearHalt();
 
     // CHECK SPECIFIED DT STEPPING
-    const SimTK::State& s = _integ->getState();
     double initialTime = s.getTime();
     if (_specifiedDT) {
         if (_tArray.getSize() <= 0) {
