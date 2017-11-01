@@ -597,6 +597,9 @@ const SimTK::State& Manager::integrate(double finalTime)
             "initialized. Call Manager::initialize() first.");
     }
 
+    // Set the final time on the integrator so it can signal EndOfSimulation
+    _integ->setFinalTime(finalTime);
+
     // CLEAR ANY INTERRUPT
     // Halts must arrive during an integration.
     clearHalt();
@@ -630,7 +633,7 @@ const SimTK::State& Manager::integrate(double finalTime)
     bool fixedStep = false;
     if (_constantDT || _specifiedDT) fixedStep = true;
 
-    SimTK::Integrator::SuccessfulStepStatus status;
+    auto status{ SimTK::Integrator::InvalidSuccessfulStepStatus };
 
     if (!fixedStep) {
         _integ->setReturnEveryInternalStep(true);
@@ -657,8 +660,13 @@ const SimTK::State& Manager::integrate(double finalTime)
     double time = initialTime;
     double stepToTime = finalTime;
 
+    if (time >= stepToTime) {
+        // No integration can be performed.
+        return getState();
+    }
+
     // LOOP
-    while (time < finalTime) {
+    while (status != SimTK::Integrator::EndOfSimulation) {
         double fixedStepSize;
         if (fixedStep) {
             fixedStepSize = getNextTimeArrayTime(time) - time;
@@ -673,7 +681,7 @@ const SimTK::State& Manager::integrate(double finalTime)
         // need to record it again.
         status = _timeStepper->stepTo(stepToTime);
 
-        if (status != SimTK::Integrator::EndOfSimulation) {
+        if (status == SimTK::Integrator::TimeHasAdvanced) {
             const SimTK::State& s = _integ->getState();
             if (_performAnalyses) _model->updAnalysisSet().step(s, step);
             if (_writeToStorage) {
@@ -686,17 +694,32 @@ const SimTK::State& Manager::integrate(double finalTime)
             }
             step++;
         }
-        else
-            halt();
+        // Check if simulation has terminated for some reason
+        else if (_integ->isSimulationOver() &&
+                    _integ->getTerminationReason() !=
+                        SimTK::Integrator::ReachedFinalTime) {
+            cout << "Integration failed due to the following reason: "
+                << _integ->getTerminationReasonString(_integ->getTerminationReason())
+                << endl;
+            return getState();
+        }
 
         time = _integ->getState().getTime();
         // CHECK FOR INTERRUPT
         if (checkHalt()) break;
     }
-    finalize(_integ->updAdvancedState());
 
     // CLEAR ANY INTERRUPT
     clearHalt();
+
+    if (status == SimTK::Integrator::EndOfSimulation) {
+        finalize(_integ->getState());
+    }
+    else {
+        cout << "Integration failed to reach End of Simulation. "
+            << " With status: " << endl;
+        cout << _integ->getSuccessfulStepStatusString(status) << endl;
+    }
 
     return getState();
 }
@@ -788,12 +811,20 @@ void Manager::initialize(const SimTK::State& s)
  * 
  * @param s system state before integration
  */
-void Manager::finalize(SimTK::State& s )
+void Manager::finalize(const SimTK::State& s )
 {
         // ANALYSES 
     if(  _performAnalyses ) { 
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.end(s);
+    }
+    if (_writeToStorage) {
+        SimTK::Vector stateValues = _model->getStateVariableValues(s);
+        StateVector vec;
+        vec.setStates(s.getTime(), stateValues);
+        getStateStorage().append(vec);
+        if (_model->isControlled())
+            _controllerSet->storeControls(s, getStateStorage().getSize());
     }
 
     return;

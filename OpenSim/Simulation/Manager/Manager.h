@@ -302,7 +302,7 @@ private:
     void initializeTimeStepper(const SimTK::State& s);
 
     // Helper functions for Manager::integrate()
-    void finalize(SimTK::State& s);
+    void finalize(const SimTK::State& s);
 
 //=============================================================================
 };  // END of class Manager
