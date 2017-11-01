@@ -97,17 +97,20 @@ SparsityPattern SymmetricSparsityPattern::convert_full() const {
 SymmetricSparsityPattern
 SymmetricSparsityPattern::create_from_jacobian_sparsity(
         const SparsityPattern& jac_sparsity) {
-    Eigen::SparseMatrix<bool> S1(
+    Eigen::SparseMatrix<bool> S2;
+    {
+        // Use 'short' instead of 'bool' to avoid MSVC warning C4804.
+        Eigen::SparseMatrix<short> S1(
             jac_sparsity.get_num_rows(), jac_sparsity.get_num_cols());
-    S1.reserve(jac_sparsity.get_num_nonzeros());
-    std::vector<Eigen::Triplet<bool>> triplets;
-    for (const auto& entry : jac_sparsity.m_sparsity)
-        triplets.emplace_back(entry.first, entry.second, true);
-    S1.setFromTriplets(triplets.begin(), triplets.end());
-    S1.makeCompressed();
+        S1.reserve(jac_sparsity.get_num_nonzeros());
+        std::vector<Eigen::Triplet<short>> triplets;
+        for (const auto& entry : jac_sparsity.m_sparsity)
+            triplets.emplace_back(entry.first, entry.second, 1);
+        S1.setFromTriplets(triplets.begin(), triplets.end());
+        S1.makeCompressed();
 
-    Eigen::SparseMatrix<bool> S2 =
-            (S1.transpose() * S1).triangularView<Eigen::Upper>();
+        S2 = (S1.transpose() * S1).triangularView<Eigen::Upper>().cast<bool>();
+    }
 
     SymmetricSparsityPattern output((int)S2.rows());
     for (int i = 0; i < S2.outerSize(); ++i) {
