@@ -142,7 +142,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     TimeSeriesTable_<double> outputs_table =
         STOFileAdapter_<double>::
         read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_Outputs.sto");
-    SimTK::Vector tf_output = outputs_table.getDependentColumnAtIndex(0);
+    SimTK::Vector tf_output = outputs_table.getDependentColumnAtIndex(1);
 
     // Load input data as StatesTrajectory used to perform the Analysis
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
