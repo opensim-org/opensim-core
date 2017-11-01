@@ -233,12 +233,14 @@ void simulateMuscle(
 
     // Integrate from initial time to final time
     state.setTime(initialTime);
+    manager.initialize(state);
+
     cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(state, finalTime);
+    state = manager.integrate(finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock() - start) / CLOCKS_PER_SEC;

@@ -50,8 +50,7 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
-Manager::Manager(Model& model) 
-        : Manager(model, true)
+Manager::Manager(Model& model) : Manager(model, true)
 {
     _defaultInteg.reset(
             new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
