@@ -39,7 +39,7 @@ int OutputReporter::begin(const SimTK::State& s)
 {
     if (!proceed()) return 0;
 
-    if (_pvtModel == nullptr)
+    if (_model == nullptr)
         return -1;
 
     _pvtModel.reset(_model->clone());
@@ -51,6 +51,8 @@ int OutputReporter::begin(const SimTK::State& s)
     _pvtModel->addComponent(_tableReporterDouble.get());
     _pvtModel->addComponent(_tableReporterVec3.get());
     _pvtModel->addComponent(_tableReporterSpatialVec.get());
+
+    _minimumStageToRealize = SimTK::Stage::Time;
 
     for (int i = 0; i < getProperty_output_paths().size(); ++i) {
         auto outpath = ComponentPath(get_output_paths(i));
@@ -84,10 +86,14 @@ int OutputReporter::begin(const SimTK::State& s)
                 << out.getTypeName() << " is not supported by OutputReporter."
                 << " Consider adding a TableReporter_ to the Model." << endl;
         }
+
+        if (out.getDependsOnStage() > _minimumStageToRealize) {
+            _minimumStageToRealize = out.getDependsOnStage();
+        }
     }
 
     _pvtModel->initSystem();
-    _pvtModel->realizeReport(s);
+    report(s);
 
     return 0;
 }
@@ -98,21 +104,22 @@ int OutputReporter::step(const SimTK::State& s, int stepNumber)
         return 0;
     }
 
-    _pvtModel->realizeReport(s);
-
+    report(s);
     return 0;
 }
 
 int OutputReporter::end(const SimTK::State& s)
 {
     if (!proceed()) return 0;
-    _pvtModel->realizeReport(s);
+    report(s);
     return 0;
 }
 
 int OutputReporter::printResults(const std::string& baseName,
     const std::string& dir,  double dT, const std::string& extension)
 {
+    cout << "OutputReporter.printResults: " << endl;
+
     if (!getOn()) {
         printf("OutputReporter.printResults: Off- not printing.\n");
         return 0;
@@ -121,23 +128,33 @@ int OutputReporter::printResults(const std::string& baseName,
     OPENSIM_THROW_IF_FRMOBJ(IO::Lowercase(extension) != ".sto",
         Exception, "Only writing results to '.sto' format is supported.");
 
+    std::string prefix = dir.empty() ? "" : dir + "/";
+
     auto& tableD = _tableReporterDouble->getTable();
     if (tableD.getNumColumns()) {
         STOFileAdapter_<double>::write(tableD,
-            dir + "/"+ baseName + "_Outputs" + extension);
+            prefix + baseName + "_Outputs" + extension);
     }
 
     auto& tableV3 = _tableReporterVec3->getTable();
     if (tableV3.getNumColumns()) {
         STOFileAdapter_<SimTK::Vec3>::write(tableV3,
-            dir + "/" + baseName + "_OutputsVec3" + extension);
+            prefix + baseName + "_OutputsVec3" + extension);
     }
 
     auto& tableSV = _tableReporterSpatialVec->getTable();
     if (tableSV.getNumColumns()) {
         STOFileAdapter_<SimTK::SpatialVec>::write(tableSV,
-            dir + "/" + baseName + "_OutputsSpatialVec" + extension);
+            prefix + baseName + "_OutputsSpatialVec" + extension);
     }
 
     return 0;
+}
+
+void OutputReporter::report(const SimTK::State& s)
+{
+    _pvtModel->getMultibodySystem().realize(s, _minimumStageToRealize);
+    _tableReporterDouble->report(s);
+    _tableReporterVec3->report(s);
+    _tableReporterSpatialVec->report(s);
 }

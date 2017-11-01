@@ -93,6 +93,11 @@ protected:
         const std::string& extension = ".sto") override;
 
 private:
+    // Invoke the reporting of the Outputs to the Tables
+    void report(const SimTK::State& s);
+
+    SimTK::Stage _minimumStageToRealize{};
+
     // Keep a reference to the underlying TableReporter(s) for this Analysis
     SimTK::ReferencePtr< TableReporter_<double> > _tableReporterDouble;
     SimTK::ReferencePtr< TableReporter_<SimTK::Vec3> > _tableReporterVec3;
