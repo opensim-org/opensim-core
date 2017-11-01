@@ -3,6 +3,7 @@ tropter_add_test(NAME test_derivatives)
 # This test was more of a sandbox for learning ADOL-C:
 #tropter_add_test(NAME test_eigen_adolc_reverse_mode)
 tropter_add_test(NAME test_generic_optimization)
+
 tropter_add_test(NAME test_sliding_mass_minimum_effort)
 tropter_add_test(NAME test_sliding_mass_minimum_time)
 tropter_add_test(NAME test_analytic_optimal_control_solutions)

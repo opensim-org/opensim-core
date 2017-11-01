@@ -16,10 +16,9 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-#include "testing.h"
+#include "testing_optimalcontrol.h"
 
 #include <tropter/tropter.h>
-
 #include <Eigen/LU>
 
 using Eigen::Ref;
@@ -110,12 +109,11 @@ public:
                 0.001 * final_time;
     }
 
-    static void run_test(const std::string& solver) {
+    static void run_test(std::string solver, std::string hessian_approx) {
         auto ocp = std::make_shared<DoublePendulumSwingUpMinTime<T>>();
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation(
-                "limited-memory");
+        dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         tropter::OptimalControlIterate guess;
         const int Nguess = 2;
         guess.time.setLinSpaced(Nguess, 0, 1);
@@ -151,17 +149,26 @@ public:
 TEST_CASE("Double pendulum swing up in minimum time.", "[trapezoidal]")
 {
     SECTION("IPOPT") {
-        SECTION("Finite differences") {
-            DoublePendulumSwingUpMinTime<double>::run_test("ipopt");
+        SECTION("Finite differences, limited-memory Hessian") {
+            DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+                    "limited-memory");
         }
+        // This test passes but it's just really slow:
+        //SECTION("Finite differences, exact Hessian") {
+        //    DoublePendulumSwingUpMinTime<double>::run_test("ipopt",
+        //            "exact");
+        //}
         SECTION("ADOL-C") {
-            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt");
+            DoublePendulumSwingUpMinTime<adouble>::run_test("ipopt",
+                    "limited-memory");
         }
     }
+    // Does not give desired answer (not fully bang-bang controls):
     // #if defined(TROPTER_WITH_SNOPT)
     // SECTION("SNOPT") {
     //     SECTION("ADOL-C") {
-    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt");
+    //         DoublePendulumSwingUpMinTime<adouble>::run_test("snopt",
+    //                 "limited-memory");
     //     }
     // }
     // #endif
@@ -194,14 +201,15 @@ public:
 
     }
 
-    static OptimalControlSolution run_test(const std::string& solver) {
+    static OptimalControlSolution run_test(const std::string& solver,
+            const std::string& hessian_approx, int N = 50) {
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
-        const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         // Using an exact Hessian seems really important for this problem
         // (solves in only 20 iterations). Even a limited-memory problem started
         // from the solution using an exact Hessian does not converge.
-        dircol.get_optimization_solver().set_hessian_approximation("exact");
+        dircol.get_opt_solver().set_hessian_approximation(
+                hessian_approx);
         OptimalControlSolution solution = dircol.solve();
         //dircol.print_constraint_values(solution);
         solution.write("double_pendulum_coordinate_tracking.csv");
@@ -289,13 +297,14 @@ public:
         integrand = (states.template head<2>() - desired).squaredNorm();
     }
     static OptimalControlSolution run_test(const std::string& solver,
-            const std::string& hessian_approx) {
+            const std::string& hessian_approx, int N = 50) {
         auto ocp =
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
-        const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
-        dircol.get_optimization_solver().set_hessian_approximation(
+        dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
+         dircol.get_opt_solver().set_advanced_option_string
+                 ("print_timing_statistics", "yes");
         OptimalControlSolution solution = dircol.solve();
         // dircol.print_constraint_values(solution);
         solution.write("implicit_double_pendulum_coordinate_tracking.csv");
@@ -309,18 +318,18 @@ public:
     }
 };
 
-TEST_CASE("Double pendulum coordinate tracking.",
+TEST_CASE("Double pendulum coordinate tracking",
         "[trapezoidal][implicitdynamics]")
 {
-    // Make sure the solutions from the implicit and explicit
-    // formulations are similar.
-
     SECTION("IPOPT") {
+        // Make sure the solutions from the implicit and explicit
+        // formulations are similar.
 
         // The explicit solution takes 20 iterations whereas the implicit
         // solution takes 25 iterations.
         const auto explicit_solution =
-                DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
+                DoublePendulumCoordinateTracking<adouble>::
+                run_test("ipopt", "exact");
 
         const auto implicit_solution =
                 ImplicitDoublePendulumCoordinateTracking<adouble>::
@@ -337,20 +346,52 @@ TEST_CASE("Double pendulum coordinate tracking.",
         // tau0 and tau1
         // The controls have the same shape but have a pretty large error
         // between them.
-        // The peak magnitude of the torques is about 10-30 N-m, so a tolerance of
-        // 5.0 N-m means the shape of the torques is preserved.
+        // The peak magnitude of the torques is about 10-30 N-m, so a tolerance
+        // of 5.0 N-m means the shape of the torques is preserved.
         CAPTURE(explicit_solution.controls);
         CAPTURE(implicit_solution.controls.bottomRows(2));
         TROPTER_REQUIRE_EIGEN_ABS(explicit_solution.controls,
                 implicit_solution.controls.bottomRows(2), 5.0);
 
-        // TODO does not converge with limited memory.
+
+        // Finite differences.
+        // -------------------
+        // Check that finite differences are correct.
+        OCPDerivativesComparison<DoublePendulumCoordinateTracking> c;
+        c.findiff_hessian_step_size = 1e-5;
+        c.gradient_error_tolerance = 1e-5;
+        c.jacobian_error_tolerance = 1e-5;
+        c.hessian_error_tolerance = 1e-2;
+        c.compare();
+
+        OCPDerivativesComparison<ImplicitDoublePendulumCoordinateTracking> ci;
+        ci.findiff_hessian_step_size = 1e-5;
+        ci.gradient_error_tolerance = 1e-5;
+        ci.jacobian_error_tolerance = 1e-5;
+        ci.hessian_error_tolerance = 1e-2;
+        ci.compare();
+
+        DoublePendulumCoordinateTracking<double>:: run_test("ipopt", "exact");
+        ImplicitDoublePendulumCoordinateTracking<double>::
+        run_test("ipopt", "exact");
+
+        // The following do not converge:
+        // EXIT: Maximum number of iterations exceeded.
+        // DoublePendulumCoordinateTracking<adouble>::
+        // run_test("ipopt", "limited-memory");
+        // EXIT: Solved to Acceptable Level, "Restoration phase is called at
+        // almost feasible point, but acceptable point from iteration 810 could
+        // be restored." After 812 iterations. But solution is pretty wrong.
+        // DoublePendulumCoordinateTracking<double>::
+        // run_test("ipopt", "limited-memory");
+        // EXIT: Maximum number of iterations exceeded.
         // ImplicitDoublePendulumCoordinateTracking<adouble>::
+        // run_test("ipopt", "limited-memory");
+        // EXIT: Restoration failed after 235 iterations.
+        // ImplicitDoublePendulumCoordinateTracking<double>::
         // run_test("ipopt", "limited-memory");
 
     }
-
-
     /*
     #if defined(TROPTER_WITH_SNOPT)
     SECTION("SNOPT") {

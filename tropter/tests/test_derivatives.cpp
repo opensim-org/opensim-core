@@ -24,11 +24,95 @@ using Eigen::Ref;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;
 using Eigen::Vector2d;
+using Eigen::Vector3d;
 using Eigen::Vector4d;
 using Vector5d = Eigen::Matrix<double, 5, 1>;
 using Eigen::MatrixXd;
 
 using namespace tropter;
+
+template<typename T>
+class Unconstrained : public OptimizationProblem<T> {
+public:
+    Unconstrained() : OptimizationProblem<T>(3, 0)
+    {
+        this->set_variable_bounds(Vector3d(-3, -3, -3), Vector3d(3, 3, 3));
+    }
+    void calc_objective(const VectorX<T>& x, T& obj_value) const override
+    {
+        obj_value = x[0]*x[0] * x[1]*x[1] * x[2]*x[2];
+    }
+};
+
+TEST_CASE("Unconstrained Hessian")
+{
+    Unconstrained<adouble> problem;
+    VectorXd x(problem.get_num_variables());
+    x << 1.5, 1.6, 1.7;
+
+    auto deca = problem.make_decorator();
+
+    // Expected derivatives.
+    // -------------------
+    std::vector<unsigned int> jacobian_row_indices;
+    std::vector<unsigned int> jacobian_col_indices;
+    std::vector<unsigned int> hessian_row_indices;
+    std::vector<unsigned int> hessian_col_indices;
+    deca->calc_sparsity(deca->make_initial_guess_from_bounds(),
+            jacobian_row_indices, jacobian_col_indices,
+            true, hessian_row_indices, hessian_col_indices);
+
+    // Hessian.
+    const double obj_factor = 1.0;
+    VectorXd lambda(problem.get_num_constraints());
+    int num_hessian_nonzeros = (int)hessian_row_indices.size();
+    VectorXd expected_hessian_values(num_hessian_nonzeros);
+    deca->calc_hessian_lagrangian(
+            problem.get_num_variables(), x.data(), true, obj_factor,
+            problem.get_num_constraints(), lambda.data(), true,
+            num_hessian_nonzeros, expected_hessian_values.data());
+
+    // Finite differences.
+    // -------------------
+    SECTION("Finite differences") {
+        Unconstrained<double> problemd;
+        auto decorator = problemd.make_decorator();
+        // Must first initialize.
+        std::vector<unsigned int> jacobian_row_indices;
+        std::vector<unsigned int> jacobian_col_indices;
+        std::vector<unsigned int> hessian_row_indices;
+        std::vector<unsigned int> hessian_col_indices;
+        decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
+                jacobian_row_indices, jacobian_col_indices,
+                true, hessian_row_indices, hessian_col_indices);
+
+        // Hessian sparsity.
+        std::vector<unsigned int> expected_hess_row_indices{
+                0, 0, 0,
+                1, 1,
+                2};
+        std::vector<unsigned int> expected_hess_col_indices{
+                0, 1, 2,
+                1, 2,
+                2};
+
+        const unsigned num_hessian_nonzeros =
+                (unsigned)hessian_row_indices.size();
+        REQUIRE(hessian_row_indices == expected_hess_row_indices);
+        REQUIRE(hessian_col_indices == expected_hess_col_indices);
+
+        // Hessian (of the Lagrangian).
+        VectorXd actual_hessian_values(num_hessian_nonzeros);
+        decorator->calc_hessian_lagrangian(
+                problemd.get_num_variables(), x.data(), true, obj_factor,
+                problem.get_num_constraints(), lambda.data(), true,
+                num_hessian_nonzeros, actual_hessian_values.data());
+        for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+            REQUIRE(expected_hessian_values[inz] ==
+                    Approx(actual_hessian_values[inz]).epsilon(1e-5));
+        }
+    }
+}
 
 template<typename T>
 class HS071 : public OptimizationProblem<T> {
@@ -149,16 +233,40 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
-        decorator->calc_gradient(problem.get_num_variables(), x.data(), false,
+        decorator->calc_gradient(problem.get_num_variables(), x.data(), true,
                 fd_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-8);
 
         // Hessian (of the Lagrangian).
-        // TODO
+        std::vector<unsigned int> expected_hess_row_indices{
+                0, 0, 0, 0,
+                   1, 1, 1,
+                      2, 2,
+                         3};
+        std::vector<unsigned int> expected_hess_col_indices{
+                0, 1, 2, 3,
+                   1, 2, 3,
+                      2, 3,
+                        3};
+        REQUIRE(hessian_row_indices == expected_hess_row_indices);
+        REQUIRE(hessian_col_indices == expected_hess_col_indices);
+        const unsigned num_hessian_nonzeros =
+                (unsigned)hessian_row_indices.size();
+        VectorXd fd_hessian_values(num_hessian_nonzeros);
+        decorator->calc_hessian_lagrangian(
+                problemd.get_num_variables(), x.data(), true, obj_factor,
+                problem.get_num_constraints(), lambda.data(), true,
+                num_hessian_nonzeros, fd_hessian_values.data());
+        for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+            const auto& i = hessian_row_indices[inz];
+            const auto& j = hessian_col_indices[inz];
+            REQUIRE(analytical_hessian(i, j) ==
+                    Approx(fd_hessian_values[inz]).epsilon(1e-5));
+        }
 
         // Jacobian.
         const auto num_jacobian_elem = problem.get_num_constraints() *
@@ -167,7 +275,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
-        decorator->calc_jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->calc_jacobian(problem.get_num_variables(), x.data(), true,
                 num_jacobian_elem, fd_jacobian_values.data());
         INFO(analytical_jacobian);
         INFO(fd_jacobian_values);
@@ -191,11 +299,11 @@ TEST_CASE("Check derivatives with analytical deriv.")
         std::vector<unsigned int> hessian_col_indices;
         decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
-        decorator->calc_gradient(problem.get_num_variables(), x.data(), false,
+        decorator->calc_gradient(problem.get_num_variables(), x.data(), true,
                 adolc_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
 
@@ -204,8 +312,8 @@ TEST_CASE("Check derivatives with analytical deriv.")
                 (unsigned)hessian_row_indices.size();
         VectorXd adolc_hessian_values(num_hessian_nonzeros);
         decorator->calc_hessian_lagrangian(problem.get_num_variables(),
-                x.data(), false,
-                obj_factor, problem.get_num_constraints(), lambda.data(), false,
+                x.data(), true,
+                obj_factor, problem.get_num_constraints(), lambda.data(), true,
                 num_hessian_nonzeros, adolc_hessian_values.data());
         for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
             const auto& i = hessian_row_indices[inz];
@@ -220,7 +328,7 @@ TEST_CASE("Check derivatives with analytical deriv.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd adolc_jacobian_values(num_jacobian_elem);
-        decorator->calc_jacobian(problem.get_num_variables(), x.data(), false,
+        decorator->calc_jacobian(problem.get_num_variables(), x.data(), true,
                 num_jacobian_elem, adolc_jacobian_values.data());
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
@@ -338,28 +446,56 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         // Must first initialize.
         std::vector<unsigned int> jacobian_row_indices;
         std::vector<unsigned int> jacobian_col_indices;
-        std::vector<unsigned int> hessian_row_indices;
-        std::vector<unsigned int> hessian_col_indices;
+        std::vector<unsigned int> hess_row_indices;
+        std::vector<unsigned int> hess_col_indices;
         proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hess_row_indices, hess_col_indices);
 
         // Gradient.
         VectorXd fd_gradient(problem.get_num_variables());
-        proxy->calc_gradient(problem.get_num_variables(), x.data(), false,
+        proxy->calc_gradient(problem.get_num_variables(), x.data(), true,
                 fd_gradient.data());
         INFO(analytical_gradient);
         INFO(fd_gradient);
         TROPTER_REQUIRE_EIGEN(analytical_gradient, fd_gradient, 1e-7);
 
         // Hessian (of the Lagrangian).
-        // TODO
+        std::vector<unsigned int> expected_hess_row_indices{
+                0, 0, 0, 0,
+                1, 1, 1,
+                2, 2,
+                3
+        };
+        std::vector<unsigned int> expected_hess_col_indices{
+                0, 1, 2, 3,
+                1, 2, 3,
+                2, 3,
+                3
+        };
+        REQUIRE(hess_row_indices == expected_hess_row_indices);
+        REQUIRE(hess_col_indices == expected_hess_col_indices);
+
+        const unsigned num_hessian_nonzeros =
+                (unsigned)hess_row_indices.size();
+        VectorXd actual_hessian_values(num_hessian_nonzeros);
+        proxy->set_findiff_hessian_step_size(1e-3);
+        proxy->calc_hessian_lagrangian(
+                problemd.get_num_variables(), x.data(), true, obj_factor,
+                problem.get_num_constraints(), lambda.data(), true,
+                num_hessian_nonzeros, actual_hessian_values.data());
+        for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+            const auto& i = hess_row_indices[inz];
+            const auto& j = hess_col_indices[inz];
+            REQUIRE(analytical_hessian(i, j) ==
+                    Approx(actual_hessian_values[inz]).epsilon(1e-7));
+        }
 
         // Jacobian.
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd fd_jacobian_values(num_jacobian_elem);
-        proxy->calc_jacobian(problem.get_num_variables(), x.data(), false,
+        proxy->calc_jacobian(problem.get_num_variables(), x.data(), true,
                 num_jacobian_elem, fd_jacobian_values.data());
         INFO(analytical_jacobian);
         INFO(fd_jacobian_values);
@@ -383,11 +519,11 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         std::vector<unsigned int> hessian_col_indices;
         proxy->calc_sparsity(proxy->make_initial_guess_from_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
-                hessian_row_indices, hessian_col_indices);
+                true, hessian_row_indices, hessian_col_indices);
 
         // Gradient.
         VectorXd adolc_gradient(problem.get_num_variables());
-        proxy->calc_gradient(problem.get_num_variables(), x.data(), false,
+        proxy->calc_gradient(problem.get_num_variables(), x.data(), true,
                 adolc_gradient.data());
         TROPTER_REQUIRE_EIGEN(analytical_gradient, adolc_gradient, 1e-16);
 
@@ -396,8 +532,8 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
                 (unsigned)hessian_row_indices.size();
         VectorXd adolc_hessian_values(num_hessian_nonzeros);
         proxy->calc_hessian_lagrangian(problem.get_num_variables(), x.data(),
-                false,
-                obj_factor, problem.get_num_constraints(), lambda.data(), false,
+                true,
+                obj_factor, problem.get_num_constraints(), lambda.data(), true,
                 num_hessian_nonzeros, adolc_hessian_values.data());
         for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
             const auto& i = hessian_row_indices[inz];
@@ -410,7 +546,7 @@ TEST_CASE("Check derivatives with analytical deriv.; sparse Jacobian.")
         REQUIRE(jacobian_row_indices.size() == num_jacobian_elem);
         REQUIRE(jacobian_col_indices.size() == num_jacobian_elem);
         VectorXd adolc_jacobian_values(num_jacobian_elem);
-        proxy->calc_jacobian(problem.get_num_variables(), x.data(), false,
+        proxy->calc_jacobian(problem.get_num_variables(), x.data(), true,
                 num_jacobian_elem, adolc_jacobian_values.data());
         for (int inz = 0; inz < (int)num_jacobian_elem; ++inz) {
             const auto& i = jacobian_row_indices[inz];
@@ -426,7 +562,7 @@ TEST_CASE("Check finite differences on bounds", "[finitediff][!mayfail]")
     VectorXd x(problem.get_num_variables());
     x << 1, 5, 1, 5;
 
-    // Preserve the integrity of the test by making sure that x acutally lies
+    // Preserve the integrity of the test by making sure that x actually lies
     // on the bounds.
     REQUIRE(x[0] == problem.get_variable_lower_bounds()[0]);
     REQUIRE(x[1] == problem.get_variable_upper_bounds()[1]);
@@ -441,6 +577,259 @@ TEST_CASE("Check finite differences on bounds", "[finitediff][!mayfail]")
 
 
 
+template<typename T>
+class SparseJacUserSpecifiedSparsity : public SparseJacobian<T> {
+public:
+    void calc_sparsity_hessian_lagrangian(const VectorXd&,
+            SymmetricSparsityPattern& hescon_sparsity,
+            SymmetricSparsityPattern& hesobj_sparsity) const override {
+        m_calc_sparsity_hessian_lagrangian_called = true;
+        assert(hescon_sparsity.get_num_rows() == 4);
+        assert(hesobj_sparsity.get_num_rows() == 4);
+        // Treat the Hessian as dense but with a zero at (0, 3) (conservative
+        // estimate) so that we can detect that this function is called.
+        const int num_vars = (int)this->get_num_variables();
+        for (int i = 0; i < num_vars; ++i) {
+            for (int j = i; j < num_vars; ++j) {
+                if (i == 0 && j == 3) continue;
+                hescon_sparsity.set_nonzero(i, j);
+            }
+            // Hessian of objective is diagonal.
+            hesobj_sparsity.set_nonzero(i, i);
+        }
+    }
+    mutable bool m_calc_sparsity_hessian_lagrangian_called = false;
+};
 
 
+TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
+{
 
+    SparseJacUserSpecifiedSparsity<adouble> problem;
+    VectorXd x(problem.get_num_variables());
+    x << 3.1, -1.5, -0.25, 5.3;
+
+    // Analytical Hessian.
+    // -------------------
+    // Hessian.
+    MatrixXd analytical_hessian(problem.get_num_variables(),
+            problem.get_num_variables());
+    const double obj_factor = 1.0;
+    VectorXd lambda(problem.get_num_constraints());
+    lambda << 0.5, 1.5, 2.5, 3.0, 0.19;
+    problem.analytical_hessian_lagrangian(x, obj_factor, lambda,
+            analytical_hessian);
+    std::vector<unsigned int> expected_jac_row_indices{0, 1, 1, 2, 2, 3, 3, 4};
+    std::vector<unsigned int> expected_jac_col_indices{0, 0, 1, 1, 2, 2, 3, 3};
+
+    // TODO allow validating a user-supplied sparsity.
+    SECTION("Finite differences") {
+        {
+            SparseJacUserSpecifiedSparsity<double> problemd;
+            problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+            auto decorator = problemd.make_decorator();
+            std::vector<unsigned int> jac_row_indices, jac_col_indices,
+                    hess_row_indices, hess_col_indices;
+            decorator->calc_sparsity(
+                    decorator->make_initial_guess_from_bounds(),
+                    jac_row_indices, jac_col_indices,
+                    true, hess_row_indices, hess_col_indices);
+            REQUIRE(problemd.m_calc_sparsity_hessian_lagrangian_called);
+            REQUIRE(jac_row_indices == expected_jac_row_indices);
+            REQUIRE(jac_col_indices == expected_jac_col_indices);
+            // Check that the pattern is as expected (dense with a zero
+            // at (0, 3)).
+            std::vector<unsigned int> expected_hess_row_indices{
+                    0, 0, 0,
+                       1, 1, 1,
+                          2, 2,
+                             3
+            };
+            std::vector<unsigned int> expected_hess_col_indices{
+                    0, 1, 2,
+                       1, 2, 3,
+                          2, 3,
+                             3
+            };
+
+            REQUIRE(hess_row_indices == expected_hess_row_indices);
+            REQUIRE(hess_col_indices == expected_hess_col_indices);
+
+            const unsigned num_hessian_nonzeros =
+                    (unsigned)hess_row_indices.size();
+            decorator->set_findiff_hessian_step_size(1e-3);
+            VectorXd actual_hessian_values(num_hessian_nonzeros);
+            decorator->calc_hessian_lagrangian(
+                    problemd.get_num_variables(), x.data(), true, obj_factor,
+                    problem.get_num_constraints(), lambda.data(), true,
+                    num_hessian_nonzeros, actual_hessian_values.data());
+            CAPTURE(analytical_hessian);
+            CAPTURE(actual_hessian_values);
+            for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+                const auto& i = hess_row_indices[inz];
+                const auto& j = hess_col_indices[inz];
+                INFO(inz << " (" << i << " " << j << ")");
+                REQUIRE(analytical_hessian(i, j) ==
+                        Approx(actual_hessian_values[inz]).epsilon(1e-5));
+            }
+        }
+        {
+            // Do not use supplied sparsity.
+            // If user does not supply sparsity, then the Hessian sparsity is
+            // determined from the Jacobian and gradient sparsity pattern.
+            SparseJacUserSpecifiedSparsity<double> problemd;
+            // *** KEY DIFFERENCE IN THIS TEST ***
+            problemd.set_use_supplied_sparsity_hessian_lagrangian(false);
+            // ^^^ KEY DIFFERENCE IN THIS TEST ^^^
+            auto decorator = problemd.make_decorator();
+            std::vector<unsigned int> jac_row_indices, jac_col_indices,
+                    hess_row_indices, hess_col_indices;
+            decorator->calc_sparsity(
+                    decorator->make_initial_guess_from_bounds(),
+                    jac_row_indices, jac_col_indices,
+                    true, hess_row_indices, hess_col_indices);
+            std::vector<unsigned int> expected_hess_row_indices{
+                    0, 0, 0, 0,
+                       1, 1, 1,
+                          2, 2,
+                             3
+            };
+            std::vector<unsigned int> expected_hess_col_indices{
+                    0, 1, 2, 3,
+                       1, 2, 3,
+                          2, 3,
+                             3
+            };
+            REQUIRE(hess_row_indices == expected_hess_row_indices);
+            REQUIRE(hess_col_indices == expected_hess_col_indices);
+
+            // Evaluate Hessian to ensure entries are the desired order.
+            const unsigned num_hessian_nonzeros =
+                    (unsigned)hess_row_indices.size();
+            VectorXd actual_hessian_values(num_hessian_nonzeros);
+            decorator->set_findiff_hessian_step_size(1e-3);
+            decorator->calc_hessian_lagrangian(
+                    problemd.get_num_variables(), x.data(), true, obj_factor,
+                    problem.get_num_constraints(), lambda.data(), true,
+                    num_hessian_nonzeros, actual_hessian_values.data());
+            for (int inz = 0; inz < (int)num_hessian_nonzeros; ++inz) {
+                const auto& i = hess_row_indices[inz];
+                const auto& j = hess_col_indices[inz];
+                REQUIRE(analytical_hessian(i, j) ==
+                        Approx(actual_hessian_values[inz]).epsilon(1e-7));
+            }
+        }
+        {
+            // Requesting use of supplied sparsity if none is provided causes
+            // an exception.
+            SparseJacobian<double> problemd;
+            problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+            auto decorator = problemd.make_decorator();
+            std::vector<unsigned int> jac_row_indices, jac_col_indices,
+                    hess_row_indices, hess_col_indices;
+            REQUIRE_THROWS_WITH(
+                    decorator->calc_sparsity(
+                            decorator->make_initial_guess_from_bounds(),
+                            jac_row_indices, jac_col_indices,
+                            true, hess_row_indices, hess_col_indices),
+                    Catch::Contains("requested use of user-supplied sparsity"));
+        }
+    }
+
+    SECTION("ADOL-C") {
+        // Requesting use of supplied sparsity with ADOL-C causes an error.
+        SparseJacUserSpecifiedSparsity<adouble> problem;
+        problem.set_use_supplied_sparsity_hessian_lagrangian(true);
+        auto decorator = problem.make_decorator();
+        std::vector<unsigned int> jac_row,  jac_col, hess_row, hess_col;
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(
+                        decorator->make_initial_guess_from_bounds(),
+                        jac_row, jac_col, true, hess_row, hess_col),
+                Catch::Contains("Cannot use supplied sparsity pattern"));
+    }
+}
+
+TEST_CASE("Validate sparsity input") {
+
+    SECTION("Number of rows") {
+        class ConfigurableUserSpecifiedSparsity
+                : public OptimizationProblem<double> {
+        public:
+            ConfigurableUserSpecifiedSparsity() :
+                    OptimizationProblem<double>(4, 0) {}
+            void calc_objective(const VectorXd&, double&) const override {}
+            void calc_constraints(const VectorXd&,
+                    Eigen::Ref<VectorXd>) const override {}
+            void calc_sparsity_hessian_lagrangian(
+                    const VectorXd&, SymmetricSparsityPattern& hescon_sparsity,
+                    SymmetricSparsityPattern& hesobj_sparsity) const override {
+                hescon_sparsity = m_hescon_sparsity;
+                hesobj_sparsity = m_hesobj_sparsity;
+            }
+            SymmetricSparsityPattern m_hescon_sparsity =
+                    SymmetricSparsityPattern(4);
+            SymmetricSparsityPattern m_hesobj_sparsity =
+                    SymmetricSparsityPattern(4);
+        };
+        ConfigurableUserSpecifiedSparsity problemd;
+        problemd.set_use_supplied_sparsity_hessian_lagrangian(true);
+        std::vector<unsigned int> jac_row, jac_col, hess_row, hess_col;
+
+        auto decorator = problemd.make_decorator();
+
+        problemd.m_hescon_sparsity = SymmetricSparsityPattern(3);
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, true, hess_row, hess_col),
+                Catch::Contains("Expected sparsity pattern of Hessian of "
+                        "constraints to have dimensions 4"));
+
+        problemd.m_hescon_sparsity = SymmetricSparsityPattern(4);
+        problemd.m_hesobj_sparsity = SymmetricSparsityPattern(5);
+        REQUIRE_THROWS_WITH(
+                decorator->calc_sparsity(Vector4d(1, 2, 3, 4),
+                        jac_row, jac_col, true, hess_row, hess_col),
+                Catch::Contains("Expected sparsity pattern of Hessian of "
+                        "objective to have dimensions 4"));
+    }
+
+    SECTION("Column indices too large") {
+        {
+            SparsityPattern s(2, 3);
+            REQUIRE_THROWS_WITH(s.set_nonzero(2, 0),
+                    Catch::Contains("Expected row_index to be in [0, 2)"));
+            REQUIRE_THROWS_WITH(s.set_nonzero(0, 3),
+                    Catch::Contains("Expected col_index to be in [0, 3)"));
+        }
+        {
+            SymmetricSparsityPattern s(5);
+            REQUIRE_THROWS_WITH(s.set_nonzero(0, 5),
+                    Catch::Contains("Expected col_index to be in [0, 5)"));
+        }
+    }
+
+    SECTION("Idempotency") {
+        {
+            SparsityPattern s(2, 2);
+            s.set_nonzero(0, 0);
+            s.set_nonzero(0, 0);
+            REQUIRE(s.get_num_nonzeros() == 1);
+        }
+        {
+            SymmetricSparsityPattern sparsity(2);
+            sparsity.set_nonzero(1, 1);
+            sparsity.set_nonzero(1, 1);
+            REQUIRE(sparsity.get_num_nonzeros() == 1);
+        }
+    }
+
+    SECTION("Lower triangle") {
+        SymmetricSparsityPattern sparsity(2);
+        REQUIRE_THROWS_WITH(sparsity.set_nonzero(1, 0),
+                Catch::Contains("must be in the upper triangle"));
+    }
+
+}
+
+// TODO add test_derivatives_optimal_control

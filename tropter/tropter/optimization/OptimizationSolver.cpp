@@ -52,6 +52,12 @@ Optional<std::string> OptimizationSolver::get_hessian_approximation() const {
 void OptimizationSolver::set_hessian_approximation(const std::string& value) {
     m_hessian_approximation = value;
 }
+void OptimizationSolver::set_findiff_hessian_mode(const std::string& setting) {
+    m_problem->set_findiff_hessian_mode(setting);
+}
+void OptimizationSolver::set_findiff_hessian_step_size(double setting) {
+    m_problem->set_findiff_hessian_step_size(setting);
+}
 
 void OptimizationSolver::print_option_values() const {
     using std::cout;

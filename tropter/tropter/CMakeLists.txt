@@ -4,10 +4,15 @@ add_library(tropter SHARED
         utilities.h utilities.cpp
         Exception.h Exception.hpp Exception.cpp
         EigenUtilities.h
+        SparsityPattern.h
+        SparsityPattern.cpp
         optimization/AbstractOptimizationProblem.h
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp
+        optimization/OptimizationProblemDecorator.h
+        optimization/OptimizationProblemDecorator_double.h
         optimization/OptimizationProblemDecorator_double.cpp
+        optimization/OptimizationProblemDecorator_adouble.h
         optimization/OptimizationProblemDecorator_adouble.cpp
         optimization/OptimizationSolver.h
         optimization/OptimizationSolver.cpp
@@ -15,6 +20,11 @@ add_library(tropter SHARED
         optimization/SNOPTSolver.cpp
         optimization/IPOPTSolver.h
         optimization/IPOPTSolver.cpp
+        optimization/internal/GraphColoring.h
+        optimization/internal/GraphColoring.cpp
+        optimalcontrol/DirectCollocation.h
+        optimalcontrol/DirectCollocation.hpp
+        optimalcontrol/DirectCollocation.cpp
         optimalcontrol/OptimalControlProblem.h
         optimalcontrol/OptimalControlProblem.hpp
         optimalcontrol/OptimalControlProblem.cpp
@@ -25,6 +35,7 @@ add_library(tropter SHARED
         optimalcontrol/DirectCollocation.cpp
         optimalcontrol/transcription/Base.h
         optimalcontrol/transcription/Trapezoidal.h
+        optimalcontrol/transcription/Trapezoidal.hpp
         optimalcontrol/transcription/Trapezoidal.cpp
         )
 
@@ -120,4 +131,5 @@ install(TARGETS tropter EXPORT tropter-config # TODO change to tropter-targets
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
         DESTINATION ${TROPTER_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h*")
+        FILES_MATCHING PATTERN "*.h*"
+        PATTERN "*internal" EXCLUDE)

@@ -22,16 +22,44 @@
 namespace tropter {
 namespace transcription {
 
+/// The variables are ordered as follows:
+/// @verbatim
+/// ti
+/// tf
+/// states(t=0)
+/// controls(t=0)
+/// states(t=1)
+/// controls(t=1)
+/// ...
+/// states(t=N)
+/// controls(t=N)
+/// @endverbatim
+///
+/// The constraints are ordered as follows:
+/// @verbatim
+/// defects(interval 1)
+/// defects(interval 2)
+/// ...
+/// defects(interval N)
+/// path(t=0)
+/// path(t=1)
+/// ...
+/// path(t=N)
+/// @endverbatim
 /// @ingroup optimalcontrol
+// TODO reorder constraints by pairing up defects and paths at a given time
+// point; does this help the sparsity structure?
 template<typename T>
 class Trapezoidal : public Base<T> {
 public:
     typedef OptimalControlProblem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
-    // TODO const OCProblem?
     Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
             unsigned num_mesh_points = 50) {
+        if (std::is_same<T, double>::value) {
+            this->set_use_supplied_sparsity_hessian_lagrangian(true);
+        }
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
@@ -43,6 +71,13 @@ public:
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;
     void calc_constraints(const VectorX<T>& x,
             Eigen::Ref<VectorX<T>> constr) const override;
+    /// Use knowledge of the repeated structure of the optimization problem
+    /// to efficiently determine the sparsity pattern of the entire Hessian.
+    /// We only need to perturb the optimal control functions at one mesh point,
+    /// not the entire NLP objective and constraint functions.
+    void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
+            SymmetricSparsityPattern&,
+            SymmetricSparsityPattern&) const override;
 
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd
@@ -120,9 +155,6 @@ private:
     int m_num_continuous_variables = -1;
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
-    // TODO these should go eventually:
-    //double m_initial_time = -1;
-    //double m_final_time = -1;
     Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
 
     // Working memory.

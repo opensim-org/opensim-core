@@ -265,7 +265,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     dircol.set_verbosity(get_verbosity() >= 1);
 
-    auto& optsolver = dircol.get_optimization_solver();
+    auto& optsolver = dircol.get_opt_solver();
 
     checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(),
             0, std::numeric_limits<int>::max(), {-1});

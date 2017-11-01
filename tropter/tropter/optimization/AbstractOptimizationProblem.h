@@ -17,11 +17,13 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
+#include <tropter/Exception.h>
 #include <memory>
 
 namespace tropter {
 
 class OptimizationProblemDecorator;
+class SymmetricSparsityPattern;
 
 /// @ingroup optimization
 class AbstractOptimizationProblem {
@@ -35,13 +37,57 @@ public:
     unsigned get_num_variables() const { return m_num_variables; }
     unsigned get_num_constraints() const { return m_num_constraints; }
     const Eigen::VectorXd& get_variable_lower_bounds() const
-    { return m_variable_lower_bounds; }
+    {   return m_variable_lower_bounds; }
     const Eigen::VectorXd& get_variable_upper_bounds() const
-    { return m_variable_upper_bounds; }
+    {   return m_variable_upper_bounds; }
     const Eigen::VectorXd& get_constraint_lower_bounds() const
-    { return m_constraint_lower_bounds; }
+    {   return m_constraint_lower_bounds; }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
-    { return m_constraint_upper_bounds; }
+    {   return m_constraint_upper_bounds; }
+
+    /// Create an initial guess for this problem according to the
+    /// following rules:
+    ///   - unconstrained variable: 0.
+    ///   - lower and upper bounds: midpoint of the bounds.
+    ///   - only one bound: value of the bound.
+    Eigen::VectorXd make_initial_guess_from_bounds() const;
+    /// Create a vector with random variable values within the variable
+    /// bounds, potentially for use as an initial guess.
+    Eigen::VectorXd make_random_iterate_within_bounds() const;
+
+    /// When using finite differences to compute derivatives, should we use
+    /// the user-supplied sparsity pattern of the Hessian (provided by
+    /// implementing calc_sparsity_hessian_lagrangian())? If false, then we
+    /// assume the Hessian is dense, which will have a very negative impact
+    /// on performance.
+    bool get_use_supplied_sparsity_hessian_lagrangian() const
+    {   return m_use_supplied_sparsity_hessian_lagrangian; }
+    /// @copydoc get_use_supplied_sparsity_hessian_lagrangian()
+    /// If this is true and calc_sparsity_hessian_lagrangian() is not
+    /// implemented, an exception is thrown.
+    /// This must be false if using automatic differentiation.
+    void set_use_supplied_sparsity_hessian_lagrangian(bool value)
+    {   m_use_supplied_sparsity_hessian_lagrangian = value; }
+    /// If using finite differences (double) with a Newton method (exact
+    /// Hessian in IPOPT), then we require the sparsity pattern of the
+    /// Hessian of the Lagrangian. By default, we estimate the Hessian's
+    /// sparsity pattern using estimates of the sparsity of the Jacobian of
+    /// the constraints and gradient of the objective.
+    /// If you know the sparsity pattern of the Hessian, implement this
+    /// function to provide it. This could have a *huge* impact on the speed
+    /// of the optimization for sparse problems. Provide the pattern for the
+    /// Hessian of the constraints (for lambda^T * constraints, or sum_i c_i(x))
+    /// and for the Hessian of the objective, separately.
+    /// Use the supplied SymmetricSparsityPattern objects; call set_nonzero()
+    /// for each nonzero element in the upper triangle of the relevant Hessian.
+    ///
+    /// An iterate is provided for use in detecting sparsity, if
+    /// necessary (e.g., by perturbing the objective or constraint functions).
+    virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
+            SymmetricSparsityPattern& hescon_sparsity,
+            SymmetricSparsityPattern& hesobj_sparsity) const;
+    class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
+
     virtual std::unique_ptr<OptimizationProblemDecorator>
     make_decorator() const = 0;
 
@@ -82,11 +128,48 @@ private:
     // TODO use safer types that will give exceptions for improper values.
     unsigned m_num_variables;
     unsigned m_num_constraints;
+    bool m_use_supplied_sparsity_hessian_lagrangian = false;
     Eigen::VectorXd m_variable_lower_bounds;
     Eigen::VectorXd m_variable_upper_bounds;
     Eigen::VectorXd m_constraint_lower_bounds;
     Eigen::VectorXd m_constraint_upper_bounds;
 };
+
+inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
+        const Eigen::VectorXd&,
+        SymmetricSparsityPattern&,
+        SymmetricSparsityPattern&) const {
+    throw CalcSparsityHessianLagrangianNotImplemented();
+}
+
+inline Eigen::VectorXd
+AbstractOptimizationProblem::make_initial_guess_from_bounds() const
+{
+    const auto& lower = get_variable_lower_bounds();
+    const auto& upper = get_variable_upper_bounds();
+    assert(lower.size() == upper.size());
+    Eigen::VectorXd guess(lower.size());
+    const auto inf = std::numeric_limits<double>::infinity();
+    for (Eigen::Index i = 0; i < lower.size(); ++i) {
+        if (lower[i] != -inf && upper[i] != inf) {
+            guess[i] = 0.5 * (upper[i] + lower[i]);
+        }
+        else if (lower[i] != -inf) guess[i] = lower[i];
+        else if (upper[i] !=  inf) guess[i] = upper[i];
+        else guess[i] = 0;
+    }
+    return guess;
+}
+
+inline Eigen::VectorXd
+AbstractOptimizationProblem::make_random_iterate_within_bounds() const {
+    const auto lower = get_variable_lower_bounds().array();
+    const auto upper = get_variable_upper_bounds().array();
+    // random's values are within [-1, 1]
+    Eigen::ArrayXd random = Eigen::ArrayXd::Random(lower.size());
+    // Get values between [0, 1], then scale by width and shift by lower.
+    return 0.5 * (random + 1.0) * (upper - lower) + lower;
+}
 
 } // namespace tropter
 

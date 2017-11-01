@@ -31,7 +31,7 @@ public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
     TNLP(const OptimizationProblemDecorator& problem);
-    void initialize(const Eigen::VectorXd& guess);
+    void initialize(const Eigen::VectorXd& guess, const bool&);
     const Eigen::VectorXd& get_solution() const
     {
         return m_solution;
@@ -125,10 +125,6 @@ void IPOPTSolver::print_available_options() {
 }
 
 double IPOPTSolver::optimize_impl(VectorXd& variables) const {
-    Ipopt::SmartPtr<TNLP> nlp = new TNLP(*m_problem.get());
-    // TODO avoid copying x (initial guess).
-    // Determine sparsity pattern of Jacobian, Hessian, etc.
-    nlp->initialize(variables);
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
@@ -164,6 +160,12 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
             ipoptions->SetNumericValue(option.first, option.second.value());
         }
     }
+    std::string hes_approx_final;
+    bool need_exact_hessian = true;
+    if (ipoptions->GetStringValue("hessian_approximation", hes_approx_final, "")
+            && hes_approx_final == "limited-memory") {
+        need_exact_hessian = false;
+    }
     //std::string all_options;
     //app->Options()->PrintList(all_options);
     //std::cout << all_options << std::endl;
@@ -173,12 +175,18 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
     Ipopt::ApplicationReturnStatus status;
     // TODO give istream or data file?
     status = app->Initialize();
-    //TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded, Exception,
-    //        "Error during initialization");
-    if (status != Ipopt::Solve_Succeeded) {
-        std::cerr << "Error during initialization" << std::endl;
-        // TODO throw exception.
-    }
+    TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded,
+            "Error during initialization");
+    //if (status != Ipopt::Solve_Succeeded) {
+    //    std::cerr << "Error during initialization" << std::endl;
+    //}
+
+    // Create NLP.
+    // -----------
+    Ipopt::SmartPtr<TNLP> nlp = new TNLP(*m_problem.get());
+    // TODO avoid copying x (initial guess).
+    // Determine sparsity pattern of Jacobian, Hessian, etc.
+    nlp->initialize(variables, need_exact_hessian);
 
     // Optimize!!!
     // -----------
@@ -187,6 +195,8 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
             && status != Ipopt::Solved_To_Acceptable_Level) {
         // TODO give detailed diagnostics.
         // TODO throw exception.
+        // http://llvm.org/doxygen/classllvm_1_1ErrorOr.html
+        // https://akrzemi1.wordpress.com/2017/07/12/your-own-error-code/
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
         TROPTER_THROW("Failed to find a solution.");
     }
@@ -216,7 +226,8 @@ bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
     return true;
 }
 
-void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
+void IPOPTSolver::TNLP::initialize(const VectorXd& guess,
+        const bool& need_exact_hessian) {
     // TODO all of this content should be taken care of for us by
     // OptimizationProblem.
 
@@ -230,11 +241,14 @@ void IPOPTSolver::TNLP::initialize(const VectorXd& guess) {
     // TODO check their sizes.
     assert(guess.size() == m_num_variables);
 
-    // TODO use VectorXi for the sparsity pattern? allows not initializing.
     m_problem.calc_sparsity(guess,
             m_jacobian_row_indices, m_jacobian_col_indices,
-            m_hessian_row_indices, m_hessian_col_indices);
+            need_exact_hessian, m_hessian_row_indices, m_hessian_col_indices);
     m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
+
+    TROPTER_THROW_IF(!need_exact_hessian && (
+            m_hessian_row_indices.size() || m_hessian_col_indices.size()),
+            "Exact Hessian not needed but sparsity pattern was provided.");
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 
@@ -347,7 +361,6 @@ bool IPOPTSolver::TNLP::eval_jac_g(
 
     m_problem.calc_jacobian(num_variables, x, new_x, num_nonzeros_jacobian,
             values);
-
     return true;
 }
 
@@ -370,7 +383,6 @@ bool IPOPTSolver::TNLP::eval_h(
     m_problem.calc_hessian_lagrangian(num_variables, x, new_x, obj_factor,
             num_constraints, lambda, new_lambda,
             num_nonzeros_hessian, values);
-
     return true;
 }
 

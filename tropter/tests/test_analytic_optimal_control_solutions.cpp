@@ -19,8 +19,6 @@
 
 #include <tropter/tropter.h>
 
-#include <Eigen/LU>
-
 using Eigen::Ref;
 using Eigen::VectorXd;
 using Eigen::RowVectorXd;
@@ -87,28 +85,28 @@ public:
 
         return result;
     }
+    static void run_test(int N, std::string solver,
+            std::string hessian_approx) {
+        auto ocp = std::make_shared<SecondOrderLinearMinEffort<T>>();
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
+        dircol.get_opt_solver().set_hessian_approximation
+                (hessian_approx);
+        OptimalControlSolution solution = dircol.solve();
+        //solution.write("second_order_linear_min_effort_solution.csv");
+
+        MatrixXd expected_states = ocp->states_solution(solution.time);
+        TROPTER_REQUIRE_EIGEN(solution.states, expected_states, 0.005);
+    }
 };
 
 TEST_CASE("Second order linear min effort", "[adolc][trapezoidal]") {
-
-    auto ocp = std::make_shared<SecondOrderLinearMinEffort<adouble>>();
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", 1000);
-    OptimalControlSolution solution = dircol.solve();
-    //solution.write("second_order_linear_min_effort_solution.csv");
-
-    MatrixXd expected_states = ocp->states_solution(solution.time);
-
-    TROPTER_REQUIRE_EIGEN(solution.states, expected_states, 0.005);
+    SECTION("ADOL-C") {
+        SecondOrderLinearMinEffort<adouble>::run_test(1000, "ipopt", "exact");
+    }
+    //SECTION("Finite differences") {
+    //    SecondOrderLinearMinEffort<double>::run_test(20, "ipopt", "exact");
+    //}
 }
 
-//TEST_CASE("Second order linear min effort", "[finitediff][trapezoidal]") {
-//
-//    auto ocp = std::make_shared<SecondOrderLinearMinEffort<double>>();
-//    DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", 1000);
-//    OptimalControlSolution solution = dircol.solve();
-//    //solution.write("second_order_linear_min_effort_solution.csv");
-//
-//    MatrixXd expected_states = ocp->states_solution(solution.time);
-//
-//    TROPTER_REQUIRE_EIGEN(solution.states, expected_states, 0.005);
-//}
+
+// TODO add linear tangent steering (Bryson 1975). Also in Betts' book.

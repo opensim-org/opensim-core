@@ -13,7 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblem.h"
+#include "OptimizationProblemDecorator_adouble.h"
+#include <tropter/Exception.hpp>
 
 #ifdef _MSC_VER
 // Ignore warnings from ADOL-C headers.
@@ -77,6 +78,7 @@ void OptimizationProblem<adouble>::Decorator::
 calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
+        bool provide_hessian_indices,
         std::vector<unsigned int>& hessian_row_indices,
         std::vector<unsigned int>& hessian_col_indices) const
 {
@@ -129,18 +131,17 @@ calc_sparsity(const Eigen::VectorXd& x,
         // TODO don't duplicate the memory consumption for storing the sparsity
         // pattern: store the pointer to Ipopt's sparsity pattern?
 
-        //std::ofstream file("DEBUG_jacobian_sparsity.csv");
-        //file << "row_indices,column_indices" << std::endl;
-        //for (int i = 0; i < (int)jacobian_row_indices.size(); ++i) {
-        //    file << jacobian_row_indices[i] << "," << jacobian_col_indices[i]
-        //            << std::endl;
-        //}
-        //file.close();
+        //SparsityPattern jac_sparsity(num_constraints, num_variables,
+        //        jacobian_row_indices, jacobian_col_indices);
+        //jac_sparsity.write("DEBUG_adolc_jacobian_sparsity.csv");
     }
 
     // Lagrangian.
     // -----------
-    {
+    TROPTER_THROW_IF(m_problem.get_use_supplied_sparsity_hessian_lagrangian(),
+            "Cannot use supplied sparsity pattern for "
+            "Hessian of Lagrangian when using automatic differentiation.");
+    if (provide_hessian_indices) {
         VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints);
         double lagr_value; // Unused.
         trace_lagrangian(m_lagrangian_tag, num_variables, x.data(), 1.0,
@@ -151,8 +152,8 @@ calc_sparsity(const Eigen::VectorXd& x,
                 repeated_call, x.data(), &m_hessian_num_nonzeros,
                 &m_hessian_row_indices, &m_hessian_col_indices,
                 &hessian_values,
-                // TODO &hessian_values,
                 const_cast<int*>(m_sparse_hess_options.data()));
+
         // TODO See ADOL-C manual Table 1 to interpret the return value.
         // TODO improve error handling.
         assert(status >= 0);
@@ -171,13 +172,9 @@ calc_sparsity(const Eigen::VectorXd& x,
         // Working memory to hold obj_factor and lambda (multipliers).
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);
 
-        //std::ofstream file("DEBUG_hessian_lagrangian_sparsity.csv");
-        //file << "row_indices,column_indices" << std::endl;
-        //for (int i = 0; i < (int)hessian_row_indices.size(); ++i) {
-        //    file << hessian_row_indices[i] << "," << hessian_col_indices[i]
-        //            << std::endl;
-        //}
-        //file.close();
+        //SparsityPattern hes_sparsity(num_variables, num_variables,
+        //        hessian_row_indices, hessian_col_indices);
+        //hes_sparsity.write("DEBUG_adolc_hessian_lagrangian_sparsity.csv");
     }
 }
 

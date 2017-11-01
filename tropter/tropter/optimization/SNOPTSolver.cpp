@@ -116,8 +116,10 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     std::vector<unsigned int> hessian_row_indices;
     std::vector<unsigned int> hessian_col_indices;
     m_problem->calc_sparsity(variables,
-            jacobian_row_indices, jacobian_col_indices,
+            jacobian_row_indices, jacobian_col_indices, false,
             hessian_row_indices,  hessian_col_indices);
+    assert(hessian_row_indices.size() == 0);
+    assert(hessian_col_indices.size() == 0);
     int jacobian_num_nonzeros = (int)jacobian_row_indices.size();
     int length_G = num_variables + jacobian_num_nonzeros;
     int num_nonzeros_G = length_G;

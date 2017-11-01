@@ -17,7 +17,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
-#include "testing.h"
+#include "testing_optimalcontrol.h"
 
 using Eigen::Ref;
 using Eigen::VectorXd;
@@ -33,7 +33,6 @@ public:
     const double Fmax = 10;
     SlidingMassMinimumTime()
     {
-        // TODO when time is a variable, this has to be more advanced:
         this->set_time({0}, {0, 10});
         this->add_state("x", {0, 1}, {0}, {1});
         this->add_state("u", {-100, 100}, {0}, {0});
@@ -76,20 +75,31 @@ public:
 
         return sol;
     }
+    static void run_test() {
+        auto ocp = std::make_shared<SlidingMassMinimumTime<T>>();
+        const int halfN = 20;
+        const int N = 2 * halfN;
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
+        //dircol.get_opt_solver().set_advanced_option_string
+        //        ("derivative_test", "second-order");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        OptimalControlSolution solution = dircol.solve();
+        solution.write("sliding_mass_minimum_time_solution.csv");
+
+        OptimalControlSolution expected = ocp->actual_solution(solution.time);
+
+        TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
+        TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+    }
 };
 
-TEST_CASE("Sliding mass minimum time.")
-{
-    auto ocp = std::make_shared<SlidingMassMinimumTime<adouble>>();
-    const int halfN = 25;
-    const int N = 2 * halfN;
-    DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
-    OptimalControlSolution solution = dircol.solve();
-    solution.write("sliding_mass_minimum_time_solution.csv");
+TEST_CASE("Sliding mass minimum time.") {
 
-    OptimalControlSolution expected = ocp->actual_solution(solution.time);
+    OCPDerivativesComparison<SlidingMassMinimumTime> comp;
+    comp.num_mesh_points = 4;
+    comp.compare();
 
-    TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
-    TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);
+    SlidingMassMinimumTime<adouble>::run_test();
+    SlidingMassMinimumTime<double>::run_test();
 }
 

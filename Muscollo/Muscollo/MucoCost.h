@@ -26,6 +26,8 @@
 
 namespace OpenSim {
 
+// TODO give option to specify gradient and hessian analytically.
+
 /// A term in the cost functional, to be minimized.
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
