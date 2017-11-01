@@ -1451,7 +1451,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
     for (ModelComponent& comp : updComponentList<ModelComponent>())
         comp.preScale(s, scaleSet);
 
-    // Scale the model.
+    // Scale the rest of the model.
     if (!updSimbodyEngine().scale(s, scaleSet, finalMass, preserveMassDist))
         return false;
 

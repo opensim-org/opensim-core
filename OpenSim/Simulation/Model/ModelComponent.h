@@ -109,11 +109,12 @@ public:
      */
     Model& updModel();
 
-    /** Perform any computations that must occur before the Model is scaled. For
-        example, a GeometryPath must calculate and store its path length in the
-        current body position before scaling so that an owning Muscle can use
-        this information to update the properties of the muscle after scaling.
-        This method is virtual and may be implemented by any subclass of
+    /** Perform any computations that must occur before ModelComponent::scale()
+        is invoked on all ModelComponents in the Model. For example, a
+        GeometryPath must calculate and store its path length in the current
+        body position before scaling so that an owning Muscle can use this
+        information to update the properties of the muscle after scaling. This
+        method is virtual and may be implemented by any subclass of
         ModelComponent, but all implementations must begin with a call to
         `Super::preScale()` to execute the parent class methods before the child
         class method. The base class implementation in ModelComponent does
@@ -131,12 +132,12 @@ public:
         @see postScale() */
     virtual void scale(const SimTK::State& s, const ScaleSet& scaleSet) {};
 
-    /** Perform any computations that must occur after the Model has been
-        scaled. This method is virtual and may be implemented by any subclass of
-        ModelComponent, but all implementations must begin with a call to
-        `Super::postScale()` to execute the parent class methods before the
-        child class method. The base class implementation in ModelComponent does
-        nothing.
+    /** Perform any computations that must occur after ModelComponent::scale()
+        has been invoked on all ModelComponents in the Model. This method is
+        virtual and may be implemented by any subclass of ModelComponent, but
+        all implementations must begin with a call to `Super::postScale()` to
+        execute the parent class methods before the child class method. The base
+        class implementation in ModelComponent does nothing.
         @see preScale()
         @see scale() */
     virtual void postScale(const SimTK::State& s, const ScaleSet& scaleSet) {};
