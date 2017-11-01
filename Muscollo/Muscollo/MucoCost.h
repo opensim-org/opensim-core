@@ -38,9 +38,11 @@ public:
 
     MucoCost();
 
-    SimTK::Real calcIntegralCost(const SimTK::State& /*finalState*/) const {
-        // TODO
-        return 0;
+    /// This includes the weight.
+    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
+        double integrand = 0;
+        calcIntegralCostImpl(state, integrand);
+        return get_weight() * integrand;
     }
     /// This includes the weight.
     // We use SimTK::Real instead of double for when we support adoubles.
@@ -50,12 +52,18 @@ public:
         return get_weight() * cost;
     }
 protected:
-    /// Precondition: finalState is realized to SimTK::Stage::Position.
+    /// Precondition: state is realized to SimTK::Stage::Position.
+    virtual void calcIntegralCostImpl(const SimTK::State& state,
+            double& integrand) const;
+    /// The endpoint cost cannot depend on actuator controls.
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const;
 private:
     void constructProperties();
 };
+
+inline void MucoCost::calcIntegralCostImpl(const SimTK::State&,
+        double&) const {}
 
 inline void MucoCost::calcEndpointCostImpl(const SimTK::State&,
         double&) const {}

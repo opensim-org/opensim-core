@@ -1,2 +1,3 @@
 add_subdirectory(exampleSlidingMass)
 add_subdirectory(exampleSlidingMassAdvanced)
+add_subdirectory(exampleTracking)
