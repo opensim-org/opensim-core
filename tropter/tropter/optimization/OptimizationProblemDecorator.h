@@ -47,15 +47,13 @@ public:
     {   return m_problem.get_constraint_lower_bounds(); }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_problem.get_constraint_upper_bounds(); }
-    /// Create an initial guess for this problem according to the
-    /// following rules:
-    ///   - unconstrained variable: 0.
-    ///   - lower and upper bounds: midpoint of the bounds.
-    ///   - only one bound: value of the bound.
-    // TODO move to AbstractOptimizationProblem.
-    Eigen::VectorXd make_initial_guess_from_bounds() const;
-    // TODO document
-    Eigen::VectorXd make_random_iterate_within_bounds() const;
+
+    /// @see AbstractOptimizationProblem::make_initial_guess_from_bounds()
+    Eigen::VectorXd make_initial_guess_from_bounds() const
+    {   return m_problem.make_initial_guess_from_bounds(); }
+    /// @see AbstractOptimizationProblem::make_random_iterate_within_bounds()
+    Eigen::VectorXd make_random_iterate_within_bounds() const
+    {   return m_problem.make_random_iterate_within_bounds(); }
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     // You must call this function first before calling objective(),
     // constraints(), etc.

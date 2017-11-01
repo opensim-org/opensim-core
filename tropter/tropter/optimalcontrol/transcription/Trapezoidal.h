@@ -55,10 +55,8 @@ public:
     typedef OptimalControlProblem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
-    // TODO const OCProblem?
     Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
             unsigned num_mesh_points = 50) {
-        // TODO
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }

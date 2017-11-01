@@ -312,15 +312,17 @@ void HessianColoring::recover_internal(
 void HessianColoring::convert(
         const double* const hessian_sparse_coordinate_format,
         Eigen::SparseMatrix<double>& mat) const {
-    // TODO use out argument so that the sparse matrix memory can be reused.
-    // TODO see if setFromTriplets() is faster.
     mat.resize(m_num_vars, m_num_vars);
+    mat.setZero();
     mat.reserve(m_num_nonzeros);
+    std::vector<Eigen::Triplet<double>> triplets(m_num_nonzeros);
     for (int ijacnz = 0; ijacnz < m_num_nonzeros; ++ijacnz) {
-        mat.insert(m_recovered_row_indices[ijacnz],
-                m_recovered_col_indices[ijacnz]) =
-                hessian_sparse_coordinate_format[ijacnz];
+        triplets[ijacnz] = Eigen::Triplet<double>(
+                m_recovered_row_indices[ijacnz],
+                m_recovered_col_indices[ijacnz],
+                hessian_sparse_coordinate_format[ijacnz]);
     }
+    mat.setFromTriplets(triplets.begin(), triplets.end());
     mat.makeCompressed();
 }
 

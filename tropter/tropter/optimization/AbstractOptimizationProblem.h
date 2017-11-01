@@ -45,6 +45,16 @@ public:
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_constraint_upper_bounds; }
 
+    /// Create an initial guess for this problem according to the
+    /// following rules:
+    ///   - unconstrained variable: 0.
+    ///   - lower and upper bounds: midpoint of the bounds.
+    ///   - only one bound: value of the bound.
+    Eigen::VectorXd make_initial_guess_from_bounds() const;
+    /// Create a vector with random variable values within the variable
+    /// bounds, potentially for use as an initial guess.
+    Eigen::VectorXd make_random_iterate_within_bounds() const;
+
     /// When using finite differences to compute derivatives, should we use
     /// the user-supplied sparsity pattern of the Hessian (provided by
     /// implementing calc_sparsity_hessian_lagrangian())? If false, then we
@@ -68,24 +78,11 @@ public:
     /// of the optimization for sparse problems. Provide the pattern for the
     /// Hessian of the constraints (for lambda^T * constraints, or sum_i c_i(x))
     /// and for the Hessian of the objective, separately.
-    /// The sparsity pattern should be in ADOL-C's compressed row format.
-    /// This format is a 2-Dish array. The length of the first dimension is
-    /// the number of rows in the Hessian. Each element represents a row
-    /// and is a vector of the column indices of the nonzeros in that row.
-    /// The length of each row (the inner dimension) is the number of
-    /// nonzeros in that row. More information about this format can be
-    /// found in ADOL-C's manual. TODO remove this documentation.
-    /// Requirements:
-    ///  - Only supply nonzeros in the upper triangle (Hessian is symmetric).
-    ///  - Each row's elements should be unique, and must be between
-    ///    [row_index, num_variables).
-    ///  - Each row should be sorted.
-    ///  - The length of `sparsity` is the number of variables (this is true
-    ///    upon entry).
+    /// Use the supplied SymmetricSparsityPattern objects; call set_nonzero()
+    /// for each nonzero element in the upper triangle of the relevant Hessian.
     ///
     /// An iterate is provided for use in detecting sparsity, if
     /// necessary (e.g., by perturbing the objective or constraint functions).
-    /// TODO make it clear that it's the Hessian of the *Lagrangian*.
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             SymmetricSparsityPattern& hescon_sparsity,
             SymmetricSparsityPattern& hesobj_sparsity) const;
@@ -143,6 +140,35 @@ inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
         SymmetricSparsityPattern&,
         SymmetricSparsityPattern&) const {
     throw CalcSparsityHessianLagrangianNotImplemented();
+}
+
+inline Eigen::VectorXd
+AbstractOptimizationProblem::make_initial_guess_from_bounds() const
+{
+    const auto& lower = get_variable_lower_bounds();
+    const auto& upper = get_variable_upper_bounds();
+    assert(lower.size() == upper.size());
+    Eigen::VectorXd guess(lower.size());
+    const auto inf = std::numeric_limits<double>::infinity();
+    for (Eigen::Index i = 0; i < lower.size(); ++i) {
+        if (lower[i] != -inf && upper[i] != inf) {
+            guess[i] = 0.5 * (upper[i] + lower[i]);
+        }
+        else if (lower[i] != -inf) guess[i] = lower[i];
+        else if (upper[i] !=  inf) guess[i] = upper[i];
+        else guess[i] = 0;
+    }
+    return guess;
+}
+
+inline Eigen::VectorXd
+AbstractOptimizationProblem::make_random_iterate_within_bounds() const {
+    const auto lower = get_variable_lower_bounds().array();
+    const auto upper = get_variable_upper_bounds().array();
+    // random's values are within [-1, 1]
+    Eigen::ArrayXd random = Eigen::ArrayXd::Random(lower.size());
+    // Get values between [0, 1], then scale by width and shift by lower.
+    return 0.5 * (random + 1.0) * (upper - lower) + lower;
 }
 
 } // namespace tropter
