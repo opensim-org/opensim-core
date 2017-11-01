@@ -277,7 +277,7 @@ solveForTrajectoryINDYGO() {
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
         "ipopt", 100);
     // The quasi-Newton method gives a pretty good speedup for this problem.
-    dircol.get_optimization_solver().set_hessian_approximation("limited-memory");
+    dircol.get_opt_solver().set_hessian_approximation("limited-memory");
     tropter::OptimalControlSolution ocp_solution = dircol.solve();
     std::string trajectoryFile =
         "test2Muscles1DOFDeGrooteFregly2016_INDYGO_trajectory.csv";
