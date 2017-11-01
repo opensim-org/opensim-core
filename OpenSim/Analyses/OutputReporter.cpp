@@ -35,7 +35,7 @@ using namespace std;
 //=============================================================================
 // ANALYSIS
 //=============================================================================
-int OutputReporter::begin(SimTK::State& s)
+int OutputReporter::begin(const SimTK::State& s)
 {
     if (!proceed()) return 0;
 
@@ -102,7 +102,7 @@ int OutputReporter::step(const SimTK::State& s, int stepNumber)
     return 0;
 }
 
-int OutputReporter::end(SimTK::State& s)
+int OutputReporter::end(const SimTK::State& s)
 {
     if (!proceed()) return 0;
     _pvtModel->realizeReport(s);

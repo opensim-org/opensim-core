@@ -83,9 +83,9 @@ protected:
     //--------------------------------------------------------------------------
     // ANALYSIS INTERFACE
     //--------------------------------------------------------------------------
-    int begin(SimTK::State& s) override final;
+    int begin(const SimTK::State& s) override final;
     int step(const SimTK::State& s, int setNumber) override final;
-    int end(SimTK::State& s) override final;
+    int end(const SimTK::State& s) override final;
 
     int printResults(const std::string& baseName,
         const std::string& dir = "",
