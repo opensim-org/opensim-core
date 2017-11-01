@@ -307,7 +307,8 @@ bool ForwardTool::run()
 
         cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
         s.setTime(_ti);
-        manager.integrate(s, _tf);
+        manager.initialize(s);
+        manager.integrate(_tf);
     } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;

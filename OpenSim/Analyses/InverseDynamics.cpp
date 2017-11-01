@@ -396,8 +396,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int InverseDynamics::
-begin(SimTK::State& s )
+int InverseDynamics::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -420,8 +419,6 @@ begin(SimTK::State& s )
     delete _modelWorkingCopy;
     _modelWorkingCopy = _model->clone();
     _modelWorkingCopy->updAnalysisSet().setSize(0);
-    //_modelWorkingCopy = _model->clone();
-    //_modelWorkingCopy = new Model(*_model);
 
     // Replace model force set with only generalized forces
     if(_model) {
@@ -551,13 +548,13 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-end(SimTK::State& s )
+end(const SimTK::State&s )
 {
     if(!proceed()) return(0);
 
     record(s);
 
-    _model->overrideAllActuators( s, false );
+    _model->overrideAllActuators(*const_cast<SimTK::State*>(&s), false );
 
     return(0);
 }

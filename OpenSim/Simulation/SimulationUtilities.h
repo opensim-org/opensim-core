@@ -84,7 +84,8 @@ inline SimTK::State simulate(Model& model,
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         Manager manager(model, integrator);
         state.setTime(0.0);
-        manager.integrate(state, finalTime);
+        manager.initialize(state);
+        manager.integrate(finalTime);
 
         // Save the states to a storage file (if requested).
         if (saveStatesFile) {

@@ -116,9 +116,10 @@ void testExternalLoad()
     integrator.setAccuracy(integ_accuracy);
     Manager manager(model, integrator);
     s.setTime(init_t);
+    manager.initialize(s);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager.integrate(s, dt*i);
+        manager.integrate(dt*i);
         q_grav[i] = model.updCoordinateSet()[0].getValue(s);
     }
 
@@ -173,13 +174,14 @@ void testExternalLoad()
     integrator2.setAccuracy(integ_accuracy);
     Manager manager2(model,  integrator2);
     s2.setTime(init_t);
+    manager2.initialize(s2);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf(nsteps+1);
     Vector_<Vec3> pcom_xf(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager2.integrate(s2, dt*i);
+        manager2.integrate(dt*i);
         q_xf[i] = model.updCoordinateSet()[0].getValue(s2);
     }
 
@@ -246,12 +248,13 @@ void testExternalLoad()
     integrator3.setAccuracy(integ_accuracy);
     Manager manager3(model,  integrator3);
     s3.setTime(init_t);
+    manager3.initialize(s3);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf2(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager3.integrate(s3, dt*i);
+        manager3.integrate(dt*i);
         q_xf2[i] = model.updCoordinateSet()[0].getValue(s3);
     }
 

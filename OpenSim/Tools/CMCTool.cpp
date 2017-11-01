@@ -829,7 +829,8 @@ bool CMCTool::run()
     IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
-        manager.integrate(s, finalTime);
+        manager.initialize(s);
+        manager.integrate(finalTime);
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
