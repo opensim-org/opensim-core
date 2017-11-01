@@ -505,8 +505,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int StaticOptimization::
-begin(SimTK::State& s )
+int StaticOptimization::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -634,8 +633,7 @@ begin(SimTK::State& s )
  *
  * @return -1 on error, 0 otherwise.
  */
-int StaticOptimization::
-step(const SimTK::State& s, int stepNumber )
+int StaticOptimization::step(const SimTK::State& s, int stepNumber )
 {
     if(!proceed(stepNumber)) return(0);
 
@@ -652,8 +650,7 @@ step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int StaticOptimization::
-end( SimTK::State& s )
+int StaticOptimization::end( const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
