@@ -360,6 +360,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         OCPDerivativesComparison<DoublePendulumCoordinateTracking> c;
         c.findiff_hessian_step_size = 1e-5;
         c.gradient_error_tolerance = 1e-5;
+        c.jacobian_error_tolerance = 1e-5;
         c.hessian_error_tolerance = 1e-2;
         c.compare();
 

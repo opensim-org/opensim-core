@@ -85,7 +85,7 @@ TEST_CASE("IPOPT") {
         OCPDerivativesComparison<SlidingMass> comp;
         comp.findiff_hessian_step_size = 1e-3;
         comp.gradient_error_tolerance = 1e-5;
-        comp.hessian_error_tolerance = 1e-4;
+        comp.hessian_error_tolerance = 1e-3;
         comp.compare();
     }
     SECTION("Finite differences, limited memory") {
