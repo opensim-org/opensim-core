@@ -210,9 +210,9 @@ public:
             "TODO");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(time_final_bounds, double, 2, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(state_info,
-            MucoContinuousVariableInfo, "TODO");
+            MucoVariableInfo, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(control_info,
-            MucoContinuousVariableInfo, "TODO");
+            MucoVariableInfo, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost, "TODO");
 
     MucoProblem() {
@@ -668,7 +668,9 @@ MucoIterate MucoSolver::solve() const {
             "Invalid number of mesh points (" + std::to_string(N) + ")");
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt",
             N);
-    dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+    dircol.get_opt_solver().set_advanced_option_string
+            ("print_timing_statistics", "yes");
+    // dircol.get_opt_solver().set_hessian_approximation("limited-memory");
 
     using TropterIterate = tropter::OptimalControlIterate;
     tropter::OptimalControlSolution tropterSolution =
@@ -860,17 +862,17 @@ int main() {
         mp.append_costs(tracking);
 
         MucoSolver ms(mp);
-        ms.set_num_mesh_points(100);
-        MucoIterate guess = ms.createGuessTemplate();
-        guess.setNumTimes(2);
-        guess.setTime_std({0, 1});
-        guess.setState_std("j0/q0/value", {0, 0.5 * SimTK::Pi});
-        guess.setState_std("j1/q1/value", {0, 0.5 * SimTK::Pi});
-        guess.setState_std("j0/q0/speed", {0, 0});
-        guess.setState_std("j1/q1/speed", {0, 0});
-        guess.setControl_std("tau0", {20, 1});
-        guess.setControl_std("tau1", {20, -2});
-        ms.setGuess(guess);
+        ms.set_num_mesh_points(50);
+        //MucoIterate guess = ms.createGuessTemplate();
+        //guess.setNumTimes(2);
+        //guess.setTime_std({0, 1});
+        //guess.setState_std("j0/q0/value", {0, 0.5 * SimTK::Pi});
+        //guess.setState_std("j1/q1/value", {0, 0.5 * SimTK::Pi});
+        //guess.setState_std("j0/q0/speed", {0, 0});
+        //guess.setState_std("j1/q1/speed", {0, 0});
+        //guess.setControl_std("tau0", {20, 1});
+        //guess.setControl_std("tau1", {20, -2});
+        //ms.setGuess(guess);
         MucoIterate solution = ms.solve();
         solution.write("DEBUG_double_pendulum_tracking.sto");
 
