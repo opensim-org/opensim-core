@@ -176,6 +176,8 @@ programmatically in MATLAB or python.
   and may be installed in a different location.
 - macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
   `DYLD_LIBRARY_PATH` to use OpenSim libraries.
+- The `scale()` method was removed from the `SimbodyEngine` class (the contents
+  were moved into `Model::scale()`).
 
 Documentation
 --------------

@@ -1451,9 +1451,48 @@ bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
     for (ModelComponent& comp : updComponentList<ModelComponent>())
         comp.preScale(s, scaleSet);
 
-    // Scale the rest of the model.
-    if (!updSimbodyEngine().scale(s, scaleSet, finalMass, preserveMassDist))
-        return false;
+    // Call scale() on each ModelComponent owned by the model. Each
+    // ModelComponent is responsible for scaling itself. All scaling operations
+    // are performed here except scaling inertial properties of bodies, which is
+    // done below.
+    for (ModelComponent& comp : updComponentList<ModelComponent>())
+        comp.scale(s, scaleSet);
+
+    // Scale the inertial properties of bodies. If "preserve mass distribution"
+    // is true, then the masses are not scaled (but inertias are still updated).
+    for (Body& body : updComponentList<Body>())
+        body.scaleInertialProperties(scaleSet, !preserveMassDist);
+
+    // When bodies are scaled, the properties of the model are changed. The
+    // general rule is that you MUST recreate and initialize the system when
+    // properties of the model change. We must do that here or we will be
+    // querying a stale system (e.g., wrong body properties!).
+    s = initSystem();
+
+    // Now that the masses of the individual bodies have been scaled (if
+    // preserveMassDist == false), get the total mass and compare it to
+    // finalMass in order to determine how much to scale the body masses again,
+    // so that the total model mass comes out to finalMass.
+    if (finalMass > 0.0)
+    {
+        const double mass = getTotalMass(s);
+        if (mass > 0.0)
+        {
+            const double factor = finalMass / mass;
+            for (Body& body : updComponentList<Body>())
+                body.scaleMass(factor);
+
+            // Recreate the system and update the state after updating masses.
+            s = initSystem();
+
+            // Ensure the final model mass is correct.
+            const double newMass = getTotalMass(s);
+            const double normDiffMass = abs(finalMass - newMass) / finalMass;
+            if (normDiffMass > SimTK::SignificantReal) {
+                throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
+            }
+        }
+    }
 
     // Call postScale() on all ModelComponents owned by the model so that
     // components like muscles, ligaments, and path springs can update their

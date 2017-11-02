@@ -798,55 +798,6 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 //--- Private Utility Methods Below Here ---
 
 
-bool SimbodyEngine::scale(SimTK::State& s, const ScaleSet& scaleSet,
-                          double finalMass, bool preserveMassDist)
-{
-    // Call scale() on each ModelComponent owned by the model. Each
-    // ModelComponent is responsible for scaling itself. All scaling operations
-    // are performed here except scaling inertial properties of bodies, which is
-    // done below.
-    for (ModelComponent& comp : _model->updComponentList<ModelComponent>())
-        comp.scale(s, scaleSet);
-
-    // Scale the inertial properties of bodies. If "preserve mass distribution"
-    // is true, then the masses are not scaled (but inertias are still updated).
-    for (Body& body : _model->updComponentList<Body>())
-        body.scaleInertialProperties(scaleSet, !preserveMassDist);
-
-    // When bodies are scaled, the properties of the model are changed. The
-    // general rule is that you MUST recreate and initialize the system when
-    // properties of the model change. We must do that here or we will be
-    // querying a stale system (e.g., wrong body properties!).
-    s = _model->initSystem();
-
-    // Now that the masses of the individual bodies have been scaled (if
-    // preserveMassDist == false), get the total mass and compare it to
-    // finalMass in order to determine how much to scale the body masses again,
-    // so that the total model mass comes out to finalMass.
-    if (finalMass > 0.0)
-    {
-        const double mass = _model->getTotalMass(s);
-        if (mass > 0.0)
-        {
-            const double factor = finalMass / mass;
-            for (Body& body : _model->updComponentList<Body>())
-                body.scaleMass(factor);
-
-            // Recreate the system and update the state after updating masses.
-            s = _model->initSystem();
-
-            // Ensure the final model mass is correct.
-            const double newMass = _model->getTotalMass(s);
-            const double normDiffMass = abs(finalMass - newMass) / finalMass;
-            if (normDiffMass > SimTK::SignificantReal) {
-                throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
-            }
-        }
-    }
-
-    return true;
-}
-
 //=============================================================================
 // CONFIGURATION
 //=============================================================================
