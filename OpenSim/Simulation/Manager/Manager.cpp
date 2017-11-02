@@ -633,7 +633,7 @@ const SimTK::State& Manager::integrate(double finalTime)
     bool fixedStep = false;
     if (_constantDT || _specifiedDT) fixedStep = true;
 
-    auto status{ SimTK::Integrator::InvalidSuccessfulStepStatus };
+    auto status = SimTK::Integrator::InvalidSuccessfulStepStatus;
 
     if (!fixedStep) {
         _integ->setReturnEveryInternalStep(true);
@@ -680,8 +680,8 @@ const SimTK::State& Manager::integrate(double finalTime)
 
         status = _timeStepper->stepTo(stepToTime);
 
-        if (status == SimTK::Integrator::TimeHasAdvanced ||
-            status == SimTK::Integrator::ReachedScheduledEvent) {
+        if ( (status == SimTK::Integrator::TimeHasAdvanced) ||
+             (status == SimTK::Integrator::ReachedScheduledEvent) ) {
             const SimTK::State& s = _integ->getState();
             if (_performAnalyses) _model->updAnalysisSet().step(s, step);
             if (_writeToStorage) {
