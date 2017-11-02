@@ -301,8 +301,9 @@ private:
     void initializeStorageAndAnalyses(const SimTK::State& s);
     void initializeTimeStepper(const SimTK::State& s);
 
-    // Helper functions for Manager::integrate()
-    void finalize(const SimTK::State& s);
+    // Helper to record state and analysis values at integration steps.
+    // step = 0 is the beginning, step = -1 used to denote the end/final step
+    void record(const SimTK::State& s, const int& step);
 
 //=============================================================================
 };  // END of class Manager

@@ -588,7 +588,7 @@ hasStateStorage() const
 
 const SimTK::State& Manager::integrate(double finalTime)
 {
-    int step = 0; // for AnalysisSet::step()
+    int step = 1; // for AnalysisSet::step()
 
     if (_timeStepper == nullptr) {
         throw Exception("Manager::integrate(): Manager has not been "
@@ -644,17 +644,7 @@ const SimTK::State& Manager::integrate(double finalTime)
 
     if (fixedStep) {
         _model->realizeAcceleration(s);
-
-        if (_performAnalyses) _model->updAnalysisSet().step(s, step);
-        if (_writeToStorage) {
-            SimTK::Vector stateValues = 
-                _model->getStateVariableValues(s);
-            StateVector vec;
-            vec.setStates(s.getTime(), stateValues);
-            getStateStorage().append(vec);
-            if (_model->isControlled())
-                _controllerSet->storeControls(s, step);
-        }
+        record(s, step);
     }
 
     double time = initialTime;
@@ -683,15 +673,7 @@ const SimTK::State& Manager::integrate(double finalTime)
         if ( (status == SimTK::Integrator::TimeHasAdvanced) ||
              (status == SimTK::Integrator::ReachedScheduledEvent) ) {
             const SimTK::State& s = _integ->getState();
-            if (_performAnalyses) _model->updAnalysisSet().step(s, step);
-            if (_writeToStorage) {
-                SimTK::Vector stateValues = _model->getStateVariableValues(s);
-                StateVector vec;
-                vec.setStates(s.getTime(), stateValues);
-                getStateStorage().append(vec);
-                if (_model->isControlled())
-                    _controllerSet->storeControls(s, step);
-            }
+            record(s, step);
             step++;
         }
         // Check if simulation has terminated for some reason
@@ -712,7 +694,7 @@ const SimTK::State& Manager::integrate(double finalTime)
     // CLEAR ANY INTERRUPT
     clearHalt();
 
-    finalize(_integ->getState());
+    record(_integ->getState(), -1);
 
     return getState();
 }
@@ -748,30 +730,17 @@ double Manager::getFixedStepSize(int tArrayStep) const {
 void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
 {
     if( _writeToStorage && _performAnalyses ) { 
-
-        double tReal = s.getTime();
-    
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
             _controllerSet->setModel(*_model);
-            _controllerSet->storeControls(s, 0);
         }
 
-        // STORE STARTING STATES
-        if(hasStateStorage()) {
-            // ONLY IF NO STATES WERE PREVIOUSLY STORED
-            if(getStateStorage().getSize()==0) {
-                SimTK::Vector stateValues = _model->getStateVariableValues(s);
-                getStateStorage().store(0,tReal,stateValues.size(), &stateValues[0]);
-            }
-        }
-
-        // ANALYSES 
-        AnalysisSet& analysisSet = _model->updAnalysisSet();
-        analysisSet.begin(s);
+        OPENSIM_THROW_IF(!hasStateStorage(), Exception,
+            "Manager::initializeStorageAndAnalyses(): "
+            "Expected a Storage to write states into, but none provided.");
     }
 
-    return;
+    record(s, 0);
 }
 //_____________________________________________________________________________
 /**
@@ -798,18 +767,17 @@ void Manager::initialize(const SimTK::State& s)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * finalize storages and analyses
- * 
- * @param s system state before integration
- */
-void Manager::finalize(const SimTK::State& s )
+void Manager::record(const SimTK::State& s, const int& step)
 {
-        // ANALYSES 
-    if(  _performAnalyses ) { 
+    // ANALYSES 
+    if (_performAnalyses) {
         AnalysisSet& analysisSet = _model->updAnalysisSet();
-        analysisSet.end(s);
+        if (step == 0)
+            analysisSet.begin(s);
+        else if (step < 0)
+            analysisSet.end(s);
+        else
+            analysisSet.step(s, step);
     }
     if (_writeToStorage) {
         SimTK::Vector stateValues = _model->getStateVariableValues(s);
@@ -817,11 +785,11 @@ void Manager::finalize(const SimTK::State& s )
         vec.setStates(s.getTime(), stateValues);
         getStateStorage().append(vec);
         if (_model->isControlled())
-            _controllerSet->storeControls(s, getStateStorage().getSize());
+            _controllerSet->storeControls(s, 
+                (step < 0) ? getStateStorage().getSize() : step);
     }
-
-    return;
 }
+
 //=============================================================================
 // INTERRUPT
 //=============================================================================
@@ -834,7 +802,7 @@ void Manager::finalize(const SimTK::State& s )
  */
 void Manager::halt()
 {
-        _halt = true;
+    _halt = true;
 }
 //_____________________________________________________________________________
 /**
@@ -854,7 +822,7 @@ void Manager::clearHalt()
  */
 bool Manager::checkHalt()
 {
-    return(_halt);
+    return _halt;
 }
 
 
