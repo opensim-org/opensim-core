@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H
-#define MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H
+#ifndef MUSCOLLO_MUCOSTATETRACKINGCOST_H
+#define MUSCOLLO_MUCOSTATETRACKINGCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCoordinateTrackingCost.h                             *
+ * OpenSim Muscollo: MucoStateTrackingCost.h                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -25,17 +25,23 @@
 
 namespace OpenSim {
 
-// TODO could implement as a very general "state tracker", could even track
-// desired activation signals.
 // TODO can we track generailzed speeds too?
-// TODO weights for each coordinate.
-class MucoCoordinateTrackingCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoCoordinateTrackingCost, MucoCost);
+// TODO weights for each state.
+
+/// The squared difference between a state variable value and a reference
+/// state variable value, summed over the state variables for which a
+/// reference is provided, and integrated over the phase. This can be used to
+/// track joint angles, activations, etc.
+class MucoStateTrackingCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoStateTrackingCost, MucoCost);
 public:
+    /// Each column label must be the path of a state variable, e.g.,
+    /// `knee/flexion/value`.
     void setReference(const TimeSeriesTable& ref) {
         m_table = ref;
     }
 protected:
+    // TODO check that the reference covers the entire possible time range.
     void initializeImpl() const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
@@ -44,10 +50,10 @@ private:
     //OpenSim_DECLARE_PROPERTY(coordinates_file, std::string, "TODO");
     TimeSeriesTable m_table;
     mutable GCVSplineSet m_refsplines;
-    /// The indices in Q corresponding to the provided reference coordinates.
+    /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
 };
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H
+#endif // MUSCOLLO_MUCOSTATETRACKINGCOST_H

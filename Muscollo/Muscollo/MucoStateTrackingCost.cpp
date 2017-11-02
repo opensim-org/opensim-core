@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoCoordinateTrackingCost.cpp                           *
+ * OpenSim Muscollo: MucoStateTrackingCost.cpp                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,13 +16,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCoordinateTrackingCost.h"
+#include "MucoStateTrackingCost.h"
 #include "MuscolloUtilities.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 
-void MucoCoordinateTrackingCost::initializeImpl() const {
+void MucoStateTrackingCost::initializeImpl() const {
     m_refsplines = GCVSplineSet(m_table);
     auto allSysYIndices = createSystemYIndexMap(getModel());
     m_sysYIndices.resize(m_refsplines.getSize());
@@ -34,7 +34,7 @@ void MucoCoordinateTrackingCost::initializeImpl() const {
     }
 }
 
-void MucoCoordinateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
+void MucoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
         const SimTK::State& state, double& integrand) const {
     const auto& time = state.getTime();
 

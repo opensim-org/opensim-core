@@ -93,7 +93,7 @@ int main() {
 
     // Cost.
     // -----
-    MucoCoordinateTrackingCost tracking;
+    MucoStateTrackingCost tracking;
     TimeSeriesTable ref;
     ref.setColumnLabels({"j0/q0/value", "j1/q1/value"});
     for (double time = 0; time < finalTime; time += 0.01) {
