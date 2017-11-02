@@ -185,3 +185,26 @@ void OpenSim::visualize(Model model, Storage statesSto) {
         }
     }
 }
+
+std::unordered_map<std::string, int>
+OpenSim::createSystemYIndexMap(const Model& model) {
+    std::unordered_map<std::string, int> sysYIndices;
+    auto s = model.getWorkingState();
+    const auto svNames = model.getStateVariableNames();
+    s.updY() = 0;
+    for (int iy = 0; iy < s.getNY(); ++iy) {
+        s.updY()[iy] = SimTK::NaN;
+        const auto svValues = model.getStateVariableValues(s);
+        for (int isv = 0; isv < svNames.size(); ++isv) {
+            if (SimTK::isNaN(svValues[isv])) {
+                sysYIndices[svNames[isv]] = iy;
+                s.updY()[iy] = 0;
+                break;
+            }
+        }
+    }
+    SimTK_ASSERT2_ALWAYS(svNames.size() == (int)sysYIndices.size(),
+            "Expected to find %i state indices but found %i.", svNames.size(),
+            sysYIndices.size());
+    return sysYIndices;
+}
