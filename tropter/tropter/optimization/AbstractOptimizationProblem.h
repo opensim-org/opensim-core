@@ -83,6 +83,8 @@ public:
     ///
     /// An iterate is provided for use in detecting sparsity, if
     /// necessary (e.g., by perturbing the objective or constraint functions).
+    /// The caller determines what kind if iterate to provide (the initial
+    /// guess, a random iterate, etc.).
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             SymmetricSparsityPattern& hescon_sparsity,
             SymmetricSparsityPattern& hesobj_sparsity) const;

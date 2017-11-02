@@ -36,7 +36,7 @@ class OptimizationProblem<double>::Decorator
 public:
     Decorator(const OptimizationProblem<double>& problem);
     ~Decorator();
-    void calc_sparsity(const Eigen::VectorXd& variables,
+    void calc_sparsity(const Eigen::VectorXd& variables_guess,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
             bool provide_hessian_indices,

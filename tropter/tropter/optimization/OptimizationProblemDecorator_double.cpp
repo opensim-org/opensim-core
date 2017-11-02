@@ -54,7 +54,7 @@ OptimizationProblem<double>::Decorator::Decorator(
         OptimizationProblemDecorator(problem), m_problem(problem) {}
 
 void OptimizationProblem<double>::Decorator::
-calc_sparsity(const Eigen::VectorXd& x,
+calc_sparsity(const Eigen::VectorXd& /*guess*/,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         bool provide_hessian_indices,
@@ -63,6 +63,8 @@ calc_sparsity(const Eigen::VectorXd& x,
 {
     const auto num_vars = get_num_variables();
     m_x_working = VectorXd::Zero(num_vars);
+
+    VectorXd xrand = m_problem.make_random_iterate_within_bounds();
 
     // Gradient.
     // =========
@@ -75,7 +77,7 @@ calc_sparsity(const Eigen::VectorXd& x,
                 return obj_value;
             };
     SparsityPattern gradient_sparsity =
-            calc_gradient_sparsity_with_perturbation(x, calc_objective);
+            calc_gradient_sparsity_with_perturbation(xrand, calc_objective);
     m_gradient_nonzero_indices =
             gradient_sparsity.convert_to_CompressedRowSparsity()[0];
 
@@ -93,7 +95,7 @@ calc_sparsity(const Eigen::VectorXd& x,
                 m_problem.calc_constraints(vars, constr);
             };
     SparsityPattern jacobian_sparsity =
-            calc_jacobian_sparsity_with_perturbation(x,
+            calc_jacobian_sparsity_with_perturbation(xrand,
                     num_jac_rows, calc_constraints);
 
     m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
@@ -111,7 +113,7 @@ calc_sparsity(const Eigen::VectorXd& x,
     // Hessian.
     // ========
     if (provide_hessian_indices) {
-        calc_sparsity_hessian_lagrangian(x,
+        calc_sparsity_hessian_lagrangian(xrand,
                 hessian_row_indices, hessian_col_indices);
 
         // TODO produce a more informative number/description.

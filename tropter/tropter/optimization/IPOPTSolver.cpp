@@ -102,7 +102,6 @@ private:
     unsigned m_num_variables = std::numeric_limits<unsigned>::max();
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
 
-    // TODO Don't need to store a copy here...?
     Eigen::VectorXd m_initial_guess;
     Eigen::VectorXd m_solution;
     double m_optimal_obj_value;
