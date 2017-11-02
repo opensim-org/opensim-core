@@ -32,7 +32,7 @@ namespace OpenSim {
 /// state variable value, summed over the state variables for which a
 /// reference is provided, and integrated over the phase. This can be used to
 /// track joint angles, activations, etc.
-class MucoStateTrackingCost : public MucoCost {
+class OSIMMUSCOLLO_API MucoStateTrackingCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoStateTrackingCost, MucoCost);
 public:
     /// Each column label must be the path of a state variable, e.g.,
