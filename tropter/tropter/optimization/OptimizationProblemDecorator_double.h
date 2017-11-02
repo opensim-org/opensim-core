@@ -87,6 +87,9 @@ private:
     // Working memory shared by multiple functions.
     mutable Eigen::VectorXd m_x_working;
 
+    //mutable double m_time_hescon = 0;
+    //mutable double m_time_hesobj = 0;
+
     // Gradient.
     // ---------
     // The indices of the variables used in the objective function

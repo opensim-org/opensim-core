@@ -75,7 +75,7 @@ calc_sparsity(const Eigen::VectorXd& x,
                 return obj_value;
             };
     SparsityPattern gradient_sparsity =
-            calc_gradient_sparsity_with_nan(x, calc_objective);
+            calc_gradient_sparsity_with_perturbation(x, calc_objective);
     m_gradient_nonzero_indices =
             gradient_sparsity.convert_to_CompressedRowSparsity()[0];
 
@@ -92,8 +92,9 @@ calc_sparsity(const Eigen::VectorXd& x,
             [this](const VectorXd& vars, VectorXd& constr) {
                 m_problem.calc_constraints(vars, constr);
             };
-    SparsityPattern jacobian_sparsity = calc_jacobian_sparsity_with_nan(x,
-            num_jac_rows, calc_constraints);
+    SparsityPattern jacobian_sparsity =
+            calc_jacobian_sparsity_with_perturbation(x,
+                    num_jac_rows, calc_constraints);
 
     m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
     m_jacobian_coloring->get_coordinate_format(
@@ -309,6 +310,10 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         return;
     }
 
+    //using namespace std::chrono;
+    //auto start = high_resolution_clock::now();
+
+
     // Bohme book has guidelines for step size (section 9.2.4.4).
     const double& eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
@@ -377,6 +382,11 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     Eigen::SparseMatrix<double> hessian;
     m_hescon_coloring->recover(hescon_c, hessian);
 
+    //m_time_hescon +=
+    //        duration_cast<duration<double>>(high_resolution_clock::now() -
+    //                start).count();
+    //start = high_resolution_clock::now();
+
     // Add in Hessian of objective.
     // ----------------------------
     if (obj_factor) {
@@ -386,6 +396,12 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         m_hesobj_coloring->convert(hesobj_vec.data(), hesobj);
         hessian += obj_factor * hesobj;
     }
+
+    //m_time_hesobj +=
+    //        duration_cast<duration<double>>(high_resolution_clock::now() -
+    //                start).count();
+
+    //std::cout << "DEBUG " << m_time_hescon << " " << m_time_hesobj << std::endl;
 
     // Convert the SparseMatrix into coordinate format.
     m_hessian_coloring->convert(hessian, hessian_values_raw);
