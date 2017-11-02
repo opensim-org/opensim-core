@@ -195,7 +195,7 @@ void Body::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::scale(s, scaleSet);
 
     // Get scale factors (if an entry for this Body exists).
-    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
     if (scaleFactors.isNaN())
         return;
 
@@ -327,7 +327,7 @@ void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMa
 void Body::scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass)
 {
     // Get scale factors (if an entry for this Body exists).
-    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
     if (scaleFactors.isNaN())
         return;
 

@@ -253,7 +253,7 @@ scale(const SimTK::State& s, const ScaleSet& scaleSet)
 
     // Get scale factors (if there exists an entry for the base Body of the
     // Joint's parent Frame).
-    Vec3 scaleFactors =
+    const Vec3 scaleFactors =
         getScaleFactors(scaleSet, depCoordinate.getJoint().getParentFrame());
     if (scaleFactors.isNaN())
         return;

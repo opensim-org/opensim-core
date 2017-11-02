@@ -199,7 +199,7 @@ void Frame::scale(const SimTK::State& s, const ScaleSet& scaleSet)
         return;
 
     // Get scale factors (if an entry for the base Body exists).
-    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
     if (scaleFactors.isNaN())
         return;
 

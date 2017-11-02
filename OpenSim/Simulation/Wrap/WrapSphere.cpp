@@ -134,7 +134,7 @@ void WrapSphere::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::scale(s, scaleSet);
 
     // Get scale factors (if an entry for the Frame's base Body exists).
-    Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
     if (scaleFactors.isNaN())
         return;
 

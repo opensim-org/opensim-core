@@ -115,7 +115,7 @@ void Station::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::scale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
     if (scaleFactors.isNaN())
         return;
 

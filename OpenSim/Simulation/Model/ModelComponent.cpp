@@ -127,7 +127,7 @@ void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-SimTK::Vec3 ModelComponent::
+const SimTK::Vec3 ModelComponent::
 getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
 {
     const std::string& baseFrameName = frame.findBaseFrame().getName();
