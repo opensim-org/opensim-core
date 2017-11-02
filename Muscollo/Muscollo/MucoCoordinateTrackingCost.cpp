@@ -1,7 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoCoordinateTrackingCost.cpp                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -19,12 +17,34 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoCoordinateTrackingCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
+#include "MuscolloUtilities.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
-#include "RegisterTypes_osimMuscollo.h"
+using namespace OpenSim;
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+void MucoCoordinateTrackingCost::initializeImpl() const {
+    m_refsplines = GCVSplineSet(m_table);
+    auto allSysYIndices = createSystemYIndexMap(getModel());
+    m_sysYIndices.resize(m_refsplines.getSize());
+    for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
+        const auto& refName = m_refsplines[iref].getName();
+        OPENSIM_THROW_IF(allSysYIndices.count(refName) == 0, Exception,
+                "State '" + refName + "' unrecognized.");
+        m_sysYIndices[iref] = allSysYIndices[refName];
+    }
+}
+
+void MucoCoordinateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
+        const SimTK::State& state, double& integrand) const {
+    const auto& time = state.getTime();
+
+    SimTK::Vector timeVec(1, time);
+
+    // TODO cache the reference coordinate values at the mesh points, rather
+    // than evaluating the spline.
+    for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
+        const auto& modelValue = state.getY()[m_sysYIndices[iref]];
+        const auto& refValue = m_refsplines[iref].calcValue(timeVec);
+        integrand += pow(modelValue - refValue, 2);
+    }
+}

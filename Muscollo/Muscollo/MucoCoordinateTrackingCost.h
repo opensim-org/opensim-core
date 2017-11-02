@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
+#ifndef MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H
+#define MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoCoordinateTrackingCost.h                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,13 +18,36 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCoordinateTrackingCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
+#include "MucoCost.h"
 
-#include "RegisterTypes_osimMuscollo.h"
+#include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+namespace OpenSim {
+
+// TODO could implement as a very general "state tracker", could even track
+// desired activation signals.
+// TODO can we track generailzed speeds too?
+// TODO weights for each coordinate.
+class MucoCoordinateTrackingCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoCoordinateTrackingCost, MucoCost);
+public:
+    void setReference(const TimeSeriesTable& ref) {
+        m_table = ref;
+    }
+protected:
+    void initializeImpl() const override;
+    void calcIntegralCostImpl(const SimTK::State& state,
+            double& integrand) const override;
+private:
+    // TODO accept a filename.
+    //OpenSim_DECLARE_PROPERTY(coordinates_file, std::string, "TODO");
+    TimeSeriesTable m_table;
+    mutable GCVSplineSet m_refsplines;
+    /// The indices in Q corresponding to the provided reference coordinates.
+    mutable std::vector<int> m_sysYIndices;
+};
+
+} // namespace OpenSim
+
+#endif // MUSCOLLO_MUCOCOORDINATETRACKINGCOST_H

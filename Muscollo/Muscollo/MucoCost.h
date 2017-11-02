@@ -26,6 +26,8 @@
 
 namespace OpenSim {
 
+class Model;
+
 // TODO give option to specify gradient and hessian analytically.
 
 /// A term in the cost functional, to be minimized.
@@ -51,15 +53,29 @@ public:
         calcEndpointCostImpl(finalState, cost);
         return get_weight() * cost;
     }
+    /// For use by solvers. This also performs error checks on the Problem.
+    void initialize(const Model& model) const {
+        m_model.reset(&model);
+        initializeImpl();
+    }
 protected:
+    /// Perform any caching.
+    /// Upon entry, getMode() is available.
+    /// Use this opportunity to check for errors in user input.
+    virtual void initializeImpl() const {}
     /// Precondition: state is realized to SimTK::Stage::Position.
     virtual void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const;
     /// The endpoint cost cannot depend on actuator controls.
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const;
+    /// For use within virtual function implementations.
+    const Model& getModel() const { return m_model.getRef(); }
 private:
     void constructProperties();
+
+    mutable SimTK::ReferencePtr<const Model> m_model;
+
 };
 
 inline void MucoCost::calcIntegralCostImpl(const SimTK::State&,

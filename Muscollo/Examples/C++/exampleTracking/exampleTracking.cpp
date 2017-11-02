@@ -28,7 +28,7 @@ using namespace OpenSim;
 /// This model is torque-actuated.
 Model createDoublePendulumModel() {
     Model model;
-    model.setName("dp");
+    model.setName("double_pendulum");
 
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -67,21 +67,6 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-// TODO create formal CoordinateTracking task.
-class MucoCustomCoordinateTrackingCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoCustomCoordinateTrackingCost, MucoCost);
-protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
-            double& integrand) const override {
-        // TODO more of a dancing or swaying movement.
-        const auto& time = state.getTime();
-        SimTK::Vector Qdesired(2);
-        Qdesired[0] = time * 0.50 * SimTK::Pi;
-        Qdesired[1] = time * 0.25 * SimTK::Pi;
-        integrand = (state.getQ() - Qdesired).normSqr();
-    }
-};
-
 int main() {
 
     MucoTool muco;
@@ -97,17 +82,40 @@ int main() {
 
     // Bounds.
     // -------
-    mp.setTimeBounds(0, 1);
+    double finalTime = 1.0;
+    mp.setTimeBounds(0, finalTime);
     mp.setStateInfo("j0/q0/value", {-10, 10});
     mp.setStateInfo("j0/q0/speed", {-50, 50});
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50});
-    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau0", {-100, 100}); // TODO tighten.
     mp.setControlInfo("tau1", {-100, 100});
 
     // Cost.
     // -----
-    MucoCustomCoordinateTrackingCost tracking;
+    MucoCoordinateTrackingCost tracking;
+    TimeSeriesTable ref;
+    ref.setColumnLabels({"j0/q0/value", "j1/q1/value"});
+    for (double time = 0; time < finalTime; time += 0.01) {
+        ref.appendRow(time, {
+                0.5 * SimTK::Pi * time,
+                0.25 * SimTK::Pi * time
+        });
+    }
+
+    /*
+    // TODO I want to track a more interesting motion, but this will require
+     support for initial guesses.
+    double period = 1.0;
+    double f = 2 * SimTK::Pi / period;
+    for (double time = 0; time < finalTime; time += 0.01) {
+        ref.appendRow(time, {
+                SimTK::Pi * (0.50 + 0.25 * cos(f * time)),
+                0.25 * cos(f * time)
+        });
+    }*/
+
+    tracking.setReference(ref);
     mp.addCost(tracking);
 
     // Configure the solver.
