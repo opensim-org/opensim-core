@@ -150,6 +150,58 @@ calc_jacobian_sparsity_with_nan(const Eigen::VectorXd& x0,
     return sparsity;
 }
 
+/// Detect the sparsity pattern of a gradient vector by perturbing x and
+/// examining if the function value is affected by the perturbation.
+template <typename T>
+SparsityPattern
+calc_gradient_sparsity_with_perturbation(const Eigen::VectorXd& x0,
+        std::function<T(const VectorX<T>&)>& function) {
+    using std::isnan;
+    using tropter::isnan;
+    SparsityPattern sparsity(1, (int)x0.size());
+    VectorX<T> x = x0.cast<T>();
+    double eps = 1e-5;
+    T f0 = function(x0);
+    T f;
+    for (int i = 0; i < (int)x.size(); ++i) {
+        x[i] += eps;
+        f = function(x);
+        x[i] = x0[i];
+        if ((f - f0) != 0) sparsity.set_nonzero(0, i);
+    }
+    return sparsity;
+}
+
+/// Detect the sparsity pattern of a Jacobian matrix by perturbing x and
+/// examining how the constraint values are affected.
+template <typename T>
+SparsityPattern
+calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
+        int num_outputs,
+        std::function<void(const VectorX<T>&, VectorX<T>&)> function) {
+    using std::isnan;
+    using tropter::isnan;
+    SparsityPattern sparsity(num_outputs, (int)x0.size());
+    VectorX<T> x = x0.cast<T>();
+    double eps = 1e-5;
+    VectorX<T> output0(num_outputs);
+    function(x, output0);
+    VectorX<T> output(num_outputs);
+    VectorX<T> diff(num_outputs);
+    for (int j = 0; j < (int)x0.size(); ++j) {
+        output.setZero();
+        x[j] += eps;
+        function(x, output);
+        x[j] = x0[j];
+        diff = output - output0;
+        for (int i = 0; i < (int)num_outputs; ++i) {
+            if (diff[i] != 0) sparsity.set_nonzero(i, j);
+        }
+        diff.setZero();
+    }
+    return sparsity;
+}
+
 /// Detect the sparsity pattern of a Hessian matrix by perturbing x and
 /// examining if the function value is affected by the perturbation.
 template <typename T>

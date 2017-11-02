@@ -121,6 +121,7 @@ int main() {
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
+    solution.write("exampleTracking_solution.sto");
 
     muco.visualize(solution);
 

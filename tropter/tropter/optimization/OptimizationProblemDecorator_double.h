@@ -36,7 +36,7 @@ class OptimizationProblem<double>::Decorator
 public:
     Decorator(const OptimizationProblem<double>& problem);
     ~Decorator();
-    void calc_sparsity(const Eigen::VectorXd& variables,
+    void calc_sparsity(const Eigen::VectorXd& variables_guess,
             std::vector<unsigned int>& jacobian_row_indices,
             std::vector<unsigned int>& jacobian_col_indices,
             bool provide_hessian_indices,
@@ -86,6 +86,9 @@ private:
 
     // Working memory shared by multiple functions.
     mutable Eigen::VectorXd m_x_working;
+
+    //mutable double m_time_hescon = 0;
+    //mutable double m_time_hesobj = 0;
 
     // Gradient.
     // ---------
