@@ -32,8 +32,6 @@
 #include <OpenSim/Common/Array.h>
 
 
-
-
 using namespace OpenSim;
 using namespace std;
 
@@ -597,10 +595,8 @@ const SimTK::State& Manager::integrate(double finalTime)
             "initialized. Call Manager::initialize() first.");
     }
 
-    // Make sure that integrator is not stuck in a EndOfSimulation from
-    // a previous integrate call with the final state (last integrated).
+    // Get the internal state
     const SimTK::State& s = _integ->getState();
-    _integ->initialize(s);
 
     // Set the final time on the integrator so it can signal EndOfSimulation
     _integ->setFinalTime(finalTime);
@@ -669,8 +665,11 @@ const SimTK::State& Manager::integrate(double finalTime)
         return getState();
     }
 
-    // LOOP
-    while (status != SimTK::Integrator::EndOfSimulation) {
+    // This should use: status != SimTK::Integrator::EndOfSimulation
+    // but if we do that then repeated calls to integrate (and thus stepTo)
+    // fail to continue on integrating. This seems to be a bug in TimeStepper
+    // status. - aseth
+    while (time < finalTime) {
         double fixedStepSize;
         if (fixedStep) {
             fixedStepSize = getNextTimeArrayTime(time) - time;
@@ -679,13 +678,10 @@ const SimTK::State& Manager::integrate(double finalTime)
             stepToTime = time + fixedStepSize;
         }
 
-        // stepTo() does not return if it fails. However, the final step
-        // is returned once as an ordinary return; by the time we get
-        // EndOfSimulation status we have already seen the state and don't
-        // need to record it again.
         status = _timeStepper->stepTo(stepToTime);
 
-        if (status == SimTK::Integrator::TimeHasAdvanced) {
+        if (status == SimTK::Integrator::TimeHasAdvanced ||
+            status == SimTK::Integrator::ReachedScheduledEvent) {
             const SimTK::State& s = _integ->getState();
             if (_performAnalyses) _model->updAnalysisSet().step(s, step);
             if (_writeToStorage) {
@@ -716,14 +712,7 @@ const SimTK::State& Manager::integrate(double finalTime)
     // CLEAR ANY INTERRUPT
     clearHalt();
 
-    if (status == SimTK::Integrator::EndOfSimulation) {
-        finalize(_integ->getState());
-    }
-    else {
-        cout << "Integration failed to reach End of Simulation. "
-            << " With status: " << endl;
-        cout << _integ->getSuccessfulStepStatusString(status) << endl;
-    }
+    finalize(_integ->getState());
 
     return getState();
 }
