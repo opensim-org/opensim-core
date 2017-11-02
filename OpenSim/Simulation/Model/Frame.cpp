@@ -198,11 +198,10 @@ void Frame::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     if (getProperty_attached_geometry().size() == 0)
         return;
 
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndexBySegmentName(findBaseFrame().getName());
-    if (idx < 0)
+    // Get scale factors (if an entry for the base Body exists).
+    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     scaleAttachedGeometry(scaleFactors);
 }

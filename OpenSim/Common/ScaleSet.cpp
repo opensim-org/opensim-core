@@ -81,12 +81,3 @@ operator=(const ScaleSet &aScaleSet)
     Set<Scale>::operator=(aScaleSet);
     return(*this);
 }
-
-int ScaleSet::getIndexBySegmentName(const std::string& segmentName) const
-{
-    for (int i = 0; i < getSize(); ++i)
-        if (_objects[i]->getSegmentName() == segmentName)
-            return i;
-
-    return -1;
-}

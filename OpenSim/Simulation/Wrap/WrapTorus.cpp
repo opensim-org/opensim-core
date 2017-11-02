@@ -119,12 +119,10 @@ void WrapTorus::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::scale(s, scaleSet);
 
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndexBySegmentName(getFrame()
-                                                   .findBaseFrame().getName());
-    if (idx < 0)
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     // _pose.x() holds the torus's X-axis expressed in the body's reference
     // frame, and _pose.y() holds the Y-axis. Multiplying these vectors by the

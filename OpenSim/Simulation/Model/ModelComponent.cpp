@@ -127,4 +127,16 @@ void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
+SimTK::Vec3 ModelComponent::
+getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
+{
+    const std::string& baseFrameName = frame.findBaseFrame().getName();
+
+    for (int i = 0; i < scaleSet.getSize(); ++i)
+        if (scaleSet[i].getSegmentName() == baseFrameName)
+            return scaleSet[i].getScaleFactors();
+
+    return SimTK::Vec3(SimTK::NaN);
+}
+
 } // end of namespace OpenSim

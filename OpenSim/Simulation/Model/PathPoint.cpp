@@ -95,12 +95,10 @@ void PathPoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::scale(s, scaleSet);
 
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
-                                                   .findBaseFrame().getName());
-    if (idx < 0)
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     // Note: Currently, PathPoint and its Station subcomponent both have a
     //       property named "location" and the values of these properties should

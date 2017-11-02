@@ -319,12 +319,12 @@ void OffsetFrame<C>::setOffsetTransform(const SimTK::Transform& xform)
 template<class C>
 inline void OffsetFrame<C>::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
-                                                   .findBaseFrame().getName());
-    if (idx < 0)
+    Super::scale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    SimTK::Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
         return;
-    const SimTK::Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
 }

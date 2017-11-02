@@ -251,23 +251,22 @@ scale(const SimTK::State& s, const ScaleSet& scaleSet)
     if (depCoordinate.getMotionType() != Coordinate::Translational)
         return;
 
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const std::string& parentName =
-        depCoordinate.getJoint().getParentFrame().findBaseFrame().getName();
-    const int idx = scaleSet.getIndexBySegmentName(parentName);
-    if (idx < 0)
+    // Get scale factors (if there exists an entry for the base Body of the
+    // Joint's parent Frame).
+    Vec3 scaleFactors =
+        getScaleFactors(scaleSet, depCoordinate.getJoint().getParentFrame());
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& parentScaleFactors = scaleSet[idx].getScaleFactors();
 
     // Constraint scale factor. Assume uniform scaling unless proven otherwise.
-    const double scaleFactor = parentScaleFactors[0];
+    const double scaleFactor = scaleFactors[0];
 
     // We can handle non-uniform scaling along transform axes of custom joints
     // ONLY at this time.
     const Joint *joint =  dynamic_cast<const Joint*>(depCoordinate._joint.get());
     if (joint) {
-        if (parentScaleFactors[0] != parentScaleFactors[1] ||
-            parentScaleFactors[0] != parentScaleFactors[2] )
+        if (scaleFactors[0] != scaleFactors[1] ||
+            scaleFactors[0] != scaleFactors[2] )
         {
             // TODO: Non-uniform scaling remains undefined! - ASeth
             throw(Exception("Non-uniform scaling of CoordinateCoupler constraints not implemented."));

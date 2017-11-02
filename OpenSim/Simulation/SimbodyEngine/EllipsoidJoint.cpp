@@ -106,12 +106,10 @@ void EllipsoidJoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::scale(s, scaleSet);
 
-    // Get scale factors for base frame (if an entry for the base frame exists).
-    const int idx = scaleSet.getIndexBySegmentName(getParentFrame()
-                                                   .findBaseFrame().getName());
-    if (idx < 0)
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     //TODO: Need to scale transforms appropriately, given an arbitrary axis.
     upd_radii_x_y_z() = get_radii_x_y_z().elementwiseMultiply(scaleFactors);

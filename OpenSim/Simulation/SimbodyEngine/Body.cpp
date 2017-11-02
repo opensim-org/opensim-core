@@ -195,10 +195,9 @@ void Body::scale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::scale(s, scaleSet);
 
     // Get scale factors (if an entry for this Body exists).
-    const int idx = scaleSet.getIndexBySegmentName(getName());
-    if (idx < 0)
+    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
 }
@@ -328,10 +327,9 @@ void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMa
 void Body::scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass)
 {
     // Get scale factors (if an entry for this Body exists).
-    const int idx = scaleSet.getIndexBySegmentName(getName());
-    if (idx < 0)
+    Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors.isNaN())
         return;
-    const Vec3& scaleFactors = scaleSet[idx].getScaleFactors();
 
     scaleInertialProperties(scaleFactors, scaleMass);
 }
