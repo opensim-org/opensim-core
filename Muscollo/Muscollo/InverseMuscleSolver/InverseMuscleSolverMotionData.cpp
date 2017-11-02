@@ -26,27 +26,6 @@
 
 using namespace OpenSim;
 
-/// Given a table, create a spline for each column in `labels`, and provide all
-/// of these splines in a set.
-/// If `labels` is empty, all columns are splined.
-/// This function exists because GCVSplineSet's constructor takes a Storage,
-/// not a TimeSeriesTable.
-GCVSplineSet createGCVSplineSet(const TimeSeriesTable& table,
-                                const std::vector<std::string>& labels = {},
-                                int degree = 5,
-                                double errorVariance = 0.0) {
-    GCVSplineSet set;
-    const auto& time = table.getIndependentColumn();
-    auto labelsToUse = labels;
-    if (labelsToUse.empty()) labelsToUse = table.getColumnLabels();
-    for (const auto& label : labelsToUse) {
-        const auto& column = table.getDependentColumn(label);
-        set.adoptAndAppend(new GCVSpline(degree, column.size(), time.data(),
-                                         &column[0], label, errorVariance));
-    }
-    return set;
-}
-
 InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         const Model& model,
         const std::vector<const Coordinate*>& coordsToActuate,
@@ -131,7 +110,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             muscleTendonLengths.appendRow(state.getTime(), rowMTL);
             // muscleTendonVelocities.appendRow(state.getTime(), rowMTV);
         }
-        _muscleTendonLengths = createGCVSplineSet(muscleTendonLengths);
+        _muscleTendonLengths = GCVSplineSet(muscleTendonLengths);
         // auto MTLSto = std::unique_ptr<Storage>(
         //         _muscleTendonLengths.constructStorage(0));
         // MTLSto->print("DEBUG_muscle_tendon_lengths.sto");
@@ -139,7 +118,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
 
         // TODO Separately splining muscleTendonLengths and velocities might
         // lead to inconsistency.
-        // _muscleTendonVelocities = createGCVSplineSet(muscleTendonVelocities);
+        // _muscleTendonVelocities = GCVSplineSet(muscleTendonVelocities);
 
         // Moment arms.
         // ````````````
@@ -163,7 +142,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
             }
             CSVFileAdapter::write(momentArmsThisDOF,
                     "DEBUG_momentArmsThisDOF.csv");
-            _momentArms[i_dof] = createGCVSplineSet(momentArmsThisDOF);
+            _momentArms[i_dof] = GCVSplineSet(momentArmsThisDOF);
         }
     }
 }
@@ -221,7 +200,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     // them in multibody tree order.
     // TODO better error handling for invalid column labels.
     try {
-        _netGeneralizedForces = createGCVSplineSet(*netGenForcesTable,
+        _netGeneralizedForces = GCVSplineSet(*netGenForcesTable,
                 _coordPathsToActuate);
     } catch (KeyNotFound&) {
         // The net generalized forces file's column labels do not seem to
@@ -238,7 +217,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
                     "_moment" : "_force");
             ++iCoord;
         }
-        _netGeneralizedForces = createGCVSplineSet(*netGenForcesTable,
+        _netGeneralizedForces = GCVSplineSet(*netGenForcesTable,
                 invDynFormat);
         std::cout << "success!" << std::endl;
     }
@@ -421,7 +400,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     OPENSIM_THROW_IF(coordActIndices.size() != coordPathsToActuate.size(),
             Exception, "Internal bug detected: inconsistent number of "
             "actuated coordinates.");
-    auto coordFunctions = createGCVSplineSet(kinematicsData, coordValLabels);
+    auto coordFunctions = GCVSplineSet(kinematicsData, coordValLabels);
 
     // For debugging, print the splined coordinates, speeds, and accelerations.
     // auto coordSto = std::unique_ptr<Storage>(
@@ -443,7 +422,7 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     /* For debugging: use exact inverse dynamics solution.
     auto table = CSVFileAdapter::read(
             "DEBUG_testTugOfWar_INDYGO_actualInvDyn.csv");
-    _netGeneralizedForces = createGCVSplineSet(table);
+    _netGeneralizedForces = GCVSplineSet(table);
      */
 
     // Perform Inverse Dynamics.
