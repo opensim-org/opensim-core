@@ -82,10 +82,10 @@ Converting from v3.x to v4.0
 where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
 - `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
 - `Model::replaceMarkerSet()` was removed. (PR #1938) Please use `Model::updMarkerSet()` to edit the model's MarkerSet instead.
-- The argument list for `Model::scale()` was changed: the third and fourth
-  arguments were swapped and the `preserveMassDist` argument is no longer
-  optional. The default argument for `preserveMassDist` in OpenSim 3.3 was
-  `false`. (PR #1994)
+- The argument list for `Model::scale()` was changed: the `finalMass` and
+  `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
+  is no longer optional. The default argument for `preserveMassDist` in OpenSim
+  3.3 was `false`. (PR #1994)
 
 Composing a Component from other components
 -------------------------------------------
