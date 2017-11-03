@@ -32,22 +32,49 @@ namespace OpenSim {
 /// state variable value, summed over the state variables for which a
 /// reference is provided, and integrated over the phase. This can be used to
 /// track joint angles, activations, etc.
+/// The reference can be provided as a file name to a STO or CSV file (or
+/// other file types for which there is a FileAdapter), or programmatically
+/// as a TimeSeriesTable.
 class OSIMMUSCOLLO_API MucoStateTrackingCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoStateTrackingCost, MucoCost);
 public:
+    MucoStateTrackingCost() { constructProperties(); }
+    /// Provide the path to a data file containing reference values for the
+    /// states you want to track. Each column label must be the path of a state
+    /// variable, e.g., `knee/flexion/value`. Calling this function clears the
+    /// table provided via setReference(), if any.
+    /// The file is not loaded until the MucoProblem is initialized.
+    // TODO path relative to working directory or setup file?
+    void setReferenceFile(const std::string& filepath) {
+        m_table = TimeSeriesTable();
+        set_reference_file(filepath);
+    }
     /// Each column label must be the path of a state variable, e.g.,
-    /// `knee/flexion/value`.
+    /// `knee/flexion/value`. Calling this function clears the `reference_file`
+    /// property.
     void setReference(const TimeSeriesTable& ref) {
+        set_reference_file("");
         m_table = ref;
     }
+
+    /// If no reference file has been provided, this returns an empty string.
+    std::string getReferenceFile() const { return get_reference_file(); }
+
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeImpl() const override;
     void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const override;
 private:
-    // TODO accept a filename.
-    //OpenSim_DECLARE_PROPERTY(coordinates_file, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(reference_file, std::string,
+            "Path to file (.sto, .csv, ...) containing values of states "
+            "(coordinates, speeds, activation, etc.) to track. Column labels "
+            "should be state variable paths, e.g., 'knee/flexion/value'");
+
+    void constructProperties() {
+        constructProperty_reference_file("");
+    }
+
     TimeSeriesTable m_table;
     mutable GCVSplineSet m_refsplines;
     /// The indices in Y corresponding to the provided reference coordinates.

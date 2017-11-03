@@ -98,8 +98,8 @@ void MucoIterate::write(const std::string& filepath) const {
 
 Storage MucoIterate::exportToStatesStorage() const {
     TimeSeriesTable table(
-    std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
-    m_states, m_state_names);
+        std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+        m_states, m_state_names);
     return convertTableToStorage(table);
 }
 
@@ -111,6 +111,13 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
     return StatesTrajectory::createFromStatesStorage(model, storage);
 }
 
+bool MucoIterate::isNumericallyEqual(const MucoIterate& other) const {
+    return m_state_names == other.m_state_names &&
+            m_control_names == other.m_control_names &&
+            SimTK::Test::numericallyEqual(m_time, other.m_time, 1) &&
+            SimTK::Test::numericallyEqual(m_states, other.m_states, 1) &&
+            SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1);
+}
 
 
 
