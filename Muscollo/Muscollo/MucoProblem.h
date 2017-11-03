@@ -247,15 +247,40 @@ public:
     // TODO add getCost() and/or updCost().
 
 
+    /// @name Interface for solvers
+    /// These functions are for use by MucoSolver%s, but can also be called
+    /// by users for debugging. Make sure to call initialize() before invoking
+    /// any other functions in this group.
+    /// @{
+
+    /// Invoked by the solver in preparation for solving the problem.
+    // TODO make private and make MucoProblem a friend.
+    void initialize(const Model&) const;
     /// Calculate the sum of integrand over all the integral cost terms in this
     /// phase for the provided state. That is, the returned value is *not* an
     /// integral over time.
-    SimTK::Real calcIntegralCost(const SimTK::State& state) const;
+    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
+        SimTK::Real integrand = 0;
+        for (int i = 0; i < getProperty_costs().size(); ++i) {
+            integrand += get_costs(i).calcIntegralCost(state);
+        }
+        return integrand;
+    }
     /// Calculate the sum of all the endpoint cost terms in this phase.
-    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const;
+    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
+        SimTK::Real cost = 0;
+        // TODO cannot use controls.
+        for (int i = 0; i < getProperty_costs().size(); ++i) {
+            cost = get_costs(i).calcEndpointCost(finalState);
+        }
+        return cost;
+    }
+
+    /// @}
 
     // TODO print list of state and control names.
     //void printDescription();
+
 
 protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
@@ -325,6 +350,21 @@ public:
     /// This accesses the internal phases property.
     const MucoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
+
+    /// @name Interface for solvers
+    /// These functions are for use by MucoSolver%s, but can also be called
+    /// by users for debugging.
+    /// @{
+
+    /// Invoked by the solver in preparation for solving the problem.
+    /// This also performs error checks on the Problem.
+    // TODO create intermediate classes so that the solvers can have a
+    // non-const intermediate that contains a const MucoProblem; the
+    // intermediate can determine what parts of the MucoProblem to
+    // reveal/allow changing.
+    void initialize(const Model&) const;
+
+    /// @}
 
     // TODO
     // TODO check that

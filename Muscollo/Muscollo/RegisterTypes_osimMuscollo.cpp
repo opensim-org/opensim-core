@@ -25,6 +25,7 @@
 #include "MucoTropterSolver.h"
 #include "InverseMuscleSolver/GlobalStaticOptimization.h"
 #include "InverseMuscleSolver/INDYGO.h"
+#include "MucoStateTrackingCost.h"
 
 #include <exception>
 #include <iostream>
@@ -36,11 +37,13 @@ static osimMuscolloInstantiator instantiator;
 OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
     try {
         Object::registerType(MucoFinalTimeCost());
+        Object::registerType(MucoStateTrackingCost());
         Object::registerType(MucoPhase());
         Object::registerType(MucoVariableInfo());
         Object::registerType(MucoProblem());
         Object::registerType(MucoTool());
         Object::registerType(MucoTropterSolver());
+
 
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());

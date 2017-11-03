@@ -41,6 +41,10 @@ OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 /// This function blocks until the user exits the simbody-visualizer window.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
+/// The map provides the index of each state variable in
+/// SimTK::State::getY() from its state variable path string.
+std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
+
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
 template <typename T>

@@ -32,6 +32,7 @@ class MucoProblem;
 /// returned by a solver.
 class OSIMMUSCOLLO_API MucoIterate {
 public:
+    MucoIterate() = default;
     MucoIterate(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
@@ -74,7 +75,6 @@ public:
         setControl(name,
                 SimTK::Vector((int)trajectory.size(), trajectory.data()));
     }
-
     /// @}
 
     /// @name Accessors
@@ -110,6 +110,10 @@ public:
     /// order the state variables correctly.
     StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
     /// @}
+
+    /// Check if this iterate is numerically equal to another iterate.
+    /// This uses SimTK::Test::numericallyEqual() internally.
+    bool isNumericallyEqual(const MucoIterate& other) const;
 
 private:
     SimTK::Vector m_time;

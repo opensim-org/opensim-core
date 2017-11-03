@@ -91,6 +91,9 @@ public:
                     convert(info.getFinalBounds()));
         }
     }
+    void initialize_on_mesh(const Eigen::VectorXd&) const override {
+        m_mucoProb.initialize(m_model);
+    }
     // TODO rename argument "states" to "state".
     void calc_differential_algebraic_equations(
             const tropter::DAEInput<T>& in,

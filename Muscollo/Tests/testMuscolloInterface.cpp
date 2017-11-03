@@ -19,6 +19,7 @@
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 using namespace OpenSim;
 
@@ -287,11 +288,94 @@ void testBuildingProblem() {
     }
 }
 */
+void testStateTracking() {
+    // TODO move to another test file?
+    auto makeTool = []() {
+        MucoTool muco;
+        muco.setName("state_tracking");
+        muco.set_write_solution("false");
+        MucoProblem& mp = muco.updProblem();
+        mp.setModel(createSlidingMassModel());
+        mp.setTimeBounds(0, 1);
+        mp.setStateInfo("slider/position/value", {-1, 1});
+        mp.setStateInfo("slider/position/speed", {-100, 100});
+        mp.setControlInfo("actuator", {-50, 50});
+        return muco;
+    };
+
+    // Reference trajectory.
+    std::string fname = "testMuscolloInterface_testStateTracking_ref.sto";
+    {
+        TimeSeriesTable ref;
+        ref.setColumnLabels({"slider/position/value"});
+        using SimTK::Pi;
+        for (double time = -0.01; time < 1.02; time += 0.01) {
+            // Move at constant speed from x=0 to x=1. Really basic stuff.
+            ref.appendRow(time, {1.0 * time});
+        }
+        STOFileAdapter::write(ref, fname);
+    }
+
+    // Setting the TimeSeriesTable directly.
+    MucoSolution solDirect;
+    {
+        auto muco = makeTool();
+        MucoProblem& mp = muco.updProblem();
+        MucoStateTrackingCost tracking;
+        tracking.setReference(STOFileAdapter::read(fname));
+        mp.addCost(tracking);
+        MucoTropterSolver& ms = muco.initSolver();
+        ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
+        solDirect = muco.solve();
+    }
+
+    // Setting the reference to be a file.
+    std::string setup_fname = "testMuscolloInterface_testStateTracking.omuco";
+    if (std::ifstream(setup_fname).good()) std::remove(setup_fname.c_str());
+    MucoSolution solFile;
+    {
+
+        auto muco = makeTool();
+        MucoProblem& mp = muco.updProblem();
+        MucoStateTrackingCost tracking;
+        tracking.setReferenceFile(fname);
+        mp.addCost(tracking);
+        MucoTropterSolver& ms = muco.initSolver();
+        ms.set_num_mesh_points(5);
+        ms.set_optim_hessian_approximation("exact");
+        solFile = muco.solve();
+        muco.print(setup_fname);
+    }
+
+    // Run the tool from a setup file.
+    MucoSolution solDeserialized;
+    {
+        MucoTool muco(setup_fname);
+        solDeserialized = muco.solve();
+    }
+
+    SimTK_TEST(solDirect.isNumericallyEqual(solFile));
+    SimTK_TEST(solFile.isNumericallyEqual(solDeserialized));
+
+    // Error if neither file nor table were provided.
+    {
+        auto muco = makeTool();
+        MucoProblem& mp = muco.updProblem();
+        MucoStateTrackingCost tracking;
+        mp.addCost(tracking);
+        SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
+    }
+
+    // TODO error if data does not cover time window.
+
+}
 
 int main() {
     SimTK_START_TEST("testMuscolloInterface");
         SimTK_SUBTEST(testSlidingMass);
         SimTK_SUBTEST(testSolverOptions);
+        SimTK_SUBTEST(testStateTracking);
         //SimTK_SUBTEST(testEmpty);
         //SimTK_SUBTEST(testCopy);
         //SimTK_SUBTEST(testSolveRepeatedly);

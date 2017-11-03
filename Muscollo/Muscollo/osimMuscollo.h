@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoCost.h"
+#include "MucoStateTrackingCost.h"
 #include "MucoIterate.h"
 #include "MucoProblem.h"
 #include "MucoSolver.h"
