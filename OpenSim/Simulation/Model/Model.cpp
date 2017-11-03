@@ -1435,8 +1435,8 @@ void Model::removeController(Controller *aController)
 //------------------------------------------------------------------------------
 // SCALE
 //------------------------------------------------------------------------------
-bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet, double finalMass,
-                  bool preserveMassDist)
+bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet,
+                  bool preserveMassDist, double finalMass)
 {
     // Save the model's current pose.
     SimTK::Vector savedConfiguration = s.getY();

@@ -355,7 +355,7 @@ void scalePhysicalOffsetFrames()
     {
         const OpenSim::Body& body = model->getBodySet().get("body");
         const Vec3 initialLoc = body.findStationLocationInGround(s, Vec3(0));
-        model->scale(s, scaleSet);
+        model->scale(s, scaleSet, false);
         const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
 
         ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal,
