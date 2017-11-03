@@ -42,7 +42,6 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -60,7 +59,7 @@ using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-4;
+const static double integ_accuracy = 1.0e-6;
 const static double duration = 1.0;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
@@ -75,17 +74,35 @@ void testTorque();
 
 int main()
 {
-    try {
-        testNoForce();
-        testForceAtOrigin();
-        testForceAtPoint();
-        testTorque();
+    SimTK::Array_<std::string> failures;
+
+    try { testNoForce(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testNoForce");
     }
-    catch (const Exception& e) {
-        e.print(cerr);
+    try { testForceAtOrigin(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testForceAtOrigin");
+    }
+    try { testForceAtPoint(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testForceAtPoint");
+    }
+    try { testTorque(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testTorque");
+    }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+    cout << "testPrescribedForce Done" << endl;
     return 0;
 }
 
@@ -153,23 +170,22 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Compute the force and torque at the specified times.
 
     const OpenSim::Body& body = osimModel->getBodySet().get("ball");
-
+    osim_state.setTime(0.0);
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel,  integrator);
-    osim_state.setTime(0.0);
     manager.initialize(osim_state);
+    
     for (unsigned int i = 0; i < times.size(); ++i)
     {
         osim_state = manager.integrate(times[i]);
+        ASSERT_EQUAL(osim_state.getTime(), times[i], SimTK::Eps);
+
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel = body.findStationAccelerationInGround(osim_state, Vec3(0));
         Vec3 angularAccel = body.getAccelerationInGround(osim_state)[0];
-        ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
-        ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
-        ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][0], angularAccel[0], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][1], angularAccel[1], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][2], angularAccel[2], 1e-10);
+
+        ASSERT_EQUAL(accelerations[i], accel, integ_accuracy);
+        ASSERT_EQUAL(angularAccelerations[i], angularAccel, integ_accuracy);
     }
 }
 
