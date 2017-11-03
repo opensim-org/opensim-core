@@ -311,9 +311,10 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
     return dPdq_B;
 }
 
-void MovingPathPoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void MovingPathPoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());

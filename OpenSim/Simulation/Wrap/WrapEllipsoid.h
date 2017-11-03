@@ -81,7 +81,7 @@ public:
 
     /** Scale the ellipsoid's dimensions. The base class (WrapObject) scales the
         origin of the ellipsoid in the body's reference frame. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:

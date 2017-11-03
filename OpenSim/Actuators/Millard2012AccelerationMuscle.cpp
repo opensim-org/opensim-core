@@ -558,12 +558,12 @@ void Millard2012AccelerationMuscle::setMass(double mass)
 // SCALING
 //==============================================================================
 void Millard2012AccelerationMuscle::
-postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),
         "Millard2012AccelerationMuscle is not up-to-date with its properties.");
 
-    Super::postScale(s, scaleSet);
+    Super::extendPostScale(s, scaleSet);
 
     GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)

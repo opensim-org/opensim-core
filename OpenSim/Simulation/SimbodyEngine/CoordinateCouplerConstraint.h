@@ -117,7 +117,7 @@ public:
         to the Body associated with the CoordinateCouplerConstraint's dependent
         coordinate. Scaling is performed only if the dependent coordinate is a
         translation. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     void extendConnectToModel(Model& aModel) override;

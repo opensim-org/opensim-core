@@ -187,10 +187,12 @@ public:
 
     /** Calculate the path length in the current body position and store it for
         use after the Model has been scaled. */
-    void preScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendPreScale(const SimTK::State& s,
+                        const ScaleSet& scaleSet) override;
 
     /** Recalculate the path after the Model has been scaled. */
-    void postScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
     //--------------------------------------------------------------------------
     // Visualization Support

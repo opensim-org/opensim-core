@@ -127,6 +127,16 @@ void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
+// Base class implementations of virtual methods for scaling.
+void ModelComponent::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPreScale(s, scaleSet); }
+
+void ModelComponent::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendScale(s, scaleSet); }
+
+void ModelComponent::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPostScale(s, scaleSet); }
+
 const SimTK::Vec3 ModelComponent::
 getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
 {

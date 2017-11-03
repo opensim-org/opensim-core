@@ -102,9 +102,10 @@ void EllipsoidJoint::setEllipsoidRadii(const Vec3& radii)
 //==============================================================================
 // SCALING
 //==============================================================================
-void EllipsoidJoint::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void EllipsoidJoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());

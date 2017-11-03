@@ -342,9 +342,9 @@ double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) 
 // SCALING
 //==============================================================================
 void ActivationFiberLengthMuscle_Deprecated::
-postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::postScale(s, scaleSet);
+    Super::extendPostScale(s, scaleSet);
 
     GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)

@@ -76,7 +76,7 @@ public:
     SimTK::Vec3 findLocationInFrame(const SimTK::State& s,
                                     const OpenSim::Frame& frame) const;
 
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 private:
     /* Calculate the Station's location with respect to and expressed in Ground

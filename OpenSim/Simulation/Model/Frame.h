@@ -339,7 +339,7 @@ public:
         responsible for scaling themselves. (However, `scale()` is not currently
         implemented on ContactGeometry or classes derived therefrom so they will
         not scale with the Model.) */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     /** @name Extension of calculations of Frame kinematics.

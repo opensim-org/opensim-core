@@ -139,9 +139,9 @@ void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 }
 
-void WrapEllipsoid::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void WrapEllipsoid::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the Frame's base Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());

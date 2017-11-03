@@ -769,15 +769,17 @@ void GeometryPath::deletePathWrap(const SimTK::State& s, int aIndex)
 //==============================================================================
 // SCALING
 //==============================================================================
-void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
+void GeometryPath::
+extendPreScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::preScale(s, scaleSet);
+    Super::extendPreScale(s, scaleSet);
     setPreScaleLength(s, getLength(s));
 }
 
-void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+void GeometryPath::
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::postScale(s, scaleSet);
+    Super::extendPostScale(s, scaleSet);
     computePath(s);
 }
 

@@ -82,9 +82,9 @@ void WrapObject::setFrame(const PhysicalFrame& frame)
     _frame.reset(&frame);
 }
 
-void WrapObject::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void WrapObject::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the Frame's base Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());

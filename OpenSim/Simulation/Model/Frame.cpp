@@ -191,9 +191,9 @@ void Frame::scaleAttachedGeometry(const SimTK::Vec3& scaleFactors)
     }
 }
 
-void Frame::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void Frame::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     if (getProperty_attached_geometry().size() == 0)
         return;

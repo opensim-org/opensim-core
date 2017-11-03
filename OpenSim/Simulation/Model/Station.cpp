@@ -110,9 +110,9 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
                                                 get_location(), aFrame);
 }
 
-void Station::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void Station::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());

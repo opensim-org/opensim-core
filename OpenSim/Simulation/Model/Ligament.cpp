@@ -188,9 +188,9 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 //==============================================================================
 // SCALING
 //==============================================================================
-void Ligament::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::postScale(s, scaleSet);
+    Super::extendPostScale(s, scaleSet);
 
     GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)

@@ -98,7 +98,7 @@ public:
     /** Scale the Body's center of mass location only. Note that
         scaleInertialProperties() must be called after this method to update the
         Body's mass and inertia tensor. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     /** Scale the Body's mass and inertia tensor. */
     void scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass = true);

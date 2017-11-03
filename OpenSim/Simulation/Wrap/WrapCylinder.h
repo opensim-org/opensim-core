@@ -61,7 +61,7 @@ public:
 
     /** Scale the cylinder's dimensions. The base class (WrapObject) scales the
         origin of the cylinder in the body's reference frame. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,

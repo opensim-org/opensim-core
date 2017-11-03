@@ -190,9 +190,9 @@ void Body::scale(const SimTK::Vec3& scaleFactors, bool scaleMass)
     scaleInertialProperties(scaleFactors, scaleMass);
 }
 
-void Body::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+void Body::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for this Body exists).
     const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);

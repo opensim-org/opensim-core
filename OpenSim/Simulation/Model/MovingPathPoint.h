@@ -109,7 +109,7 @@ public:
 
     /** Scale the underlying MultiplierFunctions associated with the
         MovingPathPoint. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 private:
     void constructProperties();

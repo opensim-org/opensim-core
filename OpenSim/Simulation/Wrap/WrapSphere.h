@@ -74,7 +74,7 @@ public:
     /** Scale the sphere by the average of the scale factors in each direction.
         The base class (WrapObject) scales the origin of the sphere in the
         body's reference frame. */
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:

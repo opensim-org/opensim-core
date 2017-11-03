@@ -58,7 +58,6 @@ public:
 #ifndef SWIG
     ScaleSet& operator=(const ScaleSet &aScaleSet);
 #endif
-
 };
 
 }; //namespace

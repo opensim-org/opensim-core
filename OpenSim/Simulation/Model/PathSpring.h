@@ -152,7 +152,8 @@ public:
     /** Adjust the resting length of the path spring after the model has been
         scaled. The `resting_length` property is multiplied by the quotient of
         the current path length and the path length before scaling. */
-    void postScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
     /** Implementation of Force component virtual method */

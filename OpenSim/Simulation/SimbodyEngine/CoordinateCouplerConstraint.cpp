@@ -240,9 +240,9 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
 // SCALE
 //==============================================================================
 void CoordinateCouplerConstraint::
-scale(const SimTK::State& s, const ScaleSet& scaleSet)
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Super::scale(s, scaleSet);
+    Super::extendScale(s, scaleSet);
 
     Coordinate& depCoordinate =
         _model->updCoordinateSet().get(get_dependent_coordinate_name());
