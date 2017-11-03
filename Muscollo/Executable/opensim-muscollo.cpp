@@ -20,9 +20,10 @@ Usage:
 
     Print this help message.
 
-  opensim-muscollo run-tool <setup-file>
+  opensim-muscollo run-tool [--visualize] <setup-file>
 
     Run the tool specified in the provided setup file.
+    Only MucoTool supports visualizing.
 
   opensim-muscollo print-xml <tool>
 
@@ -68,10 +69,22 @@ int main(int argc, char* argv[]) {
             Object::setSerializeAllDefaults(false);
 
         } else if (arg1 == "run-tool") {
-            OPENSIM_THROW_IF(argc != 3, Exception,
+            OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,
                     "Incorrect number of arguments.");
 
-            const std::string setupFile(argv[2]);
+            std::string arg2(argv[2]);
+            OPENSIM_THROW_IF(argc == 4 && arg2 != "--visualize", Exception,
+                "Unrecognized option '" + arg2 +
+                "'; did you mean '--visualize'?");
+            std::string setupFile;
+            bool visualize = false;
+            if (argc == 3) {
+                setupFile = arg2;
+            } else {
+                setupFile = std::string(argv[3]);
+                visualize = true;
+            }
+
             auto obj = std::unique_ptr<Object>(
                     Object::makeObjectFromFile(setupFile));
 
@@ -82,14 +95,19 @@ int main(int argc, char* argv[]) {
             if (const auto* gso =
                     dynamic_cast<const GlobalStaticOptimization*>(obj.get())) {
                 auto solution = gso->solve();
+                if (visualize)
+                    std::cout << "Ignoring --visualize flag." << std::endl;
             }
             else if (const auto* mrs =
                     dynamic_cast<const INDYGO*>(obj.get())) {
                 auto solution = mrs->solve();
+                if (visualize)
+                    std::cout << "Ignoring --visualize flag." << std::endl;
             }
             else if (const auto* muco
                     = dynamic_cast<const MucoTool*>(obj.get())) {
                 auto solution = muco->solve();
+                if (visualize) muco->visualize(solution);
             }
             else {
                 throw Exception("The provided file '" + setupFile +
