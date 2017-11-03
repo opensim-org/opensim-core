@@ -55,6 +55,8 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
     Object::registerType( InducedAccelerations() );
     Object::RegisterType( ProbeReporter() );
 
+    Object::RegisterType( OutputReporter() );
+
   } catch (const std::exception& e) {
     std::cerr 
         << "ERROR during osimAnalyses Object registration:\n"

@@ -111,6 +111,9 @@ protected:
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {
+        if (!getNumPathLevels()) {
+            return std::vector<std::string>{}; 
+        }
         return getSubPathVec(0, getNumPathLevels() - 1);
     }
 

@@ -211,11 +211,6 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
     Manager manager(*osimModel,  integrator);
 
-    // Specify the initial and final times of the simulation.
-    // In this case, the initial and final times are set based on
-    // the range of times over which the controls are available.
-    //Control *control;
-    osim_state.setTime(0.0);
     manager.initialize(osim_state);
     osim_state = manager.integrate(duration);
 }
@@ -309,8 +304,8 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
     // Get the state at the end of the integration from OpenSim.
     Vector& qf = osim_state.updQ();
     Vector& uf = osim_state.updU();
-    cout<<"\nOpenSim Final q's:\n "<<qf<<endl;
-    cout<<"\nOpenSim Final u's:\n "<<uf<<endl;
+    qf.dump("\nOpenSim Final q's:");
+    uf.dump("\nOpenSim Final u's:");
 
     //==========================================================================================================
     // Compare Simulation Results
@@ -475,6 +470,12 @@ void testConstantDistanceConstraint()
 void testCoordinateLocking()
 {
     using namespace SimTK;
+
+    cout << endl;
+    cout << "==================================================================" << endl;
+    cout << " OpenSim testCoordinateLocking " << endl;
+    cout << "==================================================================" << endl;
+
 
     double fixedKneeAngle = Pi/2;
 
