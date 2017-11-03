@@ -49,6 +49,18 @@ Station()
 
 //_____________________________________________________________________________
 /**
+* Conveniece constructor.
+*/
+Marker::Marker(const std::string& name, const PhysicalFrame& frame, 
+               const SimTK::Vec3& location) :
+Station(frame, location)
+{
+    constructProperties();
+    setName(name);
+}
+
+//_____________________________________________________________________________
+/**
  * Destructor.
  */
 Marker::~Marker()

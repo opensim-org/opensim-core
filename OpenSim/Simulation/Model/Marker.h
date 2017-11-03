@@ -59,6 +59,8 @@ public:
 //=============================================================================
 public:
     Marker();
+    Marker(const std::string& name, const PhysicalFrame& frame,
+           const SimTK::Vec3& location);
     virtual ~Marker();
     /** Convenience method to get the 'parent_frame' Socket's connectee_name */
     const std::string& getParentFrameName() const;
