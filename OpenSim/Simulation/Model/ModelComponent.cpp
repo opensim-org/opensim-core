@@ -137,7 +137,7 @@ void ModelComponent::scale(const SimTK::State& s, const ScaleSet& scaleSet)
 void ModelComponent::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {   extendPostScale(s, scaleSet); }
 
-const SimTK::Vec3 ModelComponent::
+SimTK::Vec3 ModelComponent::
 getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
 {
     const std::string& baseFrameName = frame.findBaseFrame().getName();
@@ -146,6 +146,7 @@ getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
         if (scaleSet[i].getSegmentName() == baseFrameName)
             return scaleSet[i].getScaleFactors();
 
+    // No scale factors found for the base Body.
     return SimTK::Vec3(SimTK::NaN);
 }
 

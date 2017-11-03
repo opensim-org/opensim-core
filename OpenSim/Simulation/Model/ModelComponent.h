@@ -141,8 +141,8 @@ public:
     /** Get the scale factors corresponding to the base OpenSim::Body of the
         specified Frame. Returns SimTK::Vec3(SimTK::NaN) if the ScaleSet does
         not contain scale factors for the base Body. */
-    const SimTK::Vec3 getScaleFactors(const ScaleSet& scaleSet,
-                                      const Frame& frame) const;
+    SimTK::Vec3 getScaleFactors(const ScaleSet& scaleSet,
+                                const Frame& frame) const;
 
 protected:
     /** Perform any computations that must occur before ModelComponent::scale()
