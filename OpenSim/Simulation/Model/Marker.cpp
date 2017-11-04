@@ -38,7 +38,7 @@ using SimTK::Vec3;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 Marker::Marker() :
@@ -48,9 +48,9 @@ Station()
 }
 
 //_____________________________________________________________________________
-/**
-* Conveniece constructor.
-*/
+/*
+ * Convenience constructor.
+ */
 Marker::Marker(const std::string& name, const PhysicalFrame& frame, 
                const SimTK::Vec3& location) :
 Station(frame, location)
@@ -60,7 +60,7 @@ Station(frame, location)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Destructor.
  */
 Marker::~Marker()
@@ -68,7 +68,7 @@ Marker::~Marker()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the data members of this Marker to their null values.
  */
 void Marker::setNull()
@@ -76,9 +76,9 @@ void Marker::setNull()
 
 }
 //_____________________________________________________________________________
-/**
-* Construct properties and initialize their default values.
-*/
+/*
+ * Construct properties and initialize their default values.
+ */
 void Marker::constructProperties()
 {
     // Indicate whether the Marker is fixed or not (for MarkerPlacement)
@@ -91,7 +91,7 @@ void Marker::setParentFrameName(const string& name)
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Get the 'frame name' field, which is used when the marker is added to
  * an existing model.
  */
@@ -129,7 +129,7 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s,
 // SCALING
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Scale the marker.
  *
  * @param aScaleFactors XYZ scale factors.
@@ -140,10 +140,10 @@ void Marker::scale(const SimTK::Vec3& aScaleFactors)
 }
 
 //_____________________________________________________________________________
-/**
-* Override default implementation by object to intercept and fix the XML node
-* underneath the Marker to match current version
-*/
+/*
+ * Override default implementation by object to intercept and fix the XML node
+ * underneath the Marker to match current version
+ */
 /*virtual*/
 void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
