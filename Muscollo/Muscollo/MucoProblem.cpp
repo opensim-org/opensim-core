@@ -88,7 +88,7 @@ void MucoPhase::setControlInfo(const std::string& name,
 }
 void MucoPhase::addCost(const MucoCost& cost) {
     // TODO check if a cost with the provided name already exists.
-    int index = append_costs(cost);
+    append_costs(cost);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
     return MucoInitialBounds(getProperty_time_initial_bounds());
