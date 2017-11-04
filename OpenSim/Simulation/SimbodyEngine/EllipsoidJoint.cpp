@@ -99,40 +99,21 @@ void EllipsoidJoint::setEllipsoidRadii(const Vec3& radii)
     set_radii_x_y_z(radii);
 }
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale a joint based on XYZ scale factors for the bodies.
- *
- * @param aScaleSet Set of XYZ scale factors for the bodies.
- * @todo Need to scale transforms appropriately, given an arbitrary axis.
- */
-void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
+//==============================================================================
+void EllipsoidJoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    Vec3 scaleFactors(1.0);
+    Super::extendScale(s, scaleSet);
 
-    // Joint knows how to scale locations of the joint in parent and on the body
-    Super::scale(aScaleSet);
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
+        return;
 
-    // SCALING TO DO WITH THE PARENT BODY -----
-    // Joint kinematics are scaled by the scale factors for the
-    // parent body, so get those body's factors
-    const string& parentName = getParentFrame().getName();
-    for (int i=0; i<aScaleSet.getSize(); i++) {
-        Scale& scale = aScaleSet.get(i);
-        if (scale.getSegmentName()==parentName) {
-            scale.getScaleFactors(scaleFactors);
-            break;
-        }
-    }
-
-    SimTK::Vec3& ellipsoidRadii = upd_radii_x_y_z();
-    for(int i=0; i<3; i++){ 
-        // Scale the size of the mobilizer
-        ellipsoidRadii[i] *= scaleFactors[i];
-    }
+    //TODO: Need to scale transforms appropriately, given an arbitrary axis.
+    upd_radii_x_y_z() = get_radii_x_y_z().elementwiseMultiply(scaleFactors);
 }
 
 //=============================================================================

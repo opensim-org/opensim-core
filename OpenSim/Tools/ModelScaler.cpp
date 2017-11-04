@@ -309,7 +309,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
         }
 
         /* Now scale the model. */
-        aModel->scale(s, theScaleSet, aSubjectMass, _preserveMassDist);
+        aModel->scale(s, theScaleSet, _preserveMassDist, aSubjectMass);
 
 
         if(_printResultFiles) {

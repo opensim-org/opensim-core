@@ -34,6 +34,8 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -47,12 +49,16 @@ void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
 
+// Test scaling PhysicalOffsetFrames in models with atypical ownership trees.
+void scalePhysicalOffsetFrames();
+
 int main()
 {
     try {
         scaleGait2354();
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
+        scalePhysicalOffsetFrames();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -321,4 +327,137 @@ bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
         }
     }
     return true;
+}
+
+void scalePhysicalOffsetFrames()
+{
+    cout << "Scaling PhysicalOffsetFrames in models with atypical ownership "
+         << "trees..." << endl;
+
+    using namespace SimTK;
+    const Transform tfY = Transform(Vec3(0,1,0));
+
+    // Create ScaleSet to scale the OpenSim::Body named "body".
+    const double scaleFactor = 1.234;
+    ScaleSet scaleSet;
+    Scale* scale = new Scale();
+    scale->setSegmentName("body");
+    scale->setScaleFactors(Vec3(scaleFactor));
+    scale->setApply(true);
+    scaleSet.adoptAndAppend(scale);
+
+    // Expected location of COM in Ground after scaling.
+    Vec3 expectedLoc = Vec3(0, -scaleFactor, 0);
+
+    // Helper function to scale the model, report the COM location, and compare
+    // to the expected location.
+    auto testScaling = [&](Model* model, State& s) -> void
+    {
+        const OpenSim::Body& body = model->getBodySet().get("body");
+        const Vec3 initialLoc = body.findStationLocationInGround(s, Vec3(0));
+        model->scale(s, scaleSet, false);
+        const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
+
+        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "Incorrect final COM location:\n  initial: " + initialLoc.toString()
+            + "\n    final: " + finalLoc.toString() + " (expected: "
+            + expectedLoc.toString() + ")");
+    };
+
+    // Case 1: Use PinJoint's convenience constructor to create the child POF
+    //         automatically. The POF will be stored in PinJoint's "frames" list
+    //         property. This is the most typical case.
+    {
+        cout << "- case 1" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint("pin", model->getGround(), Vec3(0), Vec3(0),
+                                            *body, Vec3(0,1,0), Vec3(0));
+        model->addJoint(pin);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 2: Create the child POF manually and store it in
+    //         (a) PinJoint's "frames" list property (i==0)
+    //         (b) PinJoint's "components" list property (i==1)
+    //         (c) Model's "components" list property (i==2)
+    for (int i=0; i<3; ++i)
+    {
+        cout << "- case 2(" << std::string("abc").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            pin->updProperty_frames().adoptAndAppendValue(pof);
+        else if (i==1)
+            pin->addComponent(pof);
+        else
+            model->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 3: Create the child POF manually and store it in
+    //         (a) a different PinJoint's "frames" list property (i==0)
+    //         (b) a different PinJoint's "components" list property (i==1)
+
+    // TODO: These cases currently throw "Assigned an invalid
+    //       SimTK::MobilizedBodyIndex" Exception on initSystem(). See GitHub
+    //       Issue #1970.
+
+    /*
+    for (int i=0; i<2; ++i)
+    {
+        cout << "- case 3(" << std::string("ab").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+
+        // First add a body and joint as in Case 1.
+        OpenSim::Body* otherBody = new OpenSim::Body("otherBody", 1, Vec3(0),
+                                                     Inertia(0));
+        model->addBody(otherBody);
+
+        PinJoint* otherPin = new PinJoint("otherPin",
+                                          model->getGround(), Vec3(0), Vec3(0),
+                                          *otherBody, Vec3(0,1,0), Vec3(0));
+        model->addJoint(otherPin);
+
+        // Now add the components for the test.
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            otherPin->updProperty_frames().adoptAndAppendValue(pof);
+        else
+            otherPin->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+    */
 }

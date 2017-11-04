@@ -933,19 +933,24 @@ public:
     /**
      * Scale the model.
      *
-     * @param state     State containing parameter values that might be 
-     *                  modified here.
-     * @param scaleSet  The set of XYZ scale factors for the bodies.
-     * @param finalMass The mass that the scaled model should have.
-     * @param preserveMassDist 
-     *                  Whether or not the masses of the individual bodies 
-     *                  should be scaled with the body scale factors.
-     * @returns         Whether or not scaling was successful.
+     * @param state      State containing parameter values that might be
+     *                   modified here.
+     * @param scaleSet   The set of XYZ scale factors for the bodies.
+     * @param preserveMassDist
+     *                   Whether the masses of the bodies should be scaled by
+     *                   the scale factors. If `false`, body masses will be
+     *                   adjusted only if `finalMass` has been specified; if
+     *                   `true`, body masses will be scaled by the product of
+     *                   the body's scale factors (and then a second time if
+     *                   `finalMass` has been specified). Inertias are always
+     *                   updated to reflect changes in body dimensions.
+     * @param finalMass  The total mass that the scaled model should have.
+     * @returns          Whether or not scaling was successful.
      */
-    bool scale(SimTK::State&    state, 
-               const ScaleSet&  scaleSet, 
-               double           finalMass = -1.0, 
-               bool             preserveMassDist = false);
+    bool scale(SimTK::State&    state,
+               const ScaleSet&  scaleSet,
+               bool             preserveMassDist,
+               double           finalMass = -1.0);
 
     //--------------------------------------------------------------------------
     // PRINT

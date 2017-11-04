@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Lmdif.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -114,33 +115,28 @@ void WrapTorus::setupProperties()
     _propertySet.append(&_outerRadiusProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the torus's dimensions. The base class scales the origin
- * of the torus in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
+void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   // Base class, to scale origin in body frame
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-    SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors.isNaN())
+        return;
 
-   // _pose.x() holds the torus's X axis expressed in the
-   // body's reference frame, and _pose.y() holds the Y.
-   // Multiplying these vectors by the scale factor vector gives
-    // localScaleVector[]. The magnitudes of the localScaleVectors
-    // gives the amount to scale the torus in the XYZ dimensions.
-    // The wrap torus is oriented along the Z axis, so the inner and
+    // _pose.x() holds the torus's X-axis expressed in the body's reference
+    // frame, and _pose.y() holds the Y-axis. Multiplying these vectors by the
+    // scale factor vector gives localScaleVector[]. The magnitudes of the
+    // localScaleVectors gives the amount to scale the torus in the X, Y, and Z
+    // dimensions. The wrap torus is oriented along the Z-axis, so the inner and
     // outer radii are scaled by the average of the X and Y scale factors.
-    for (int i=0; i<3; i++) {
-        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-    }
+    Vec3 localScaleVector[2];
 
-   double averageXYScale = (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
+    localScaleVector[0] = _pose.x().elementwiseMultiply(scaleFactors);
+    localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
+
+    const double averageXYScale =
+        (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
    _innerRadius *= averageXYScale;
    _outerRadius *= averageXYScale;
 }

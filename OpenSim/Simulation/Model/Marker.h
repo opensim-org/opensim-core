@@ -76,8 +76,6 @@ public:
     void changeFramePreserveLocation(const SimTK::State& s, 
                                      const PhysicalFrame& newParentFrame );
 
-    void scale(const SimTK::Vec3& aScaleFactors);
-
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;

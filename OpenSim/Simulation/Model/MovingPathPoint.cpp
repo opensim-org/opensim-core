@@ -30,7 +30,7 @@
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -311,20 +311,27 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
     return dPdq_B;
 }
 
-
-void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
+void MovingPathPoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
+        return;
+
     if (!_xCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_x_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[0]);
+            mf->setScale(mf->getScale() * scaleFactors[0]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_x_location(MultiplierFunction(get_x_location().clone(), aScaleFactors[0]));
+            set_x_location(MultiplierFunction(get_x_location().clone(), scaleFactors[0]));
         }
     }
 
@@ -334,11 +341,11 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_y_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[1]);
+            mf->setScale(mf->getScale() * scaleFactors[1]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_y_location(MultiplierFunction(get_y_location().clone(), aScaleFactors[1]));
+            set_y_location(MultiplierFunction(get_y_location().clone(), scaleFactors[1]));
         }
     }
 
@@ -348,9 +355,9 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_z_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[2]);
+            mf->setScale(mf->getScale() * scaleFactors[2]);
         } else {
-            set_z_location(MultiplierFunction(get_z_location().clone(), aScaleFactors[2]));
+            set_z_location(MultiplierFunction(get_z_location().clone(), scaleFactors[2]));
         }
     }
 }

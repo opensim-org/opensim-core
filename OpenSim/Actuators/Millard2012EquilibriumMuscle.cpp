@@ -459,18 +459,21 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
 }
 
 //==============================================================================
-// PROTECTED METHODS
+// SCALING
 //==============================================================================
 void Millard2012EquilibriumMuscle::
-postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    GeometryPath& path = upd_GeometryPath();
-    path.postScale(s, aScaleSet);
+    Super::extendPostScale(s, scaleSet);
 
-    if (path.getPreScaleLength(s) > 0.0) {
-        double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+    GeometryPath& path = upd_GeometryPath();
+    if (path.getPreScaleLength(s) > 0.0)
+    {
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
+
+        // Clear the pre-scale length that was stored in the GeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }

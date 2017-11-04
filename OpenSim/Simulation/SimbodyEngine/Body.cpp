@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "Body.h"
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -179,43 +180,38 @@ void Body::setInertia(const SimTK::Inertia& inertia)
     upd_inertia()[5] = I[1][2];
 }
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale the body.
- *
- * @param aScaleFactors XYZ scale factors.
- * @param aScaleMass whether or not to scale mass properties
- */
-void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+//==============================================================================
+void Body::scale(const SimTK::Vec3& scaleFactors, bool scaleMass)
 {
-    Super::scale(aScaleFactors);
-    for(int i=0; i<3; i++) {
-        upd_mass_center()[i] *= aScaleFactors[i];
-    }
-
-    scaleInertialProperties(aScaleFactors, aScaleMass);
+    Super::scaleAttachedGeometry(scaleFactors);
+    upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
+    scaleInertialProperties(scaleFactors, scaleMass);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the body's mass and inertia tensor.
- *
- * @param aScaleFactors XYZ scale factors.
- * @param aScaleMass Whether or not to scale the mass
- */
-void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
+void Body::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for this Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors.isNaN())
+        return;
+
+    upd_mass_center() = get_mass_center().elementwiseMultiply(scaleFactors);
+}
+
+void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMass)
 {
     // Save the unscaled mass for possible use later.
     double unscaledMass = get_mass();
 
     // Calculate and store the product of the scale factors.
-    double massScaleFactor = abs(aScaleFactors[0] * aScaleFactors[1] * aScaleFactors[2]);
+    double massScaleFactor = abs(scaleFactors[0] * scaleFactors[1] * scaleFactors[2]);
 
     // Scale the mass.
-    if (aScaleMass)
+    if (scaleMass)
         upd_mass() *= massScaleFactor;
 
     SimTK::SymMat33 inertia = _inertia.asSymMat33();
@@ -230,15 +226,15 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
     if (get_mass() <= SimTK::Eps) {
         inertia *= 0.0;
     }
-    else if (SimTK::isNumericallyEqual(aScaleFactors[0], aScaleFactors[1])
-             && SimTK::isNumericallyEqual(aScaleFactors[1], aScaleFactors[2])) {
+    else if (SimTK::isNumericallyEqual(scaleFactors[0], scaleFactors[1])
+             && SimTK::isNumericallyEqual(scaleFactors[1], scaleFactors[2])) {
         // If the mass is also being scaled, scale the inertia terms by massScaleFactor.
-        if (aScaleMass) {
+        if (scaleMass) {
             inertia *= massScaleFactor;
         }
 
         // Now scale by the length-squared component.
-        inertia *= (aScaleFactors[0] * aScaleFactors[0]);
+        inertia *= (scaleFactors[0] * scaleFactors[0]);
 
     } else {
         // If the scale factors are not equal, then assume that the segment
@@ -284,22 +280,22 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
             length = sqrt(term);
 
         // 4. Scale the radius and length, and recalculate the diagonal inertia terms.
-        length *= aScaleFactors[axis];
+        length *= scaleFactors[axis];
 
         if (axis == 0) {
-            rad_sqr = radius * (aScaleFactors[1]) * radius * (aScaleFactors[2]);
+            rad_sqr = radius * (scaleFactors[1]) * radius * (scaleFactors[2]);
             inertia[0][0] = 0.5 * get_mass() * rad_sqr;
             inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
         } else if (axis == 1) {
-            rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[2]);
+            rad_sqr = radius * (scaleFactors[0]) * radius * (scaleFactors[2]);
             inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[1][1] = 0.5 * get_mass() * rad_sqr;
             inertia[2][2] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
 
         } else {
-            rad_sqr = radius * (aScaleFactors[0]) * radius * (aScaleFactors[1]);
+            rad_sqr = radius * (scaleFactors[0]) * radius * (scaleFactors[1]);
             inertia[0][0] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[1][1] = get_mass() * ((length * length / 12.0) + 0.25 * rad_sqr);
             inertia[2][2] = 0.5 * get_mass() * rad_sqr;
@@ -308,14 +304,14 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
         // 5. Scale the inertia products, in case some are non-zero. These are scaled by
         //    two scale factors for the length term (which two depend on the inertia term
         //    being scaled), and, if the mass is also scaled, by massScaleFactor.
-        inertia[0][1] *= ((aScaleFactors[0] * aScaleFactors[1]));
-        inertia[0][2] *= ((aScaleFactors[0] * aScaleFactors[2]));
-        inertia[1][0] *= ((aScaleFactors[1] * aScaleFactors[0]));
-        inertia[1][2] *= ((aScaleFactors[1] * aScaleFactors[2]));
-        inertia[2][0] *= ((aScaleFactors[2] * aScaleFactors[0]));
-        inertia[2][1] *= ((aScaleFactors[2] * aScaleFactors[1]));
+        inertia[0][1] *= ((scaleFactors[0] * scaleFactors[1]));
+        inertia[0][2] *= ((scaleFactors[0] * scaleFactors[2]));
+        inertia[1][0] *= ((scaleFactors[1] * scaleFactors[0]));
+        inertia[1][2] *= ((scaleFactors[1] * scaleFactors[2]));
+        inertia[2][0] *= ((scaleFactors[2] * scaleFactors[0]));
+        inertia[2][1] *= ((scaleFactors[2] * scaleFactors[1]));
 
-        if (aScaleMass) {
+        if (scaleMass) {
             inertia[0][1] *= massScaleFactor;
             inertia[0][2] *= massScaleFactor;
             inertia[1][0] *= massScaleFactor;
@@ -326,6 +322,16 @@ void Body::scaleInertialProperties(const SimTK::Vec3& aScaleFactors, bool aScale
     }
 
     setInertia(SimTK::Inertia(inertia));
+}
+
+void Body::scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass)
+{
+    // Get scale factors (if an entry for this Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors.isNaN())
+        return;
+
+    scaleInertialProperties(scaleFactors, scaleMass);
 }
 
 //_____________________________________________________________________________

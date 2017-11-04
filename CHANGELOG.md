@@ -82,6 +82,10 @@ Converting from v3.x to v4.0
 where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
 - `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
 - `Model::replaceMarkerSet()` was removed. (PR #1938) Please use `Model::updMarkerSet()` to edit the model's MarkerSet instead.
+- The argument list for `Model::scale()` was changed: the `finalMass` and
+  `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
+  is no longer optional. The default argument for `preserveMassDist` in OpenSim
+  3.3 was `false`. (PR #1994)
 
 Composing a Component from other components
 -------------------------------------------
@@ -112,7 +116,8 @@ Bug Fixes
 - Fixed bug causing the muscle equilibrium solve routine in both Thelen2003Muscle and Millard2012EquilibriumMuscle to fail to converge and erroneously return the minimum fiber length. The fix added a proper reduction in step-size when errors increase and limiting the fiber-length to its minimum. (PR #1728)
 - Fixed a bug where Models with Bodies and Joints (and other component types) with the same name were loaded without error. Duplicately named Bodies were simply being ignored and only the first Body of that name in the BodySet was being used, for example, to connect a Body to its parent via its Joint, or to affix path points to its respective Body. Now, duplicate names are flagged and renamed so they are uniquely identified. (PR #1887)
 - Fixed bug and speed issue with `model.setStateVariableValues()` caused by enforcing constraints after each coordinate value was being set (PR #1911). Removing the automatic enforcement of constraints makes setting all state values much faster, but also requires calling `model.assemble()` afterwards. Enforcing constraints after setting each coordinate value individually was also incorrect, since it neglected the effect of other coordinate changes have on the current coordinate. All coordinate values must be set before enforcing constraints.
-
+- Fixed a bug that resulted in incorrect Ligament resting lengths after scaling.
+  (PR #1994)
 
 New Classes
 -----------
@@ -177,6 +182,11 @@ programmatically in MATLAB or python.
   and may be installed in a different location.
 - macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
   `DYLD_LIBRARY_PATH` to use OpenSim libraries.
+- The `scale()` method was removed from the `SimbodyEngine` class (the contents
+  were moved into `Model::scale()`). (PR #1994)
+- Any class derived from ModelComponent can now add its own implementation of
+  `extendPreScale()`, `extendScale()`, and/or `extendPostScale()` to control how
+  its properties are updated during scaling. (PR #1994)
 
 Documentation
 --------------
