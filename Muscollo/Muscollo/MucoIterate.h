@@ -44,6 +44,8 @@ public:
     /// @name Set the data
     /// @{
 
+    /// setNumTimes() -> setNumNodes().
+
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories. This may erase any data that was previously stored.
     // TODO change this to interpolate.

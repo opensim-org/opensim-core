@@ -95,3 +95,5 @@ pl.plot(sliding_velocity,
         label="MATLAB")
 pl.legend()
 pl.show()
+
+fig.savefig('contact_models.pdf')
