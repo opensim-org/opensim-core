@@ -119,7 +119,7 @@ double MucoIterate::resampleWithInterval(double desiredTimeInterval) {
     // an integer:
     // time_interval = duration / (num_times - 1)
     const auto& duration = m_time[m_time.size() - 1] - m_time[0];
-    const int actualNumTimes = ceil(duration / desiredTimeInterval) + 1;
+    const int actualNumTimes = (int)ceil(duration / desiredTimeInterval) + 1;
     resampleWithNumTimes(actualNumTimes);
     return duration / ((double)actualNumTimes - 1);
 }
@@ -128,7 +128,7 @@ double MucoIterate::resampleWithFrequency(double desiredFrequency) {
     // frequency = num_times / duration, so
     // num_times = ceil(duration * frequency);
     const auto& duration = m_time[m_time.size() - 1] - m_time[0];
-    const int actualNumTimes = ceil(duration * desiredFrequency);
+    const int actualNumTimes = (int)ceil(duration * desiredFrequency);
     resampleWithNumTimes(actualNumTimes);
     return (double)actualNumTimes / duration;
 }
