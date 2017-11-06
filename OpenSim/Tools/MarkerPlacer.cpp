@@ -416,7 +416,6 @@ bool MarkerPlacer::processModel(Model* aModel,
         } // catch the exception so we can reset the working directory
         catch (std::exception& ex) {
             IO::chDir(savedCwd);
-            // now re-throw in context of ModelPlacer
             OPENSIM_THROW_FRMOBJ(Exception, ex.what());
         }
         IO::chDir(savedCwd);

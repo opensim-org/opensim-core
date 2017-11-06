@@ -326,7 +326,7 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
                         cout << "Wrote scale file " << _outputScaleFileName <<
                         " for model " << aModel->getName() << endl;
                 }
-            }
+            } // catch the exception so we can reset the working directory
             catch (std::exception& ex) {
                 IO::chDir(savedCwd);
                 OPENSIM_THROW_FRMOBJ(Exception, ex.what());
