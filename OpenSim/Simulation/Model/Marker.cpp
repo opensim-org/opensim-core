@@ -125,20 +125,6 @@ void Marker::changeFramePreserveLocation(const SimTK::State& s,
     setParentFrame(parentFrame);
 }
 
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/*
- * Scale the marker.
- *
- * @param aScaleFactors XYZ scale factors.
- */
-void Marker::scale(const SimTK::Vec3& aScaleFactors)
-{
-    upd_location() = get_location().elementwiseMultiply(aScaleFactors);
-}
-
 //_____________________________________________________________________________
 /*
  * Override default implementation by object to intercept and fix the XML node
