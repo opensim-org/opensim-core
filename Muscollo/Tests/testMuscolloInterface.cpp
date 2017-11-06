@@ -586,7 +586,7 @@ void testGuess() {
             // actual_num_times = ceil(duration/desired_interval) + 1
             // actual_interval = duration/(actual_num_times - 1)
             auto actualInterval = guess.resampleWithInterval(0.9);
-            auto expectedNumTimes = ceil(5/0.9) + 1;
+            int expectedNumTimes = (int)ceil(5/0.9) + 1;
             SimTK_TEST_EQ(actualInterval, 5 / (expectedNumTimes - 1));
             SimTK_TEST(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
@@ -604,7 +604,7 @@ void testGuess() {
             MucoIterate guess = guess0;
             // Here, we also ensure that we can downsample.
             auto actualFrequency = guess.resampleWithFrequency(0.7);
-            auto expectedNumTimes = ceil(5 * 0.7);
+            int expectedNumTimes = (int)ceil(5 * 0.7);
             SimTK_TEST_EQ(actualFrequency, expectedNumTimes / 5); // 4
             SimTK_TEST(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
