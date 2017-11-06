@@ -391,22 +391,22 @@ bool MarkerPlacer::processModel(Model* aModel,
     //_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
     if(_printResultFiles) {
-        if (!_outputModelFileNameProp.isValidFileName())
-        {
+        if (_outputModelFileNameProp.isValidFileName()) {
             aModel->print(aPathToSubject + _outputModelFileName);
-            cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
+            cout << "Wrote model file " << _outputModelFileName <<
+                " from model " << aModel->getName() << endl;
         }
 
-        if (!_outputMarkerFileNameProp.isValidFileName())
-        {
+        if (_outputMarkerFileNameProp.isValidFileName()) {
             aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
-            cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
+            cout << "Wrote marker file " << _outputMarkerFileName <<
+                " from model " << aModel->getName() << endl;
         }
         
-        if ( _outputMotionFileNameProp.isValidFileName())
-        {
+        if ( _outputMotionFileNameProp.isValidFileName()) {
             _outputStorage->print(aPathToSubject + _outputMotionFileName, 
-                "w", "File generated from solving marker data for model "+aModel->getName());
+                "w", "File generated from solving marker data for model "
+                + aModel->getName());
         }
     }
 
