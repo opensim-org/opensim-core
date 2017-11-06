@@ -314,23 +314,27 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
         if(_printResultFiles) {
             std::string savedCwd = IO::getCwd();
             IO::chDir(aPathToSubject);
-
-            if (_outputModelFileNameProp.isValidFileName()) {
-                if (aModel->print(_outputModelFileName))
-                    cout << "Wrote model file " << _outputModelFileName <<
+            try { // writing can throw an exception
+                if (_outputModelFileNameProp.isValidFileName()) {
+                    if (aModel->print(_outputModelFileName))
+                        cout << "Wrote model file " << _outputModelFileName <<
                         " from model " << aModel->getName() << endl;
-            }
+                }
 
-            if (_outputScaleFileNameProp.isValidFileName()) {
-                if (theScaleSet.print(_outputScaleFileName))
-                    cout << "Wrote scale file " << _outputScaleFileName <<
+                if (_outputScaleFileNameProp.isValidFileName()) {
+                    if (theScaleSet.print(_outputScaleFileName))
+                        cout << "Wrote scale file " << _outputScaleFileName <<
                         " for model " << aModel->getName() << endl;
+                }
+            }
+            catch (std::exception& ex) {
+                IO::chDir(savedCwd);
+                OPENSIM_THROW_FRMOBJ(Exception, ex.what());
             }
             IO::chDir(savedCwd);
         }
     }
-    catch (const Exception& x)
-    {
+    catch (const Exception& x) {
         x.print(cout);
         return false;
     }
