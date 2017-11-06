@@ -122,9 +122,9 @@ public:
     //-------------------------------------------------------------------------
     // METHODS THAT MUST BE OVERRIDDEN
     //-------------------------------------------------------------------------
-    int begin(SimTK::State& s) override;
+    int begin(const SimTK::State& s) override;
     int step(const SimTK::State& s, int stepNumber) override;
-    int end(SimTK::State& s) override;
+    int end(const SimTK::State& s) override;
 
     //-------------------------------------------------------------------------
     // IO

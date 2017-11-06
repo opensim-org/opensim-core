@@ -57,22 +57,35 @@ Converting from v3.x to v4.0
   compatibility, a joint's parent and child PhysicalFrames are swapped when
   opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
-  `Manager::integrate(SimTK::State&, double)`. Here is a before-after example
-  (see the documentation in the `Manager` class for more details):
+  `Manager::integrate(double)`. You must also now call 
+  `Manager::initialize(SimTK::State&)` before integrating or pass the
+  initialization state into a convenience constructor. Here is a 
+   before-after example (see the documentation in the `Manager` class 
+   for more details):
   - Before:
-	- manager.setInitialTime(0.0);
-	- manager.setFinalTime(1.0);
-	- manager.integrate(state);
+    - Manager manager(model);
+    - manager.setInitialTime(0.0);
+    - manager.setFinalTime(1.0);
+    - manager.integrate(state);
   - After:
+    - Manager manager(model);
     - state.setTime(0.0);
-	- manager.integrate(state, 1.0);
-
+    - manager.initialize(state);
+    - manager.integrate(1.0);
+  - After (using a convenience constructor):
+    - state.setTime(0.0);
+    - Manager manager(model, state);
+    - manager.integrate(1.0);
 - `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
 - `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
 where fiber-velocity can be estimated from the state or assumed to be zero if the flag is *true*.
 - `Millard2012EquilibriumMuscle::computeInitialFiberEquilibrium(SimTK::State&)` invokes `computeFiberEquilibrium()` with `useZeroVelocity = true` to maintain its previous behavior.
 - `Model::replaceMarkerSet()` was removed. (PR #1938) Please use `Model::updMarkerSet()` to edit the model's MarkerSet instead.
+- The argument list for `Model::scale()` was changed: the `finalMass` and
+  `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
+  is no longer optional. The default argument for `preserveMassDist` in OpenSim
+  3.3 was `false`. (PR #1994)
 
 Composing a Component from other components
 -------------------------------------------
@@ -103,7 +116,8 @@ Bug Fixes
 - Fixed bug causing the muscle equilibrium solve routine in both Thelen2003Muscle and Millard2012EquilibriumMuscle to fail to converge and erroneously return the minimum fiber length. The fix added a proper reduction in step-size when errors increase and limiting the fiber-length to its minimum. (PR #1728)
 - Fixed a bug where Models with Bodies and Joints (and other component types) with the same name were loaded without error. Duplicately named Bodies were simply being ignored and only the first Body of that name in the BodySet was being used, for example, to connect a Body to its parent via its Joint, or to affix path points to its respective Body. Now, duplicate names are flagged and renamed so they are uniquely identified. (PR #1887)
 - Fixed bug and speed issue with `model.setStateVariableValues()` caused by enforcing constraints after each coordinate value was being set (PR #1911). Removing the automatic enforcement of constraints makes setting all state values much faster, but also requires calling `model.assemble()` afterwards. Enforcing constraints after setting each coordinate value individually was also incorrect, since it neglected the effect of other coordinate changes have on the current coordinate. All coordinate values must be set before enforcing constraints.
-
+- Fixed a bug that resulted in incorrect Ligament resting lengths after scaling.
+  (PR #1994)
 
 New Classes
 -----------
@@ -115,6 +129,7 @@ New Classes
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 - The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
+- Added OutputReporter as an Analysis so that users can use the existing AnalyzeTool and ForwardTool to extract Output values of interest, without modifications to the GUI. (PR #1991)
 
 Removed Classes
 ---------------
@@ -167,6 +182,11 @@ programmatically in MATLAB or python.
   and may be installed in a different location.
 - macOS and Linux users should no longer need to set `LD_LIBRARY_PATH` or
   `DYLD_LIBRARY_PATH` to use OpenSim libraries.
+- The `scale()` method was removed from the `SimbodyEngine` class (the contents
+  were moved into `Model::scale()`). (PR #1994)
+- Any class derived from ModelComponent can now add its own implementation of
+  `extendPreScale()`, `extendScale()`, and/or `extendPostScale()` to control how
+  its properties are updated during scaling. (PR #1994)
 
 Documentation
 --------------

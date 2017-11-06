@@ -185,57 +185,20 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
     set_force_length_curve(aForceLengthCurve);
     return true;
 }
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the ligament is scaled.
- * For this object, that entails calculating and storing the
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+//==============================================================================
+void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    updGeometryPath().preScale(s, aScaleSet);
-}
+    Super::extendPostScale(s, scaleSet);
 
-//_____________________________________________________________________________
-/**
- * Scale the ligament.
- *
- * @param aScaleSet XYZ scale factors for the bodies
- * @return Whether or not the ligament was scaled successfully
- */
-void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the ligament is scaled.
- * For this object, that entails comparing the length before and after scaling,
- * and scaling the resting length a proportional amount.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    GeometryPath& path          = updGeometryPath();
-    double&       restingLength = upd_resting_length();
-
-    path.postScale(s, aScaleSet);
-
+    GeometryPath& path = upd_GeometryPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
+        upd_resting_length() *= scaleFactor;
 
-        // Scale resting length by the same amount as the change in
-        // total ligament length (in the current body position).
-        restingLength *= scaleFactor;
-
+        // Clear the pre-scale length that was stored in the GeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }

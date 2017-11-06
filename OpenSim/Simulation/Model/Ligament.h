@@ -106,9 +106,12 @@ public:
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+    /** Adjust the resting length of the ligament after the model has been
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
     /** Override this method if you would like to calculate a color for use

@@ -561,7 +561,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -617,7 +617,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-end( SimTK::State& s)
+end( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     record(s);
