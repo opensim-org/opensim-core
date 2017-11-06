@@ -31,7 +31,8 @@ public:
     // TODO cannot use temporary.
     static void print_available_options();
 protected:
-    double optimize_impl(Eigen::VectorXd& variables) const override;
+    OptimizationSolution
+    optimize_impl(const Eigen::VectorXd& guess) const override;
     void get_available_options(
             std::vector<std::string>&, std::vector<std::string>&,
             std::vector<std::string>&) const override;

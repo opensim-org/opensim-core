@@ -96,6 +96,20 @@ MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
 MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
     return MucoFinalBounds(getProperty_time_final_bounds());
 }
+std::vector<std::string> MucoPhase::createStateInfoNames() const {
+    std::vector<std::string> names(getProperty_state_infos().size());
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        names[i] = get_state_infos(i).getName();
+    }
+    return names;
+}
+std::vector<std::string> MucoPhase::createControlInfoNames() const {
+    std::vector<std::string> names(getProperty_control_infos().size());
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        names[i] = get_control_infos(i).getName();
+    }
+    return names;
+}
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
     int idx = getProperty_state_infos().findIndexForName(name);

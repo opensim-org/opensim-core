@@ -24,21 +24,28 @@ using namespace OpenSim;
 MucoSolver::MucoSolver() {}
 
 MucoSolver::MucoSolver(const MucoProblem& problem) : MucoSolver() {
-    resetProblem(problem);
+    setProblem(problem);
 }
 
-void MucoSolver::resetProblem() {
+void MucoSolver::clearProblem() {
     m_problem.reset();
-    resetProblemImpl();
+    clearProblemImpl();
 }
 
-void MucoSolver::resetProblem(const MucoProblem& problem) {
+void MucoSolver::setProblem(const MucoProblem& problem) {
     m_problem.reset(&problem);
-    resetProblemImpl(problem);
+    setProblemImpl(problem);
 }
 
 MucoSolution MucoSolver::solve() const {
-    OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set; perhaps you "
-            "called updProblem()? Call resetProblem() with a problem.");
+    OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set.");
     return solveImpl();
 }
+
+void MucoSolver::setSolutionStatusAndSuccess(MucoSolution& sol,
+        bool success, const std::string& status) {
+    sol.setSuccess(success);
+    sol.setStatus(status);
+}
+
+

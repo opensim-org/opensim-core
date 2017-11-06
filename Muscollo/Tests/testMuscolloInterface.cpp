@@ -24,7 +24,6 @@
 using namespace OpenSim;
 
 // TODO
-// - add setGuess
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
@@ -371,11 +370,300 @@ void testStateTracking() {
 
 }
 
+void testGuess() {
+    MucoTool muco = createSlidingMassMucoTool();
+    MucoTropterSolver& ms = muco.initSolver();
+    const int N = 6;
+    ms.set_num_mesh_points(N);
+
+    std::vector<std::string> expectedStateNames{
+            "slider/position/value", "slider/position/speed"
+    };
+    std::vector<std::string> expectedControlNames{"actuator"};
+
+    SimTK::Matrix expectedStatesTraj(N, 2);
+    expectedStatesTraj.col(0) = 0.5; // bounds are [0, 1].
+    expectedStatesTraj(0, 0) = 0; // initial value fixed to 0.
+    expectedStatesTraj(N-1, 0) = 1; // final value fixed to 1.
+    expectedStatesTraj.col(1) = 0.0; // bounds are [-100, 100]
+    expectedStatesTraj(0, 1) = 0; // initial speed fixed to 0.
+    expectedStatesTraj(N-1, 1) = 0; // final speed fixed to 1.
+
+    SimTK::Matrix expectedControlsTraj(N, 1);
+    expectedControlsTraj.col(0) = 0;
+
+    // createGuess().
+    // --------------
+
+    // Initial guess based on bounds.
+    {
+        MucoIterate guess = ms.createGuess("bounds");
+        SimTK_TEST(guess.getTime().size() == N);
+        SimTK_TEST(guess.getStateNames() == expectedStateNames);
+        SimTK_TEST(guess.getControlNames() == expectedControlNames);
+        SimTK_TEST(guess.getTime()[0] == 0);
+        SimTK_TEST_EQ(guess.getTime()[N-1], 5.0); // midpoint of bounds [0, 10]
+
+        SimTK_TEST_EQ(guess.getStatesTrajectory(), expectedStatesTraj);
+        SimTK_TEST_EQ(guess.getControlsTrajectory(), expectedControlsTraj);
+    }
+
+    // Random initial guess.
+    {
+        MucoIterate guess = ms.createGuess("random");
+        SimTK_TEST(guess.getTime().size() == N);
+        SimTK_TEST(guess.getStateNames() == expectedStateNames);
+        SimTK_TEST(guess.getControlNames() == expectedControlNames);
+
+        // The numbers are random, so we don't what they are; only that they
+        // are different from the guess from bounds.
+        SimTK_TEST_NOTEQ(guess.getStatesTrajectory(), expectedStatesTraj);
+        SimTK_TEST_NOTEQ(guess.getControlsTrajectory(), expectedControlsTraj);
+    }
+
+    // Setting a guess programmatically.
+    // ---------------------------------
+
+    // Don't need a converged solution; so ensure the following tests are fast.
+    ms.set_optim_max_iterations(2);
+
+    ms.clearGuess();
+    MucoIterate solNoGuess = muco.solve().unseal();
+    {
+        // Using the guess from bounds is the same as not providing a guess.
+
+
+        ms.setGuess(ms.createGuess());
+        MucoIterate solDefaultGuess = muco.solve().unseal();
+
+        SimTK_TEST(solDefaultGuess.isNumericallyEqual(solNoGuess));
+
+        // Can also use convenience version of setGuess().
+        ms.setGuess("bounds");
+        SimTK_TEST(muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // Using a random guess should give us a different "solution."
+        ms.setGuess(ms.createGuess("random"));
+        MucoIterate solRandomGuess = muco.solve().unseal();
+        SimTK_TEST(!solRandomGuess.isNumericallyEqual(solNoGuess));
+
+        // Convenience.
+        ms.setGuess("random");
+        SimTK_TEST(!muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // Clearing the guess works (this check must come after using a
+        // random guess).
+        ms.clearGuess();
+        SimTK_TEST(muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // Can call clearGuess() multiple times with no weird issues.
+        ms.clearGuess(); ms.clearGuess();
+        SimTK_TEST(muco.solve().unseal().isNumericallyEqual(solNoGuess));
+    }
+
+    // Guess is incompatible with problem.
+    {
+        MucoIterate guess = ms.createGuess();
+        // Delete the second state variable name.
+        const_cast<std::vector<std::string>&>(guess.getStateNames()).resize(1);
+        SimTK_TEST_MUST_THROW_EXC(ms.setGuess(std::move(guess)), Exception);
+    }
+
+    // Unrecognized guess type.
+    SimTK_TEST_MUST_THROW_EXC(ms.createGuess("unrecognized"), Exception);
+    SimTK_TEST_MUST_THROW_EXC(ms.setGuess("unrecognized"), Exception);
+
+    // Setting a guess from a file.
+    // ----------------------------
+    {
+        MucoIterate guess = ms.createGuess("bounds");
+        // Use weird number to ensure the solver actually loads the file:
+        guess.setControl("actuator", SimTK::Vector(N, 13.28));
+        const std::string fname = "testMuscolloInterface_testGuess_file.sto";
+        guess.write(fname);
+        ms.setGuessFile(fname);
+
+        SimTK_TEST(ms.getGuess().isNumericallyEqual(guess));
+        SimTK_TEST(!muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // Using setGuess(MucoIterate) overrides the file setting.
+        ms.setGuess(ms.createGuess("bounds"));
+        SimTK_TEST(muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        ms.setGuessFile(fname);
+        SimTK_TEST(ms.getGuess().isNumericallyEqual(guess));
+        SimTK_TEST(!muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // Clearing the file causes the default guess type to be used.
+        ms.setGuessFile("");
+        SimTK_TEST(muco.solve().unseal().isNumericallyEqual(solNoGuess));
+
+        // TODO mismatched state/control names.
+
+        // Solve from deserialization.
+        // TODO
+    }
+
+    // Customize a guess.
+    // ------------------
+    // This is really just a test of the MucoIterate class.
+    {
+        MucoIterate guess = ms.createGuess();
+        guess.setNumTimes(2);
+        SimTK_TEST(SimTK::isNaN(guess.getTime()[0]));
+        SimTK_TEST(SimTK::isNaN(guess.getStatesTrajectory()(0, 0)));
+        SimTK_TEST(SimTK::isNaN(guess.getControlsTrajectory()(0, 0)));
+
+        // TODO look at how TimeSeriesTable handles this.
+        // Make sure this uses the initializer list variant.
+        guess.setState("slider/position/value", {2, 0.3});
+        SimTK::Vector expectedv(2);
+        expectedv[0] = 2;
+        expectedv[1] = 0.3;
+        SimTK_TEST_EQ(guess.getState("slider/position/value"), expectedv);
+
+        // Can use SimTK::Vector.
+        expectedv[1] = 9.4;
+        guess.setState("slider/position/value", expectedv);
+        SimTK_TEST_EQ(guess.getState("slider/position/value"), expectedv);
+
+        // Controls
+        guess.setControl("actuator", {1, 0.6});
+        SimTK::Vector expecteda(2);
+        expecteda[0] = 1.0;
+        expecteda[1] = 0.6;
+        SimTK_TEST_EQ(guess.getControl("actuator"), expecteda);
+
+        expecteda[0] = 0.7;
+        guess.setControl("actuator", expecteda);
+        SimTK_TEST_EQ(guess.getControl("actuator"), expecteda);
+
+
+        // Errors.
+
+        // Nonexistant state/control.
+        SimTK_TEST_MUST_THROW_EXC(guess.setState("none", SimTK::Vector(2)),
+                Exception);
+        SimTK_TEST_MUST_THROW_EXC(guess.setControl("none", SimTK::Vector(2)),
+                Exception);
+        SimTK_TEST_MUST_THROW_EXC(guess.getState("none"), Exception);
+        SimTK_TEST_MUST_THROW_EXC(guess.getControl("none"), Exception);
+
+        // Incorrect length.
+        SimTK_TEST_MUST_THROW_EXC(
+                guess.setState("slider/position/value", SimTK::Vector(1)),
+                Exception);
+        SimTK_TEST_MUST_THROW_EXC(
+                guess.setControl("actuator", SimTK::Vector(3)), Exception);
+
+    }
+
+    // Resampling.
+    {
+        ms.set_num_mesh_points(5);
+        MucoIterate guess0 = ms.createGuess();
+        guess0.setControl("actuator", createVectorLinspace(5, 2.8, 7.3));
+        SimTK_TEST(guess0.getTime().size() == 5); // midpoint of [0, 10]
+        SimTK_TEST_EQ(guess0.getTime()[4], 5);
+
+        // resampleWithNumTimes
+        {
+            MucoIterate guess = guess0;
+            guess.resampleWithNumTimes(10);
+            SimTK_TEST(guess.getTime().size() == 10);
+            SimTK_TEST_EQ(guess.getTime()[9], 5);
+            SimTK_TEST(guess.getStatesTrajectory().nrow() == 10);
+            SimTK_TEST(guess.getControlsTrajectory().nrow() == 10);
+            SimTK_TEST_EQ(guess.getControl("actuator"),
+                    createVectorLinspace(10, 2.8, 7.3));
+        }
+
+        // resampleWithInterval
+        {
+            MucoIterate guess = guess0;
+            // We can't achieve exactly the interval the user provides.
+            // time_interval = duration/(num_times - 1)
+            // actual_num_times = ceil(duration/desired_interval) + 1
+            // actual_interval = duration/(actual_num_times - 1)
+            auto actualInterval = guess.resampleWithInterval(0.9);
+            auto expectedNumTimes = ceil(5/0.9) + 1;
+            SimTK_TEST_EQ(actualInterval, 5 / (expectedNumTimes - 1));
+            SimTK_TEST(guess.getTime().size() == expectedNumTimes);
+            SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
+            SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            SimTK_TEST(
+                    guess.getControlsTrajectory().nrow() == expectedNumTimes);
+            SimTK_TEST_EQ(guess.getControl("actuator"),
+                    createVectorLinspace(expectedNumTimes, 2.8, 7.3));
+        }
+
+        // resampleWithFrequency
+        {
+            // We can't achieve exactly the interval the user provides.
+            // frequency = num_times/duration
+            MucoIterate guess = guess0;
+            // Here, we also ensure that we can downsample.
+            auto actualFrequency = guess.resampleWithFrequency(0.7);
+            auto expectedNumTimes = ceil(5 * 0.7);
+            SimTK_TEST_EQ(actualFrequency, expectedNumTimes / 5); // 4
+            SimTK_TEST(guess.getTime().size() == expectedNumTimes);
+            SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
+            SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            SimTK_TEST(
+                    guess.getControlsTrajectory().nrow() == expectedNumTimes);
+            SimTK_TEST_EQ(guess.getControl("actuator"),
+                    createVectorLinspace(expectedNumTimes, 2.8, 7.3));
+        }
+
+    }
+
+    // Number of points required for splining.
+    {
+        // 3 and 2 points are okay.
+        ms.set_num_mesh_points(3);
+        MucoIterate guess3 = ms.createGuess();
+        guess3.resampleWithNumTimes(10);
+
+        ms.set_num_mesh_points(2);
+        MucoIterate guess2 = ms.createGuess();
+        guess2.resampleWithNumTimes(10);
+
+        // 1 point is too few.
+        MucoIterate guess1(guess2);
+        guess1.setNumTimes(1);
+        SimTK_TEST_MUST_THROW_EXC(guess1.resampleWithNumTimes(10), Exception);
+    }
+
+    // TODO ordering of states and controls in MucoIterate should not matter!
+
+    // TODO getting a guess, editing the problem, asking for another guess,
+    // requires calling initSolver(). TODO can check the Problem's
+    // isObjectUptoDateWithProperties(); simply flipping a flag with
+    // updProblem() is not sufficient, b/c a user could make changes way
+    // after they get the mutable reference.
+}
+
+void testMucoIterate() {
+    const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
+    SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
+    MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"},
+            SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4));
+    orig.write(fname);
+
+    MucoIterate deserialized(fname);
+    SimTK_TEST(deserialized.isNumericallyEqual(orig));
+
+    // TODO ensure that we can't access methods until we unseal.
+}
+
 int main() {
     SimTK_START_TEST("testMuscolloInterface");
         SimTK_SUBTEST(testSlidingMass);
         SimTK_SUBTEST(testSolverOptions);
         SimTK_SUBTEST(testStateTracking);
+        SimTK_SUBTEST(testGuess);
+        SimTK_SUBTEST(testMucoIterate);
+
         //SimTK_SUBTEST(testEmpty);
         //SimTK_SUBTEST(testCopy);
         //SimTK_SUBTEST(testSolveRepeatedly);

@@ -64,6 +64,12 @@ struct OptimalControlIterate {
 /// @ingroup optimalcontrol
 struct OptimalControlSolution : public OptimalControlIterate {
     double objective;
+    /// Did the solver converge?
+    explicit operator bool() { return success; }
+    /// Did the solver converge?
+    bool success;
+    /// A solver-defined string describing the return status of the optimizer.
+    std::string status;
     // TODO allow reading, to use this as an initial guess.
     // related class: OptimalControlIterate
 };

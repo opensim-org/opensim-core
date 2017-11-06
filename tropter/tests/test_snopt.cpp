@@ -164,10 +164,10 @@ TEST_CASE("SNOPT and ADOL-C on SnoptA (sntoyA) example")
     SnoptA problem;
     SNOPTSolver solver(problem);
     VectorXd variables = Vector2d(2, 2);
-    double obj_value = solver.optimize(variables);
-    REQUIRE(Approx(variables[0]) == 0);
-    REQUIRE(Approx(variables[1]) == -1);
-    REQUIRE(Approx(obj_value)    == -1);
+    auto solution = solver.optimize(variables);
+    REQUIRE(Approx(solution.variables[0]) == 0);
+    REQUIRE(Approx(solution.variables[1]) == -1);
+    REQUIRE(Approx(solution.objective)    == -1);
 }
 TEST_CASE("First order minimum effort.", "[analytic]")
 {
