@@ -37,6 +37,7 @@
 #include "IKCoordinateTask.h"
 #include "IKTaskSet.h"
 #include <OpenSim/Analyses/StatesReporter.h>
+#include <OpenSim/Common/IO.h>
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -391,6 +392,9 @@ bool MarkerPlacer::processModel(Model* aModel,
     //_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
     if(_printResultFiles) {
+        std::string savedCwd = IO::getCwd();
+        IO::chDir(aPathToSubject);
+
         if (_outputModelFileNameProp.isValidFileName()) {
             aModel->print(aPathToSubject + _outputModelFileName);
             cout << "Wrote model file " << _outputModelFileName <<
@@ -408,6 +412,7 @@ bool MarkerPlacer::processModel(Model* aModel,
                 "w", "File generated from solving marker data for model "
                 + aModel->getName());
         }
+        IO::chDir(savedCwd);
     }
 
     return true;
