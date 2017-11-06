@@ -58,8 +58,18 @@ public:
 // METHODS
 //=============================================================================
 public:
+    /** Default constructor */
     Marker();
+
+    /** Convenience constructor
+    @param[in] name      Marker name string.
+    @param[in] frame     PhysicalFrame in which the Marker is located.
+    @param[in] location  Vec3 location of the station in its PhysicalFrame */
+    Marker(const std::string& name, const PhysicalFrame& frame,
+           const SimTK::Vec3& location);
+
     virtual ~Marker();
+
     /** Convenience method to get the 'parent_frame' Socket's connectee_name */
     const std::string& getParentFrameName() const;
 
