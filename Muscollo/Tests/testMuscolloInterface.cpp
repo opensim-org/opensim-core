@@ -24,6 +24,7 @@
 using namespace OpenSim;
 
 // TODO
+// - add setGuess
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
@@ -587,7 +588,7 @@ void testGuess() {
             // actual_interval = duration/(actual_num_times - 1)
             auto actualInterval = guess.resampleWithInterval(0.9);
             int expectedNumTimes = (int)ceil(5/0.9) + 1;
-            SimTK_TEST_EQ(actualInterval, 5 / (expectedNumTimes - 1));
+            SimTK_TEST_EQ(actualInterval, 5 / ((double)expectedNumTimes - 1));
             SimTK_TEST(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
@@ -604,8 +605,8 @@ void testGuess() {
             MucoIterate guess = guess0;
             // Here, we also ensure that we can downsample.
             auto actualFrequency = guess.resampleWithFrequency(0.7);
-            int expectedNumTimes = (int)ceil(5 * 0.7);
-            SimTK_TEST_EQ(actualFrequency, expectedNumTimes / 5); // 4
+            int expectedNumTimes = (int)ceil(5 * 0.7); // 4
+            SimTK_TEST_EQ(actualFrequency, (double)expectedNumTimes / 5);
             SimTK_TEST(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
