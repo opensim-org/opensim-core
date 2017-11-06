@@ -25,7 +25,7 @@ if(SUPERBUILD_opensim-core)
 
     AddDependency(NAME       docopt
                   GIT_URL    https://github.com/docopt/docopt.cpp.git
-                  GIT_TAG    af03fa044ee1eff20819549b534ea86829a24a54
+                  GIT_TAG    68b814282252d75d7c98d073e5958c5b1a964241
                   CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d)
 
     add_dependencies(opensim-core simbody docopt)

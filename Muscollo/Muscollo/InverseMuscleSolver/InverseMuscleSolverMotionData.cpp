@@ -83,7 +83,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
     std::vector<std::string> musclePathNames;
     for (const auto& muscle : muscleList) {
         if (muscle.get_appliesForce()) {
-            musclePathNames.push_back(muscle.getAbsolutePathName());
+            musclePathNames.push_back(muscle.getAbsolutePathString());
             activeMuscles.push_back(&muscle);
         }
     }
@@ -328,9 +328,9 @@ std::vector<std::string>
 InverseMuscleSolverMotionData::createCoordPathsToActuate(const Model& model,
         const std::vector<const Coordinate*>& coordsToActuate) const {
     std::vector<std::string> coordPathsToActuate(coordsToActuate.size());
-    const ComponentPath modelPath = model.getAbsolutePathName();
+    const auto modelPath = model.getAbsolutePath();
     for (size_t iCoord = 0; iCoord < coordsToActuate.size(); ++iCoord) {
-        ComponentPath absPath(coordsToActuate[iCoord]->getAbsolutePathName());
+        auto absPath = coordsToActuate[iCoord]->getAbsolutePath();
         coordPathsToActuate[iCoord] =
                 absPath.formRelativePath(modelPath).toString();
     }
@@ -373,13 +373,13 @@ void InverseMuscleSolverMotionData::computeInverseDynamics(
     // TODO do something correct here.
     std::vector<size_t> coordActIndices;
     auto coordsInOrder = modelForID.getCoordinatesInMultibodyTreeOrder();
-    const ComponentPath modelPath = model.getAbsolutePathName();
+    const auto modelPath = model.getAbsolutePath();
     for (const auto& coordPathAct : coordPathsToActuate) {
         // Find the index of the coordinate with path coordPathAct.
         size_t iCoordAct = 0;
         for (auto& coord : coordsInOrder) {
             const auto thisCoordPath =
-                    ComponentPath(coord->getAbsolutePathName())
+                    coord->getAbsolutePath()
                             .formRelativePath(modelPath).toString();
             if (coordPathAct == thisCoordPath) {
                 coordActIndices.push_back(iCoordAct);
