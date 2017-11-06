@@ -205,9 +205,6 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     status = app->Initialize();
     TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded,
             "Error during initialization");
-    //if (status != Ipopt::Solve_Succeeded) {
-    //    std::cerr << "Error during initialization" << std::endl;
-    //}
 
     // Create NLP.
     // -----------
@@ -226,14 +223,11 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
             || status == Ipopt::Solved_To_Acceptable_Level
             || status == Ipopt::Feasible_Point_Found) {
         solution.success = true;
-        // TODO give detailed diagnostics.
-        // TODO throw exception.
+    } else {
+        solution.success = false;
         // http://llvm.org/doxygen/classllvm_1_1ErrorOr.html
         // https://akrzemi1.wordpress.com/2017/07/12/your-own-error-code/
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
-        //TROPTER_THROW("Failed to find a solution.");
-    } else {
-        solution.success = false;
     }
     solution.status = convert_IPOPT_ApplicationReturnStatus_to_string(status);
     return solution;

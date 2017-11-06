@@ -75,6 +75,8 @@ public:
     ///   bounds (the value for variables with ony one bound is the specified
     ///   bound). This is the default type.
     /// - **random**: values are randomly generated within the bounds.
+    /// @note Calling this method does *not* set an initial guess to be used
+    /// in the solver; you must call setGuess() or setGuessFile() for that.
     /// @precondition You must have called setProblem().
     // TODO problem must be upToDate()?
     // TODO add "forward_simulation" as way of creating a guess.
