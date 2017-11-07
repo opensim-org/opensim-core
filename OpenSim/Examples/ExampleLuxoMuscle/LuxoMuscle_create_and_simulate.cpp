@@ -258,8 +258,9 @@ int main(int argc, char* argv[]) {
         
         
         state.setTime(0.0);
+        manager.initialize(state);
         std::cout<<"Integrating for " << sim_time << " seconds" <<std::endl;
-        manager.integrate(state, sim_time);
+        manager.integrate(sim_time);
         std::cout<<"Integration finished."<<std::endl;
         
         //////////////////////////////

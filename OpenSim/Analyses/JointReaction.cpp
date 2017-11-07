@@ -607,7 +607,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-begin(SimTK::State& s)
+begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
     // Read forces file here rather than during initialization
@@ -654,7 +654,7 @@ step( const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-end(SimTK::State& s)
+end(const SimTK::State&s)
 {
     if(!proceed()) return(0);
 

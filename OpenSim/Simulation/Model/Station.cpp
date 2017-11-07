@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Station.h"
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -107,6 +108,18 @@ SimTK::Vec3 Station::findLocationInFrame(const SimTK::State& s,
     // transform location from the station's frame to the other frame
     return getParentFrame().findStationLocationInAnotherFrame(s, 
                                                 get_location(), aFrame);
+}
+
+void Station::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors.isNaN())
+        return;
+
+    upd_location() = get_location().elementwiseMultiply(scaleFactors);
 }
 
 SimTK::Vec3 Station::calcLocationInGround(const SimTK::State& s) const

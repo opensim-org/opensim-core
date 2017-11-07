@@ -31,6 +31,7 @@
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 
 //=============================================================================
@@ -79,35 +80,31 @@ void WrapCylinder::constructProperties()
     constructProperty_length(1.0);
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the cylinder's dimensions. The base class scales the origin
- * of the cylinder in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
+void WrapCylinder::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   // Base class, to scale origin in body frame
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-    SimTK::Vec3 localScaleVector[3];
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors.isNaN())
+        return;
 
-   // _pose.x() holds the ellipsoid's X axis expressed in the
-   // body's reference frame, _pose.y() holds the Y, and
-   // _pose.z() holds the Z. Multiplying these vectors by
-   // the scale factor vector gives localScaleVector[]. The magnitudes
-   // of the localScaleVectors gives the amount to scale the cylinder
-   // in the XYZ dimensions. The wrap cylinder is oriented along
-   // the Z axis, so the length is scaled by the Z scale factor,
-   // and the radius is scaled by the average of the X and Y scale factors.
-    for (int i=0; i<3; i++) {
-        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-        localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
-    }
-   upd_radius() *= ((localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5);
-   upd_length() *= localScaleVector[2].norm();
+    // _pose.x() holds the ellipsoid's X-axis expressed in the body's reference
+    // frame, _pose.y() holds the Y-axis, and _pose.z() holds the Z-axis.
+    // Multiplying these vectors by the scale factor vector gives
+    // localScaleVector[]. The magnitudes of the localScaleVectors gives the
+    // amount to scale the cylinder in the X, Y, and Z dimensions. The wrap
+    // cylinder is oriented along the Z-axis, so the length is scaled by the Z
+    // scale factor, and the radius is scaled by the average of the X and Y
+    // scale factors.
+    Vec3 localScaleVector[3];
+
+    localScaleVector[0] = _pose.x().elementwiseMultiply(scaleFactors);
+    localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
+    localScaleVector[2] = _pose.z().elementwiseMultiply(scaleFactors);
+
+    upd_radius() *= (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
+    upd_length() *= localScaleVector[2].norm();
 }
 
 //_____________________________________________________________________________

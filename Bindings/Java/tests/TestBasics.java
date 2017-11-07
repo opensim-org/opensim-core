@@ -91,12 +91,18 @@ class TestBasics {
     public static void testToyReflexController() {
         ToyReflexController controller = new ToyReflexController();
     }
-        
+      
+    public static void testScaleToolUtils() {
+       ModelScaler ms = new ModelScaler();
+       Scale s = new Scale();
+       ms.addScale(s);
+    }  
   public static void main(String[] args) {
       testBasics();
       testMuscleList();
       testToyReflexController();
-      
+      testScaleToolUtils();
+
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);
   }

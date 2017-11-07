@@ -103,9 +103,6 @@ public:
     virtual void setContactPointForInducedAccelerations(
         const SimTK::State &s, SimTK::Vec3 point) override;
 
-    void scale(const ScaleSet& scaleSet) override
-    {   Super::scaleFrames(scaleSet); }
-
 protected:
     /** Extend Component Interface. */
     void extendAddToSystemAfterSubcomponents(SimTK::MultibodySystem& system)

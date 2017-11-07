@@ -639,11 +639,12 @@ Storage simulateModel(Model& model, double t0, double t1)
 
     Manager manager(model, integrator);
     state.setTime(t0);
+    manager.initialize(state);
 
     // Simulate.
     const clock_t tStart = clock();
     cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(state, t1);
+    manager.integrate(t1);
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 

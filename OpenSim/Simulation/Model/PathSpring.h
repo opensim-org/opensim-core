@@ -148,14 +148,12 @@ public:
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-    /**
-     * Scale the PathSpring.
-     * @param s     the (SimTK::) State of system that defines the current pose
-     * @param scaleSet XYZ scale factors for all the bodies in the model
-     */
-    void preScale(const SimTK::State& s, const ScaleSet& scaleSet);
-    void scale(const SimTK::State& s, const ScaleSet& scaleSet);
-    void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Adjust the resting length of the path spring after the model has been
+        scaled. The `resting_length` property is multiplied by the quotient of
+        the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
 protected:
     /** Implementation of Force component virtual method */

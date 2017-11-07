@@ -108,13 +108,6 @@ public:
     double computeActuation( const SimTK::State& s) const override;
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
 
-    //--------------------------------------------------------------------------
-    // SCALING
-    //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
 protected:
     /** Override this method if you would like to calculate a color for use when
     the %PathActuator's path is displayed in the visualizer. You do not have 

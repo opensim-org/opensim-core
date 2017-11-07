@@ -115,6 +115,9 @@ protected:
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {
+        if (!getNumPathLevels()) {
+            return std::vector<std::string>{}; 
+        }
         return getSubPathVec(0, getNumPathLevels() - 1);
     }
 
@@ -155,6 +158,10 @@ private:
             _path.begin() + last);
         return subPath;
     }
+
+    /// Return true if all elements in pathVec do not contain any chars from
+    /// the list of _invalidChars
+    bool isLegalPathVec(const std::vector<std::string>& pathVec) const;
 
     // Path variables
     std::vector<std::string> _path;

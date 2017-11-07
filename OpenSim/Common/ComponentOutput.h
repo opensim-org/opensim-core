@@ -350,7 +350,7 @@ public:
         return getOutput().getName() + ":" + _channelName;
     }
     std::string getPathName() const override {
-        return getOutput().getOwner().getAbsolutePathName() + "|" + getName();
+        return getOutput().getOwner().getAbsolutePathString() + "|" + getName();
     }
 private:
     mutable T _result;

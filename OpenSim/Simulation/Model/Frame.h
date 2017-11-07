@@ -329,6 +329,18 @@ public:
         transform used to position the Geometry is that of this Frame. */
     void attachGeometry(OpenSim::Geometry* geom);
 
+    void scaleAttachedGeometry(const SimTK::Vec3& scaleFactors);
+
+    /** Scales Geometry components that reside in the Frame's
+        `attached_geometry` list property. Note that Geometry residing elsewhere
+        (e.g., in the `components` list property of a Frame or any other
+        Component) will not be scaled. Note also that ContactGeometry derives
+        from ModelComponent so the classes derived from ContactGeometry are
+        responsible for scaling themselves. (However, `scale()` is not currently
+        implemented on ContactGeometry or classes derived therefrom so they will
+        not scale with the Model.) */
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+
 protected:
     /** @name Extension of calculations of Frame kinematics.
     Concrete Frame types must override these calculations.

@@ -34,18 +34,23 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Tools/GenericModelMaker.h>
 
 using namespace OpenSim;
-using namespace std;
+using std::cout; using std::endl;
 
 void scaleGait2354();
 void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
+
+// Test scaling PhysicalOffsetFrames in models with atypical ownership trees.
+void scalePhysicalOffsetFrames();
 
 int main()
 {
@@ -53,6 +58,7 @@ int main()
         scaleGait2354();
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
+        scalePhysicalOffsetFrames();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -62,30 +68,86 @@ int main()
     return 0;
 }
 
-void compareModelMarkers(const Model& resultModel, const std::string& stdFileName, double tol)
+void compareModelToStandard(const std::string&  resultFilename,
+                            const std::string&  targetFilename,
+                            const double        tol)
 {
-    // Load std model 
-    unique_ptr<Model> refModel{ new Model(stdFileName) };
+    using SimTK::Vec3;
 
-    const MarkerSet& stdMarkers = refModel->getMarkerSet();
-    const MarkerSet& resultMarkers = resultModel.getMarkerSet();
+    // Load the result and target models.
+    std::unique_ptr<Model> result{ new Model(resultFilename) };
+    std::unique_ptr<Model> target{ new Model(targetFilename) };
 
-    //It is possible that markers are not in the same order, so access by name
-    OpenSim::Array<std::string> markerNames;
-    stdMarkers.getMarkerNames(markerNames);
-    for (int i = 0; i < markerNames.getSize(); ++i) {
-        std::string& name = markerNames[i];
-        const Marker& stdMarker = stdMarkers.get(name);
-        const Marker& marker = resultMarkers.get(name);
+    // Component paths can be guaranteed to be equivalent only once connections
+    // have been made.
+    result->setup();
+    target->setup();
 
-        const SimTK::Vec3& stdLocation = stdMarker.get_location();
-        const SimTK::Vec3& location = marker.get_location();
+    // Check number of Marker Components (otherwise, test will pass even if
+    // markers are missing from result model).
+    {
+        const unsigned nmResult = result->countNumComponents<Marker>();
+        const unsigned nmTarget = target->countNumComponents<Marker>();
+        OPENSIM_THROW_IF(nmResult != nmTarget, Exception,
+            "Incorrect number of Marker Components in result Model.");
+    }
 
-        std::cout << "Marker `" << name << "' location: " << location
-            << " | " << stdLocation << " (standard) " << endl;
+    // Check Marker locations.
+    cout << "Checking marker locations..." << endl;
+    for (const Marker& mResult : result->getComponentList<Marker>())
+    {
+        const std::string& absPathStr = mResult.getAbsolutePathString();
 
-        ASSERT_EQUAL(stdLocation, location, tol, __FILE__, __LINE__,
-            "Scale model marker location failed to match the standard");
+        // Ensure marker exists in target model.
+        OPENSIM_THROW_IF(!target->hasComponent(absPathStr), Exception,
+            "Marker '" + absPathStr + "' not found in standard model.");
+
+        const Vec3& result_loc = mResult.get_location();
+        const Vec3& target_loc =
+            target->getComponent<Marker>(absPathStr).get_location();
+
+        cout << "  '" << absPathStr << "' - location: " << result_loc << endl;
+        ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
+            "Marker '" + absPathStr + "' location in scaled model does not "
+            + "match standard of " + target_loc.toString());
+    }
+
+    // Check number of GeometryPath Components (otherwise, test will pass even
+    // if path actuators, ligaments, etc. are missing from result model).
+    {
+        const unsigned ngpResult = result->countNumComponents<GeometryPath>();
+        const unsigned ngpTarget = target->countNumComponents<GeometryPath>();
+        OPENSIM_THROW_IF(ngpResult != ngpTarget, Exception,
+            "Incorrect number of GeometryPath Components in result Model.");
+    }
+
+    // Check GeometryPath path point locations.
+    cout << "Checking path point locations..." << endl;
+    SimTK::State& sResult = result->initSystem();
+    SimTK::State& sTarget = target->initSystem();
+    for (const GeometryPath& gpResult : result->getComponentList<GeometryPath>())
+    {
+        const std::string& absPathStr = gpResult.getAbsolutePathString();
+
+        // Ensure GeometryPath exists in target model.
+        OPENSIM_THROW_IF(!target->hasComponent(absPathStr), Exception,
+            "GeometryPath '" + absPathStr + "' not found in standard model.");
+
+        cout << "  '" << absPathStr << "'" << endl;
+        for (int i = 0; i < gpResult.getPathPointSet().getSize(); ++i)
+        {
+            const Vec3& result_loc =
+                gpResult.getPathPointSet()[i].getLocation(sResult);
+            const Vec3& target_loc =
+                target->getComponent<GeometryPath>(absPathStr)
+                .getPathPointSet()[i].getLocation(sTarget);
+
+            ASSERT_EQUAL(result_loc, target_loc, tol, __FILE__, __LINE__,
+                "The location of point " + std::to_string(i)
+                + " in GeometryPath '" + absPathStr + "' is "
+                + result_loc.toString() + ", which does not match standard of "
+                + target_loc.toString());
+        }
     }
 }
 
@@ -130,10 +192,8 @@ void scaleGait2354()
         ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
     }
 
-    //Compare model markers to the standard
-    Model model(setupFilePath + "subject01_simbody.osim");
-    compareModelMarkers(model, "std_subject01_simbody.osim", 1.0e-6);
-
+    compareModelToStandard(setupFilePath + "subject01_simbody.osim",
+                           "std_subject01_simbody.osim", 1.0e-6);
 }
 
 void scaleGait2354_GUI(bool useMarkerPlacement)
@@ -183,9 +243,8 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
 
     ASSERT(compareStdScaleToComputed(stdScaleSet, computedScaleSet));
 
-    //Compare model markers to the standard
-    Model model(setupFilePath + "subject01_simbody.osim");
-    compareModelMarkers(model, "std_subject01_simbody.osim", 1.0e-6);
+    compareModelToStandard(setupFilePath + "subject01_simbody.osim",
+                           "std_subject01_simbody.osim", 1.0e-6);
 }
 
 void scaleModelWithLigament()
@@ -243,7 +302,8 @@ void scaleModelWithLigament()
     ASSERT(std == comp, __FILE__, __LINE__, 
             "Standard model failed to match scaled.");
 
-    compareModelMarkers(comp, std_scaledModelFile, 1.0e-6);
+    compareModelToStandard("comp_toyLigamentModelScaled_latest.osim",
+                           std_scaledModelFile, 1.0e-6);
 }
 
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
@@ -267,4 +327,137 @@ bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
         }
     }
     return true;
+}
+
+void scalePhysicalOffsetFrames()
+{
+    cout << "Scaling PhysicalOffsetFrames in models with atypical ownership "
+         << "trees..." << endl;
+
+    using namespace SimTK;
+    const Transform tfY = Transform(Vec3(0,1,0));
+
+    // Create ScaleSet to scale the OpenSim::Body named "body".
+    const double scaleFactor = 1.234;
+    ScaleSet scaleSet;
+    Scale* scale = new Scale();
+    scale->setSegmentName("body");
+    scale->setScaleFactors(Vec3(scaleFactor));
+    scale->setApply(true);
+    scaleSet.adoptAndAppend(scale);
+
+    // Expected location of COM in Ground after scaling.
+    Vec3 expectedLoc = Vec3(0, -scaleFactor, 0);
+
+    // Helper function to scale the model, report the COM location, and compare
+    // to the expected location.
+    auto testScaling = [&](Model* model, State& s) -> void
+    {
+        const OpenSim::Body& body = model->getBodySet().get("body");
+        const Vec3 initialLoc = body.findStationLocationInGround(s, Vec3(0));
+        model->scale(s, scaleSet, false);
+        const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
+
+        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "Incorrect final COM location:\n  initial: " + initialLoc.toString()
+            + "\n    final: " + finalLoc.toString() + " (expected: "
+            + expectedLoc.toString() + ")");
+    };
+
+    // Case 1: Use PinJoint's convenience constructor to create the child POF
+    //         automatically. The POF will be stored in PinJoint's "frames" list
+    //         property. This is the most typical case.
+    {
+        cout << "- case 1" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint("pin", model->getGround(), Vec3(0), Vec3(0),
+                                            *body, Vec3(0,1,0), Vec3(0));
+        model->addJoint(pin);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 2: Create the child POF manually and store it in
+    //         (a) PinJoint's "frames" list property (i==0)
+    //         (b) PinJoint's "components" list property (i==1)
+    //         (c) Model's "components" list property (i==2)
+    for (int i=0; i<3; ++i)
+    {
+        cout << "- case 2(" << std::string("abc").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            pin->updProperty_frames().adoptAndAppendValue(pof);
+        else if (i==1)
+            pin->addComponent(pof);
+        else
+            model->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 3: Create the child POF manually and store it in
+    //         (a) a different PinJoint's "frames" list property (i==0)
+    //         (b) a different PinJoint's "components" list property (i==1)
+
+    // TODO: These cases currently throw "Assigned an invalid
+    //       SimTK::MobilizedBodyIndex" Exception on initSystem(). See GitHub
+    //       Issue #1970.
+
+    /*
+    for (int i=0; i<2; ++i)
+    {
+        cout << "- case 3(" << std::string("ab").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+
+        // First add a body and joint as in Case 1.
+        OpenSim::Body* otherBody = new OpenSim::Body("otherBody", 1, Vec3(0),
+                                                     Inertia(0));
+        model->addBody(otherBody);
+
+        PinJoint* otherPin = new PinJoint("otherPin",
+                                          model->getGround(), Vec3(0), Vec3(0),
+                                          *otherBody, Vec3(0,1,0), Vec3(0));
+        model->addJoint(otherPin);
+
+        // Now add the components for the test.
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            otherPin->updProperty_frames().adoptAndAppendValue(pof);
+        else
+            otherPin->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+    */
 }
