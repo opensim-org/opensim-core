@@ -61,13 +61,13 @@ def friction_force_MATLAB(fnormal, sliding_velocity):
 
 
 
-penetration = np.linspace(-0.01, 0.01, 1000)
+depth = np.linspace(-0.01, 0.01, 1000)
 
 fig = pl.figure()
 ax = fig.add_subplot(3, 1, 1)
 for xdot in np.array([-5, -2.5, -0.5, -0.25, 0, 0.25, 0.5, 2.5, 5])[::-1]:
-    pl.plot(penetration, normal_force(penetration, xdot),
-            label='penetration rate=%.1f' % xdot)
+    pl.plot(depth, normal_force(depth, xdot),
+            label='depth rate=%.1f' % xdot)
 pl.legend()
 ax = fig.add_subplot(3, 1, 2)
 sliding_velocity = np.linspace(-5, 5, 1000)
