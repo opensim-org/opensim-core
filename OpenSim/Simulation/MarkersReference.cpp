@@ -162,6 +162,10 @@ void MarkersReference::getWeights(const SimTK::State &s,
     weights = _weights;
 }
 
+const TimeSeriesTable_<SimTK::Vec3>& MarkersReference::getMarkerTable() const {
+    return _markerTable;
+}
+
 void
 MarkersReference::setMarkerWeightSet(const Set<MarkerWeight>& markerWeights) {
     upd_marker_weights() = markerWeights;
