@@ -1268,7 +1268,7 @@ Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
     return found;
 }
 
-TimeSeriesTable Storage::getAsTimeSeriesTable() const {
+TimeSeriesTable Storage::exportToTable() const {
     TimeSeriesTable table{};
 
     table.addTableMetaData("header", getName());

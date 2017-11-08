@@ -191,8 +191,8 @@ public:
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
 
-    /** Get a TimeSeriesTable out of the Storage.                             */
-    TimeSeriesTable getAsTimeSeriesTable() const;
+    /** Convert to a TimeSeriesTable (new in 4.0).                            */
+    TimeSeriesTable exportToTable() const;
 
 #ifndef SWIG
     /** A data block, like a vector for a force, point, etc... will span multiple "columns"

@@ -569,7 +569,7 @@ getStateStorage() const
 }
 
 TimeSeriesTable Manager::getStatesTable() const {
-    return getStateStorage().getAsTimeSeriesTable();
+    return getStateStorage().exportToTable();
 }
 
 //_____________________________________________________________________________
