@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -460,4 +461,141 @@ void scalePhysicalOffsetFrames()
         testScaling(model, s);
     }
     */
+
+    // Case 4: Attach Markers to PhysicalOffsetFrames and assign arbitrary
+    //         ownership. All Markers in this example model should be coincident
+    //         before and after scaling.
+    {
+        cout << "- case 4" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        FreeJoint* free = new FreeJoint("free", model->getGround(), *body);
+        free->setName("free");
+        model->addJoint(free);
+
+        // First Marker is attached to and owned by the Body.
+        const Vec3 offset1 = Vec3(0.3, 0.6, 0.9);
+        Marker* marker1 = new Marker("marker1", *body, offset1);
+        body->addComponent(marker1);
+
+        // Second Marker is attached to the Body via one PhysicalOffsetFrame.
+        // The POF is owned by the Model; the Marker is owned by the Joint.
+        const Vec3 offset2  = offset1 / 2.;
+        const Transform tf2 = Transform(offset2);
+        PhysicalOffsetFrame* pof2 = new PhysicalOffsetFrame("pof2", *body, tf2);
+        model->addComponent(pof2);
+        Marker* marker2 = new Marker("marker2", *pof2, offset2);
+        free->addComponent(marker2);
+
+        // Third Marker is attached to the Body via two PhysicalOffsetFrames.
+        // All new ModelComponents are owned by the first Marker.
+        const Vec3 offset3  = offset1 / 3.;
+        const Transform tf3 = Transform(offset3);
+        PhysicalOffsetFrame* pof3a = new PhysicalOffsetFrame("pof3a", *body, tf3);
+        marker1->addComponent(pof3a);
+        PhysicalOffsetFrame* pof3b = new PhysicalOffsetFrame("pof3b", *pof3a, tf3);
+        marker1->addComponent(pof3b);
+        Marker* marker3 = new Marker("marker3", *pof3b, offset3);
+        marker1->addComponent(marker3);
+
+        State& s = model->initSystem();
+
+        // Ensure all Markers are coincident before scaling.
+        Vec3 expectedMarkerLoc = offset1;
+
+        auto testMarkerLoc =
+            [&](Marker* marker, const State& s, const std::string& msg) -> void
+        {
+            const Vec3 loc = marker->getLocationInGround(s);
+
+            ASSERT_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal,
+                __FILE__, __LINE__,
+                "Incorrect location of Marker '" + marker->getName()
+                + "' (" + msg + ")\n  location: " + loc.toString()
+                + "\n  expected: " + expectedMarkerLoc.toString());
+        };
+
+        testMarkerLoc(marker1, s, "before scaling");
+        testMarkerLoc(marker2, s, "before scaling");
+        testMarkerLoc(marker3, s, "before scaling");
+
+        // Scale the model.
+        model->scale(s, scaleSet, false);
+        expectedMarkerLoc =
+            expectedMarkerLoc.elementwiseMultiply(Vec3(scaleFactor));
+
+        // Ensure all Markers are coincident after scaling.
+        testMarkerLoc(marker1, s, "after scaling");
+        testMarkerLoc(marker2, s, "after scaling");
+        testMarkerLoc(marker3, s, "after scaling");
+    }
+
+    // Case 5: Attach a PathActuator to a PhysicalOffsetFrame. The two
+    //         PathActuators in this example model should be coincident before
+    //         and after scaling.
+    {
+        cout << "- case 5" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        FreeJoint* free = new FreeJoint("free", model->getGround(), *body);
+        free->setName("free");
+        model->addJoint(free);
+
+        // First PathActuator is attached to and owned by the Body.
+        const Vec3 offset1 = Vec3(0.2, 0.4, 0.6);
+        PathActuator* act1 = new PathActuator();
+        act1->setName("pathActuator1");
+        act1->addNewPathPoint("point1a", model->updGround(), Vec3(0));
+        act1->addNewPathPoint("point1b", *body, offset1);
+        body->addComponent(act1);
+
+        // Second PathActuator is attached to the Body via a POF. Both new
+        // ModelComponents are owned by the first PathActuator.
+        const Vec3 offset2 = offset1 / 2.;
+        const Transform tf2 = Transform(offset2);
+
+        PhysicalOffsetFrame* pof2 = new PhysicalOffsetFrame("pof2", *body, tf2);
+        act1->addComponent(pof2);
+
+        PathActuator* act2 = new PathActuator();
+        act2->setName("pathActuator2");
+        act2->addNewPathPoint("point2a", model->updGround(), Vec3(0));
+        act2->addNewPathPoint("point2b", *pof2, offset2);
+        act1->addComponent(act2);
+
+        State& s = model->initSystem();
+
+        // Ensure PathPoints are coincident before scaling.
+        auto testPathPointLoc =
+            [&](const State& s, const std::string& msg) -> void
+        {
+            const PathPointSet& pps1 = act1->getGeometryPath().getPathPointSet();
+            const PathPointSet& pps2 = act2->getGeometryPath().getPathPointSet();
+
+            for (int i = 0; i < 2; ++i)
+            {
+                const Vec3& p1 = pps1[i].getLocationInGround(s);
+                const Vec3& p2 = pps2[i].getLocationInGround(s);
+
+                ASSERT_EQUAL(p1, p2, SimTK::SignificantReal, __FILE__, __LINE__,
+                    "The location of point " + std::to_string(i)
+                    + " does not match (" + msg + ")\n  PathActuator1: "
+                    + p1.toString() + "\n  PathActuator2: " + p2.toString());
+            }
+        };
+
+        testPathPointLoc(s, "before scaling");
+
+        // Scale the model.
+        model->scale(s, scaleSet, false);
+
+        // Ensure PathPoints are coincident after scaling.
+        testPathPointLoc(s, "after scaling");
+    }
 }
