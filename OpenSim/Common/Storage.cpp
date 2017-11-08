@@ -36,9 +36,26 @@
 #include "SimTKcommon.h"
 #include "GCVSpline.h"
 #include "StateVector.h"
+#include "STOFileAdapter.h"
+#include "TimeSeriesTable.h"
 
 using namespace OpenSim;
 using namespace std;
+
+void convertTableToStorage(const TimeSeriesTable& table, Storage& sto) {
+    sto.purge();
+    OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
+    labels[0] = "time";
+    for (int i = 0; i < (int)table.getNumColumns(); ++i) {
+        labels[i + 1] = table.getColumnLabel(i);
+    }
+    sto.setColumnLabels(labels);
+    const auto& times = table.getIndependentColumn();
+    for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
+        auto rowView = table.getRowAtIndex(i_time);
+        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+    }
+}            
 
 
 //============================================================================
@@ -130,9 +147,14 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
     if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
-    if(_fileVersion > 1)
-      throw Exception{"Error: File version (" + std::to_string(_fileVersion) +
-                      ") not supported. Use STOFileAdapter instead."};
+    if(_fileVersion > 1) {
+        OPENSIM_THROW_IF(readHeadersOnly, Exception, 
+                "Cannot read headers only if STO version is greater than 1.");
+        TimeSeriesTable table = STOFileAdapter::read(aFileName);
+        convertTableToStorage(table, *this);
+        return;
+    }
+
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
     while(fp->good()) {
         int c = fp->peek();
