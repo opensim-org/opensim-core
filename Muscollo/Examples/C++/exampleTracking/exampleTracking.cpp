@@ -96,7 +96,7 @@ int main() {
     MucoStateTrackingCost tracking;
     TimeSeriesTable ref;
     ref.setColumnLabels({"j0/q0/value", "j1/q1/value"});
-    for (double time = 0; time < finalTime; time += 0.01) {
+    for (double time = -0.05; time < finalTime + 0.05; time += 0.01) {
         ref.appendRow(time, {
                 0.5 * SimTK::Pi * time,
                 0.25 * SimTK::Pi * time
@@ -114,7 +114,6 @@ int main() {
                 0.25 * cos(f * time)
         });
     }*/
-
     tracking.setReference(ref);
     mp.addCost(tracking);
 
@@ -125,6 +124,8 @@ int main() {
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
+
+    muco.print("double_pendulum_tracking.omuco");
 
     // Solve the problem.
     // ==================

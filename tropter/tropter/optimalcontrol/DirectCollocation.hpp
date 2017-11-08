@@ -79,22 +79,29 @@ OptimalControlSolution DirectCollocationSolver<T>::solve(
     if (initial_guess.empty()) return solve();
     Eigen::VectorXd variables =
             m_transcription->construct_iterate(initial_guess, true);
-    return solve_internal(variables);
+    auto solution = solve_internal(variables);
+    if (!solution && m_verbosity) {
+        std::cerr << "[tropter] DirectCollocationSolver did not succeed:\n"
+                << solution.status << std::endl;
+    }
+    return solution;
 }
 
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
-        Eigen::VectorXd& variables) const {
-    double obj_value = m_optsolver->optimize(variables);
+        const Eigen::VectorXd& variables) const {
+    OptimizationSolution optsol = m_optsolver->optimize(variables);
     OptimalControlIterate traj =
-            m_transcription->deconstruct_iterate(variables);
+            m_transcription->deconstruct_iterate(optsol.variables);
     OptimalControlSolution solution;
     solution.time = traj.time;
     solution.states = traj.states;
     solution.controls = traj.controls;
-    solution.objective = obj_value;
+    solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
+    solution.success = optsol.success;
+    solution.status = optsol.status;
     return solution;
 }
 

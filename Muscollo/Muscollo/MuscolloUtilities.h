@@ -27,6 +27,11 @@ namespace OpenSim {
 class StatesTrajectory;
 class Model;
 
+/// Create a SimTK::Vector with the provided length whose elements are
+/// linearly spaced between start and end.
+OSIMMUSCOLLO_API
+SimTK::Vector createVectorLinspace(int length, double start, double end);
+
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.
 /// You should use TimeSeriesTable if possible, as support for Storage may be

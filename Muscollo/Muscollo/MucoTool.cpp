@@ -42,7 +42,7 @@ void MucoTool::constructProperties() {
 
 MucoProblem& MucoTool::updProblem() {
     m_solverInitialized = false;
-    upd_solver().resetProblem();
+    upd_solver().clearProblem();
     return upd_problem();
 }
 
@@ -53,7 +53,7 @@ void MucoTool::ensureInitSolver() {
 MucoSolver& MucoTool::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
     // TODO how to persist Solver settings when solving multiple times.
-    upd_solver().resetProblem(get_problem());
+    upd_solver().setProblem(get_problem());
     m_solverInitialized = true;
     return upd_solver();
 }

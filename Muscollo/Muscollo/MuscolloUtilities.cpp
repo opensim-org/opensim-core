@@ -25,6 +25,16 @@
 
 using namespace OpenSim;
 
+
+SimTK::Vector OpenSim::createVectorLinspace(
+        int length, double start, double end) {
+    SimTK::Vector v(length);
+    for (int i = 0; i < length; ++i) {
+        v[i] = start + i * (end - start) / (length - 1);
+    }
+    return v;
+}
+
 Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     Storage sto;
     OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
