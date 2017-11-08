@@ -78,8 +78,8 @@ void testIsometricMuscleRoundtrip() {
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         // This is necessary to achieve a smooth solution for excitation.
         integrator.setAccuracy(1e-5);
-        Manager manager(model, integrator);
-        manager.integrate(state, 1.0);
+        Manager manager(model, state, integrator);
+        state = manager.integrate(1.0);
 
         // Print the model and states trajectory to files.
         model.print("testSingleMuscle_isometric_muscle.osim");

@@ -89,7 +89,7 @@ public:
                 _model.getComponentList<CoordinateActuator>()) {
             if (!actuator.get_appliesForce()) continue;
 
-            const auto& actuPath = actuator.getAbsolutePathName();
+            const auto& actuPath = actuator.getAbsolutePathString();
             this->add_control(actuPath + "_control",
                               {actuator.get_min_control(),
                                actuator.get_max_control()});
@@ -100,7 +100,7 @@ public:
         const auto& coordPathsToActuate = motionData.getCoordinatesToActuate();
         _optimalForce.resize(_numCoordActuators);
         _coordActuatorDOFs.resize(_numCoordActuators);
-        const ComponentPath modelPath = model.getAbsolutePathName();
+        const auto modelPath = model.getAbsolutePath();
         int i_act = 0;
         for (const auto& actuator :
                 _model.getComponentList<CoordinateActuator>()) {
@@ -109,7 +109,7 @@ public:
             // Figure out which DOF each coordinate actuator is actuating.
             const auto* coord = actuator.getCoordinate();
             const auto coordPath =
-                    ComponentPath(coord->getAbsolutePathName())
+                    coord->getAbsolutePath()
                             .formRelativePath(modelPath).toString();
             size_t i_coord = 0;
             while (i_coord < coordPathsToActuate.size() &&
@@ -119,8 +119,9 @@ public:
             // TODO move this into InverseMuscleSolver.
             if (i_coord == coordPathsToActuate.size()) {
                 throw std::runtime_error("[GSO] Could not find Coordinate '" +
-                        coord->getAbsolutePathName() + "' used in "
-                        "CoordinateActuator '" + actuator.getAbsolutePathName()
+                        coord->getAbsolutePathString() + "' used in "
+                        "CoordinateActuator '" +
+                        actuator.getAbsolutePathString()
                         + "'. Is the coordinate locked?");
             }
             _coordActuatorDOFs[i_act] = i_coord;
@@ -134,7 +135,7 @@ public:
         for (const auto& actuator : muscleList) {
             if (!actuator.get_appliesForce()) continue;
 
-            const auto& actuPath = actuator.getAbsolutePathName();
+            const auto& actuPath = actuator.getAbsolutePathString();
 
             // TODO use activation bounds, not excitation bounds.
             this->add_control(actuPath + "_activation", {0, 1});
@@ -387,7 +388,7 @@ GlobalStaticOptimization::solve() const {
     SimTK::State state = model.initSystem();
     std::vector<const Coordinate*> coordsToActuate;
     const auto coordsInOrder = model.getCoordinatesInMultibodyTreeOrder();
-    const ComponentPath modelPath = model.getAbsolutePathName();
+    const auto modelPath = model.getAbsolutePath();
     if (!getProperty_coordinates_to_include().empty()) {
         // Our goal is to create a list of Coordinate* in multibody tree order.
         // We will keep track of which requested coordinates we actually find.
@@ -399,7 +400,7 @@ GlobalStaticOptimization::solve() const {
         // Go through coordinates in order.
         for (auto& coord : coordsInOrder) {
             // Remove the model name from the coordinate path.
-            const auto coordPath = ComponentPath(coord->getAbsolutePathName())
+            const auto coordPath = coord->getAbsolutePath()
                             .formRelativePath(modelPath).toString();
             // Should this coordinate be included?
             const auto foundCoordPath = coordsToInclude.find(coordPath);
@@ -433,7 +434,7 @@ GlobalStaticOptimization::solve() const {
     }
     std::cout << "The following Coordinates will be actuated:" << std::endl;
     for (const auto* coord : coordsToActuate) {
-        std::cout << "  " << coord->getAbsolutePathName() << std::endl;
+        std::cout << "  " << coord->getAbsolutePathString() << std::endl;
     }
 
     // Process which actuators are included.
@@ -456,11 +457,11 @@ GlobalStaticOptimization::solve() const {
         for (const auto* coord : coordsToActuate) {
             auto* actu = new CoordinateActuator();
             actu->setCoordinate(const_cast<Coordinate*>(coord));
-            auto path = coord->getAbsolutePathName();
+            auto path = coord->getAbsolutePathString();
             coordPaths.push_back(path);
             // Get rid of model name.
-            path = ComponentPath(path).formRelativePath(
-                    model.getAbsolutePathName()).toString();
+            path = coord->getAbsolutePath().formRelativePath(
+                    model.getAbsolutePath()).toString();
             // Get rid of slashes in the path; slashes not allowed in names.
             std::replace(path.begin(), path.end(), '/', '_');
             actu->setName("reserve_" + path);
