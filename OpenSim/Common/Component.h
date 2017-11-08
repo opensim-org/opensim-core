@@ -75,6 +75,22 @@ public:
     }
 };
 
+class InvalidComponentName : public Exception {
+public:
+    InvalidComponentName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& invalidChars,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " contains invalid characters of: '" +
+            invalidChars + "'.";
+        addMessage(msg);
+    }
+};
+
 class ComponentNotFoundOnSpecifiedPath : public Exception {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
