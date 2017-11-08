@@ -107,8 +107,15 @@ protected:
                               double& integrand) const override {
         //const auto& time = state.getTime();
         getModel().realizePosition(state); // why is this needed?
-        SimTK::Array_<SimTK::Vec3> refValues;
-        m_markref.getValues(state, refValues);
+        TimeSeriesTableVec3& markerTable = m_markref.getMarkerTable();
+        std::vector<std::string> suffixes(3);
+        suffixes[0] = '_x';
+        suffixes[1] = '_y';
+        suffixes[2] = '_z';
+
+
+        //SimTK::Array_<SimTK::Vec3> refValues;
+        //m_markref.getValues(state, refValues);
 
         for (int i = 0; i < m_marker_names.size(); ++i) {
             std::string name = m_marker_names[i];
@@ -120,8 +127,9 @@ protected:
         }
     }
 private:
-    void constructProperties() {};
+    void constructProperties() {}; // why is this needed?
     MarkersReference m_markref;
+    mutable GCVSplineSet m_refsplines;
     mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
     SimTK::Array_<std::string> m_marker_names;
 };
