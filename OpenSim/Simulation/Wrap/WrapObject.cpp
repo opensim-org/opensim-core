@@ -87,8 +87,8 @@ void WrapObject::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the Frame's base Body exists).
-    const Vec3 scaleFactors = getScaleFactors(scaleSet, getFrame());
-    if (scaleFactors.isNaN())
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
     upd_translation() = get_translation().elementwiseMultiply(scaleFactors);
