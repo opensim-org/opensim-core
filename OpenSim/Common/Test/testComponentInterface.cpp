@@ -918,6 +918,12 @@ void testListSockets() {
 
 void testComponentPathNames()
 {
+    Foo foo;
+    foo.setName("LegWithConstrainedFoot/foot");
+    // verify that this illegal name throws when we try to finalize
+    // the component from its property values
+    ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
+  
     // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.

@@ -1119,10 +1119,13 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
                         std::remove_if(name.begin(), name.end(), ::isspace),
                         name.end() );
                     node.setAttributeValue("name", name);
-                    std::cout << "It is was renamed '" << name << "'." << std::endl;
+                    std::cout << "It was renamed '" << name << "'." << std::endl;
                 }
             }
-            else { // All Components should have a name. If none, assign one here.
+            else { // As 4.0 all Components must have a name. If none, assign one.
+                // Note: in finalizeFromProperties(), the Component will ensure
+                // that names are unique by travesing its list of subcomponents
+                // and renaming any duplicates.
                 node.setAttributeValue("name", 
                     IO::Lowercase(getConcreteClassName()));
             }
