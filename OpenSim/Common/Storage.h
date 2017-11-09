@@ -112,6 +112,10 @@ public:
     // make this constructor explicit so you don't get implicit casting of int to Storage
     explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
         const std::string &aName="UNKNOWN");
+    /** Load a STO file.
+    <b>Version 2 STO files</b>: This constructor can read version 1 and version 2
+    STO files. However, most metadata from a version 2 STO file will not be
+    preserved. Use STOFileAdapter and TimeSeriesTable instead, if possible. */
     Storage(const std::string &aFileName, bool readHeadersOnly=false) SWIG_DECLARE_EXCEPTION;
     Storage(const Storage &aStorage,bool aCopyData=true);
     Storage(const Storage &aStorage,int aStateIndex,int aN,
