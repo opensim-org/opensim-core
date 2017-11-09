@@ -28,21 +28,27 @@ class AbstractOptimizationProblem;
 
 class OptimizationProblemDecorator;
 
+struct OptimizationSolution {
+    Eigen::VectorXd variables;
+    double objective = std::numeric_limits<double>::quiet_NaN();
+    bool success = false;
+    std::string status;
+};
+
 /// @ingroup optimization
 class OptimizationSolver {
 public:
     /// Provide the problem to solve.
     OptimizationSolver(const AbstractOptimizationProblem& problem);
     /// Optimize the optimization problem.
-    /// @param[in,out] variables Pass in the initial guess to the problem, or
-    ///     leave empty to use a naive initial guess based on the variables'
-    ///     bounds (see OptimizationProblemProxy::initial_guess_from_bounds()).
-    ///     After this function returns, `variables` contains the solution to
-    ///     the optimization problem.
+    /// @param[in] guess
+    ///     Initial guess to the problem, or leave empty to use a naive initial
+    ///     guess based on the variables' bounds
+    ///     (see OptimizationProblemProxy::make_initial_guess_from_bounds()).
+    /// @returns the solution (optimal variables, objective, and the solver's
+    ///     return status).
     /// @returns The value of the objective function evaluated at the solution.
-    // TODO return struct that contains info about the optimizer's return
-    // status.
-    double optimize(Eigen::VectorXd& variables) const;
+    OptimizationSolution optimize(const Eigen::VectorXd& guess) const;
 
     /// @name Set common options
     /// @{
@@ -100,7 +106,8 @@ public:
     /// @}
 
 protected:
-    virtual double optimize_impl(Eigen::VectorXd& variables) const = 0;
+    virtual OptimizationSolution
+    optimize_impl(const Eigen::VectorXd& variables) const = 0;
     virtual void get_available_options(
             std::vector<std::string>& options_string,
             std::vector<std::string>& options_int,
