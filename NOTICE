@@ -33,13 +33,24 @@ our impact, which is essential for securing funding to improve the software and
 provide support to our users (you). We would be extremely grateful if you
 acknowledge us by citing the following papers.
 
+Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen
+DG. OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of
+Movement. IEEE Transactions on Biomedical Engineering. (2007)
+
 Seth A, Sherman M, Reinbolt JA,  Delp SL. OpenSim: a musculoskeletal modeling
 and simulation framework for in silico investigations and exchange.
 Procedia IUTAM. (2011)
 
-Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen
-DG. OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of
-Movement. IEEE Transactions on Biomedical Engineering. (2007)
+Please note that OpenSim employs its own exact method of computing moment-arms 
+and does not numerically compute the partial derivative of muscle length w.r.t.
+joint angle. Please use the following when for a reference to how OpenSim computes 
+moment-arms.
+
+Sherman MA, Seth A, Delp SL. What is a Moment Arm? Calculating Muscle Effectiveness
+in Biomechanical Models Using Generalized Coordinates. ASME. International Design
+Engineering Technical Conferences and Computers and Information in Engineering
+Conference, Volume 7B: 9th International Conference on Multibody Systems, Nonlinear
+Dynamics, and Control. (2013)
 
 We would also be grateful if you mention that OpenSim is funded by NIH Roadmap
 grant U54 GM072970, the NIH research infrastructure grant P2C HD065690, the NIH
