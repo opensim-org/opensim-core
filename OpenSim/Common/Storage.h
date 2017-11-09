@@ -195,7 +195,8 @@ public:
     int getDataColumn(const std::string& columnName,double *&rData) const;
     void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0) override;
 
-    /** Convert to a TimeSeriesTable (new in 4.0).                            */
+    /** Convert to a TimeSeriesTable. This may be useful if you need to use
+    parts of the API that require a TimeSeriesTable instead of a Storage. */
     TimeSeriesTable exportToTable() const;
 
 #ifndef SWIG
