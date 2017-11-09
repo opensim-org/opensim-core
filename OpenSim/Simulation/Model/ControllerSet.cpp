@@ -157,7 +157,7 @@ void ControllerSet::printControlStorage( const string& fileName)  const
 }
 
 TimeSeriesTable ControllerSet::getControlTable() const {
-    return _controlStore->getAsTimeSeriesTable();
+    return _controlStore->exportToTable();
 }
 
 void ControllerSet::setActuators( Set<Actuator>& as) 
