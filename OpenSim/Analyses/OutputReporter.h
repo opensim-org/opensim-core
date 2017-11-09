@@ -49,8 +49,10 @@ namespace OpenSim {
  * report on Outputs via the Analysis interface but backed by a TableReporter.
  * The OutputReporter currently only supports Outputs of type: double, Vec3
  * and SpatialVec. The OutputReporter will automatically write multiple files-
- * a file for each supported Output type: <results_file_name>.sto (as doubles),
- * <results_file_name>Vec3.sto and <results_file_name>SpatialVec.sto.
+ * a file for each supported Output type: 
+ *   - `<results-file-name>.sto` (as doubles), 
+ *   - `<results-file-name>Vec3.sto`, and
+ *   - `<results-file-name>SpatialVec.sto`.
  *
  * Note that the internal tables are reset at the beginning of a simulation or
  * AnalyzeTool::run() and does not append results to previous tables.
