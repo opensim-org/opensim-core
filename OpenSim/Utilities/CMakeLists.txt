@@ -1,8 +1,8 @@
 set(BUILD_SIMM_TRANSLATOR OFF CACHE BOOL "Build Utilities to support importing/exporting SIMM models")
 
-if(BUILD_JAVA_WRAPPING)
+if(BUILD_JAVA_WRAPPING AND BUILD_SIMM_TRANSLATOR)
     subdirs(simmFileWriterDLL) 
-endif(BUILD_JAVA_WRAPPING)
+endif()
 if(BUILD_SIMM_TRANSLATOR)
     subdirs(simmToOpenSim) 
 endif()
