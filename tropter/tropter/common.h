@@ -77,6 +77,8 @@ using MatrixXa = Eigen::Matrix<adouble, Eigen::Dynamic, Eigen::Dynamic>;
 template<typename T>
 using VectorX = Eigen::Matrix<T, Eigen::Dynamic, 1>;
 template<typename T>
+using RowVectorX = Eigen::Matrix<T, 1, Eigen::Dynamic>;
+template<typename T>
 using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
 template<typename T>
