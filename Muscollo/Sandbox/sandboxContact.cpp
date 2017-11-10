@@ -26,12 +26,27 @@ using SimTK::Vec3;
 
 class CustomContactForce : public Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForce, Force);
+public:
+    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
     void computeForce(const SimTK::State& s,
             SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
             SimTK::Vector& generalizedForces) const override {
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& vel = pt.getVelocityInGround(s);
+        const SimTK::Real y = pos[1];
+        const SimTK::Real vy = vel[1];
+        SimTK::Real force = 0;
+        const SimTK::Real depth = 0 - y;
+        const SimTK::Real depthRate = 0 - vy;
+        const SimTK::Real a = 5e7; // N/m^3
+        const SimTK::Real b = 1.0; // s/m
+        if (depth > 0) {
+            //force = 1000 * depth;
+            force = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
+        }
         applyGeneralizedForce(s, getModel().getCoordinateSet().get(0),
-                -getModel().getTotalMass(s) * getModel().getGravity()[1],
-                generalizedForces);
+                force, generalizedForces);
     }
 };
 
@@ -49,8 +64,15 @@ Model createModel() {
     coord.setName("y");
     model.addComponent(joint);
 
+    auto* station = new Station();
+    station->setName("contact_point");
+    station->connectSocket_parent_frame(*body);
+    model.addComponent(station);
+
     auto* force = new CustomContactForce();
+    force->setName("contact");
     model.addComponent(force);
+    force->connectSocket_station(*station);
 
     return model;
 }
@@ -59,6 +81,7 @@ int main() {
 
     Model model = createModel();
     auto state = model.initSystem();
+    model.setStateVariableValue(state, "/slider/y/value", 1.0);
 
     Manager manager(model);
     manager.integrate(state, 1.0);
