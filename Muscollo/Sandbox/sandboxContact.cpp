@@ -29,7 +29,7 @@ class CustomContactForce : public Force {
 public:
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
     void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector_<SimTK::SpatialVec>& /*bodyForces*/,
             SimTK::Vector& generalizedForces) const override {
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
@@ -45,6 +45,8 @@ public:
             //force = 1000 * depth;
             force = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
         }
+        const SimTK::Real voidStiffness = 1.0; // N/m
+        force += voidStiffness * depth;
         applyGeneralizedForce(s, getModel().getCoordinateSet().get(0),
                 force, generalizedForces);
     }
@@ -53,7 +55,7 @@ public:
 Model createModel() {
     Model model;
     model.setName("point_mass");
-    auto* body = new Body("body", 2.0, Vec3(0), SimTK::Inertia(0));
+    auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(0));
     model.addComponent(body);
 
     // Allows translation along x.
@@ -79,14 +81,19 @@ Model createModel() {
 
 int main() {
 
+    const SimTK::Real y0 = 0.5;
+    const SimTK::Real finalTime = 1.0;
     Model model = createModel();
     auto state = model.initSystem();
-    model.setStateVariableValue(state, "/slider/y/value", 1.0);
+    model.setStateVariableValue(state, "/slider/y/value", y0);
 
     Manager manager(model);
-    manager.integrate(state, 1.0);
+    manager.integrate(state, finalTime);
     visualize(model, manager.getStateStorage());
-    /*
+
+    // TODO use the simulation as an initial guess!!!
+
+
     MucoTool muco;
     muco.setName("sliding_mass");
 
@@ -96,31 +103,22 @@ int main() {
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(createSlidingMassModel());
+    mp.setModel(model);
 
     // Bounds.
     // -------
     // Initial time must be 0, final time can be within [0, 5].
-    mp.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 5));
+    mp.setTimeBounds(0, finalTime);
 
     // Initial position must be 0, final position must be 1.
-    mp.setStateInfo("slider/y/value", MucoBounds(-5, 5),
-            MucoInitialBounds(0), MucoFinalBounds(1));
+    mp.setStateInfo("slider/y/value", MucoBounds(-5, 5), y0);
     // Initial and final speed must be 0. Use compact syntax.
-    mp.setStateInfo("slider/y/speed", {-50, 50}, 0, 0);
-
-    // Applied force must be between -50 and 50.
-    mp.setControlInfo("actuator", MucoBounds(-50, 50));
-
-    // Cost.
-    // -----
-    MucoFinalTimeCost ftCost;
-    mp.addCost(ftCost);
+    mp.setStateInfo("slider/y/speed", {-50, 50}, 0);
 
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(100);
 
     // TODO interface for setting these options:
     // TODO ms.setOption("optim.hessian-approximation", "limited-memory");
@@ -128,7 +126,7 @@ int main() {
 
 
     // Now that we've finished setting up the tool, print it to a file.
-    muco.print("sliding_mass.omuco");
+    //muco.print("contact.omuco");
 
     // Solve the problem.
     // ==================
@@ -136,10 +134,11 @@ int main() {
 
     //solution.write("sliding_mass_solution.sto");
 
+    // TODO copmare the forward and direct collocation integration.
+
     // Visualize.
     // ==========
     muco.visualize(solution);
-    */
 
     return EXIT_SUCCESS;
 }
