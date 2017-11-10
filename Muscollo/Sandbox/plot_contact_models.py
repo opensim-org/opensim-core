@@ -94,6 +94,85 @@ pl.plot(sliding_velocity,
         friction_force_MATLAB(1, sliding_velocity),
         label="MATLAB")
 pl.legend()
+
+#pl.show()
+fig.savefig('contact_models.pdf')
+
+
+
+# Simulate 2d bouncing ball with friction
+# ---------------------------------------
+import scipy.integrate
+g = 9.81
+mass = 50.0
+a = 5e7
+b = 1.0
+stiffness_fictitious = 1.0
+coefficient_of_friction = 1.0
+velocity_scaling_factor = 0.05
+def dynamics(state, t):
+    x = state[0]
+    y = state[1]
+    vx = state[2]
+    vy = state[3]
+
+    ground_height = 0.0
+    depth = ground_height - y
+    depth_pos = np.maximum(0, depth)
+    depth_rate = -vy
+    #if depth > 0:
+    #    physical_normal_force = (
+    #        # TODO np.maximum(-fstiffness, fdissipation)
+    #        # https://simtk-confluence.stanford.edu/display/OpenSim/Dynamics
+    #        # +Theory+and+Publications?preview=/3376330/3737531/Sherman-2011-SethDelp-Simbody-ProcediaIUTAM-v2-p241.pdf
+    #        np.maximum(0, a * depth_pos**3 * (1 + b * depth_rate))
+    #    )
+    #else:
+    #    physical_normal_force = 0
+    normal_force_stiffness = a * depth_pos**3
+    normal_force_dissipation = np.maximum(
+        b * normal_force_stiffness * depth_rate,
+        -normal_force_stiffness)
+    physical_normal_force = normal_force_stiffness + normal_force_dissipation
+    normal_force = physical_normal_force + stiffness_fictitious * depth
+    dvydt = -g  + normal_force / mass
+
+    z0 = np.exp(-vx / velocity_scaling_factor)
+    print("DEBUG", t, normal_force, vx, z0)
+    friction_force = ((1 - z0) / (1 + z0) * coefficient_of_friction *
+                      #physical_normal_force)
+                      normal_force)
+    dvxdt = -friction_force / mass;
+    return np.array([vx, vy, dvxdt, dvydt])
+
+x0 = 0
+y0 = 1
+vx0 = 0.1
+vy0 = 0
+initial_state = [x0, y0, vx0, vy0]
+N = 100
+tf = 1.25
+time = np.linspace(0, 1.25, N)
+solution = scipy.integrate.odeint(dynamics, initial_state, time)
+
+state_names = ['x', 'y', 'vx', 'vy']
+
+fig = pl.figure(figsize=(4, 10))
+for i in range(4):
+    ax = fig.add_subplot(4, 1, i + 1)
+    ax.plot(time, solution[:, i])
+    ax.set_title(state_names[i])
+
 pl.show()
 
-fig.savefig('contact_models.pdf')
+
+
+
+
+
+
+
+
+
+
+
