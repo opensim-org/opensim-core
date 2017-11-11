@@ -771,7 +771,7 @@ void scaleJointsAndConstraints()
             "SliderJoint has incorrect Coordinate value before scaling.");
 
         // Scale body2 uniformly.
-        const double uniformFactor = 3.14159;
+        const double uniformFactor = 1.234;
         ScaleSet scaleSetUniform;
         Scale* scale = new Scale();
         scale->setSegmentName("body1");
