@@ -171,12 +171,14 @@ public:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
-        auto& osimControls = m_model.updControls(m_state);
-        std::copy(controls.data(), controls.data() + controls.size(),
-                &osimControls[0]);
+        if (m_model.getNumControls()) {
+            auto& osimControls = m_model.updControls(m_state);
+            std::copy(controls.data(), controls.data() + controls.size(),
+                    &osimControls[0]);
 
-        m_model.realizeVelocity(m_state);
-        m_model.setControls(m_state, osimControls);
+            m_model.realizeVelocity(m_state);
+            m_model.setControls(m_state, osimControls);
+        }
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
@@ -193,11 +195,14 @@ public:
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
-        auto& osimControls = m_model.updControls(m_state);
-        std::copy(controls.data(), controls.data() + controls.size(),
-                &osimControls[0]);
-        m_model.realizePosition(m_state);
-        m_model.setControls(m_state, osimControls);
+        if (m_model.getNumControls()) {
+            auto& osimControls = m_model.updControls(m_state);
+            std::copy(controls.data(), controls.data() + controls.size(),
+                    &osimControls[0]);
+            m_model.setControls(m_state, osimControls);
+        } else {
+            m_model.realizePosition(m_state);
+        }
         integrand = m_phase0.calcIntegralCost(m_state);
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
