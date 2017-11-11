@@ -738,8 +738,7 @@ void scaleJointsAndConstraints()
         slider1->updCoordinate().setName("indepCoord");
         model->addJoint(slider1);
 
-        SliderJoint* slider2 =
-            new SliderJoint("slider2", *body2, model->getGround());
+        SliderJoint* slider2 = new SliderJoint("slider2", *body1, *body2);
         slider2->updCoordinate().setName("depCoord");
         model->addJoint(slider2);
 
@@ -775,7 +774,7 @@ void scaleJointsAndConstraints()
         const double uniformFactor = 3.14159;
         ScaleSet scaleSetUniform;
         Scale* scale = new Scale();
-        scale->setSegmentName("body2");
+        scale->setSegmentName("body1");
         scale->setScaleFactors(Vec3(uniformFactor));
         scale->setApply(true);
         scaleSetUniform.adoptAndAppend(scale);
