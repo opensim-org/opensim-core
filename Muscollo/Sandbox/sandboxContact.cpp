@@ -88,7 +88,6 @@ public:
         const SimTK::Real coeff_friction = 1.0;
         // TODO decide direction!!!
         const SimTK::Real frictionForce =
-//                100;
                 -(1 - z0) / (1 + z0) * coeff_friction * force[1];
 
         std::cout << "DEBUG " << s.getTime() << " " << force[1]
@@ -188,7 +187,7 @@ int main() {
     Model model = createModel2D();
     auto state = model.initSystem();
     model.setStateVariableValue(state, "/ty/ty/value", y0);
-    model.setStateVariableValue(state, "/tx/tx/speed", 0); // TODO 0.5);
+    model.setStateVariableValue(state, "/tx/tx/speed", 2.5);
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     // Without the next line: Simbody
     integrator.setMaximumStepSize(0.01);
