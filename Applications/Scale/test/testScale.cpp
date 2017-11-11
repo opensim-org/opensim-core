@@ -615,7 +615,7 @@ void scaleJointsAndConstraints()
 
     using namespace SimTK;
 
-    // Create ScaleSet to scale the "body1" and "body2".
+    // Create ScaleSet to scale "body1" and "body2".
     const Vec3 scaleFactors = Vec3(1.61, 8.03, 3.98);
     ScaleSet scaleSet;
     auto addBodyScale = [&](const std::string& bodyName) -> void {
