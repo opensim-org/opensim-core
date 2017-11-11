@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Author(s): Ayman Habib, Peter Loan, Tom Uchida                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -38,6 +38,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -653,8 +655,8 @@ void scaleJointsAndConstraints()
         const Vec3& expected1 = radii;
         ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal,
             __FILE__, __LINE__,
-            "ellipsoid1 has incorrect radii after scaling: radii are "
-            + actual1.toString() + " but expected " + expected1.toString());
+            "EllipsoidJoint 'ellipsoid1' has incorrect radii.\n  actual: "
+            + actual1.toString() + ", expected: " + expected1.toString());
 
         // Radii of ellipsoid2 should have been scaled using the scale factors
         // corresponding to body2.
@@ -662,14 +664,60 @@ void scaleJointsAndConstraints()
         const Vec3& expected2 = radii.elementwiseMultiply(scaleFactors);
         ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal,
             __FILE__, __LINE__,
-            "ellipsoid2 has incorrect radii after scaling: radii are "
-            + actual2.toString() + " but expected " + expected2.toString());
+            "EllipsoidJoint 'ellipsoid2' has incorrect radii.\n  actual: "
+            + actual2.toString() + ", expected: " + expected2.toString());
     }
 
     // Test CustomJoint scaling. Ensure SpatialTransform is scaled if the parent
     // is a Body but does not change if the parent is Ground.
     {
         cout << "- CustomJoint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        SpatialTransform transform;
+        transform[3].setCoordinateNames(OpenSim::Array<std::string>("x", 1, 1));
+        transform[3].setFunction(new LinearFunction(1.2, 3.4));
+
+        // Evaluate LinearFunction before scaling and compare after scaling.
+        const Vector xA = Vector(1, 0.);
+        const double yA = transform[3].getFunction().calcValue(xA);
+        const Vector xB = Vector(1, 1.618);
+        const double yB = transform[3].getFunction().calcValue(xB);
+
+        CustomJoint* custom1 =
+            new CustomJoint("custom1", model->getGround(), *body1, transform);
+        model->addJoint(custom1);
+        CustomJoint* custom2 =
+            new CustomJoint("custom2", *body2, model->getGround(), transform);
+        model->addJoint(custom2);
+
+        // Scale the model.
+        State& s = model->initSystem();
+        model->scale(s, scaleSet, false);
+
+        // Transform of custom1 should not have changed.
+        const OpenSim::Function& fn1 =
+            custom1->getSpatialTransform()[3].getFunction();
+        ASSERT_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal,
+            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
+        ASSERT_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal,
+            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
+
+        // Transform of custom2 should have been scaled using the scale factors
+        // corresponding to body2.
+        const OpenSim::Function& fn2 =
+            custom2->getSpatialTransform()[3].getFunction();
+        ASSERT_EQUAL(fn2.calcValue(xA), yA * scaleFactors[0],
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "CustomJoint 'custom2' was incorrectly scaled.");
+        ASSERT_EQUAL(fn2.calcValue(xB), yB * scaleFactors[0],
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "CustomJoint 'custom2' was incorrectly scaled.");
     }
 
     // Test CoordinateCouplerConstraint scaling.
