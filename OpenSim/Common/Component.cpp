@@ -167,6 +167,10 @@ void Component::finalizeFromProperties()
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
                       getConcreteClassName() );
 
+    ComponentPath cp;
+    OPENSIM_THROW_IF( !cp.isLegalPathElement(getName()), InvalidComponentName,
+        getName(), cp.getInvalidChars(), getConcreteClassName());
+
     for (auto& comp : _memberSubcomponents) {
         comp->setOwner(*this);
     }
@@ -1103,6 +1107,29 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30500) {
+            // In 3.3 and earlier, spaces in names were tolerated. Spaces are
+            // no longer acceptable in Component names.
+            if (node.hasAttribute("name")) {
+                auto name = node.getRequiredAttribute("name").getValue();
+                if (name.find_first_of("\n\t ") < std::string::npos) {
+                    std::cout << getConcreteClassName() << " name '" << name
+                        << "' contains whitespace. ";
+                    name.erase(
+                        std::remove_if(name.begin(), name.end(), ::isspace),
+                        name.end() );
+                    node.setAttributeValue("name", name);
+                    std::cout << "It was renamed '" << name << "'." << std::endl;
+                }
+            }
+            else { // As 4.0 all Components must have a name. If none, assign one.
+                // Note: in finalizeFromProperties(), the Component will ensure
+                // that names are unique by travesing its list of subcomponents
+                // and renaming any duplicates.
+                node.setAttributeValue("name", 
+                    IO::Lowercase(getConcreteClassName()));
+            }
+        }
         if (versionNumber < 30508) {
             // Here's an example of the change this function might make:
             // Previous: <connectors>

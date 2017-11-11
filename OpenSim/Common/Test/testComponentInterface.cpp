@@ -918,6 +918,12 @@ void testListSockets() {
 
 void testComponentPathNames()
 {
+    Foo foo;
+    foo.setName("LegWithConstrainedFoot/foot");
+    // verify that this illegal name throws when we try to finalize
+    // the component from its property values
+    ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
+  
     // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
@@ -1889,14 +1895,9 @@ void testSingleValueInputConnecteeSerialization() {
     // Deserialize.
     {
         // Single-value connectee cannot have multiple connectee_names.
-        // TODO Would ideally check for an exception, but we only emit a warning
-        // for now. This is because the way we determine if multiple
-        // connectee names were specified is by looking for spaces, but old
-        // models used have spaces in their names.
-        // SimTK_TEST_MUST_THROW_EXC(
-        //     TheWorld world(modelFileNameMultipleValues),
-        //     OpenSim::Exception);
-        TheWorld world(modelFileNameMultipleValues);
+        SimTK_TEST_MUST_THROW_EXC(
+             TheWorld world(modelFileNameMultipleValues),
+             OpenSim::Exception);
     }
     
     // Test error case: connectee_name has invalid characters.

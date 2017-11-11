@@ -34,7 +34,7 @@ int main() {
         //checkRunDirFile << "Run from here:\n\n";
         //checkRunDirFile.close();
         string stdLabels[] = {"time", "v1", "v2"};
-        Storage* st = new Storage("test.sto");
+        std::unique_ptr<Storage> st(new Storage("test.sto"));
         // time[\t]v1[\t]v2
         // 1.[\t]   10.0[Space]20
         // 2.[\t\t] 20.0[\t]40
@@ -71,7 +71,13 @@ int main() {
         diff = st->compareColumn(st2, stdLabels[2], 0.);
         ASSERT(fabs(diff) < 1E-7);
 
-        delete st;
+        // Loading version 2 storage file with Storage class.
+        auto table = st->exportToTable();
+        STOFileAdapter::write(table, "testStorage_version2.sto");
+        // Now read using Storage() constructor.
+        Storage stVersion2("testStorage_version2.sto");
+        // Compare with st.
+        SimTK_TEST_EQ(table.getMatrix(), stVersion2.exportToTable().getMatrix());
     }
     catch (const Exception& e) {
         e.print(cerr);
