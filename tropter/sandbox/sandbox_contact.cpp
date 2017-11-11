@@ -53,6 +53,10 @@ public:
     }
 };
 
+void condassign(double& a, const double& b, const double& c, const double& d) {
+    a = (b > 0) ? c : d;
+}
+
 template<typename T>
 class BouncingBallAckermann2010 : public OptimalControlProblem<T> {
 public:
@@ -78,8 +82,18 @@ public:
         const T depth_pos = fmax(0, depth);
         const T depth_rate = -vy;
         const T damping_force = 0;
-        const T contact_normal_force =
-                fmax(0, a * pow(depth_pos, 3) * (1 + b * depth_rate)) +
+        //const T contact_normal_force =
+        //        fmax(0, a * pow(depth_pos, 3) * (1 + b * depth_rate)) +
+        //        stiffness_fictitious * depth;
+        // Must use this condassign because if depth < 0 (no contact), we can
+        // still generate a positive normal force if the depth_rate is
+        // positive, as is the case when the mass is falling.
+        // condassign(a, b, c, d) is the same as `a = if (b > 0) ? c : d`.
+        T physical_normal_force;
+        condassign(physical_normal_force, depth,
+                fmax(0, a * pow(depth, 3) * (1 + b * depth_rate)),
+                T(0.0));
+        const T contact_normal_force = physical_normal_force +
                 stiffness_fictitious * depth;
         out.dynamics[1] = -g + (contact_normal_force) / mass;
     }
@@ -95,6 +109,7 @@ public:
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
         OptimalControlSolution solution = dircol.solve(guess);
+        dircol.print_constraint_values(solution);
         solution.write(
                 "bouncing_ball_Ackermann2010_solution" + suffix + ".csv");
         std::cout << std::string(79, '=') << std::endl;
@@ -160,6 +175,104 @@ public:
     }
 };
 
+template<typename T>
+class Ball2DAckermann2010 : public OptimalControlProblem<T> {
+public:
+    const double mass = 50.0; // kg
+    double a; // N/m^3
+    const double b; // s/m
+    const double stiffness_fictitious = 1.0; // N/m
+    const double g = 9.81; // m/s^2
+    Ball2DAckermann2010(double a = 5e7, double b = 0, double vx0 = 0)
+            : a(a), b(b) {
+        this->set_time(0, 1/*TODO.25*/);
+        this->add_state("x", {0, 5}, 0);
+        this->add_state("y", {-1, 1}, 1.0); // TODO used to be 1
+        this->add_state("vx", {-10, 10}, vx0);
+        this->add_state("vy", {-10, 10}, 0);
+    }
+    void calc_differential_algebraic_equations(
+            const DAEInput<T>& in, DAEOutput<T> out) const override {
+        const T& x = in.states[0];
+        const T& y = in.states[1];
+        const T& vx = in.states[2];
+        const T& vy = in.states[3];
+        out.dynamics[0] = vx;
+        out.dynamics[1] = vy;
+        const T ground_height = 0;
+        // Positive if penetrated.
+        const T depth = ground_height - y;
+        const T depth_pos = fmax(0, depth);
+        const T depth_rate = -vy;
+        //const T damping_force = 0;
+        /*
+                    */
+        T physical_normal_force;
+        // condassign(a, b, c, d) is the same as `a = if (b > 0) ? c : d`.
+        condassign(physical_normal_force, depth,
+                fmax(0, a * pow(depth, 3) * (1 + b * depth_rate)),
+                T(0.0));
+        const T total_normal_force = physical_normal_force +
+                    stiffness_fictitious * depth;
+
+
+        // with vx0!=0, i still get an "exit code 11" with adolc whther using
+        // condassign or not.
+        /*
+        TODO this method for keeping the normal force positive didn't work as
+         well as using condassign.
+        const T normal_force_stiffness = a * pow(depth_pos, 3);
+        // Simbody paper. suggests this fmax(-Fstiff, Fdamp)
+        const T normal_force_dissiptation = fmax(
+                b * normal_force_stiffness * depth_rate,
+                -normal_force_stiffness);
+        const T physical_normal_force =
+                normal_force_stiffness + normal_force_dissiptation;
+        const T total_normal_force =
+                physical_normal_force +
+                        stiffness_fictitious * depth;
+                        */
+
+        // TODO is the x direction drift b/c friction includes the fictitious
+        // force???? YES
+        const double velocity_scaling_factor = 0.1; // TODO 0.05;
+        const T z0 = exp(-vx / velocity_scaling_factor);
+        const double coefficient_of_friction = 1.0;
+        // TODO does normal force for friction include the soft linear term?
+        // TODO only apply force if in contact.
+        // TODO normal force should be zero out of contact!!
+        // Carmichael says he uses mu = 0.8
+        // TODO use total normal force
+        // TODO ideally would use physical_normal_force here, but using
+        // total_normal_force
+        const T friction_force =
+                (1 - z0) / (1 + z0) * coefficient_of_friction *
+                        total_normal_force; // TODO total_normal_force
+        out.dynamics[2] = -friction_force / mass;
+//        std::cout << "DEBUG " << in.time << " " << out.dynamics[2] << std::endl;
+        out.dynamics[3] = -g + (total_normal_force) / mass;
+    }
+    static OptimalControlSolution run(std::string suffix, double a,
+            const OptimalControlIterate& guess = OptimalControlIterate(),
+            double b = 0,
+            std::string hessian_approx = "exact",
+            double vx0 = 0) {
+        std::cout << std::string(79, '=') << "\n";
+        std::cout << suffix << "\n";
+        std::cout << std::string(79, '-') << std::endl;
+        auto ocp = std::make_shared<Ball2DAckermann2010<T>>(a, b, vx0);
+        const int N = 1000; // TODO can get away with less when T=double, but
+        // adolc gives error code 11 if N = 300...
+        DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
+        dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
+        OptimalControlSolution solution = dircol.solve(guess);
+        dircol.print_constraint_values(solution);
+        solution.write("Ball2DAckermann2010" + suffix + ".csv");
+        std::cout << std::string(79, '=') << std::endl;
+        return solution;
+    }
+};
+
 int main()
 {
     BouncingBallLinear<adouble>::run();
@@ -195,6 +308,7 @@ int main()
 
 
 
+    /*
     // Using doubles gives the same solutions, qualitatively at least, and
     // the 5e5 solution takes just as many iterations about, but the 5e7
     // struggled quite a bit but still found a solution (IPOPT went into
@@ -202,17 +316,55 @@ int main()
     // iteration than ADOLC.
     auto sold5e5d = BouncingBallAckermann2010<double>::run(
             "double5e5_damped", 5e5, {}, 1.0);
-    BouncingBallAckermann2010<double>::run(
-            "double5e7_damped_cold", 5e7, {}, 1.0);
+    // 88 iterations:
+    //BouncingBallAckermann2010<double>::run(
+    //        "double5e7_damped_cold", 5e7, {}, 1.0);
     // Giving a hot start helps a lot (13 iterations vs 88 for the cold start)
     // with finite differences.
     BouncingBallAckermann2010<double>::run(
             "double5e7_damped", 5e7, sold5e5d, 1.0);
+    */
 
     // Do not need a hot start if using quasi-Newton.
     BouncingBallAckermann2010<double>::run(
             "double5e7_damped_quasinewton", 5e7, {}, 1.0, "limited-memory");
 
+
+    // 2D
+    // --
+    // Ensure that dropping the ball straight down still works just fine.
+    Ball2DAckermann2010<adouble>::run("vx0=0", 5e7, {}, 1.0, "exact",
+            0.0);
+
+    // TODO defect values are often exactly 0 for vy dynamics; how is that
+    // possible?
+
+    // TODO adolc issue: "process finished with exit code 11". something with
+    // hessian sparsity?
+    // Ball2DAckermann2010<adouble>::run("vx0=0.1", 5e3, {}, 1.0, "exact", 0.1);
+    // This works for N = 1000, but not for N = 300, 100, 50..... WHAT!?
+    // Perhaps related to use of condassign with fmax?
+    // Ball2DAckermann2010<adouble>::run("vx0=0.1", 5e7, {}, 1.0,
+    //         "limited-memory", 0.1);
+
+
+    Ball2DAckermann2010<double>::run("dvx0=0.5", 5e7, {}, 1.0,
+            "limited-memory", 0.5);
+    Ball2DAckermann2010<double>::run("dvx0=1.0", 5e7, {}, 1.0,
+            "limited-memory", 1.0);
+
+
+
+
+
     // TODO try using squared depth instead of cubic depth. (see Miller 2015).
 
+    // steps:
+    // 1d no damping
+    // 1d damping
+    // 2d damping but no friction
+    // 2d damping and friction
+    // pendulum with contact element at tip, bounces into floor.
+    // opensim: compare forward simulation with direct collocation for all
+    // problems above.
 }
