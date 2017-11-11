@@ -40,6 +40,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -723,5 +725,74 @@ void scaleJointsAndConstraints()
     // Test CoordinateCouplerConstraint scaling.
     {
         cout << "- CoordinateCouplerConstraint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        // Attach bodies to Ground with slider joints.
+        SliderJoint* slider1 =
+            new SliderJoint("slider1", model->getGround(), *body1);
+        slider1->updCoordinate().setName("indepCoord");
+        model->addJoint(slider1);
+
+        SliderJoint* slider2 =
+            new SliderJoint("slider2", *body2, model->getGround());
+        slider2->updCoordinate().setName("depCoord");
+        model->addJoint(slider2);
+
+        // Constrain Coordinate of slider2.
+        OpenSim::Array<std::string> indepCoordNameArray("indepCoord", 1, 1);
+        const double slope     = 1.2;
+        const double intercept = 3.4;
+
+        CoordinateCouplerConstraint* ccc = new CoordinateCouplerConstraint();
+        ccc->setIndependentCoordinateNames(indepCoordNameArray);
+        ccc->setDependentCoordinateName("depCoord");
+        ccc->setFunction(LinearFunction(slope, intercept));
+        model->addConstraint(ccc);
+
+        // Scale the model with non-uniform scale factors. Should fetch the
+        // scale factors corresponding to body2 and then throw because only
+        // uniform scaling is currently supported.
+        State& s = model->initSystem();
+        ASSERT_THROW(OpenSim::Exception, model->scale(s, scaleSet, false));
+
+        // Test coupling function before scaling.
+        slider1->getCoordinate().setValue(s, 0., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value before scaling.");
+
+        slider1->getCoordinate().setValue(s, 1., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept + slope,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value before scaling.");
+
+        // Scale body2 uniformly.
+        const double uniformFactor = 3.14159;
+        ScaleSet scaleSetUniform;
+        Scale* scale = new Scale();
+        scale->setSegmentName("body2");
+        scale->setScaleFactors(Vec3(uniformFactor));
+        scale->setApply(true);
+        scaleSetUniform.adoptAndAppend(scale);
+
+        model->scale(s, scaleSetUniform, false);
+
+        // Test coupling function after scaling.
+        slider1->getCoordinate().setValue(s, 0., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+            intercept * uniformFactor,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value after scaling.");
+
+        slider1->getCoordinate().setValue(s, 1., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+            (intercept + slope) * uniformFactor,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value after scaling.");
     }
 }
