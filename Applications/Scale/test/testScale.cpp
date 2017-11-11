@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -50,8 +51,11 @@ void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
 
-// Test scaling PhysicalOffsetFrames in models with atypical ownership trees.
+// Test scaling PhysicalOffsetFrames and models with atypical ownership trees.
 void scalePhysicalOffsetFrames();
+
+// Test scaling EllipsoidJoint, CustomJoint, and CoordinateCouplerConstraint.
+void scaleJointsAndConstraints();
 
 int main()
 {
@@ -60,6 +64,7 @@ int main()
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
         scalePhysicalOffsetFrames();
+        scaleJointsAndConstraints();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -332,7 +337,7 @@ bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
 
 void scalePhysicalOffsetFrames()
 {
-    cout << "Scaling PhysicalOffsetFrames in models with atypical ownership "
+    cout << "Scaling PhysicalOffsetFrames and models with atypical ownership "
          << "trees..." << endl;
 
     using namespace SimTK;
@@ -597,5 +602,78 @@ void scalePhysicalOffsetFrames()
 
         // Ensure PathPoints are coincident after scaling.
         testPathPointLoc(s, "after scaling");
+    }
+}
+
+void scaleJointsAndConstraints()
+{
+    cout << "Scaling Joints and Constraints..." << endl;
+
+    using namespace SimTK;
+
+    // Create ScaleSet to scale the "body1" and "body2".
+    const Vec3 scaleFactors = Vec3(1.61, 8.03, 3.98);
+    ScaleSet scaleSet;
+    auto addBodyScale = [&](const std::string& bodyName) -> void {
+        Scale* scale = new Scale();
+        scale->setSegmentName(bodyName);
+        scale->setScaleFactors(scaleFactors);
+        scale->setApply(true);
+        scaleSet.adoptAndAppend(scale);
+    };
+    addBodyScale("body1");
+    addBodyScale("body2");
+
+    // Test EllipsoidJoint scaling. Ensure radii are scaled if the parent is a
+    // Body but does not change if the parent is Ground.
+    {
+        cout << "- EllipsoidJoint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        const Vec3 radii = Vec3(3.14, 1.59, 2.65);
+
+        EllipsoidJoint* ellipsoid1 =
+            new EllipsoidJoint("ellipsoid1", model->getGround(), *body1, radii);
+        model->addJoint(ellipsoid1);
+        EllipsoidJoint* ellipsoid2 =
+            new EllipsoidJoint("ellipsoid2", *body2, model->getGround(), radii);
+        model->addJoint(ellipsoid2);
+
+        // Scale the model.
+        State& s = model->initSystem();
+        model->scale(s, scaleSet, false);
+
+        // Radii of ellipsoid1 should not have changed.
+        const Vec3& actual1   = ellipsoid1->get_radii_x_y_z();
+        const Vec3& expected1 = radii;
+        ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "ellipsoid1 has incorrect radii after scaling: radii are "
+            + actual1.toString() + " but expected " + expected1.toString());
+
+        // Radii of ellipsoid2 should have been scaled using the scale factors
+        // corresponding to body2.
+        const Vec3& actual2   = ellipsoid2->get_radii_x_y_z();
+        const Vec3& expected2 = radii.elementwiseMultiply(scaleFactors);
+        ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "ellipsoid2 has incorrect radii after scaling: radii are "
+            + actual2.toString() + " but expected " + expected2.toString());
+    }
+
+    // Test CustomJoint scaling. Ensure SpatialTransform is scaled if the parent
+    // is a Body but does not change if the parent is Ground.
+    {
+        cout << "- CustomJoint" << endl;
+    }
+
+    // Test CoordinateCouplerConstraint scaling.
+    {
+        cout << "- CoordinateCouplerConstraint" << endl;
     }
 }
