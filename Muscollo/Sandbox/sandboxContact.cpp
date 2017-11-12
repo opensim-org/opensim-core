@@ -85,15 +85,28 @@ public:
 
         const SimTK::Real velSlidingScaling = 0.05;
         const SimTK::Real z0 = exp(-velSliding / velSlidingScaling);
-        const SimTK::Real coeff_friction = 1.0;
+        const SimTK::Real coeff_friction = 1.0; // TODO
         // TODO decide direction!!!
+
+        // TODO tropter thinks there are 402 seeds req for Jacobian.
         const SimTK::Real frictionForce =
                 -(1 - z0) / (1 + z0) * coeff_friction * force[1];
 
-        std::cout << "DEBUG " << s.getTime() << " " << force[1]
-                << " " << frictionForce <<
-                std::endl;
+        //std::cout << "DEBUG " << s.getTime() << " " << force[1]
+        //        << " " << frictionForce <<
+        //        std::endl;
         force[0] = frictionForce;
+
+        if (force.isNaN()) {
+        std::cout << "DEBUGcomputeForce"
+                << " t:" << s.getTime()
+                << " depth:" << depth
+                << " f0:" << force[0]
+                << " f1:" << force[1]
+                << " vs: " << velSliding
+                << " z0: " << z0
+                << std::endl;
+        }
 
         const auto& frame = pt.getParentFrame();
         applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
@@ -171,6 +184,7 @@ Model createModel2D() {
 int main() {
 
     const SimTK::Real y0 = 0.5;
+    const SimTK::Real vx0 = 0.7;
     const SimTK::Real finalTime = 1.0;
 
     if (false) {
@@ -186,8 +200,8 @@ int main() {
 
     Model model = createModel2D();
     auto state = model.initSystem();
-    model.setStateVariableValue(state, "/ty/ty/value", y0);
-    model.setStateVariableValue(state, "/tx/tx/speed", 2.5);
+    model.setStateVariableValue(state, "ty/ty/value", y0);
+    model.setStateVariableValue(state, "tx/tx/speed", vx0);
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     // Without the next line: Simbody
     integrator.setMaximumStepSize(0.01);
@@ -197,10 +211,13 @@ int main() {
 
     // TODO use the simulation as an initial guess!!!
 
+    // TODO solve with Muscollo and forward simulation and ensure we get the
+    // same answer.
 
-    if (false) {
+
+    if (true) {
         MucoTool muco;
-        muco.setName("sliding_mass");
+        muco.setName("ball2d");
 
         // Define the optimal control problem.
         // ===================================
@@ -215,10 +232,10 @@ int main() {
         // Initial time must be 0, final time can be within [0, 5].
         mp.setTimeBounds(0, finalTime);
 
-        // Initial position must be 0, final position must be 1.
-        mp.setStateInfo("slider/y/value", MucoBounds(-5, 5), y0);
-        // Initial and final speed must be 0. Use compact syntax.
-        mp.setStateInfo("slider/y/speed", {-50, 50}, 0);
+        mp.setStateInfo("tx/tx/value", {-5, 5}, 0);
+        mp.setStateInfo("ty/ty/value", {-0.5, 1}, y0);
+        mp.setStateInfo("tx/tx/speed", {-10, 10}, vx0);
+        mp.setStateInfo("ty/ty/speed", {-10, 10}, 0);
 
         // Configure the solver.
         // =====================
@@ -237,13 +254,17 @@ int main() {
         // ==================
         MucoSolution solution = muco.solve();
 
-        //solution.write("sliding_mass_solution.sto");
+        solution.write("ball2d_solution.sto");
 
         // TODO copmare the forward and direct collocation integration.
 
         // Visualize.
         // ==========
         muco.visualize(solution);
+
+
+        // TODO write script to plot MucoIterate, and plot two of them for
+        // comparison!
     }
 
     return EXIT_SUCCESS;
