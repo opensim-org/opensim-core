@@ -203,6 +203,7 @@ public:
             auto& osimControls = m_model.updControls(m_state);
             std::copy(controls.data(), controls.data() + controls.size(),
                     &osimControls[0]);
+            m_model.realizePosition(m_state);
             m_model.setControls(m_state, osimControls);
         } else {
             m_model.realizePosition(m_state);
