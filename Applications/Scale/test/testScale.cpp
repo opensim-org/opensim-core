@@ -616,7 +616,7 @@ void scaleJointsAndConstraints()
     using namespace SimTK;
 
     // Create ScaleSet to scale "body1" and "body2".
-    const Vec3 scaleFactors = Vec3(1.61, 8.03, 3.98);
+    const Vec3 scaleFactors = Vec3(1.1, 2.22, 3.333);
     ScaleSet scaleSet;
     auto addBodyScale = [&](const std::string& bodyName) -> void {
         Scale* scale = new Scale();
@@ -639,7 +639,7 @@ void scaleJointsAndConstraints()
         OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
         model->addBody(body2);
 
-        const Vec3 radii = Vec3(3.14, 1.59, 2.65);
+        const Vec3 radii = Vec3(0.123, 0.456, 0.789);
 
         EllipsoidJoint* ellipsoid1 =
             new EllipsoidJoint("ellipsoid1", model->getGround(), *body1, radii);
@@ -683,12 +683,12 @@ void scaleJointsAndConstraints()
 
         SpatialTransform transform;
         transform[3].setCoordinateNames(OpenSim::Array<std::string>("x", 1, 1));
-        transform[3].setFunction(new LinearFunction(1.2, 3.4));
+        transform[3].setFunction(new LinearFunction(1.234, 5.678));
 
         // Evaluate LinearFunction before scaling and compare after scaling.
         const Vector xA = Vector(1, 0.);
         const double yA = transform[3].getFunction().calcValue(xA);
-        const Vector xB = Vector(1, 1.618);
+        const Vector xB = Vector(1, 123.456);
         const double yB = transform[3].getFunction().calcValue(xB);
 
         CustomJoint* custom1 =
@@ -744,8 +744,8 @@ void scaleJointsAndConstraints()
 
         // Constrain Coordinate of slider2.
         OpenSim::Array<std::string> indepCoordNameArray("indepCoord", 1, 1);
-        const double slope     = 1.2;
-        const double intercept = 3.4;
+        const double slope     = 1.234;
+        const double intercept = 5.678;
 
         CoordinateCouplerConstraint* ccc = new CoordinateCouplerConstraint();
         ccc->setIndependentCoordinateNames(indepCoordNameArray);
@@ -771,7 +771,7 @@ void scaleJointsAndConstraints()
             "SliderJoint has incorrect Coordinate value before scaling.");
 
         // Scale body2 uniformly.
-        const double uniformFactor = 1.234;
+        const double uniformFactor = 1.23456;
         ScaleSet scaleSetUniform;
         Scale* scale = new Scale();
         scale->setSegmentName("body1");
