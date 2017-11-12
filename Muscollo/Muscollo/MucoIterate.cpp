@@ -33,7 +33,15 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_states(statesTrajectory),
-        m_controls(controlsTrajectory) {}
+        m_controls(controlsTrajectory) {
+    OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
+            Exception, "Inconsistent number of states.");
+    OPENSIM_THROW_IF((int)m_control_names.size() != m_controls.ncol(),
+            Exception, "Inconsistent number of controls.");
+    OPENSIM_THROW_IF(time.size() != m_states.nrow() ||
+            time.size() != m_controls.nrow(), Exception,
+            "Inconsistent number of times.");
+}
 
 void MucoIterate::setTime(const SimTK::Vector& time) {
     ensureUnsealed();
@@ -73,6 +81,57 @@ void MucoIterate::setControl(const std::string& name,
     int index = (int)std::distance(m_control_names.cbegin(), it);
     m_controls.updCol(index) = trajectory;
 }
+
+void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
+        bool allowMissingColumns, bool allowExtraColumns) {
+    ensureUnsealed();
+
+    int numTimesTable = (int)states.getNumRows();
+    OPENSIM_THROW_IF(numTimesTable < 2, Exception,
+            "Cannot interpolate if number of times in table is 0 or 1.");
+
+    const auto& labels = states.getColumnLabels();
+
+    auto find = [](const std::vector<std::string>& v, const std::string& elem) {
+        return std::find(v.cbegin(), v.cend(), elem);
+    };
+
+    if (!allowMissingColumns) {
+       for (const auto& iterate_state : m_state_names) {
+           OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
+                   Exception, "Expected table to contain column '" +
+                   iterate_state + "'; consider setting "
+                   "allowMissingColumns to true.");
+       }
+    }
+
+    std::vector<std::string> labelsToUse;
+    if (!allowExtraColumns) {
+        for (const auto& label : labels) {
+            if (find(m_state_names, label) != labels.end()) {
+                labelsToUse.push_back(label);
+            } else {
+                OPENSIM_THROW(Exception,
+                        "Column '" + label + "' is not a state in the "
+                        "iterate; consider setting allowExtraColumns to true.");
+            }
+        }
+    }
+
+    GCVSplineSet splines(states, labelsToUse, std::min(numTimesTable - 1, 5));
+
+    SimTK::Vector curTime(1, SimTK::NaN);
+    for (const auto& label : labelsToUse) {
+        auto it = find(m_state_names, label);
+        int istate = (int)std::distance(m_state_names.cbegin(), it);
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            curTime[0] = m_time[itime];
+            m_states(itime, istate) = splines.get(label).calcValue(curTime);
+        }
+    }
+}
+
+
 SimTK::VectorView MucoIterate::getState(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(m_state_names.cbegin(), m_state_names.cend(), name);

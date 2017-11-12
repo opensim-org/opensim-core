@@ -168,6 +168,33 @@ public:
             v[i] = *it;
         setControl(name, v);
     }
+
+    /// Set the states trajectory. The provided data is interpolated at the
+    /// times contained within this iterate. The controls trajectory is not
+    /// altered. If the table only contains a subset of the states in the
+    /// iterate (and allowMissingColumns is true), the unspecified states
+    /// preserve their pre-existing values.
+    ///
+    /// This function might be helpful if you generate a guess using a
+    /// forward simulation; you can access the forward simulation's states
+    /// trajectory using Manager::getStateStorage() or
+    /// Manager::getStatesTable().
+    ///
+    /// @param states
+    ///     The column labels of the table should match the state
+    ///     names (see getStateNames()). By default, the table must provide all
+    ///     state variables. Any data outside the time range of this guess's
+    ///     times are ignored.
+    /// @param allowMissingColumns
+    ///     If false, an exception is thrown if there are states in the
+    ///     iterate that are not in the table.
+    /// @param allowExtraColumns
+    ///     If false, an exception is thrown if there are states in the
+    ///     table that are not in the iterate.
+    // TODO add tests in testMuscolloInterface.
+    // TODO add setStatesTrajectory(const StatesTrajectory&)
+    void setStatesTrajectory(const TimeSeriesTable& states,
+            bool allowMissingColumns = false, bool allowExtraColumns = false);
     /// @}
 
     /// @name Accessors
@@ -201,6 +228,7 @@ public:
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
     /// Controls are not carried over to the states storage.
+    // TODO use TimeSeriesTable instead?
     Storage exportToStatesStorage() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MucoProblem is necessary because we need the underlying Model to

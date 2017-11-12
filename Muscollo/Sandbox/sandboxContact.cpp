@@ -204,14 +204,16 @@ int main() {
     model.setStateVariableValue(state, "ty/ty/value", y0);
     model.setStateVariableValue(state, "tx/tx/speed", vx0);
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    // Without the next line: Simbody
-    integrator.setMaximumStepSize(0.01);
+    // Without the next line: Simbody takes steps that are too large and NaNs
+    // are generated.
+    integrator.setMaximumStepSize(0.05);
     Manager manager(model, integrator);
     manager.integrate(state, finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     visualize(model, statesTimeStepping);
-    STOFileAdapter::write(statesTimeStepping.getAsTimeSeriesTable(),
-            "ball2d_timestepping.sto");
+    const auto statesTimeSteppingTable =
+            statesTimeStepping.getAsTimeSeriesTable();
+    STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
     // TODO use the simulation as an initial guess!!!
 
@@ -248,11 +250,9 @@ int main() {
 
         MucoIterate guess = ms.createGuess();
 
-        // TODO will interpolate?? TODO WHATTT TO DO ABOUT TIME.
-        //guess.setStatesTrajectory(statesTimeStepping);
-        //guess.setStatesTrajectory
-        //        (StateTrajectory::createFromStatesStorage
-        // (statesTimeStepping));
+        // Setting this guess reduces the number of iterations from 90 to 6.
+        guess.setStatesTrajectory(statesTimeSteppingTable);
+        ms.setGuess(guess);
 
         // TODO interface for setting these options:
         // TODO ms.setOption("optim.hessian-approximation", "limited-memory");
@@ -270,13 +270,12 @@ int main() {
 
         // TODO copmare the forward and direct collocation integration.
 
+        solution.isNumericallyEqual(guess);
+
         // Visualize.
         // ==========
         muco.visualize(solution);
 
-
-        // TODO write script to plot MucoIterate, and plot two of them for
-        // comparison!
     }
 
     return EXIT_SUCCESS;
