@@ -385,7 +385,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     // Check columns.
     if (interpolate) {
         TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
-                        || traj.time.size() != traj.controls.cols(),
+                         || traj.time.size() != traj.controls.cols(),
                 "Expected time, states, and controls to have the same number "
                         "of columns (they have %i, %i, %i column(s), "
                         "respectively).", traj.time.size(), traj.states.cols(),

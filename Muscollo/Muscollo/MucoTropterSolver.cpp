@@ -103,8 +103,12 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
     // tropter's is numStates x numTimes.
     tropIter.states = Map<const MatrixXd>(
             &states(0, 0), numTimes, numStates).transpose();
-    tropIter.controls = Map<const MatrixXd>(
-            &controls(0, 0), numTimes, numControls).transpose();
+    if (numControls) {
+        tropIter.controls = Map<const MatrixXd>(
+                &controls(0, 0), numTimes, numControls).transpose();
+    } else {
+        tropIter.controls.resize(numControls, numTimes);
+    }
     return tropIter;
 }
 

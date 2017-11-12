@@ -28,6 +28,7 @@ using namespace OpenSim;
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
+// - test problems without controls (including with setting guesses).
 
 Model createSlidingMassModel() {
     Model model;
