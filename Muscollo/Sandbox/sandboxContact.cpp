@@ -246,12 +246,14 @@ int main() {
         // Configure the solver.
         // =====================
         MucoTropterSolver& ms = muco.initSolver();
-        ms.set_num_mesh_points(100);
+        ms.set_num_mesh_points(500);
 
         MucoIterate guess = ms.createGuess();
 
         // Setting this guess reduces the number of iterations from 90 to 6.
         guess.setStatesTrajectory(statesTimeSteppingTable);
+        // TODO add noise
+
         ms.setGuess(guess);
 
         // TODO interface for setting these options:
@@ -270,7 +272,8 @@ int main() {
 
         // TODO copmare the forward and direct collocation integration.
 
-        solution.isNumericallyEqual(guess);
+        std::cout << "DEBUG " << solution.compareRMS(guess) << std::endl;
+        //solution.isNumericallyEqual(guess);
 
         // Visualize.
         // ==========

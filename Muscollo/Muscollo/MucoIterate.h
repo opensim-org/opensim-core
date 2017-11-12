@@ -242,6 +242,24 @@ public:
     /// Check if this iterate is numerically equal to another iterate.
     /// This uses SimTK::Test::numericallyEqual() internally.
     bool isNumericallyEqual(const MucoIterate& other) const;
+    /// Compute the root-mean-square error between this iterate and another.
+    /// The RMS is computed by numerically integrating the sum of squared
+    /// error across states and controls and dividing by the larger of the
+    /// two time ranges. If the time ranges do not match between this and the
+    /// other iterate, then we assume values of 0 for the iterate with the
+    /// shorter time range.
+    /// When one iterate does not cover the same time range as the other, we
+    /// assume values of 0 for the iterate with "missing" time.
+    /// Numerical integration is performed using the trapezoidal rule.
+    /// By default, all states and controls are compared, and it is expected
+    /// that both iterates have the same states and controls. Alternatively,
+    /// you can specify the specific states and controls to compare. To skip
+    /// over all states, specify a single element of "none" for stateNames;
+    /// likewise for controlNames.
+    /// Both iterates must have at least 6 time nodes.
+    double compareRMS(const MucoIterate& other,
+            std::vector<std::string> stateNames = {},
+            std::vector<std::string> controlNames = {}) const;
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
