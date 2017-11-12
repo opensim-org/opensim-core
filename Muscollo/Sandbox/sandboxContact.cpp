@@ -211,8 +211,7 @@ int main() {
     manager.integrate(state, finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     visualize(model, statesTimeStepping);
-    const auto statesTimeSteppingTable =
-            statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
     // TODO use the simulation as an initial guess!!!
@@ -251,8 +250,9 @@ int main() {
         MucoIterate guess = ms.createGuess();
 
         // Setting this guess reduces the number of iterations from 90 to 6.
+        // Can tweak the guess to test convergence (~50 iterations):
+        //statesTimeSteppingTable.updDependentColumn("ty/ty/value") += 0.05;
         guess.setStatesTrajectory(statesTimeSteppingTable);
-        // TODO add noise
 
         ms.setGuess(guess);
 
