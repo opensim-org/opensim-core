@@ -20,6 +20,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
@@ -207,7 +208,10 @@ int main() {
     integrator.setMaximumStepSize(0.01);
     Manager manager(model, integrator);
     manager.integrate(state, finalTime);
-    visualize(model, manager.getStateStorage());
+    const auto& statesTimeStepping = manager.getStateStorage();
+    visualize(model, statesTimeStepping);
+    STOFileAdapter::write(statesTimeStepping.getAsTimeSeriesTable(),
+            "ball2d_timestepping.sto");
 
     // TODO use the simulation as an initial guess!!!
 
@@ -241,6 +245,14 @@ int main() {
         // =====================
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(100);
+
+        MucoIterate guess = ms.createGuess();
+
+        // TODO will interpolate?? TODO WHATTT TO DO ABOUT TIME.
+        //guess.setStatesTrajectory(statesTimeStepping);
+        //guess.setStatesTrajectory
+        //        (StateTrajectory::createFromStatesStorage
+        // (statesTimeStepping));
 
         // TODO interface for setting these options:
         // TODO ms.setOption("optim.hessian-approximation", "limited-memory");

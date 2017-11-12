@@ -22,27 +22,54 @@ import os
 import numpy as np
 import pylab as pl
 
-if len(sys.argv) == 1 or len(sys.argv) > 3:
-    raise Exception("Only 1 or 2 argument allowed.")
+import argparse
 
-data_filepath = sys.argv[1]
-if len(sys.argv) == 3:
-    include_zero = False
-else:
-    include_zero = True
+parser = argparse.ArgumentParser(
+    description="Plot 1 or more MucoIterates on the same axes.")
+parser.add_argument('file', type=str, nargs='+',
+                    help="Paths to MucoIterate files.")
+parser.add_argument('--zero', action='store_true',
+                    help="Plot y=0 on all plots.")
+
+args = parser.parse_args()
+
+datafiles = args.file
+
+include_zero = args.zero
 
 
-data = np.genfromtxt(data_filepath, names=True, delimiter='\t', skip_header=5)
+data = list()
+column_names = list()
+for filepath in datafiles:
+    num_header_rows = 1
+    with open(filepath) as f:
+        for line in f:
+            if not line.startswith('endheader'):
+                num_header_rows += 1
+            else:
+                break
+    this_data = np.genfromtxt(filepath, names=True, delimiter='\t',
+                              skip_header=num_header_rows)
+    data.append(this_data)
 
-names = data.dtype.names[1:]
+    # Skip time column.
+    for name in this_data.dtype.names[1:]:
+        if not name in column_names:
+            column_names.append(name)
 
 # If headers have a common prefix, remove it (to avoid very long plot titles).
-name_prefix = os.path.commonprefix(names)
+name_prefix = os.path.commonprefix(column_names)
 plot_names = list()
-for i, name in enumerate(names):
-    plot_names.append(names[i][len(name_prefix):])
+for i, name in enumerate(column_names):
+    plot_names.append(column_names[i][len(name_prefix):])
 num_plots = len(plot_names)
 
+# Legend entries are the unique parts of the data file names.
+legend_nprefix = len(os.path.commonprefix(datafiles))
+# Get common suffix by reversing the strings.
+legend_nsuffix = len(os.path.commonprefix([s[::-1] for s in datafiles]))
+legend_entries = [df[legend_nprefix:(len(df)-legend_nsuffix)]
+                  for df in datafiles]
 
 if num_plots < 5:
     num_rows = num_plots
@@ -55,16 +82,23 @@ else:
         # There's an extra row that we don't need.
         num_rows -= 1
 fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows))
+
 for i in range(num_plots):
     ax = fig.add_subplot(num_rows, num_cols, i + 1)
-    name = data.dtype.names[i + 1]
     if include_zero:
         ax.axhline(0, color='gray', alpha=0.5)
-    ax.plot(data['time'], data[name])
-    plot_name = plot_names[i]
-    ax.set_title(plot_name)
     if i == num_plots - 1:
         ax.set_xlabel('time')
+    ax.set_title(plot_names[i])
+    for idat, dat in enumerate(data):
+        if column_names[i] in dat.dtype.names:
+            ax.plot(dat['time'], dat[column_names[i]])
+        else:
+            # Still plot something so that we the datafile colors are consistent
+            # across plots, but have nothing nothing show up on the graph.
+            ax.plot(np.nan, np.nan)
+    if i == 0:
+        ax.legend(legend_entries)
 
 #fig.subplots_adjust()
 fig.tight_layout()
