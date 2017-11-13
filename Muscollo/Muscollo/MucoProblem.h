@@ -241,6 +241,10 @@ public:
     MucoInitialBounds getTimeInitialBounds() const;
     /// @copydoc getTimeInitialBounds()
     MucoFinalBounds getTimeFinalBounds() const;
+    /// Get the state names of for all the state infos.
+    std::vector<std::string> createStateInfoNames() const;
+    /// Get the control names of for all the control infos.
+    std::vector<std::string> createControlInfoNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
 

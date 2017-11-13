@@ -30,7 +30,8 @@ public:
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
 protected:
-    double optimize_impl(Eigen::VectorXd& variables) const override;
+    OptimizationSolution
+    optimize_impl(const Eigen::VectorXd& guess) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
     class TNLP;

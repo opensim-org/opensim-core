@@ -50,6 +50,64 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
+template <typename MucoIterateType, typename tropIterateType>
+MucoIterateType convert(const tropIterateType& tropSol) {
+    const auto& tropTime = tropSol.time;
+    SimTK::Vector time((int)tropTime.size(), tropTime.data());
+    const auto& state_names = tropSol.state_names;
+    const auto& control_names = tropSol.control_names;
+
+    int numTimes = (int)time.size();
+    int numStates = (int)state_names.size();
+    int numControls = (int)control_names.size();
+    SimTK::Matrix states(numTimes, numStates);
+    for (int itime = 0; itime < numTimes; ++itime) {
+        for (int istate = 0; istate < numStates; ++istate) {
+            states(itime, istate) = tropSol.states(istate, itime);
+        }
+    }
+    SimTK::Matrix controls(numTimes, numControls);
+    for (int itime = 0; itime < numTimes; ++itime) {
+        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+            controls(itime, icontrol) = tropSol.controls(icontrol, itime);
+        }
+    }
+    return {time, state_names, control_names, states, controls};
+}
+
+MucoSolution convert(const tropter::OptimalControlSolution& tropSol) {
+    // TODO enhance when solution contains more info than iterate.
+    return convert<MucoSolution, tropter::OptimalControlSolution>(tropSol);
+}
+
+tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
+    tropter::OptimalControlIterate tropIter;
+    if (mucoIter.empty()) return tropIter;
+
+    using Eigen::Map;
+    using Eigen::RowVectorXd;
+    using Eigen::MatrixXd;
+
+    const auto& time = mucoIter.getTime();
+    tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
+
+    tropIter.state_names = mucoIter.getStateNames();
+    tropIter.control_names = mucoIter.getControlNames();
+
+    int numTimes = (int)time.size();
+    int numStates = (int)tropIter.state_names.size();
+    int numControls = (int)tropIter.control_names.size();
+    const auto& states = mucoIter.getStatesTrajectory();
+    const auto& controls = mucoIter.getControlsTrajectory();
+    // Muscollo's matrix is numTimes x numStates;
+    // tropter's is numStates x numTimes.
+    tropIter.states = Map<const MatrixXd>(
+            &states(0, 0), numTimes, numStates).transpose();
+    tropIter.controls = Map<const MatrixXd>(
+            &controls(0, 0), numTimes, numControls).transpose();
+    return tropIter;
+}
+
 tropter::Bounds convert(const MucoBounds& mb) {
     return {mb.lower, mb.upper};
 }
@@ -130,6 +188,8 @@ public:
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls, T& integrand) const override {
+        // TODO would it make sense to a vector of States, one for each mesh
+        // point, so that each can preserve their cache?
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
@@ -170,6 +230,8 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_max_iterations(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_ipopt_print_level(-1);
+
+    constructProperty_guess_file("");
 }
 
 std::shared_ptr<const tropter::OptimalControlProblem<double>>
@@ -180,62 +242,74 @@ MucoTropterSolver::getTropterProblem() const {
     return m_tropProblem;
 }
 
-void MucoTropterSolver::resetProblemImpl() {
+void MucoTropterSolver::clearProblemImpl() {
+    clearGuess();
+}
+
+void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
+    clearProblemImpl();
 
 }
 
-void MucoTropterSolver::resetProblemImpl(const MucoProblem& /*problem*/) {
+MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
+    OPENSIM_THROW_IF_FRMOBJ(type != "bounds" && type != "random",
+            Exception,
+            "Unexpected guess type '" + type +
+            "'; supported types are 'bounds' and 'random'.");
+    auto ocp = getTropterProblem();
 
-}
+    // TODO avoid performing error checks multiple times; use
+    // isObjectUpToDateWithProperties();
+    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+    int N = get_num_mesh_points();
 
-MucoSolution convert(const tropter::OptimalControlSolution& tropSol) {
-    const auto& tropTime = tropSol.time;
-    SimTK::Vector time((int)tropTime.size(), tropTime.data());
-    const auto& state_names = tropSol.state_names;
-    const auto& control_names = tropSol.control_names;
+    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
+            get_optim_solver(), N);
 
-    int numTimes = (int)time.size();
-    int numStates = (int)state_names.size();
-    int numControls = (int)control_names.size();
-    SimTK::Matrix states(numTimes, numStates);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int istate = 0; istate < numStates; ++istate) {
-            states(itime, istate) = tropSol.states(istate, itime);
-        }
-    }
-    SimTK::Matrix controls(numTimes, numControls);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-            controls(itime, icontrol) = tropSol.controls(icontrol, itime);
-        }
-    }
-    return {time, state_names, control_names, states, controls};
-}
-
-tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
     tropter::OptimalControlIterate tropIter;
-    using Eigen::Map;
-    using Eigen::RowVectorXd;
-    using Eigen::MatrixXd;
+    if (type == "bounds") {
+        tropIter = dircol.make_initial_guess_from_bounds();
+    } else if (type == "random") {
+        tropIter = dircol.make_random_iterate_within_bounds();
+    }
+    return convert<MucoIterate, tropter::OptimalControlIterate>(tropIter);
+}
 
-    const auto& time = mucoIter.getTime();
-    tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
-
-    tropIter.state_names = mucoIter.getStateNames();
-    tropIter.control_names = mucoIter.getControlNames();
-
-    int numTimes = (int)time.size();
-    int numStates = (int)tropIter.state_names.size();
-    int numControls = (int)tropIter.control_names.size();
-    const auto& states = mucoIter.getStatesTrajectory();
-    const auto& controls = mucoIter.getControlsTrajectory();
-    // Muscollo's matrix is numTimes x numStates;
-    // tropter's is numStates x numTimes.
-    tropIter.states = Map<const MatrixXd>(
-            &states(0, 0), numTimes, numStates).transpose();
-    tropIter.controls = Map<const MatrixXd>(
-            &controls(0, 0), numTimes, numControls).transpose();
-    return tropIter;
+void MucoTropterSolver::setGuess(MucoIterate guess) {
+    // Ensure the guess is compatible with this solver/problem.
+    guess.isCompatible(getProblem(), true);
+    clearGuess();
+    m_guessFromAPI = std::move(guess);
+}
+void MucoTropterSolver::setGuessFile(const std::string& file) {
+    clearGuess();
+    set_guess_file(file);
+}
+void MucoTropterSolver::clearGuess() {
+    m_guessFromAPI = MucoIterate();
+    m_guessFromFile = MucoIterate();
+    set_guess_file("");
+    m_guessToUse.reset();
+}
+const MucoIterate& MucoTropterSolver::getGuess() const {
+    if (!m_guessToUse) {
+        if (get_guess_file() != "" && m_guessFromFile.empty()) {
+            // The API should make it impossible for both guessFromFile and
+            // guessFromAPI to be non-empty.
+            assert(m_guessFromAPI.empty());
+            // No need to load from file again if we've already loaded it.
+            MucoIterate guessFromFile(get_guess_file());
+            guessFromFile.isCompatible(getProblem(), true);
+            m_guessFromFile = guessFromFile;
+            m_guessToUse.reset(&m_guessFromFile);
+        } else {
+            // This will either be a guess specified via the API, or empty to
+            // signal that tropter should use the default guess.
+            m_guessToUse.reset(&m_guessFromAPI);
+        }
+    }
+    return m_guessToUse.getRef();
 }
 
 void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
@@ -295,16 +369,24 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     //    optsolver.set_advanced_option(TODO);
     //}
 
-    // TODO
-
-    tropter::OptimalControlIterate tropIterate;
-    // TODO set based on guess if available. _guess.getRef().
-    // if (m_guess) tropIterate = m_guess.getRef();
+    tropter::OptimalControlIterate tropIterate = convert(getGuess());
     tropter::OptimalControlSolution tropSolution = dircol.solve(tropIterate);
 
     if (get_verbosity()) {
         dircol.print_constraint_values(tropSolution);
     }
 
-    return convert(tropSolution);
+    MucoSolution mucoSolution = convert(tropSolution);
+    // TODO move this to convert():
+    MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
+            tropSolution.success, tropSolution.status);
+    if (!mucoSolution && get_verbosity() > 0) {
+        std::cerr << std::string(79, '=') << "\n";
+        std::cerr << "MucoTropterSolver did not succeed:\n";
+        std::cerr << mucoSolution.getStatus() << "\n";
+        std::cerr << std::string(79, '=') << std::endl;
+    }
+
+
+    return mucoSolution;
 }

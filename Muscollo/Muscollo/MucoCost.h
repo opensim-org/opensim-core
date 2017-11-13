@@ -59,7 +59,8 @@ public:
         initializeImpl();
     }
 protected:
-    /// Perform any caching.
+    /// Perform any caching. Make sure to first clear any caches, as this is
+    /// invoked every time the problem is solved.
     /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
@@ -70,7 +71,11 @@ protected:
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const;
     /// For use within virtual function implementations.
-    const Model& getModel() const { return m_model.getRef(); }
+    const Model& getModel() const {
+        OPENSIM_THROW_IF(!m_model, Exception,
+                "Model is not available until the start of initializing.");
+        return m_model.getRef();
+    }
 private:
     void constructProperties();
 

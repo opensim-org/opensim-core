@@ -27,6 +27,13 @@ namespace tropter {
 namespace transcription {
 
 template<typename T>
+void Trapezoidal<T>::set_num_mesh_points(unsigned N) {
+    TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
+            "least 2, but got %i", N);
+    m_num_mesh_points = N;
+}
+
+template<typename T>
 void Trapezoidal<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
@@ -407,6 +414,8 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     } else {
         traj_to_use = &traj;
     }
+
+    // TODO reorder columns !!!!!
 
     Eigen::VectorXd iterate(this->get_num_variables());
     // Initial and final time.

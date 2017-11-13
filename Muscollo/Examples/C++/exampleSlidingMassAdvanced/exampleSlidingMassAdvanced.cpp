@@ -107,9 +107,18 @@ int main() {
     // ms.set_optim_convergence_tolerance(1e-5);
     // ms.set_optim_findiff_hessian_step_size(1e-3);
 
+    // Specify an initial guess.
+    // -------------------------
+    MucoIterate guess = ms.createGuess("bounds");
+    guess.resampleWithNumTimes(2);
+    guess.setTime({0, 0.5});
+    guess.setState("slider/position/value", {0.0, 1.0});
+    ms.setGuess(guess);
+
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
+    std::cout << "Solution status: " << solution.getStatus() << std::endl;
 
     return EXIT_SUCCESS;
 }

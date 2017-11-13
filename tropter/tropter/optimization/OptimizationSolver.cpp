@@ -122,13 +122,16 @@ void OptimizationSolver::set_advanced_option_real(const std::string& name,
     m_advanced_options_real[name] = value;
 }
 
-double OptimizationSolver::optimize(Eigen::VectorXd& variables) const
+OptimizationSolution
+OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
 {
     // If the user did not provide an initial guess, then we choose
     // the initial guess based on the bounds.
     // TODO if (m_verbosity > 0) print_options();
-    if (variables.size() == 0) {
-        variables = m_problem->make_initial_guess_from_bounds();
-    } // else TODO make sure variables has the correct size.
-    return optimize_impl(variables);
+    //if (variables.size() == 0) {
+    //    variables = m_problem->make_initial_guess_from_bounds();
+    //} // else TODO make sure variables has the correct size.
+    return optimize_impl(variables.size() == 0
+                         ? m_problem->make_initial_guess_from_bounds()
+                         : variables);
 }
