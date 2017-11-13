@@ -60,7 +60,7 @@ public:
     }
 protected:
     /// Perform any caching.
-    /// Upon entry, getMode() is available.
+    /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
     /// Precondition: state is realized to SimTK::Stage::Position.

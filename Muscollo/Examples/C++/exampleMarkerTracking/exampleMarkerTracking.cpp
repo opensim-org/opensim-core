@@ -42,18 +42,8 @@ Model createDoublePendulumModel() {
     model.addBody(b1);
 
     // Add markers to body origin locations
-    // auto* m0 = new Marker("m0", *b0, Vec3(0))
-    // auto* m1 = new Marker("m1", *b1, Vec3(0))
-    auto* m0 = new Marker();
-    auto* m1 = new Marker();
-    m0->setName("m0");
-    m1->setName("m1");
-    m0->setParentFrame(*b0);
-    m1->setParentFrame(*b1);
-    m0->set_location(Vec3(0));
-    m1->set_location(Vec3(0));
-    auto* mSet = new MarkerSet();
-    model.updateMarkerSet(*mSet);
+    auto* m0 = new Marker("m0", *b0, Vec3(0));
+    auto* m1 = new Marker("m1", *b1, Vec3(0));
     model.addMarker(m0);
     model.addMarker(m1);
 
@@ -84,56 +74,6 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-class MucoMarkerTrackingCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerTrackingCost, MucoCost);
-public:
-    MucoMarkerTrackingCost() { constructProperties(); }
-    
-    void setReference(const MarkersReference& ref) {
-        m_markref = ref;
-        m_marker_names = ref.getNames();
-    }
-protected:
-    void initializeImpl() const override {
-        // Cache reference pointers to model markers in order of reference
-        // markers.
-        for (int i = 0; i < m_marker_names.size(); ++i) {
-            const auto& m = getModel().getComponent<Marker>(m_marker_names[i]);
-            m_model_markers.emplace_back(&m);
-        }
-    }
-    
-    void calcIntegralCostImpl(const SimTK::State& state,
-                              double& integrand) const override {
-        //const auto& time = state.getTime();
-        getModel().realizePosition(state); // why is this needed?
-        TimeSeriesTableVec3& markerTable = m_markref.getMarkerTable();
-        std::vector<std::string> suffixes(3);
-        suffixes[0] = '_x';
-        suffixes[1] = '_y';
-        suffixes[2] = '_z';
-
-
-        //SimTK::Array_<SimTK::Vec3> refValues;
-        //m_markref.getValues(state, refValues);
-
-        for (int i = 0; i < m_marker_names.size(); ++i) {
-            std::string name = m_marker_names[i];
-
-            const auto& modelValue = 
-                m_model_markers[i]->getLocationInGround(state);
-            
-            integrand += (modelValue - refValues[i]).normSqr();
-        }
-    }
-private:
-    void constructProperties() {}; // why is this needed?
-    MarkersReference m_markref;
-    mutable GCVSplineSet m_refsplines;
-    mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
-    SimTK::Array_<std::string> m_marker_names;
-};
-
 int main() {
 
     MucoTool muco;
@@ -158,10 +98,10 @@ int main() {
     mp.setControlInfo("tau0", { -100, 100 }); // TODO tighten.
     mp.setControlInfo("tau1", { -100, 100 });
 
-    MucoMarkerTrackingCost markerTracking;
-    TimeSeriesTableVec3 refTableVec3;
-    refTableVec3.setColumnLabels({"m0", "m1"});
-    for (double time = -0.05; time < finalTime+0.05; time += 0.01) {
+    // Create marker trajectories based on exampleTracking.cpp joint angles.
+    TimeSeriesTableVec3 markerTrajectories;
+    markerTrajectories.setColumnLabels({"m0", "m1"});
+    for (double time = 0; time < finalTime; time += 0.01) {
 
         SimTK::Real theta0 = (time / 1.0) * 0.5 * SimTK::Pi;
         SimTK::Real theta1 = (time / 1.0) * 0.25 * SimTK::Pi;
@@ -169,20 +109,32 @@ int main() {
         SimTK::Vec3 m1;
 
         m0[0] = cos(theta0);
-        m0[1] = sin(theta1);
+        m0[1] = sin(theta0);
         m0[2] = 0;
         m1[0] = m0[0] + cos(theta0 + theta1);
-        m1[1] = m1[1] + sin(theta0 + theta1);
+        m1[1] = m0[1] + sin(theta0 + theta1);
         m1[2] = 0;
 
         SimTK::RowVector_<SimTK::Vec3> markers(2);
         markers.updElt(0, 0) = m0;
         markers.updElt(0, 1) = m1;
-        refTableVec3.appendRow(time, markers);
+        markerTrajectories.appendRow(time, markers);
     }
 
-    MarkersReference ref(refTableVec3);
-    markerTracking.setReference(ref);
+    // Assign a weight to each marker.
+    Set<MarkerWeight> markerWeights;
+    MarkerWeight w0("m0", 100);
+    MarkerWeight w1("m1", 10);
+    markerWeights.adoptAndAppend(&w0);
+    markerWeights.adoptAndAppend(&w1);
+
+    // Create the MarkersReference to be passed to the cost.
+    //MarkersReference ref(markerTrajectories);
+    MarkersReference ref(markerTrajectories, &markerWeights);
+
+    // Create cost, set reference, and attach to problem.
+    MucoMarkerTrackingCost markerTracking;
+    markerTracking.setMarkersReference(ref);
     mp.addCost(markerTracking);
 
     // Configure the solver.

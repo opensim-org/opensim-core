@@ -12,6 +12,8 @@ add_library(osimMuscollo SHARED
         MucoProblem.cpp
         MucoCost.h
         MucoCost.cpp
+        MucoMarkerTrackingCost.h
+        MucoMarkerTrackingCost.cpp
         MucoStateTrackingCost.h
         MucoStateTrackingCost.cpp
         MucoSolver.h
