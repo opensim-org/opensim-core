@@ -18,10 +18,12 @@
 
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Simulation/Model/PointToPointSpring.h>
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
@@ -345,6 +347,77 @@ void pendulum() {
     muco.visualize(solution);
 }
 
+Model createModelSLIP() {
+    Model model;
+    model.setName("SLIP");
+    auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(foot);
+    auto* pelvis = new Body("pelvis", 35.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(pelvis);
+
+    Sphere bodyGeom(0.05);
+    bodyGeom.setColor(SimTK::Red);
+    foot->attachGeometry(bodyGeom.clone());
+    bodyGeom.setColor(SimTK::Blue);
+    pelvis->attachGeometry(bodyGeom.clone());
+
+    auto* planar = new PlanarJoint("planar", model.getGround(), *foot);
+    planar->updCoordinate(PlanarJoint::Coord::TranslationX).setName("tx");
+    auto& ty = planar->updCoordinate(PlanarJoint::Coord::TranslationY);
+    ty.setName("ty");
+    ty.setDefaultValue(0.1);
+    planar->updCoordinate(PlanarJoint::Coord::RotationZ).setName("rz");
+    model.addComponent(planar);
+
+    const Vec3 rz90 = SimTK::Vec3(0, 0, 0.5 * SimTK::Pi);
+    auto* leg = new SliderJoint("leg", *foot, Vec3(0), rz90,
+            *pelvis, Vec3(0), rz90);
+    auto& length = leg->updCoordinate(SliderJoint::Coord::TranslationX);
+    length.setName("length");
+    length.setDefaultValue(1.0);
+    model.addComponent(leg);
+
+    // Foot-ground contact.
+    auto* station = new Station();
+    station->setName("contact_point");
+    station->connectSocket_parent_frame(*foot);
+    model.addComponent(station);
+
+    auto* force = new CustomContactForceFriction();
+    force->set_dissipation(1.0);
+    force->set_friction_coefficient(1.0);
+    force->setName("contact");
+    model.addComponent(force);
+    force->connectSocket_station(*station);
+
+
+    // Leg muscles.
+    // TODO spring force should be felt all the time; similar to contact.
+    // TODO disallow PathSpring?
+    auto* spring = new PointToPointSpring();
+    model.addComponent(spring);
+    spring->set_stiffness(1e3);
+    spring->set_rest_length(1.0);
+    spring->connectSocket_body1(*foot);
+    spring->connectSocket_body2(*pelvis);
+
+    return model;
+}
+
+void slip() {
+    const SimTK::Real finalTime = 1.0;
+    auto model = createModelSLIP();
+    auto state = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    integrator.setMaximumStepSize(0.05);
+    Manager manager(model, integrator);
+    manager.integrate(state, finalTime);
+    const auto& statesTimeStepping = manager.getStateStorage();
+    visualize(model, statesTimeStepping);
+    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
+}
+
 int main() {
 
     const SimTK::Real y0 = 0.5;
@@ -362,5 +435,8 @@ int main() {
 
     // ball2d();
 
-    pendulum();
+    // pendulum();
+
+    slip();
+
 }
