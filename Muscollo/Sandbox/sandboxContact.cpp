@@ -424,7 +424,6 @@ void slip() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(model);
     mp.setTimeBounds(0, finalTime);
-
     using SimTK::Pi;
     mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
     mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
@@ -435,18 +434,17 @@ void slip() {
     mp.setStateInfo("planar/rz/speed", {-10, 10}, 0);
     mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
 
-    // Configure the solver.
-
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(500);
     MucoIterate guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
     //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
+    statesTimeSteppingTable.updDependentColumn("planar/ty/value") +=
+            0.05 * SimTK::Test::randVector(guess.getNumTimes());
     guess.setStatesTrajectory(statesTimeSteppingTable);
-
     ms.setGuess(guess);
-    MucoSolution solution = muco.solve().unseal();
 
+    MucoSolution solution = muco.solve().unseal();
     solution.write("slip_solution.sto");
     std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
     muco.visualize(solution);
