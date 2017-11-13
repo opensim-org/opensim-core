@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -24,6 +25,9 @@
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
+
+// TODO add tests for contact model (energy conservation) to make sure, for
+// example, ball bounces back to original height if there is no dissipation.
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -261,6 +265,86 @@ void ball2d() {
     muco.visualize(solution);
 }
 
+Model createModelPendulum(double linkLength, double jointHeight,
+        double dissipation, double frictionCoeff) {
+    Model model;
+    model.setName("pendulum");
+    auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(body);
+
+    // The joint's x axis must point in the global "+y" direction.
+    auto* joint = new PinJoint("rz",
+            model.getGround(), Vec3(0, jointHeight, 0), Vec3(0),
+            *body, Vec3(-linkLength, 0, 0), Vec3(0));
+    auto& rz = joint->updCoordinate(PinJoint::Coord::RotationZ);
+    rz.setName("rz");
+    model.addComponent(joint);
+
+    auto* station = new Station();
+    station->setName("contact_point");
+    station->connectSocket_parent_frame(*body);
+    model.addComponent(station);
+
+    auto* force = new CustomContactForceFriction();
+    force->set_dissipation(dissipation);
+    force->set_friction_coefficient(frictionCoeff);
+    force->setName("contact");
+    model.addComponent(force);
+    force->connectSocket_station(*station);
+
+    return model;
+}
+
+void pendulum() {
+    const double jointHeight = 0.6;
+    const double linkLength = 1.0;
+    const double dissipation = 1.0;
+    const double frictionCoeff = 1.0;
+    const SimTK::Real finalTime = 1.0;
+    auto model = createModelPendulum(linkLength, jointHeight, dissipation,
+            frictionCoeff);
+    auto state = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    // Without the next line: Simbody takes steps that are too large and NaNs
+    // are generated.
+    integrator.setMaximumStepSize(0.05);
+    Manager manager(model, integrator);
+    manager.integrate(state, finalTime);
+    const auto& statesTimeStepping = manager.getStateStorage();
+    visualize(model, statesTimeStepping);
+    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
+
+
+
+    MucoTool muco;
+    muco.setName("ball2d");
+    MucoProblem& mp = muco.updProblem();
+    mp.setModel(model);
+    mp.setTimeBounds(0, finalTime);
+
+    mp.setStateInfo("rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
+    mp.setStateInfo("rz/rz/speed", {-10, 10}, 0);
+
+    // Configure the solver.
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(500);
+    MucoIterate guess = ms.createGuess();
+    guess.setStatesTrajectory(statesTimeSteppingTable);
+
+    ms.setGuess(guess);
+    MucoSolution solution = muco.solve();
+
+    solution.write("pendulum_solution.sto");
+
+    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+
+    // Visualize.
+    // ==========
+    muco.visualize(solution);
+}
+
 int main() {
 
     const SimTK::Real y0 = 0.5;
@@ -276,5 +360,7 @@ int main() {
         visualize(model, manager.getStateStorage());
     }
 
-    ball2d();
+    // ball2d();
+
+    pendulum();
 }
