@@ -313,6 +313,7 @@ public:
     /// access to the (failed) solution. If the solver succeeded, then the
     /// solution is already unsealed.
     MucoSolution& unseal() { MucoIterate::setSealed(false); return *this; }
+    MucoSolution& seal() { MucoIterate::setSealed(true); return *this; }
     bool isSealed() const { return MucoIterate::isSealed(); }
     /// @}
 

@@ -65,8 +65,8 @@ public:
     }
 };
 
-class CustomContactForceFriction : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(CustomContactForceFriction, Force);
+class AckermannVanDenBogert2010Contact : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
 public:
     OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
@@ -75,7 +75,7 @@ public:
 
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
 
-    CustomContactForceFriction() {
+    AckermannVanDenBogert2010Contact() {
         constructProperties();
     }
     void computeForce(const SimTK::State& s,
@@ -181,7 +181,7 @@ Model createModel2D() {
     model.addComponent(station);
 
     //auto* force = new CustomContactForce();
-    auto* force = new CustomContactForceFriction();
+    auto* force = new AckermannVanDenBogert2010Contact();
     force->setName("contact");
     model.addComponent(force);
     force->connectSocket_station(*station);
@@ -287,7 +287,7 @@ Model createModelPendulum(double linkLength, double jointHeight,
     station->connectSocket_parent_frame(*body);
     model.addComponent(station);
 
-    auto* force = new CustomContactForceFriction();
+    auto* force = new AckermannVanDenBogert2010Contact();
     force->set_dissipation(dissipation);
     force->set_friction_coefficient(frictionCoeff);
     force->setName("contact");
@@ -383,7 +383,7 @@ Model createModelSLIP() {
     station->connectSocket_parent_frame(*foot);
     model.addComponent(station);
 
-    auto* force = new CustomContactForceFriction();
+    auto* force = new AckermannVanDenBogert2010Contact();
     force->set_dissipation(1.0);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
@@ -438,6 +438,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(500);
+    //ms.set_optim_max_iterations(2);
     MucoIterate guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
     //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
