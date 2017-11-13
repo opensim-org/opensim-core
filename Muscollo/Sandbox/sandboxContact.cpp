@@ -396,7 +396,7 @@ Model createModelSLIP() {
     // TODO disallow PathSpring?
     auto* spring = new PointToPointSpring();
     model.addComponent(spring);
-    spring->set_stiffness(1e3);
+    spring->set_stiffness(1e4);
     spring->set_rest_length(1.0);
     spring->connectSocket_body1(*foot);
     spring->connectSocket_body2(*pelvis);
@@ -409,13 +409,47 @@ void slip() {
     auto model = createModelSLIP();
     auto state = model.initSystem();
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    integrator.setAccuracy(1e-5);
     integrator.setMaximumStepSize(0.05);
     Manager manager(model, integrator);
     manager.integrate(state, finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    visualize(model, statesTimeStepping);
+    //visualize(model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
+
+
+    MucoTool muco;
+    muco.setName("slip");
+    MucoProblem& mp = muco.updProblem();
+    mp.setModel(model);
+    mp.setTimeBounds(0, finalTime);
+
+    using SimTK::Pi;
+    mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
+    mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
+    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, 0);
+    mp.setStateInfo("leg/length/value", {0.1, 1.9}, 1.0);
+    mp.setStateInfo("planar/tx/speed", {-10, 10}, 0);
+    mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
+    mp.setStateInfo("planar/rz/speed", {-10, 10}, 0);
+    mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
+
+    // Configure the solver.
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(500);
+    MucoIterate guess = ms.createGuess();
+    //statesTimeSteppingTable.updMatrix() +=
+    //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
+    guess.setStatesTrajectory(statesTimeSteppingTable);
+
+    ms.setGuess(guess);
+    MucoSolution solution = muco.solve().unseal();
+
+    solution.write("slip_solution.sto");
+    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    muco.visualize(solution);
 }
 
 int main() {

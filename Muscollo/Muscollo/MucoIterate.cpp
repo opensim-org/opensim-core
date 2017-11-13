@@ -451,7 +451,7 @@ double MucoIterate::compareRMS(const MucoIterate& other,
 
 void MucoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, Exception,
-            "This object is sealed, to force you to acknowledge the "
+            "This iterate is sealed, to force you to acknowledge the "
             "solver failed; call unseal() to gain access.");
 }
 
