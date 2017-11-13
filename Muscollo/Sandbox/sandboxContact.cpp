@@ -404,17 +404,19 @@ Model createModelSLIP() {
     return model;
 }
 
-void slip() {
+void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     const SimTK::Real finalTime = 1.0;
     auto model = createModelSLIP();
     auto state = model.initSystem();
+    model.setStateVariableValue(state, "planar/rz/value", rzvalue0);
+    model.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(1e-5);
     integrator.setMaximumStepSize(0.05);
     Manager manager(model, integrator);
     manager.integrate(state, finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    //visualize(model, statesTimeStepping);
+    visualize(model, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
@@ -427,11 +429,11 @@ void slip() {
     using SimTK::Pi;
     mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
     mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
-    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, 0);
+    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
     mp.setStateInfo("leg/length/value", {0.1, 1.9}, 1.0);
     mp.setStateInfo("planar/tx/speed", {-10, 10}, 0);
     mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
-    mp.setStateInfo("planar/rz/speed", {-10, 10}, 0);
+    mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
     mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
 
     MucoTropterSolver& ms = muco.initSolver();
@@ -439,8 +441,8 @@ void slip() {
     MucoIterate guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
     //        0.1 * SimTK::Test::randMatrix(guess.getNumTimes(), 6);
-    statesTimeSteppingTable.updDependentColumn("planar/ty/value") +=
-            0.05 * SimTK::Test::randVector(guess.getNumTimes());
+    //statesTimeSteppingTable.updDependentColumn("planar/ty/value") +=
+    //        0.05 * SimTK::Test::randVector(guess.getNumTimes());
     guess.setStatesTrajectory(statesTimeSteppingTable);
     ms.setGuess(guess);
 
@@ -469,6 +471,16 @@ int main() {
 
     // pendulum();
 
-    slip();
+    //slip();
+
+    // TODO use a different model that has a CoordinateActuator and recover
+    // the original spring force.
+
+    // TODO need to add an actuator that can rotate the leg.
+
+    // TODO add two legs.
+    slip(0.1 * SimTK::Pi, -1.5);
+
+
 
 }
