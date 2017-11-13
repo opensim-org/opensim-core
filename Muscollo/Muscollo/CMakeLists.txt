@@ -33,10 +33,7 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
-                                   PRIVATE tropter)
-								   
-# TODO: OpenSim should link Simbody libraries automatically
-target_link_libraries(osimMuscollo PUBLIC SimTKsimbody)
+                                   PRIVATE tropter)								
 
 target_include_directories(osimMuscollo INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Muscollo>

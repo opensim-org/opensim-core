@@ -125,8 +125,8 @@ int main() {
     Set<MarkerWeight> markerWeights;
     MarkerWeight w0("m0", 100);
     MarkerWeight w1("m1", 10);
-    markerWeights.adoptAndAppend(&w0);
-    markerWeights.adoptAndAppend(&w1);
+    markerWeights.cloneAndAppend(w0);
+    markerWeights.cloneAndAppend(w1);
 
     // Create the MarkersReference to be passed to the cost.
     //MarkersReference ref(markerTrajectories);
