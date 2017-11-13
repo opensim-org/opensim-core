@@ -17,6 +17,9 @@ MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxContact
         LIB_DEPENDS osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
+        LIB_DEPENDS osimMuscollo tropter)
+
 MuscolloAddSandboxExecutable(NAME sandboxTendonForceState
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
