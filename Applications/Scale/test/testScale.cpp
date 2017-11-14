@@ -531,7 +531,8 @@ void scalePhysicalOffsetFrames()
         testMarkerLoc(marker2, s, "before scaling");
         testMarkerLoc(marker3, s, "before scaling");
 
-        // Scale the model.
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
         model->scale(s, scaleSet, false);
         expectedMarkerLoc =
             expectedMarkerLoc.elementwiseMultiply(Vec3(scaleFactor));
@@ -601,7 +602,8 @@ void scalePhysicalOffsetFrames()
 
         testPathPointLoc(s, "before scaling");
 
-        // Scale the model.
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
         model->scale(s, scaleSet, false);
 
         // Ensure PathPoints are coincident after scaling.
@@ -648,7 +650,8 @@ void scaleJointsAndConstraints()
             new EllipsoidJoint("ellipsoid2", *body2, model->getGround(), radii);
         model->addJoint(ellipsoid2);
 
-        // Scale the model.
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
         State& s = model->initSystem();
         model->scale(s, scaleSet, false);
 
@@ -698,7 +701,8 @@ void scaleJointsAndConstraints()
             new CustomJoint("custom2", *body2, model->getGround(), transform);
         model->addJoint(custom2);
 
-        // Scale the model.
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
         State& s = model->initSystem();
         model->scale(s, scaleSet, false);
 
