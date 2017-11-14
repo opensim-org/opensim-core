@@ -668,12 +668,12 @@ void Model::createMultibodyTree()
 
     // assemble a multibody tree according to the PhysicalFrames in the
     // OpenSim model, which include Ground and Bodies
-    _multibodyTree.addBody(ground.getAbsolutePathName(),
+    _multibodyTree.addBody(ground.getAbsolutePathString(),
                            0, false, &ground);
 
     auto bodies = getComponentList<Body>();
     for (auto& body : bodies) {
-        _multibodyTree.addBody( body.getAbsolutePathName(),
+        _multibodyTree.addBody( body.getAbsolutePathString(),
                                 body.getMass(), false,
                                 const_cast<Body*>(&body) );
     }
@@ -686,7 +686,7 @@ void Model::createMultibodyTree()
     // Complete multibody tree description by indicating how "bodies" are
     // connected by joints.
     for (auto& joint : joints) {
-        std::string name = joint->getAbsolutePathName();
+        std::string name = joint->getAbsolutePathString();
         IO::TrimWhitespace(name);
 
         // Currently we need to take a first pass at connecting the joints
@@ -711,8 +711,8 @@ void Model::createMultibodyTree()
             joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getAbsolutePathName(),
-            joint->getChildFrame().findBaseFrame().getAbsolutePathName(),
+            joint->getParentFrame().findBaseFrame().getAbsolutePathString(),
+            joint->getChildFrame().findBaseFrame().getAbsolutePathString(),
             false,
             joint.get());
     }
@@ -779,7 +779,7 @@ void Model::extendConnectToModel(Model &model)
                 SimTK::Transform o(SimTK::Vec3(0));
                 //Now add the constraints that weld the slave to the master at the 
                 // body origin
-                std::string pathName = outb->getAbsolutePathName();
+                std::string pathName = outb->getAbsolutePathString();
                 WeldConstraint* weld = new WeldConstraint(outb->getName()+"_weld",
                                                           *outbMaster, o, *outb, o);
 
@@ -1428,87 +1428,86 @@ void Model::removeController(Controller *aController)
 
 
 
-//==========================================================================
+//==============================================================================
 // OPERATIONS
-//==========================================================================
-//--------------------------------------------------------------------------
+//==============================================================================
+
+//------------------------------------------------------------------------------
 // SCALE
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Scale the model
- *
- * @param aScaleSet the set of XYZ scale factors for the bodies
- * @param aFinalMass the mass that the scaled model should have
- * @param aPreserveMassDist whether or not the masses of the
- *        individual bodies should be scaled with the body scale factors.
- * @return Whether or not scaling was successful.
- */
-bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
+//------------------------------------------------------------------------------
+bool Model::scale(SimTK::State& s, const ScaleSet& scaleSet,
+                  bool preserveMassDist, double finalMass)
 {
-    int i;
-
-    // 1. Save the current pose of the model, then put it in a
-    //    default pose, so pre- and post-scale muscle lengths
-    //    can be found.
+    // Save the model's current pose.
     SimTK::Vector savedConfiguration = s.getY();
+
+    // Put the model in a default pose so that GeometryPath lengths can be
+    // computed and stored. These lengths will be required for adjusting
+    // properties after the rest of the model has been scaled.
     applyDefaultConfiguration(s);
-    // 2. For each Actuator, call its preScale method so it
-    //    can calculate and store its pre-scale length in the
-    //    current position, and then call its scale method to
-    //    scale all of the muscle properties except tendon and
-    //    fiber length.
-    for (i = 0; i < get_ForceSet().getSize(); i++)
+
+    // Call preScale() on each ModelComponent owned by the model to store
+    // GeometryPath lengths (and perform any other necessary computations).
+    for (ModelComponent& comp : updComponentList<ModelComponent>())
+        comp.preScale(s, scaleSet);
+
+    // Call scale() on each ModelComponent owned by the model. Each
+    // ModelComponent is responsible for scaling itself. All scaling operations
+    // are performed here except scaling inertial properties of bodies, which is
+    // done below.
+    for (ModelComponent& comp : updComponentList<ModelComponent>())
+        comp.scale(s, scaleSet);
+
+    // Scale the inertial properties of bodies. If "preserve mass distribution"
+    // is true, then the masses are not scaled (but inertias are still updated).
+    for (Body& body : updComponentList<Body>())
+        body.scaleInertialProperties(scaleSet, !preserveMassDist);
+
+    // When bodies are scaled, the properties of the model are changed. The
+    // general rule is that you MUST recreate and initialize the system when
+    // properties of the model change. We must do that here or we will be
+    // querying a stale system (e.g., wrong body properties!).
+    s = initSystem();
+
+    // Now that the masses of the individual bodies have been scaled (if
+    // preserveMassDist == false), get the total mass and compare it to
+    // finalMass in order to determine how much to scale the body masses again,
+    // so that the total model mass comes out to finalMass.
+    if (finalMass > 0.0)
     {
-        PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
-        if( act ) {
-            act->preScale(s, aScaleSet);
-            act->scale(s, aScaleSet);
-        }
-        // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
-        else {
-            Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
-            if (ligament){
-                ligament->preScale(s, aScaleSet);
-                ligament->scale(s, aScaleSet);
+        const double mass = getTotalMass(s);
+        if (mass > 0.0)
+        {
+            const double factor = finalMass / mass;
+            for (Body& body : updComponentList<Body>())
+                body.scaleMass(factor);
+
+            // Recreate the system and update the state after updating masses.
+            s = initSystem();
+
+            // Ensure the final model mass is correct.
+            const double newMass = getTotalMass(s);
+            const double normDiffMass = abs(finalMass - newMass) / finalMass;
+            if (normDiffMass > SimTK::SignificantReal) {
+                throw Exception("Model::scale() scaled model mass does not match specified subject mass.");
             }
         }
     }
-    // 3. Scale the rest of the model
-    bool returnVal = updSimbodyEngine().scale(s, aScaleSet, aFinalMass, aPreserveMassDist);
 
-    // 4. If the dynamics engine was scaled successfully,
-    //    call each Muscle's postScale method so it
-    //    can calculate its post-scale length in the current
-    //    position and then scale the tendon and fiber length
-    //    properties.
+    // Call postScale() on all ModelComponents owned by the model so that
+    // components like muscles, ligaments, and path springs can update their
+    // properties based on their new path length.
+    for (ModelComponent& comp : updComponentList<ModelComponent>())
+        comp.postScale(s, scaleSet);
 
+    // Changed the model after scaling path actuators. Have to recreate system!
+    s = initSystem();
 
-    if (returnVal)
-    {
-        for (i = 0; i < get_ForceSet().getSize(); i++) {
-            PathActuator* act = dynamic_cast<PathActuator*>(&get_ForceSet().get(i));
-            if( act ) {
-                act->postScale(s, aScaleSet);
-            }
-            // Do ligaments as well for now until a general mechanism is introduced. -Ayman 5/15
-            else {
-                Ligament* ligament = dynamic_cast<Ligament*>(&get_ForceSet().get(i));
-                if (ligament){
-                    ligament->postScale(s, aScaleSet);
-                }
-            }
-        }
+    // Put the model back in its original pose.
+    s.updY() = savedConfiguration;
+    getMultibodySystem().realize( s, SimTK::Stage::Velocity );
 
-        // Changed the model after scaling path actuators. Have to recreate system!
-        s = initSystem();
-
-        // 5. Put the model back in whatever pose it was in.
-        s.updY() = savedConfiguration;
-        getMultibodySystem().realize( s, SimTK::Stage::Velocity );
-    }
-
-    return returnVal;
+    return true;
 }
 
 

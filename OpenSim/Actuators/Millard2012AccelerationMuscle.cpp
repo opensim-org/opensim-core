@@ -547,26 +547,25 @@ void Millard2012AccelerationMuscle::setMass(double mass)
 
 
 //==============================================================================
-// Protected Useful Functions
+// SCALING
 //==============================================================================
-
 void Millard2012AccelerationMuscle::
-postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    SimTK_ASSERT(isObjectUpToDateWithProperties()==true,
-        "Millard2012AccelerationMuscle: Muscle is not"
-        " to date with properties");
+    SimTK_ASSERT(isObjectUpToDateWithProperties(),
+        "Millard2012AccelerationMuscle is not up-to-date with its properties.");
+
+    Super::extendPostScale(s, scaleSet);
 
     GeometryPath& path = upd_GeometryPath();
-
-    path.postScale(s, aScaleSet);
-
     if (path.getPreScaleLength(s) > 0.0)
     {
-        double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+        double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
-        path.setPreScaleLength(s, 0.0) ;
+
+        // Clear the pre-scale length that was stored in the GeometryPath.
+        path.setPreScaleLength(s, 0.0);
     }
 }
 

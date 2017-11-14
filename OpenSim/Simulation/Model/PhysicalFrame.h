@@ -65,8 +65,7 @@ public:
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
-    Sockets to the PhysicalFrames they attach to. This must be addressed prior
-    to OpenSim 4.0 release. - aseth
+    Sockets to the PhysicalFrames they attach to. - aseth
 
     Note: VisibleObject was removed from this class by @aymanhab via PR #417.
                                                             -@chrisdembia
@@ -135,10 +134,6 @@ public:
 
     // End of underlying MobilizedBody accessors.
     ///@}
-
-    /** Scale PhysicalFrame related dimensions according to predetermined 
-        ScaleFactors */
-    void scale(const SimTK::Vec3& scaleFactors);
 
     /** @name DEPRECATED API */
 

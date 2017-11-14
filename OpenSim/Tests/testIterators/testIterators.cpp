@@ -101,17 +101,17 @@ void testNestedComponentListConsistency() {
 
     std::cout << "Joints in the model: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
-        std::cout << "    " << joint.getAbsolutePathName() << std::endl;
+        std::cout << "    " << joint.getAbsolutePathString() << std::endl;
         joints1.push_back(&joint);
     }
 
     std::cout << "Joints and Coordinates: " << std::endl;
     for(const auto& joint : model.getComponentList<Joint>()) {
         joints2.push_back(&joint);
-        std::cout << "    Joint: " << joint.getAbsolutePathName() << std::endl;
+        std::cout << "    Joint: " << joint.getAbsolutePathString() << std::endl;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
             std::cout << "        Coord: "
-                      << coord.getAbsolutePathName() << std::endl;
+                      << coord.getAbsolutePathString() << std::endl;
             coords.insert(&coord);
         }
     }
@@ -134,7 +134,7 @@ void testComponentListConst() {
     int numComponents = 0;
     for (ComponentList<const Component>::const_iterator 
             it = componentsList.begin(); it != componentsList.end();  ++it) {
-        cout << "Iterator is at: " << it->getAbsolutePathName() << 
+        cout << "Iterator is at: " << it->getAbsolutePathString() <<
             " <" << it->getConcreteClassName() << ">" << endl;
         numComponents++;
         // it->setName("this line should not compile; using const_iterator.");
@@ -185,7 +185,7 @@ void testComponentListConst() {
     for (ComponentList<Component>::const_iterator
             it = jComponentsList.begin(); it != jComponentsList.end(); ++it) {
         cout << "Iterator is at: " << it->getConcreteClassName() << " "
-            << it->getAbsolutePathName() << endl;
+            << it->getAbsolutePathString() << endl;
         numJntComponents++;
     }
     cout << "Num all components = " << numComponents << endl;
@@ -201,10 +201,10 @@ void testComponentListConst() {
 
     unsigned numJoints{}, numCoords{};
     for(const auto& joint : model.getComponentList<Joint>()) {
-        cout << "Joint: " << joint.getAbsolutePathName() << endl;
+        cout << "Joint: " << joint.getAbsolutePathString() << endl;
         ++numJoints;
         for(const auto& coord : joint.getComponentList<Coordinate>()) {
-            cout << "Coord: " << coord.getAbsolutePathName() << endl;
+            cout << "Coord: " << coord.getAbsolutePathString() << endl;
             ++numCoords;
         }
     }
@@ -218,7 +218,7 @@ void testComponentListConst() {
     jointsWithStates.setFilter(myFilter); 
     for (const Joint& comp : jointsWithStates) {
         cout << comp.getConcreteClassName() << ":" 
-            << comp.getAbsolutePathName() << endl;
+            << comp.getAbsolutePathString() << endl;
         numJointsWithStateVariables++;
     }
 
@@ -228,7 +228,7 @@ void testComponentListConst() {
     comps.setFilter(myFilter);
     for (const ModelComponent& comp : comps) {
         cout << comp.getConcreteClassName() << ":" 
-            << comp.getAbsolutePathName() << endl;
+            << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
 
@@ -238,7 +238,7 @@ void testComponentListConst() {
     int countSkipFrames = 0;
     while (skipIter != allFrames.end()){
         cout << skipIter->getConcreteClassName() << ":" 
-            << skipIter->getAbsolutePathName() << endl;
+            << skipIter->getAbsolutePathString() << endl;
         std::advance(skipIter, 2);
         countSkipFrames++;
     }
@@ -279,7 +279,7 @@ void testComponentListNonConstWithConstIterator() {
     for (ComponentList<Component>::const_iterator it = componentsList.begin();
             it != componentsList.end();
             ++it) {
-        std::cout << "Iterator is at: " << it->getAbsolutePathName() << " <" << it->getConcreteClassName() << ">" << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathString() << " <" << it->getConcreteClassName() << ">" << std::endl;
         numComponents++;
         // it->setName("this line should not compile; using const_iterator.");
     }
@@ -334,7 +334,7 @@ void testComponentListNonConstWithConstIterator() {
     for (ComponentList<Component>::const_iterator it = jComponentsList.begin();
         it != jComponentsList.end();
         ++it) {
-        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getConcreteClassName() << " " << it->getAbsolutePathString() << std::endl;
         numJntComponents++;
     }
     cout << "Num all components = " << numComponents << std::endl;
@@ -351,14 +351,14 @@ void testComponentListNonConstWithConstIterator() {
     ComponentWithStateVariables myFilter;
     jointsWithStates.setFilter(myFilter); 
     for (const Joint& comp : jointsWithStates) {
-        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathName() << endl;
+        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathString() << endl;
         numJointsWithStateVariables++;
     }
     int numModelComponentsWithStateVariables = 0;
     ComponentList<ModelComponent> comps = model.updComponentList<ModelComponent>();
     comps.setFilter(myFilter);
     for (const ModelComponent& comp : comps) {
-        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathName() << endl;
+        cout << comp.getConcreteClassName() << ":" << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
     //Now test a std::iterator method
@@ -367,7 +367,7 @@ void testComponentListNonConstWithConstIterator() {
     ComponentList<Frame>::const_iterator skipIter = allFrames.begin();
     int countSkipFrames = 0;
     while (skipIter != allFrames.end()){
-        cout << skipIter->getConcreteClassName() << ":" << skipIter->getAbsolutePathName() << endl;
+        cout << skipIter->getConcreteClassName() << ":" << skipIter->getAbsolutePathString() << endl;
         std::advance(skipIter, 2);
         countSkipFrames++;
     }

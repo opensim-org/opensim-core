@@ -126,29 +126,6 @@ void PhysicalFrame::addWrapObject(WrapObject* wrap) {
     upd_WrapObjectSet().adoptAndAppend(wrap);
 }
 
-void PhysicalFrame::scale(const SimTK::Vec3& aScaleFactors)
-{
-    // Base class, to scale wrap objects
-    for (int i = 0; i< get_WrapObjectSet().getSize(); i++)
-        upd_WrapObjectSet().get(i).scale(aScaleFactors);
-
-    // TODO: When we redo scaling and decide where scale factors
-    // are maintained, we may need to fix this or remove this method completely.
-    // -Ayman 5/15
-    
-    // DO NOT scale the FrameGeometry (axes) associated with this Frame.
-    // Scale the attached Geometry if any. 
-    for (int i = 0; i < getProperty_attached_geometry().size(); ++i) {
-        const SimTK::Vec3& oldScaleFactor =
-            get_attached_geometry(i).get_scale_factors();
-        // Recompute scale factors for Geometry
-        SimTK::Vec3 newScaleFactor =
-            oldScaleFactor.elementwiseMultiply(aScaleFactors);
-        upd_attached_geometry(i).set_scale_factors(newScaleFactor);
-    }
-}
-
-
 //=============================================================================
 // XML Deserialization
 //=============================================================================

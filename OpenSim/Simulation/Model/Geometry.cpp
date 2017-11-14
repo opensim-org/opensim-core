@@ -218,7 +218,7 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasOwner()) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
             return;   // Orphan Mesh not part of a model yet
         }
         const Component* owner = &getOwner();
@@ -234,7 +234,7 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring\n";
+            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
             return;   // Orphan Mesh not descendant of a model
         }
 
@@ -251,7 +251,7 @@ void Mesh::extendFinalizeFromProperties() {
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
             std::cout << "ModelVisualizer ignoring '" << file
-                << "'; only .vtp, .stl, and .obj files currently supported.\n";
+                << "'; only .vtp, .stl, and .obj files currently supported." << std::endl;
             return;
         }
 
@@ -266,27 +266,26 @@ void Mesh::extendFinalizeFromProperties() {
             std::cout << "ModelVisualizer couldn't find file '" << file
                 << "'; tried\n";
             for (unsigned i = 0; i < attempts.size(); ++i)
-                std::cout << "  " << attempts[i] << "\n";
+                std::cout << "\n  " << attempts[i];
+            std::cout << std::endl;
             if (!isAbsolutePath &&
                 !Pathname::environmentVariableExists("OPENSIM_HOME"))
                 std::cout << "Set environment variable OPENSIM_HOME "
-                << "to search $OPENSIM_HOME/Geometry.\n";
+                << "to search $OPENSIM_HOME/Geometry." << std::endl;
             return;
         }
 
-        SimTK::PolygonalMesh pmesh;
         try {
             std::ifstream objFile;
             objFile.open(attempts.back().c_str());
             // objFile closes when destructed
             // if the file can be opened but had bad contents e.g. binary vtp 
             // it will be handled downstream 
-
         }
         catch (const std::exception& e) {
             std::cout << "Visualizer couldn't open "
                 << attempts.back() << " because:\n"
-                << e.what() << "\n";
+                << e.what() << std::endl;
             return;
         }
 
@@ -298,6 +297,20 @@ void Mesh::extendFinalizeFromProperties() {
 void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     if (cachedMesh.get() != nullptr) {
+        try {
+            // Force the loading of the mesh to see if it has bad contents
+            // (e.g., binary vtp).
+            // We do not want to do this in extendFinalizeFromProperties b/c
+            // it's expensive to repeatedly load meshes.
+            cachedMesh->getMesh();
+        } catch (const std::exception& e) {
+            std::cout << "Visualizer couldn't open "
+                << get_mesh_file() << " because:\n"
+                << e.what() << std::endl;
+            // No longer try to visualize this mesh.
+            cachedMesh.reset();
+            return;
+        }
         cachedMesh->setScaleFactors(get_scale_factors());
         decoGeoms.push_back(*cachedMesh);
     }

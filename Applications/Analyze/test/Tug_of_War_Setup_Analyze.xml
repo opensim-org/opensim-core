@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30000">
+<OpenSimDocument Version="30516">
 	<AnalyzeTool name="Tug_of_War_Millard_Iso">
 		<!--Name of the .osim file used to construct a model.-->
 		<model_file>Tug_of_War_Millard_Iso.osim</model_file>
@@ -29,7 +29,7 @@
 		<AnalysisSet name="Analyses">
 			<objects>
 				<ForceReporter name="ForceReporter">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<!--Flag (true or false) specifying whether on. True by default.-->
 					<on>true</on>
 					<!--Start time.-->
 					<start_time>0</start_time>
@@ -42,18 +42,31 @@
 					<!--Flag indicating whether to include forces due to constraints.-->
 					<include_constraint_forces>false</include_constraint_forces>
 				</ForceReporter>
+				<OutputReporter name="OutputReporter">
+					<!--The names of Outputs to be reported. To select specific Component Outputs, provide its path name. For example, 'slider/tx/value' is an Output for the value of a Coordinate 'tx' belonging to the Joint 'slider'.-->
+					<output_paths>LeftMuscle/fiber_length LeftMuscle/tendon_force com_position LeftMuscle/active_force_length_multiplier ground_block/reaction_on_child</output_paths>
+					<!--Flag (true or false) specifying whether on. True by default.-->
+					<on>true</on>
+					<!--Start time.-->
+					<start_time>-Inf</start_time>
+					<!--End time.-->
+					<end_time>Inf</end_time>
+					<!--Specifies how often to store results during a simulation. More specifically, the interval (a positive integer) specifies how many successful integration steps should be taken before results are recorded again.-->
+					<step_interval>1</step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or not.-->
+					<in_degrees>true</in_degrees>
+				</OutputReporter>
 			</objects>
 			<groups />
 		</AnalysisSet>
 		<!--Controller objects in the model.-->
 		<ControllerSet name="Controllers">
-			<objects>
-			</objects>
+			<objects />
 			<groups />
 		</ControllerSet>
 		<!--XML file (.xml) containing the forces applied to the model as ExternalLoads.-->
 		<external_loads_file />
-		<!--Storage file (.sto) containing the time history of states for the model. This file often contains multiple rows of data, each row being a time-stamped array of states. The first column contains the time.  The rest of the columns contain the states in the order appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing is allowed.  If the user-specified initial time for a simulation does not correspond exactly to one of the time stamps in this file, inerpolation is NOT used because it is sometimes necessary to an exact set of states for analyses.  Instead, the closest earlier set of states is used.-->
+		<!--Storage file (.sto) containing the time history of states for the model. This file often contains multiple rows of data, each row being a time-stamped array of states. The first column contains the time.  The rest of the columns contain the states in the order appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing is allowed.  If the user-specified initial time for a simulation does not correspond exactly to one of the time stamps in this file, interpolation is NOT used because it is sometimes necessary to use an exact set of states for analyses.  Instead, the closest earlier set of states is used.-->
 		<states_file />
 		<!--Motion file (.mot) or storage file (.sto) containing the time history of the generalized coordinates for the model. These can be specified in place of the states file.-->
 		<coordinates_file>Tug_of_War_ConstantVelocity.sto</coordinates_file>

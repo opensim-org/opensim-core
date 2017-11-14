@@ -59,10 +59,7 @@ public:
 #ifndef SWIG
     ContactGeometrySet& operator=(const ContactGeometrySet &aContactGeometrySet);
 #endif
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-    void scale(const ScaleSet& aScaleSet);
+
 //=============================================================================
 };  // END of class ContactGeometrySet
 //=============================================================================

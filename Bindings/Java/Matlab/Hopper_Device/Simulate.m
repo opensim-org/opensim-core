@@ -96,7 +96,7 @@ while true
     while ~compIter.equals(compList.end())
         if ~isempty(strfind(compIter.getConcreteClassName(), ...
                 'TableReporter__double_'))
-            comp = model.getComponent(compIter.getAbsolutePathName());
+            comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
         end
@@ -106,7 +106,8 @@ while true
     % Simulate.
     state = State(initState);
     manager = Manager(model);
-    manager.integrate(state, 5.0);
+    manager.initialize(state);
+    state = manager.integrate(5.0);
     simulatedAtLeastOnce = true;
 
     % If there is no visualizer, only simulate once.

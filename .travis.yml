@@ -8,18 +8,25 @@ sudo: false
     
 matrix:
   include:
-    - os: linux
+    # "cron" means periodic (e.g., daily) builds. 
+    # see https://travis-ci.org/opensim-org/opensim-core/settings
+    # for our scheduled cron jobs.
+    - if: type != cron
+      os: linux
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=on  DOXY=on  NPROC=3 DEPLOY=yes
-    - os: linux
+      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=3 DEPLOY=yes
+    - if: type != cron
+      os: linux
       compiler: gcc
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=no
-    - os: linux
+      env: BTYPE=Release WRAP=off DOXY=off NPROC=3 DEPLOY=no
+    - if: type = cron
+      os: linux
       compiler: clang
-      env: BTYPE=Debug          WRAP=off DOXY=off NPROC=3 DEPLOY=no
-    - os: osx
+      env: BTYPE=Debug   WRAP=off DOXY=off NPROC=3 DEPLOY=no
+    - if: type != cron
+      os: osx
       compiler: clang
-      env: BTYPE=RelWithDebInfo WRAP=off DOXY=off NPROC=3 DEPLOY=yes
+      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
       
 branches:
   except:
@@ -81,6 +88,10 @@ addons:
       - frs.sourceforge.net
 
 before_install:
+  # If the Mac builds take too long when building bindings, then we can have the bindings 
+  # (and doxygen) only build if we're going to deploy to sourceforge.
+  #- if [[ "$TRAVIS_BRANCH" != "master" || "$TRAVIS_PULL_REQUEST" != "false" ]]; then export WRAP=off; export DOXY=off; fi
+
   - cd $TRAVIS_BUILD_DIR
   # Stop build if comment contains [skip travis].
   - if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
@@ -91,6 +102,10 @@ before_install:
   # This prevents the build from failing with:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
+  
+  # Avoid "Homebrew must be run under Ruby 2.3!"
+  # https://github.com/PowerShell/PowerShell/issues/5062
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   
   ## Ensure that there are no tabs in source code.
   # GREP returns 0 (true) if there are any matches, and
@@ -129,9 +144,10 @@ before_install:
 
   ## Doxygen.
   # Need a doxygen that is more recent than that available through apt-get.
-  - if [ "$DOXY" = "on" ]; then mkdir ~/doxygen && cd ~/doxygen; fi
-  - if [ "$DOXY" = "on" ]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
-  - if [ "$DOXY" = "on" ]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
 
   ## Install Simbody.
   # The Simbody travis script uploads the simbody binaries to sourceforge.
@@ -141,7 +157,7 @@ before_install:
   - unzip -q $SIMBODYZIP -d ~
 
   ## Install SWIG to build Java/python wrapping.
-  - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
+  # - if [[ "$WRAP" = "on" ]]; then if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install pcre; fi; fi
   - if [[ "$WRAP" = "on" ]]; then mkdir ~/swig-source && cd ~/swig-source; fi
   - if [[ "$WRAP" = "on" ]]; then wget https://github.com/swig/swig/archive/rel-$SWIG_VER.tar.gz; fi
   #- wget http://prdownloads.sourceforge.net/swig/$SWIG.tar.gz
@@ -180,13 +196,31 @@ install:
   # Configure OpenSim.
   #############################################################################
   - mkdir ~/opensim-core-build && cd ~/opensim-core-build
-  - cmake $TRAVIS_BUILD_DIR -DBUILD_JAVA_WRAPPING=$WRAP -DBUILD_PYTHON_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig -DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS" -DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen -DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/" -DWITH_BTK:BOOL=ON
-
+  ## Store CMake arguments in bash array.
+  # https://stackoverflow.com/questions/1951506/add-a-new-element-to-an-array-without-specifying-the-index-in-bash
+  - OSIM_CMAKE_ARGS=($TRAVIS_BUILD_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS")
+  
+  # Dependencies.
+  - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
+  
+  # Bindings.
+  - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+  # On Mac, use system python instead of Homebrew python.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DPYTHON_EXECUTABLE=/usr/bin/python); fi
+  
+  # Doxygen.
+  - OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
+  
+  - printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+  - cmake "${OSIM_CMAKE_ARGS[@]}"
+  
   #############################################################################
   # Build OpenSim.
   #############################################################################
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
-  - if [[ "$WRAP" = "on" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
+  # On OSX, building the bindings separately slows down the build too much.
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
@@ -215,10 +249,12 @@ script:
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
   # Run the python tests, verbosely.
-  - if [ "$WRAP" = "on" ]; then nosetests -v; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
-  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
   # Decrypt the private key stored in the repository to the tmp dir.
   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
   # Start the ssh agent.
@@ -230,12 +266,12 @@ script:
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  - if [ "$DOXY" = "on" ]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
   # If we're uploading doxygen, we also want to delete old
   # doxygen files from the server so they don't build up indefinitely.
   # However, ssh'ing into the server takes a while, so we only do this
   # randomly (1% of the time).
-  - if [[ "$DOXY" = "on" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false" && $(python -c "import random; print(random.random() < 0.01)") = "True" ]]; then CLEAN_UP_MYOSIN=0; else CLEAN_UP_MYOSIN=1; fi
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then echo "This build is randomly selected to delete old folders from myosin.sourceforge.net."; fi
   # Creates an environment at sourceforge that we can ssh into.
   - if [ $CLEAN_UP_MYOSIN = "0" ]; then ssh opensim-bot,myosin@shell.sourceforge.net create; fi
@@ -275,7 +311,8 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    branch: master 
+    # TODO temporarily deply on beta branch so GUI doesn't depend directly on master.
+    branch: 4.0beta_nov2017 
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"

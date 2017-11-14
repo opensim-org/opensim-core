@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 // INCLUDE
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <simbody/internal/MobilizedBody.h>
@@ -31,7 +32,6 @@
 namespace OpenSim {
 
 class Model;
-class ScaleSet;
 
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
@@ -102,12 +102,13 @@ public:
         "List containing the generalized coordinates (q's) that parameterize "
         "this joint.");
 
-    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalFrame,
-        "Physical frames owned by the Joint that are used to satisfy the Joint's "
-        "parent and child frame connections. For examples, PhysicalOffsetFrames "
-        "are often used to offset the connection from a Body's origin to another "
-        "location of interest (e.g. the joint center). That offset can be added "
-        "to the Joint. When the joint is delete so are the Frames in this list.");
+    OpenSim_DECLARE_LIST_PROPERTY(frames, PhysicalOffsetFrame,
+        "Physical offset frames owned by the Joint that are typically used to "
+        "satisfy the owning Joint's parent and child frame connections "
+        "(sockets). PhysicalOffsetFrames are often used to describe the fixed "
+        "transformation from a Body's origin to another location of interest "
+        "on the Body (e.g., the joint center). When the joint is deleted, so "
+        "are the PhysicalOffsetFrame components in this list.");
 
 //==============================================================================
 // SOCKETS
@@ -260,19 +261,6 @@ public:
         must already have been realized to %Acceleration stage so that 
         constraint forces are available. */
     virtual double calcPower(const SimTK::State &s) const;
-
-    // SCALE
-    /**
-    * Scale a joint based on XYZ scale factors for PhysicalFrames.
-    * Generic behavior is to scale the locations of parent and child offsets
-    * according to scale factors of the physical frame upon which they are located.
-    *
-    * Joint subclasses should invoke this method before scaling joint specific
-    * properties
-    *
-    * @param aScaleSet Set of XYZ scale factors for the bodies.
-    */
-    virtual void scale(const ScaleSet& aScaleSet);
 
 #ifndef SWIG
     /// @class CoordinateIndex

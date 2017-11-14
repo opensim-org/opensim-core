@@ -95,7 +95,7 @@ public:
     void clearValue() { _value = getDefaultStr(); setValueIsDefault(true); }
     static const std::string& getDefaultStr();
 
-    bool isValidFileName() { return _value!="" && _value!=getDefaultStr(); }
+    bool isValidFileName() const { return _value!="" && _value!=getDefaultStr(); }
 
 //=============================================================================
 };  // END of class PropertyStr
