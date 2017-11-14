@@ -135,7 +135,7 @@ const SimTK::Array_<std::string>& MarkersReference::getNames() const {
     return _markerNames;
 }
 
-void  MarkersReference::getValues(const SimTK::State& s,
+void MarkersReference::getValues(const SimTK::State& s,
                                   SimTK::Array_<Vec3>& values) const {
     double time = s.getTime();
     const auto rowView = _markerTable.getNearestRow(time);
@@ -160,6 +160,10 @@ void MarkersReference::getWeights(const SimTK::State &s,
                                   SimTK::Array_<double> &weights) const {
     updateInternalWeights();
     weights = _weights;
+}
+
+const TimeSeriesTable_<SimTK::Vec3>& MarkersReference::getMarkerTable() const {
+    return _markerTable;
 }
 
 void
