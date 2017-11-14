@@ -581,12 +581,20 @@ void scalePhysicalOffsetFrames()
 
         State& s = model->initSystem();
 
+        const std::string pathToAct1 = act1->getAbsolutePathString();
+        const std::string pathToAct2 = act2->getAbsolutePathString();
+
         // Ensure PathPoints are coincident before scaling.
         auto testPathPointLoc =
             [&](const State& s, const std::string& msg) -> void
         {
-            const PathPointSet& pps1 = act1->getGeometryPath().getPathPointSet();
-            const PathPointSet& pps2 = act2->getGeometryPath().getPathPointSet();
+            const PathActuator& pa1 =
+                model->getComponent<PathActuator>(pathToAct1);
+            const PathActuator& pa2 =
+                model->getComponent<PathActuator>(pathToAct2);
+
+            const PathPointSet& pps1 = pa1.getGeometryPath().getPathPointSet();
+            const PathPointSet& pps2 = pa2.getGeometryPath().getPathPointSet();
 
             for (int i = 0; i < 2; ++i)
             {
