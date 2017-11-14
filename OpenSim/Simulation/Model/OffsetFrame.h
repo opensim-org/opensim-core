@@ -323,9 +323,9 @@ extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const SimTK::Vec3 scaleFactors =
+    const SimTK::Vec3& scaleFactors =
         this->getScaleFactors(scaleSet, getParentFrame());
-    if (scaleFactors.isNaN())
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
     upd_translation() = get_translation().elementwiseMultiply(scaleFactors);

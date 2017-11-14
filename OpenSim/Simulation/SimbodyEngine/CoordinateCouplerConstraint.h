@@ -37,7 +37,7 @@ class Model;
  * A class implementing a CoordinateCoupler Constraint.  The underlying SimTK
  * Constraint is a Constraint::CoordinateCoupler in Simbody, which relates 
  * coordinates to one another at the position level (i.e. holonomic).
- * Relationship between coordinates is a specified by a function that equates 
+ * Relationship between coordinates is specified by a function that equates 
  * to zero only when the coordinates satisfy the constraint function.
  *
  * OpenSim::CoordinateCouplerConstraint assumes that there is one coordinate

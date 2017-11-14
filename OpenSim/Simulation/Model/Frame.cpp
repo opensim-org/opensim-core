@@ -199,8 +199,8 @@ void Frame::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
         return;
 
     // Get scale factors (if an entry for the base Body exists).
-    const Vec3 scaleFactors = getScaleFactors(scaleSet, *this);
-    if (scaleFactors.isNaN())
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, *this);
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
     scaleAttachedGeometry(scaleFactors);
