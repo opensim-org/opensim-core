@@ -115,8 +115,8 @@ void Station::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3 scaleFactors = getScaleFactors(scaleSet, getParentFrame());
-    if (scaleFactors.isNaN())
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
     upd_location() = get_location().elementwiseMultiply(scaleFactors);
