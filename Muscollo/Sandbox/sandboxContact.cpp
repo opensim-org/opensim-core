@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 #include <Muscollo/osimMuscollo.h>
+#include <OpenSim/Common/Reporter.h>
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
@@ -74,14 +75,19 @@ public:
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
     OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
 
+    OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3, calcContactForce,
+            SimTK::Stage::Velocity);
+
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
 
     AckermannVanDenBogert2010Contact() {
         constructProperties();
     }
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
+
+    /// Compute the force applied to body to which the station is attached, at
+    /// the station, expressed in ground.
+    SimTK::Vec3 calcContactForce(const SimTK::State& s) const {
+        SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
         const auto& vel = pt.getVelocityInGround(s);
@@ -89,7 +95,6 @@ public:
         const SimTK::Real velNormal = vel[1];
         // TODO should project vel into ground.
         const SimTK::Real velSliding = vel[0];
-        SimTK::Vec3 force(0);
         const SimTK::Real depth = 0 - y;
         const SimTK::Real depthRate = 0 - velNormal;
         const SimTK::Real a = get_stiffness();
@@ -109,11 +114,39 @@ public:
                 -(1 - z0) / (1 + z0) * get_friction_coefficient() * force[1];
 
         force[0] = frictionForce;
-
+        return force;
+    }
+    void computeForce(const SimTK::State& s,
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& /*generalizedForces*/) const override {
+        const SimTK::Vec3 force = calcContactForce(s);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
         const auto& frame = pt.getParentFrame();
         applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
         applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
     }
+
+    OpenSim::Array<std::string> getRecordLabels() const override {
+        OpenSim::Array<std::string> labels;
+        const auto stationName = getConnectee("station").getName();
+        labels.append(getName() + "." + stationName + ".force.X");
+        labels.append(getName() + "." + stationName + ".force.Y");
+        labels.append(getName() + "." + stationName + ".force.Z");
+        return labels;
+    }
+    OpenSim::Array<double> getRecordValues(const SimTK::State& s)
+            const override {
+        OpenSim::Array<double> values;
+        // TODO cache.
+        const SimTK::Vec3 force = calcContactForce(s);
+        values.append(force[0]);
+        values.append(force[1]);
+        values.append(force[2]);
+        return values;
+    }
+
+    // TODO potential energy.
 private:
     void constructProperties() {
         constructProperty_friction_coefficient(1.0);
@@ -511,6 +544,11 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
 void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     const SimTK::Real finalTime = 1.0;
     auto modelTS = createModelSLIP();
+    auto reporter = new TableReporterVec3();
+    reporter->set_report_time_interval(0.01);
+    reporter->addToReport(
+            modelTS.getComponent("contact").getOutput("force_on_station"));
+    modelTS.addComponent(reporter);
     auto state = modelTS.initSystem();
     modelTS.setStateVariableValue(state, "planar/rz/value", rzvalue0);
     modelTS.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
@@ -523,6 +561,8 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     manager.integrate(state, finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
+    STOFileAdapter::write(reporter->getTable().flatten({"x", "y", "z"}),
+            "slipSolveForForce_contact_force.sto");
     visualize(modelTS, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
     STOFileAdapter::write(statesTimeSteppingTable,
@@ -563,6 +603,25 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     MucoSolution solution = muco.solve().unseal();
     solution.write("slipSolveForForce_solution.sto");
     std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+
+    // Compute the contact force for the direct collocation solution.
+    const auto statesTraj = solution.exportToStatesTrajectory(mp);
+    Model model = mp.getPhase().getModel();
+    model.initSystem();
+    const auto& contact =
+            model.getComponent<AckermannVanDenBogert2010Contact>("contact");
+    TimeSeriesTableVec3 contactForceHistory;
+    contactForceHistory.setColumnLabels({"contact"});
+
+    for (const auto& s : statesTraj) {
+        model.realizeVelocity(s);
+        contactForceHistory.appendRow(s.getTime(),
+                {contact.calcContactForce(s)});
+    }
+
+    STOFileAdapter::write(contactForceHistory.flatten({"x", "y", "z"}),
+            "slipSolveForForce_dircol_force.sto");
+
     muco.visualize(solution);
 }
 
