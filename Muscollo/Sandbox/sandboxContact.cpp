@@ -20,10 +20,11 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+#include <OpenSim/Analyses/ForceReporter.h>
+#include <Muscollo/osimMuscollo.h>
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
@@ -404,6 +405,60 @@ Model createModelSLIP() {
     return model;
 }
 
+Model createModelSLIPActuated() {
+    Model model;
+    model.setName("SLIP");
+    auto* foot = new Body("foot", 15.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(foot);
+    auto* pelvis = new Body("pelvis", 35.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(pelvis);
+
+    Sphere bodyGeom(0.05);
+    bodyGeom.setColor(SimTK::Red);
+    foot->attachGeometry(bodyGeom.clone());
+    bodyGeom.setColor(SimTK::Blue);
+    pelvis->attachGeometry(bodyGeom.clone());
+
+    auto* planar = new PlanarJoint("planar", model.getGround(), *foot);
+    planar->updCoordinate(PlanarJoint::Coord::TranslationX).setName("tx");
+    auto& ty = planar->updCoordinate(PlanarJoint::Coord::TranslationY);
+    ty.setName("ty");
+    ty.setDefaultValue(0.1);
+    planar->updCoordinate(PlanarJoint::Coord::RotationZ).setName("rz");
+    model.addComponent(planar);
+
+    const Vec3 rz90 = SimTK::Vec3(0, 0, 0.5 * SimTK::Pi);
+    auto* leg = new SliderJoint("leg", *foot, Vec3(0), rz90,
+            *pelvis, Vec3(0), rz90);
+    auto& length = leg->updCoordinate(SliderJoint::Coord::TranslationX);
+    length.setName("length");
+    length.setDefaultValue(1.0);
+    model.addComponent(leg);
+
+    // Foot-ground contact.
+    auto* station = new Station();
+    station->setName("contact_point");
+    station->connectSocket_parent_frame(*foot);
+    model.addComponent(station);
+
+    auto* force = new AckermannVanDenBogert2010Contact();
+    force->set_dissipation(1.0);
+    force->set_friction_coefficient(1.0);
+    force->setName("contact");
+    model.addComponent(force);
+    force->connectSocket_station(*station);
+
+
+
+    auto* actuator = new CoordinateActuator();
+    actuator->setCoordinate(&length);
+    actuator->setName("actuator");
+    actuator->setOptimalForce(2500);
+    model.addComponent(actuator);
+
+    return model;
+}
+
 void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     const SimTK::Real finalTime = 1.0;
     auto model = createModelSLIP();
@@ -453,13 +508,71 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     muco.visualize(solution);
 }
 
+void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
+    const SimTK::Real finalTime = 1.0;
+    auto modelTS = createModelSLIP();
+    auto state = modelTS.initSystem();
+    modelTS.setStateVariableValue(state, "planar/rz/value", rzvalue0);
+    modelTS.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
+    SimTK::RungeKuttaMersonIntegrator integrator(modelTS.getMultibodySystem());
+    integrator.setAccuracy(1e-5);
+    integrator.setMaximumStepSize(0.05);
+    auto* forceRep = new ForceReporter(&modelTS);
+    modelTS.addAnalysis(forceRep);
+    Manager manager(modelTS, integrator);
+    manager.integrate(state, finalTime);
+    const auto& statesTimeStepping = manager.getStateStorage();
+    forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
+    visualize(modelTS, statesTimeStepping);
+    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    STOFileAdapter::write(statesTimeSteppingTable,
+            "slipSolveForForce_timestepping.sto");
+
+
+    MucoTool muco;
+    muco.setName("slipSolveForForce");
+    MucoProblem& mp = muco.updProblem();
+    //mp.setModel(modelTS);
+    mp.setModel(createModelSLIPActuated());
+    mp.setTimeBounds(0, finalTime);
+    using SimTK::Pi;
+    mp.setStateInfo("planar/tx/value", {-5, 5}, 0);
+    mp.setStateInfo("planar/ty/value", {-0.5, 2}, 0.1);
+    mp.setStateInfo("planar/rz/value", {-0.5*Pi, 0.5*Pi}, rzvalue0);
+    mp.setStateInfo("leg/length/value", {0.1, 1.9}, 1.0);
+    mp.setStateInfo("planar/tx/speed", {-10, 10}, 0);
+    mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
+    mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
+    mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
+    mp.setControlInfo("actuator", {-1, 1});
+
+    MucoStateTrackingCost tracking;
+    tracking.setName("tracking");
+    tracking.setReference(statesTimeSteppingTable);
+    mp.addCost(tracking);
+
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(100);
+    //ms.set_optim_max_iterations(2);
+    ms.set_optim_hessian_approximation("exact");
+    MucoIterate guess = ms.createGuess();
+    guess.setStatesTrajectory(statesTimeSteppingTable);
+    ms.setGuess(guess);
+
+    MucoSolution solution = muco.solve().unseal();
+    solution.write("slipSolveForForce_solution.sto");
+    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    muco.visualize(solution);
+}
+
 int main() {
 
-    const SimTK::Real y0 = 0.5;
-    const SimTK::Real vx0 = 0.7;
-    const SimTK::Real finalTime = 1.0;
 
     if (false) {
+        const SimTK::Real y0 = 0.5;
+        const SimTK::Real vx0 = 0.7;
+        const SimTK::Real finalTime = 1.0;
         Model model = createModel();
         auto state = model.initSystem();
         model.setStateVariableValue(state, "/slider/y/value", y0);
@@ -474,13 +587,17 @@ int main() {
 
     //slip();
 
-    // TODO use a different model that has a CoordinateActuator and recover
-    // the original spring force.
+    // slip(0.1 * SimTK::Pi, -0.5);
 
     // TODO need to add an actuator that can rotate the leg.
 
     // TODO add two legs.
-    slip(0.1 * SimTK::Pi, -0.5);
+
+
+
+    // TODO use a different model that has a CoordinateActuator and recover
+    // the original spring force.
+    slipSolveForForce(0.1 * SimTK::Pi, -0.5);
 
 
 
