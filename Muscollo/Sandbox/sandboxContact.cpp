@@ -480,7 +480,7 @@ int main() {
     // TODO need to add an actuator that can rotate the leg.
 
     // TODO add two legs.
-    slip(0.1 * SimTK::Pi, -1.5);
+    slip(0.1 * SimTK::Pi, -0.5);
 
 
 
