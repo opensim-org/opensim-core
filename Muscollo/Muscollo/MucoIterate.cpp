@@ -33,7 +33,15 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_states(statesTrajectory),
-        m_controls(controlsTrajectory) {}
+        m_controls(controlsTrajectory) {
+    OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
+            Exception, "Inconsistent number of states.");
+    OPENSIM_THROW_IF((int)m_control_names.size() != m_controls.ncol(),
+            Exception, "Inconsistent number of controls.");
+    OPENSIM_THROW_IF(time.size() != m_states.nrow() ||
+            time.size() != m_controls.nrow(), Exception,
+            "Inconsistent number of times.");
+}
 
 void MucoIterate::setTime(const SimTK::Vector& time) {
     ensureUnsealed();
@@ -73,6 +81,57 @@ void MucoIterate::setControl(const std::string& name,
     int index = (int)std::distance(m_control_names.cbegin(), it);
     m_controls.updCol(index) = trajectory;
 }
+
+void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
+        bool allowMissingColumns, bool allowExtraColumns) {
+    ensureUnsealed();
+
+    int numTimesTable = (int)states.getNumRows();
+    OPENSIM_THROW_IF(numTimesTable < 2, Exception,
+            "Cannot interpolate if number of times in table is 0 or 1.");
+
+    const auto& labels = states.getColumnLabels();
+
+    auto find = [](const std::vector<std::string>& v, const std::string& elem) {
+        return std::find(v.cbegin(), v.cend(), elem);
+    };
+
+    if (!allowMissingColumns) {
+       for (const auto& iterate_state : m_state_names) {
+           OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
+                   Exception, "Expected table to contain column '" +
+                   iterate_state + "'; consider setting "
+                   "allowMissingColumns to true.");
+       }
+    }
+
+    std::vector<std::string> labelsToUse;
+    if (!allowExtraColumns) {
+        for (const auto& label : labels) {
+            if (find(m_state_names, label) != labels.end()) {
+                labelsToUse.push_back(label);
+            } else {
+                OPENSIM_THROW(Exception,
+                        "Column '" + label + "' is not a state in the "
+                        "iterate; consider setting allowExtraColumns to true.");
+            }
+        }
+    }
+
+    GCVSplineSet splines(states, labelsToUse, std::min(numTimesTable - 1, 5));
+
+    SimTK::Vector curTime(1, SimTK::NaN);
+    for (const auto& label : labelsToUse) {
+        auto it = find(m_state_names, label);
+        int istate = (int)std::distance(m_state_names.cbegin(), it);
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            curTime[0] = m_time[itime];
+            m_states(itime, istate) = splines.get(label).calcValue(curTime);
+        }
+    }
+}
+
+
 SimTK::VectorView MucoIterate::getState(const std::string& name) const {
     ensureUnsealed();
     auto it = std::find(m_state_names.cbegin(), m_state_names.cend(), name);
@@ -266,9 +325,133 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other) const {
             SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1);
 }
 
+double MucoIterate::compareRMS(const MucoIterate& other,
+        std::vector<std::string> stateNames,
+        std::vector<std::string> controlNames) const {
+    ensureUnsealed();
+
+    // Process state and control names.
+    // --------------------------------
+    using VecStr = std::vector<std::string>;
+    auto sameContents = [](VecStr v1, VecStr v2) {
+        std::sort(v1.begin(), v1.end());
+        std::sort(v2.begin(), v2.end());
+        return v1 == v2;
+    };
+    // Check that b and c contain a.
+    auto checkContains = [](std::string type, VecStr a, VecStr b, VecStr c) {
+        // set_difference requires sorted containers.
+        std::sort(a.begin(), a.end());
+        std::sort(b.begin(), b.end());
+        std::sort(c.begin(), c.end());
+        std::vector<std::string> diff;
+        std::set_difference(a.begin(), a.end(), b.begin(), b.end(),
+                std::back_inserter(diff));
+        if (!diff.empty()) {
+            std::string msg = "Expected this iterate's " + type + " names to "
+                    "contain the following:";
+            for (const auto& elem : diff) msg += "\n  " + elem;
+            OPENSIM_THROW(Exception, msg);
+        }
+        diff.clear();
+        std::set_difference(a.begin(), a.end(), c.begin(), c.end(),
+                std::back_inserter(diff));
+        if (!diff.empty()) {
+            std::string msg = "Expected the other iterate's " + type +
+                    " names to contain the following:";
+            for (const auto& elem : diff) msg += "\n  " + elem;
+            OPENSIM_THROW(Exception, msg);
+        }
+    };
+    if (stateNames.empty()) {
+        OPENSIM_THROW_IF(!sameContents(m_state_names, other.m_state_names),
+                Exception,
+                "Expected both iterates to have the same state names; consider "
+                "specifying the states to compare.");
+        stateNames = m_state_names;
+    } else if (stateNames.size() == 1 && stateNames[0] == "none") {
+        stateNames.clear();
+    } else {
+        // Will hold elements of stateNames that are not in m_state_names, etc.
+        checkContains("state", stateNames, m_state_names, other.m_state_names);
+    }
+    if (controlNames.empty()) {
+        OPENSIM_THROW_IF(!sameContents(m_control_names, other.m_control_names),
+                Exception,
+                "Expected both iterates to have the same control names; "
+                "consider specifying the controls to compare.");
+        controlNames = m_control_names;
+    } else if (controlNames.size() == 1 && controlNames[0] == "none") {
+        controlNames.clear();
+    } else {
+        std::sort(controlNames.begin(), controlNames.end());
+        checkContains("control", controlNames, m_control_names,
+                other.m_control_names);
+    }
+
+
+    std::vector<double> selfTime =
+            std::vector<double>(&m_time[0], &m_time[0] + m_time.size());
+    std::vector<double> otherTime = std::vector<double>(&other.m_time[0],
+            &other.m_time[0] + other.m_time.size());
+
+    const auto initialTime = std::min(selfTime.front(), otherTime.front());
+    const auto finalTime = std::max(selfTime.back(), otherTime.back());
+    const auto numTimes = std::max(getNumTimes(), other.getNumTimes());
+    // Times to use for integrating over time.
+    auto integTime = createVectorLinspace(numTimes, initialTime, finalTime);
+    const auto timeInterval = integTime[1] - integTime[0];
+
+    auto integralSumSquaredError = [&selfTime, &otherTime,
+            &numTimes, &integTime, &timeInterval](
+            const VecStr& namesToUse,
+            const SimTK::Matrix& selfData, const VecStr& selfNames,
+            const SimTK::Matrix& otherData, const VecStr& otherNames) -> double
+    {
+        if (namesToUse.empty()) return 0;
+
+        TimeSeriesTable selfTable(selfTime, selfData, selfNames);
+        TimeSeriesTable otherTable(otherTime, otherData, otherNames);
+
+        GCVSplineSet self(selfTable, namesToUse);
+        GCVSplineSet other(otherTable, namesToUse);
+
+        SimTK::Vector sumSquaredError(numTimes, 0.0);
+        for (int itime = 0; itime < numTimes; ++itime) {
+            const auto& curTime = integTime[itime];
+            SimTK::Vector curTimeVec(1, curTime);
+            bool selfInRange =
+                    self.getMinX() <= curTime && curTime <= self.getMaxX();
+            bool otherInRange =
+                    other.getMinX() <= curTime && curTime <= other.getMaxX();
+            for (int iname = 0; iname < (int)namesToUse.size(); ++iname) {
+                double selfValue = selfInRange ?
+                                   self.get(iname).calcValue(curTimeVec) : 0;
+                double otherValue = otherInRange ?
+                                    other.get(iname).calcValue(curTimeVec) : 0;
+                sumSquaredError[itime] += SimTK::square(selfValue - otherValue);
+            }
+        }
+        // Trapezoidal rule for uniform grid:
+        // dt / 2 (f_0 + 2f_1 + 2f_2 + 2f_3 + ... + 2f_{N-1} + f_N)
+        assert(numTimes > 2);
+        return timeInterval / 2.0 * (sumSquaredError.sum() +
+                sumSquaredError(1, numTimes - 2).sum());
+    };
+
+    const auto stateISS = integralSumSquaredError(stateNames,
+            m_states, m_state_names, other.m_states, other.m_state_names);
+    const auto controlISS = integralSumSquaredError(controlNames, m_controls,
+            m_control_names, other.m_controls, other.m_control_names);
+
+    // sqrt(1/T * integral_t (sum_is error_is^2 + sum_ic error_ic^2)
+    // `is`: index for states; `ic`: index for controls.
+    return sqrt((stateISS + controlISS) / (finalTime - initialTime));
+}
+
 void MucoIterate::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, Exception,
-            "This object is sealed, to force you to acknowledge the "
+            "This iterate is sealed, to force you to acknowledge the "
             "solver failed; call unseal() to gain access.");
 }
 

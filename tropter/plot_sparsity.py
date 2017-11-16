@@ -21,7 +21,7 @@ import pylab as pl
 
 df = pd.read_csv(sys.argv[1], skiprows=2)
 
-with file(sys.argv[1]) as f:
+with open(sys.argv[1]) as f:
     line0 = f.readline()
     num_rows = line0.split('=')[1]
     line1 = f.readline()

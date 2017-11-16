@@ -159,20 +159,20 @@ int main() {
 
     // Bounds.
     // -------
-    mp.setTimeBounds(0.0, 0.1);
+    mp.setTimeBounds(0.4, 1.6);
     // ground-pelvis
-    mp.setStateInfo("gp/p_tx/value", { 0.57, 0.61 });
-    mp.setStateInfo("gp/p_tx/speed", { -5, 5 });
-    mp.setStateInfo("gp/p_ty/value", { 1.0, 1.05 });
-    mp.setStateInfo("gp/p_ty/speed", { -5, 5 });
+    mp.setStateInfo("gp/p_tx/value", { -10, 10 });
+    mp.setStateInfo("gp/p_tx/speed", { -50, 50 });
+    mp.setStateInfo("gp/p_ty/value", { -10, 10 });
+    mp.setStateInfo("gp/p_ty/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_tz/value", { -1, 1 });
     //mp.setStateInfo("gp/p_tz/speed", { -5, 5 });
     //mp.setStateInfo("gp/p_rx/value", { -10, 10 });
     //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
     //mp.setStateInfo("gp/p_ry/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_rz/value", { 0.0611, 0.1134 });
-    mp.setStateInfo("gp/p_rz/speed", { -5, 5 });
+    mp.setStateInfo("gp/p_rz/value", { -10, 10 });
+    mp.setStateInfo("gp/p_rz/speed", { -50, 50 });
     // hip
     //mp.setStateInfo("hip/hip_rx/value", { -10, 10 });
     //mp.setStateInfo("hip/hip_rx/speed", { -50, 50 });
@@ -207,6 +207,9 @@ int main() {
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
+
+    //MucoIterate guess = ms.createGuess();
+    
 
     // Solve the problem.
     // ==================

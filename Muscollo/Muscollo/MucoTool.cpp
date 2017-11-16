@@ -71,11 +71,14 @@ MucoSolution MucoTool::solve() const {
     // TODO avoid const_cast.
     const_cast<Self*>(this)->ensureInitSolver();
     MucoSolution solution = get_solver().solve();
+    bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
         OpenSim::IO::makeDir(get_write_solution());
         std::string prefix = getName().empty() ? "MucoTool" : getName();
+        solution.unseal();
         solution.write(get_write_solution() +
                 SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto");
+        if (originallySealed) solution.seal();
     }
     return solution;
 }

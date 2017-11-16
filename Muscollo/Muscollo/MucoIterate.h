@@ -55,6 +55,8 @@ public:
     /// @name Change the length of the trajectory
     /// @{
 
+    /// setNumTimes() -> setNumNodes().
+
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories, and set all times, states, and controls to NaN.
     // TODO rename to setNumPoints() or setNumTimePoints().
@@ -166,6 +168,33 @@ public:
             v[i] = *it;
         setControl(name, v);
     }
+
+    /// Set the states trajectory. The provided data is interpolated at the
+    /// times contained within this iterate. The controls trajectory is not
+    /// altered. If the table only contains a subset of the states in the
+    /// iterate (and allowMissingColumns is true), the unspecified states
+    /// preserve their pre-existing values.
+    ///
+    /// This function might be helpful if you generate a guess using a
+    /// forward simulation; you can access the forward simulation's states
+    /// trajectory using Manager::getStateStorage() or
+    /// Manager::getStatesTable().
+    ///
+    /// @param states
+    ///     The column labels of the table should match the state
+    ///     names (see getStateNames()). By default, the table must provide all
+    ///     state variables. Any data outside the time range of this guess's
+    ///     times are ignored.
+    /// @param allowMissingColumns
+    ///     If false, an exception is thrown if there are states in the
+    ///     iterate that are not in the table.
+    /// @param allowExtraColumns
+    ///     If false, an exception is thrown if there are states in the
+    ///     table that are not in the iterate.
+    // TODO add tests in testMuscolloInterface.
+    // TODO add setStatesTrajectory(const StatesTrajectory&)
+    void setStatesTrajectory(const TimeSeriesTable& states,
+            bool allowMissingColumns = false, bool allowExtraColumns = false);
     /// @}
 
     /// @name Accessors
@@ -199,6 +228,7 @@ public:
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
     /// Controls are not carried over to the states storage.
+    // TODO use TimeSeriesTable instead?
     Storage exportToStatesStorage() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MucoProblem is necessary because we need the underlying Model to
@@ -212,6 +242,24 @@ public:
     /// Check if this iterate is numerically equal to another iterate.
     /// This uses SimTK::Test::numericallyEqual() internally.
     bool isNumericallyEqual(const MucoIterate& other) const;
+    /// Compute the root-mean-square error between this iterate and another.
+    /// The RMS is computed by numerically integrating the sum of squared
+    /// error across states and controls and dividing by the larger of the
+    /// two time ranges. If the time ranges do not match between this and the
+    /// other iterate, then we assume values of 0 for the iterate with the
+    /// shorter time range.
+    /// When one iterate does not cover the same time range as the other, we
+    /// assume values of 0 for the iterate with "missing" time.
+    /// Numerical integration is performed using the trapezoidal rule.
+    /// By default, all states and controls are compared, and it is expected
+    /// that both iterates have the same states and controls. Alternatively,
+    /// you can specify the specific states and controls to compare. To skip
+    /// over all states, specify a single element of "none" for stateNames;
+    /// likewise for controlNames.
+    /// Both iterates must have at least 6 time nodes.
+    double compareRMS(const MucoIterate& other,
+            std::vector<std::string> stateNames = {},
+            std::vector<std::string> controlNames = {}) const;
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
@@ -265,6 +313,7 @@ public:
     /// access to the (failed) solution. If the solver succeeded, then the
     /// solution is already unsealed.
     MucoSolution& unseal() { MucoIterate::setSealed(false); return *this; }
+    MucoSolution& seal() { MucoIterate::setSealed(true); return *this; }
     bool isSealed() const { return MucoIterate::isSealed(); }
     /// @}
 
