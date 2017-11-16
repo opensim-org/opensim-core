@@ -196,7 +196,10 @@ int main() {
     //fileAdapter.write(table, "state_ref.sto");
 
     MucoStateTrackingCost trackingCost;
-    trackingCost.setReferenceFile("state_ref.sto");
+    auto ref = STOFileAdapter::read("state_ref.sto");
+    auto refFilt = filterLowpass(ref, 6.0, true);
+    auto refFilt2 = refFilt;
+    trackingCost.setReference(refFilt);
     trackingCost.allowUnusedReferences(true);
     mp.addCost(trackingCost);
 
@@ -209,11 +212,12 @@ int main() {
     ms.set_optim_hessian_approximation("exact");
 
     //MucoIterate guess = ms.createGuess();
-    
+    //guess.setStatesTrajectory(refFilt2, true);
+    //ms.setGuess(guess);
 
     // Solve the problem.
     // ==================
-    MucoSolution solution = muco.solve();
+    MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxWholeBodyTracking_solution.sto");
 
     muco.visualize(solution);
