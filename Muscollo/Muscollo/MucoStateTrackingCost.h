@@ -60,6 +60,11 @@ public:
     /// If no reference file has been provided, this returns an empty string.
     std::string getReferenceFile() const { return get_reference_file(); }
 
+    /// 
+    void allowUnusedReferences(bool tf) {
+        set_allow_unused_refs(tf);
+    }
+
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeImpl() const override;
@@ -71,8 +76,13 @@ private:
             "(coordinates, speeds, activation, etc.) to track. Column labels "
             "should be state variable paths, e.g., 'knee/flexion/value'");
 
+    OpenSim_DECLARE_PROPERTY(allow_unused_refs, bool,
+            "Flag to determine whether or not references contained in the "
+            "reference_file are allowed to be ignored by the cost.");
+
     void constructProperties() {
         constructProperty_reference_file("");
+        constructProperty_allow_unused_refs(false);
     }
 
     TimeSeriesTable m_table;

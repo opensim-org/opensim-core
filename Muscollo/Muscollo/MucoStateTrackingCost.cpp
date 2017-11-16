@@ -54,8 +54,15 @@ void MucoStateTrackingCost::initializeImpl() const {
     m_sysYIndices.resize(m_refsplines.getSize());
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& refName = m_refsplines[iref].getName();
-        OPENSIM_THROW_IF(allSysYIndices.count(refName) == 0, Exception,
-                "State '" + refName + "' unrecognized.");
+        if (allSysYIndices.count(refName) == 0) {
+            if (get_allow_unused_refs()) {
+                continue;
+            } else {
+                OPENSIM_THROW_FRMOBJ(Exception,
+                    "State '" + refName + "' unrecognized.");
+            }
+
+        }
         m_sysYIndices[iref] = allSysYIndices[refName];
     }
 }
