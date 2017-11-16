@@ -159,9 +159,9 @@ int main() {
 
     // Bounds.
     // -------
-    mp.setTimeBounds(0.0, {0.1, 1.2});
+    mp.setTimeBounds(0.0, 0.1);
     // ground-pelvis
-    mp.setStateInfo("gp/p_tx/value", { 0.3, 0.7 });
+    mp.setStateInfo("gp/p_tx/value", { 0.57, 0.61 });
     mp.setStateInfo("gp/p_tx/speed", { -5, 5 });
     mp.setStateInfo("gp/p_ty/value", { 1.0, 1.05 });
     mp.setStateInfo("gp/p_ty/speed", { -5, 5 });
@@ -171,7 +171,7 @@ int main() {
     //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
     //mp.setStateInfo("gp/p_ry/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_rz/value", { 2.5, 7.5 });
+    mp.setStateInfo("gp/p_rz/value", { 0.0611, 0.1134 });
     mp.setStateInfo("gp/p_rz/speed", { -5, 5 });
     // hip
     //mp.setStateInfo("hip/hip_rx/value", { -10, 10 });
@@ -191,8 +191,12 @@ int main() {
     //mp.setControlInfo("tau_hip_ry", { -100, 100 });
  /*   mp.setControlInfo("tau_hip_rz", { -100, 100 });*/
 
+    //STOFileAdapter fileAdapter;
+    //auto table = fileAdapter.read("state_reference.mot");
+    //fileAdapter.write(table, "state_ref.sto");
+
     MucoStateTrackingCost trackingCost;
-    trackingCost.setReferenceFile("state_reference.mot");
+    trackingCost.setReferenceFile("state_ref.sto");
     trackingCost.allowUnusedReferences(true);
     mp.addCost(trackingCost);
 
