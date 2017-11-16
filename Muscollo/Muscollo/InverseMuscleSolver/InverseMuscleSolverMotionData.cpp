@@ -192,7 +192,7 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         netGenForcesSto.pad(netGenForcesSto.getSize() / 2);
         netGenForcesSto.lowpassIIR(lowpassCutoffJointMoments);
         // TODO _netGeneralizedForces = GCVSplineSet(5, &forceTrajectorySto);
-        netGenForcesTableIfFiltering = netGenForcesSto.getAsTimeSeriesTable();
+        netGenForcesTableIfFiltering = netGenForcesSto.exportToTable();
         netGenForcesTable = &netGenForcesTableIfFiltering;
     }
 

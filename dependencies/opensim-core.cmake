@@ -2,7 +2,7 @@
 
 AddDependency(NAME       opensim-core
               # StatesTrajectory::createFromStatesStorage() assembles the states.
-              URL        https://github.com/opensim-org/opensim-core/archive/fa9afbd39ff814eb84a1ed5cee11bb2c564f0da4.zip
+              URL        https://github.com/opensim-org/opensim-core/archive/e05338dde404e055f300f7685397dc61cc495961.zip
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
