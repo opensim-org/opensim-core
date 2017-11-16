@@ -18,6 +18,7 @@
 
  #include "MucoMarkerTrackingCost.h"
  #include <OpenSim/Simulation/Model/Model.h>
+ #include <OpenSim/Simulation/Model/Marker.h>
 
  using namespace OpenSim;
 
@@ -49,7 +50,7 @@
      getModel().realizePosition(state);
      SimTK::Vector timeVec(1, time);
 
-     for (int i = 0; i < get_markers_reference().getNames().size(); ++i) {
+     for (int i = 0; i < (int)get_markers_reference().getNames().size(); ++i) {
          const auto& modelValue =
              m_model_markers[i]->getLocationInGround(state);
          SimTK::Vec3 refValue;

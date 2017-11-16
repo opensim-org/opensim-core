@@ -115,18 +115,13 @@ int main() {
         m1[1] = m0[1] + sin(theta0 + theta1);
         m1[2] = 0;
 
-        SimTK::RowVector_<SimTK::Vec3> markers(2);
-        markers.updElt(0, 0) = m0;
-        markers.updElt(0, 1) = m1;
-        markerTrajectories.appendRow(time, markers);
+        markerTrajectories.appendRow(time, {m0, m1});
     }
 
     // Assign a weight to each marker.
     Set<MarkerWeight> markerWeights;
-    MarkerWeight w0("m0", 100);
-    MarkerWeight w1("m1", 10);
-    markerWeights.cloneAndAppend(w0);
-    markerWeights.cloneAndAppend(w1);
+    markerWeights.cloneAndAppend({"m0", 100});
+    markerWeights.cloneAndAppend({"m1", 10});
 
     // Create the MarkersReference to be passed to the cost.
     //MarkersReference ref(markerTrajectories);

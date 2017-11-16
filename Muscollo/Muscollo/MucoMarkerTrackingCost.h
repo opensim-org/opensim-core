@@ -23,9 +23,10 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Simulation/Model/Marker.h>
 
 namespace OpenSim {
+
+class Marker;
 
 /// The squared difference between a model marker location and an experimental
 /// reference marker location, summed over the markers for which an 
@@ -39,7 +40,7 @@ public:
 
     /// Provide a MarkersReference object containing the marker trajectories to 
     /// be tracked by a model. The MarkersReferences can be created from a file 
-    /// marker trajectories (e.g. .trc) or created programmatically via a 
+    /// of marker trajectories (e.g. .trc) or created programmatically via a 
     /// TimeSeriesTableVec3. The marker weights property can be optionally 
     /// specified to weight the tracking of individual markers in the cost 
     /// function. Names of markers in the reference to be tracked should match 
