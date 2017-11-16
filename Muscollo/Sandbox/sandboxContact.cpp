@@ -23,9 +23,12 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
+//#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Analyses/ForceReporter.h>
 #include <Muscollo/osimMuscollo.h>
 #include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
 
 // TODO achieve sliding friction (apply constant tangential force,
 // maybe from gravity?).
@@ -67,6 +70,7 @@ public:
     }
 };
 
+// TODO add OSIMMUSCOLLO_API
 class AckermannVanDenBogert2010Contact : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
 public:
@@ -153,6 +157,64 @@ private:
         constructProperty_stiffness(5e7);
         constructProperty_dissipation(1.0);
         constructProperty_tangent_velocity_scaling_factor(0.05);
+    }
+};
+
+/// Similar to CoordinateActuator (simply produces a generalized force) but
+/// with first-order linear activation dynamics. This actuator has one state
+/// variable, `activation`, with \f$ \dot{a} = (u - a) / \tau \f$, where
+/// \f$ a \f$ is activation, \f$ u $\f is excitation, and \f$ \tau \f$ is the
+/// activation time constant (there is no separate deactivation time constant).
+/// <b>Default %Property Values</b>
+/// @verbatim
+/// activation_time_constant: 0.01
+/// default_activation: 0.5
+/// @dverbatim
+class ActivationCoordinateActuator : public CoordinateActuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
+        CoordinateActuator);
+public:
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+    "Larger value means activation can change more rapidly (units: seconds).");
+
+    OpenSim_DECLARE_PROPERTY(default_activation, double,
+    "Value of activation in the default state returned by initSystem().");
+
+    ActivationCoordinateActuator() {
+        constructProperties();
+    }
+
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("activation", SimTK::Stage::Dynamics);
+    }
+
+    void extendInitStateFromProperties(SimTK::State& s) const override {
+        Super::extendInitStateFromProperties(s);
+        setStateVariableValue(s, "activation", get_default_activation());
+    }
+
+    void extendSetPropertiesFromState(const SimTK::State& s) override {
+        Super::extendSetPropertiesFromState(s);
+        set_default_activation(getStateVariableValue(s, "activation"));
+    }
+
+    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
+    void computeStateVariableDerivatives(const SimTK::State& s) const override {
+        const auto& tau = get_activation_time_constant();
+        const auto& u = getControl(s);
+        const auto& a = getStateVariableValue(s, "activation");
+        const SimTK::Real adot = (u - a) / tau;
+        setStateVariableDerivativeValue(s, "activation", adot);
+    }
+
+    double computeActuation(const SimTK::State& s) const override {
+        return getStateVariableValue(s, "activation") * getOptimalForce();
+    }
+private:
+    void constructProperties() {
+        constructProperty_activation_time_constant(0.010);
+        constructProperty_default_activation(0.5);
     }
 };
 
@@ -381,6 +443,96 @@ void pendulum() {
     muco.visualize(solution);
 }
 
+Model createModelPendulumActivationCoordinateActuator() {
+    const double jointHeight = 0.6;
+    const double linkLength = 1.0;
+    Model model;
+    model.setName("pendulum");
+    auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
+    model.addComponent(body);
+
+    // The joint's x axis must point in the global "+y" direction.
+    auto* joint = new PinJoint("rz",
+            model.getGround(), Vec3(0, jointHeight, 0), Vec3(0),
+            *body, Vec3(-linkLength, 0, 0), Vec3(0));
+    auto& rz = joint->updCoordinate(PinJoint::Coord::RotationZ);
+    rz.setName("rz");
+    model.addComponent(joint);
+
+    auto* station = new Station();
+    station->setName("contact_point");
+    station->connectSocket_parent_frame(*body);
+    model.addComponent(station);
+
+    auto* force = new AckermannVanDenBogert2010Contact();
+    force->set_dissipation(1.0);
+    force->set_friction_coefficient(1.0);
+    force->setName("contact");
+    model.addComponent(force);
+    force->connectSocket_station(*station);
+
+    auto* actu = new ActivationCoordinateActuator();
+    actu->set_default_activation(0.1);
+    actu->setName("actuator");
+    actu->setCoordinate(&rz);
+    actu->setOptimalForce(600);
+    model.addComponent(actu);
+
+    return model;
+}
+
+void pendulumActivationCoordinateActuator() {
+    const SimTK::Real finalTime = 1.0;
+    auto model = createModelPendulumActivationCoordinateActuator();
+    PrescribedController* contr = new PrescribedController();
+    contr->addActuator(model.getComponent<ActivationCoordinateActuator>
+            ("actuator"));
+    contr->prescribeControlForActuator("actuator", new Constant(1.0));
+    model.addComponent(contr);
+    auto state = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    // Without the next line: Simbody takes steps that are too large and NaNs
+    // are generated.
+    integrator.setMaximumStepSize(0.05);
+    Manager manager(model, integrator);
+    manager.integrate(state, finalTime);
+    const auto& statesTimeStepping = manager.getStateStorage();
+    visualize(model, statesTimeStepping);
+    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    STOFileAdapter::write(statesTimeSteppingTable,
+            "pendulumaca_timestepping.sto");
+
+    /*
+
+    MucoTool muco;
+    muco.setName("pendulumaca");
+    MucoProblem& mp = muco.updProblem();
+    mp.setModel(model);
+    mp.setTimeBounds(0, finalTime);
+
+    mp.setStateInfo("rz/rz/value", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi}, 0);
+    mp.setStateInfo("rz/rz/speed", {-10, 10}, 0);
+
+    // Configure the solver.
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(500);
+    MucoIterate guess = ms.createGuess();
+    guess.setStatesTrajectory(statesTimeSteppingTable);
+
+    ms.setGuess(guess);
+    MucoSolution solution = muco.solve();
+
+    solution.write("pendulumaca_solution.sto");
+
+    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+
+    // Visualize.
+    // ==========
+    muco.visualize(solution);
+     */
+}
+
 Model createModelSLIP() {
     Model model;
     model.setName("SLIP");
@@ -593,7 +745,8 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(100);
+    //ms.set_num_mesh_points(100);
+    ms.set_num_mesh_points(50);
     //ms.set_optim_max_iterations(2);
     ms.set_optim_hessian_approximation("exact");
     MucoIterate guess = ms.createGuess();
@@ -621,6 +774,20 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     STOFileAdapter::write(contactForceHistory.flatten({"x", "y", "z"}),
             "slipSolveForForce_dircol_force.sto");
+
+    //ms.set_num_mesh_points(50);
+    //ms.setGuess(solution);
+    //// Does not converge instantly... TODO
+    //MucoSolution solution2 = muco.solve().unseal();
+    //solution2.write("slipSolveForForce_solution2.sto");
+
+    //// 200 mesh points results in a *much* smoother solution than 50 but takes
+    //// 7626 seconds to solve. and it's smoother but not smooth; very high
+    //// frequency for most of the motion; smooth in the middle third.
+    //ms.set_num_mesh_points(200);
+    //ms.setGuess(solution2);
+    //MucoSolution solution200 = muco.solve().unseal();
+    //solution200.write("slipSolveForForce_solution200.sto");
 
     muco.visualize(solution);
 }
@@ -656,8 +823,10 @@ int main() {
 
     // TODO use a different model that has a CoordinateActuator and recover
     // the original spring force.
-    slipSolveForForce(0.1 * SimTK::Pi, -0.5);
+    //slipSolveForForce(0.1 * SimTK::Pi, -0.5);
 
+
+    pendulumActivationCoordinateActuator();
 
 
 }
