@@ -159,20 +159,20 @@ int main() {
 
     // Bounds.
     // -------
-    mp.setTimeBounds(0.0, 1.2);
+    mp.setTimeBounds(0.0, {0.1, 1.2});
     // ground-pelvis
-    mp.setStateInfo("gp/p_tx/value", { -50, 50 });
-    mp.setStateInfo("gp/p_tx/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_ty/value", { -50, 50 });
-    mp.setStateInfo("gp/p_ty/speed", { -50, 50 });
+    mp.setStateInfo("gp/p_tx/value", { 0.3, 0.7 });
+    mp.setStateInfo("gp/p_tx/speed", { -5, 5 });
+    mp.setStateInfo("gp/p_ty/value", { 1.0, 1.05 });
+    mp.setStateInfo("gp/p_ty/speed", { -5, 5 });
     //mp.setStateInfo("gp/p_tz/value", { -1, 1 });
     //mp.setStateInfo("gp/p_tz/speed", { -5, 5 });
     //mp.setStateInfo("gp/p_rx/value", { -10, 10 });
     //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
     //mp.setStateInfo("gp/p_ry/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_rz/value", { -50, 50 });
-    mp.setStateInfo("gp/p_rz/speed", { -50, 50 });
+    mp.setStateInfo("gp/p_rz/value", { 2.5, 7.5 });
+    mp.setStateInfo("gp/p_rz/speed", { -5, 5 });
     // hip
     //mp.setStateInfo("hip/hip_rx/value", { -10, 10 });
     //mp.setStateInfo("hip/hip_rx/speed", { -50, 50 });
@@ -199,7 +199,7 @@ int main() {
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(100);
+    ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
