@@ -71,7 +71,7 @@ public:
 };
 
 // TODO add OSIMMUSCOLLO_API
-class AckermannVanDenBogert2010Contact : public Force {
+class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Contact : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
 public:
     OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
@@ -170,7 +170,8 @@ private:
 /// activation_time_constant: 0.01
 /// default_activation: 0.5
 /// @dverbatim
-class ActivationCoordinateActuator : public CoordinateActuator {
+class /*TODO OSIMMUSCOLLO_API*/
+ActivationCoordinateActuator : public CoordinateActuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
         CoordinateActuator);
 public:
@@ -215,6 +216,22 @@ private:
     void constructProperties() {
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
+    }
+};
+
+
+/// Minimize the sum of squared controls, integrated over the phase.
+// TODO want a related cost for minimizing the value of state variables like
+// activation.
+class /*TODO OSIMMUSCOLLO_API*/ MucoControlCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoControlCost, MucoCost);
+public:
+    MucoControlCost() = default;
+protected:
+    void calcIntegralCostImpl(const SimTK::State& state,
+            double& integrand) const override {
+        getModel().realizeVelocity(state); // TODO unnecessary.
+        integrand = getModel().getControls(state).normSqr();
     }
 };
 
@@ -299,12 +316,12 @@ void ball2d() {
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
     integrator.setMaximumStepSize(0.05);
-    Manager manager(model, integrator);
-    manager.integrate(state, finalTime);
+    Manager manager(model, state, integrator);
+    state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     std::cout << "DEBUG " << statesTimeStepping.getSize() << std::endl;
     visualize(model, statesTimeStepping);
-    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
     MucoTool muco;
@@ -406,11 +423,11 @@ void pendulum() {
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
     integrator.setMaximumStepSize(0.05);
-    Manager manager(model, integrator);
-    manager.integrate(state, finalTime);
+    Manager manager(model, state, integrator);
+    state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     visualize(model, statesTimeStepping);
-    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
 
 
@@ -494,11 +511,11 @@ void pendulumActivationCoordinateActuator() {
     // Without the next line: Simbody takes steps that are too large and NaNs
     // are generated.
     integrator.setMaximumStepSize(0.05);
-    Manager manager(model, integrator);
-    manager.integrate(state, finalTime);
+    Manager manager(model, state, integrator);
+    state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     visualize(model, statesTimeStepping);
-    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable,
             "pendulumaca_timestepping.sto");
 
@@ -656,11 +673,11 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(1e-5);
     integrator.setMaximumStepSize(0.05);
-    Manager manager(model, integrator);
-    manager.integrate(state, finalTime);
+    Manager manager(model, state, integrator);
+    state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     visualize(model, statesTimeStepping);
-    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
 
@@ -712,16 +729,16 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     integrator.setMaximumStepSize(0.05);
     auto* forceRep = new ForceReporter(&modelTS);
     modelTS.addAnalysis(forceRep);
-    Manager manager(modelTS, integrator);
-    manager.integrate(state, finalTime);
+    Manager manager(modelTS, state, integrator);
+    state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
     forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
     STOFileAdapter::write(reporter->getTable().flatten({"x", "y", "z"}),
             "slipSolveForForce_contact_force.sto");
-    auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
+    auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable,
             "slipSolveForForce_timestepping.sto");
-    visualize(modelTS, statesTimeStepping);
+    // visualize(modelTS, statesTimeStepping);
 
 
     MucoTool muco;
@@ -745,7 +762,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     Storage statesFilt = statesTimeStepping;
     statesFilt.pad(statesFilt.getSize() / 2);
     statesFilt.lowpassIIR(30);
-    const auto statesToTrack = statesFilt.getAsTimeSeriesTable();
+    const auto statesToTrack = statesFilt.exportToTable();
     //const auto statesToTrack = statesTimeSteppingTable;
     STOFileAdapter::write(statesToTrack, "slipSolveForForce_ref_filtered.sto");
 
@@ -757,6 +774,10 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     tracking.setName("tracking");
     tracking.setReference(statesToTrack);
     mp.addCost(tracking);
+
+    MucoControlCost effort;
+    effort.setName("effort");
+    mp.addCost(effort);
 
 
     MucoTropterSolver& ms = muco.initSolver();
@@ -804,10 +825,11 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //MucoSolution solution200 = muco.solve().unseal();
     //solution200.write("slipSolveForForce_solution200.sto");
 
-    ms.set_num_mesh_points(100);
-    ms.setGuess(solution);
-    MucoSolution solution100 = muco.solve().unseal();
-    solution100.write("slipSolveForForce_solution100.sto");
+    // This works, but it takes a few minutes:
+    //ms.set_num_mesh_points(100);
+    //ms.setGuess(solution);
+    //MucoSolution solution100 = muco.solve().unseal();
+    //solution100.write("slipSolveForForce_solution100.sto");
 
     muco.visualize(solution);
 }
@@ -822,8 +844,8 @@ int main() {
         Model model = createModel();
         auto state = model.initSystem();
         model.setStateVariableValue(state, "/slider/y/value", y0);
-        Manager manager(model);
-        manager.integrate(state, finalTime);
+        Manager manager(model, state);
+        state = manager.integrate(finalTime);
         visualize(model, manager.getStateStorage());
     }
 

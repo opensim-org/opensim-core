@@ -29,6 +29,7 @@ using namespace OpenSim;
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
 // - test problems without controls (including with setting guesses).
+// - test that names for setStateInfo() are actual existing states in the model.
 
 Model createSlidingMassModel() {
     Model model;
