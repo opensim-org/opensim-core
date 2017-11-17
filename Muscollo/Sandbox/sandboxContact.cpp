@@ -804,6 +804,11 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //MucoSolution solution200 = muco.solve().unseal();
     //solution200.write("slipSolveForForce_solution200.sto");
 
+    ms.set_num_mesh_points(100);
+    ms.setGuess(solution);
+    MucoSolution solution100 = muco.solve().unseal();
+    solution100.write("slipSolveForForce_solution100.sto");
+
     muco.visualize(solution);
 }
 
