@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
+#ifndef MUSCOLLO_MUCOCONTROLCOST_H
+#define MUSCOLLO_MUCOCONTROLCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoControlCost.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,16 +18,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoStateTrackingCost.h"
-#include "MucoMarkerTrackingCost.h"
-#include "MucoControlCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
+#include "MucoCost.h"
 
-#include "RegisterTypes_osimMuscollo.h"
+namespace OpenSim {
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+/// Minimize the sum of squared controls, integrated over the phase.
+// TODO want a related cost for minimizing the value of state variables like
+// activation.
+// TODO allow leaving out some controls.
+class OSIMMUSCOLLO_API MucoControlCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoControlCost, MucoCost);
+protected:
+    void calcIntegralCostImpl(const SimTK::State& state,
+            double& integrand) const override;
+};
+
+} // namespace OpenSim
+
+#endif // MUSCOLLO_MUCOCONTROLCOST_H

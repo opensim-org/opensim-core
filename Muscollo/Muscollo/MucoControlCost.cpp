@@ -1,7 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoControlCost.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,16 +16,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoStateTrackingCost.h"
-#include "MucoMarkerTrackingCost.h"
 #include "MucoControlCost.h"
-#include "MucoIterate.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
-#include "RegisterTypes_osimMuscollo.h"
+using namespace OpenSim;
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+void MucoControlCost::calcIntegralCostImpl(const SimTK::State& state,
+        double& integrand) const {
+    getModel().realizeVelocity(state); // TODO would avoid this, ideally.
+    integrand = getModel().getControls(state).normSqr();
+}
