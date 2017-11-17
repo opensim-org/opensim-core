@@ -27,6 +27,8 @@ namespace OpenSim {
 
 // TODO can we track generailzed speeds too?
 // TODO weights for each state.
+// TODO allow raising error to different powers (cubed).
+// TODO allow a "deadband."
 
 /// The squared difference between a state variable value and a reference
 /// state variable value, summed over the state variables for which a

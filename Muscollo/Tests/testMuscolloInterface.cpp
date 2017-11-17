@@ -29,6 +29,7 @@ using namespace OpenSim;
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
 // - test problems without controls (including with setting guesses).
+// - test that names for setStateInfo() are actual existing states in the model.
 
 Model createSlidingMassModel() {
     Model model;
@@ -222,6 +223,7 @@ void testCopy() {
     // TODO what happens if just the MucoProblem is copied, or if just the
     // MucoSolver is copied?
 }
+ */
 
 void testBounds() {
     // TODO what to do about clamped coordinates? Use the range in the
@@ -233,6 +235,7 @@ void testBounds() {
 
     // TODO create intermediate class, Delegate or Proxy or Decorator
     // TODO or simply have a "finalize()" method on MucoProblem.
+    /*
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();
@@ -242,24 +245,34 @@ void testBounds() {
         SimTK_TEST(state_bounds.lower == coord.get_range(0));
         SimTK_TEST(state_bounds.upper == coord.get_range(0));
     }
+     */
 
     // TODO what to do if the user does not specify info for some variables?
 
     // Get error if state/control name does not exist.
     {
-        MucoTool muco;
-        MucoProblem& mp = muco.updProblem();
-        mp.setModel(createSlidingMassModel());
-        SimTK_TEST_MUST_THROW_EXC(mp.setStateInfo("nonexistant", {0, 1}),
-                Exception);
-        SimTK_TEST_MUST_THROW_EXC(mp.setControlInfo("nonexistant", {0, 1}),
-                Exception);
+        auto model = createSlidingMassModel();
+        model.initSystem();
+        {
+            MucoTool muco;
+            MucoProblem& mp = muco.updProblem();
+            mp.setModel(model);
+            mp.setStateInfo("nonexistant", {0, 1});
+            SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
+        }
+        {
+            MucoTool muco;
+            MucoProblem& mp = muco.updProblem();
+            mp.setModel(model);
+            mp.setControlInfo("nonexistant", {0, 1});
+            SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
+        }
     }
-
 
     // TODO what if bounds are missing for some states?
 }
 
+/*
 void testBuildingProblem() {
     {
         MucoTool muco;
@@ -732,7 +745,7 @@ int main() {
         //SimTK_SUBTEST(testCopy);
         //SimTK_SUBTEST(testSolveRepeatedly);
         //SimTK_SUBTEST(testOMUCOSerialization);
-        //SimTK_SUBTEST(testBounds);
+        SimTK_SUBTEST(testBounds);
         //SimTK_SUBTEST(testBuildingProblem);
         // TODO what happens when Ipopt does not converge.
         // TODO specifying optimizer options.
