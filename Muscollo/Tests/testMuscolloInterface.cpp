@@ -692,10 +692,10 @@ void testMucoIterate() {
         int N = 0;
         if (statesToCompare.empty()) N += NS;
         else if (statesToCompare[0] == "none") N += 0;
-        else N += statesToCompare.size();
+        else N += (int)statesToCompare.size();
         if (controlsToCompare.empty()) N += NC;
         else if (controlsToCompare[0] == "none") N += 0;
-        else N += controlsToCompare.size();
+        else N += (int)controlsToCompare.size();
         auto rmsExpected = sqrt(N) * error;
         SimTK_TEST_EQ(rmsBA, rmsExpected);
         auto rmsAB = a.compareRMS(b, statesToCompare, controlsToCompare);
