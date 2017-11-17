@@ -28,6 +28,7 @@ using namespace OpenSim;
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
+// - test problems without controls (including with setting guesses).
 
 Model createSlidingMassModel() {
     Model model;
@@ -645,16 +646,78 @@ void testGuess() {
 }
 
 void testMucoIterate() {
-    const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
-    SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
-    MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"},
-            SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4));
-    orig.write(fname);
+    // Reading and writing.
+    {
+        const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
+        SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
+        MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"},
+                SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4));
+        orig.write(fname);
 
-    MucoIterate deserialized(fname);
-    SimTK_TEST(deserialized.isNumericallyEqual(orig));
+        MucoIterate deserialized(fname);
+        SimTK_TEST(deserialized.isNumericallyEqual(orig));
+    }
 
     // TODO ensure that we can't access methods until we unseal.
+
+
+    // compareRMS
+    auto testCompareRMS = [](int NT, int NS, int NC,
+            double duration, double error,
+            std::vector<std::string> statesToCompare = {},
+            std::vector<std::string> controlsToCompare = {}) {
+        const double t0 = 0.2;
+        std::vector<std::string> snames;
+        for (int i = 0; i < NS; ++i) snames.push_back("s" + std::to_string(i));
+        std::vector<std::string> cnames;
+        for (int i = 0; i < NC; ++i) cnames.push_back("c" + std::to_string(i));
+        SimTK::Matrix states(NT, NS);
+        for (int i = 0; i < NS; ++i) {
+            states.updCol(i) = createVectorLinspace(NT,
+                    SimTK::Test::randDouble(), SimTK::Test::randDouble());
+        }
+        SimTK::Matrix controls(NT, NC);
+        for (int i = 0; i < NC; ++i) {
+            controls.updCol(i) = createVectorLinspace(NT,
+                    SimTK::Test::randDouble(), SimTK::Test::randDouble());
+        }
+        SimTK::Vector time = createVectorLinspace(NT, t0, t0 + duration);
+        MucoIterate a(time, snames, cnames, states, controls);
+        MucoIterate b(time, snames, cnames,
+                states.elementwiseAddScalar(error),
+                controls.elementwiseAddScalar(error));
+        // If error is constant:
+        // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
+        auto rmsBA = b.compareRMS(a, statesToCompare, controlsToCompare);
+        int N = 0;
+        if (statesToCompare.empty()) N += NS;
+        else if (statesToCompare[0] == "none") N += 0;
+        else N += (int)statesToCompare.size();
+        if (controlsToCompare.empty()) N += NC;
+        else if (controlsToCompare[0] == "none") N += 0;
+        else N += (int)controlsToCompare.size();
+        auto rmsExpected = sqrt(N) * error;
+        SimTK_TEST_EQ(rmsBA, rmsExpected);
+        auto rmsAB = a.compareRMS(b, statesToCompare, controlsToCompare);
+        SimTK_TEST_EQ(rmsAB, rmsExpected);
+    };
+
+    testCompareRMS(10, 2, 1, 0.6, 0.05);
+    testCompareRMS(21, 2, 0, 15.0, 0.01);
+    // 6 is the minimum required number of times; ensure that it works.
+    testCompareRMS(6, 0, 3, 0.1, 0.9);
+
+    // Providing a subset of states/columns to compare.
+    testCompareRMS(10, 2, 3, 0.6, 0.05, {"s1"});
+    testCompareRMS(10, 2, 3, 0.6, 0.05, {}, {"c1"});
+    testCompareRMS(10, 2, 3, 0.6, 0.05, {"none"}, {"none"});
+    // Can't provide "none" along with other state names.
+    SimTK_TEST_MUST_THROW_EXC(
+            testCompareRMS(10, 2, 3, 0.6, 0.05, {"none", "s1"}),
+            Exception);
+    SimTK_TEST_MUST_THROW_EXC(
+            testCompareRMS(10, 2, 3, 0.6, 0.05, {}, {"none, c0"}),
+            Exception);
 }
 
 int main() {
