@@ -571,6 +571,7 @@ Model createModelSLIP() {
 
     auto* force = new AckermannVanDenBogert2010Contact();
     force->set_dissipation(1.0);
+    //force->set_stiffness(5e3);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
     model.addComponent(force);
@@ -582,7 +583,7 @@ Model createModelSLIP() {
     // TODO disallow PathSpring?
     auto* spring = new PointToPointSpring();
     model.addComponent(spring);
-    spring->set_stiffness(1e4);
+    spring->set_stiffness(5e3);
     spring->set_rest_length(1.0);
     spring->connectSocket_body1(*foot);
     spring->connectSocket_body2(*pelvis);
@@ -628,6 +629,7 @@ Model createModelSLIPActuated() {
 
     auto* force = new AckermannVanDenBogert2010Contact();
     force->set_dissipation(1.0);
+    //force->set_stiffness(5e3);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
     model.addComponent(force);
@@ -635,7 +637,7 @@ Model createModelSLIPActuated() {
 
 
 
-    auto* actuator = new CoordinateActuator();
+    auto* actuator = new ActivationCoordinateActuator();
     actuator->setCoordinate(&length);
     actuator->setName("actuator");
     actuator->setOptimalForce(2500);
@@ -694,7 +696,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
 }
 
 void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
-    const SimTK::Real finalTime = 1.0;
+    const SimTK::Real finalTime = 0.68;
     auto modelTS = createModelSLIP();
     auto reporter = new TableReporterVec3();
     reporter->set_report_time_interval(0.01);
@@ -715,10 +717,10 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
     STOFileAdapter::write(reporter->getTable().flatten({"x", "y", "z"}),
             "slipSolveForForce_contact_force.sto");
-    visualize(modelTS, statesTimeStepping);
     auto statesTimeSteppingTable = statesTimeStepping.getAsTimeSeriesTable();
     STOFileAdapter::write(statesTimeSteppingTable,
             "slipSolveForForce_timestepping.sto");
+    visualize(modelTS, statesTimeStepping);
 
 
     MucoTool muco;
@@ -736,11 +738,23 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
     mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
     mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
+    mp.setStateInfo("actuator/activation", {-2, 2});
     mp.setControlInfo("actuator", {-1, 1});
+
+    Storage statesFilt = statesTimeStepping;
+    statesFilt.pad(statesFilt.getSize() / 2);
+    statesFilt.lowpassIIR(30);
+    const auto statesToTrack = statesFilt.getAsTimeSeriesTable();
+    //const auto statesToTrack = statesTimeSteppingTable;
+    STOFileAdapter::write(statesToTrack, "slipSolveForForce_ref_filtered.sto");
+
+
+    // TODO filter statesTimeSteppingTable!
+    // TODO only track coordinate values, not speeds.
 
     MucoStateTrackingCost tracking;
     tracking.setName("tracking");
-    tracking.setReference(statesTimeSteppingTable);
+    tracking.setReference(statesToTrack);
     mp.addCost(tracking);
 
 
@@ -750,7 +764,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //ms.set_optim_max_iterations(2);
     ms.set_optim_hessian_approximation("exact");
     MucoIterate guess = ms.createGuess();
-    guess.setStatesTrajectory(statesTimeSteppingTable);
+    guess.setStatesTrajectory(statesToTrack, true);
     ms.setGuess(guess);
 
     MucoSolution solution = muco.solve().unseal();
@@ -823,10 +837,12 @@ int main() {
 
     // TODO use a different model that has a CoordinateActuator and recover
     // the original spring force.
-    //slipSolveForForce(0.1 * SimTK::Pi, -0.5);
+
+    // TODO use a lower stiffness.
+    slipSolveForForce(0.05 * SimTK::Pi, -0.5);
 
 
-    pendulumActivationCoordinateActuator();
+//    pendulumActivationCoordinateActuator();
 
 
 }
