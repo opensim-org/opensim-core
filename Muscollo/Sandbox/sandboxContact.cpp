@@ -846,6 +846,8 @@ int main() {
     // TODO use a different model that has a CoordinateActuator and recover
     // the original spring force.
 
+    // TODO inverse dynamics: solve for what the actuator force should be.
+
     // TODO use a lower stiffness.
     slipSolveForForce(0.05 * SimTK::Pi, -0.5);
 
