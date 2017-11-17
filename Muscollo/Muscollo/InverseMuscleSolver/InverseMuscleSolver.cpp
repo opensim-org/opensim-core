@@ -191,10 +191,10 @@ void InverseMuscleSolver::processActuatorsToInclude(Model& model) const {
             actuToInclude.insert(get_actuators_to_include(iInclude));
         }
         // Check each actuator to see if it should be included.
-        const ComponentPath modelPath = model.getAbsolutePathName();
+        const ComponentPath modelPath = model.getAbsolutePath();
         auto actuList = model.updComponentList<Actuator>();
         for (auto& actu : actuList) {
-            const auto actuPath = ComponentPath(actu.getAbsolutePathName())
+            const auto actuPath = actu.getAbsolutePath()
                     .formRelativePath(modelPath).toString();
             const auto foundActuPath = actuToInclude.find(actuPath);
             if (foundActuPath == actuToInclude.end()) {
@@ -221,7 +221,7 @@ void InverseMuscleSolver::processActuatorsToInclude(Model& model) const {
                 << std::endl;
         for (const auto& actu : actuList) {
             if (actu.get_appliesForce()) {
-                std::cout << "  " << actu.getAbsolutePathName() << std::endl;
+                std::cout << "  " << actu.getAbsolutePathString() << std::endl;
             }
         }
     }
