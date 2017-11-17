@@ -12,6 +12,8 @@ add_library(osimMuscollo SHARED
         MucoProblem.cpp
         MucoCost.h
         MucoCost.cpp
+        MucoMarkerTrackingCost.h
+        MucoMarkerTrackingCost.cpp
         MucoStateTrackingCost.h
         MucoStateTrackingCost.cpp
         MucoSolver.h
@@ -31,7 +33,7 @@ add_library(osimMuscollo SHARED
         InverseMuscleSolver/InverseMuscleSolverMotionData.cpp
         )
 target_link_libraries(osimMuscollo PUBLIC osimActuators
-                                   PRIVATE tropter)
+                                   PRIVATE tropter)								
 
 target_include_directories(osimMuscollo INTERFACE
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Muscollo>
