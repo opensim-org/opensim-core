@@ -641,6 +641,7 @@ Model createModelSLIPActuated() {
     actuator->setCoordinate(&length);
     actuator->setName("actuator");
     actuator->setOptimalForce(2500);
+    actuator->set_activation_time_constant(0.025);
     model.addComponent(actuator);
 
     return model;
@@ -833,6 +834,8 @@ int main() {
 
     // TODO add two legs.
 
+
+    // TODO cost to minimize effort.
 
 
     // TODO use a different model that has a CoordinateActuator and recover
