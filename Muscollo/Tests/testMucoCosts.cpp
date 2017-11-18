@@ -65,7 +65,6 @@ void testMucoControlCost() {
 
         MucoSolution solution = muco.solve();
         solution.write("testMucoCosts_testMucoControlCost_solution.sto");
-        muco.visualize(solution); // TODO remove.
 
         // TODO add checks here.
         // Minimum effort solution is a linear control.
