@@ -43,41 +43,55 @@ Model createHipModel() {
     pelvis->attachGeometry(pelvis_geom);
     model.addBody(pelvis);
 
-    //auto* thigh = new OpenSim::Body("thigh", 1, Vec3(0), Inertia(1));
-    //auto* thigh_geom = new OpenSim::Ellipsoid; 
-    //thigh_geom->set_radii(Vec3(0.03, thighLength / 2.0, 0.03));
-    //thigh->attachGeometry(thigh_geom);
-    //model.addBody(thigh);
+    auto* thigh = new OpenSim::Body("thigh", 1, Vec3(0), Inertia(1));
+    auto* thigh_geom = new OpenSim::Ellipsoid; 
+    thigh_geom->set_radii(Vec3(0.03, thighLength / 2.0, 0.03));
+    thigh->attachGeometry(thigh_geom);
+    model.addBody(thigh);
 
     // Create free joint between ground and pelvis
-    auto* gp = new PlanarJoint("gp", 
-            model.getGround(), Vec3(0, 1.0, 0), Vec3(0), 
-            *pelvis, Vec3(0), Vec3(0));
-    auto& p_tx = gp->updCoordinate(PlanarJoint::Coord::TranslationX);
-    p_tx.setName("p_tx");
-    auto& p_ty = gp->updCoordinate(PlanarJoint::Coord::TranslationY);
-    p_ty.setName("p_ty");
+    //auto* gp = new FreeJoint("gp", 
+    //        model.getGround(), Vec3(0, 1.0, 0), Vec3(0), 
+    //        *pelvis, Vec3(0), Vec3(0));
+    //auto& p_tx = gp->updCoordinate(FreeJoint::Coord::TranslationX);
+    //p_tx.setName("p_tx");
+    //auto& p_ty = gp->updCoordinate(FreeJoint::Coord::TranslationY);
+    //p_ty.setName("p_ty");
     //auto& p_tz = gp->updCoordinate(FreeJoint::Coord::TranslationZ);
     //p_tz.setName("p_tz");
     //auto& p_rx = gp->updCoordinate(FreeJoint::Coord::Rotation1X);
     //p_rx.setName("p_rx");
     //auto& p_ry = gp->updCoordinate(FreeJoint::Coord::Rotation2Y);
     //p_ry.setName("p_ry");
+    //auto& p_rz = gp->updCoordinate(FreeJoint::Coord::Rotation3Z);
+    //p_rz.setName("p_rz");
+    //model.addJoint(gp);
+
+    auto* gp = new PlanarJoint("gp",
+        model.getGround(), Vec3(0, 1.0, 0), Vec3(0),
+        *pelvis, Vec3(0), Vec3(0));
+    auto& p_tx = gp->updCoordinate(PlanarJoint::Coord::TranslationX);
+    p_tx.setName("p_tx");
+    auto& p_ty = gp->updCoordinate(PlanarJoint::Coord::TranslationY);
+    p_ty.setName("p_ty");
     auto& p_rz = gp->updCoordinate(PlanarJoint::Coord::RotationZ);
     p_rz.setName("p_rz");
     model.addJoint(gp);
 
     // Create hip joint
-    //auto* hip = new PinJoint("hip",
-    //        *pelvis, Vec3(0, 0, pelvisWidth/2.0), Vec3(0),
-    //        *thigh, Vec3(0, thighLength/2.0, 0), Vec3(0, 0, 0));
+    auto* hip = new PinJoint("hip",
+            *pelvis, Vec3(0, 0, pelvisWidth/2.0), Vec3(0),
+            *thigh, Vec3(0, thighLength/2.0, 0), Vec3(0, 0, 0));
     //auto& hip_rx = hip->updCoordinate(BallJoint::Coord::Rotation1X);
     //hip_rx.setName("hip_rx");
     //auto& hip_ry = hip->updCoordinate(BallJoint::Coord::Rotation2Y);
     //hip_ry.setName("hip_ry");
-    //auto& hip_rz = hip->updCoordinate();
-    //hip_rz.setName("hip_rz");
-    //model.addJoint(hip);
+    auto& hip_rz = hip->updCoordinate();
+    //hip_rz.setRangeMax(SimTK::Pi/2);
+    //hip_rz.setRangeMin(-SimTK::Pi/2);
+  
+    hip_rz.setName("hip_rz");
+    model.addJoint(hip);
 
     // Add markers
     // TODO
@@ -133,11 +147,11 @@ Model createHipModel() {
     //tau_hip_ry->setOptimalForce(1);
     //model.addComponent(tau_hip_ry);
 
-    //auto* tau_hip_rz = new CoordinateActuator();
-    //tau_hip_rz->setCoordinate(&p_rz);
-    //tau_hip_rz->setName("tau_hip_rz");
-    //tau_hip_rz->setOptimalForce(1);
-    //model.addComponent(tau_hip_rz);
+    auto* tau_hip_rz = new CoordinateActuator();
+    tau_hip_rz->setCoordinate(&p_rz);
+    tau_hip_rz->setName("tau_hip_rz");
+    tau_hip_rz->setOptimalForce(1);
+    model.addComponent(tau_hip_rz);
 
     model.print("hip_model.osim");
 
@@ -165,8 +179,8 @@ int main() {
     mp.setStateInfo("gp/p_tx/speed", { -50, 50 });
     mp.setStateInfo("gp/p_ty/value", { -10, 10 });
     mp.setStateInfo("gp/p_ty/speed", { -50, 50 });
-    //mp.setStateInfo("gp/p_tz/value", { -1, 1 });
-    //mp.setStateInfo("gp/p_tz/speed", { -5, 5 });
+    //mp.setStateInfo("gp/p_tz/value", { -10, 10 });
+    //mp.setStateInfo("gp/p_tz/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_rx/value", { -10, 10 });
     //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
     //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
@@ -178,8 +192,8 @@ int main() {
     //mp.setStateInfo("hip/hip_rx/speed", { -50, 50 });
     //mp.setStateInfo("hip/hip_ry/value", { -10, 10 });
     //mp.setStateInfo("hip/hip_ry/speed", { -50, 50 });
-    //mp.setStateInfo("hip/hip_rz/value", { -25, 25 });
-    //mp.setStateInfo("hip/hip_rz/speed", { -100, 100 });
+    mp.setStateInfo("hip/hip_rz/value", { -10, 10 });
+    mp.setStateInfo("hip/hip_rz/speed", { -50, 50 });
     // torques
     mp.setControlInfo("tau_p_tx", { -100, 100 });
     mp.setControlInfo("tau_p_ty", { -100, 100 });
@@ -189,18 +203,25 @@ int main() {
     mp.setControlInfo("tau_p_rz", { -100, 100 });
     //mp.setControlInfo("tau_hip_rx", { -100, 100 }); 
     //mp.setControlInfo("tau_hip_ry", { -100, 100 });
- /*   mp.setControlInfo("tau_hip_rz", { -100, 100 });*/
+    mp.setControlInfo("tau_hip_rz", { -100, 100 });
 
-    //STOFileAdapter fileAdapter;
-    //auto table = fileAdapter.read("state_reference.mot");
-    //fileAdapter.write(table, "state_ref.sto");
 
     MucoStateTrackingCost trackingCost;
-    auto ref = STOFileAdapter::read("state_ref.sto");
-    auto refFilt = filterLowpass(ref, 6.0, true);
-    auto refFilt2 = refFilt;
-    trackingCost.setReference(refFilt);
+    auto ref = STOFileAdapter::read("state_reference_radians.sto");
+    //auto refFilt = filterLowpass(ref, 6.0, true);
+
+    //auto model = mp.getPhase().getModel();
+    //model.initSystem();
+    //auto refFilt2 = refFilt;
+    //model.getSimbodyEngine().convertDegreesToRadians(refFilt2);
+    //STOFileAdapter::write(refFilt2, "state_reference_radians.sto");
+
+    trackingCost.setReference(ref);
     trackingCost.allowUnusedReferences(true);
+    trackingCost.setWeight("gp/p_rz/value", 100.0);
+    trackingCost.setWeight("gp/p_tx/value", 25.0);
+    //trackingCost.setWeight("gp/p_ty/value", 10.0);
+    trackingCost.setWeight("hip/hip_rz/value", 2.0);
     mp.addCost(trackingCost);
 
     // Configure the solver.
@@ -211,9 +232,10 @@ int main() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
 
-    //MucoIterate guess = ms.createGuess();
-    //guess.setStatesTrajectory(refFilt2, true);
-    //ms.setGuess(guess);
+    MucoIterate guess = ms.createGuess();
+    guess.setStatesTrajectory(ref, true, true);
+    guess.write("states_guess.sto");
+    ms.setGuess(guess);
 
     // Solve the problem.
     // ==================

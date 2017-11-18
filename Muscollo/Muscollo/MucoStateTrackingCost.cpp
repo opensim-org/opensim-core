@@ -56,11 +56,13 @@ void MucoStateTrackingCost::initializeImpl() const {
         tableToUse.getTableMetaDataAsString("inDegrees") == "yes") {
         getModel().getSimbodyEngine().convertDegreesToRadians(tableToUse);
     }
+
     auto allSplines = GCVSplineSet(tableToUse);
     m_refsplines.clearAndDestroy();
+    m_sysYIndices.clear();
+    m_state_weights.clear();
 
     auto allSysYIndices = createSystemYIndexMap(getModel());
-    //m_sysYIndices.resize(m_refsplines.getSize());
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
         if (allSysYIndices.count(refName) == 0) {
@@ -71,7 +73,13 @@ void MucoStateTrackingCost::initializeImpl() const {
                     "State '" + refName + "' unrecognized.");
             }
         }
+
         m_sysYIndices.push_back(allSysYIndices[refName]);
+        double refWeight = 1.0;
+        if (get_state_weights().contains(refName)) {
+            refWeight = get_state_weights().get(refName).getWeight();
+        }
+        m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
     }
 }
@@ -87,6 +95,6 @@ void MucoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
-        integrand += pow(modelValue - refValue, 2);
+        integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
     }
 }

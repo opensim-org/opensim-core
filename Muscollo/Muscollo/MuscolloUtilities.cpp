@@ -94,8 +94,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
-    OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
-            "Model is not compatible with the provided StatesTrajectory.");
+    //OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
+    //        "Model is not compatible with the provided StatesTrajectory.");
 
     // Set up visualization.
     // ---------------------

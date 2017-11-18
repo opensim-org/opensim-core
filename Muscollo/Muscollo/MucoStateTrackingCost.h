@@ -22,6 +22,7 @@
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Simulation/MarkersReference.h>
 
 namespace OpenSim {
 
@@ -57,10 +58,23 @@ public:
         m_table = ref;
     }
 
+    /// Set the weight for an individual state variable. 
+    void setWeight(const std::string& stateName, const double& weight) {
+        if (get_state_weights().contains(stateName)) {
+            upd_state_weights().get(stateName).setWeight(weight);
+        } else {
+            upd_state_weights().cloneAndAppend({stateName, weight});
+        }
+    }
+
+    // TODO: void setWeightSet() 
+
     /// If no reference file has been provided, this returns an empty string.
     std::string getReferenceFile() const { return get_reference_file(); }
 
-    /// 
+    /// Specify whether or not extra columns in the reference are allowed.
+    /// If set true, the extra references will be ignored by the cost.
+    /// If false, extra reference will cause an Exception to be raised.
     void allowUnusedReferences(bool tf) {
         set_allow_unused_refs(tf);
     }
@@ -80,15 +94,22 @@ private:
             "Flag to determine whether or not references contained in the "
             "reference_file are allowed to be ignored by the cost.");
 
+    OpenSim_DECLARE_PROPERTY(state_weights, Set<MarkerWeight>, 
+            "Set of weight objects to weight the tracking of individual "
+            "state variables in the cost.");
+
     void constructProperties() {
         constructProperty_reference_file("");
         constructProperty_allow_unused_refs(false);
+        constructProperty_state_weights(Set<MarkerWeight>());
     }
 
     TimeSeriesTable m_table;
     mutable GCVSplineSet m_refsplines;
     /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
+    mutable std::vector<double> m_state_weights;
+
 };
 
 } // namespace OpenSim
