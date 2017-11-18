@@ -122,6 +122,8 @@ void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
 
     GCVSplineSet splines(states, labelsToUse, std::min(numTimesTable - 1, 5));
 
+    // TODO memory issue if extra columns in states but allowExtraColumns=false.
+
     SimTK::Vector curTime(1, SimTK::NaN);
     for (const auto& label : labelsToUse) {
         auto it = find(m_state_names, label);

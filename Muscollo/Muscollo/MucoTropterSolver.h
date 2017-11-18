@@ -52,7 +52,8 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
     "The optimization solver for tropter to use; ipopt (default), or snopt.");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
-    "Maximum number of iterations in the optimization solver.");
+    "Maximum number of iterations in the optimization solver "
+    "(-1 for solver's default).");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,

@@ -128,6 +128,26 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
 void MucoPhase::initialize(const Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
+    const auto stateNames = model.getStateVariableNames();
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        const auto& name = get_state_infos(i).getName();
+        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
+                "State info provided for nonexistant state '" + name + "'.");
+    }
+    OpenSim::Array<std::string> actuNames;
+    const auto modelPath = model.getAbsolutePath();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        actuNames.append(
+                actu.getAbsolutePath().formRelativePath(modelPath).toString());
+    }
+    // TODO can only handle ScalarActuators?
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        const auto& name = get_control_infos(i).getName();
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
+                "Control info provided for nonexistant actuator '"
+                        + name + "'.");
+    }
+
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }

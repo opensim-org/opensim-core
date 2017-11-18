@@ -112,6 +112,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
+    //viz.setBackgroundType(viz.SolidColor);
+    //viz.setBackgroundColor(SimTK::White);
     //viz.setShowFrameRate(true);
     //viz.setShowFrameNumber(true);
     auto& silo = model.updVisualizer().updInputSilo();

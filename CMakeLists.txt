@@ -57,6 +57,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshorten-64-to-32")
+        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
+        # many warnings.
     endif()
     # The assert() macro is omitted in Release, causing "unused-variable"
     # warnings. It is sufficient to just catch such warnings in Debug.
@@ -67,6 +69,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
             "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-parameter")
     endforeach()
 endif()
+
+# TODO add /WX flag for Windows.
 
 enable_testing()
 

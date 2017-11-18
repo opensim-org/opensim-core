@@ -65,6 +65,10 @@ protected:
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
     /// Precondition: state is realized to SimTK::Stage::Position.
+    /// If you need access to the controls, you must realize to Velocity:
+    /// @code
+    /// getModel().realizeVelocity(state);
+    /// @endcode
     virtual void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const;
     /// The endpoint cost cannot depend on actuator controls.
