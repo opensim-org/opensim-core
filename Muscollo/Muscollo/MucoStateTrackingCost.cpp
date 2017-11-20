@@ -24,25 +24,27 @@ using namespace OpenSim;
 
 void MucoStateTrackingCost::initializeImpl() const {
 
+    TimeSeriesTable tableToUse;
+    
     if (get_reference_file() != "") {
         // Should not be able to supply both.
         assert(m_table.getNumColumns() == 0);
 
-        auto tables = FileAdapter::readFile(get_reference_file());
+        auto tablesFromFile = FileAdapter::readFile(get_reference_file());
         // There should only be one table.
-        OPENSIM_THROW_IF_FRMOBJ(tables.size() != 1, Exception,
+        OPENSIM_THROW_IF_FRMOBJ(tablesFromFile.size() != 1, Exception,
                 "Expected reference file '" + get_reference_file() +
                 "' to contain 1 table, but it contains " +
-                std::to_string(tables.size()) + " tables.");
+                std::to_string(tablesFromFile.size()) + " tables.");
         // Get the first table.
         auto* firstTable =
-                dynamic_cast<TimeSeriesTable*>(tables.begin()->second.get());
+                dynamic_cast<TimeSeriesTable*>(tablesFromFile.begin()->second.get());
         OPENSIM_THROW_IF_FRMOBJ(!firstTable, Exception,
                 "Expected reference file to contain a (scalar) "
                 "TimeSeriesTable, but it contains a different type of table.");
-        m_refsplines = GCVSplineSet(*firstTable);
+        tableToUse = *firstTable;
     } else if (m_table.getNumColumns() != 0) {
-        m_refsplines = GCVSplineSet(m_table);
+        tableToUse = m_table;
     } else {
         OPENSIM_THROW_FRMOBJ(Exception,
                 "Expected user to either provide a reference"
@@ -50,13 +52,38 @@ void MucoStateTrackingCost::initializeImpl() const {
                 " the user supplied neither.");
     }
 
+    if (tableToUse.hasTableMetaDataKey("inDegrees") &&
+        tableToUse.getTableMetaDataAsString("inDegrees") == "yes") {
+        getModel().getSimbodyEngine().convertDegreesToRadians(tableToUse);
+    }
+
+    auto allSplines = GCVSplineSet(tableToUse);
+    m_refsplines.clearAndDestroy();
+    m_sysYIndices.clear();
+    m_state_weights.clear();
+
+
+    // TODO throw exception if a weight is specified for a nonexistant state.
+
     auto allSysYIndices = createSystemYIndexMap(getModel());
-    m_sysYIndices.resize(m_refsplines.getSize());
-    for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
-        const auto& refName = m_refsplines[iref].getName();
-        OPENSIM_THROW_IF(allSysYIndices.count(refName) == 0, Exception,
-                "State '" + refName + "' unrecognized.");
-        m_sysYIndices[iref] = allSysYIndices[refName];
+    for (int iref = 0; iref < allSplines.getSize(); ++iref) {
+        const auto& refName = allSplines[iref].getName();
+        if (allSysYIndices.count(refName) == 0) {
+            if (get_allow_unused_refs()) {
+                continue;
+            } else {
+                OPENSIM_THROW_FRMOBJ(Exception,
+                    "State '" + refName + "' unrecognized.");
+            }
+        }
+
+        m_sysYIndices.push_back(allSysYIndices[refName]);
+        double refWeight = 1.0;
+        if (get_state_weights().contains(refName)) {
+            refWeight = get_state_weights().get(refName).getWeight();
+        }
+        m_state_weights.push_back(refWeight);
+        m_refsplines.cloneAndAppend(allSplines[iref]);
     }
 }
 
@@ -71,6 +98,6 @@ void MucoStateTrackingCost::calcIntegralCostImpl(/*int meshIndex,*/
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
-        integrand += pow(modelValue - refValue, 2);
+        integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
     }
 }

@@ -106,14 +106,16 @@ void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
     }
 
     std::vector<std::string> labelsToUse;
-    if (!allowExtraColumns) {
-        for (const auto& label : labels) {
-            if (find(m_state_names, label) != labels.end()) {
-                labelsToUse.push_back(label);
-            } else {
+    for (const auto& label : labels) {
+        if (std::find(m_state_names.begin(), m_state_names.end(), label) != 
+                m_state_names.end()) {
+            labelsToUse.push_back(label);
+        } else {
+            if (!allowExtraColumns) {
                 OPENSIM_THROW(Exception,
                         "Column '" + label + "' is not a state in the "
-                        "iterate; consider setting allowExtraColumns to true.");
+                        "iterate; consider setting allowExtraColumns to "
+                        "true.");
             }
         }
     }

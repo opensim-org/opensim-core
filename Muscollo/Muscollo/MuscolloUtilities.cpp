@@ -36,7 +36,13 @@ SimTK::Vector OpenSim::createVectorLinspace(
 }
 
 Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
+
     Storage sto;
+    if (table.hasTableMetaDataKey("inDegrees") &&
+        table.getTableMetaDataAsString("inDegrees") == "yes") {
+        sto.setInDegrees(true);
+    }
+
     OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
     labels[0] = "time";
     for (int i = 0; i < (int)table.getNumColumns(); ++i) {
@@ -49,6 +55,17 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
         sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
     }
     return sto;
+}
+
+/// TODO: doc
+OSIMMUSCOLLO_API TimeSeriesTable OpenSim::filterLowpass(const TimeSeriesTable & table, double cutoffFreq, bool padData) {
+    auto storage = convertTableToStorage(table);
+    if (padData) {
+        storage.pad(storage.getSize() / 2);
+    }
+    storage.lowpassIIR(cutoffFreq);
+
+    return storage.exportToTable();
 }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
@@ -77,8 +94,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
-    OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
-            "Model is not compatible with the provided StatesTrajectory.");
+    //OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
+    //        "Model is not compatible with the provided StatesTrajectory.");
 
     // Set up visualization.
     // ---------------------
@@ -95,6 +112,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
+    //viz.setBackgroundType(viz.SolidColor);
+    //viz.setBackgroundColor(SimTK::White);
     //viz.setShowFrameRate(true);
     //viz.setShowFrameNumber(true);
     auto& silo = model.updVisualizer().updInputSilo();
