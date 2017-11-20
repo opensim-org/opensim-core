@@ -60,7 +60,11 @@ public:
         m_table = ref;
     }
 
-    /// Set the weight for an individual state variable. 
+    /// Set the weight for an individual state variable. If a weight is
+    /// already set for the requested state, then the provided weight
+    /// replaces the previous weight.
+    // TODO describe what happens if a weight is provided for a nonexistant
+    // state.
     void setWeight(const std::string& stateName, const double& weight) {
         if (get_state_weights().contains(stateName)) {
             upd_state_weights().get(stateName).setWeight(weight);
@@ -77,7 +81,7 @@ public:
     /// Specify whether or not extra columns in the reference are allowed.
     /// If set true, the extra references will be ignored by the cost.
     /// If false, extra reference will cause an Exception to be raised.
-    void allowUnusedReferences(bool tf) {
+    void setAllowUnusedReferences(bool tf) {
         set_allow_unused_refs(tf);
     }
 

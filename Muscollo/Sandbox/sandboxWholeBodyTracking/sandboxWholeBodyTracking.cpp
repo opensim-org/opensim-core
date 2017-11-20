@@ -217,7 +217,7 @@ int main() {
     STOFileAdapter::write(refFilt2, "state_reference_radians.sto");
 
     trackingCost.setReference(refFilt);
-    trackingCost.allowUnusedReferences(true);
+    trackingCost.setAllowUnusedReferences(true);
     trackingCost.setWeight("gp/p_rz/value", 100.0);
     trackingCost.setWeight("gp/p_tx/value", 25.0);
     //trackingCost.setWeight("gp/p_ty/value", 10.0);
