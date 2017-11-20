@@ -19,10 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoCost.h"
+#include "MucoWeightSet.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/MarkersReference.h>
 
 namespace OpenSim {
 
@@ -100,14 +100,14 @@ private:
             "Flag to determine whether or not references contained in the "
             "reference_file are allowed to be ignored by the cost.");
 
-    OpenSim_DECLARE_PROPERTY(state_weights, Set<MarkerWeight>, 
+    OpenSim_DECLARE_PROPERTY(state_weights, MucoWeightSet,
             "Set of weight objects to weight the tracking of individual "
             "state variables in the cost.");
 
     void constructProperties() {
         constructProperty_reference_file("");
         constructProperty_allow_unused_refs(false);
-        constructProperty_state_weights(Set<MarkerWeight>());
+        constructProperty_state_weights(MucoWeightSet());
     }
 
     TimeSeriesTable m_table;
