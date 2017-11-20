@@ -148,7 +148,7 @@ Model createHipModel() {
     //model.addComponent(tau_hip_ry);
 
     auto* tau_hip_rz = new CoordinateActuator();
-    tau_hip_rz->setCoordinate(&p_rz);
+    tau_hip_rz->setCoordinate(&hip_rz);
     tau_hip_rz->setName("tau_hip_rz");
     tau_hip_rz->setOptimalForce(1);
     model.addComponent(tau_hip_rz);
@@ -207,16 +207,16 @@ int main() {
 
 
     MucoStateTrackingCost trackingCost;
-    auto ref = STOFileAdapter::read("state_reference_radians.sto");
-    //auto refFilt = filterLowpass(ref, 6.0, true);
+    auto ref = STOFileAdapter::read("state_reference.mot");
+    auto refFilt = filterLowpass(ref, 6.0, true);
 
-    //auto model = mp.getPhase().getModel();
-    //model.initSystem();
-    //auto refFilt2 = refFilt;
-    //model.getSimbodyEngine().convertDegreesToRadians(refFilt2);
-    //STOFileAdapter::write(refFilt2, "state_reference_radians.sto");
+    auto model = mp.getPhase().getModel();
+    model.initSystem();
+    auto refFilt2 = refFilt;
+    model.getSimbodyEngine().convertDegreesToRadians(refFilt2);
+    STOFileAdapter::write(refFilt2, "state_reference_radians.sto");
 
-    trackingCost.setReference(ref);
+    trackingCost.setReference(refFilt);
     trackingCost.allowUnusedReferences(true);
     trackingCost.setWeight("gp/p_rz/value", 100.0);
     trackingCost.setWeight("gp/p_tx/value", 25.0);
@@ -233,7 +233,7 @@ int main() {
     ms.set_optim_hessian_approximation("exact");
 
     MucoIterate guess = ms.createGuess();
-    guess.setStatesTrajectory(ref, true, true);
+    guess.setStatesTrajectory(refFilt2, true, true);
     guess.write("states_guess.sto");
     ms.setGuess(guess);
 

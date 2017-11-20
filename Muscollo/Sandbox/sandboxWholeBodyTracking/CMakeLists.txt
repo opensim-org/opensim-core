@@ -1,5 +1,8 @@
-add_executable(sandboxWholeBodyTracking EXCLUDE_FROM_ALL
-        sandboxWholeBodyTracking.cpp)
-set_target_properties(sandboxWholeBodyTracking PROPERTIES
-        FOLDER "Muscollo/Sandbox/sandboxWholeBodyTracking")
-target_link_libraries(sandboxWholeBodyTracking osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxWholeBodyTracking
+        LIB_DEPENDS osimMuscollo tropter
+        RESOURCES
+            state_reference.mot
+            subject01_simbody_adjusted.osim
+            subject01_walk1_ik.mot
+        )
+
