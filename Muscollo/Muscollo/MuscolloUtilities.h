@@ -40,6 +40,10 @@ SimTK::Vector createVectorLinspace(int length, double start, double end);
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
+/// TODO: doc
+OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
+    double cutoffFreq, bool padData = false);
+
 /// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
 /// should contain all generalized coordinates. The visualizer window allows the
 /// user to control playback speed.

@@ -13,6 +13,7 @@ function(MuscolloAddSandboxExecutable)
     file(COPY ${MUCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
+
 MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxContact
@@ -23,3 +24,5 @@ MuscolloAddSandboxExecutable(NAME sandboxTendonForceState
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
         LIB_DEPENDS osimMuscollo tropter)
+		
+add_subdirectory(sandboxWholeBodyTracking)

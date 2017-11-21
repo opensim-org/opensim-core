@@ -193,6 +193,7 @@ public:
     ///     table that are not in the iterate.
     // TODO add tests in testMuscolloInterface.
     // TODO add setStatesTrajectory(const StatesTrajectory&)
+    // TODO handle rotational coordinates specified in degrees.
     void setStatesTrajectory(const TimeSeriesTable& states,
             bool allowMissingColumns = false, bool allowExtraColumns = false);
     /// @}

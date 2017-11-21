@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MucoWeightSet.h"
 #include "MucoStateTrackingCost.h"
 #include "MucoMarkerTrackingCost.h"
 #include "MucoIterate.h"
