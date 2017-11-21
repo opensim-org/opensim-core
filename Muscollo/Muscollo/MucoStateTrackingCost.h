@@ -82,7 +82,7 @@ public:
     /// If set true, the extra references will be ignored by the cost.
     /// If false, extra reference will cause an Exception to be raised.
     void setAllowUnusedReferences(bool tf) {
-        set_allow_unused_refs(tf);
+        set_allow_unused_references(tf);
     }
 
 protected:
@@ -96,7 +96,7 @@ private:
             "(coordinates, speeds, activation, etc.) to track. Column labels "
             "should be state variable paths, e.g., 'knee/flexion/value'");
 
-    OpenSim_DECLARE_PROPERTY(allow_unused_refs, bool,
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Flag to determine whether or not references contained in the "
             "reference_file are allowed to be ignored by the cost.");
 
@@ -106,7 +106,7 @@ private:
 
     void constructProperties() {
         constructProperty_reference_file("");
-        constructProperty_allow_unused_refs(false);
+        constructProperty_allow_unused_references(false);
         constructProperty_state_weights(MucoWeightSet());
     }
 

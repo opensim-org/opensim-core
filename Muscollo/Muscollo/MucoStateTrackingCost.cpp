@@ -69,7 +69,7 @@ void MucoStateTrackingCost::initializeImpl() const {
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
         if (allSysYIndices.count(refName) == 0) {
-            if (get_allow_unused_refs()) {
+            if (get_allow_unused_references()) {
                 continue;
             } else {
                 OPENSIM_THROW_FRMOBJ(Exception,

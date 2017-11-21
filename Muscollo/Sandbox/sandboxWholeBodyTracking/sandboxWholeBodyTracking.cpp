@@ -49,6 +49,12 @@ Model createHipModel() {
     thigh->attachGeometry(thigh_geom);
     model.addBody(thigh);
 
+    auto* shank = new OpenSim::Body("shank", 1, Vec3(0), Inertia(1));
+    auto* shank_geom = new OpenSim::Ellipsoid;
+    shank_geom->set_radii(Vec3(0.03, shankLength /2.0, 0.03));
+    shank->attachGeometry(shank_geom);
+    model.addBody(shank);
+
     // Create free joint between ground and pelvis
     //auto* gp = new FreeJoint("gp", 
     //        model.getGround(), Vec3(0, 1.0, 0), Vec3(0), 
@@ -87,11 +93,15 @@ Model createHipModel() {
     //auto& hip_ry = hip->updCoordinate(BallJoint::Coord::Rotation2Y);
     //hip_ry.setName("hip_ry");
     auto& hip_rz = hip->updCoordinate();
-    //hip_rz.setRangeMax(SimTK::Pi/2);
-    //hip_rz.setRangeMin(-SimTK::Pi/2);
-  
     hip_rz.setName("hip_rz");
     model.addJoint(hip);
+
+    auto* knee = new PinJoint("knee",
+        *thigh, Vec3(0, -thighLength/2.0, 0), Vec3(0),
+        *shank, Vec3(0, shankLength/2.0, 0), Vec3(0));
+    auto& knee_rz = knee->updCoordinate();
+    knee_rz.setName("knee_rz");
+    model.addJoint(knee);
 
     // Add markers
     // TODO
@@ -153,6 +163,13 @@ Model createHipModel() {
     tau_hip_rz->setOptimalForce(1);
     model.addComponent(tau_hip_rz);
 
+    //knee
+    auto* tau_knee_rz = new CoordinateActuator();
+    tau_knee_rz->setCoordinate(&knee_rz);
+    tau_knee_rz->setName("tau_knee_rz");
+    tau_knee_rz->setOptimalForce(1);
+    model.addComponent(tau_knee_rz);
+
     model.print("hip_model.osim");
 
     return model;
@@ -194,6 +211,9 @@ int main() {
     //mp.setStateInfo("hip/hip_ry/speed", { -50, 50 });
     mp.setStateInfo("hip/hip_rz/value", { -10, 10 });
     mp.setStateInfo("hip/hip_rz/speed", { -50, 50 });
+    // knee
+    mp.setStateInfo("knee/knee_rz/value", {-10, 10});
+    mp.setStateInfo("knee/knee_rz/speed", {-50, 50});
     // torques
     mp.setControlInfo("tau_p_tx", { -100, 100 });
     mp.setControlInfo("tau_p_ty", { -100, 100 });
@@ -204,6 +224,7 @@ int main() {
     //mp.setControlInfo("tau_hip_rx", { -100, 100 }); 
     //mp.setControlInfo("tau_hip_ry", { -100, 100 });
     mp.setControlInfo("tau_hip_rz", { -100, 100 });
+    mp.setControlInfo("tau_knee_rz", {-100, 100});
 
 
     MucoStateTrackingCost trackingCost;
