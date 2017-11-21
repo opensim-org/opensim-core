@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: exampleWholeBodyTracking.cpp                             *
+ * OpenSim Muscollo: sandboxWholeBodyTracking.cpp                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -34,6 +34,7 @@ Model createModel() {
     double pelvisWidth = 0.20;
     double thighLength = 0.40;
     double shankLength = 0.435;
+    double footLength = 0.20;
     
     // Create bodies
     auto* pelvis = new OpenSim::Body("pelvis", 1, Vec3(0), Inertia(1));
@@ -50,9 +51,15 @@ Model createModel() {
 
     auto* shank = new OpenSim::Body("shank", 1, Vec3(0), Inertia(1));
     auto* shank_geom = new OpenSim::Ellipsoid;
-    shank_geom->set_radii(Vec3(0.03, shankLength /2.0, 0.03));
+    shank_geom->set_radii(Vec3(0.03, shankLength / 2.0, 0.03));
     shank->attachGeometry(shank_geom);
     model.addBody(shank);
+
+    auto* foot = new OpenSim::Body("foot", 1, Vec3(0), Inertia(1));
+    auto* foot_geom = new OpenSim::Ellipsoid;
+    foot_geom->set_radii(Vec3(footLength / 2.0, 0.03, 0.03));
+    foot->attachGeometry(foot_geom);
+    model.addBody(foot);
 
     // Create free joint between ground and pelvis
     //auto* gp = new FreeJoint("gp", 
@@ -95,12 +102,21 @@ Model createModel() {
     hip_rz.setName("hip_rz");
     model.addJoint(hip);
 
+    // Create knee joint
     auto* knee = new PinJoint("knee",
-        *thigh, Vec3(0, -thighLength/2.0, 0), Vec3(0),
-        *shank, Vec3(0, shankLength/2.0, 0), Vec3(0));
+            *thigh, Vec3(0, -thighLength/2.0, 0), Vec3(0),
+            *shank, Vec3(0, shankLength/2.0, 0), Vec3(0));
     auto& knee_rz = knee->updCoordinate();
     knee_rz.setName("knee_rz");
     model.addJoint(knee);
+
+    // Create ankle joint
+    auto* ankle = new PinJoint("ankle",
+            *shank, Vec3(0, -shankLength/2.0, 0), Vec3(0),
+            *foot, Vec3(-footLength / 2.0, 0, 0), Vec3(0));
+    auto& ankle_rz = ankle->updCoordinate();
+    ankle_rz.setName("ankle_rz");
+    model.addJoint(ankle);
 
     // Add markers
     // TODO
@@ -169,6 +185,13 @@ Model createModel() {
     tau_knee_rz->setOptimalForce(1);
     model.addComponent(tau_knee_rz);
 
+    // ankle
+    auto* tau_ankle_rz = new CoordinateActuator();
+    tau_ankle_rz->setCoordinate(&ankle_rz);
+    tau_ankle_rz->setName("tau_ankle_rz");
+    tau_ankle_rz->setOptimalForce(1);
+    model.addComponent(tau_ankle_rz);
+
     model.print("hip_model.osim");
 
     return model;
@@ -213,6 +236,9 @@ int main() {
     // knee
     mp.setStateInfo("knee/knee_rz/value", {-10, 10});
     mp.setStateInfo("knee/knee_rz/speed", {-50, 50});
+    // ankle
+    mp.setStateInfo("ankle/ankle_rz/value", {-10, 10});
+    mp.setStateInfo("ankle/ankle_rz/speed", {-50, 50});
     // torques
     mp.setControlInfo("tau_p_tx", { -100, 100 });
     mp.setControlInfo("tau_p_ty", { -100, 100 });
@@ -224,7 +250,7 @@ int main() {
     //mp.setControlInfo("tau_hip_ry", { -100, 100 });
     mp.setControlInfo("tau_hip_rz", { -100, 100 });
     mp.setControlInfo("tau_knee_rz", {-100, 100});
-
+    mp.setControlInfo("tau_ankle_rz", {-100, 100});
 
     MucoStateTrackingCost trackingCost;
     auto ref = STOFileAdapter::read("state_reference.mot");
@@ -238,10 +264,10 @@ int main() {
 
     trackingCost.setReference(refFilt);
     trackingCost.setAllowUnusedReferences(true);
-    trackingCost.setWeight("gp/p_rz/value", 100.0);
-    trackingCost.setWeight("gp/p_tx/value", 25.0);
+    //trackingCost.setWeight("gp/p_rz/value", 100.0);
+    //trackingCost.setWeight("gp/p_tx/value", 25.0);
     //trackingCost.setWeight("gp/p_ty/value", 10.0);
-    trackingCost.setWeight("hip/hip_rz/value", 2.0);
+    //trackingCost.setWeight("hip/hip_rz/value", 2.0);
     mp.addCost(trackingCost);
 
     // Configure the solver.

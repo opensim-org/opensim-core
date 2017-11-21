@@ -27,7 +27,6 @@
 namespace OpenSim {
 
 // TODO can we track generailzed speeds too?
-// TODO weights for each state.
 // TODO allow raising error to different powers (cubed).
 // TODO allow a "deadband."
 
@@ -62,9 +61,8 @@ public:
 
     /// Set the weight for an individual state variable. If a weight is
     /// already set for the requested state, then the provided weight
-    /// replaces the previous weight.
-    // TODO describe what happens if a weight is provided for a nonexistant
-    // state.
+    /// replaces the previous weight. An exception is thrown if a weight
+    /// for an unknown state is provided.
     void setWeight(const std::string& stateName, const double& weight) {
         if (get_state_weights().contains(stateName)) {
             upd_state_weights().get(stateName).setWeight(weight);
@@ -73,7 +71,11 @@ public:
         }
     }
 
-    // TODO: void setWeightSet() 
+    /// Provide a MucoWeightSet to weight the state variables in the cost.
+    /// Replaces the weight set if it already exists.
+    void setWeightSet(const MucoWeightSet& weightSet) {
+        upd_state_weights() = weightSet;
+    }
 
     /// If no reference file has been provided, this returns an empty string.
     std::string getReferenceFile() const { return get_reference_file(); }
