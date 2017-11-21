@@ -19,12 +19,11 @@
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
-//#include <tropter/tropter.h>
 #include <Muscollo/osimMuscollo.h>
 
 using namespace OpenSim;
 
-Model createHipModel() {
+Model createModel() {
     Model model;
     model.setName("right_hip");
 
@@ -186,7 +185,7 @@ int main() {
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(createHipModel());
+    mp.setModel(createModel());
 
     // Bounds.
     // -------
