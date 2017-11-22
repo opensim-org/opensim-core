@@ -22,6 +22,8 @@ endfunction()
 
 MuscolloAddTest(NAME testMuscolloInterface)
 
+MuscolloAddTest(NAME testMucoCosts)
+
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 
 MuscolloAddTest(NAME testSingleMuscle)

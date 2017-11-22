@@ -21,6 +21,7 @@
 #include "MucoWeightSet.h"
 #include "MucoStateTrackingCost.h"
 #include "MucoMarkerTrackingCost.h"
+#include "MucoControlCost.h"
 #include "MucoIterate.h"
 #include "MucoProblem.h"
 #include "MucoSolver.h"
