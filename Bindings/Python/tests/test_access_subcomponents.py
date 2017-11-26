@@ -51,10 +51,15 @@ class TestAccessSubcomponents(unittest.TestCase):
         assert num_bodies == 2
 
         model = osim.Model()
+        ground = model.getGround()
 
         thelenMuscle = osim.Thelen2003Muscle("Darryl", 1, 0.5, 0.5, 0)
+        thelenMuscle.addNewPathPoint("muscle1-point1", ground, osim.Vec3(0.0,0.0,0.0));
+        thelenMuscle.addNewPathPoint("muscle1-point2", ground, osim.Vec3(1.0,0.0,0.0));
         millardMuscle = osim.Millard2012EquilibriumMuscle("Matt", 1, 0.5,
                                                           0.5, 0)
+        millardMuscle.addNewPathPoint("muscle1-point1", ground, osim.Vec3(0.0,0.0,0.0));
+        millardMuscle.addNewPathPoint("muscle1-point2", ground, osim.Vec3(1.0,0.0,0.0));
 
         model.addComponent(thelenMuscle)
         model.addComponent(millardMuscle)
