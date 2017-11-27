@@ -23,7 +23,103 @@
 
 using namespace OpenSim;
 
-Model createModel() {
+class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Contact : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
+public:
+    OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
+    OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
+
+    OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3, calcContactForce,
+            SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
+
+    AckermannVanDenBogert2010Contact() {
+        constructProperties();
+    }
+
+    /// Compute the force applied to body to which the station is attached, at
+    /// the station, expressed in ground.
+    SimTK::Vec3 calcContactForce(const SimTK::State& s) const {
+        SimTK::Vec3 force(0);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& vel = pt.getVelocityInGround(s);
+        const SimTK::Real y = pos[1];
+        const SimTK::Real velNormal = vel[1];
+        // TODO should project vel into ground.
+        const SimTK::Real velSliding = vel[0];
+        const SimTK::Real depth = 0 - y;
+        const SimTK::Real depthRate = 0 - velNormal;
+        const SimTK::Real a = get_stiffness();
+        const SimTK::Real b = get_dissipation();
+        if (depth > 0) {
+            force[1] = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
+        }
+        const SimTK::Real voidStiffness = 1.0; // N/m
+        force[1] += voidStiffness * depth;
+
+        const SimTK::Real velSlidingScaling =
+                get_tangent_velocity_scaling_factor();
+        const SimTK::Real z0 = exp(-velSliding / velSlidingScaling);
+        // TODO decide direction!!!
+
+        const SimTK::Real frictionForce =
+                -(1 - z0) / (1 + z0) * get_friction_coefficient() * force[1];
+
+        force[0] = frictionForce;
+        return force;
+    }
+    void computeForce(const SimTK::State& s,
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& /*generalizedForces*/) const override {
+        const SimTK::Vec3 force = calcContactForce(s);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& frame = pt.getParentFrame();
+        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
+        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
+    }
+
+    OpenSim::Array<std::string> getRecordLabels() const override {
+        OpenSim::Array<std::string> labels;
+        const auto stationName = getConnectee("station").getName();
+        labels.append(getName() + "." + stationName + ".force.X");
+        labels.append(getName() + "." + stationName + ".force.Y");
+        labels.append(getName() + "." + stationName + ".force.Z");
+        return labels;
+    }
+    OpenSim::Array<double> getRecordValues(const SimTK::State& s)
+    const override {
+        OpenSim::Array<double> values;
+        // TODO cache.
+        const SimTK::Vec3 force = calcContactForce(s);
+        values.append(force[0]);
+        values.append(force[1]);
+        values.append(force[2]);
+        return values;
+    }
+
+    // TODO potential energy.
+private:
+    void constructProperties() {
+        constructProperty_friction_coefficient(1.0);
+        constructProperty_stiffness(5e7);
+        constructProperty_dissipation(1.0);
+        constructProperty_tangent_velocity_scaling_factor(0.05);
+    }
+};
+
+enum class DOFs {
+    PTX_PTY_PRZ,
+    PTX_PTY_PRZ_HIPRZ,
+    PTX_PTY_PRZ_HIPRZ_KNEERZ,
+    PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ
+};
+
+Model createModel(DOFs dofs) {
     Model model;
     model.setName("right_hip");
 
@@ -35,35 +131,54 @@ Model createModel() {
     double thighLength = 0.40;
     double shankLength = 0.435;
     double footLength = 0.20;
-    
+
     // Create bodies
-    auto* pelvis = new OpenSim::Body("pelvis", 1, Vec3(0), Inertia(1));
-    auto* pelvis_geom = new OpenSim::Ellipsoid;
-    pelvis_geom->set_radii(Vec3(0.03, 0.03, pelvisWidth / 2.0));
-    pelvis->attachGeometry(pelvis_geom);
-    model.addBody(pelvis);
+    OpenSim::Body* pelvis = nullptr;
+    OpenSim::Body* thigh = nullptr;
+    OpenSim::Body* shank = nullptr;
+    OpenSim::Body* foot = nullptr;
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        pelvis = new OpenSim::Body("pelvis", 40, Vec3(0), Inertia(1));
+        auto* pelvis_geom = new OpenSim::Ellipsoid;
+        pelvis_geom->set_radii(Vec3(0.03, 0.03, pelvisWidth / 2.0));
+        pelvis->attachGeometry(pelvis_geom);
+        model.addBody(pelvis);
+    }
 
-    auto* thigh = new OpenSim::Body("thigh", 1, Vec3(0), Inertia(1));
-    auto* thigh_geom = new OpenSim::Ellipsoid; 
-    thigh_geom->set_radii(Vec3(0.03, thighLength / 2.0, 0.03));
-    thigh->attachGeometry(thigh_geom);
-    model.addBody(thigh);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        thigh = new OpenSim::Body("thigh", 10, Vec3(0), Inertia(1));
+        auto* thigh_geom = new OpenSim::Ellipsoid;
+        thigh_geom->set_radii(Vec3(0.03, thighLength / 2.0, 0.03));
+        thigh->attachGeometry(thigh_geom);
+        model.addBody(thigh);
+    }
 
-    auto* shank = new OpenSim::Body("shank", 1, Vec3(0), Inertia(1));
-    auto* shank_geom = new OpenSim::Ellipsoid;
-    shank_geom->set_radii(Vec3(0.03, shankLength / 2.0, 0.03));
-    shank->attachGeometry(shank_geom);
-    model.addBody(shank);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        shank = new OpenSim::Body("shank", 10, Vec3(0), Inertia(1));
+        auto* shank_geom = new OpenSim::Ellipsoid;
+        shank_geom->set_radii(Vec3(0.03, shankLength / 2.0, 0.03));
+        shank->attachGeometry(shank_geom);
+        model.addBody(shank);
+    }
 
-    auto* foot = new OpenSim::Body("foot", 1, Vec3(0), Inertia(1));
-    auto* foot_geom = new OpenSim::Ellipsoid;
-    foot_geom->set_radii(Vec3(footLength / 2.0, 0.03, 0.03));
-    foot->attachGeometry(foot_geom);
-    model.addBody(foot);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ) {
+        foot = new OpenSim::Body("foot", 5, Vec3(0), Inertia(1));
+        auto* foot_geom = new OpenSim::Ellipsoid;
+        foot_geom->set_radii(Vec3(footLength / 2.0, 0.03, 0.03));
+        foot->attachGeometry(foot_geom);
+        model.addBody(foot);
+    }
+
+    Coordinate* p_tx = nullptr;
+    Coordinate* p_ty = nullptr;
+    Coordinate* p_rz = nullptr;
+    Coordinate* hip_rz = nullptr;
+    Coordinate* knee_rz = nullptr;
+    Coordinate* ankle_rz = nullptr;
 
     // Create free joint between ground and pelvis
-    //auto* gp = new FreeJoint("gp", 
-    //        model.getGround(), Vec3(0, 1.0, 0), Vec3(0), 
+    //auto* gp = new FreeJoint("gp",
+    //        model.getGround(), Vec3(0, 1.0, 0), Vec3(0),
     //        *pelvis, Vec3(0), Vec3(0));
     //auto& p_tx = gp->updCoordinate(FreeJoint::Coord::TranslationX);
     //p_tx.setName("p_tx");
@@ -79,85 +194,112 @@ Model createModel() {
     //p_rz.setName("p_rz");
     //model.addJoint(gp);
 
-    auto* gp = new PlanarJoint("gp",
-        model.getGround(), Vec3(0, 1.0, 0), Vec3(0),
-        *pelvis, Vec3(0), Vec3(0));
-    auto& p_tx = gp->updCoordinate(PlanarJoint::Coord::TranslationX);
-    p_tx.setName("p_tx");
-    auto& p_ty = gp->updCoordinate(PlanarJoint::Coord::TranslationY);
-    p_ty.setName("p_ty");
-    auto& p_rz = gp->updCoordinate(PlanarJoint::Coord::RotationZ);
-    p_rz.setName("p_rz");
-    model.addJoint(gp);
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        auto* gp = new PlanarJoint("gp",
+                model.getGround(), Vec3(0, 1.0, 0), Vec3(0),
+                *pelvis, Vec3(0), Vec3(0));
+        p_tx = &gp->updCoordinate(PlanarJoint::Coord::TranslationX);
+        p_tx->setName("p_tx");
+        p_ty = &gp->updCoordinate(PlanarJoint::Coord::TranslationY);
+        p_ty->setName("p_ty");
+        p_rz = &gp->updCoordinate(PlanarJoint::Coord::RotationZ);
+        p_rz->setName("p_rz");
+        model.addJoint(gp);
+    }
 
     // Create hip joint
-    auto* hip = new PinJoint("hip",
-            *pelvis, Vec3(0, 0, pelvisWidth/2.0), Vec3(0),
-            *thigh, Vec3(0, thighLength/2.0, 0), Vec3(0, 0, 0));
-    //auto& hip_rx = hip->updCoordinate(BallJoint::Coord::Rotation1X);
-    //hip_rx.setName("hip_rx");
-    //auto& hip_ry = hip->updCoordinate(BallJoint::Coord::Rotation2Y);
-    //hip_ry.setName("hip_ry");
-    auto& hip_rz = hip->updCoordinate();
-    hip_rz.setName("hip_rz");
-    model.addJoint(hip);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        auto* hip = new PinJoint("hip",
+                *pelvis, Vec3(0, 0, pelvisWidth/2.0), Vec3(0),
+                *thigh, Vec3(0, thighLength/2.0, 0), Vec3(0, 0, 0));
+        //auto& hip_rx = hip->updCoordinate(BallJoint::Coord::Rotation1X);
+        //hip_rx.setName("hip_rx");
+        //auto& hip_ry = hip->updCoordinate(BallJoint::Coord::Rotation2Y);
+        //hip_ry.setName("hip_ry");
+        hip_rz = &hip->updCoordinate();
+        hip_rz->setName("hip_rz");
+        model.addJoint(hip);
+    }
 
     // Create knee joint
-    auto* knee = new PinJoint("knee",
-            *thigh, Vec3(0, -thighLength/2.0, 0), Vec3(0),
-            *shank, Vec3(0, shankLength/2.0, 0), Vec3(0));
-    auto& knee_rz = knee->updCoordinate();
-    knee_rz.setName("knee_rz");
-    model.addJoint(knee);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        auto* knee = new PinJoint("knee",
+                *thigh, Vec3(0, -thighLength/2.0, 0), Vec3(0),
+                *shank, Vec3(0, shankLength/2.0, 0), Vec3(0));
+        knee_rz = &knee->updCoordinate();
+        knee_rz->setName("knee_rz");
+        model.addJoint(knee);
+    }
 
     // Create ankle joint
-    auto* ankle = new PinJoint("ankle",
-            *shank, Vec3(0, -shankLength/2.0, 0), Vec3(0),
-            *foot, Vec3(-footLength / 2.0, 0, 0), Vec3(0));
-    auto& ankle_rz = ankle->updCoordinate();
-    ankle_rz.setName("ankle_rz");
-    model.addJoint(ankle);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ) {
+        auto* ankle = new PinJoint("ankle",
+                *shank, Vec3(0, -shankLength / 2.0, 0), Vec3(0),
+                *foot, Vec3(-footLength / 2.0, 0, 0), Vec3(0));
+        ankle_rz = &ankle->updCoordinate();
+        ankle_rz->setName("ankle_rz");
+        model.addJoint(ankle);
+    }
 
     // Add markers
     // TODO
+    Marker* hip_joint_center = nullptr;
+    Marker* knee_joint_center = nullptr;
+    Marker* heel = nullptr;
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        hip_joint_center = new Marker("hip_joint_center", *pelvis,
+                Vec3(0, 0, pelvisWidth / 2.0));
+        model.addComponent(hip_joint_center);
+    }
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        knee_joint_center = new Marker("knee_joint_center", *thigh,
+                Vec3(0, -thighLength / 2.0, 0));
+        model.addComponent(knee_joint_center);
+    }
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        heel = new Marker("heel", *shank, Vec3(0, -shankLength / 2.0, 0));
+        model.addComponent(heel);
+    }
 
     // Add actuators
     // ground-pelvis
-    auto* tau_p_tx = new CoordinateActuator();
-    tau_p_tx->setCoordinate(&p_tx);
-    tau_p_tx->setName("tau_p_tx");
-    tau_p_tx->setOptimalForce(1);
-    model.addComponent(tau_p_tx);
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        auto* tau_p_tx = new CoordinateActuator();
+        tau_p_tx->setCoordinate(p_tx);
+        tau_p_tx->setName("tau_p_tx");
+        tau_p_tx->setOptimalForce(1);
+        model.addComponent(tau_p_tx);
 
-    auto* tau_p_ty = new CoordinateActuator();
-    tau_p_ty->setCoordinate(&p_ty);
-    tau_p_ty->setName("tau_p_ty");
-    tau_p_ty->setOptimalForce(1);
-    model.addComponent(tau_p_ty);
+        auto* tau_p_ty = new CoordinateActuator();
+        tau_p_ty->setCoordinate(p_ty);
+        tau_p_ty->setName("tau_p_ty");
+        tau_p_ty->setOptimalForce(1);
+        model.addComponent(tau_p_ty);
 
-    //auto* tau_p_tz = new CoordinateActuator();
-    //tau_p_tz->setCoordinate(&p_tz);
-    //tau_p_tz->setName("tau_p_tz");
-    //tau_p_tz->setOptimalForce(1);
-    //model.addComponent(tau_p_tz);
+        //auto* tau_p_tz = new CoordinateActuator();
+        //tau_p_tz->setCoordinate(&p_tz);
+        //tau_p_tz->setName("tau_p_tz");
+        //tau_p_tz->setOptimalForce(1);
+        //model.addComponent(tau_p_tz);
 
-    //auto* tau_p_rx = new CoordinateActuator();
-    //tau_p_rx->setCoordinate(&p_rx);
-    //tau_p_rx->setName("tau_p_rx");
-    //tau_p_rx->setOptimalForce(1);
-    //model.addComponent(tau_p_rx);
+        //auto* tau_p_rx = new CoordinateActuator();
+        //tau_p_rx->setCoordinate(&p_rx);
+        //tau_p_rx->setName("tau_p_rx");
+        //tau_p_rx->setOptimalForce(1);
+        //model.addComponent(tau_p_rx);
 
-    //auto* tau_p_ry = new CoordinateActuator();
-    //tau_p_ry->setCoordinate(&p_ry);
-    //tau_p_ry->setName("tau_p_ry");
-    //tau_p_ry->setOptimalForce(1);
-    //model.addComponent(tau_p_ry);
+        //auto* tau_p_ry = new CoordinateActuator();
+        //tau_p_ry->setCoordinate(&p_ry);
+        //tau_p_ry->setName("tau_p_ry");
+        //tau_p_ry->setOptimalForce(1);
+        //model.addComponent(tau_p_ry);
 
-    auto* tau_p_rz = new CoordinateActuator();
-    tau_p_rz->setCoordinate(&p_rz);
-    tau_p_rz->setName("tau_p_rz");
-    tau_p_rz->setOptimalForce(1);
-    model.addComponent(tau_p_rz);
+        auto* tau_p_rz = new CoordinateActuator();
+        tau_p_rz->setCoordinate(p_rz);
+        tau_p_rz->setName("tau_p_rz");
+        tau_p_rz->setOptimalForce(1);
+        model.addComponent(tau_p_rz);
+    }
 
     // hip
     //auto* tau_hip_rx = new CoordinateActuator();
@@ -172,25 +314,61 @@ Model createModel() {
     //tau_hip_ry->setOptimalForce(1);
     //model.addComponent(tau_hip_ry);
 
-    auto* tau_hip_rz = new CoordinateActuator();
-    tau_hip_rz->setCoordinate(&hip_rz);
-    tau_hip_rz->setName("tau_hip_rz");
-    tau_hip_rz->setOptimalForce(1);
-    model.addComponent(tau_hip_rz);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        auto* tau_hip_rz = new CoordinateActuator();
+        tau_hip_rz->setCoordinate(hip_rz);
+        tau_hip_rz->setName("tau_hip_rz");
+        tau_hip_rz->setOptimalForce(1);
+        model.addComponent(tau_hip_rz);
+    }
 
     //knee
-    auto* tau_knee_rz = new CoordinateActuator();
-    tau_knee_rz->setCoordinate(&knee_rz);
-    tau_knee_rz->setName("tau_knee_rz");
-    tau_knee_rz->setOptimalForce(1);
-    model.addComponent(tau_knee_rz);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        auto* tau_knee_rz = new CoordinateActuator();
+        tau_knee_rz->setCoordinate(knee_rz);
+        tau_knee_rz->setName("tau_knee_rz");
+        tau_knee_rz->setOptimalForce(1);
+        model.addComponent(tau_knee_rz);
+    }
 
     // ankle
-    auto* tau_ankle_rz = new CoordinateActuator();
-    tau_ankle_rz->setCoordinate(&ankle_rz);
-    tau_ankle_rz->setName("tau_ankle_rz");
-    tau_ankle_rz->setOptimalForce(1);
-    model.addComponent(tau_ankle_rz);
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ) {
+        auto* tau_ankle_rz = new CoordinateActuator();
+        tau_ankle_rz->setCoordinate(ankle_rz);
+        tau_ankle_rz->setName("tau_ankle_rz");
+        tau_ankle_rz->setOptimalForce(1);
+        model.addComponent(tau_ankle_rz);
+    }
+
+    // Contact
+    if (false) {
+        double stiffness = 1;
+        double friction_coefficient = 0.1;
+        if (dofs >= DOFs::PTX_PTY_PRZ) {
+            auto* contact = new AckermannVanDenBogert2010Contact();
+            contact->setName("hip_contact");
+            contact->set_stiffness(stiffness);
+            contact->set_friction_coefficient(friction_coefficient);
+            model.addComponent(contact);
+            contact->connectSocket_station(*hip_joint_center);
+        }
+        if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+            auto* contact = new AckermannVanDenBogert2010Contact();
+            contact->setName("knee_contact");
+            contact->set_stiffness(stiffness);
+            contact->set_friction_coefficient(friction_coefficient);
+            model.addComponent(contact);
+            contact->connectSocket_station(*knee_joint_center);
+        }
+        if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+            auto* contact = new AckermannVanDenBogert2010Contact();
+            contact->setName("foot_contact");
+            contact->set_stiffness(stiffness);
+            contact->set_friction_coefficient(friction_coefficient);
+            model.addComponent(contact);
+            contact->connectSocket_station(*heel);
+        }
+    }
 
     model.print("hip_model.osim");
 
@@ -206,58 +384,90 @@ int main() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
+    DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ;
+
     // Model (dynamics).
     // -----------------
-    mp.setModel(createModel());
+    auto model = createModel(dofs);
+    mp.setModel(model);
+
+    auto state = model.initSystem();
+    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
+    // Without the next line: Simbody takes steps that are too large and NaNs
+    // are generated.
+    integrator.setMaximumStepSize(0.05);
+    Manager manager(model, state, integrator);
+    state = manager.integrate(1.6);
+    const auto& statesTimeStepping = manager.getStateStorage();
+//    visualize(model, statesTimeStepping);
 
     // Bounds.
     // -------
+    const double defaultMaxSpeed = 7;
     mp.setTimeBounds(0.4, 1.6);
     // ground-pelvis
-    mp.setStateInfo("gp/p_tx/value", { -10, 10 });
-    mp.setStateInfo("gp/p_tx/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_ty/value", { -10, 10 });
-    mp.setStateInfo("gp/p_ty/speed", { -50, 50 });
-    //mp.setStateInfo("gp/p_tz/value", { -10, 10 });
-    //mp.setStateInfo("gp/p_tz/speed", { -50, 50 });
-    //mp.setStateInfo("gp/p_rx/value", { -10, 10 });
-    //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
-    //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
-    //mp.setStateInfo("gp/p_ry/speed", { -50, 50 });
-    mp.setStateInfo("gp/p_rz/value", { -10, 10 });
-    mp.setStateInfo("gp/p_rz/speed", { -50, 50 });
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        mp.setStateInfo("gp/p_tx/value", { -10, 10 });
+        mp.setStateInfo("gp/p_tx/speed", { -defaultMaxSpeed, defaultMaxSpeed });
+        mp.setStateInfo("gp/p_ty/value", { -2, 10 });
+        mp.setStateInfo("gp/p_ty/speed", { -defaultMaxSpeed, defaultMaxSpeed });
+        //mp.setStateInfo("gp/p_tz/value", { -10, 10 });
+        //mp.setStateInfo("gp/p_tz/speed", { -50, 50 });
+        //mp.setStateInfo("gp/p_rx/value", { -10, 10 });
+        //mp.setStateInfo("gp/p_rx/speed", { -50, 50 });
+        //mp.setStateInfo("gp/p_ry/value", { -10, 10 });
+        //mp.setStateInfo("gp/p_ry/speed", { -50, 50 });
+        mp.setStateInfo("gp/p_rz/value", { -10, 10 });
+        mp.setStateInfo("gp/p_rz/speed", { -defaultMaxSpeed, defaultMaxSpeed });
+    }
     // hip
-    //mp.setStateInfo("hip/hip_rx/value", { -10, 10 });
-    //mp.setStateInfo("hip/hip_rx/speed", { -50, 50 });
-    //mp.setStateInfo("hip/hip_ry/value", { -10, 10 });
-    //mp.setStateInfo("hip/hip_ry/speed", { -50, 50 });
-    mp.setStateInfo("hip/hip_rz/value", { -10, 10 });
-    mp.setStateInfo("hip/hip_rz/speed", { -50, 50 });
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        //mp.setStateInfo("hip/hip_rx/value", { -10, 10 });
+        //mp.setStateInfo("hip/hip_rx/speed", { -50, 50 });
+        //mp.setStateInfo("hip/hip_ry/value", { -10, 10 });
+        //mp.setStateInfo("hip/hip_ry/speed", { -50, 50 });
+        mp.setStateInfo("hip/hip_rz/value", { -10, 10 });
+        mp.setStateInfo("hip/hip_rz/speed", { -defaultMaxSpeed, defaultMaxSpeed });
+    }
     // knee
-    mp.setStateInfo("knee/knee_rz/value", {-10, 10});
-    mp.setStateInfo("knee/knee_rz/speed", {-50, 50});
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        mp.setStateInfo("knee/knee_rz/value", {-10, 10});
+        mp.setStateInfo("knee/knee_rz/speed", {-10, 10});
+    }
     // ankle
-    mp.setStateInfo("ankle/ankle_rz/value", {-10, 10});
-    mp.setStateInfo("ankle/ankle_rz/speed", {-50, 50});
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ) {
+        mp.setStateInfo("ankle/ankle_rz/value", {-10, 10});
+        mp.setStateInfo("ankle/ankle_rz/speed", {-defaultMaxSpeed, defaultMaxSpeed});
+    }
     // torques
-    const double Tmax = 150;
-    mp.setControlInfo("tau_p_tx", { -Tmax, Tmax });
-    mp.setControlInfo("tau_p_ty", { -Tmax, Tmax });
-    //mp.setControlInfo("tau_p_tz", { -Tmax, Tmax });
-    //mp.setControlInfo("tau_p_rx", { -Tmax, Tmax });
-    //mp.setControlInfo("tau_p_ry", { -Tmax, Tmax });
-    mp.setControlInfo("tau_p_rz", { -Tmax, Tmax });
-    //mp.setControlInfo("tau_hip_rx", { -Tmax, Tmax });
-    //mp.setControlInfo("tau_hip_ry", { -Tmax, Tmax });
-    mp.setControlInfo("tau_hip_rz", { -Tmax, Tmax });
-    mp.setControlInfo("tau_knee_rz", {-Tmax, Tmax});
-    mp.setControlInfo("tau_ankle_rz", {-Tmax, Tmax});
+    const double Tmax = 300;
+    if (dofs >= DOFs::PTX_PTY_PRZ) {
+        mp.setControlInfo("tau_p_tx", { -Tmax, Tmax });
+        // Without ground contact, this residual must be able to
+        // provide about 2*mass*g.
+        mp.setControlInfo("tau_p_ty", { -2000, 2000 });
+        //mp.setControlInfo("tau_p_tz", { -Tmax, Tmax });
+        //mp.setControlInfo("tau_p_rx", { -Tmax, Tmax });
+        //mp.setControlInfo("tau_p_ry", { -Tmax, Tmax });
+        mp.setControlInfo("tau_p_rz", { -Tmax, Tmax });
+    }
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
+        //mp.setControlInfo("tau_hip_rx", { -Tmax, Tmax });
+        //mp.setControlInfo("tau_hip_ry", { -Tmax, Tmax });
+        mp.setControlInfo("tau_hip_rz", { -Tmax, Tmax });
+    }
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
+        mp.setControlInfo("tau_knee_rz", {-Tmax, Tmax});
+    }
+    if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ) {
+        mp.setControlInfo("tau_ankle_rz", {-Tmax, Tmax});
+    }
 
     MucoStateTrackingCost trackingCost;
     auto ref = STOFileAdapter::read("state_reference.mot");
     auto refFilt = filterLowpass(ref, 6.0, true);
 
-    auto model = mp.getPhase().getModel();
+    //auto model = mp.getPhase().getModel();
     model.initSystem();
     auto refFilt2 = refFilt;
     model.getSimbodyEngine().convertDegreesToRadians(refFilt2);
@@ -270,6 +480,12 @@ int main() {
     //trackingCost.setWeight("gp/p_ty/value", 10.0);
     //trackingCost.setWeight("hip/hip_rz/value", 2.0);
     mp.addCost(trackingCost);
+
+    // Takes longer to solve with this cost:
+    //MucoControlCost controlCost;
+    //controlCost.setName("effort");
+    //controlCost.set_weight(0.000001);
+    //mp.addCost(controlCost);
 
     // Configure the solver.
     // =====================
@@ -284,12 +500,30 @@ int main() {
     guess.write("states_guess.sto");
     ms.setGuess(guess);
 
+    //muco.visualize(guess);
+
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxWholeBodyTracking_solution.sto");
 
     muco.visualize(solution);
+
+    // Notes:
+    // All dofs and no contact takes ~70 seconds to solve.
+    // dofs = PTX_PTY_PRZ_HIPRZ and stiffness=5e1 and damping=0.1:
+    //      converges in 258 iterations (~150 seconds).
+    //      "solved to acceptable level"
+    // Decresaing stiffness to 1 does not seem to help much (a few more
+    // iteratiosns, actually).
+    // TODO maybe the sparsity detection is wrong?
+    // The hip_rz and knee_rz speed defects seem the hardest to satisfy.
+
+    // TODO
+    // loosen constraint tolerance.
+    // more filtering of input kinematics.
+    // successive guesses.
+    // build model from ground up.
 
     return EXIT_SUCCESS;
 

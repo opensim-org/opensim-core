@@ -733,6 +733,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {
     //    optsolver.set_advanced_option(TODO);
     //}
+    //optsolver.set_advanced_option_string("print_timing_statistics", "yes");
 
     tropter::Iterate tropIterate = convert(getGuess());
     tropter::Solution tropSolution = dircol.solve(tropIterate);

@@ -70,7 +70,6 @@ public:
     }
 };
 
-// TODO add OSIMMUSCOLLO_API
 class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Contact : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
 public:
