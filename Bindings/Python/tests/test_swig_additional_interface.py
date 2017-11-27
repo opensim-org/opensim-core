@@ -35,12 +35,15 @@ class TestSwigAddtlInterface(unittest.TestCase):
     
     def test_markAdopted2(self):
         a = osim.Model()
+        ground = model.getGround()
     
         # We just need the following not to cause a segfault.
     
         # Model add*
         pa = osim.PathActuator()
         pa.setName('pa')
+        pa.addNewPathPoint("pa-point1", ground, osim.Vec3(0.0,0.0,0.0))
+        pa.addNewPathPoint("pa-point2", ground, osim.Vec3(1.0,0.0,0.0))
         a.addForce(pa)
 
         probe = osim.Umberger2010MuscleMetabolicsProbe()
