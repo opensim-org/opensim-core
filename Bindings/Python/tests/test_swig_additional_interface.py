@@ -35,7 +35,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
     
     def test_markAdopted2(self):
         a = osim.Model()
-        ground = model.getGround()
+        ground = a.getGround()
     
         # We just need the following not to cause a segfault.
     
