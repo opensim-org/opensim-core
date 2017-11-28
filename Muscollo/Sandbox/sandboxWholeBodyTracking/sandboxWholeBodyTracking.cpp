@@ -341,9 +341,9 @@ Model createModel(DOFs dofs) {
     }
 
     // Contact
-    if (false) {
+    if (true) {
         double stiffness = 1;
-        double friction_coefficient = 0.1;
+        double friction_coefficient = 0.0;
         if (dofs >= DOFs::PTX_PTY_PRZ) {
             auto* contact = new AckermannVanDenBogert2010Contact();
             contact->setName("hip_contact");
@@ -465,6 +465,7 @@ int main() {
 
     MucoStateTrackingCost trackingCost;
     auto ref = STOFileAdapter::read("state_reference.mot");
+    ref.updDependentColumn("gp/p_ty/value") -= 1.2;
     auto refFilt = filterLowpass(ref, 6.0, true);
 
     //auto model = mp.getPhase().getModel();
@@ -500,7 +501,7 @@ int main() {
     guess.write("states_guess.sto");
     ms.setGuess(guess);
 
-    //muco.visualize(guess);
+    // muco.visualize(guess);
 
     // Solve the problem.
     // ==================
@@ -511,11 +512,18 @@ int main() {
 
     // Notes:
     // All dofs and no contact takes ~70 seconds to solve.
-    // dofs = PTX_PTY_PRZ_HIPRZ and stiffness=5e1 and damping=0.1:
+    // dofs = PTX_PTY_PRZ_HIPRZ and stiffness=5e1 and friccoeff=0.1:
     //      converges in 258 iterations (~150 seconds).
     //      "solved to acceptable level"
     // Decresaing stiffness to 1 does not seem to help much (a few more
     // iteratiosns, actually).
+    // dofs = all and stiffness=1 and friccoeff=0.1:
+    //      converges in 369 iterations (~720 seconds).
+    //      "solved to acceptable level"
+    // dofs = all and stiffness=1 and friccoeff=0:
+    //      converged in 79 iterations (~155 seconds).
+    //      "solved to acceptable level"
+    // TODO
     // TODO maybe the sparsity detection is wrong?
     // The hip_rz and knee_rz speed defects seem the hardest to satisfy.
 
@@ -524,6 +532,15 @@ int main() {
     // more filtering of input kinematics.
     // successive guesses.
     // build model from ground up.
+    // implicit dynamics.
+    // use forward simulation for initial guess.
+
+    // Almost all the time is spent computing the Hessian, and 2x more time
+    // is in the constraints Hessian than in the objective Hessian.
+
+    // TODO I don't think we can use treadmill data for this...
+
+    // TODO it seems like friction is the real issue.
 
     return EXIT_SUCCESS;
 
