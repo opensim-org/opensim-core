@@ -29,6 +29,7 @@ public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
     OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
+    // TODO rename to transition_velocity
     OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
 
     OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3, calcContactForce,
@@ -342,13 +343,15 @@ Model createModel(DOFs dofs) {
 
     // Contact
     if (true) {
-        double stiffness = 1;
-        double friction_coefficient = 0.0;
+        const double stiffness = 5e2;
+        const double friction_coefficient = 0.0;
+        const double velocity_scaling = 0.1;
         if (dofs >= DOFs::PTX_PTY_PRZ) {
             auto* contact = new AckermannVanDenBogert2010Contact();
             contact->setName("hip_contact");
             contact->set_stiffness(stiffness);
             contact->set_friction_coefficient(friction_coefficient);
+            contact->set_tangent_velocity_scaling_factor(velocity_scaling);
             model.addComponent(contact);
             contact->connectSocket_station(*hip_joint_center);
         }
@@ -357,6 +360,7 @@ Model createModel(DOFs dofs) {
             contact->setName("knee_contact");
             contact->set_stiffness(stiffness);
             contact->set_friction_coefficient(friction_coefficient);
+            contact->set_tangent_velocity_scaling_factor(velocity_scaling);
             model.addComponent(contact);
             contact->connectSocket_station(*knee_joint_center);
         }
@@ -365,6 +369,7 @@ Model createModel(DOFs dofs) {
             contact->setName("foot_contact");
             contact->set_stiffness(stiffness);
             contact->set_friction_coefficient(friction_coefficient);
+            contact->set_tangent_velocity_scaling_factor(velocity_scaling);
             model.addComponent(contact);
             contact->connectSocket_station(*heel);
         }
@@ -384,7 +389,7 @@ int main() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
-    DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ;
+    DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ; //_ANKLERZ;
 
     // Model (dynamics).
     // -----------------
@@ -465,8 +470,18 @@ int main() {
 
     MucoStateTrackingCost trackingCost;
     auto ref = STOFileAdapter::read("state_reference.mot");
-    ref.updDependentColumn("gp/p_ty/value") -= 1.2;
-    auto refFilt = filterLowpass(ref, 6.0, true);
+
+    // Alter data.
+    ref.updDependentColumn("gp/p_ty/value") -= 1.20;
+    const auto& reftime = ref.getIndependentColumn();
+    auto reftx = ref.updDependentColumn("gp/p_tx/value");
+    // I got this speed with "guess and check" by observing, in
+    // visualization, if the foot stayed in the same spot during stance.
+    const double walkingSpeed = 1.20; // m/s
+    for (int i = 0; i < reftx.nrow(); ++i) {
+        reftx[i] += walkingSpeed * reftime[i];
+    }
+    auto refFilt = filterLowpass(ref, 10.0, true);
 
     //auto model = mp.getPhase().getModel();
     model.initSystem();
@@ -492,6 +507,7 @@ int main() {
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
+    ms.set_optim_max_iterations(1000);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
