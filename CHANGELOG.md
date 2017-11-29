@@ -58,10 +58,10 @@ Converting from v3.x to v4.0
   compatibility, a joint's parent and child PhysicalFrames are swapped when
   opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
-  `Manager::integrate(double)`. You must also now call 
+  `Manager::integrate(double)`. You must also now call
   `Manager::initialize(SimTK::State&)` before integrating or pass the
-  initialization state into a convenience constructor. Here is a 
-   before-after example (see the documentation in the `Manager` class 
+  initialization state into a convenience constructor. Here is a
+   before-after example (see the documentation in the `Manager` class
    for more details):
   - Before:
     - Manager manager(model);
@@ -87,6 +87,22 @@ where fiber-velocity can be estimated from the state or assumed to be zero if th
   `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
   is no longer optional. The default argument for `preserveMassDist` in OpenSim
   3.3 was `false`. (PR #1994)
+- A GeometryPath without PathPoints is considered invalid, since it does not represent a physical system. You must specify PathPoints to define a valid GeometryPath for a Muscle, Ligament, PathSpring, etc... that is added to a Model. (PR #1948)
+  - Before (no longer valid):
+    ```cpp
+    Model model;
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", 1, 0.5, 0.5, 0);
+    model.addForce(muscle); // GeometryPath throws: "A valid path requires at least two PathPoints."
+    ```
+  - After (now required):
+    ```cpp
+    Model model;
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", 1, 0.5, 0.5, 0);
+    // require at least two path points to have a valid muscle path
+    muscle->addNewPathPoint("p1", model.getGround(), Vec3(0.0,0.0,0.0));
+    muscle->addNewPathPoint("p2", model.getGround(), Vec3(1.0,0.0,0.0));
+    model.addForce(muscle);
+    ```
 
 Composing a Component from other components
 -------------------------------------------
