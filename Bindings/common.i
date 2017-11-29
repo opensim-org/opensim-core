@@ -84,9 +84,6 @@ namespace OpenSim {
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
 %template(OutputSpatialVec) OpenSim::Output<SimTK::SpatialVec>;
 
-
-
-
 namespace OpenSim {
     %ignore Input::downcast(AbstractInput&); // suppress warning 509.
 }
@@ -402,6 +399,5 @@ namespace OpenSim {
 %template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
 %template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
-
 
 %include <OpenSim/Common/GCVSplineSet.h>
