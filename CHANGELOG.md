@@ -87,20 +87,24 @@ where fiber-velocity can be estimated from the state or assumed to be zero if th
   `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
   is no longer optional. The default argument for `preserveMassDist` in OpenSim
   3.3 was `false`. (PR #1994)
-- A GeometryPath without PathPoints is considered invalid, since it does not represent a physical system. You must specify PathPoints to define a valid GeometryPath for a Muscle, Ligament, PathSpring, etc... that is added to a Model. (PR #1948)
+- A GeometryPath without PathPoints is considered invalid, since it does not
+represent a physical system. You must specify PathPoints to define a valid
+GeometryPath for a Muscle, Ligament, PathSpring, etc... that is added to a
+Model. (PR #1948)
   - Before (no longer valid):
     ```cpp
     Model model;
-    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", 1, 0.5, 0.5, 0);
-    model.addForce(muscle); // GeometryPath throws: "A valid path requires at least two PathPoints."
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", ...);
+    // GeometryPath throws: "A valid path requires at least two PathPoints."
+    model.addForce(muscle);
     ```
   - After (now required):
     ```cpp
     Model model;
-    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", 1, 0.5, 0.5, 0);
-    // require at least two path points to have a valid muscle path
-    muscle->addNewPathPoint("p1", model.getGround(), Vec3(0.0,0.0,0.0));
-    muscle->addNewPathPoint("p2", model.getGround(), Vec3(1.0,0.0,0.0));
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", ...);
+    // require at least two path points to have a valid muscle GeometryPath
+    muscle->addNewPathPoint("p1", ...);
+    muscle->addNewPathPoint("p2", ...);
     model.addForce(muscle);
     ```
 
