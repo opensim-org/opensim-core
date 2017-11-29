@@ -539,6 +539,12 @@ int main() {
     // dofs = all and stiffness=1 and friccoeff=0:
     //      converged in 79 iterations (~155 seconds).
     //      "solved to acceptable level"
+    // dofs = no ankle, and stiffness=5e2 and friccoeff=0:
+    //      converged in 513 iterations (~630 seconds).
+    //      "solved to acceptable level"
+    // dofs = no ankle, and stiffness=5e3 and friccoeff=0:
+    //      does not solve; it's as if the pty actuator doesn't work; the pty
+    //      coordinate looks like parabolic arc.
     // TODO
     // TODO maybe the sparsity detection is wrong?
     // The hip_rz and knee_rz speed defects seem the hardest to satisfy.
