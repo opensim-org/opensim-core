@@ -202,6 +202,7 @@ On Windows using Visual Studio
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+        * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
     * The choice between 32-bit/64-bit must be the same between Java, Python,
@@ -474,6 +475,7 @@ ctest -j8
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+        * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
@@ -656,9 +658,10 @@ specific Ubuntu versions under 'For the impatient' below.
 * **version control** (optional): git; `git`.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8; `swig`.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
-      `openjdk-6-jdk` or `openjdk-7-jdk`.
+      `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+        * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5; `python-dev`.
 
 For example, you could get the required dependencies (except Simbody) via:
