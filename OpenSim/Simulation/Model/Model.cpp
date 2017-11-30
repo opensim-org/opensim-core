@@ -939,10 +939,7 @@ void Model::extendAddToSystem(SimTK::MultibodySystem& system) const
 }
 
 
-//_____________________________________________________________________________
-/**
- * Add any Component derived from ModelComponent to the Model.
- */
+// Add any Component derived from ModelComponent to the Model
 void Model::addModelComponent(ModelComponent* component)
 {
     if(component){
@@ -951,10 +948,7 @@ void Model::addModelComponent(ModelComponent* component)
     }
 }
 
-//_____________________________________________________________________________
-/*
- * Add a body to the Model.
- */
+// Add a body to the Model
 void Model::addBody(OpenSim::Body* body)
 {
     if (body){
@@ -963,10 +957,7 @@ void Model::addBody(OpenSim::Body* body)
     }
 }
 
-//_____________________________________________________________________________
-/*
-* Add a Marker to the Model.
-*/
+// Add a Marker to the Model
 void Model::addMarker(OpenSim::Marker* marker)
 {
     if (marker){
@@ -975,10 +966,7 @@ void Model::addMarker(OpenSim::Marker* marker)
     }
 }
 
-//_____________________________________________________________________________
-/*
-* Add a joint to the Model.
-*/
+// Add a joint to the Model
 void Model::addJoint(Joint* joint)
 {
     if (joint){
@@ -988,10 +976,7 @@ void Model::addJoint(Joint* joint)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Add a constraint to the Model.
- */
+// Add a constraint to the Model
 void Model::addConstraint(OpenSim::Constraint *constraint)
 {
     if(constraint){
@@ -1000,10 +985,7 @@ void Model::addConstraint(OpenSim::Constraint *constraint)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Add a force to the Model.
- */
+// Add a force to the Model
 void Model::addForce(OpenSim::Force *force)
 {
     if(force){
@@ -1012,10 +994,7 @@ void Model::addForce(OpenSim::Force *force)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Add a probe to the Model.
- */
+// Add a probe to the Model
 void Model::addProbe(OpenSim::Probe *probe)
 {
     if(probe){
@@ -1024,10 +1003,7 @@ void Model::addProbe(OpenSim::Probe *probe)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Remove a probe from the Model. Probe will be deleted as well since model owns it
- */
+// Remove a probe from the Model. Probe will be deleted since model owns it
 void Model::removeProbe(OpenSim::Probe *aProbe)
 {
     clearConnections();
@@ -1035,10 +1011,7 @@ void Model::removeProbe(OpenSim::Probe *aProbe)
     finalizeFromProperties();
 }
 
-//_____________________________________________________________________________
-/**
- * Add a contact geometry to the Model.
- */
+// Add a contact geometry to the Model
 void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
 {
     if (contactGeometry) {
@@ -1047,10 +1020,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Add a controller to the Model.
- */
+// Add a controller to the Model
 void Model::addController(Controller *aController)
 {
     if (aController) {
@@ -1059,8 +1029,7 @@ void Model::addController(Controller *aController)
     }
 }
 //_____________________________________________________________________________
-/**
- * Perform some setup functions that happen after the
+/* Perform some setup functions that happen after the
  * object has been deserialized. This method is
  * not yet designed to be called after a model has been
  * copied.
@@ -1075,10 +1044,9 @@ void Model::setup()
 }
 
 //_____________________________________________________________________________
-/**
- * Perform some clean up functions that are normally done from the destructor
- * however this gives the GUI a way to proactively do the cleaning without waiting for garbage
- * collection to do the actual cleanup.
+/* Perform some clean up functions that are normally done from the destructor
+ * however this gives the GUI a way to proactively do the cleaning without 
+ * waiting for garbage collection to do the actual cleanup.
  */
 void Model::cleanup()
 {
