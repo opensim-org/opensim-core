@@ -220,21 +220,6 @@ private:
 };
 
 
-/// Minimize the sum of squared controls, integrated over the phase.
-// TODO want a related cost for minimizing the value of state variables like
-// activation.
-class /*TODO OSIMMUSCOLLO_API*/ MucoControlCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoControlCost, MucoCost);
-public:
-    MucoControlCost() = default;
-protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
-            double& integrand) const override {
-        getModel().realizeVelocity(state); // TODO unnecessary.
-        integrand = getModel().getControls(state).normSqr();
-    }
-};
-
 Model createModel() {
     Model model;
     model.setName("point_mass");

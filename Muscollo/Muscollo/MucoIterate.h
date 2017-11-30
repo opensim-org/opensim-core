@@ -242,7 +242,11 @@ public:
     bool isCompatible(const MucoProblem&, bool throwOnError = false) const;
     /// Check if this iterate is numerically equal to another iterate.
     /// This uses SimTK::Test::numericallyEqual() internally.
-    bool isNumericallyEqual(const MucoIterate& other) const;
+    /// Accordingly, the tolerance is both a relative and absolute tolerance
+    /// (depending on the magnitude of quantities being compared).
+    bool isNumericallyEqual(const MucoIterate& other,
+            double tol = SimTK::NTraits<SimTK::Real>::getDefaultTolerance())
+            const;
     /// Compute the root-mean-square error between this iterate and another.
     /// The RMS is computed by numerically integrating the sum of squared
     /// error across states and controls and dividing by the larger of the

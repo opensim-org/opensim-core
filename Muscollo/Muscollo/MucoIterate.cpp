@@ -320,13 +320,14 @@ bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
     return compatible;
 }
 
-bool MucoIterate::isNumericallyEqual(const MucoIterate& other) const {
+bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
+        const {
     ensureUnsealed();
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
-            SimTK::Test::numericallyEqual(m_time, other.m_time, 1) &&
-            SimTK::Test::numericallyEqual(m_states, other.m_states, 1) &&
-            SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1);
+            SimTK::Test::numericallyEqual(m_time, other.m_time, 1, tol) &&
+            SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&
+            SimTK::Test::numericallyEqual(m_controls, other.m_controls, 1, tol);
 }
 
 double MucoIterate::compareRMS(const MucoIterate& other,
