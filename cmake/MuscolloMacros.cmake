@@ -62,6 +62,7 @@ function(MuscolloAddExampleCXX)
     set_target_properties(${MUCOEX_NAME} PROPERTIES
             FOLDER "Muscollo/Examples")
     target_link_libraries(${MUCOEX_NAME} osimMuscollo)
+	file(COPY ${MUCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DESTINATION ${MUSCOLLO_INSTALL_EXAMPLEDIR}/C++
