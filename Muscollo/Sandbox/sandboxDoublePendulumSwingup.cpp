@@ -98,7 +98,7 @@ Model createDoublePendulumModel() {
 int main() {
 
     MucoTool muco;
-    muco.setName("double_pendulum_tracking");
+    muco.setName("double_pendulum_swingup");
 
     // Define the optimal control problem.
     // ===================================
@@ -135,7 +135,8 @@ int main() {
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    int N = 50;
+    ms.set_num_mesh_points(N);
     ms.set_optim_max_iterations(5);
     //ms.set_verbosity(2);
     //ms.set_optim_hessian_approximation("exact");
@@ -152,20 +153,47 @@ int main() {
     guess.resampleWithNumTimes(10);
     ms.setGuess(guess);
 
-    muco.visualize(guess);
+    //muco.visualize(guess);
 
     muco.print("double_pendulum_swingup.omuco");
 
     // Solve the problem.
     // ==================
-    MucoSolution solution = muco.solve().unseal();
-    solution.write("double_pendulum_swingup_solution.sto");
-
-    muco.visualize(solution);
+    //MucoSolution solution = muco.solve().unseal();
+    //solution.write("double_pendulum_swingup_solution.sto");
+    //muco.visualize(solution);
 
     ms.set_optim_max_iterations(-1);
     MucoSolution solution2 = muco.solve().unseal();
     muco.visualize(solution2);
+
+    // Use implicit differential equations.
+    // ====================================
+    ms.set_dynamics_mode("implicit");
+    MucoIterate guessImp = ms.createGuess();
+    guessImp.setNumTimes(2);
+    guessImp.setTime({0, 1});
+    guessImp.setState("j0/q0/value", {0, -SimTK::Pi});
+    guessImp.setState("j1/q1/value", {0, 2*SimTK::Pi});
+    guessImp.setState("j0/q0/speed", {0, 0});
+    guessImp.setState("j1/q1/speed", {0, 0});
+    guessImp.setControl("j0/q0/accel", {0, 0});
+    guessImp.setControl("j1/q1/accel", {0, 0});
+    guessImp.setControl("tau0", {0, 0});
+    guessImp.setControl("tau1", {0, 0});
+    guessImp.resampleWithNumTimes(10);
+    ms.setGuess(guessImp);
+    ms.set_optim_max_iterations(-1);
+    // ms.clearGuess();
+
+    MucoSolution solutionImplicit = muco.solve();
+    solutionImplicit.write("double_pendulum_swingup_solution_implicit.sto");
+    muco.visualize(solutionImplicit);
+
+    std::cout << solution2.getTime()[N-1] << " "
+            << solutionImplicit.getTime()[N-1] << std::endl;
+    //TODO std::cout << "Comparison with implicit: " <<
+    //        solutionImplicit.compareRMS(solution2) << std::endl;
 
     return EXIT_SUCCESS;
 }

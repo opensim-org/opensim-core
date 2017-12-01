@@ -49,6 +49,9 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
     "0 for silent. 1 for only Muscollo's own output. "
     "2 for output from tropter and the underlying solver (default: 2).");
+    OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
+    "Dynamics are expressed as 'explicit' (default) or 'implicit' "
+    "differential equations.");
     OpenSim_DECLARE_PROPERTY(optim_solver, std::string,
     "The optimization solver for tropter to use; ipopt (default), or snopt.");
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
@@ -152,7 +155,11 @@ protected:
 
     /// Internal tropter optimal control problem.
     template <typename T>
-    class OCProblem;
+    class OptimalControlProblem;
+    template <typename T>
+    class OCPExplicit;
+    template <typename T>
+    class OCPImplicit;
 
     std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
@@ -168,8 +175,9 @@ private:
 
     void constructProperties();
 
-    mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
-            m_tropProblem;
+    // TODO
+    //mutable SimTK::ResetOnCopy<std::shared_ptr<OCProblem<double>>>
+    //        m_tropProblem;
 
     // When a copy of the solver is made, we want to keep any guess specified
     // by the API, but want to discard anything we've cached by loading a file.

@@ -556,6 +556,7 @@ int main() {
     // build model from ground up.
     // implicit dynamics.
     // use forward simulation for initial guess.
+    // alter finite diff step size.
 
     // Almost all the time is spent computing the Hessian, and 2x more time
     // is in the constraints Hessian than in the objective Hessian.
