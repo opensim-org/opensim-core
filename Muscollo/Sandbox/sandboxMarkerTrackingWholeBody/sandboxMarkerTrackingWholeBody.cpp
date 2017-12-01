@@ -16,8 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
- /// This example solves a basic marker tracking problem using a 10 DOF 
- /// OpenSim model.
+ /// Solves two tracking problem using a 10 DOF OpenSim model.
 
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -87,104 +86,43 @@ private:
     }
 };
 
-/// Minimize the sum of squared controls, integrated over the phase.
-// TODO want a related cost for minimizing the value of state variables like
-// activation.
-class /*TODO OSIMMUSCOLLO_API*/ MucoControlCost : public MucoCost {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MucoControlCost, MucoCost);
-public:
-    MucoControlCost() = default;
-protected:
-    void calcIntegralCostImpl(const SimTK::State& state,
-        double& integrand) const override {
-        getModel().realizeVelocity(state); // TODO unnecessary.
-        integrand = getModel().getControls(state).normSqr();
-    }
-};
-
-Model setupModel() {
-
-    Model model("subject01.osim");
+/// Convenience function for apply an ActivationCoordinateActuator to a model.
+void addActivationCoordinateActuator(Model& model, std::string coordName,
+    double optimalForce) {
 
     auto& coordSet = model.updCoordinateSet();
 
-    auto* tau_lumbar_extension = new ActivationCoordinateActuator();
-    tau_lumbar_extension->set_default_activation(0.1);
-    tau_lumbar_extension->setName("tau_lumbar_extension");
-    tau_lumbar_extension->setCoordinate(&coordSet.get("lumbar_extension"));
-    tau_lumbar_extension->setOptimalForce(100);
-    model.addComponent(tau_lumbar_extension);
-
-    auto* tau_pelvis_tilt = new ActivationCoordinateActuator();
-    tau_pelvis_tilt->set_default_activation(0.1);
-    tau_pelvis_tilt->setName("tau_pelvis_tilt");
-    tau_pelvis_tilt->setCoordinate(&coordSet.get("pelvis_tilt"));
-    tau_pelvis_tilt->setOptimalForce(100);
-    model.addComponent(tau_pelvis_tilt);
-
-    auto* tau_pelvis_tx = new ActivationCoordinateActuator();
-    tau_pelvis_tx->set_default_activation(0.1);
-    tau_pelvis_tx->setName("tau_pelvis_tx");
-    tau_pelvis_tx->setCoordinate(&coordSet.get("pelvis_tx"));
-    tau_pelvis_tx->setOptimalForce(1000);
-    model.addComponent(tau_pelvis_tx);
-
-    auto* tau_pelvis_ty = new ActivationCoordinateActuator();
-    tau_pelvis_ty->set_default_activation(0.1);
-    tau_pelvis_ty->setName("tau_pelvis_ty");
-    tau_pelvis_ty->setCoordinate(&coordSet.get("pelvis_ty"));
-    tau_pelvis_ty->setOptimalForce(1000);
-    model.addComponent(tau_pelvis_ty);
-
-    auto* tau_hip_flexion_r = new ActivationCoordinateActuator();
-    tau_hip_flexion_r->set_default_activation(0.1);
-    tau_hip_flexion_r->setName("tau_hip_flexion_r");
-    tau_hip_flexion_r->setCoordinate(&coordSet.get("hip_flexion_r"));
-    tau_hip_flexion_r->setOptimalForce(100);
-    model.addComponent(tau_hip_flexion_r);
-
-    auto* tau_knee_angle_r = new ActivationCoordinateActuator();
-    tau_knee_angle_r->set_default_activation(0.1);
-    tau_knee_angle_r->setName("tau_knee_angle_r");
-    tau_knee_angle_r->setCoordinate(&coordSet.get("knee_angle_r"));
-    tau_knee_angle_r->setOptimalForce(100);
-    model.addComponent(tau_knee_angle_r);
-
-    auto* tau_ankle_angle_r = new ActivationCoordinateActuator();
-    tau_ankle_angle_r->set_default_activation(0.1);
-    tau_ankle_angle_r->setName("tau_ankle_angle_r");
-    tau_ankle_angle_r->setCoordinate(&coordSet.get("ankle_angle_r"));
-    tau_ankle_angle_r->setOptimalForce(100);
-    model.addComponent(tau_ankle_angle_r);
-
-    auto* tau_hip_flexion_l = new ActivationCoordinateActuator();
-    tau_hip_flexion_l->set_default_activation(0.1);
-    tau_hip_flexion_l->setName("tau_hip_flexion_l");
-    tau_hip_flexion_l->setCoordinate(&coordSet.get("hip_flexion_l"));
-    tau_hip_flexion_l->setOptimalForce(100);
-    model.addComponent(tau_hip_flexion_l);
-
-    auto* tau_knee_angle_l = new ActivationCoordinateActuator();
-    tau_knee_angle_l->set_default_activation(0.1);
-    tau_knee_angle_l->setName("tau_knee_angle_l");
-    tau_knee_angle_l->setCoordinate(&coordSet.get("knee_angle_l"));
-    tau_knee_angle_l->setOptimalForce(100);
-    model.addComponent(tau_knee_angle_l);
-
-    auto* tau_ankle_angle_l = new ActivationCoordinateActuator();
-    tau_ankle_angle_l->set_default_activation(0.1);
-    tau_ankle_angle_l->setName("tau_ankle_angle_l");
-    tau_ankle_angle_l->setCoordinate(&coordSet.get("ankle_angle_l"));
-    tau_ankle_angle_l->setOptimalForce(100);
-    model.addComponent(tau_ankle_angle_l);
-
-    return model;
-
+    auto* actu = new ActivationCoordinateActuator();
+    actu->set_default_activation(0.1);
+    actu->setName("tau_" + coordName);
+    actu->setCoordinate(&coordSet.get(coordName));
+    actu->setOptimalForce(optimalForce);
+    model.addComponent(actu);
 }
 
-void setupProblemBounds(MucoProblem& mp) {
+/// Set the model and bounds for the specified MucoProblem.
+void setModelAndBounds(MucoProblem& mp) {
 
-    double finalTime = 2.5;
+    Model model("subject01.osim");
+
+    addActivationCoordinateActuator(model, "lumbar_extension", 100);
+    addActivationCoordinateActuator(model, "pelvis_tilt", 100);
+    addActivationCoordinateActuator(model, "pelvis_tx", 1000);
+    addActivationCoordinateActuator(model, "pelvis_ty", 1000);
+    addActivationCoordinateActuator(model, "hip_flexion_r", 100);
+    addActivationCoordinateActuator(model, "knee_angle_r", 100);
+    addActivationCoordinateActuator(model, "ankle_angle_r", 100);
+    addActivationCoordinateActuator(model, "hip_flexion_l", 100);
+    addActivationCoordinateActuator(model, "knee_angle_l", 100);
+    addActivationCoordinateActuator(model, "ankle_angle_l", 100);
+
+    // Model(dynamics).
+    // -----------------
+    mp.setModel(model);
+
+    // Bounds.
+    // -------
+    double finalTime = 1.25;
     mp.setTimeBounds(0, finalTime);
     mp.setStateInfo("ground_pelvis/pelvis_tilt/value", { -10, 10 });
     mp.setStateInfo("ground_pelvis/pelvis_tilt/speed", { -50, 50 });
@@ -226,9 +164,11 @@ void setupProblemBounds(MucoProblem& mp) {
     mp.setControlInfo("tau_hip_flexion_l", { -1, 1 });
     mp.setControlInfo("tau_knee_angle_l", { -1, 1 });
     mp.setControlInfo("tau_ankle_angle_l", { -1, 1 });
-
 }
 
+/// Solve a full-body (10 DOF) tracking problem by having each model 
+/// generalized coordinate track the coordinate value obtained from 
+/// inverse kinematics.
 MucoSolution solveStateTrackingProblem() {
 
     MucoTool muco;
@@ -238,13 +178,8 @@ MucoSolution solveStateTrackingProblem() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
-    // Model (dynamics).
-    // -----------------
-    mp.setModel(setupModel());
-
-    // Bounds.
-    // -------
-    setupProblemBounds(mp);
+    // Bounds and model.
+    setModelAndBounds(mp);
 
     // Cost.
     // -----
@@ -252,7 +187,7 @@ MucoSolution solveStateTrackingProblem() {
     auto ref = STOFileAdapter::read("state_reference.mot");
     auto refFilt = filterLowpass(ref, 6.0, true);
     tracking.setReference(refFilt);
-   // tracking.setAllowUnusedReferences(true);
+    //tracking.setAllowUnusedReferences(true);
     mp.addCost(tracking);
 
     // Configure the solver.
@@ -277,13 +212,15 @@ MucoSolution solveStateTrackingProblem() {
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-    solution.write("exampleMarkerTrackingWholeBody_states_solution.sto");
+    solution.write("sandboxMarkerTrackingWholeBody_states_solution.sto");
 
     muco.visualize(solution);
 
     return solution;
 }
 
+/// Solve a full-body (10 DOF) tracking problem by having the model markers
+/// track the marker trajectories directly.
 MucoSolution solveMarkerTrackingProblem() {
 
     MucoTool muco;
@@ -293,13 +230,8 @@ MucoSolution solveMarkerTrackingProblem() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
-    // Model (dynamics).
-    // -----------------
-    mp.setModel(setupModel());
-
-    // Bounds.
-    // -------
-    setupProblemBounds(mp);
+    // Bounds and model.
+    setModelAndBounds(mp);
         
     // Cost.
     // -----
@@ -307,14 +239,14 @@ MucoSolution solveMarkerTrackingProblem() {
     tracking.setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
     TimeSeriesTable refFilt = filterLowpass(ref.flatten(), 6.0, true);
-
-    //std::vector<std::string> suffixes = {"_1","_2","_3"};
     auto refPacked = refFilt.pack<double>();
     TimeSeriesTableVec3 refToUse(refPacked);
 
+    // Convert from millimeters to meters.
     auto& table = refToUse.updMatrix();
-    table = table / 1000.0; // convert from mm to m
+    table = table / 1000.0; 
 
+    // Set marker weights to match IK task weights.
     Set<MarkerWeight> markerWeights;
     markerWeights.cloneAndAppend({ "Top.Head", 3 });
     markerWeights.cloneAndAppend({ "R.ASIS", 3 });
@@ -330,14 +262,14 @@ MucoSolution solveMarkerTrackingProblem() {
     tracking.setAllowUnusedReferences(true);
     mp.addCost(tracking);
 
-    MucoControlCost effort;
-    effort.setName("effort");
-    mp.addCost(effort);
+    //MucoControlCost effort;
+    //effort.setName("effort");
+    //mp.addCost(effort);
 
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(100);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
@@ -357,20 +289,19 @@ MucoSolution solveMarkerTrackingProblem() {
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-    solution.write("exampleMarkerTrackingWholeBody_marker_solution.sto");
+    solution.write("sandboxMarkerTrackingWholeBody_marker_solution.sto");
 
     muco.visualize(solution);
 
     return solution;
 }
 
+/// Solve both problems and compare.
 int main() {
 
-    //MucoSolution stateTrackingSolution = solveStateTrackingProblem();
+    MucoSolution stateTrackingSolution = solveStateTrackingProblem();
 
-    MucoSolution markerTrackingSolution = solveMarkerTrackingProblem();
-
-    //solveMarkerTrackingProblem();
+    //MucoSolution markerTrackingSolution = solveMarkerTrackingProblem();
 
     return EXIT_SUCCESS;
 }

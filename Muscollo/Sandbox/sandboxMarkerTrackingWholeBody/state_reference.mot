@@ -8,7 +8,7 @@ Units are S.I. units (second, meters, Newtons, ...)
 Angles are in degrees.
 
 endheader
-time	ground_pelvis/pelvis_tilt/value	ground_pelvis/pelvis_tx/value	ground_pelvis/pelvis_ty/value	hip_r/hip_flexion_r/value	knee_r/knee_angle_r/value	ankle_r/ankle_angle_r/value	hip_l/hip_flexion_l/value	knee_r/knee_angle_l/value	ankle_l/ankle_angle_l/value	back/lumbar_extension/value
+time	ground_pelvis/pelvis_tilt/value	ground_pelvis/pelvis_tx/value	ground_pelvis/pelvis_ty/value	hip_r/hip_flexion_r/value	knee_r/knee_angle_r/value	ankle_r/ankle_angle_r/value	hip_l/hip_flexion_l/value	knee_l/knee_angle_l/value	ankle_l/ankle_angle_l/value	back/lumbar_extension/value
       0.00000000	     10.32995988	      0.61213494	      1.01790250	    -29.10815989	     -5.12860733	     12.81530059	     11.53587638	     -0.62251583	     -4.61417904	    -26.13945065
       0.01666667	     10.07837430	      0.61303298	      1.01659780	    -29.10828057	     -6.95176330	     12.82380037	     12.22232385	     -2.96171734	     -5.65381238	    -25.87606155
       0.03333333	      9.78090558	      0.61456262	      1.01551839	    -28.98988200	     -8.88661482	     12.52241192	     12.77083247	     -5.23610151	     -6.55319866	    -25.45129547
