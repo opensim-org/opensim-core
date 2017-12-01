@@ -55,6 +55,13 @@ public:
         return get_markers_reference();
     }
 
+    /// Specify if the markers_reference can contain marker data for a marker
+    /// not in the model. An exception is raised if set to false and marker
+    /// data exists for a marker not included in the model.
+    void setAllowUnusedReferences(bool tf) {
+        set_allow_unused_references(tf);
+    }
+
 protected:
     void initializeImpl() const override;
     void calcIntegralCostImpl(const SimTK::State& state,
@@ -67,12 +74,18 @@ private:
             "function. Names of markers in the reference desired to be track " 
             "should match the names of corresponding model markers.");
 
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
+            "Allow markers_reference to contain marker data for a marker "
+            "not in the model (such data would be ignored). Default: false.");
+
     void constructProperties() {
         constructProperty_markers_reference(MarkersReference());
+        constructProperty_allow_unused_references(false);
     };
 
     mutable GCVSplineSet m_refsplines;
     mutable std::vector<SimTK::ReferencePtr<const Marker>> m_model_markers;
+    mutable std::vector<int> m_refindices;
     mutable SimTK::Array_<double> m_marker_weights;
 };
 

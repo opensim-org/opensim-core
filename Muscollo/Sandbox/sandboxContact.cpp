@@ -170,7 +170,7 @@ private:
 /// activation_time_constant: 0.01
 /// default_activation: 0.5
 /// @dverbatim
-class /*TODO OSIMMUSCOLLO_API*/
+class /*OSIMMUSCOLLO_API*/
 ActivationCoordinateActuator : public CoordinateActuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
         CoordinateActuator);

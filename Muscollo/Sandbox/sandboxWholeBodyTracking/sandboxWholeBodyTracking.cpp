@@ -240,17 +240,18 @@ int main() {
     mp.setStateInfo("ankle/ankle_rz/value", {-10, 10});
     mp.setStateInfo("ankle/ankle_rz/speed", {-50, 50});
     // torques
-    mp.setControlInfo("tau_p_tx", { -100, 100 });
-    mp.setControlInfo("tau_p_ty", { -100, 100 });
-    //mp.setControlInfo("tau_p_tz", { -100, 100 }); 
-    //mp.setControlInfo("tau_p_rx", { -100, 100 });
-    //mp.setControlInfo("tau_p_ry", { -100, 100 }); 
-    mp.setControlInfo("tau_p_rz", { -100, 100 });
-    //mp.setControlInfo("tau_hip_rx", { -100, 100 }); 
-    //mp.setControlInfo("tau_hip_ry", { -100, 100 });
-    mp.setControlInfo("tau_hip_rz", { -100, 100 });
-    mp.setControlInfo("tau_knee_rz", {-100, 100});
-    mp.setControlInfo("tau_ankle_rz", {-100, 100});
+    const double Tmax = 150;
+    mp.setControlInfo("tau_p_tx", { -Tmax, Tmax });
+    mp.setControlInfo("tau_p_ty", { -Tmax, Tmax });
+    //mp.setControlInfo("tau_p_tz", { -Tmax, Tmax });
+    //mp.setControlInfo("tau_p_rx", { -Tmax, Tmax });
+    //mp.setControlInfo("tau_p_ry", { -Tmax, Tmax });
+    mp.setControlInfo("tau_p_rz", { -Tmax, Tmax });
+    //mp.setControlInfo("tau_hip_rx", { -Tmax, Tmax });
+    //mp.setControlInfo("tau_hip_ry", { -Tmax, Tmax });
+    mp.setControlInfo("tau_hip_rz", { -Tmax, Tmax });
+    mp.setControlInfo("tau_knee_rz", {-Tmax, Tmax});
+    mp.setControlInfo("tau_ankle_rz", {-Tmax, Tmax});
 
     MucoStateTrackingCost trackingCost;
     auto ref = STOFileAdapter::read("state_reference.mot");

@@ -98,6 +98,8 @@ int main() {
     mp.setControlInfo("tau0", { -100, 100 }); // TODO tighten.
     mp.setControlInfo("tau1", { -100, 100 });
 
+    // Cost.
+    // -----
     // Create marker trajectories based on exampleTracking.cpp joint angles.
     TimeSeriesTableVec3 markerTrajectories;
     markerTrajectories.setColumnLabels({"m0", "m1"});

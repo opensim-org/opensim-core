@@ -26,3 +26,4 @@ MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
         LIB_DEPENDS osimMuscollo tropter)
 		
 add_subdirectory(sandboxWholeBodyTracking)
+add_subdirectory(sandboxMarkerTrackingWholeBody)

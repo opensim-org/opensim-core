@@ -26,9 +26,24 @@
     
     // Cache reference pointers to model markers.
     m_model_markers.clear();
-    for (const auto& name : get_markers_reference().getNames()) {
-        const auto& m = getModel().getComponent<Marker>(name);
-        m_model_markers.emplace_back(&m);
+    const auto& markRefNames = get_markers_reference().getNames();
+    for (int i = 0; i < (int)markRefNames.size(); ++i) {
+        if (getModel().hasComponent<Marker>(markRefNames[i])) {
+            const auto& m = getModel().getComponent<Marker>(markRefNames[i]);
+            // Store a pointer to the current model marker.
+            m_model_markers.emplace_back(&m);
+            // Store the reference index corresponding to the current model
+            // marker.
+            m_refindices.push_back(i);
+        } else {
+            if (get_allow_unused_references()) {
+                continue;
+            } else {
+                OPENSIM_THROW_FRMOBJ(Exception,
+                    "Marker '" + markRefNames[i] + "' unrecognized by the "
+                    "specified model.");
+            }
+        }
     }
 
     // Get the marker weights. The MarkersReference constructor automatically
@@ -50,14 +65,19 @@
      getModel().realizePosition(state);
      SimTK::Vector timeVec(1, time);
 
-     for (int i = 0; i < (int)get_markers_reference().getNames().size(); ++i) {
+     for (int i = 0; i < m_model_markers.size(); ++i) {
          const auto& modelValue =
              m_model_markers[i]->getLocationInGround(state);
          SimTK::Vec3 refValue;
-         refValue[0] = m_refsplines[3*i].calcValue(timeVec);
-         refValue[1] = m_refsplines[3*i + 1].calcValue(timeVec);
-         refValue[2] = m_refsplines[3*i + 2].calcValue(timeVec);
 
-         integrand += m_marker_weights[i] * (modelValue - refValue).normSqr();
+         // Get the markers reference index corresponding to the current 
+         // model marker and get the reference value.
+         int refidx = m_refindices[i];
+         refValue[0] = m_refsplines[3*refidx].calcValue(timeVec);
+         refValue[1] = m_refsplines[3*refidx + 1].calcValue(timeVec);
+         refValue[2] = m_refsplines[3*refidx + 2].calcValue(timeVec);
+
+         integrand +=
+            m_marker_weights[refidx] * (modelValue - refValue).normSqr();
      }
  }
