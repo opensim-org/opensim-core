@@ -55,9 +55,9 @@ public:
         return get_markers_reference();
     }
 
-    /// Specify whether or not extra marker references are allowed.
-    /// If set true, the extra references will be ignored by the cost.
-    /// If false, extra references will cause an Exception to be raised.
+    /// Specify if the markers_reference can contain marker data for a marker
+    /// not in the model. An exception is raised if set to false and marker
+    /// data exists for a marker not included in the model.
     void setAllowUnusedReferences(bool tf) {
         set_allow_unused_references(tf);
     }
@@ -75,11 +75,8 @@ private:
             "should match the names of corresponding model markers.");
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
-            "Flag to determine whether or not marker data contained in the "
-            "markers_reference for which no model markers exist are allowed "
-            "to be ignored by the cost. If set to false (which is the "
-            "default setting) and any descrepancies between marker data and "
-            "model markers exists, an exception is raised." );
+            "Allow markers_reference to contain marker data for a marker "
+            "not in the model (such data would be ignored). Default: false.");
 
     void constructProperties() {
         constructProperty_markers_reference(MarkersReference());

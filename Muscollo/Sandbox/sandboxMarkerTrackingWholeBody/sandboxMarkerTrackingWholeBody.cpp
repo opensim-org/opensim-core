@@ -86,7 +86,7 @@ private:
     }
 };
 
-/// Convenience function for apply an ActivationCoordinateActuator to a model.
+/// Convenience function to apply an ActivationCoordinateActuator to the model.
 void addActivationCoordinateActuator(Model& model, std::string coordName,
     double optimalForce) {
 
@@ -169,6 +169,8 @@ void setModelAndBounds(MucoProblem& mp) {
 /// Solve a full-body (10 DOF) tracking problem by having each model 
 /// generalized coordinate track the coordinate value obtained from 
 /// inverse kinematics.
+///
+/// Time to solve: ~36.5 minutes.
 MucoSolution solveStateTrackingProblem() {
 
     MucoTool muco;
@@ -221,6 +223,8 @@ MucoSolution solveStateTrackingProblem() {
 
 /// Solve a full-body (10 DOF) tracking problem by having the model markers
 /// track the marker trajectories directly.
+///
+/// Time to solve: ~95 minutes.
 MucoSolution solveMarkerTrackingProblem() {
 
     MucoTool muco;
