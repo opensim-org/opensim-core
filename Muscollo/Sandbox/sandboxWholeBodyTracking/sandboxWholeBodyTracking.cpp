@@ -247,6 +247,7 @@ Model createModel(DOFs dofs) {
     Marker* hip_joint_center = nullptr;
     Marker* knee_joint_center = nullptr;
     Marker* heel = nullptr;
+    Marker* ball = nullptr;
     if (dofs >= DOFs::PTX_PTY_PRZ) {
         hip_joint_center = new Marker("hip_joint_center", *pelvis,
                 Vec3(0, 0, pelvisWidth / 2.0));
@@ -260,6 +261,9 @@ Model createModel(DOFs dofs) {
     if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
         heel = new Marker("heel", *shank, Vec3(0, -shankLength / 2.0, 0));
         model.addComponent(heel);
+
+        ball = new Marker("ball", *foot, Vec3(+footLength / 2.0, 0, 0));
+        model.addComponent(ball);
     }
 
     // Add actuators
@@ -341,11 +345,12 @@ Model createModel(DOFs dofs) {
         model.addComponent(tau_ankle_rz);
     }
 
+
     // Contact
     if (true) {
-        const double stiffness = 5e2;
-        const double friction_coefficient = 0.0;
-        const double velocity_scaling = 0.1;
+        const double stiffness = 5e6; // TODO 5e2;
+        const double friction_coefficient = 1;
+        const double velocity_scaling = 0.05;
         if (dofs >= DOFs::PTX_PTY_PRZ) {
             auto* contact = new AckermannVanDenBogert2010Contact();
             contact->setName("hip_contact");
@@ -365,13 +370,21 @@ Model createModel(DOFs dofs) {
             contact->connectSocket_station(*knee_joint_center);
         }
         if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
-            auto* contact = new AckermannVanDenBogert2010Contact();
-            contact->setName("foot_contact");
-            contact->set_stiffness(stiffness);
-            contact->set_friction_coefficient(friction_coefficient);
-            contact->set_tangent_velocity_scaling_factor(velocity_scaling);
-            model.addComponent(contact);
-            contact->connectSocket_station(*heel);
+            auto* heel_contact = new AckermannVanDenBogert2010Contact();
+            heel_contact->setName("heel_contact");
+            heel_contact->set_stiffness(stiffness);
+            heel_contact->set_friction_coefficient(friction_coefficient);
+            heel_contact->set_tangent_velocity_scaling_factor(velocity_scaling);
+            model.addComponent(heel_contact);
+            heel_contact->connectSocket_station(*heel);
+
+            auto* ball_contact = new AckermannVanDenBogert2010Contact();
+            ball_contact->setName("ball_contact");
+            ball_contact->set_stiffness(stiffness);
+            ball_contact->set_friction_coefficient(friction_coefficient);
+            ball_contact->set_tangent_velocity_scaling_factor(velocity_scaling);
+            model.addComponent(ball_contact);
+            ball_contact->connectSocket_station(*ball);
         }
     }
 
@@ -389,7 +402,7 @@ int main() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
-    DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ; //_ANKLERZ;
+    DOFs dofs = DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ_ANKLERZ;
 
     // Model (dynamics).
     // -----------------
@@ -472,12 +485,12 @@ int main() {
     auto ref = STOFileAdapter::read("state_reference.mot");
 
     // Alter data.
-    ref.updDependentColumn("gp/p_ty/value") -= 1.20;
+    ref.updDependentColumn("gp/p_ty/value") -= 1.22;
     const auto& reftime = ref.getIndependentColumn();
     auto reftx = ref.updDependentColumn("gp/p_tx/value");
     // I got this speed with "guess and check" by observing, in
     // visualization, if the foot stayed in the same spot during stance.
-    const double walkingSpeed = 1.20; // m/s
+    const double walkingSpeed = 1.05; // m/s
     for (int i = 0; i < reftx.nrow(); ++i) {
         reftx[i] += walkingSpeed * reftime[i];
     }
@@ -506,6 +519,7 @@ int main() {
     // Configure the solver.
     // =====================
     MucoTropterSolver& ms = muco.initSolver();
+    ms.set_dynamics_mode("implicit");
     ms.set_num_mesh_points(50);
     ms.set_optim_max_iterations(1000);
     ms.set_verbosity(2);
@@ -515,9 +529,11 @@ int main() {
     MucoIterate guess = ms.createGuess();
     guess.setStatesTrajectory(refFilt2, true, true);
     guess.write("states_guess.sto");
+    //MucoIterate guess("sandboxWholeBodyTracking_solution.sto");
     ms.setGuess(guess);
+    // Using the correct initial guess reduces computational time by 4x.
 
-    // muco.visualize(guess);
+    muco.visualize(guess);
 
     // Solve the problem.
     // ==================
@@ -566,6 +582,5 @@ int main() {
     // TODO it seems like friction is the real issue.
 
     return EXIT_SUCCESS;
-
 
 }
