@@ -30,7 +30,10 @@
     for (int i = 0; i < (int)markRefNames.size(); ++i) {
         if (getModel().hasComponent<Marker>(markRefNames[i])) {
             const auto& m = getModel().getComponent<Marker>(markRefNames[i]);
+            // Store a pointer to the current model marker.
             m_model_markers.emplace_back(&m);
+            // Store the reference index corresponding to the current model
+            // marker.
             m_refindices.push_back(i);
         } else {
             if (get_allow_unused_references()) {
@@ -66,6 +69,9 @@
          const auto& modelValue =
              m_model_markers[i]->getLocationInGround(state);
          SimTK::Vec3 refValue;
+
+         // Get the markers reference index corresponding to the current 
+         // model marker and get the reference value.
          int refidx = m_refindices[i];
          refValue[0] = m_refsplines[3*refidx].calcValue(timeVec);
          refValue[1] = m_refsplines[3*refidx + 1].calcValue(timeVec);

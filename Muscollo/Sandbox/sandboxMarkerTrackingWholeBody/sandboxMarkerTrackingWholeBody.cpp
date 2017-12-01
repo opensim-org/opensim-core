@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: exampleMarkerTrackingWholeBody.cpp                       *
+ * OpenSim Muscollo: sandboxMarkerTrackingWholeBody.cpp                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -170,7 +170,7 @@ void setModelAndBounds(MucoProblem& mp) {
 /// generalized coordinate track the coordinate value obtained from 
 /// inverse kinematics.
 ///
-/// Time to solve: ~36.5 minutes.
+/// Estimated time to solve: ~35 minutes.
 MucoSolution solveStateTrackingProblem() {
 
     MucoTool muco;
@@ -224,7 +224,7 @@ MucoSolution solveStateTrackingProblem() {
 /// Solve a full-body (10 DOF) tracking problem by having the model markers
 /// track the marker trajectories directly.
 ///
-/// Time to solve: ~95 minutes.
+/// Estimated time to solve: ~95 minutes.
 MucoSolution solveMarkerTrackingProblem() {
 
     MucoTool muco;
