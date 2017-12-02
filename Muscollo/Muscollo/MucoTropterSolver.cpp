@@ -875,7 +875,10 @@ void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     getTropterProblem();
-    guess.isCompatible(getProblemRep(), true);
+    if (get_dynamics_mode() != "implicit") {
+        // TODO check even if implicit.
+        guess.isCompatible(getProblem(), true);
+    }
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
