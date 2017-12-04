@@ -332,11 +332,16 @@ void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
 }
 
 MucoSolution MucoTropterSolver::solveImpl() const {
+    const Stopwatch stopwatch;
 
     auto ocp = getTropterProblem();
 
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+
     if (get_verbosity()) {
+        std::cout << std::string(79, '=') << "\n";
+        std::cout << "MucoTropterSolver starting.\n";
+        std::cout << std::string(79, '-') << std::endl;
         ocp->print_description();
     }
 
@@ -390,13 +395,20 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     // TODO move this to convert():
     MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
             tropSolution.success, tropSolution.status);
-    if (!mucoSolution && get_verbosity() > 0) {
-        std::cerr << std::string(79, '=') << "\n";
-        std::cerr << "MucoTropterSolver did not succeed:\n";
-        std::cerr << mucoSolution.getStatus() << "\n";
-        std::cerr << std::string(79, '=') << std::endl;
-    }
 
+    if (get_verbosity()) {
+        std::cout << std::string(79, '-') << "\n";
+        std::cout << "Elapsed real time: "
+                << stopwatch.getElapsedTimeFormatted() << ".\n";
+        if (mucoSolution) {
+            std::cout << "MucoTropterSolver succeeded!\n";
+        } else {
+            // TODO cout or cerr?
+            std::cout << "MucoTropterSolver did NOT succeed:\n";
+            std::cout << "  " << mucoSolution.getStatus() << "\n";
+        }
+        std::cout << std::string(79, '=') << std::endl;
+    }
 
     return mucoSolution;
 }
