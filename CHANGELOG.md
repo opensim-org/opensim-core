@@ -13,7 +13,8 @@ v4.0 (in development)
 
 Converting from v3.x to v4.0
 -----------------------------
-- A significant difference between v3.3 and 4.0 is the naming of dependencies. Unique names were not enforced in 3.3, which led to undefined behavior. In 4.0, Component pathnames must be unique. That is a Component must be unique with respect to its peers. A Model named *model* cannot have multiple subcomponents with the name *toes* either as bodies or joints, because the pathname */model/toes* will not uniquely identify the Component. However, multiple *toes* bodies can be used as long as they are not subcomponents of the same Component. For example, a *device* Component with a *toes* Body will have no issues since this *toes* Body has a unique pathname, */model/device/toes*, which is unambiguous. One could also create a multi-legged model, where each leg is identical, with *hip* and *knee* joints and *upper* and *lower* bodies, but each being unique because each `Leg` Component that contains the leg subcomponents, is uniquely named like */model/leg1* and */model/leg4/* and thus all of their subcomponents are unique, e.g.: */model/leg1/knee* vs. */model/leg4/knee*.        
+- A significant difference between v3.3 and 4.0 is the naming of dependencies. Unique names were not enforced in 3.3, which led to undefined behavior. In 4.0, Component pathnames must be unique. That is a Component must be unique with respect to its peers. A Model named *model* cannot have multiple subcomponents with the name *toes* either as bodies or joints, because the pathname */model/toes* will not uniquely identify the Component. However, multiple *toes* bodies can be used as long as they are not subcomponents of the same Component. For example, a *device* Component with a *toes* Body will have no issues since this *toes* Body has a unique pathname, */model/device/toes*, which is unambiguous. One could also create a multi-legged model, where each leg is identical, with *hip* and *knee* joints and *upper* and *lower* bodies, but each being unique because each `Leg` Component that contains the leg subcomponents, is uniquely named like */model/leg1* and */model/leg4/* and thus all of their subcomponents are unique, e.g.: */model/leg1/knee* vs. */model/leg4/knee*.
+- Component naming is more strictly enforced and names with spaces are no longer accepted. Spaces are only allowable as separators for `Output` or `Channel` names that satisfy a list `Input`. (PR #1955)
 - The Actuator class has been renamed to ScalarActuator (and `Actuator_` has been renamed to `Actuator`) (PR #126).
   If you have subclassed from Actuator, you must now subclass from ScalarActuator.
 - Methods like `Actuator::getForce` are renamed to use "Actuator" instead (e.g., `Actuator::getActuator`) (PR #209).
@@ -57,10 +58,10 @@ Converting from v3.x to v4.0
   compatibility, a joint's parent and child PhysicalFrames are swapped when
   opening a Model if the `reverse` element is set to `true`.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
-  `Manager::integrate(double)`. You must also now call 
+  `Manager::integrate(double)`. You must also now call
   `Manager::initialize(SimTK::State&)` before integrating or pass the
-  initialization state into a convenience constructor. Here is a 
-   before-after example (see the documentation in the `Manager` class 
+  initialization state into a convenience constructor. Here is a
+   before-after example (see the documentation in the `Manager` class
    for more details):
   - Before:
     - Manager manager(model);
@@ -86,6 +87,26 @@ where fiber-velocity can be estimated from the state or assumed to be zero if th
   `preserveMassDist` arguments were swapped and the `preserveMassDist` argument
   is no longer optional. The default argument for `preserveMassDist` in OpenSim
   3.3 was `false`. (PR #1994)
+- A GeometryPath without PathPoints is considered invalid, since it does not
+represent a physical system. You must specify PathPoints to define a valid
+GeometryPath for a Muscle, Ligament, PathSpring, etc... that is added to a
+Model. (PR #1948)
+  - Before (no longer valid):
+    ```cpp
+    Model model;
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", ...);
+    // GeometryPath throws: "A valid path requires at least two PathPoints."
+    model.addForce(muscle);
+    ```
+  - After (now required):
+    ```cpp
+    Model model;
+    Thelen2003Muscle* muscle = new Thelen2003Muscle("muscle", ...);
+    // require at least two path points to have a valid muscle GeometryPath
+    muscle->addNewPathPoint("p1", ...);
+    muscle->addNewPathPoint("p2", ...);
+    model.addForce(muscle);
+    ```
 
 Composing a Component from other components
 -------------------------------------------

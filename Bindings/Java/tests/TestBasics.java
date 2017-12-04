@@ -32,12 +32,15 @@ class TestBasics {
 
     public static void testMuscleList() {
         Model model = new Model();
-
+        Ground ground = model.getGround();
         Thelen2003Muscle thelenMuscle =
             new Thelen2003Muscle("Darryl", 1, 0.5, 0.5, 0);
+        thelenMuscle.addNewPathPoint("muscle1-point1", ground, new Vec3(0.0,0.0,0.0));
+        thelenMuscle.addNewPathPoint("muscle1-point2", ground, new Vec3(1.0,0.0,0.0));
         Millard2012EquilibriumMuscle millardMuscle =
             new Millard2012EquilibriumMuscle("Matt", 1, 0.5, 0.5, 0);
-
+        millardMuscle.addNewPathPoint("muscle1-point1", ground, new Vec3(0.0,0.0,0.0));
+        millardMuscle.addNewPathPoint("muscle1-point2", ground, new Vec3(1.0,0.0,0.0));
         model.addComponent(thelenMuscle);
         model.addComponent(millardMuscle);
 

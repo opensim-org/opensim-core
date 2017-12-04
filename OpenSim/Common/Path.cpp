@@ -238,7 +238,8 @@ bool Path::isLegalPathVec(const std::vector<std::string>& pathVec) const
 void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
+        OPENSIM_THROW(Exception, 
+            "Invalid character used in pathElement '" + pathElement + "'.");
     }
 
     if (pathElement.empty()) {

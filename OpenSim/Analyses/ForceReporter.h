@@ -104,7 +104,7 @@ public:
     
     /** Get forces table.                                                     */
     TimeSeriesTable getForcesTable() const {
-        return _forceStore.getAsTimeSeriesTable();
+        return _forceStore.exportToTable();
     }
 
     // MODEL

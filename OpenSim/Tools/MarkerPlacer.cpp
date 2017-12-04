@@ -37,6 +37,7 @@
 #include "IKCoordinateTask.h"
 #include "IKTaskSet.h"
 #include <OpenSim/Analyses/StatesReporter.h>
+#include <OpenSim/Common/IO.h>
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -391,23 +392,33 @@ bool MarkerPlacer::processModel(Model* aModel,
     //_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
     if(_printResultFiles) {
-        if (!_outputModelFileNameProp.getValueIsDefault())
-        {
-            aModel->print(aPathToSubject + _outputModelFileName);
-            cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
-        }
+        std::string savedCwd = IO::getCwd();
+        IO::chDir(aPathToSubject);
 
-        if (!_outputMarkerFileNameProp.getValueIsDefault())
-        {
-            aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
-            cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
+        try { // writing can throw an exception
+            if (_outputModelFileNameProp.isValidFileName()) {
+                aModel->print(aPathToSubject + _outputModelFileName);
+                cout << "Wrote model file " << _outputModelFileName <<
+                    " from model " << aModel->getName() << endl;
+            }
+
+            if (_outputMarkerFileNameProp.isValidFileName()) {
+                aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
+                cout << "Wrote marker file " << _outputMarkerFileName <<
+                    " from model " << aModel->getName() << endl;
+            }
+
+            if (_outputMotionFileNameProp.isValidFileName()) {
+                _outputStorage->print(aPathToSubject + _outputMotionFileName,
+                    "w", "File generated from solving marker data for model "
+                    + aModel->getName());
+            }
+        } // catch the exception so we can reset the working directory
+        catch (std::exception& ex) {
+            IO::chDir(savedCwd);
+            OPENSIM_THROW_FRMOBJ(Exception, ex.what());
         }
-        
-        if (!_outputMotionFileNameProp.getValueIsDefault())
-        {
-            _outputStorage->print(aPathToSubject + _outputMotionFileName, 
-                "w", "File generated from solving marker data for model "+aModel->getName());
-        }
+        IO::chDir(savedCwd);
     }
 
     return true;
