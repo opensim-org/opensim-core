@@ -348,7 +348,7 @@ Model createModel(DOFs dofs) {
 
     // Contact
     if (true) {
-        const double stiffness = 5e6; // TODO 5e2;
+        const double stiffness = 5e4; // TODO 5e2;
         const double friction_coefficient = 1;
         const double velocity_scaling = 0.05;
         if (dofs >= DOFs::PTX_PTY_PRZ) {
@@ -511,9 +511,11 @@ int main() {
     mp.addCost(trackingCost);
 
     // Takes longer to solve with this cost:
+    // With implicit, and 5e4 stiffness, doesn't not converge within 1000
+    // iterations:
     //MucoControlCost controlCost;
     //controlCost.setName("effort");
-    //controlCost.set_weight(0.000001);
+    //controlCost.set_weight(0.00000001);
     //mp.addCost(controlCost);
 
     // Configure the solver.
@@ -561,6 +563,12 @@ int main() {
     // dofs = no ankle, and stiffness=5e3 and friccoeff=0:
     //      does not solve; it's as if the pty actuator doesn't work; the pty
     //      coordinate looks like parabolic arc.
+
+    // With implicit dynamics mode:
+    // dofs = all, stiffness=5e4, friccoeff=1, velocity scaling=0.05
+    //      converged in 116 iterations (~215 seconds).
+    //      "Optimal Solution Found."
+
     // TODO
     // TODO maybe the sparsity detection is wrong?
     // The hip_rz and knee_rz speed defects seem the hardest to satisfy.
