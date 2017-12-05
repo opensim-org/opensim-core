@@ -49,6 +49,8 @@ public:
     OpenSim_DECLARE_PROPERTY(verbosity, int,
     "0 for silent. 1 for only Muscollo's own output. "
     "2 for output from tropter and the underlying solver (default: 2).");
+    // TODO make a private property with a custom setter so we can detect
+    // when the user has changed this and we can invalidate relevant caches.
     OpenSim_DECLARE_PROPERTY(dynamics_mode, std::string,
     "Dynamics are expressed as 'explicit' (default) or 'implicit' "
     "differential equations.");
