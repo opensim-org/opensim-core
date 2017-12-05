@@ -45,12 +45,65 @@ class /*OSIMMUSCOLLO_API*/
         CoordinateActuator);
 public:
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Larger value means activation can change more rapidly (units: seconds).");
+        "Larger value means activation can change more rapidly "
+        "(units: seconds).");
 
     OpenSim_DECLARE_PROPERTY(default_activation, double,
         "Value of activation in the default state returned by initSystem().");
 
     ActivationCoordinateActuator() {
+        constructProperties();
+    }
+
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
+        Super::extendAddToSystem(system);
+        addStateVariable("activation", SimTK::Stage::Dynamics);
+    }
+
+    void extendInitStateFromProperties(SimTK::State& s) const override {
+        Super::extendInitStateFromProperties(s);
+        setStateVariableValue(s, "activation", get_default_activation());
+    }
+
+    void extendSetPropertiesFromState(const SimTK::State& s) override {
+        Super::extendSetPropertiesFromState(s);
+        set_default_activation(getStateVariableValue(s, "activation"));
+    }
+
+    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
+    void computeStateVariableDerivatives(const SimTK::State& s) const override 
+    {
+        const auto& tau = get_activation_time_constant();
+        const auto& u = getControl(s);
+        const auto& a = getStateVariableValue(s, "activation");
+        const SimTK::Real adot = (u - a) / tau;
+        setStateVariableDerivativeValue(s, "activation", adot);
+    }
+
+    double computeActuation(const SimTK::State& s) const override {
+        return getStateVariableValue(s, "activation") * getOptimalForce();
+    }
+private:
+    void constructProperties() {
+        constructProperty_activation_time_constant(0.010);
+        constructProperty_default_activation(0.5);
+    }
+};
+
+class /*OSIMMUSCOLLO_API*/
+    ActivationMuscleLikeCoordinateActuator : 
+            public MuscleLikeCoordinateActuator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActivationMuscleLikeCoordinateActuator,
+        MuscleLikeCoordinateActuator);
+public:
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "Larger value means activation can change more rapidly "
+        "(units: seconds).");
+
+    OpenSim_DECLARE_PROPERTY(default_activation, double,
+        "Value of activation in the default state returned by initSystem().");
+
+    ActivationMuscleLikeCoordinateActuator() {
         constructProperties();
     }
 
@@ -90,7 +143,7 @@ private:
 
 /// Convenience function to apply an ActivationCoordinateActuator to the model.
 void addActivationCoordinateActuator(Model& model, std::string coordName,
-    double optimalForce) {
+        double optimalForce) {
 
     auto& coordSet = model.updCoordinateSet();
 
@@ -103,14 +156,15 @@ void addActivationCoordinateActuator(Model& model, std::string coordName,
 }
 
 /// Convenience function to apply an MuscleLikeCoordinateActuator to the model.
-void addMuscleLikeCoordinateActuator(Model& model, std::string coordName) {
+void addMuscleLikeCoordinateActuator(Model& model, std::string coordName, 
+        double optimalForce) {
 
     auto& coordSet = model.updCoordinateSet();
 
-    auto* actu = new MuscleLikeCoordinateActuator();
+    auto* actu = new ActivationMuscleLikeCoordinateActuator();
     actu->setName("tau_" + coordName);
     actu->setCoordinate(&coordSet.get(coordName));
-    actu->setOptimalForce(1);
+    actu->setOptimalForce(optimalForce);
 
     auto* posFunc = new PolynomialFunction();
     posFunc->setName("pos_force_vs_coordinate_function");
@@ -151,18 +205,18 @@ Model setupModel(bool usingMuscleLikeActuators) {
 
     Model model("subject01.osim");  
 
-    addActivationCoordinateActuator(model, "lumbar_extension", 100);
-    addActivationCoordinateActuator(model, "pelvis_tilt", 100);
+    addActivationCoordinateActuator(model, "lumbar_extension", 500);
+    addActivationCoordinateActuator(model, "pelvis_tilt", 500);
     addActivationCoordinateActuator(model, "pelvis_tx", 1000);
-    addActivationCoordinateActuator(model, "pelvis_ty", 1000);
+    addActivationCoordinateActuator(model, "pelvis_ty", 2500);
 
     if (usingMuscleLikeActuators) {
-        addMuscleLikeCoordinateActuator(model, "hip_flexion_r");
-        addMuscleLikeCoordinateActuator(model, "knee_angle_r");
-        addMuscleLikeCoordinateActuator(model, "ankle_angle_r");
-        addMuscleLikeCoordinateActuator(model, "hip_flexion_l");
-        addMuscleLikeCoordinateActuator(model, "knee_angle_l");
-        addMuscleLikeCoordinateActuator(model, "ankle_angle_l");
+        addMuscleLikeCoordinateActuator(model, "hip_flexion_r", 100);
+        addMuscleLikeCoordinateActuator(model, "knee_angle_r", 100);
+        addMuscleLikeCoordinateActuator(model, "ankle_angle_r", 100);
+        addMuscleLikeCoordinateActuator(model, "hip_flexion_l", 100);
+        addMuscleLikeCoordinateActuator(model, "knee_angle_l", 100);
+        addMuscleLikeCoordinateActuator(model, "ankle_angle_l", 100);
     } else {
         addActivationCoordinateActuator(model, "hip_flexion_r", 100);
         addActivationCoordinateActuator(model, "knee_angle_r", 100);
@@ -204,14 +258,12 @@ void setBounds(MucoProblem& mp, bool usingMuscleLikeActuators) {
     mp.setStateInfo("tau_pelvis_tilt/activation", {-1, 1});
     mp.setStateInfo("tau_pelvis_tx/activation", { -1, 1 });
     mp.setStateInfo("tau_pelvis_ty/activation", { -1, 1 });
-    if (!usingMuscleLikeActuators) {
-        mp.setStateInfo("tau_hip_flexion_r/activation", { -1, 1 });
-        mp.setStateInfo("tau_knee_angle_r/activation", { -1, 1 });
-        mp.setStateInfo("tau_ankle_angle_r/activation", { -1, 1 });
-        mp.setStateInfo("tau_hip_flexion_l/activation", { -1, 1 });
-        mp.setStateInfo("tau_knee_angle_l/activation", { -1, 1 });
-        mp.setStateInfo("tau_ankle_angle_l/activation", { -1, 1 });
-    }
+    mp.setStateInfo("tau_hip_flexion_r/activation", { -1, 1 });
+    mp.setStateInfo("tau_knee_angle_r/activation", { -1, 1 });
+    mp.setStateInfo("tau_ankle_angle_r/activation", { -1, 1 });
+    mp.setStateInfo("tau_hip_flexion_l/activation", { -1, 1 });
+    mp.setStateInfo("tau_knee_angle_l/activation", { -1, 1 });
+    mp.setStateInfo("tau_ankle_angle_l/activation", { -1, 1 });
     mp.setControlInfo("tau_lumbar_extension", { -1, 1 });
     mp.setControlInfo("tau_pelvis_tilt", { -1, 1 });
     mp.setControlInfo("tau_pelvis_tx", { -1, 1 });
