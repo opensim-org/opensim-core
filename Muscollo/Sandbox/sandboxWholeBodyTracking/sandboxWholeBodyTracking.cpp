@@ -23,8 +23,8 @@
 
 using namespace OpenSim;
 
-class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Contact : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
+class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Force : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, Force);
 public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
@@ -37,7 +37,7 @@ public:
 
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
 
-    AckermannVanDenBogert2010Contact() {
+    AckermannVanDenBogert2010Force() {
         constructProperties();
     }
 
@@ -352,7 +352,7 @@ Model createModel(DOFs dofs) {
         const double friction_coefficient = 1;
         const double velocity_scaling = 0.05;
         if (dofs >= DOFs::PTX_PTY_PRZ) {
-            auto* contact = new AckermannVanDenBogert2010Contact();
+            auto* contact = new AckermannVanDenBogert2010Force();
             contact->setName("hip_contact");
             contact->set_stiffness(stiffness);
             contact->set_friction_coefficient(friction_coefficient);
@@ -361,7 +361,7 @@ Model createModel(DOFs dofs) {
             contact->connectSocket_station(*hip_joint_center);
         }
         if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ) {
-            auto* contact = new AckermannVanDenBogert2010Contact();
+            auto* contact = new AckermannVanDenBogert2010Force();
             contact->setName("knee_contact");
             contact->set_stiffness(stiffness);
             contact->set_friction_coefficient(friction_coefficient);
@@ -370,7 +370,7 @@ Model createModel(DOFs dofs) {
             contact->connectSocket_station(*knee_joint_center);
         }
         if (dofs >= DOFs::PTX_PTY_PRZ_HIPRZ_KNEERZ) {
-            auto* heel_contact = new AckermannVanDenBogert2010Contact();
+            auto* heel_contact = new AckermannVanDenBogert2010Force();
             heel_contact->setName("heel_contact");
             heel_contact->set_stiffness(stiffness);
             heel_contact->set_friction_coefficient(friction_coefficient);
@@ -378,7 +378,7 @@ Model createModel(DOFs dofs) {
             model.addComponent(heel_contact);
             heel_contact->connectSocket_station(*heel);
 
-            auto* ball_contact = new AckermannVanDenBogert2010Contact();
+            auto* ball_contact = new AckermannVanDenBogert2010Force();
             ball_contact->setName("ball_contact");
             ball_contact->set_stiffness(stiffness);
             ball_contact->set_friction_coefficient(friction_coefficient);

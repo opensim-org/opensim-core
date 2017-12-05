@@ -70,8 +70,8 @@ public:
     }
 };
 
-class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Contact : public Force {
-OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Contact, Force);
+class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Force : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, Force);
 public:
     OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
@@ -83,7 +83,7 @@ public:
 
     OpenSim_DECLARE_SOCKET(station, Station, "TODO");
 
-    AckermannVanDenBogert2010Contact() {
+    AckermannVanDenBogert2010Force() {
         constructProperties();
     }
 
@@ -278,7 +278,7 @@ Model createModel2D() {
     model.addComponent(station);
 
     //auto* force = new CustomContactForce();
-    auto* force = new AckermannVanDenBogert2010Contact();
+    auto* force = new AckermannVanDenBogert2010Force();
     force->setName("contact");
     model.addComponent(force);
     force->connectSocket_station(*station);
@@ -384,7 +384,7 @@ Model createModelPendulum(double linkLength, double jointHeight,
     station->connectSocket_parent_frame(*body);
     model.addComponent(station);
 
-    auto* force = new AckermannVanDenBogert2010Contact();
+    auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(dissipation);
     force->set_friction_coefficient(frictionCoeff);
     force->setName("contact");
@@ -465,7 +465,7 @@ Model createModelPendulumActivationCoordinateActuator() {
     station->connectSocket_parent_frame(*body);
     model.addComponent(station);
 
-    auto* force = new AckermannVanDenBogert2010Contact();
+    auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
@@ -570,7 +570,7 @@ Model createModelSLIP() {
     station->connectSocket_parent_frame(*foot);
     model.addComponent(station);
 
-    auto* force = new AckermannVanDenBogert2010Contact();
+    auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     //force->set_stiffness(5e3);
     force->set_friction_coefficient(1.0);
@@ -628,7 +628,7 @@ Model createModelSLIPActuated() {
     station->connectSocket_parent_frame(*foot);
     model.addComponent(station);
 
-    auto* force = new AckermannVanDenBogert2010Contact();
+    auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
     //force->set_stiffness(5e3);
     force->set_friction_coefficient(1.0);
@@ -782,7 +782,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     Model model = mp.getPhase().getModel();
     model.initSystem();
     const auto& contact =
-            model.getComponent<AckermannVanDenBogert2010Contact>("contact");
+            model.getComponent<AckermannVanDenBogert2010Force>("contact");
     TimeSeriesTableVec3 contactForceHistory;
     contactForceHistory.setColumnLabels({"contact"});
 
