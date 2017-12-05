@@ -1,18 +1,13 @@
 /* -------------------------------------------------------------------------- *
- *                OpenSim:  MuscleLikeCoordinateActuator.cpp                  *
+ * OpenSim Muscollo: MuscleLikeCoordinateActuator.cpp                         *
  * -------------------------------------------------------------------------- *
- * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
- * See http://opensim.stanford.edu and the NOTICE file for more information.  *
- * OpenSim is developed at Stanford University and supported by the US        *
- * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
- * through the Warrior Web program.                                           *
+ * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Copyright (c) 2005-2012 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
@@ -21,9 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-//==============================================================================
-// INCLUDES
-//==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -33,168 +25,130 @@
 using namespace OpenSim;
 using namespace std;
 
-//==============================================================================
-// CONSTRUCTOR
-//==============================================================================
-// Uses default (compiler-generated) destructor, copy constructor, copy 
-// assignment operator.
-
-//_____________________________________________________________________________
-// Also serves as default constructor (with coordinateName="").
-MuscleLikeCoordinateActuator::MuscleLikeCoordinateActuator(const std::string& coordinateName)
-{
-	setNull();
+MuscleLikeCoordinateActuator::MuscleLikeCoordinateActuator(
+        const std::string& coordinateName) {
+    setNull();
     constructProperties();
-	//setMinControl(-1.0);
-	//setMaxControl(1.0);
 
     if (!coordinateName.empty())
-	    set_coordinate(coordinateName);
+        set_coordinate(coordinateName);
 }
 
-MuscleLikeCoordinateActuator::MuscleLikeCoordinateActuator(const std::string& coordinateName,
-														   double gain,
-														   Function* posForceVsCoordinateFunction,
-														   Function* negForceVsCoordinateFunction,
-														   double qdot_max)
-{
-	setNull();
-	constructProperties();
-	//setMinControl(-1.0);
-	//setMaxControl(1.0);
+MuscleLikeCoordinateActuator::MuscleLikeCoordinateActuator(
+        const std::string& coordinateName, 
+        double optimalForce,
+        Function* posForceVsCoordinateFunction,
+        Function* negForceVsCoordinateFunction, 
+        double qdot_max) {
+    setNull();
+    constructProperties();
 
-	set_coordinate(coordinateName);
-	set_optimal_force(gain);
-	set_pos_force_vs_coordinate_function(*posForceVsCoordinateFunction);
-	set_neg_force_vs_coordinate_function(*negForceVsCoordinateFunction);
-	set_qdot_max(qdot_max);
+    set_coordinate(coordinateName);
+    set_optimal_force(optimalForce);
+    set_pos_force_vs_coordinate_function(*posForceVsCoordinateFunction);
+    set_neg_force_vs_coordinate_function(*negForceVsCoordinateFunction);
+    set_qdot_max(qdot_max);
 }
 
-//_____________________________________________________________________________
-// Set the data members of this actuator to their null values.
-void MuscleLikeCoordinateActuator::setNull()
-{
-	setAuthors("Carmichael Ong");
+void MuscleLikeCoordinateActuator::setNull() {
+    setAuthors("Carmichael Ong");
 }
 
-//_____________________________________________________________________________
-// Allocate and initialize properties.
-void MuscleLikeCoordinateActuator::constructProperties()
-{
-	constructProperty_pos_force_vs_coordinate_function(Constant(0.0));
-	constructProperty_neg_force_vs_coordinate_function(Constant(0.0));
-	constructProperty_qdot_max(1.0);
+void MuscleLikeCoordinateActuator::constructProperties() {
+    constructProperty_pos_force_vs_coordinate_function(Constant(0.0));
+    constructProperty_neg_force_vs_coordinate_function(Constant(0.0));
+    constructProperty_qdot_max(1.0);
 }
 
-
-//==============================================================================
-// GET AND SET
-//==============================================================================
-void MuscleLikeCoordinateActuator::setGain(double gain)
-{
-	set_optimal_force(gain);
+void MuscleLikeCoordinateActuator::setPosForceVsCoordinateFunction(
+        Function* posForceVsCoordinateFunction) {
+    set_pos_force_vs_coordinate_function(*posForceVsCoordinateFunction);
 }
 
-double MuscleLikeCoordinateActuator::getGain() {
-	return get_optimal_force();
+const 
+Function* MuscleLikeCoordinateActuator::getPosForceVsCoordinateFunction() {
+    return &get_pos_force_vs_coordinate_function();
 }
 
-void MuscleLikeCoordinateActuator::setPosForceVsCoordinateFunction(Function* posForceVsCoordinateFunction)
-{
-	set_pos_force_vs_coordinate_function(*posForceVsCoordinateFunction);
+void MuscleLikeCoordinateActuator::setNegForceVsCoordinateFunction(
+        Function* negForceVsCoordinateFunction) {
+    set_neg_force_vs_coordinate_function(*negForceVsCoordinateFunction);
 }
 
-const Function* MuscleLikeCoordinateActuator::getPosForceVsCoordinateFunction()
-{
-	return &get_pos_force_vs_coordinate_function();
+const 
+Function* MuscleLikeCoordinateActuator::getNegForceVsCoordinateFunction() {
+    return &get_neg_force_vs_coordinate_function();
 }
 
-void MuscleLikeCoordinateActuator::setNegForceVsCoordinateFunction(Function* negForceVsCoordinateFunction)
-{
-	set_neg_force_vs_coordinate_function(*negForceVsCoordinateFunction);
+void MuscleLikeCoordinateActuator::setMaxVelocity(double qdot_max) {
+    set_qdot_max(qdot_max);
 }
 
-const Function* MuscleLikeCoordinateActuator::getNegForceVsCoordinateFunction()
-{
-	return &get_neg_force_vs_coordinate_function();
+double MuscleLikeCoordinateActuator::getMaxVelocity() {
+    return get_qdot_max();
 }
 
-void MuscleLikeCoordinateActuator::setMaxVelocity(double qdot_max)
-{
-	set_qdot_max(qdot_max);
+double MuscleLikeCoordinateActuator::computeActuation( 
+        const SimTK::State& s) const {
+    if(&getModel() == NULL) {
+        return 0.0;
+    }
+
+    return getControl(s) * getOptimalForce() * 
+           getForceVsCoordinateFunctionValue(s) * getVelocityMultiplier(s);
 }
 
-double MuscleLikeCoordinateActuator::getMaxVelocity()
-{
-	return get_qdot_max();
+double MuscleLikeCoordinateActuator::getForceVsCoordinateFunctionValue( 
+        const SimTK::State& s) const {
+    double coordinateValue = getCoordinate()->getValue(s);
+    if ( getControl(s) >= 0.0 ) {
+        double thisValue = get_pos_force_vs_coordinate_function().calcValue(
+                SimTK::Vector(1, coordinateValue));
+
+        if (thisValue <= 0.0) {
+            return 0.0;
+        } else {
+            return thisValue;
+        }
+
+    } else {
+        double thisValue = get_neg_force_vs_coordinate_function().calcValue(
+            SimTK::Vector(1, coordinateValue));
+
+        if (thisValue <= 0.0) {
+            return 0.0;
+        } else {
+            return thisValue;
+        }
+    }
 }
 
-//==============================================================================
-// COMPUTATIONS
-//==============================================================================
-//_____________________________________________________________________________
-/**
- * Compute all quantities necessary for applying the actuator force to the
- * model.
- */
-double MuscleLikeCoordinateActuator::computeActuation( const SimTK::State& s ) const
-{
-	if(&getModel()==NULL)
-		return 0.0;
+double MuscleLikeCoordinateActuator::getVelocityMultiplier(
+        const SimTK::State& s) const {
+    double qdot = getSpeed(s);
+    double qdot_max = get_qdot_max();
 
-	// getOptimalForce() will return the "gain" defined for this actuator.
-	return getControl(s) * getOptimalForce() * getForceVsCoordinateFunctionValue(s) * getVelocityMultiplier(s);
-}
+    if ( getControl(s) >= 0.0 ) {
 
-double MuscleLikeCoordinateActuator::getForceVsCoordinateFunctionValue( const SimTK::State& s ) const
-{
-	double coordinateValue = getCoordinate()->getValue(s);
-	if ( getControl(s) >= 0.0 ) {
-		double thisValue = get_pos_force_vs_coordinate_function().calcValue(SimTK::Vector(1, coordinateValue));
+        if ( qdot > qdot_max ) {
+            return 0.0;
 
-		if (thisValue <= 0.0) {
-			return 0.0;
-		} else {
-			return thisValue;
-		}
+        } else if ( qdot < (-0.35678917232)*qdot_max ) {
+            return 1.5;
 
-	} else {
-		double thisValue = get_neg_force_vs_coordinate_function().calcValue(SimTK::Vector(1, coordinateValue));
+        } else {
+            return (1 - (1.01750751592)*atan(1.5*qdot/qdot_max));
+        }
+    } else {
 
-		if (thisValue <= 0.0) {
-			return 0.0;
-		} else {
-			return thisValue;
-		}
-	}
-}
+        if ( qdot < -qdot_max) {
+            return 0.0;
 
-double MuscleLikeCoordinateActuator::getVelocityMultiplier( const SimTK::State& s ) const
-{
-	double qdot = getSpeed(s);
-	double qdot_max = get_qdot_max();
+        } else if ( qdot > (0.35678917232)*qdot_max ) {
+            return 1.5;
 
-	if ( getControl(s) >= 0.0 ) {
-
-		if ( qdot > qdot_max ) {
-			return 0.0;
-
-		} else if ( qdot < (-0.35678917232)*qdot_max ) {
-			return 1.5;
-
-		} else {
-			return (1 - (1.01750751592)*atan(1.5*qdot/qdot_max));
-		}
-	} else {
-
-		if ( qdot < -qdot_max) {
-			return 0.0;
-
-		} else if ( qdot > (0.35678917232)*qdot_max ) {
-			return 1.5;
-
-		} else {
-			return (1 - (1.01750751592)*atan(1.5*qdot/(-qdot_max)));
-		}
-	}
+        } else {
+            return (1 - (1.01750751592)*atan(1.5*qdot/(-qdot_max)));
+        }
+    }
 }
