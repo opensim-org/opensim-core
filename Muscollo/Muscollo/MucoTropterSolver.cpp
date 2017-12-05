@@ -648,7 +648,7 @@ public:
                     "Internal error.");
             name.replace(leafpos, name.size(), "accel");
             // TODO how to choose bounds on udot?
-            this->add_control(name, {-100, 100});
+            this->add_control(name, {-1000, 1000});
             this->add_path_constraint(name.substr(0, leafpos) + "residual", 0);
         }
         // Now add actuator controls.
