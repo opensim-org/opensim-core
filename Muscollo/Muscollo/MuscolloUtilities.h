@@ -146,7 +146,7 @@ public:
     /// or greater.
     static std::string format(const double& seconds) {
         std::stringstream ss;
-        int sec = std::round(seconds);
+        int sec = (int)std::round(seconds);
         ss << sec << " seconds";
         int minutes = sec / 60;
         int hours = minutes / 60;
