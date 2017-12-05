@@ -86,7 +86,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     // -------------
     statesSto.resample(1.0 / dataRate, 4 /* degree */);
     auto statesTraj =
-            StatesTrajectory::createFromStatesStorage(model, statesSto);
+            StatesTrajectory::createFromStatesStorage(model, statesSto,
+                    true, true);
     const int numStates = (int)statesTraj.getSize();
 
     // Must setUseVisualizer() *after* createFromStatesStorage(), otherwise
