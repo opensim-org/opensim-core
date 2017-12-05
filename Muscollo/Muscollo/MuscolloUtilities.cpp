@@ -100,7 +100,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
 
     // Set up visualization.
     // ---------------------
-    model.updMatterSubsystem().setShowDefaultGeometry(true);
+    // model.updMatterSubsystem().setShowDefaultGeometry(true);
     auto& viz = model.updVisualizer().updSimbodyVisualizer();
     std::string modelName = model.getName().empty() ? "<unnamed>"
                                                     : model.getName();
