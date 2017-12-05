@@ -4,4 +4,7 @@ MuscolloAddSandboxExecutable(NAME sandboxMarkerTrackingWholeBody
 			subject01.osim
 			marker_trajectories.trc
 			state_reference.mot
+        SOURCE_FILES
+            MuscleLikeCoordinateActuator.cpp
+            MuscleLikeCoordinateActuator.h
 		)
