@@ -152,9 +152,6 @@ public:
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
-    OpenSim_DECLARE_PROPERTY(ground, Ground,
-        "The model's ground reference frame.");
-
     OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
         "Acceleration due to gravity, expressed in ground.");
 
@@ -169,33 +166,36 @@ public:
 
     OpenSim_DECLARE_PROPERTY(force_units,std::string,
         "Units for all forces.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
-        "Controllers that provide the control inputs for Actuators.");  
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
-        "Constraints in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
-        "Forces in the model (includes Actuators).");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
-        "Markers in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
-        "Geometry to be used in contact forces.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
-        "Additional components in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
-        "Probes in the model.");
-
+    
+    OpenSim_DECLARE_PROPERTY(ground, Ground,
+        "The model's ground reference frame.");
+    
     OpenSim_DECLARE_UNNAMED_PROPERTY(BodySet,
         "List of bodies that make up this model.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
         "List of joints that connect the bodies.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
+        "Constraints in the model.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
+        "Markers in the model.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
+        "Forces in the model (includes Actuators).");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
+        "Controllers that provide the control inputs for Actuators.");  
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
+        "Geometry to be used in contact forces.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
+        "Probes in the model.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
+        "Additional components in the model.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
