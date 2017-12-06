@@ -230,7 +230,7 @@ Model setupModel(bool usingMuscleLikeActuators) {
 }
 
 /// Set the bounds for the specified MucoProblem.
-void setBounds(MucoProblem& mp, bool usingMuscleLikeActuators) {
+void setBounds(MucoProblem& mp) {
 
     double finalTime = 1.25;
     mp.setTimeBounds(0, finalTime);
@@ -297,7 +297,7 @@ MucoSolution solveStateTrackingProblem(bool usingMuscleLikeActuators,
 
     // Bounds.
     // -------
-    setBounds(mp, usingMuscleLikeActuators);
+    setBounds(mp);
 
     // Cost.
     // -----
@@ -337,7 +337,13 @@ MucoSolution solveStateTrackingProblem(bool usingMuscleLikeActuators,
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-    solution.write("sandboxMarkerTrackingWholeBody_states_solution.sto");
+    std::string output;
+    if (usingMuscleLikeActuators) {
+        output = "sandboxMarkerTrackingWholeBody_states_solution_AMLCAs.sto";
+    } else {
+        output = "sandboxMarkerTrackingWholeBody_states_solution_ACAs.sto";
+    }
+    solution.write(output);
 
     muco.visualize(solution);
 
@@ -364,7 +370,7 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 
     // Bounds.
     // -------
-    setBounds(mp, usingMuscleLikeActuators);
+    setBounds(mp);
         
     // Cost.
     // -----
@@ -424,7 +430,13 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve();
-    solution.write("sandboxMarkerTrackingWholeBody_marker_solution.sto");
+    std::string output;
+    if (usingMuscleLikeActuators) {
+        output = "sandboxMarkerTrackingWholeBody_marker_solution_AMLCAs.sto";
+    } else {
+        output = "sandboxMarkerTrackingWholeBody_marker_solution_ACAs.sto";
+    }
+    solution.write(output);
 
     muco.visualize(solution);
 
@@ -434,10 +446,11 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
 /// Solve both problems and compare.
 int main() {
 
-    MucoSolution stateTrackingSolution = solveStateTrackingProblem(true, 
-        false);
+    // MucoSolution stateTrackingSolution = solveStateTrackingProblem(true, 
+    //   false);
 
-    //MucoSolution markerTrackingSolution = solveMarkerTrackingProblem();
+    MucoSolution markerTrackingSolution = solveMarkerTrackingProblem(true, 
+        false);
 
     return EXIT_SUCCESS;
 }
