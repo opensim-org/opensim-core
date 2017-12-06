@@ -3,6 +3,7 @@
 #include <Muscollo/InverseMuscleSolver/INDYGO.h>
 #include <Muscollo/MucoTool.h>
 #include <Muscollo/MucoProblem.h>
+#include <Muscollo/MuscolloUtilities.h>
 
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -29,6 +30,11 @@ Usage:
 
     Print a template XML file for the provided tool.
     <tool> can be "GlobalStaticOptimization", "INDYGO", or "MucoTool"
+
+  opensim-muscollo visualize <model-file> [<iterate-file>]
+
+    Visualize an OpenSim model (.osim file) with a MucoIterate, if provided.
+
 )";
 
 int main(int argc, char* argv[]) {
@@ -74,8 +80,8 @@ int main(int argc, char* argv[]) {
 
             std::string arg2(argv[2]);
             OPENSIM_THROW_IF(argc == 4 && arg2 != "--visualize", Exception,
-                "Unrecognized option '" + arg2 +
-                "'; did you mean '--visualize'?");
+                    "Unrecognized option '" + arg2 +
+                    "'; did you mean '--visualize'?");
             std::string setupFile;
             bool visualize = false;
             if (argc == 3) {
@@ -97,23 +103,38 @@ int main(int argc, char* argv[]) {
                 auto solution = gso->solve();
                 if (visualize)
                     std::cout << "Ignoring --visualize flag." << std::endl;
-            }
-            else if (const auto* mrs =
+            } else if (const auto* mrs =
                     dynamic_cast<const INDYGO*>(obj.get())) {
                 auto solution = mrs->solve();
                 if (visualize)
                     std::cout << "Ignoring --visualize flag." << std::endl;
-            }
-            else if (const auto* muco
+            } else if (const auto* muco
                     = dynamic_cast<const MucoTool*>(obj.get())) {
                 auto solution = muco->solve();
                 if (visualize) muco->visualize(solution);
-            }
-            else {
+            } else {
                 throw Exception("The provided file '" + setupFile +
                         "' yields a '" + obj->getConcreteClassName() +
                         "' but only GlobalStaticOptimization, INDYGO, and "
-                        "MucoTool are acceptable.");
+                                "MucoTool are acceptable.");
+            }
+        } else if (arg1 == "visualize") {
+            OPENSIM_THROW_IF(argc < 3 || argc > 4, Exception,
+                    "Incorrect number of arguments.");
+
+            std::string modelFile(argv[2]);
+            if (argc == 3) {
+                // No motion provided.
+                Model model(modelFile);
+                model.setUseVisualizer(true);
+                auto state = model.initSystem();
+                model.getVisualizer().show(state);
+                std::cout << "Press any key to exit." << std::endl;
+                // Wait for user input.
+                std::cin.get();
+            } else {
+                MucoIterate iterate(argv[3]);
+                visualize(Model(modelFile), iterate.exportToStatesStorage());
             }
         } else {
             std::cout << "Unrecognized arguments. See usage with -h or --help"

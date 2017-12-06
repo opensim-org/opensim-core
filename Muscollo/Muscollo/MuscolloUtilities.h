@@ -48,6 +48,7 @@ OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table,
 /// should contain all generalized coordinates. The visualizer window allows the
 /// user to control playback speed.
 /// This function blocks until the user exits the simbody-visualizer window.
+// TODO handle degrees.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
 /// The map provides the index of each state variable in
