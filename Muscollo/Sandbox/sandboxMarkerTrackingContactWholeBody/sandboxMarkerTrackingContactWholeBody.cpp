@@ -311,8 +311,17 @@ MucoSolution solveMarkerTrackingProblem() {
     mp.addCost(tracking);
 
     MucoForceTrackingCost grfTracking;
+    // TODO this is a complete hack!
     grfTracking.setName("grf");
-    //mp.addCost(grfTracking); TODO
+    auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
+    auto time = data.getIndependentColumn();
+    SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
+    SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
+    grfTracking.m_refspline_x =
+            GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
+    grfTracking.m_refspline_y =
+            GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
+    // TODO mp.addCost(grfTracking);
 
     //MucoControlCost effort;
     //effort.setName("effort");

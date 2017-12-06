@@ -125,8 +125,8 @@ public:
 
         const SimTK::Real velSlidingScaling =
                 get_tangent_velocity_scaling_factor();
-        //// The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
-        //// tanh() has a wider domain than using exp().
+        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
+        // tanh() has a wider domain than using exp().
         const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
 
         const SimTK::Real frictionForce =
@@ -365,14 +365,6 @@ protected:
                     dynamic_cast<const AckermannVanDenBogert2010Force&>(
                             getModel().getComponent(get_forces(i))));
         }
-        // TODO this is a complete hack!
-        auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
-
-        auto time = data.getIndependentColumn();
-        SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
-        SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
-        m_refspline_x = GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
-        m_refspline_y = GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
     }
 
     void calcIntegralCostImpl(const SimTK::State& state, double& integrand)
