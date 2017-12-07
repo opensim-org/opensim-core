@@ -90,11 +90,7 @@ double MuscleLikeCoordinateActuator::getMaxVelocity() {
 
 double MuscleLikeCoordinateActuator::computeActuation( 
         const SimTK::State& s) const {
-    if(&getModel() == NULL) {
-        return 0.0;
-    }
-
-    return getControl(s) * getOptimalForce() * 
+    return getControl(s) * getOptimalForce() *
            getForceVsCoordinateFunctionValue(s) * getVelocityMultiplier(s);
 }
 

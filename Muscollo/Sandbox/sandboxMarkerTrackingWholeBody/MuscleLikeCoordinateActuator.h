@@ -87,7 +87,7 @@ public:
 private:
     /// Compute all quantities necessary for applying the actuator force to the
     /// model.
-    double computeActuation(const SimTK::State& s) const;
+    double computeActuation(const SimTK::State& s) const override;
 
     /// Helper functions to calculate F_max and F_vel for computeActuation.
     double getForceVsCoordinateFunctionValue(const SimTK::State& s) const;
