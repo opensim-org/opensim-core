@@ -87,7 +87,11 @@ void MucoPhase::setControlInfo(const std::string& name,
     else           upd_control_infos(idx) = info;
 }
 void MucoPhase::addCost(const MucoCost& cost) {
-    // TODO check if a cost with the provided name already exists.
+    OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
+        "Cannot add a cost if it does not have a name (use setName()).");
+    int idx = getProperty_costs().findIndexForName(cost.getName());
+    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
+        "A cost with name '" + cost.getName() + "' already exists.");
     append_costs(cost);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
