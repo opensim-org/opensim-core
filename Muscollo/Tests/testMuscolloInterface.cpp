@@ -272,14 +272,11 @@ void testBounds() {
     // TODO what if bounds are missing for some states?
 }
 
-/*
 void testBuildingProblem() {
     {
         MucoTool muco;
         MucoProblem& mp = muco.updProblem();
         mp.setModel(createSlidingMassModel());
-
-        // TODO ensure that model must be set ... what did I mean?
 
         // Costs have the name "cost" by default.
         {
@@ -298,10 +295,9 @@ void testBuildingProblem() {
             cEmptyName.setName("");
             SimTK_TEST_MUST_THROW_EXC(mp.addCost(cEmptyName), Exception);
         }
-
     }
 }
-*/
+
 void testStateTracking() {
     // TODO move to another test file?
     auto makeTool = []() {
@@ -746,7 +742,7 @@ int main() {
         //SimTK_SUBTEST(testSolveRepeatedly);
         //SimTK_SUBTEST(testOMUCOSerialization);
         SimTK_SUBTEST(testBounds);
-        //SimTK_SUBTEST(testBuildingProblem);
+        SimTK_SUBTEST(testBuildingProblem);
         // TODO what happens when Ipopt does not converge.
         // TODO specifying optimizer options.
     SimTK_END_TEST();
