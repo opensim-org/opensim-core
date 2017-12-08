@@ -150,6 +150,7 @@ int main() {
     mp.addCost(ftCost);
 
     MucoMarkerEndpointCost endpointCost;
+    endpointCost.setName("endpoint");
     endpointCost.set_frame_name("b1");
     endpointCost.set_weight(1000.0);
     endpointCost.set_point_on_frame(SimTK::Vec3(0));

@@ -65,7 +65,7 @@
      getModel().realizePosition(state);
      SimTK::Vector timeVec(1, time);
 
-     for (int i = 0; i < m_model_markers.size(); ++i) {
+     for (int i = 0; i < (int)m_model_markers.size(); ++i) {
          const auto& modelValue =
              m_model_markers[i]->getLocationInGround(state);
          SimTK::Vec3 refValue;
