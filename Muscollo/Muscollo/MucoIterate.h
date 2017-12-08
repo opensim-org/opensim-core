@@ -304,7 +304,6 @@ public:
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
-    /// @copydoc success().
     /// Same as success().
     explicit operator bool() const { return success(); }
     /// Obtain a solver-dependent string describing the return status of the
