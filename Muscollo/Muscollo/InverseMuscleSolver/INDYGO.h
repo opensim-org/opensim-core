@@ -34,100 +34,100 @@ namespace OpenSim {
 // TODO method performs better with longer activation/deactivation time
 // constants. TODO get these constants from the muscle model rather than using
 // hard-coded values.
-///
-/// Mesh point frequency
-/// --------------------
-/// This is a property in the base class, InverseMuscleSolver.
-/// For gait, you should use between 100-300 mesh points per second. Having too
-/// few mesh points may result in spiky solutions, especially for fiber
-/// velocity. A higher mesh point frequency often results in a smoother and more
-/// accurate solution, but may cause the problem to take longer to solve. Faster
-/// motions (with faster dynamics) require a higher mesh point frequency.
-/// The "tendon_force" fiber dynamics mode may require a higher mesh point
-/// frequency than the "fiber_length" mode to obtain a comparable level of
-/// smoothness (TODO look into this more).
-///
-/// Fiber dynamics mode
-/// -------------------
-/// This mode was shown to be the fastest of the 4 formulations in [1].
-/// Instead of using fiber length as a state variable, the (normalized
-/// tendon) force is used instead. We introduce a control variable,
-/// tendon_force_rate_control, that sets the derivative of the tendon force.
-/// Fiber-tendon equilibrium is still enforced.
-/// The tendon_force_rate_control variable has bounds [-50, 50], and the
-/// norm_tendon_force state variable has bounds [0, 5].
-///
-/// Activation dynamics mode
-/// ------------------------
-/// TODO not implemented yet.
-/// There are two choices for the formulation of activation dynamics:
-/// "explicit" and "implicit". The implicit mode may be up to 2 times faster
-/// than the explicit mode, and you should try the implict mode first.
-/// The explicit mode is based on [1], while the implicit mode is based on
-/// aspects of [2] (see also https://simtk.org/projects/optcntrlmuscle
-/// version 1.1). In the explicit model, excitation is a control variable
-/// and activation dynamics is one of the differential equations in the optimal
-/// control problem. The implicit mode is based on the realization that one
-/// doesn't actually need to simulate activation dynamics within the optimal
-/// control problem; rather, excitation can be computed post-hoc so long as
-/// the optimal control problem obeys the upper and lower bounds on the rate of
-/// activation. Therefore, the implicit mode does not have a variable for
-/// excitation, and computes excitation post-hoc by inverting the activation
-/// dynamics differential equation.
-///
-/// The model for activation dynamics is different in these two modes. The
-/// implicit mode uses the activation dynamics model from [3]:
-///
-/// \f{eqnarray*}{
-/// \frac{da}{dt} = \begin{cases}
-/// (u - a) \left( \frac{u}{\tau_a} + \frac{1 - u}{\tau_d} \right) & u \geq a \\
-/// \frac{u - a}{\tau_d}                                           & u < a
-/// \end{cases}
-/// \f}
-/// where \f$ u \f$ is excitation, \f$ a \f$ is activation, and \f$ \tau_a \f$
-/// and \f$ \tau_d \f$ are the activation and deactivation time constants.
-/// We add a control variable $v$ that is the rate of change of activation and
-/// supply the following (trivial) dynamics in the optimal control problem:
-/// \f[
-///     \frac{da}{dt} = v
-/// \f]
-/// The following inequality path constraints are used to ensure that the
-/// activation doesn't change more quickly than activation dynamics would
-/// allow (obtained by setting \f$ u = 0 \f$ and \f$ u = 1 \f$):
-///
-/// \f{eqnarray*}{
-///     v + \frac{a}{\tau_d} &\geq 0 \\
-///     v + \frac{a}{\tau_a} &\leq \frac{1}{\tau_a} \\
-/// \f}
-///
-/// In the explicit mode, the cost is the sum of squared *excitations*. In
-/// the implicit mode, the cost is the sum of squared *activations*. In both
-/// cases, the cost for non-muscle actuators is their control signal.
-///
-/// TODO move this information to a user's guide.
 
-/// Notes
-/// -----
-/// 1. If the activation dynamics mode is explicit, the cost functional includes
-///    the sum of squared excitations *and* the sum of squared activations
-///    (as well as the sum of squared "other controls").
-///    Minimizing excitations prevents a spiky solution, and minimizing
-///    activations prevents the initial activation from being unreasonably
-///    large (since initial activation would otherwise be "free" in the
-///    optimization).
-/// 2. The muscle's min_control and max_control properties are ignored (non-zero
-///    min activation worsens the numerical properties of the problem).
-///
-/// [1] De Groote, Friedl, et al. "Evaluation of direct collocation optimal
-/// control problem formulations for solving the muscle redundancy problem."
-/// Annals of biomedical engineering 44.10 (2016): 2922-2936.
-///
-/// [2] De Groote, Friedl, et al. "A physiology based inverse dynamic analysis of
-/// human gait: potential and perspectives." Computer methods in biomechanics and
-/// biomedical engineering 12.5 (2009): 563-574.
-///
-/// [3] Raasch, Christine C., et al. "Muscle coordination of maximum-speed
-/// pedaling." Journal of biomechanics 30.6 (1997): 595-602.
+/**
+Mesh point frequency
+--------------------
+This is a property in the base class, InverseMuscleSolver.
+For gait, you should use between 100-300 mesh points per second. Having too
+few mesh points may result in spiky solutions, especially for fiber
+velocity. A higher mesh point frequency often results in a smoother and more
+accurate solution, but may cause the problem to take longer to solve. Faster
+motions (with faster dynamics) require a higher mesh point frequency.
+The "tendon_force" fiber dynamics mode may require a higher mesh point
+frequency than the "fiber_length" mode to obtain a comparable level of
+smoothness (TODO look into this more).
+
+Fiber dynamics mode
+-------------------
+This mode was shown to be the fastest of the 4 formulations in [1].
+Instead of using fiber length as a state variable, the (normalized
+tendon) force is used instead. We introduce a control variable,
+tendon_force_rate_control, that sets the derivative of the tendon force.
+Fiber-tendon equilibrium is still enforced.
+The tendon_force_rate_control variable has bounds [-50, 50], and the
+norm_tendon_force state variable has bounds [0, 5].
+
+Activation dynamics mode
+------------------------
+TODO not implemented yet.
+There are two choices for the formulation of activation dynamics:
+"explicit" and "implicit". The implicit mode may be up to 2 times faster
+than the explicit mode, and you should try the implict mode first.
+The explicit mode is based on [1], while the implicit mode is based on
+aspects of [2] (see also https://simtk.org/projects/optcntrlmuscle
+version 1.1). In the explicit model, excitation is a control variable
+and activation dynamics is one of the differential equations in the optimal
+control problem. The implicit mode is based on the realization that one
+doesn't actually need to simulate activation dynamics within the optimal
+control problem; rather, excitation can be computed post-hoc so long as
+the optimal control problem obeys the upper and lower bounds on the rate of
+activation. Therefore, the implicit mode does not have a variable for
+excitation, and computes excitation post-hoc by inverting the activation
+dynamics differential equation.
+
+The model for activation dynamics is different in these two modes. The
+implicit mode uses the activation dynamics model from [3]:
+
+\f{eqnarray*}{
+\frac{da}{dt} = \begin{cases}
+(u - a) \left( \frac{u}{\tau_a} + \frac{1 - u}{\tau_d} \right) & u \geq a \\\\
+\frac{u - a}{\tau_d}                                           & u < a
+\end{cases}
+\f}
+where \f$ u \f$ is excitation, \f$ a \f$ is activation, and \f$ \tau_a \f$
+and \f$ \tau_d \f$ are the activation and deactivation time constants.
+We add a control variable $v$ that is the rate of change of activation and
+supply the following (trivial) dynamics in the optimal control problem:
+\f[
+    \frac{da}{dt} = v
+\f]
+The following inequality path constraints are used to ensure that the
+activation doesn't change more quickly than activation dynamics would
+allow (obtained by setting \f$ u = 0 \f$ and \f$ u = 1 \f$):
+
+\f{eqnarray*}{
+    v + \frac{a}{\tau_d} &\geq 0 \\\\
+    v + \frac{a}{\tau_a} &\leq \frac{1}{\tau_a}
+\f}
+
+In the explicit mode, the cost is the sum of squared *excitations*. In
+the implicit mode, the cost is the sum of squared *activations*. In both
+cases, the cost for non-muscle actuators is their control signal.
+
+TODO move this information to a user's guide.
+Notes
+-----
+1. If the activation dynamics mode is explicit, the cost functional includes
+   the sum of squared excitations *and* the sum of squared activations
+   (as well as the sum of squared "other controls").
+   Minimizing excitations prevents a spiky solution, and minimizing
+   activations prevents the initial activation from being unreasonably
+   large (since initial activation would otherwise be "free" in the
+   optimization).
+2. The muscle's min_control and max_control properties are ignored (non-zero
+   min activation worsens the numerical properties of the problem).
+
+[1] De Groote, Friedl, et al. "Evaluation of direct collocation optimal
+control problem formulations for solving the muscle redundancy problem."
+Annals of biomedical engineering 44.10 (2016): 2922-2936.
+
+[2] De Groote, Friedl, et al. "A physiology based inverse dynamic analysis of
+human gait: potential and perspectives." Computer methods in biomechanics and
+biomedical engineering 12.5 (2009): 563-574.
+
+[3] Raasch, Christine C., et al. "Muscle coordination of maximum-speed
+pedaling." Journal of biomechanics 30.6 (1997): 595-602. */
 class OSIMMUSCOLLO_API INDYGO : public InverseMuscleSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(INDYGO, InverseMuscleSolver);
 public:

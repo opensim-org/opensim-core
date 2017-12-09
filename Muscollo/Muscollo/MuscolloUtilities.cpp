@@ -21,7 +21,7 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
-#include <Simbody/internal/Visualizer_InputListener.h>
+#include <simbody/internal/Visualizer_InputListener.h>
 
 using namespace OpenSim;
 
