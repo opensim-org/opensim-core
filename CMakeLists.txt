@@ -24,6 +24,12 @@ if(NOT MUSCOLLO_COPY_DEPENDENCIES)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()
 
+# Directory in which to install.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH
+        "The directory in which to install this project." FORCE)
+endif()
+
 # Make targets go in the same binary directory.
 # These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
@@ -38,6 +44,7 @@ if(WIN32)
 else()
     set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Muscollo)
 endif()
+set(MUSCOLLO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)
@@ -75,6 +82,7 @@ endif()
 # TODO add /WX flag for Windows.
 
 enable_testing()
+include(CTest)
 
 add_subdirectory(tropter)
 

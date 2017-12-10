@@ -161,6 +161,7 @@ add_custom_command(
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
     COMMENT "Compiling Java sources and creating jar archive.")
 
+
 # Umbrella target for assembling the java bindings in the build tree.
 # -------------------------------------------------------------------
 add_custom_target(MuscolloJavaBindings ALL
@@ -172,3 +173,16 @@ add_dependencies(MuscolloJavaBindings osimMuscolloJavaJNI)
 set_target_properties(MuscolloJavaBindings PROPERTIES
     PROJECT_LABEL "Java - umbrella target"
     FOLDER "Muscollo/Bindings")
+
+
+# Install.
+# --------
+install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
+        DESTINATION ${MUSCOLLO_INSTALL_JAVAJARDIR})
+
+
+# Java tests.
+# -----------
+if(BUILD_TESTING)
+    add_subdirectory(Tests)
+endif()
