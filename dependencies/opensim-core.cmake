@@ -5,6 +5,7 @@ AddDependency(NAME       opensim-core
               URL        https://github.com/opensim-org/opensim-core/archive/e05338dde404e055f300f7685397dc61cc495961.zip
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
+                         -DBUILD_JAVA_WRAPPING:BOOL=ON
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
                          -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
 

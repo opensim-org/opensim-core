@@ -8,6 +8,8 @@ set_package_properties(OpenSim PROPERTIES
 MuscolloCopyDLLs(DEP_NAME OpenSim
     DEP_BIN_DIR "${OpenSim_ROOT_DIR}/bin")
 
+include("${CMAKE_SOURCE_DIR}/opensim-core/cmake/OpenSimMacros.cmake")
+
 # Copy OpenSim into our installation.
 install(DIRECTORY "${OpenSim_ROOT_DIR}/"
         DESTINATION "${CMAKE_INSTALL_PREFIX}"
@@ -17,5 +19,6 @@ add_subdirectory(doc)
 add_subdirectory(Muscollo)
 add_subdirectory(Tests)
 add_subdirectory(Executable)
+add_subdirectory(Bindings)
 add_subdirectory(Examples)
 add_subdirectory(Sandbox)

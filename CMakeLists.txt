@@ -6,6 +6,8 @@ project(Muscollo)
 # Copy dependencies' libraries into Muscollo's installation?
 set(MUSCOLLO_COPY_DEPENDENCIES ON)
 
+option(MUSCOLLO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
+
 
 # CMake settings.
 # ---------------
