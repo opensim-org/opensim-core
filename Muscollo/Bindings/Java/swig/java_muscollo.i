@@ -3,10 +3,17 @@
 %include java_exception.i
 
 %{
+#include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/OpenSimHeaders_simulation.h>
+#include <Bindings/OpenSimHeaders_actuators.h>
+#include <Bindings/OpenSimHeaders_analyses.h>
+#include <Bindings/OpenSimHeaders_tools.h>
 #include <Bindings/OpenSimHeaders_muscollo.h>
 using namespace OpenSim;
 using namespace SimTK;
 %}
+
+%include "java_preliminaries.i"
 
 /* Load the required libraries when this module is loaded.                    */
 /* TODO send console output instead of JOptionPane in case user is headless. */

@@ -7,5 +7,9 @@
 #include <Muscollo/MucoCost.h>
 #include <Muscollo/MucoWeightSet.h>
 #include <Muscollo/MucoStateTrackingCost.h>
+#include <Muscollo/MucoProblem.h>
+#include <Muscollo/MucoIterate.h>
+#include <Muscollo/MucoTropterSolver.h>
+#include <Muscollo/MucoTool.h>
 
 #endif // MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_
