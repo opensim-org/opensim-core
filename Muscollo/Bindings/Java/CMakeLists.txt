@@ -79,15 +79,17 @@ MuscolloGenerateJavaWrapper(muscollo
 
 # Compile the C++ wrapper into a library.
 # ---------------------------------------
-
 add_library(osimMuscolloJavaJNI
     SHARED 
     ${SWIG_JAVA_MUSCOLLO_CXX_FILE} 
     ${SWIG_JAVA_MUSCOLLO_H_FILE}
     )
 
-target_include_directories(osimMuscolloJavaJNI PRIVATE
-                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+# SYSTEM to avoid warnings.
+target_include_directories(osimMuscolloJavaJNI SYSTEM PRIVATE
+                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2}
+                           # For Bindings/OpenSimHeaders_common.h, etc.:
+                           ${CMAKE_SOURCE_DIR}/opensim-core)
 
 target_link_libraries(osimMuscolloJavaJNI osimMuscollo)
 
