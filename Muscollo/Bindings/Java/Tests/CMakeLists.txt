@@ -84,7 +84,7 @@ set_target_properties(RunMuscolloJavaTests PROPERTIES
 # -----------------------
 # Test name must be the name of a java file in this directory.
 # Leave out the ".java" extension.
-MuscolloAddJavaTest(TestMuscolloBasics)
+MuscolloAddJavaTest(TestSlidingMass)
 
 # This line must appear after all tests are added.
 # This variable at the end has been accumulated from within the

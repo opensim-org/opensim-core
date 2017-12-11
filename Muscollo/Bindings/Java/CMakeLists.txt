@@ -188,3 +188,9 @@ install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
 if(BUILD_TESTING)
     add_subdirectory(Tests)
 endif()
+
+
+# Matlab.
+# -------
+add_subdirectory(Matlab)
+

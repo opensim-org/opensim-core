@@ -9,6 +9,7 @@ MuscolloCopyDLLs(DEP_NAME OpenSim
     DEP_BIN_DIR "${OpenSim_ROOT_DIR}/bin")
 
 include("${CMAKE_SOURCE_DIR}/opensim-core/cmake/OpenSimMacros.cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/opensim-core/cmake")
 
 # Copy OpenSim into our installation.
 install(DIRECTORY "${OpenSim_ROOT_DIR}/"
