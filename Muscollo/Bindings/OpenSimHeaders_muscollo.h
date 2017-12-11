@@ -7,6 +7,8 @@
 #include <Muscollo/MucoCost.h>
 #include <Muscollo/MucoWeightSet.h>
 #include <Muscollo/MucoStateTrackingCost.h>
+#include <Muscollo/MucoMarkerTrackingCost.h>
+#include <Muscollo/MucoControlCost.h>
 #include <Muscollo/MucoProblem.h>
 #include <Muscollo/MucoIterate.h>
 #include <Muscollo/MucoTropterSolver.h>

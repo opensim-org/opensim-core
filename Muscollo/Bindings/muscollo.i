@@ -2,6 +2,8 @@
 %include <Muscollo/MucoCost.h>
 %include <Muscollo/MucoWeightSet.h>
 %include <Muscollo/MucoStateTrackingCost.h>
+%include <Muscollo/MucoMarkerTrackingCost.h>
+%include <Muscollo/MucoControlCost.h>
 
 %include <Muscollo/MucoProblem.h>
 
@@ -15,6 +17,8 @@
 %enddef
 EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoInitialBounds);
 EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoFinalBounds);
+
+/* TODO MucoInitialBounds constructor that takes double[] */
 
 
 /* TODO want to be able to use initializer list. */
