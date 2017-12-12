@@ -21,39 +21,9 @@ using namespace SimTK;
 %feature("director") OpenSim::AnalysisWrapper;
 %feature("director") OpenSim::SimtkLogCallback;
 
+%include "java_preliminaries.i";
 
 %include "arrays_java.i";
-
-/* Load the required libraries when this module is loaded.                    */
-%pragma(java) jniclassclassmodifiers="public class"
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;"
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-          // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimJavaJNI");
-      }
-      catch(UnsatisfiedLinkError e){
-          String envVar = new String();
-          String OS = System.getProperty("os.name").toLowerCase();
-          if (OS.indexOf("win") >= 0) {
-              envVar = "PATH";
-          } else if (OS.indexOf("mac") >= 0) {
-              envVar = "DYLD_LIBRARY_PATH";
-          } else {
-              envVar = "LD_LIBRARY_PATH";
-          }
-          String msg = new String("Required library failed to load. " +
-                  "Check that the dynamic library osimJavaJNI " +
-                  "is on your " + envVar + ".\n" + e);
-          System.out.println(msg);
-          if (!GraphicsEnvironment.isHeadless()) {
-              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
-          }
-      }
-  }
-%}
 
 
 %import "java_simulation.i"

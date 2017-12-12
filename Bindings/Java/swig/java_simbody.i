@@ -3,8 +3,6 @@
 
 #pragma SWIG nowarn=822,451,503,516,325,401
 
-%include java_exception.i
-
 %{
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/Object.h>
@@ -12,6 +10,8 @@
 
 using namespace SimTK;
 %}
+
+%include "java_preliminaries.i";
 
 /* This file is for creation/handling of arrays */
 %include "arrays_java.i";
