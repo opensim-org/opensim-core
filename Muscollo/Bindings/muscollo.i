@@ -129,16 +129,36 @@
 EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoInitialBounds);
 EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoFinalBounds);
 
-/* TODO MucoInitialBounds constructor that takes double[] */
 
-
-/* TODO want to be able to use initializer list. */
+/* SWIG does not support initializer_list, but we can use Java arrays to
+ * achieve similar syntax in MATLAB.
+ * TODO create Vector(double[]) constructor. */
 %ignore OpenSim::MucoIterate::setTime(std::initializer_list<double>);
 %ignore OpenSim::MucoIterate::setState(const std::string&,
         std::initializer_list<double>);
 %ignore OpenSim::MucoIterate::setControl(const std::string&,
         std::initializer_list<double>);
-/* TODO %feature("valuewrapper") VectorView */
+%typemap(javacode) OpenSim::MucoIterate %{
+    public void setTime(double[] time) {
+        Vector v = new Vector();
+        v.resize(time.length);
+        for (int i = 0; i < time.length; ++i) { v.set(i, time[i]); }
+        setTime(v);
+    }
+    public void setState(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setState(name, v);
+    }
+    public void setControl(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setControl(name, v);
+    }
+%}
+
 %include <Muscollo/MucoIterate.h>
 
 %include <Muscollo/MucoSolver.h>

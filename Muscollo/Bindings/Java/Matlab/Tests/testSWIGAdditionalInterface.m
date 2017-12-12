@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: testStateAndControlInfo.m                                %
+% OpenSim Muscollo: testSWIGAdditionalInterface.m                            %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -16,6 +16,8 @@
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
 import org.opensim.modeling.*;
+
+%% Bounds.
 
 model = Model();
 model.setName('sliding_mass');
@@ -97,3 +99,30 @@ assert(18 == ph0.getControlInfo('actuator').getBounds().getLower());
 assert(18 == ph0.getControlInfo('actuator').getBounds().getUpper());
 
 
+%% MucoIterate
+time = Vector(3, 0);
+time.set(0, 0);
+time.set(1, 0.1);
+time.set(2, 0.2);
+sn = StdVectorString();
+sn.add('s0');
+sn.add('s1');
+cn = StdVectorString();
+cn.add('c1');
+cn.add('c2');
+cn.add('c3');
+st = Matrix(3, 2);
+ct = Matrix(3, 3);
+it = MucoIterate(time, sn, cn, st, ct);
+it.setState('s0', [5, 3, 10]);
+s0traj = it.getState('s0');
+assert(s0traj.get(0) == 5);
+assert(s0traj.get(1) == 3);
+assert(s0traj.get(2) == 10);
+it.setState('s1', [2, 6, 1]);
+s1traj = it.getState('s1');
+assert(s1traj.get(0) == 2);
+assert(s1traj.get(1) == 6);
+assert(s1traj.get(2) == 1);
+
+% TODO test for Time and Control.

@@ -210,7 +210,6 @@ public:
     {   ensureUnsealed(); return m_state_names; }
     const std::vector<std::string>& getControlNames() const
     {   ensureUnsealed(); return m_control_names; }
-    // TODO using typedef causes swig to not use SwigValueWrapper.
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
