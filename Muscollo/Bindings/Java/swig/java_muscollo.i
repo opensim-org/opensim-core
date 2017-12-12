@@ -16,22 +16,32 @@ using namespace SimTK;
 %include "java_preliminaries.i"
 
 /* Load the required libraries when this module is loaded.                    */
-/* TODO send console output instead of JOptionPane in case user is headless. */
-/* TODO create different error message for mac/linux. */
 /* TODO be more clever about detecting location of library. */
-/* TODO isHeadless(): https://stackoverflow.com/questions/1014620/best-way-to-detect-whether-code-is-running-in-an-application-server-java */
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;"
+ 
 %pragma(java) jniclasscode=%{
   static {
       try{
           System.loadLibrary("osimMuscolloJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
-          new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimMuscolloJavaJNI is in your PATH\n" + e, 
-        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+          String envVar = new String("PATH");
+          String OS = System.getProperty("os.name").toLowerCase();
+          if (OS.indexOf("win") >= 0) {
+          } else if (OS.indexOf("mac") >= 0) {
+              envVar = "DYLD_LIBRARY_PATH";
+          } else {
+              envVar = "LD_LIBRARY_PATH";
+          }
+          String msg = new String("Required library failed to load. " +
+                  "Check that the dynamic library osimMuscolloJavaJNI " +
+                  "is on your " + envVar + ".\n" + e);
+          System.out.println(msg);
+          if (!GraphicsEnvironment.isHeadless()) {
+              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+          }
       }
   }
 %}

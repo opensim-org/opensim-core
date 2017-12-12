@@ -21,7 +21,7 @@ file(WRITE "${matlab_output_dir}/javalibrarypath.txt"
     "${_binary_dirs}"
     )
 
-macro(MuscolloAddMatlabTest TESTNAME MFILE)
+function(MuscolloAddMatlabTest TESTNAME MFILE)
     get_filename_component(_full_path_to_mfile "${MFILE}" ABSOLUTE)
     if(MSVC OR XCODE)
         # Multi-generator configurations are handled differently.
@@ -53,7 +53,7 @@ macro(MuscolloAddMatlabTest TESTNAME MFILE)
             ENVIRONMENT "OPENSIM_USE_VISUALIZER=0")
         #TEST_ARGS CONFIGURATIONS Release RelWithDebInfo MinSizeRel
     endif()
-endmacro()
+endfunction()
 
 # Allow MSVC users to run only the Matlab tests directly from the MSVC GUI.
 # The Matlab tests are run from RUN_TESTS, so no need to run this target as
@@ -63,7 +63,7 @@ add_custom_target(RunMuscolloMatlabTests
                                    --build-config ${CMAKE_CFG_INTDIR}
                                    --extra-verbose
     PROJECT_LABEL "Matlab - run tests"
-    FOLDER "/Muscollo/Bindings"
+    FOLDER "Muscollo/Bindings"
     )
 
 add_dependencies(RunMuscolloMatlabTests MuscolloJavaBindings)
