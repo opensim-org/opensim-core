@@ -45,8 +45,10 @@
         return bounds;
     }
 
-    public void setStateInfo(String name, double[] b)
-        throws Exception {
+    public void setTimeBounds(double[] ib, double[] fb) throws Exception {
+        setTimeBounds(this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
+    }
+    public void setStateInfo(String name, double[] b) throws Exception {
         setStateInfo(name, this.convertArrayToMB(b));
     }
     public void setStateInfo(String name, double[] b, double[] ib)
@@ -60,8 +62,7 @@
                 this.convertArrayToMIB(ib), this.convertArrayToMFB(fb));
     }
 
-    public void setControlInfo(String name, double[] b)
-        throws Exception {
+    public void setControlInfo(String name, double[] b) throws Exception {
         setControlInfo(name, this.convertArrayToMB(b));
     }
     public void setControlInfo(String name, double[] b, double[] ib)
@@ -77,6 +78,10 @@
 %}
 
 %typemap(javacode) OpenSim::MucoProblem %{
+    public void setTimeBounds(double[] ib, double[] fb) throws Exception {
+        setTimeBounds(MucoPhase.convertArrayToMIB(ib),
+            MucoPhase.convertArrayToMFB(fb));
+    }
     public void setStateInfo(String name, double[] b)
         throws Exception {
         setStateInfo(name, MucoPhase.convertArrayToMB(b));

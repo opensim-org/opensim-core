@@ -113,14 +113,13 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
 }
 
 tropter::Bounds convert(const MucoBounds& mb) {
-    return {mb.lower, mb.upper};
+    return {mb.getLower(), mb.getUpper()};
 }
-
 tropter::InitialBounds convert(const MucoInitialBounds& mb) {
-    return {mb.lower, mb.upper};
+    return {mb.getLower(), mb.getUpper()};
 }
 tropter::FinalBounds convert(const MucoFinalBounds& mb) {
-    return {mb.lower, mb.upper};
+    return {mb.getLower(), mb.getUpper()};
 }
 
 template <typename T>

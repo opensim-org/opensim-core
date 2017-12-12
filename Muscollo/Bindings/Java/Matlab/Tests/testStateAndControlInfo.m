@@ -23,7 +23,6 @@ model.set_gravity(Vec3(0, 0, 0));
 body = Body('body', 2.0, Vec3(0), Inertia(0));
 model.addComponent(body);
 
-% Allows translation along x.
 joint = SliderJoint('slider', model.getGround(), body);
 coord = joint.updCoordinate();
 coord.setName('position');
@@ -32,41 +31,69 @@ model.addComponent(joint);
 actu = CoordinateActuator();
 actu.setCoordinate(coord);
 actu.setName('actuator');
-actu.setOptimalForce(1);
 model.addComponent(actu);
 
-
-% Create MucoTool.
-% ================
 muco = MucoTool();
 muco.setName('sliding_mass');
 
-% Define the optimal control problem.
-% ===================================
 mp = muco.updProblem();
+ph0 = mp.getPhase();
 
-% Model (dynamics).
-% -----------------
 mp.setModel(model);
 
-% Bounds.
-% -------
-% Initial time must be 0, final time can be within [0, 5].
-% TODO support "initializer list" in MATLAB.
-% TODO "using" does not work in SWIG.
-mp.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0., 5.));
+almostEqual = @(x, y) abs(x - y) < 1e-15;
 
-% Initial position must be 0, final position must be 1.
+mp.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0.1, 5.));
+assert(ph0.getTimeInitialBounds().getLower() == 0);
+assert(ph0.getTimeInitialBounds().getUpper() == 0);
+assert(almostEqual(ph0.getTimeFinalBounds().getLower(), 0.1));
+assert(almostEqual(ph0.getTimeFinalBounds().getUpper(), 5.0));
+
+mp.setTimeBounds([0.2, 0.3], [3.5]);
+assert(almostEqual(ph0.getTimeInitialBounds().getLower(), 0.2));
+assert(almostEqual(ph0.getTimeInitialBounds().getUpper(), 0.3));
+assert(almostEqual(ph0.getTimeFinalBounds().getLower(), 3.5));
+assert(almostEqual(ph0.getTimeFinalBounds().getUpper(), 3.5));
+
+% Use setter on MucoPhase.
+ph0.setTimeBounds([2.2, 2.3], [4.5]);
+assert(almostEqual(ph0.getTimeInitialBounds().getLower(), 2.2));
+assert(almostEqual(ph0.getTimeInitialBounds().getUpper(), 2.3));
+assert(almostEqual(ph0.getTimeFinalBounds().getLower(), 4.5));
+assert(almostEqual(ph0.getTimeFinalBounds().getUpper(), 4.5));
+
+
 mp.setStateInfo('slider/position/value', MucoBounds(-5, 5), ...
-    MucoInitialBounds(0), MucoFinalBounds(1));
-% Initial and final speed must be 0. Use compact syntax.
-mp.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
+    MucoInitialBounds(0));
+assert(-5 == ph0.getStateInfo('slider/position/value').getBounds().getLower());
+assert( 5 == ph0.getStateInfo('slider/position/value').getBounds().getUpper());
+assert(isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getLower()));
+assert(isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getUpper()));
+mp.setStateInfo('slider/position/speed', [-50, 50], [-3], 1.5);
+assert(-50 == ph0.getStateInfo('slider/position/speed').getBounds().getLower());
+assert( 50 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper());
+assert(-3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower());
+assert(-3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getUpper());
+assert(almostEqual(1.5, ...
+    ph0.getStateInfo('slider/position/speed').getFinalBounds().getLower()));
+assert(almostEqual(1.5, ...
+    ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper()));
 
-% Applied force must be between -50 and 50.
+% Use setter on MucoPhase.
+ph0.setStateInfo('slider/position/speed', [-6, 10], [-4, 3], [0]);
+assert(-6 == ph0.getStateInfo('slider/position/speed').getBounds().getLower());
+assert(10 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper());
+assert(-4 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower());
+assert( 3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getUpper());
+assert(0 == ph0.getStateInfo('slider/position/speed').getFinalBounds().getLower());
+assert(0 == ph0.getStateInfo('slider/position/speed').getFinalBounds().getUpper());
+
+% Controls.
 mp.setControlInfo('actuator', MucoBounds(-50, 50));
-mp.setControlInfo('actuator', [-50, 50]);
+assert(-50 == ph0.getControlInfo('actuator').getBounds().getLower());
+assert( 50 == ph0.getControlInfo('actuator').getBounds().getUpper());
+mp.setControlInfo('actuator', [18]);
+assert(18 == ph0.getControlInfo('actuator').getBounds().getLower());
+assert(18 == ph0.getControlInfo('actuator').getBounds().getUpper());
 
-ph0 = mp.getPhase();
-ph0.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
 
-% TODO flesh out this test.
