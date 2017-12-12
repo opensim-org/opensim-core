@@ -27,7 +27,7 @@ using namespace SimTK;
 /* Load the required libraries when this module is loaded.                    */
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;"
 %pragma(java) jniclasscode=%{
   static {
       try{
@@ -35,9 +35,22 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
           System.loadLibrary("osimJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
-          new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimJavaJNI is in your PATH\n" + e, 
-        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+          String envVar = new String();
+          String OS = System.getProperty("os.name").toLowerCase();
+          if (OS.indexOf("win") >= 0) {
+              envVar = "PATH";
+          } else if (OS.indexOf("mac") >= 0) {
+              envVar = "DYLD_LIBRARY_PATH";
+          } else {
+              envVar = "LD_LIBRARY_PATH";
+          }
+          String msg = new String("Required library failed to load. " +
+                  "Check that the dynamic library osimJavaJNI " +
+                  "is on your " + envVar + ".\n" + e);
+          System.out.println(msg);
+          if (!GraphicsEnvironment.isHeadless()) {
+              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+          }
       }
   }
 %}
