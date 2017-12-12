@@ -156,6 +156,9 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     }
 %}
 
+/* SWIG does not support initializer_list, but we can use Java arrays to
+ * achieve similar syntax in MATLAB.
+ * TODO create Vector(double[]) constructor. */
 %typemap(javacode) OpenSim::MucoIterate %{
     public void setTime(double[] time) {
         Vector v = new Vector();
