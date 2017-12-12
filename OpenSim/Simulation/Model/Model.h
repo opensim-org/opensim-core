@@ -140,7 +140,19 @@ OpenSim_OBJECT_NONTEMPLATE_DEFS(Model, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
-//==============================================================================
+//==============================================================================    
+    OpenSim_DECLARE_PROPERTY(credits, std::string,
+        "Credits (e.g., model author names) associated with the model.");
+
+    OpenSim_DECLARE_PROPERTY(publications, std::string,
+        "Publications and references associated with the model.");
+
+    OpenSim_DECLARE_PROPERTY(length_units, std::string,
+        "Units for all lengths.");
+
+    OpenSim_DECLARE_PROPERTY(force_units, std::string,
+        "Units for all forces.");
+        
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of significant digits in the "
@@ -152,20 +164,8 @@ public:
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
-    OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
+    OpenSim_DECLARE_PROPERTY(gravity, SimTK::Vec3,
         "Acceleration due to gravity, expressed in ground.");
-
-    OpenSim_DECLARE_PROPERTY(credits,std::string,
-        "Credits (e.g., model author names) associated with the model.");
-
-    OpenSim_DECLARE_PROPERTY(publications,std::string,
-        "Publications and references associated with the model.");
-
-    OpenSim_DECLARE_PROPERTY(length_units,std::string,
-        "Units for all lengths.");
-
-    OpenSim_DECLARE_PROPERTY(force_units,std::string,
-        "Units for all forces.");
     
     OpenSim_DECLARE_PROPERTY(ground, Ground,
         "The model's ground reference frame.");
