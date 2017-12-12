@@ -108,12 +108,18 @@ sn = StdVectorString();
 sn.add('s0');
 sn.add('s1');
 cn = StdVectorString();
+cn.add('c0');
 cn.add('c1');
 cn.add('c2');
-cn.add('c3');
 st = Matrix(3, 2);
 ct = Matrix(3, 3);
 it = MucoIterate(time, sn, cn, st, ct);
+
+it.setTime([15, 25, 35]);
+assert(it.getTime().get(0) == 15);
+assert(it.getTime().get(1) == 25);
+assert(it.getTime().get(2) == 35);
+
 it.setState('s0', [5, 3, 10]);
 s0traj = it.getState('s0');
 assert(s0traj.get(0) == 5);
@@ -125,4 +131,13 @@ assert(s1traj.get(0) == 2);
 assert(s1traj.get(1) == 6);
 assert(s1traj.get(2) == 1);
 
-% TODO test for Time and Control.
+it.setControl('c0', [10, 46, -5]);
+c0traj = it.getControl('c0');
+assert(c0traj.get(0) == 10);
+assert(c0traj.get(1) == 46);
+assert(c0traj.get(2) == -5);
+it.setControl('c2', [5, 12, -1]);
+c2traj = it.getControl('c2');
+assert(c2traj.get(0) == 5);
+assert(c2traj.get(1) == 12);
+assert(c2traj.get(2) == -1);

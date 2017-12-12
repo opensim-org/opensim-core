@@ -53,8 +53,6 @@ mp.setModel(model);
 % Bounds.
 % -------
 % Initial time must be 0, final time can be within [0, 5].
-% TODO support "initializer list" in MATLAB.
-% TODO "using" does not work in SWIG.
 mp.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0., 5.));
 
 % Initial position must be 0, final position must be 1.
