@@ -101,7 +101,7 @@ before_install:
   ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
   # This prevents the build from failing with:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
   # Avoid "Homebrew must be run under Ruby 2.3!"
   # https://github.com/PowerShell/PowerShell/issues/5062
