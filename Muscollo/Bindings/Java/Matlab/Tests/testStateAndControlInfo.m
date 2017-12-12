@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: testSlidingMass.m                                        %
+% OpenSim Muscollo: testStateAndControlInfo.m                                %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -15,7 +15,6 @@
 % See the License for the specific language governing permissions and        %
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
-
 import org.opensim.modeling.*;
 
 model = Model();
@@ -65,22 +64,9 @@ mp.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
 
 % Applied force must be between -50 and 50.
 mp.setControlInfo('actuator', MucoBounds(-50, 50));
+mp.setControlInfo('actuator', [-50, 50]);
 
-% Cost.
-% -----
-ftCost = MucoFinalTimeCost();
-mp.addCost(ftCost);
+ph0 = mp.getPhase();
+ph0.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
 
-% Configure the solver.
-% =====================
-ms = muco.initSolver();
-ms.set_num_mesh_points(50);
-
-% Now that we've finished setting up the tool, print it to a file.
-muco.print('sliding_mass.omuco');
-
-% Solve the problem.
-% ==================
-% TODO solution = muco.solve();
-
-% TODO solution.write('sliding_mass_solution.sto');
+% TODO flesh out this test.

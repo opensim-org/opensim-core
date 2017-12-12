@@ -77,6 +77,7 @@ add_dependencies(RunMuscolloMatlabTests MuscolloJavaBindings)
 
 # From examples.
 MuscolloAddMatlabTest(SlidingMass testSlidingMass.m)
+MuscolloAddMatlabTest(StateAndControlInfo testStateAndControlInfo.m)
 
 # Copy resources.
 # file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
