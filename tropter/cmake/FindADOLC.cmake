@@ -12,11 +12,12 @@ set(ADOLC_DIR $ENV{ADOLC_DIR} CACHE PATH
 find_path(ADOLC_INCLUDES
         NAMES
         adolc/adtl.h
-        PATHS
+        HINTS # HINTS instead of PATHS to prefer the hint over system dirs.
         "${ADOLC_DIR}/include"
 )
 
-find_library(ADOLC_LIBRARIES adolc PATHS
+find_library(ADOLC_LIBRARIES adolc
+        HINTS # HINTS instead of PATHS to prefer the hint over system dirs.
         "${ADOLC_DIR}/lib"
         "${ADOLC_DIR}/lib64"
         )
