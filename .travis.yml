@@ -210,7 +210,7 @@ install:
   
   # Doxygen.
   - OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
   
   - printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
   - cmake "${OSIM_CMAKE_ARGS[@]}"
