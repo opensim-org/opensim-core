@@ -18,28 +18,39 @@ using namespace SimTK;
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 %pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;"
- 
 %pragma(java) jniclasscode=%{
   static {
       try{
+          // All OpenSim classes required for GUI operation.
           System.loadLibrary("osimMuscolloJavaJNI");
       }
       catch(UnsatisfiedLinkError e){
-          String envVar = new String();
           String OS = System.getProperty("os.name").toLowerCase();
+          String tip = "";
           if (OS.indexOf("win") >= 0) {
-              envVar = "PATH";
+              tip = "\nMake sure Muscollo's bin directory is on your PATH.";
           } else if (OS.indexOf("mac") >= 0) {
-              envVar = "DYLD_LIBRARY_PATH";
-          } else {
-              envVar = "LD_LIBRARY_PATH";
+              // Nothing for now; our use of RPATH means we were probably able
+              // to locate the OpenSim dynamic libraries.
+          } else /* linux */ {
+              // Nothing for now; our use of RPATH means we were probably able
+              // to locate the OpenSim dynamic libraries.
           }
-          String msg = new String("Required library failed to load. " +
-                  "Check that the dynamic library osimMuscolloJavaJNI " +
-                  "is on your " + envVar + ".\n" + e);
+          String msg = new String(
+                  "Failed to load one or more dynamic libraries for Muscollo.\n"
+                  + e + tip);
+
+          String javaHome = System.getProperties().getProperty("java.home");
+          boolean inMatlab = javaHome.toLowerCase().indexOf("matlab") >= 0;
+          if (inMatlab) {
+              msg +=  "\nSee https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+with+Matlab";
+          }
+
           System.out.println(msg);
+          String title = "Error: Failed to load OpenSim Muscollo libraries";
           if (!GraphicsEnvironment.isHeadless()) {
-              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
+              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE)
+                    .createDialog(null, title).setVisible(true);
           }
       }
   }

@@ -1,5 +1,5 @@
 % -------------------------------------------------------------------------- %
-% OpenSim Muscollo: testSlidingMass.m                                        %
+% OpenSim Muscollo: exampleSlidingMass.m                                     %
 % -------------------------------------------------------------------------- %
 % Copyright (c) 2017 Stanford University and the Authors                     %
 %                                                                            %
@@ -79,6 +79,10 @@ muco.print('sliding_mass.omuco');
 
 % Solve the problem.
 % ==================
-% TODO solution = muco.solve();
+solution = muco.solve();
 
-% TODO solution.write('sliding_mass_solution.sto');
+solution.write('sliding_mass_solution.sto');
+
+if getenv('OPENSIM_USE_VISUALIZER') == '1'
+    muco.visualize(solution);
+end

@@ -76,7 +76,7 @@ add_dependencies(RunMuscolloMatlabTests MuscolloJavaBindings)
 # ------
 
 # From examples.
-MuscolloAddMatlabTest(SlidingMass testSlidingMass.m)
+MuscolloAddMatlabTest(SlidingMass ../Examples/exampleSlidingMass.m)
 MuscolloAddMatlabTest(SWIGAdditionalInterface testSWIGAdditionalInterface.m)
 
 # Copy resources.
