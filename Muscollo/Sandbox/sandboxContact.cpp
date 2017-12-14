@@ -387,6 +387,54 @@ void pendulumActivationCoordinateActuator() {
      */
 }
 
+void addResidualActivationCoordinateActuators(Model& model) {
+
+    auto& coordSet = model.updCoordinateSet();
+    
+    auto* res_rz = new ActivationCoordinateActuator();
+    res_rz->setCoordinate(&coordSet.get("rz"));
+    res_rz->setName("res_rz");
+    res_rz->setOptimalForce(100);
+    model.addComponent(res_rz);
+
+    auto* res_tx = new ActivationCoordinateActuator();
+    res_tx->setCoordinate(&coordSet.get("tx"));
+    res_tx->setName("res_tx");
+    res_tx->setOptimalForce(2500);
+    model.addComponent(res_tx);
+
+    auto* res_ty = new ActivationCoordinateActuator();
+    res_ty->setCoordinate(&coordSet.get("ty"));
+    res_ty->setName("res_ty");
+    res_ty->setOptimalForce(2500);
+    model.addComponent(res_ty);
+
+}
+
+void addResidualCoordinateActuators(Model& model) {
+
+    auto& coordSet = model.updCoordinateSet();
+
+    auto* res_rz = new CoordinateActuator();
+    res_rz->setCoordinate(&coordSet.get("rz"));
+    res_rz->setName("res_rz");
+    res_rz->setOptimalForce(100);
+    model.addComponent(res_rz);
+
+    auto* res_tx = new CoordinateActuator();
+    res_tx->setCoordinate(&coordSet.get("tx"));
+    res_tx->setName("res_tx");
+    res_tx->setOptimalForce(2500);
+    model.addComponent(res_tx);
+
+    auto* res_ty = new CoordinateActuator();
+    res_ty->setCoordinate(&coordSet.get("ty"));
+    res_ty->setName("res_ty");
+    res_ty->setOptimalForce(2500);
+    model.addComponent(res_ty);
+
+}
+
 Model createModelSLIP() {
     Model model;
     model.setName("SLIP");
@@ -425,12 +473,18 @@ Model createModelSLIP() {
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
-    //force->set_stiffness(5e3);
+    force->set_stiffness(5e5);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
     model.addComponent(force);
     force->connectSocket_station(*station);
 
+    //auto* force = new MeyerFregly2016Force();
+    ////force->set_dissipation(1.0);
+    ////force->set_stiffness(1e4);
+    //force->setName("contact");
+    //model.addComponent(force);
+    //force->connectSocket_station(*station);
 
     // Leg muscles.
     // TODO spring force should be felt all the time; similar to contact.
@@ -441,6 +495,11 @@ Model createModelSLIP() {
     spring->set_rest_length(1.0);
     spring->connectSocket_body1(*foot);
     spring->connectSocket_body2(*pelvis);
+
+    auto* foot_marker = new Marker("foot_COM", *foot, Vec3(0));
+    model.addComponent(foot_marker);
+    auto* pelvis_marker = new Marker("pelvis_COM", *pelvis, Vec3(0));
+    model.addComponent(pelvis_marker);
 
     return model;
 }
@@ -483,20 +542,33 @@ Model createModelSLIPActuated() {
 
     auto* force = new AckermannVanDenBogert2010Force();
     force->set_dissipation(1.0);
-    //force->set_stiffness(5e3);
+    force->set_stiffness(5e5);
     force->set_friction_coefficient(1.0);
     force->setName("contact");
     model.addComponent(force);
     force->connectSocket_station(*station);
 
+    //auto* force = new MeyerFregly2016Force();
+    //force->set_dissipation(1.0);
+    //force->set_stiffness(1e4);
+    //force->setName("contact");
+    //model.addComponent(force);
+    //force->connectSocket_station(*station);
 
-
-    auto* actuator = new ActivationCoordinateActuator();
+    auto* actuator = new CoordinateActuator();
     actuator->setCoordinate(&length);
     actuator->setName("actuator");
     actuator->setOptimalForce(2500);
-    actuator->set_activation_time_constant(0.025);
+    //actuator->set_activation_time_constant(0.025);
     model.addComponent(actuator);
+
+    //addResidualActivationCoordinateActuators(model);
+    addResidualCoordinateActuators(model);
+
+    auto* foot_marker = new Marker("foot_COM", *foot, Vec3(0));
+    model.addComponent(foot_marker);
+    auto* pelvis_marker = new Marker("pelvis_COM", *pelvis, Vec3(0));
+    model.addComponent(pelvis_marker);
 
     return model;
 }
@@ -558,6 +630,15 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     reporter->addToReport(
             modelTS.getComponent("contact").getOutput("force_on_station"));
     modelTS.addComponent(reporter);
+    auto markersReporter = new TableReporterVec3();
+    markersReporter->set_report_time_interval(0.01);
+    markersReporter->addToReport(
+            modelTS.getComponent("foot_COM").getOutput("location"), 
+            "foot_COM");
+    markersReporter->addToReport(
+            modelTS.getComponent("pelvis_COM").getOutput("location"), 
+            "pelvis_COM");
+    modelTS.addComponent(markersReporter);
     auto state = modelTS.initSystem();
     modelTS.setStateVariableValue(state, "planar/rz/value", rzvalue0);
     modelTS.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
@@ -571,12 +652,18 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     const auto& statesTimeStepping = manager.getStateStorage();
     forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
     auto forcesFlattened = reporter->getTable().flatten({"x", "y", "z"});
+    //TimeSeriesTable forcesFilt = filterLowpass(forcesFlattened, 18.0, true);
     STOFileAdapter::write(forcesFlattened,
-            "slipSolveForForce_contact_force.sto");
+        "slipSolveForForce_contact_force.sto");
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable,
             "slipSolveForForce_timestepping.sto");
-    // visualize(modelTS, statesTimeStepping);
+    auto markers = markersReporter->getTable();
+    TimeSeriesTable markersFilt = filterLowpass(markers.flatten(), 6.0, true);
+    auto markersPacked = markersFilt.pack<double>();
+    TimeSeriesTableVec3 markersToUse(markersPacked);
+    markersToUse.setColumnLabels({"foot_COM", "pelvis_COM"});
+    visualize(modelTS, statesTimeStepping);
 
 
     MucoTool muco;
@@ -594,8 +681,14 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setStateInfo("planar/ty/speed", {-10, 10}, 0);
     mp.setStateInfo("planar/rz/speed", {-10, 10}, rzspeed0);
     mp.setStateInfo("leg/length/speed", {-10, 10}, 0);
-    mp.setStateInfo("actuator/activation", {-2, 2});
+    //mp.setStateInfo("actuator/activation", {-2, 2});
+    //mp.setStateInfo("res_rz/activation", { -2, 2 });
+    //mp.setStateInfo("res_tx/activation", { -2, 2 });
+    //mp.setStateInfo("res_ty/activation", { -2, 2 });
     mp.setControlInfo("actuator", {-1, 1});
+    mp.setControlInfo("res_rz", { -1, 1 });
+    mp.setControlInfo("res_tx", { -1, 1 });
+    mp.setControlInfo("res_ty", { -1, 1 });
 
     Storage statesFilt = statesTimeStepping;
     statesFilt.pad(statesFilt.getSize() / 2);
@@ -608,25 +701,37 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     // TODO filter statesTimeSteppingTable!
     // TODO only track coordinate values, not speeds.
 
-    MucoStateTrackingCost tracking;
-    tracking.setName("tracking");
-    tracking.setReference(statesToTrack);
-    mp.addCost(tracking);
+    MucoStateTrackingCost stateTracking;
+    stateTracking.setName("state_tracking");
+    stateTracking.setReference(statesToTrack);
+    mp.addCost(stateTracking);
 
-    // MucoControlCost effort;
-    // effort.setName("effort");
-    // mp.addCost(effort);
+    //MucoControlCost effort;
+    //effort.setName("effort");
+    //mp.addCost(effort);
+
+    //MucoMarkerTrackingCost markerTracking;
+    //markerTracking.setName("marker_tracking");
+    //MarkersReference markersRef(markersToUse);
+    //markerTracking.setMarkersReference(markersRef);
+    ////markerTracking.setFreeRadius(0.01);
+    //markerTracking.set_weight(1);
+    //mp.addCost(markerTracking);
 
     MucoForceTrackingCost grfTracking;
     grfTracking.setName("grf_tracking");
     GCVSplineSet grfSplines(forcesFlattened);
     grfTracking.m_refspline_x = *grfSplines.getGCVSpline(0);
     grfTracking.m_refspline_y = *grfSplines.getGCVSpline(1);
-    grfTracking.set_weight(0.0001);
-    // TODO mp.addCost(grfTracking);
+    double normGRFs = 0.001;
+    double weight = 1;
+    grfTracking.set_weight(normGRFs * weight);
+    grfTracking.append_forces("contact");
+    mp.addCost(grfTracking);
 
 
     MucoTropterSolver& ms = muco.initSolver();
+    ms.set_dynamics_mode("implicit");
     ms.set_num_mesh_points(100);
     //ms.set_num_mesh_points(50);
     //ms.set_optim_max_iterations(2);
@@ -677,6 +782,12 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //ms.setGuess(solution);
     //MucoSolution solution100 = muco.solve().unseal();
     //solution100.write("slipSolveForForce_solution100.sto");
+
+    // State and GRF tracking solution:
+    // + Residual actuators at pelvis (rz, tx, ty)
+    // + Implicit skeletal dynamics (no activation dynamics at coordinates)
+    // + 100 mesh points
+    // + AckermannVanDenBogert2010Force contact (defaults w/ stiffness = 5e5)
 
     muco.visualize(solution);
 }

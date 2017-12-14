@@ -125,8 +125,8 @@ public:
 
         const SimTK::Real velSlidingScaling =
                 get_tangent_velocity_scaling_factor();
-        // The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
-        // tanh() has a wider domain than using exp().
+        //// The paper used (1 - exp(-x)) / (1 + exp(-x)) = tanh(2x).
+        //// tanh() has a wider domain than using exp().
         const SimTK::Real transition = tanh(velSliding / velSlidingScaling / 2);
 
         const SimTK::Real frictionForce =
@@ -236,7 +236,7 @@ public:
         const SimTK::Real velNormal = vel[1];
         // TODO should project vel into ground.
         const SimTK::Real velSliding = vel[0];
-        // const SimTK::Real depth = 0 - y;
+        const SimTK::Real depth = 0 - y;
         const SimTK::Real depthRate = 0 - velNormal;
         const SimTK::Real Kval = get_stiffness();
         const SimTK::Real Cval = get_dissipation();

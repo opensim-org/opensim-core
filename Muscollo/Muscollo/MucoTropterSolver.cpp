@@ -706,7 +706,7 @@ public:
         }
 
         InverseDynamicsSolver id(this->m_model);
-        SimTK::Vector udot(NQ, controls.data(), controls.data());
+        SimTK::Vector udot(NQ, controls.data() /*, controls.data()*/);
         SimTK::Vector residual = id.solve(this->m_state, udot);
 
         std::copy(&residual[0], &residual[0] + residual.size(),
