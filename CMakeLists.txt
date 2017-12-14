@@ -30,6 +30,16 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         "The directory in which to install this project." FORCE)
 endif()
 
+# Set the default for CMAKE_BUILD_TYPE.
+# CMAKE_BUILD_TYPE is only applicable for single-configuration generators.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+        "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
+
 # Make targets go in the same binary directory.
 # These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
