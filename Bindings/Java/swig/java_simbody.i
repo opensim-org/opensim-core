@@ -16,12 +16,6 @@ using namespace SimTK;
 /* This file is for creation/handling of arrays */
 %include "arrays_java.i";
 
-%typemap(javacode) SimTK::Vec3 %{
-    double[] getAsJavaArray() {
-		return new double[]{this->get(0), this->get(1), this->get(2)};
-	}
-%}
-
 %extend  SimTK::DecorativeGeometry {
 public:
 	bool hasUserRef() const {
@@ -166,6 +160,30 @@ public:
          return prevValue;
      }
 }
+
+%typemap(javacode) SimTK::Vec<3> %{
+    public double[] getAsJavaArray() {
+		return new double[]{get(0), get(1), get(2)};
+	}
+%}
+
+%typemap(javacode) SimTK::Vector_<double> %{
+    public Vector(double[] arr) {
+        resize(arr.length);
+        for (int i = 0; i < arr.length; ++i) {
+            set(i, arr[i]);
+        }
+    }
+%}
+
+%typemap(javacode) SimTK::RowVector_<double> %{
+    public RowVector(double[] arr) {
+        resize(arr.length);
+        for (int i = 0; i < arr.length; ++i) {
+            set(i, arr[i]);
+        }
+    }
+%}
 
 %include <Bindings/preliminaries.i>
 %include <Bindings/simbody.i>

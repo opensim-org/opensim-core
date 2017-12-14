@@ -1,10 +1,21 @@
 
-import org.opensim.modeling.*
+import org.opensim.modeling.*;
 
 % Create a model.
 model = Model('arm26.osim');
 
 s = model.initSystem();
+
+%% Creating Vectors from MATLAB matrices.
+% ---------------------------------------
+v = Vector([1, 2, 3, 4, 5, 6]);
+assert(v.get(0) == 1);
+assert(v.get(4) == 5);
+rv = RowVector([6, 7, 8]);
+assert(rv.get(0) == 6);
+assert(rv.get(2) == 8);
+
+% TODO test Vector([1, 2, 3; 4, 5, 6])
 
 % Test SimbodyMatterSubsystem.calcResidualForce().
 % ------------------------------------------------

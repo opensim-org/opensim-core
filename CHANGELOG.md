@@ -169,6 +169,8 @@ MATLAB interface
 - The configureOpenSim.m function should no longer require administrator
   privileges for most users, and gives more verbose output to assist with
   troubleshooting.
+- You can now easily create a Vector from a MATLAB vector:
+    `v = Vector([1, 2, 3])`.
 
 Python interface
 ----------------

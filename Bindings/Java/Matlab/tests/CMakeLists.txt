@@ -78,6 +78,8 @@ add_dependencies(RunMatlabTests JavaBindings)
 
 # From examples.
 OpenSimAddMatlabTest(TugOfWar ../examples/OpenSimCreateTugOfWarModel.m)
+OpenSimAddMatlabTest(convertingDataAndMatrices
+    ../examples/convertingDataAndMatrices.m)
 OpenSimAddMatlabTest(wiringInputsAndOutputsWithTableReporter
     ../examples/wiringInputsAndOutputsWithTableReporter.m)
 OpenSimAddMatlabTest(RunHopper_answers ../Hopper_Device/RunHopper_answers.m)
