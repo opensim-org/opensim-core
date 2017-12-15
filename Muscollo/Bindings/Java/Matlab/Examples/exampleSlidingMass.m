@@ -83,6 +83,6 @@ solution = muco.solve();
 
 solution.write('sliding_mass_solution.sto');
 
-if getenv('OPENSIM_USE_VISUALIZER') == '1'
+if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
     muco.visualize(solution);
 end

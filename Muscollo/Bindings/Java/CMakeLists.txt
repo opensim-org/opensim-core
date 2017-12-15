@@ -38,7 +38,6 @@ function(MuscolloGenerateJavaWrapper
 
     set(_swig_common_args -c++ -java
             -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
-            # TODO
             -I${CMAKE_SOURCE_DIR}/Muscollo
             -I${CMAKE_SOURCE_DIR}/opensim-core
             -I${CMAKE_SOURCE_DIR}/opensim-core/Bindings
@@ -87,9 +86,9 @@ add_library(osimMuscolloJavaJNI
 
 # SYSTEM to avoid warnings.
 target_include_directories(osimMuscolloJavaJNI SYSTEM PRIVATE
-                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2}
+                           "${JAVA_INCLUDE_PATH}" "${JAVA_INCLUDE_PATH2}"
                            # For Bindings/OpenSimHeaders_common.h, etc.:
-                           ${CMAKE_SOURCE_DIR}/opensim-core)
+                           "${CMAKE_SOURCE_DIR}/opensim-core")
 
 target_link_libraries(osimMuscolloJavaJNI osimMuscollo)
 
@@ -138,9 +137,6 @@ install(TARGETS osimMuscolloJavaJNI EXPORT MuscolloTargets
 # Compile java sources.
 # ---------------------
 find_package(Java 1.7 REQUIRED)
-
-# TODO COPY *.java files from opensim-core OR build a separate
-# org-opensim-muscollo.jar?
 
 # To avoid compiling stale .java files, delete any existing files and copy
 # over the new files from the module-specific directories (see

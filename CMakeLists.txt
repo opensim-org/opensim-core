@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(Muscollo)
+project(Muscollo VERSION 0.1)
 
 # Muscollo settings.
 # ------------------
@@ -7,6 +7,12 @@ project(Muscollo)
 set(MUSCOLLO_COPY_DEPENDENCIES ON)
 
 option(MUSCOLLO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
+
+option(MUSCOLLO_PYTHON_BINDINGS "Build Python interface." OFF)
+set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
+    "The major Python version (2 or 3) for which to build the wrapping.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 
 # CMake settings.
@@ -51,10 +57,16 @@ set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 set(MUSCOLLO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
 if(WIN32)
     set(MUSCOLLO_INSTALL_CMAKEDIR cmake)
+    set(MUSCOLLO_INSTALL_PYTHONDIR sdk/python)
+    set(MUSCOLLO_INSTALL_SCRIPTSDIR sdk/Scripts)
 else()
     set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Muscollo)
+    set(MUSCOLLO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    set(MUSCOLLO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
 endif()
 set(MUSCOLLO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+set(MUSCOLLO_INSTALL_MATLABEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Matlab")
+set(MUSCOLLO_INSTALL_PYTHONEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Python")
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)
