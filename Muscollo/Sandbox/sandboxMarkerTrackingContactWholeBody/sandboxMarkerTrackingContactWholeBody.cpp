@@ -52,8 +52,8 @@ void addActivationCoordinateActuator(Model& model, std::string coordName,
 }
 
 void addContact(Model& model, std::string markerName) {
-    const double stiffness = 50000;
-    const double friction_coefficient = 1;
+    const double stiffness = 5e7;
+    const double friction_coefficient = 0.75;
     const double velocity_scaling = 0.05;
     auto* contact = new AckermannVanDenBogert2010Force();
     contact->setName(markerName + "_contact");
@@ -79,9 +79,9 @@ void setModelAndBounds(MucoProblem& mp) {
     //addActivationCoordinateActuator(model, "hip_flexion_l", 100);
     //addActivationCoordinateActuator(model, "knee_angle_l", 100);
     //addActivationCoordinateActuator(model, "ankle_angle_l", 100);
-    addActivationCoordinateActuator(model, "rz", 40); // TODO 100);
-    addActivationCoordinateActuator(model, "tx", 100); // TODO 1000);
-    addActivationCoordinateActuator(model, "ty", 100); // TODO 1000);
+    addActivationCoordinateActuator(model, "rz", 250); // TODO 100);
+    addActivationCoordinateActuator(model, "tx", 5000); // TODO 1000);
+    addActivationCoordinateActuator(model, "ty", 5000); // TODO 1000);
 
     const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
     model.addMarker(new Marker("R.Heel.Distal", calcn,
@@ -126,7 +126,7 @@ void setModelAndBounds(MucoProblem& mp) {
 
     // Bounds.
     // -------
-    MucoBounds defaultSpeedBounds(-7, 7);
+    MucoBounds defaultSpeedBounds(-25, 25);
     mp.setTimeBounds(0.48, 1.8); // TODO [.58, 1.8] for gait cycle of right leg.
     mp.setStateInfo("ground_toes/rz/value", { -10, 10 });
     mp.setStateInfo("ground_toes/rz/speed", defaultSpeedBounds);
@@ -289,7 +289,10 @@ MucoSolution solveMarkerTrackingProblem() {
             col[j][1] -= 0.03; // y TODO
         }
     }
-    TimeSeriesTable refFilt = filterLowpass(ref.flatten(), 6.0, true);
+    TimeSeriesTable refFilt = filterLowpass(ref.flatten({ "_x", "_y", "_z" }), 
+        6.0, true);
+    STOFileAdapter::write(refFilt,
+        "sandboxMarkerTrackingContactWholeBody_marker_trajectories.sto");
     auto refPacked = refFilt.pack<double>();
     TimeSeriesTableVec3 refToUse(refPacked);
 
@@ -308,6 +311,9 @@ MucoSolution solveMarkerTrackingProblem() {
 
     tracking.setMarkersReference(markersRef);
     tracking.setAllowUnusedReferences(true);
+    tracking.set_weight(0.1);
+    tracking.setFreeRadius(0.01);
+    tracking.setTrackedMarkerComponents("xy");
     mp.addCost(tracking);
 
     MucoForceTrackingCost grfTracking;
@@ -321,7 +327,14 @@ MucoSolution solveMarkerTrackingProblem() {
             GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
     grfTracking.m_refspline_y =
             GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
-    // TODO mp.addCost(grfTracking);
+    double normGRFs = 0.001;
+    double weight = 1;
+    grfTracking.set_weight(normGRFs * weight);
+    grfTracking.append_forces("R.Heel.Distal_contact");
+    grfTracking.append_forces("R.Ball.Lat_contact");
+    grfTracking.append_forces("R.Ball.Med_contact");
+    grfTracking.set_tracked_grf_components("vertical");
+    mp.addCost(grfTracking);
 
     //MucoControlCost effort;
     //effort.setName("effort");
@@ -335,10 +348,11 @@ MucoSolution solveMarkerTrackingProblem() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
     ms.set_dynamics_mode("implicit");
+    ms.set_optim_max_iterations(100);
 
     // Create guess.
     // =============
-    //MucoIterate guess = ms.createGuess();
+    MucoIterate guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
     //auto statesRef = STOFileAdapter::read("walk_gait1018_state_reference.mot");
@@ -347,13 +361,67 @@ MucoSolution solveMarkerTrackingProblem() {
     //STOFileAdapter::write(statesRefFilt, "state_reference_radians.sto");
     //guess.setStatesTrajectory(statesRefFilt, true, true);
     //ms.setGuess(guess);
-    //ms.setGuess(MucoIterate(
-    //        "sandboxMarkerTrackingContactWholeBody_marker_solution.sto"));
+    ms.setGuess(MucoIterate(
+            "sandboxMarkerTrackingContactWholeBody_guess.sto"));
 
     // Solve the problem.
     // ==================
-    MucoSolution solution = muco.solve();
+    MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxMarkerTrackingContactWholeBody_marker_solution.sto");
+
+    // Compute the contact force for the direct collocation solution.
+    const auto statesTraj = solution.exportToStatesTrajectory(mp);
+    Model model = mp.getPhase().getModel();
+    model.initSystem();
+    const auto& RHeel_contact =
+        model.getComponent<AckermannVanDenBogert2010Force>(
+        "R.Heel.Distal_contact");
+    const auto& RBallLat_contact =
+        model.getComponent<AckermannVanDenBogert2010Force>(
+        "R.Ball.Lat_contact");
+    const auto& RBallMed_contact =
+        model.getComponent<AckermannVanDenBogert2010Force>(
+        "R.Ball.Med_contact");
+    TimeSeriesTableVec3 contactForceHistory;
+    contactForceHistory.setColumnLabels(
+    { "ground_force" });
+
+    for (const auto& s : statesTraj) {
+        model.realizeVelocity(s);
+        contactForceHistory.appendRow(s.getTime(),
+        { RHeel_contact.calcContactForce(s) 
+          + RBallLat_contact.calcContactForce(s) 
+          + RBallMed_contact.calcContactForce(s) });
+    }
+
+    STOFileAdapter::write(contactForceHistory.flatten({ "_vx", "_vy", "_vz" }),
+        "sandboxMarkerTrackingContactWholeBody_dircol_force.sto");
+
+    // Compute the model marker trajectories for the direct collocation 
+    // solution.
+    const auto& RHeel = model.getComponent<Marker>("R.Heel");
+    const auto& RMidfootSup = model.getComponent<Marker>("R.Midfoot.Sup");
+    const auto& RMidfootLat = model.getComponent<Marker>("R.Midfoot.Lat");
+    const auto& RToeLat = model.getComponent<Marker>("R.Toe.Lat");
+    const auto& RToeMed = model.getComponent<Marker>("R.Toe.Med");
+    const auto& RToeTip = model.getComponent<Marker>("R.Toe.Tip");
+    TimeSeriesTableVec3 modelMarkerHistory;
+    modelMarkerHistory.setColumnLabels({"R.Heel", "R.Midfoot.Sup", 
+        "R.Midfoot.Lat", "R.Toe.Lat", "R.Toe.Med", "R.Toe.Tip"});
+
+    for (const auto& s : statesTraj) {
+        model.realizePosition(s);
+        modelMarkerHistory.appendRow(s.getTime(),
+            {RHeel.getLocationInGround(s), 
+             RMidfootSup.getLocationInGround(s),
+             RMidfootLat.getLocationInGround(s),
+             RToeLat.getLocationInGround(s),
+             RToeMed.getLocationInGround(s),
+             RToeTip.getLocationInGround(s) });
+    }
+
+    STOFileAdapter::write(modelMarkerHistory.flatten({ "_x", "_y", "_z" }),
+        "sandboxMarkerTrackingContactWholeBody_dircol_markers.sto");
 
     muco.visualize(solution);
 
