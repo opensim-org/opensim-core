@@ -89,24 +89,23 @@
          refValue[2] = m_refsplines[3*refidx + 2].calcValue(timeVec);
 
          // Calculate distance for specified marker position components.
-         double distance;
+         double distance = 0.0;
          if (get_tracked_marker_components().find("x") != std::string::npos) {
-            distance += pow(modelValue[0] - refValue[0], 2);
+             distance += pow(modelValue[0] - refValue[0], 2);
          }
          if (get_tracked_marker_components().find("y") != std::string::npos) {
-            distance += pow(modelValue[1] - refValue[1], 2);
+             distance += pow(modelValue[1] - refValue[1], 2);
          }
          if (get_tracked_marker_components().find("z") != std::string::npos) {
-            distance += pow(modelValue[2] - refValue[2], 2);
+             distance += pow(modelValue[2] - refValue[2], 2);
          }
 
          // Only calculate error when distance is outside of specified free
          // radius.
          if (distance <= get_free_radius()) {
-            integrand += 0.0;
+             integrand += 0.0;
          } else {
-            integrand += m_marker_weights[refidx] * distance;
+             integrand += m_marker_weights[refidx] * distance;
          }
      }
  }
-

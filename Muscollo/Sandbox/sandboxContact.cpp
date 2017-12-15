@@ -626,11 +626,13 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     const SimTK::Real finalTime = 0.68;
     auto modelTS = createModelSLIP();
     auto reporter = new TableReporterVec3();
+    reporter->setName("contact_rep");
     reporter->set_report_time_interval(0.01);
     reporter->addToReport(
             modelTS.getComponent("contact").getOutput("force_on_station"));
     modelTS.addComponent(reporter);
     auto markersReporter = new TableReporterVec3();
+    markersReporter->setName("marker_rep");
     markersReporter->set_report_time_interval(0.01);
     markersReporter->addToReport(
             modelTS.getComponent("foot_COM").getOutput("location"), 
