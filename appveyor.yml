@@ -10,7 +10,7 @@ image: Visual Studio 2015
 
 platform: x64
 
-shallow_clone: true
+shallow_clone: false
 
 # No need to build the branch if building a PR.
 skip_branch_with_pr: true
