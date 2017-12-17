@@ -40,6 +40,10 @@ install:
   # OpenSim headers when using NuGet.
   # TODO - nuget sources add -name opensim-core --source https://ci.appveyor.com/nuget/opensim-core-kd63opes1em0
   # TODO - nuget install opensim-core -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+  # We rely on the opensim-core source code submodule for bindings and the
+  # superbuild.
+  # Only need the most recent commit (depth 1).
+  - git submodule update --depth 1 --init
 
   # https://blogs.msdn.microsoft.com/vcblog/2016/09/19/vcpkg-a-tool-to-acquire-and-build-c-open-source-libraries-on-windows/
   # https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md
