@@ -87,7 +87,7 @@ try
     toolboxLocal = fullfile(matlabroot, 'toolbox', 'local');
     % Create the string names used
     % TODO GUI distribution might put this file elsewhere.
-    OpenSimJarPath =  fullfile(muscolloRoot, ...
+    jarPath =  fullfile(muscolloRoot, ...
             '@MUSCOLLO_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
     % Keep track of if (1) we detected existing OpenSim
@@ -99,7 +99,7 @@ try
         % The prefdir mechanism doesn't exist yet; only check and use the
         % pre-2012b mechanism.
         % Must use single | to avoid short-circuit behavior of ||.
-        rmPrev = rmPrev | editPathTxtFile(classFileTool, OpenSimJarPath);
+        rmPrev = rmPrev | editPathTxtFile(classFileTool, jarPath);
     else
         % Previous versions of this script only used the pre-2012b mechanism,
         % so even if the user has 2012b or later, we must check the pre-2012b
@@ -108,58 +108,44 @@ try
         rmPrev = rmPrev | editPathTxtFile(classFileTool, '');
         % We will only add the jar path using the prefdir mechanism.
         classFilePref = fullfile(prefdir, 'javaclasspath.txt');
-        rmPrev = rmPrev | editPathTxtFile(classFilePref, OpenSimJarPath);
+        rmPrev = rmPrev | editPathTxtFile(classFilePref, jarPath);
     end
 
 %% Edit the Java library path.
     % Create the string names used
-    OpenSimLibPath  = fullfile(muscolloRoot, '@MUSCOLLO_INSTALL_SHAREDLIBDIR@');
+    libPath  = fullfile(muscolloRoot, '@MUSCOLLO_INSTALL_SHAREDLIBDIR@');
     libraryFileTool = fullfile(toolboxLocal, 'librarypath.txt');
     if matlabOlderThan2012b
-        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, OpenSimLibPath);
+        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, libPath);
     else
         rmPrev = rmPrev | editPathTxtFile(libraryFileTool, '');
         libraryFilePref = fullfile(prefdir, 'javalibrarypath.txt');
-        rmPrev = rmPrev | editPathTxtFile(libraryFilePref, OpenSimLibPath);
-    end
-
-%% Edit MATLAB path
-    cleanMatlabSearchPath();
-    utilitiesPath = fullfile(thisFolder, 'Utilities');
-    addpath(utilitiesPath);
-    fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
-    status = savepath;
-    if status ~= 0 % Status is 0 for success (see doc savepath). 
-        fprintf(['-- Could not save changes to the MATLAB path. ' ...
-                 'Therefore, you will not have access to OpenSim-related '...
-                 'MATLAB utilities like osimTableToStruct(). ' ...
-                 'Restart MATLAB as administrator (or with sudo, on UNIX) '...
-                 'and re-run configureOpenSim.m.'])
+        rmPrev = rmPrev | editPathTxtFile(libraryFilePref, libPath);
     end
 
 %% Display final message.
-    msg = ['Paths have been successfully updated for the copy of OpenSim '...
+    msg = ['Paths have been successfully updated for the copy of Muscollo '...
             'installed at ' muscolloRoot '.'];
     if rmPrev(1) && rmPrev(2) 
         % We detected previous OpenSim entries and couldn't remove them.
         msg = [msg ' However, we were unable to fully remove existing '...
-                'installations of OpenSim from MATLAB. '...
+                'installations of OpenSim/Muscollo from MATLAB. '...
                 'Either remove them manually (see Command Window for '...
                 'details), or restart ' ...
                 'MATLAB as administrator (or with sudo, on UNIX) ' ...
-                ' and re-run configureOpenSim.m.'];
+                ' and re-run configureMuscollo.m.'];
     end
     if ispc && rmPrev(1) 
         msg = [msg ' Make sure your Windows PATH (search for ' ...
                    '"environment" in the Windows start menu) ' ...
-                   'contains ' OpenSimLibPath '.'];
+                   'contains ' libPath '.'];
         % If the user does not have a pre-existing OpenSim installation,
         % we assume the OpenSim installer successfully edited the PATH;
         % no need for a message.
     end
     msg = [msg ' To complete setup, restart MATLAB. To test your set up, ' ...
            'type: `model = org.opensim.modeling.Model();`'];
-    showMessage(msg, 'OpenSim successfully added', false);
+    showMessage(msg, 'OpenSim Muscollo successfully added', false);
 catch ME
     % Introduced in version 2007b (7.4).
     throwAsCaller(ME); % Avoid a stacktrace.
@@ -172,8 +158,8 @@ function rmPrev = editPathTxtFile(txtname, spath)
     % Edits Java path .txt files. Deletes old entries and adds the new path
     % spath if spath is not empty.
     % return value:
-    % (1): have we detected existing OpenSim entries?
-    % (2): did we have trouble removing existing OpenSim entries.
+    % (1): have we detected existing OpenSim/Muscollo entries?
+    % (2): did we have trouble removing existing OpenSim/Muscollo entries.
     rmPrev = [false false];
     
     % If the file does not exist then there are no old entries to delete; if
@@ -189,20 +175,20 @@ function rmPrev = editPathTxtFile(txtname, spath)
         if fileIDread == -1
             if isempty(spath)
                 % This branch is unlikely.
-                fprintf(['-- Unable check for existing OpenSim entries in ' ...
-                         '%s. Check this file manually.\n'], txtname);
+                fprintf(['-- Unable check for existing OpenSim/Muscollo ' ...
+                        'entries in %s. Check this file manually.\n'], txtname);
                 % If spath is not empty, then we intend to write to the file,
                 % and we will give a more useful message in the next few lines.
             end
         else
             C = textscan(fileIDread,'%s', 'delimiter','\n');
-            [entries, rmPrev(1)] = searchForOpenSimString(C, txtname);
+            [entries, rmPrev(1)] = searchForOpenSimMuscollo(C, txtname);
         end
         fclose(fileIDread);
     end
 
-    % If we detected previous OpenSim entries or if want to add an entry,
-    % then we need to be able to write to the file.
+    % If we detected previous OpenSim/Muscollo entries or if want to add an
+    % entry, then we need to be able to write to the file.
     if rmPrev(1) || ~isempty(spath)
         fileIDwrite = fopen(txtname, 'w');
         if fileIDwrite == -1
@@ -234,7 +220,7 @@ function rmPrev = editPathTxtFile(txtname, spath)
             msg = ['-- Added ' spath ' to ' txtname];
         end
         if rmPrev(1)
-            msg = [msg ' and commented out pre-existing OpenSim entries'];
+            msg = [msg ' and commented out pre-existing OpenSim/Muscollo entries'];
         end
         msg = [msg '.\n\n'];
         fprintf(msg);
@@ -244,7 +230,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [newC, foundExisting] = searchForOpenSimString(C, txtname)
+function [newC, foundExisting] = searchForOpenSimMuscollo(C, txtname)
     % Return a new cell array with all the same entries as C, except that
     % entries containing opensim or muscollo are commented out.
     timeStr = datestr(now, 30);
@@ -318,7 +304,9 @@ function cleanMatlabSearchPath()
         % ouput the folder string
         folderName = matlabPath(startString+1 : finishString-1);
         
-        % check to see if the folder string contains 'OpenSim'
+        % Check to see if the folder string contains 'OpenSim'.
+        % No need to check for 'muscollo' because this script never adds a path
+        % to the MATLAB PATH.
         if ~isempty(strfind(lower(folderName), 'opensim'))
             if ~attemptedBackup
                 backup = fullfile(prefdir, ['pathdef_backup_' timeStr '.m']);
