@@ -51,10 +51,10 @@ void addActivationCoordinateActuator(Model& model, std::string coordName,
     model.addComponent(actu);
 }
 
-void addContact(Model& model, std::string markerName) {
-    const double stiffness = 5e7;
-    const double friction_coefficient = 0.75;
-    const double velocity_scaling = 0.05;
+void addContact(Model& model, std::string markerName, const double stiffness = 5e7) {
+    //const double stiffness = 5e7;
+    const double friction_coefficient = 0.95;
+    const double velocity_scaling = 0.3;
     auto* contact = new AckermannVanDenBogert2010Force();
     contact->setName(markerName + "_contact");
     contact->set_stiffness(stiffness);
@@ -90,9 +90,9 @@ void setModelAndBounds(MucoProblem& mp) {
             SimTK::Vec3(0.16769, -0.0272884, 0.066)));
     model.addMarker(new Marker("R.Ball.Med", calcn,
             SimTK::Vec3(0.1898, -0.0272884, -0.03237)));
-    addContact(model, "R.Heel.Distal");
-    addContact(model, "R.Ball.Lat");
-    addContact(model, "R.Ball.Med");
+    addContact(model, "R.Heel.Distal", 5e7);
+    addContact(model, "R.Ball.Lat", 7.5e7);
+    addContact(model, "R.Ball.Med", 7.5e7);
     //addContact(model, "R.Heel");
     //addContact(model, "R.Toe.Lat");
     //addContact(model, "R.Toe.Med");
@@ -281,7 +281,7 @@ MucoSolution solveMarkerTrackingProblem() {
     ref.updMatrix() /= 1000;
     // TODO shift x and y positions to create "overground" trial.
     const auto& reftime = ref.getIndependentColumn();
-    const double walkingSpeed = 1.15; // m/s
+    const double walkingSpeed = 1.05; // m/s
     for (int i = 0; i < (int)ref.getNumColumns(); ++i) {
         SimTK::VectorView_<SimTK::Vec3> col = ref.updDependentColumnAtIndex(i);
         for (int j = 0; j < col.size(); ++j) {
@@ -311,11 +311,11 @@ MucoSolution solveMarkerTrackingProblem() {
 
     tracking.setMarkersReference(markersRef);
     tracking.setAllowUnusedReferences(true);
-    tracking.set_weight(0.1);
+    tracking.set_weight(0.000001);
     tracking.setFreeRadius(0.01);
     tracking.setTrackedMarkerComponents("xy");
     mp.addCost(tracking);
-
+        
     MucoForceTrackingCost grfTracking;
     // TODO this is a complete hack!
     grfTracking.setName("grf");
@@ -328,12 +328,13 @@ MucoSolution solveMarkerTrackingProblem() {
     grfTracking.m_refspline_y =
             GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
     double normGRFs = 0.001;
-    double weight = 1;
+    double weight = 0.000001;
     grfTracking.set_weight(normGRFs * weight);
     grfTracking.append_forces("R.Heel.Distal_contact");
     grfTracking.append_forces("R.Ball.Lat_contact");
     grfTracking.append_forces("R.Ball.Med_contact");
     grfTracking.set_tracked_grf_components("vertical");
+    grfTracking.set_free_force_window(25.0);
     mp.addCost(grfTracking);
 
     //MucoControlCost effort;
@@ -348,11 +349,11 @@ MucoSolution solveMarkerTrackingProblem() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
     ms.set_dynamics_mode("implicit");
-    ms.set_optim_max_iterations(100);
+    ms.set_optim_max_iterations(1000);
 
     // Create guess.
     // =============
-    MucoIterate guess = ms.createGuess();
+    //MucoIterate guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
     //auto statesRef = STOFileAdapter::read("walk_gait1018_state_reference.mot");
