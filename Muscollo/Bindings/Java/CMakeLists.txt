@@ -33,6 +33,10 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory
 # For building C++ wrapper.
 find_package(JNI 1.7 REQUIRED)
 
+# Avoid excessive compiler warnings. We set these COMPILE_OPTIONS in the root
+# CMakeLists.txt.
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+
 function(MuscolloGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 
