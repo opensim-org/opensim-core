@@ -104,6 +104,8 @@ struct DAEOutput {
 /// - *controls*:  a vector of all control variables at a given time.
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
+/// - *parameter*: a single parameter variable.
+/// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
 template <typename T>
 class OptimalControlProblem {
