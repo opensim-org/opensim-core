@@ -70,6 +70,7 @@ struct DAEInput {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& controls;
+
 };
 /// This struct holds the outputs of
 /// OptimalControlProblem::calc_differntial_algebraic_equations().
@@ -118,6 +119,10 @@ private:
         const FinalBounds final_bounds;
     };
     struct PathConstraintInfo {
+        const std::string name;
+        const Bounds bounds;
+    };
+    struct ParameterInfo {
         const std::string name;
         const Bounds bounds;
     };
