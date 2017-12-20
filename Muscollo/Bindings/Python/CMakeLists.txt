@@ -198,7 +198,7 @@ macro(MuscolloAddPythonModule)
         set_target_properties(${_libname} PROPERTIES SUFFIX ${WINLIBSUFFIX})
     elseif(APPLE)
         # Defaults to .dylib; change to .so.
-        set_target_properties(${_libname} PROPERTIES SUFFIX ${MACDLLSUFFIX})
+        set_target_properties(${_libname} PROPERTIES SUFFIX ${MACLIBSUFFIX})
     endif()
     
     if(MUSCOLLO_COPY_DEPENDENCIES)
