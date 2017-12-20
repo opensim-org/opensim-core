@@ -10,7 +10,7 @@ AddDependency(NAME       opensim-core
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          -DBUILD_JAVA_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
-                         -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
+                         -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
                          -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
 
