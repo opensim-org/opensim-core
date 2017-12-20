@@ -1,7 +1,7 @@
 import numpy as np
 import pylab as pl
 
-a = 5e7 # N/m^3
+a = 5e5 # N/m^3
 dissipation_coefficient = 1.0 # s/m
 b = dissipation_coefficient
 # See Simbody Theory Manual about when the std::max() is necessary.
@@ -97,6 +97,40 @@ pl.legend()
 
 #pl.show()
 fig.savefig('contact_models.pdf')
+
+
+
+fig = pl.figure(figsize=(4, 4))
+ax = fig.add_subplot(2, 1, 1)
+depth = np.linspace(-0.005, 0.005, 1000)
+pl.plot(depth, normal_force(depth, 0))
+ax.set_xlabel('depth (m)')
+ax.set_title('normal force (N)', fontsize=8)
+ax.spines['left'].set_position('zero')
+ax.spines['bottom'].set_position('zero')
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.xaxis.set_label_coords(0.75, -0.04)
+
+ax = fig.add_subplot(2, 1, 2)
+sliding_velocity = np.linspace(-1, 1, 1000)
+pl.plot(sliding_velocity,
+        friction_force_AckermannVanDenBogert2010(1, sliding_velocity),
+        label="Ackermann and van den Bogert 2010")
+ax.set_title('friction force (-)', fontsize=8)
+ax.set_xlabel('slip speed (m/s)')
+ax.set_xticks([-1, -0.5, 0, 0.5, 1.0])
+ax.xaxis.set_label_coords(0.75, 0.35)
+ax.spines['left'].set_position('zero')
+ax.spines['bottom'].set_position('zero')
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+
+fig.tight_layout()
+
+fig.savefig('AckermannVanDenBogert2010_normal_and_friction.png', dpi=300)
+
+
 
 
 
