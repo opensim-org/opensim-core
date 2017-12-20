@@ -22,8 +22,6 @@
 #include "testing.h"
 #include "testing_optimalcontrol.h"
 
-using Eigen::VectorXd;
-
 using namespace tropter;
 
 /// Pose the generic unconstrained optimization defined in
@@ -50,16 +48,41 @@ public:
 };
 
 TEST_CASE("IPOPT") {
+    SECTION("Finite differences, limited memory") {
+        auto ocp = std::make_shared<Unconstrained<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+        OptimalControlSolution solution = dircol.solve();
 
+        // Check correct optimization solution is obtained.
+        REQUIRE(Approx(solution.parameters[0]) == 1.5);
+        REQUIRE(Approx(solution.parameters[1]) == -2.0);
+        REQUIRE(Approx(solution.objective) == 0);
+    }
+    SECTION("Finite differences, exact Hessian") {
+        auto ocp = std::make_shared<Unconstrained<double>>();
+        DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
+        dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
+        dircol.get_opt_solver().set_hessian_approximation("exact");
+        OptimalControlSolution solution = dircol.solve();
+
+        // Check correct optimization solution is obtained.
+        REQUIRE(Approx(solution.parameters[0]) == 1.5);
+        REQUIRE(Approx(solution.parameters[1]) == -2.0);
+        REQUIRE(Approx(solution.objective) == 0);
+    }
     SECTION("ADOL-C") {
         // Solve the optimal control problem.
         auto ocp = std::make_shared<Unconstrained<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
         OptimalControlSolution solution = dircol.solve();
+        dircol.print_constraint_values(solution);
         solution.write("unconstrained_solution.csv");
 
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
         REQUIRE(Approx(solution.parameters[1]) == -2.0);
         REQUIRE(Approx(solution.objective) == 0);
+    }
 }

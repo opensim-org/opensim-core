@@ -116,12 +116,13 @@ calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
 
 template<typename T>
 void OptimalControlProblem<T>::
-calc_endpoint_cost(const T&, const VectorX<T>&, T&) const
+calc_endpoint_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
 {}
 
 template<typename T>
 void OptimalControlProblem<T>::
-calc_integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
+calc_integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, 
+        const VectorX<T>&, T&) const
 {}
 
 template<typename T>
@@ -194,6 +195,26 @@ set_control_guess(OptimalControlIterate& guess,
 }
 
 template<typename T>
+void OptimalControlProblem<T>::
+set_parameter_guess(OptimalControlIterate& guess,
+        const std::string& name,
+        const double& value)
+{
+    // Find the parameter index.
+    size_t parameter_index = 0;
+    // TODO store parameter infos in a map.
+    for (const auto& info : m_parameter_infos) {
+        if (info.name == name) break;
+        parameter_index++;
+    }
+    TROPTER_THROW_IF(parameter_index == m_parameter_infos.size(),
+        "Parameter '%s' does not exist.", name);
+
+    // Set the guess.
+    guess.parameters(parameter_index) = value;
+}
+
+template<typename T>
 void OptimalControlProblem<T>::get_all_bounds(
         double& initial_time_lower, double& initial_time_upper,
         double& final_time_lower, double& final_time_upper,
@@ -209,6 +230,8 @@ void OptimalControlProblem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
         Eigen::Ref<Eigen::VectorXd> final_controls_lower,
         Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+        Eigen::Ref<Eigen::VectorXd> parameters_lower,
+        Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
         Eigen::Ref<Eigen::VectorXd> path_constraints_upper) const {
     initial_time_lower = m_initial_time_bounds.lower;
@@ -256,10 +279,15 @@ void OptimalControlProblem<T>::get_all_bounds(
             final_controls_upper[ic]   = info.bounds.upper;
         }
     }
-    for (unsigned ip = 0; ip < m_path_constraint_infos.size(); ++ip) {
-        const auto& info = m_path_constraint_infos[ip];
-        path_constraints_lower[ip] = info.bounds.lower;
-        path_constraints_upper[ip] = info.bounds.upper;
+    for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
+        const auto& info = m_parameter_infos[ip];
+        parameters_lower[ip] = info.bounds.lower;
+        parameters_upper[ip] = info.bounds.upper;
+    }
+    for (unsigned ipc = 0; ipc < m_path_constraint_infos.size(); ++ipc) {
+        const auto& info = m_path_constraint_infos[ipc];
+        path_constraints_lower[ipc] = info.bounds.lower;
+        path_constraints_upper[ipc] = info.bounds.upper;
     }
 }
 

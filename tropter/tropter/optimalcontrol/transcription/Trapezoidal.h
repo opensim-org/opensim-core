@@ -104,29 +104,45 @@ protected:
     /// The "outer" stride is the distance between columns and "inner" stride is
     /// the distance between elements of each column (for column-major format).
     template<typename S>
+    using ParameterViewConst = Eigen::Map<const VectorX<S>,
+        Eigen::Unaligned,
+        Eigen::InnerStride<1>>;
+    template<typename S>
     using TrajectoryViewConst = Eigen::Map<const MatrixX<S>,
             Eigen::Unaligned,
             Eigen::OuterStride<Eigen::Dynamic>>;
     template<typename S>
+    using ParameterView = Eigen::Map<VectorX<S>,
+        Eigen::Unaligned,
+        Eigen::InnerStride<1>>;
+    template<typename S>
     using TrajectoryView = Eigen::Map<MatrixX<S>,
-    Eigen::Unaligned,
-    Eigen::OuterStride<Eigen::Dynamic>>;
+            Eigen::Unaligned,
+            Eigen::OuterStride<Eigen::Dynamic>>;
     // TODO move to a single "make_variables_view"
+    template<typename S>
+    ParameterViewConst<S>
+    make_parameters_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
     make_states_trajectory_view(const VectorX<S>& variables) const;
     template<typename S>
     TrajectoryViewConst<S>
     make_controls_trajectory_view(const VectorX<S>& variables) const;
-    template<typename S>
     // TODO find a way to avoid these duplicated functions, using SFINAE.
     /// This provides a view to which you can write.
+    template<typename S>
+    ParameterView<S>
+    make_parameters_view(VectorX<S>& variables) const;
+    /// This provides a view to which you can write.
+    template<typename S>
     TrajectoryView<S>
     make_states_trajectory_view(VectorX<S>& variables) const;
     /// This provides a view to which you can write.
     template<typename S>
     TrajectoryView<S>
     make_controls_trajectory_view(VectorX<S>& variables) const;
+
 
     // TODO templatize.
     using DefectsTrajectoryView = Eigen::Map<MatrixX<T>>;
@@ -150,6 +166,8 @@ private:
     std::shared_ptr<const OCProblem> m_ocproblem;
     int m_num_mesh_points;
     int m_num_time_variables = -1;
+    int m_num_parameters = -1;
+    int m_num_dense_variables = -1;
     int m_num_defects = -1;
     int m_num_states = -1;
     int m_num_controls = -1;
