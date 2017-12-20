@@ -652,7 +652,42 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     Manager manager(modelTS, state, integrator);
     state = manager.integrate(finalTime);
     const auto& statesTimeStepping = manager.getStateStorage();
-    forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
+
+
+    // Calculate the signed magnitude of the spring force.
+    // forceRep->getForceStorage().print("DEBUG_slipSolveForForce_forces.sto");
+    SimTK::Vector springForceActual;
+    SimTK::Vector springForceActualTime;
+    {
+        auto forceRepTable = forceRep->getForcesTable();
+        std::string prefix = "pointtopointspring.";
+        auto X = forceRepTable.getDependentColumn(prefix + "foot.force.X");
+        auto Y = forceRepTable.getDependentColumn(prefix + "foot.force.Y");
+        auto Z = forceRepTable.getDependentColumn(prefix + "foot.force.Z");
+        auto pX = forceRepTable.getDependentColumn(prefix + "pelvis.point.X") -
+                forceRepTable.getDependentColumn(prefix + "foot.point.X");
+        auto pY = forceRepTable.getDependentColumn(prefix + "pelvis.point.Y") -
+                forceRepTable.getDependentColumn(prefix + "foot.point.Y");
+        auto pZ = forceRepTable.getDependentColumn(prefix + "pelvis.point.Z") -
+                forceRepTable.getDependentColumn(prefix + "foot.point.Z");
+        const auto& stdTime = forceRepTable.getIndependentColumn();
+        springForceActualTime =
+                SimTK::Vector((int)stdTime.size(), stdTime.data());
+        springForceActual.resize(X.size());
+        assert(X.size() > 0);
+        for (int i = 0; i < X.size(); ++i) {
+            SimTK::Vec3 forceVec(X[i], Y[i], Z[i]);
+            SimTK::Vec3 lineOfAction(pX[i], pY[i], pZ[i]);
+            springForceActual[i] = forceVec.norm();
+            if (~lineOfAction * forceVec < 0) {
+                springForceActual[i] *= -1;
+            }
+        }
+        forceRepTable.appendColumn("spring_force_mag", springForceActual);
+        STOFileAdapter::write(forceRepTable,
+                "DEBUG_slipSolveForForce_springforce.sto");
+    }
+
     auto forcesFlattened = reporter->getTable().flatten({"x", "y", "z"});
     //TimeSeriesTable forcesFilt = filterLowpass(forcesFlattened, 18.0, true);
     STOFileAdapter::write(forcesFlattened,
@@ -730,6 +765,8 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     grfTracking.set_weight(normGRFs * weight);
     grfTracking.append_forces("contact");
     mp.addCost(grfTracking);
+    // Solves in 3-4 minutes without contact tracking, 9 minutes with contact
+    // tracking.
 
 
     MucoTropterSolver& ms = muco.initSolver();
@@ -745,6 +782,13 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     MucoSolution solution = muco.solve().unseal();
     solution.write("slipSolveForForce_solution.sto");
     std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+
+    SimTK::Vector springForceRecovered =
+            interpolate(solution.getTime(),
+                    -2500.0 * solution.getControl("actuator"),
+                    springForceActualTime);
+    std::cout << "Spring force error: " <<
+            springForceRecovered - springForceActual << std::endl;
 
     // Compute the contact force for the direct collocation solution.
     const auto statesTraj = solution.exportToStatesTrajectory(mp);
