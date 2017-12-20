@@ -52,17 +52,19 @@ macro(MuscolloAddJavaTest TESTNAME)
     endif()
 
     if(WIN32)
-        # On Windows, CMake cannot use RPATH to hard code the location of libraries
-        # in the binary directory (DLL's don't have RPATH), so we must set PATH to
-        # find the right libraries. The location of the libraries depends on the
-        # build configuration, which is filled in for `$<CONFIG>`. We also don't
-        # want to accidentally use a different build/installation somewhere
-        # on the machine.
-        set_tests_properties(Java_${TESTNAME}_${cfg} PROPERTIES
-            ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/$<CONFIG>"
-            TIMEOUT 30)
-        # Timeout (seconds) is because Java might hang if it can't find
-        # the DLL's.
+        # On Windows, CMake cannot use RPATH to hard code the location of
+        # libraries in the binary directory (DLL's don't have RPATH), so we
+        # must set PATH to find the right libraries. The location of the
+        # libraries depends on the build configuration. We also don't want to
+        # accidentally use a different OpenSim build/installation somewhere on
+        # the machine.
+        foreach(cfg ${CMAKE_CONFIGURATION_TYPES})
+            set_tests_properties(Java_${TESTNAME}_${cfg} PROPERTIES ENVIRONMENT
+                "PATH=${CMAKE_BINARY_DIR}/${cfg}"
+                TIMEOUT 30)
+            # Timeout (seconds) is because Java might hang if it can't find
+            # the DLL's.
+        endforeach()
     endif()
 
 endmacro()
