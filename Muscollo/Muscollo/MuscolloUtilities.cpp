@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MuscolloUtilities.cpp                                               *
+ * OpenSim Muscollo: MuscolloUtilities.cpp                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -19,6 +19,7 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <simbody/internal/Visualizer_InputListener.h>
@@ -33,6 +34,18 @@ SimTK::Vector OpenSim::createVectorLinspace(
         v[i] = start + i * (end - start) / (length - 1);
     }
     return v;
+}
+
+SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
+        const SimTK::Vector& y, const SimTK::Vector& newX) {
+    PiecewiseLinearFunction function(x.size(), &x[0], &y[0]);
+    SimTK::Vector newY(newX.size(), SimTK::NaN);
+    for (int i = 0; i < newX.size(); ++i) {
+        const auto& newXi = newX[i];
+        if (x[0] <= newXi && newXi <= x[x.size()-1])
+            newY[i] = function.calcValue(SimTK::Vector(1, newXi));
+    }
+    return newY;
 }
 
 Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
