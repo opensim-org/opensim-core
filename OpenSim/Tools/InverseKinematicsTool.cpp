@@ -372,7 +372,7 @@ bool InverseKinematicsTool::run()
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
         // Once done, remove the analysis we added
-        _model->removeAnalysis(&kinematicsReporter);
+        _model->removeAnalysis(&kinematicsReporter, false);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
