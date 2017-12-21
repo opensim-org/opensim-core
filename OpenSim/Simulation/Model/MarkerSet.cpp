@@ -118,37 +118,6 @@ void MarkerSet::getMarkerNames(Array<string>& markerNamesArray) const
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Scale marker set by a set of scale factors
- */
-void MarkerSet::scale(const ScaleSet& scaleSet)
-{
-    Vec3    scaleFactors(1.0);
-
-    for (int i = 0; i < getSize(); i++)
-    {
-        Marker& nextMarker = get(i);
-        const string& refFrameName = nextMarker.getParentFrame().getName();
-
-        bool found = false;
-        for (int j = 0; j < scaleSet.getSize() && !found; j++)
-        {
-            Scale& nextScale = scaleSet.get(j);
-            if (nextScale.getSegmentName() == refFrameName)
-            {
-                found = true;
-                nextScale.getScaleFactors(scaleFactors);
-                nextMarker.scale(scaleFactors);
-            }
-        }
-    }
-}
-
-//_____________________________________________________________________________
-/**
- * Add name prefix.
- */
 void MarkerSet::addNamePrefix(const string& prefix)
 {
     int i;

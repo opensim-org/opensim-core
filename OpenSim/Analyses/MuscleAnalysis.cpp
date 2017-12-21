@@ -682,7 +682,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::begin(SimTK::State& s )
+int MuscleAnalysis::begin(const SimTK::State&s )
 {
     if(!proceed()) return 0;
 
@@ -753,7 +753,7 @@ int MuscleAnalysis::step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int MuscleAnalysis::end(SimTK::State& s )
+int MuscleAnalysis::end(const SimTK::State& s )
 {
     if (!proceed()) return 0;
     record(s);

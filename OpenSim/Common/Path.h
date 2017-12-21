@@ -97,6 +97,10 @@ public:
     /// Pure virtual function that returns a string of invalid characters.
     virtual const std::string getInvalidChars() const = 0;
 
+    /// Return true if pathElement does not contain any chars from the list
+    /// of getInvalidChars()
+    bool isLegalPathElement(const std::string& pathElement) const;
+
 protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
@@ -111,6 +115,9 @@ protected:
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {
+        if (!getNumPathLevels()) {
+            return std::vector<std::string>{}; 
+        }
         return getSubPathVec(0, getNumPathLevels() - 1);
     }
 
@@ -152,9 +159,9 @@ private:
         return subPath;
     }
 
-    /// Return true if pathElement does not contain any chars from the list
-    /// of _invalidChars
-    bool isLegalPathElement(const std::string& pathElement) const;
+    /// Return true if all elements in pathVec do not contain any chars from
+    /// the list of _invalidChars
+    bool isLegalPathVec(const std::vector<std::string>& pathVec) const;
 
     // Path variables
     std::vector<std::string> _path;

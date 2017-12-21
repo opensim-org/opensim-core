@@ -30,6 +30,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -138,30 +139,26 @@ void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 */
 }
 
-//_____________________________________________________________________________
-/**
- * Scale the ellipsoid's dimensions. The base class scales the origin
- * of the ellipsoid in the body's reference frame.
- *
- * @param aScaleFactors The XYZ scale factors.
- */
-void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
+void WrapEllipsoid::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-   // Base class, to scale origin in body frame
-   WrapObject::scale(aScaleFactors);
+    Super::extendScale(s, scaleSet);
 
-    SimTK::Vec3 localScaleVector[3];
+    // Get scale factors (if an entry for the Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
 
-   // _pose.x() holds the ellipsoid's X axis expressed in the
-   // body's reference frame. The magnitude of this-vector-multiplied-
-   // by-the-XYZ-scale-factors gives the amount that you need to
-   // scale the X dimension of the ellipsoid. Similarly for Y and Z...
-    for (int i=0; i<3; i++) {
-        localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
-        localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
-        localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
-    }
-    for (int i=0; i<3; i++)
+    // _pose.x() holds the ellipsoid's X-axis expressed in the body's reference
+    // frame. The elementwise product of this vector and the scaleFactors vector
+    // gives the amount that the ellipsoid must be scaled in the X dimension.
+    // Similar for the Y and Z dimensions.
+    Vec3 localScaleVector[3];
+
+    localScaleVector[0] = _pose.x().elementwiseMultiply(scaleFactors);
+    localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
+    localScaleVector[2] = _pose.z().elementwiseMultiply(scaleFactors);
+
+    for (int i = 0; i < 3; ++i)
         _dimensions[i] *= localScaleVector[i].norm();
 }
 

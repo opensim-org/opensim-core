@@ -167,7 +167,8 @@ void createStateStorageFile() {
     SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
     Manager manager(model, integrator);
     initState.setTime(0.0);
-    manager.integrate(initState, 0.15);
+    manager.initialize(initState);
+    manager.integrate(0.15);
     manager.getStateStorage().print(statesStoFname);
 }
 

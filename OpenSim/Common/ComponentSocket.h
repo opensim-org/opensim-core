@@ -236,28 +236,20 @@ protected:
         // property is a ComponentPath (or a ChannelPath?).
         for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
-            
-            if (connecteeName.find(" ") != std::string::npos) {
+            ComponentPath cp(connecteeName);
+            if (!cp.isLegalPathElement(cp.getComponentName()) ) {
                 std::string msg = "In Socket '" + getName() +
                         "', connectee name '" + connecteeName +
-                        "' contains spaces, but spaces are not allowed.";
+                        "' contains illegal characters such as spaces.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
                            "names for a single-value Socket?";
                 }
-                // TODO Would ideally throw an exception, but some models *do*
-                // use spaces in names, and the error for this should be
-                // handled elsewhere.
-                // OPENSIM_THROW(Exception, msg);
-                std::cout << "Warning: " << msg << std::endl;
+                OPENSIM_THROW(Exception, msg);
             }
             
-            // Use ComponentPath constructor to validate the connectee_name.
-            // We still need the check above for spaces, as ComponentPath
-            // currently treats spaces as valid.
-            ComponentPath compPath(connecteeName);
             // Use the cleaned-up connectee_name created by ComponentPath.
-            setConnecteeName(compPath.toString(), iname);
+            setConnecteeName(cp.toString(), iname);
             // TODO update the above for Inputs when ChannelPath exists.
             
             // TODO There might be a bug with empty connectee_name being
@@ -345,8 +337,8 @@ public:
         
         connectee = *objT;
 
-        std::string objPathName = objT->getAbsolutePathName();
-        std::string ownerPathName = getOwner().getAbsolutePathName();
+        std::string objPathName = objT->getAbsolutePathString();
+        std::string ownerPathName = getOwner().getAbsolutePathString();
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasOwner()) {

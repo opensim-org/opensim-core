@@ -37,6 +37,8 @@ class ScaleSet;
  * representations. The geometry is attached to a PhysicalFrame, which is
  * specified using a Socket named "frame".
  *
+ * Note that ContactGeometry is not scaled with the Model.
+ *
  * @author Peter Eastman
  */
 class OSIMSIMULATION_API ContactGeometry : public ModelComponent {

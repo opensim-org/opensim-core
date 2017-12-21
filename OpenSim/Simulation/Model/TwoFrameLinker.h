@@ -26,7 +26,6 @@
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
@@ -47,10 +46,6 @@ namespace OpenSim {
  *
  * @tparam C The base class.
  * @tparam F The type of frame that the class links together.
- *
- * @internal @note If your base class C has a virtual `scale()` member function
- * that you need to implement, you may want to use the scaleFrames() function
- * in this class template (e.g., see WeldConstraint).
  *
  * @author Ajay Seth
  */
@@ -194,24 +189,6 @@ protected:
     void 
     updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
-
-    /**
-    * This can be used by derived classes to implement a base class' `scale()`
-    * function (e.g., see WeldConstraint). This function is NOT invoked
-    * automatically.
-    *
-    * The behavior is to scale the locations of PhyscialOffsetFrames according
-    * to the scale factors of the physical frames upon which they are attached.
-    *
-    * @internal @note Some of the base classes C used for this mixin have a
-    * virtual `scale()` member function (e.g., Constraint), but this is not
-    * true for all potential base classes.. We would ideally name this function
-    * as `scale()` and mark it as `override`, but this would give a compiler
-    * error when the base class C does not have a virtual `scale()` function.
-    *
-    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
-    */
-    void scaleFrames(const ScaleSet& scaleSet);
 
     /** Helper method to convert internal force expressed in the mobility basis
         between frame1 and frame2, dq, as individual spatial forces acting on
@@ -378,50 +355,6 @@ const F& TwoFrameLinker<C, F>::getFrame2() const
         _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
-}
-
-template<class C, class F>
-void TwoFrameLinker<C, F>::scaleFrames(const ScaleSet& scaleSet)
-{
-    SimTK::Vec3 frame1Factors(1.0);
-    SimTK::Vec3 frame2Factors(1.0);
-
-    // Find the factors associated with the PhysicalFrames this Component connects
-    const std::string& base1Name = this->getFrame1().findBaseFrame().getName();
-    const std::string& base2Name = this->getFrame2().findBaseFrame().getName();
-    // Get scale factors
-    bool found_b1 = false;
-    bool found_b2 = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_b1 && (scale.getSegmentName() == base1Name)) {
-            scale.getScaleFactors(frame1Factors);
-            found_b1 = true;
-        }
-        if (!found_b2 && (scale.getSegmentName() == base2Name)) {
-            scale.getScaleFactors(frame2Factors);
-            found_b2 = true;
-        }
-        if (found_b1 && found_b2)
-            break;
-    }
-
-    // if the frame is owned by this Component scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getFrame1());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame1Factors);
-    }
-    found = getProperty_frames().findIndex(getFrame2());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame2Factors);
-    }
 }
 
 template<class C, class F>

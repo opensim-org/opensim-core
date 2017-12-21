@@ -78,6 +78,9 @@ Path::Path(const std::vector<std::string> pathVec,
 {
     if (_path.empty()) return;
     cleanPath();
+    if (!isLegalPathVec(_path)) {
+        OPENSIM_THROW(Exception, "Invalid character used in the path");
+    }
 }
 
 std::string Path::toString() const
@@ -224,10 +227,19 @@ bool Path::isLegalPathElement(const std::string& pathElement) const
     return true;
 }
 
+bool Path::isLegalPathVec(const std::vector<std::string>& pathVec) const
+{
+    for (const std::string& pathElement : pathVec) {
+        if (!isLegalPathElement(pathElement)) return false;
+    }
+    return true;
+}
+
 void Path::appendPathElement(const std::string& pathElement) 
 {
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, "Invalid character used in pathElement");
+        OPENSIM_THROW(Exception, 
+            "Invalid character used in pathElement '" + pathElement + "'.");
     }
 
     if (pathElement.empty()) {

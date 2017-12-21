@@ -76,7 +76,6 @@ public:
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    void scale(const SimTK::Vec3& aScaleFactors) override { }
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,

@@ -149,6 +149,8 @@ public:
         same order as names*/
     void getWeights(const SimTK::State &s,
                     SimTK::Array_<double> &weights) const override;
+    /** get the marker trajectories in a table*/
+    const TimeSeriesTable_<SimTK::Vec3>& getMarkerTable() const;
 
     //--------------------------------------------------------------------------
     // Convenience Access

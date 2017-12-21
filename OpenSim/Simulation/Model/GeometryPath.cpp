@@ -124,6 +124,8 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
+    assert(pathPoints.size() > 1);
+
     const AbstractPathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);
 
@@ -490,7 +492,7 @@ double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
  * @return Pointer to the newly created path point.
  */
 AbstractPathPoint* GeometryPath::
-addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
+addPathPoint(const SimTK::State& s, int aIndex, const PhysicalFrame& frame)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
@@ -519,7 +521,8 @@ addPathPoint(const SimTK::State& s, int aIndex, PhysicalFrame& frame)
 
 AbstractPathPoint* GeometryPath::
 appendNewPathPoint(const std::string& proposedName, 
-                   PhysicalFrame& frame, const SimTK::Vec3& aPositionOnBody)
+                   const PhysicalFrame& frame,
+                   const SimTK::Vec3& aPositionOnBody)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
@@ -766,60 +769,20 @@ void GeometryPath::deletePathWrap(const SimTK::State& s, int aIndex)
 
 }
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/*
- * Perform computations that need to happen before the path is scaled.
- * For this object, that entails calculating and storing the path
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void GeometryPath::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+//==============================================================================
+void GeometryPath::
+extendPreScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    setPreScaleLength( s,  getLength(s) );
+    Super::extendPreScale(s, scaleSet);
+    setPreScaleLength(s, getLength(s));
 }
 
-//_____________________________________________________________________________
-/*
- * Scale the path based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether path was successfully scaled or not.
- */
-void GeometryPath::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void GeometryPath::
+extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
-    for (int i = 0; i < get_PathPointSet().getSize(); i++)
-    {
-        const string& bodyName = 
-            get_PathPointSet()[i].getParentFrame().getName();
-        for (int j = 0; j < aScaleSet.getSize(); j++)
-        {
-            Scale& aScale = aScaleSet.get(j);
-            if (bodyName == aScale.getSegmentName())
-            {
-                Vec3 scaleFactors(1.0);
-                aScale.getScaleFactors(scaleFactors);
-                upd_PathPointSet().get(i).scale(scaleFactors);
-            }
-        }
-    }
-}
-
-//_____________________________________________________________________________
-/*
- * Perform computations that need to happen after the path is scaled.
- * For this object, that entails updating the path.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    // Recalculate the path. This will also update the geometry.
-    // Done here since scale is invoked before bodies are scaled
-    // so we may not have enough info to update (e.g. wrapping, via points)
+    Super::extendPostScale(s, scaleSet);
     computePath(s);
 }
 
@@ -1180,6 +1143,12 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 void GeometryPath::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+
+    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2,
+        InvalidPropertyValue,
+        getProperty_PathPointSet().getName(),
+        "A valid path requires at least two PathPoints.")
+
     for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
         if (upd_PathWrapSet()[i].getName().empty()) {
             std::stringstream label;

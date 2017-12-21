@@ -167,6 +167,10 @@ void Component::finalizeFromProperties()
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
                       getConcreteClassName() );
 
+    ComponentPath cp;
+    OPENSIM_THROW_IF( !cp.isLegalPathElement(getName()), InvalidComponentName,
+        getName(), cp.getInvalidChars(), getConcreteClassName());
+
     for (auto& comp : _memberSubcomponents) {
         comp->setOwner(*this);
     }
@@ -630,7 +634,7 @@ unsigned Component::printComponentsMatching(const std::string& substring) const
     components.setFilter(ComponentFilterAbsolutePathNameContainsString(substring));
     unsigned count = 0;
     for (const auto& comp : components) {
-        std::cout << comp.getAbsolutePathName() << std::endl;
+        std::cout << comp.getAbsolutePathString() << std::endl;
         ++count;
     }
     return count;
@@ -688,7 +692,22 @@ void Component::setOwner(const Component& owner)
     _owner.reset(&owner);
 }
 
-std::string Component::getAbsolutePathName() const
+std::string Component::getAbsolutePathString() const
+{
+    std::string absPathName("/" + getName());
+
+    const Component* up = this;
+
+    while (up && up->hasOwner()) {
+        up = &up->getOwner();
+        absPathName.insert(0, "/" + up->getName());
+    }
+
+    return absPathName;
+
+}
+
+ComponentPath Component::getAbsolutePath() const
 {
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
@@ -699,16 +718,14 @@ std::string Component::getAbsolutePathName() const
         up = &up->getOwner();
         pathVec.insert(pathVec.begin(), up->getName());
     }
-    // The root must have a leading '/' 
-    ComponentPath path(pathVec, true);
 
-    return path.toString();
+    return ComponentPath(pathVec, true);
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    ComponentPath thisP(getAbsolutePathName());
-    ComponentPath wrtP(wrt.getAbsolutePathName());
+    ComponentPath thisP = getAbsolutePath();
+    ComponentPath wrtP = wrt.getAbsolutePath();
 
     return thisP.formRelativePath(wrtP).toString();
 }
@@ -774,11 +791,11 @@ Array<std::string> Component::getStateVariableNames() const
 
 /** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
-        stateNames[i] = (getAbsolutePathName() + "/" + stateNames[i]);
+        stateNames[i] = (getAbsolutePathString() + "/" + stateNames[i]);
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getAbsolutePathName();// *this);
+        const std::string& pathName = comp.getAbsolutePathString();// *this);
         Array<std::string> subStateNames = 
             comp.getStateVariablesNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
@@ -1090,6 +1107,29 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30500) {
+            // In 3.3 and earlier, spaces in names were tolerated. Spaces are
+            // no longer acceptable in Component names.
+            if (node.hasAttribute("name")) {
+                auto name = node.getRequiredAttribute("name").getValue();
+                if (name.find_first_of("\n\t ") < std::string::npos) {
+                    std::cout << getConcreteClassName() << " name '" << name
+                        << "' contains whitespace. ";
+                    name.erase(
+                        std::remove_if(name.begin(), name.end(), ::isspace),
+                        name.end() );
+                    node.setAttributeValue("name", name);
+                    std::cout << "It was renamed '" << name << "'." << std::endl;
+                }
+            }
+            else { // As 4.0 all Components must have a name. If none, assign one.
+                // Note: in finalizeFromProperties(), the Component will ensure
+                // that names are unique by travesing its list of subcomponents
+                // and renaming any duplicates.
+                node.setAttributeValue("name", 
+                    IO::Lowercase(getConcreteClassName()));
+            }
+        }
         if (versionNumber < 30508) {
             // Here's an example of the change this function might make:
             // Previous: <connectors>
@@ -1188,8 +1228,8 @@ void Component::markAsPropertySubcomponent(const Component* component)
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
     else{
-        auto compPath = component->getAbsolutePathName();
-        auto foundPath = it->get()->getAbsolutePathName();
+        auto compPath = component->getAbsolutePathString();
+        auto foundPath = it->get()->getAbsolutePathString();
         OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
                        component->getName(), getName());
     }
@@ -1604,7 +1644,7 @@ void Component::printOutputInfo(const bool includeDescendants) const {
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        const std::string msg = "Outputs from " + getAbsolutePathName() +
+        const std::string msg = "Outputs from " + getAbsolutePathString() +
             " [" + getConcreteClassName() + "]";
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 
