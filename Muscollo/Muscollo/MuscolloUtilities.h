@@ -24,6 +24,8 @@
 
 #include "osimMuscolloDLL.h"
 
+#include <set>
+
 namespace OpenSim {
 
 /// Since Muscollo does not require C++14 (which contains std::make_unique()),
