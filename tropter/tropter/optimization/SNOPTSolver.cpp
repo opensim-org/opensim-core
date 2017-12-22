@@ -245,6 +245,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     solution.objective = F[0];
     solution.status = convert_info_integer_to_string(info);
     solution.success = (info == 1 || info == 2 || info == 3);
+    // TODO set number of iterations: solution.num_iterations.
     return solution;
 }
 

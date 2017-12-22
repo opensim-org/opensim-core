@@ -42,10 +42,11 @@ MucoSolution MucoSolver::solve() const {
     return solveImpl();
 }
 
-void MucoSolver::setSolutionStatusAndSuccess(MucoSolution& sol,
-        bool success, const std::string& status) {
+void MucoSolver::setSolutionStats(MucoSolution& sol,
+        bool success, const std::string& status, int numIterations) {
     sol.setSuccess(success);
     sol.setStatus(status);
+    sol.setNumIterations(numIterations);
 }
 
 

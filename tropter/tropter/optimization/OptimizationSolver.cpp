@@ -59,19 +59,18 @@ void OptimizationSolver::set_findiff_hessian_step_size(double setting) {
     m_problem->set_findiff_hessian_step_size(setting);
 }
 
-void OptimizationSolver::print_option_values() const {
-    using std::cout;
-    using std::endl;
+void OptimizationSolver::print_option_values(std::ostream& stream) const {
+    stream << "OptimizationSolver option values:\n";
     // Print non-advanced options first.
-    cout << "max iterations: ";
-    if (m_max_iterations) cout << m_max_iterations.value();
-    else                  cout << "<unset>";
-    cout << endl;
+    stream << "  max iterations: ";
+    if (m_max_iterations) stream << m_max_iterations.value();
+    else                  stream << "<unset>";
+    stream << "\n";
 
-    cout << "hessian_approximation: ";
-    if (m_hessian_approximation) cout << m_hessian_approximation.value();
-    else                         cout << "<unset>";
-    cout << endl;
+    stream << "  hessian_approximation: ";
+    if (m_hessian_approximation) stream << m_hessian_approximation.value();
+    else                         stream << "<unset>";
+    stream << "\n";
 
     std::vector<std::string> available_options_string;
     std::vector<std::string> available_options_int;
@@ -86,27 +85,28 @@ void OptimizationSolver::print_option_values() const {
 
     // Print advanced options.
     for (const auto& opt : m_advanced_options_string) {
-        cout << "[string] " << opt.first;
+        stream << "  [string] " << opt.first;
         if (!contains(available_options_string, opt.first))
-            cout << " (unrecognized)";
-        cout << ": " << opt.second.value_or("<unset>");
+            stream << " (unrecognized)";
+        stream << ": " << opt.second.value_or("<unset>");
     }
     for (const auto& opt : m_advanced_options_int) {
-        cout << "[int] " << opt.first;
+        stream << "  [int] " << opt.first;
         if (!contains(available_options_int, opt.first))
-            cout << " (unrecognized)";
-        if (opt.second) cout << opt.second.value();
-        else            cout << "<unset>";
-        cout << endl;
+            stream << " (unrecognized)";
+        if (opt.second) stream << opt.second.value();
+        else            stream << "<unset>";
+        stream << "\n";
     }
     for (const auto& opt : m_advanced_options_real) {
-        cout << "[real] " << opt.first;
+        stream << "  [real] " << opt.first;
         if (!contains(available_options_real, opt.first))
-            cout << " (unrecognized)";
-        if (opt.second) cout << opt.second.value();
-        else            cout << "<unset>";
-        cout << endl;
+            stream << " (unrecognized)";
+        if (opt.second) stream << opt.second.value();
+        else            stream << "<unset>";
+        stream << "\n";
     }
+    stream << std::flush;
 }
 
 void OptimizationSolver::set_advanced_option_string(const std::string& name,
@@ -125,9 +125,9 @@ void OptimizationSolver::set_advanced_option_real(const std::string& name,
 OptimizationSolution
 OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
 {
+    if (m_verbosity > 0) print_option_values();
     // If the user did not provide an initial guess, then we choose
     // the initial guess based on the bounds.
-    // TODO if (m_verbosity > 0) print_options();
     //if (variables.size() == 0) {
     //    variables = m_problem->make_initial_guess_from_bounds();
     //} // else TODO make sure variables has the correct size.

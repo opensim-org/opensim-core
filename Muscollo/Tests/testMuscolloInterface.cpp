@@ -118,6 +118,7 @@ void testSlidingMass() {
 void testSolverOptions() {
     MucoTool muco = createSlidingMassMucoTool();
     MucoTropterSolver& ms = muco.initSolver();
+    MucoSolution solDefault = muco.solve();
     ms.set_verbosity(3); // Invalid value.
     SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
     ms.set_verbosity(1);
@@ -130,10 +131,21 @@ void testSolverOptions() {
     SimTK_TEST_MUST_THROW(muco.solve());
     ms.set_optim_hessian_approximation("limited-memory");
 
-    ms.set_optim_max_iterations(1);
-    // TODO MucoSolution does not give num_iterations yet.
-    // MucoSolution solution = muco.solve();
-    // SimTK_TEST(solution.num_iterations == 1);
+    {
+        ms.set_optim_max_iterations(1);
+        MucoSolution solution = muco.solve();
+        SimTK_TEST(solution.isSealed());
+        solution.unseal();
+        SimTK_TEST(solution.getNumIterations() == 1);
+    }
+
+    /* TODO
+    {
+        ms.set_optim_convergence_tolerance(1e-2);
+        MucoSolution solution = muco.solve();
+        SimTK_TEST(solution.getNumIterations() < solDefault.getNumIterations());
+    } */
+
 }
 
 /*

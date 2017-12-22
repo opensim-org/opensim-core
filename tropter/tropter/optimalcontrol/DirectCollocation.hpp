@@ -102,6 +102,7 @@ OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
     solution.control_names = traj.control_names;
     solution.success = optsol.success;
     solution.status = optsol.status;
+    solution.num_iterations = optsol.num_iterations;
     return solution;
 }
 

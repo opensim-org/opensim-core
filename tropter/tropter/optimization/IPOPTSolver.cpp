@@ -18,6 +18,7 @@
 #include <tropter/Exception.hpp>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
+#include <IpIpoptData.hpp>
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
 using Eigen::Ref;
@@ -32,14 +33,10 @@ public:
     using Number = Ipopt::Number;
     TNLP(const OptimizationProblemDecorator& problem);
     void initialize(const Eigen::VectorXd& guess, const bool&);
-    const Eigen::VectorXd& get_solution() const
-    {
-        return m_solution;
-    }
+    const Eigen::VectorXd& get_solution() const { return m_solution; }
     const double& get_optimal_objective_value() const
-    {
-        return m_optimal_obj_value;
-    }
+    {   return m_optimal_obj_value; }
+    const int& get_num_iterations() const { return m_num_iterations; }
 private:
     // TODO move to OptimizationProblem if more than one solver would need this.
     // TODO should use fancy arguments to avoid temporaries and to exploit
@@ -104,7 +101,8 @@ private:
 
     Eigen::VectorXd m_initial_guess;
     Eigen::VectorXd m_solution;
-    double m_optimal_obj_value;
+    double m_optimal_obj_value = std::numeric_limits<double>::quiet_NaN();
+    int m_num_iterations = -1;
 
     unsigned m_hessian_num_nonzeros = std::numeric_limits<unsigned>::max();
     std::vector<unsigned int> m_hessian_row_indices;
@@ -230,6 +228,7 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
     }
     solution.status = convert_IPOPT_ApplicationReturnStatus_to_string(status);
+    solution.num_iterations = nlp->get_num_iterations();
     return solution;
 }
 
@@ -421,7 +420,8 @@ void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
                                           const Number* /*z_L*/, const Number* /*z_U*/,
                                           Index /*num_constraints*/,
                                           const Number* /*g*/, const Number* /*lambda*/,
-                                          Number obj_value, const Ipopt::IpoptData* /*ip_data*/,
+                                          Number obj_value,
+                                          const Ipopt::IpoptData* ip_data,
                                           Ipopt::IpoptCalculatedQuantities* /*ip_cq*/)
 {
     m_solution.resize(num_variables);
@@ -431,6 +431,7 @@ void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
         m_solution[i] = x[i];
     }
     m_optimal_obj_value = obj_value;
+    m_num_iterations = ip_data->iter_count();
     //printf("\nSolution of the bound multipliers, z_L and z_U\n");
     //for (Index i = 0; i < num_variables; ++i) {
     //    printf("z_L[%d] = %e\n", i, z_L[i]);

@@ -32,6 +32,8 @@ struct OptimizationSolution {
     Eigen::VectorXd variables;
     double objective = std::numeric_limits<double>::quiet_NaN();
     bool success = false;
+    /// Number of solver iterations at which this solution was obtained.
+    int num_iterations = -1;
     std::string status;
 };
 
@@ -96,7 +98,7 @@ public:
     /// @{
 
     /// Print a list of options you've set and their current values.
-    void print_option_values() const;
+    void print_option_values(std::ostream& = std::cout) const;
     /// @copydoc set_verbosity()
     int get_verbosity() const;
     /// @copydoc set_max_iterations()

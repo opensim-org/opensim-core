@@ -393,8 +393,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     MucoSolution mucoSolution = convert(tropSolution);
     // TODO move this to convert():
-    MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
-            tropSolution.success, tropSolution.status);
+    MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,
+            tropSolution.status, tropSolution.num_iterations);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
