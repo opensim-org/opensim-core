@@ -72,7 +72,7 @@ struct DAEInput {
     const Eigen::Ref<const VectorX<T>>& controls;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
-    /// input, see the note above the the `states` variable.
+    /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& parameters;
 };
 /// This struct holds the outputs of

@@ -350,8 +350,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     SymmetricSparsityPattern integral_cost_sparsity =
             calc_hessian_sparsity_with_perturbation(
                     // Grab the first state and first controls.
-                    x.segment(m_num_dense_variables,
-                        num_con_vars),
+                    x.segment(m_num_dense_variables, num_con_vars),
                     calc_integral_cost);
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
         const auto istart = m_num_dense_variables + imesh * num_con_vars;
@@ -400,7 +399,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
             "Expected controls to have %i row(s), but it has %i.",
             m_num_controls, traj.controls.rows());
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
-            "Expected parameters to have %i row(s), but it has %i.",
+            "Expected parameters to have %i elements(s), but it has %i.",
             m_num_parameters, traj.parameters.rows());
     // Check columns.
     if (interpolate) {
@@ -421,9 +420,6 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
                 "Expected controls to have %i column(s), but it has %i.",
                 m_num_mesh_points, traj.controls.cols());
     }
-    TROPTER_THROW_IF(traj.parameters.cols() != 1,
-        "Expected parameters to have 1 column, but it has %i.",
-        traj.parameters.cols());
 
     // Interpolate the guess, as it might have a different number of mesh
     // points than m_num_mesh_points.
@@ -603,10 +599,10 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                             << std::setw(9) << V << " <= "
                             << std::setw(9) << U << " ";
                     // Show if the constraint is violated.
-                    if (V <= L) stream << " ";
-                    else        stream << "L";
-                    if (V >= U) stream << " ";
-                    else        stream << "U";
+                    if (V <= L) stream << "L";
+                    else        stream << " ";
+                    if (V >= U) stream << "U";
+                    else        stream << " ";
                     if (V < L || V > U) stream << "*";
                     stream << std::endl;
                 }
@@ -693,16 +689,25 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                     << std::setw(9) << V << " <= "
                     << std::setw(9) << U << " ";
                 // Show if the constraint is violated.
-                if (V <= L) stream << " ";
-                else        stream << "L";
-                if (V >= U) stream << " ";
-                else        stream << "U";
+                if (V <= L) stream << "L";
+                else        stream << " ";
+                if (V >= U) stream << "U";
+                else        stream << " ";
                 if (V < L || V > U) stream << "*";
                 stream << std::endl;
             }
         }
 
     };
+    //Eigen::Index index = 0;
+    //VectorXd time_values(2);
+    //time_values = {ocp_vars.time[index], ocp_vars.time.tail<1>()[index]};
+    //VectorXd time_lower(2);
+    //time_lower = {ocp_vars_lower.time[0], ocp_vars_lower.time.tail<1>()[0]};
+    //VectorXd time_upper(2); 
+    //time_upper = {ocp_vars_upper.time[0], ocp_vars_upper.time.tail<1>()[0]};
+    //print_parameter_bounds("Time bounds", time_names, time_values, time_lower,
+    //    time_upper);
     print_parameter_bounds("Parameter bounds", parameter_names, 
         ocp_vars.parameters, ocp_vars_lower.parameters, 
         ocp_vars_upper.parameters);
@@ -844,7 +849,7 @@ Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const
     // TODO move time variables to the end.
     return {
             // Pointer to the start of the states.
-            x.data() + m_num_time_variables + m_num_parameters,
+            x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
@@ -858,7 +863,7 @@ Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Start of controls for first mesh interval.
-            x.data() + m_num_time_variables + m_num_parameters + m_num_states,
+            x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.
@@ -885,7 +890,7 @@ Trapezoidal<T>::make_states_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
-            x.data() + m_num_time_variables + m_num_parameters,
+            x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
@@ -899,7 +904,7 @@ Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Start of controls for first mesh interval.
-            x.data() + m_num_time_variables + m_num_parameters + m_num_states,
+            x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.

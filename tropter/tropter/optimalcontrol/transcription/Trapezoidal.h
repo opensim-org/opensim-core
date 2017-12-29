@@ -167,6 +167,9 @@ private:
     int m_num_mesh_points;
     int m_num_time_variables = -1;
     int m_num_parameters = -1;
+    // The sum total of time_variables and parameters. Here, "dense" means that
+    // a dense row and column are added to the sparsity pattern of the Hessian 
+    // for each dense_variable added.
     int m_num_dense_variables = -1;
     int m_num_defects = -1;
     int m_num_states = -1;
