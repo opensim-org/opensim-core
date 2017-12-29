@@ -729,6 +729,29 @@ void testMucoIterate() {
             Exception);
 }
 
+void testInterpolate() {
+    SimTK::Vector x(2);
+    x[0] = 0;
+    x[1] = 1;
+
+    SimTK::Vector y(2);
+    y[0] = 1;
+    y[1] = 0;
+
+    SimTK::Vector newX(4);
+    newX[0] = -1;
+    newX[1] = 0.25;
+    newX[2] = 0.75;
+    newX[3] = 1.5;
+
+    SimTK::Vector newY = interpolate(x, y, newX);
+
+    SimTK_TEST(SimTK::isNaN(newY[0]));
+    SimTK_TEST_EQ(newY[1], 0.75);
+    SimTK_TEST_EQ(newY[2], 0.25);
+    SimTK_TEST(SimTK::isNaN(newY[3]));
+}
+
 int main() {
     SimTK_START_TEST("testMuscolloInterface");
         SimTK_SUBTEST(testSlidingMass);
@@ -745,5 +768,7 @@ int main() {
         SimTK_SUBTEST(testBuildingProblem);
         // TODO what happens when Ipopt does not converge.
         // TODO specifying optimizer options.
+
+        SimTK_SUBTEST(testInterpolate);
     SimTK_END_TEST();
 }
