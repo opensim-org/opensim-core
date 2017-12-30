@@ -44,7 +44,7 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
     int num_controls = std::stoi(num_controls_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || 
-            line.find("nun_parameters=") != 0,
+            line.find("num_parameters=") != 0,
             "Could not read num_parameters from '%s'.", filepath);
     std::string num_parameters_str = line.substr(line.find('=') + 1);
     int num_parameters = std::stoi(num_parameters_str);

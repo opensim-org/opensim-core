@@ -219,4 +219,4 @@ TEST_CASE("OscillatorMass, IPOPT") {
         REQUIRE(Approx(solution.parameters[0]) == MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
-}
+};
