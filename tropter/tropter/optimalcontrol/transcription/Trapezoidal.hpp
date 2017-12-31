@@ -46,7 +46,7 @@ void Trapezoidal<T>::set_ocproblem(
     int num_variables = m_num_time_variables + m_num_parameters
             + m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    m_num_defects = m_num_mesh_points - 1;
+    m_num_defects = m_num_states ? m_num_mesh_points - 1 : 0;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
@@ -229,22 +229,24 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     // ---------------------------
     // Backwards Euler (not used here):
     // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
-    const unsigned N = m_num_mesh_points;
-    const auto& x_i = states.rightCols(N - 1);
-    const auto& x_im1 = states.leftCols(N - 1);
-    const auto& xdot_i = m_derivs.rightCols(N - 1);
-    const auto& h = step_size;
-    //constr_view.defects = x_i-(x_im1+h*xdot_i);
-    // TODO Trapezoidal:
-    const auto& xdot_im1 = m_derivs.leftCols(N-1);
-    //constr_view.defects = x_i-(x_im1+h*xdot_im1);
-    constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
-    //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
-    //    const auto& h = m_mesh_intervals[i_mesh];
-    //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
-    //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
-    // (i_mesh) + xdot_im1.col(i_mesh)));
-    //}
+    if (m_num_defects) {
+        const unsigned N = m_num_mesh_points;
+        const auto& x_i = states.rightCols(N - 1);
+        const auto& x_im1 = states.leftCols(N - 1);
+        const auto& xdot_i = m_derivs.rightCols(N - 1);
+        const auto& h = step_size;
+        //constr_view.defects = x_i-(x_im1+h*xdot_i);
+        // TODO Trapezoidal:
+        const auto& xdot_im1 = m_derivs.leftCols(N-1);
+        //constr_view.defects = x_i-(x_im1+h*xdot_im1);
+        constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
+        //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
+        //    const auto& h = m_mesh_intervals[i_mesh];
+        //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
+        //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
+        // (i_mesh) + xdot_im1.col(i_mesh)));
+        //}
+    }
 
 }
 
@@ -916,12 +918,11 @@ typename Trapezoidal<T>::ConstraintsView
 Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
-    const unsigned d  = 0;                               // defects.
+    T* d_ptr = m_num_defects ?                           // defects.
+               &constr[0] : nullptr;
     T* pc_ptr= m_num_path_constraints ?                  // path constraints.
-               &constr[d + m_num_dynamics_constraints] : nullptr;
-    //const unsigned pc =  // path
-    // constraints.
-    return {DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
+               &constr[m_num_dynamics_constraints] : nullptr;
+    return {DefectsTrajectoryView(d_ptr, m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
                     m_num_mesh_points)};
 }
