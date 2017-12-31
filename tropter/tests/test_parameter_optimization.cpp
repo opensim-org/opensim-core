@@ -98,7 +98,7 @@ class GravitationalAcceleration : public tropter::OptimalControlProblem<T> {
 public:
     GravitationalAcceleration() {
         this->set_time({0}, {1});
-        this->add_state("x", {0, 20}, {0}, {GRAV_ACCEL-0.5, GRAV_ACCEL+0.5);
+        this->add_state("x", {0, 20}, {0}, {GRAV_ACCEL-0.5, GRAV_ACCEL+0.5});
         this->add_state("u", {0, 20}, {0}, {GRAV_ACCEL});
         this->add_parameter("g", {0, 20});
     }
@@ -112,7 +112,7 @@ public:
     void calc_endpoint_cost(const T& /*final_time*/,
         const VectorX<T>& final_states,
         const VectorX<T>& /*parameters*/,
-        T& cost) {
+        T& cost) const override {
         cost = (final_states[0] - GRAV_ACCEL) * (final_states[0] - GRAV_ACCEL);
     }
 
@@ -175,7 +175,7 @@ public:
     void calc_endpoint_cost(const T& /*final_time*/,
             const VectorX<T>& final_states,
             const VectorX<T>& /*parameters*/,
-            T& cost) {
+            T& cost) const override {
         
         cost = (final_states[0] - 0.5) * (final_states[0] - 0.5);
 

@@ -293,7 +293,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 VectorX<T> s = vars.head(m_num_states);
                 VectorX<T> c = vars.tail(m_num_controls);
                 VectorX<T> p = x.segment(m_num_time_variables,
-                    m_num_parameters).cast<T>();
+                    m_num_parameters).template cast<T>();
                 VectorX<T> deriv(m_num_states);
                 VectorX<T> path(m_num_path_constraints);
                 m_ocproblem->calc_differential_algebraic_equations(
@@ -342,7 +342,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
         VectorX<T> s = vars.head(m_num_states);
         VectorX<T> c = vars.tail(m_num_controls);
         VectorX<T> p = x.segment(m_num_time_variables,
-            m_num_parameters).cast<T>();
+            m_num_parameters).template cast<T>();
         T integrand = 0;
         m_ocproblem->calc_integral_cost(t, s, c, p, integrand);
         return integrand;
@@ -365,7 +365,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 // depends on final time; put it in vars.
                 VectorX<T> s = vars;
                 VectorX<T> p = x.segment(m_num_time_variables,
-                    m_num_parameters).cast<T>();
+                    m_num_parameters).template cast<T>();
                 T cost = 0;
                 m_ocproblem->calc_endpoint_cost(t, s, p, cost);
                 return cost;
@@ -624,7 +624,7 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                 compare_size)->size());
     }
     // Check if max parameter name length is larger than "initial_time".
-    if (max_name_length < time_names[0].size()) {
+    if (max_name_length < (int)time_names[0].size()) {
         max_name_length = (int)time_names[0].size();
     }
 
