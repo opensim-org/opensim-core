@@ -20,6 +20,8 @@
 
 #include <OpenSim/Common/Storage.h>
 
+#include <set>
+
 #include "osimMuscolloDLL.h"
 
 namespace OpenSim {
