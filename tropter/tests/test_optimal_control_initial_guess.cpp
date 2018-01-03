@@ -135,7 +135,7 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
                         Contains("guess.time is empty"));
     REQUIRE_THROWS_WITH(
-            ocp->set_control_guess(guess, "x", RowVectorXd::Zero(1)),
+            ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
             Contains("guess.time is empty"));
     guess.time.setLinSpaced(N, 0, 1);
 
@@ -164,9 +164,10 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
-    guess.time.resize(N - 10);   // incorrect.
-    guess.states.resize(2, N);   // correct.
-    guess.controls.resize(1, N); // correct.
+    guess.time.resize(N - 10);     // incorrect.
+    guess.states.resize(2, N);     // correct.
+    guess.controls.resize(1, N);   // correct.
+    guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 5, "
@@ -174,7 +175,6 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     guess.time.resize(N);        // correct.
     guess.states.resize(6, N);   // incorrect.
-    guess.controls.resize(1, N); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected states to have 2 row(s), but it has 6."));
 
@@ -189,11 +189,16 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected controls to have 1 row(s), but it has 4."));
 
-    guess.controls.resize(1, N - 3); // incorrect
+    guess.controls.resize(1, N - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 15, "
                     "15, 12 column(s), respectively)."));
+
+    guess.parameters.resize(2, 1); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess), 
+            Contains("Expected parameters to have 1 elements(s), "
+                     "but it has 2."));
 }
 
 

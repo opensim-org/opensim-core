@@ -402,7 +402,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
             m_num_controls, traj.controls.rows());
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
             "Expected parameters to have %i elements(s), but it has %i.",
-            m_num_parameters, traj.parameters.rows());
+            m_num_parameters, traj.parameters.size());
     // Check columns.
     if (interpolate) {
         TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
