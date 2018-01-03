@@ -50,6 +50,7 @@ public:
     void calc_integral_cost(const T& /*t*/,
             const VectorX<T>& /*x*/,
             const VectorX<T>& u,
+            const VectorX<T>& /*p*/,
             T& integrand) const override {
         integrand = 0.5 * u[0] * u[0];
     }

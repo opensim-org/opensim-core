@@ -151,12 +151,12 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
 /// Optimize the mass parameter for a single harmonic oscillator such that the
 /// dynamics and boundary conditions match that of a 5 kg spring mass system,
 /// and check that the predicted mass parameter equals 5 kg.
-const double MASS = 5.0; // kg
 const double PI = 3.14159265358979323846;
 template<typename T>
 class OscillatorMass : public tropter::OptimalControlProblem<T> {
 public:
     const double STIFFNESS = 100.0; // N/m
+    const double MASS = 5.0; // kg
     const double FINAL_TIME = PI * sqrt(MASS / STIFFNESS);
 
     OscillatorMass() {
@@ -198,7 +198,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
         OptimalControlSolution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == MASS);
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
     SECTION("Finite differences, exact Hessian") {
@@ -208,7 +208,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         dircol.get_opt_solver().set_hessian_approximation("exact");
         OptimalControlSolution solution = dircol.solve();
 
-        REQUIRE(Approx(solution.parameters[0]) == MASS);
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
     SECTION("ADOL-C") {
@@ -217,7 +217,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         OptimalControlSolution solution = dircol.solve();
         dircol.print_constraint_values(solution);
 
-        REQUIRE(Approx(solution.parameters[0]) == MASS);
+        REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
     }
 };
