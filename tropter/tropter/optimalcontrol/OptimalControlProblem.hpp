@@ -200,6 +200,15 @@ set_parameter_guess(OptimalControlIterate& guess,
         const std::string& name,
         const double& value)
 {
+    // Check for errors.
+    if (guess.parameters.size() == 0) {
+        guess.parameters.resize(m_parameter_infos.size());
+    }
+    else if (guess.parameters.size() != m_parameter_infos.size()) {
+        TROPTER_THROW("Expected guess.parameters to have %i elements "
+            "but it has %i elements.",
+            m_parameter_infos.size(), guess.parameters.size());
+    }
     // Find the parameter index.
     size_t parameter_index = 0;
     // TODO store parameter infos in a map.
