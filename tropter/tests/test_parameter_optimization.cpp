@@ -16,9 +16,6 @@
 
 #include <tropter/tropter.h>
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-
 #define CATCH_CONFIG_MAIN
 #include <catch.hpp>
 
@@ -89,17 +86,18 @@ TEST_CASE("Unconstrained, IPOPT") {
 }
 
 /// Use parameter optimization to find the constant parameter that causes a 1 kg 
-/// mass to fall "g" meters in 1 second, with a final velocity of "g" meters per 
-/// second, and check that the parameter is equal to "g" meters per second 
+/// mass to fall 0.5g meters in 1 second, with a final velocity of g meters per 
+/// second, and check that the parameter is equal to g meters per second 
 /// squared (g = 9.80665).
-double GRAV_ACCEL = 9.80665;
+const double GRAV_ACCEL = 9.80665;
 template<typename T>
 class GravitationalAcceleration : public tropter::OptimalControlProblem<T> {
 public:
     GravitationalAcceleration() {
         this->set_time({0}, {1});
-        this->add_state("x", {0, 20}, {0}, {GRAV_ACCEL-0.5, GRAV_ACCEL+0.5});
-        this->add_state("u", {0, 20}, {0}, {GRAV_ACCEL});
+        this->add_state("x", {0, 20}, {0}, {GRAV_ACCEL * 0.5 - 0.5, 
+                                            GRAV_ACCEL * 0.5 + 0.5});
+        this->add_state("v", {0, 20}, {0}, {GRAV_ACCEL});
         this->add_parameter("g", {0, 20});
     }
 
@@ -113,7 +111,8 @@ public:
         const VectorX<T>& final_states,
         const VectorX<T>& /*parameters*/,
         T& cost) const override {
-        cost = (final_states[0] - GRAV_ACCEL) * (final_states[0] - GRAV_ACCEL);
+        cost = (final_states[0] - GRAV_ACCEL * 0.5) * 
+               (final_states[0] - GRAV_ACCEL * 0.5);
     }
 
 };
@@ -152,17 +151,18 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
 /// Optimize the mass parameter for a single harmonic oscillator such that the
 /// dynamics and boundary conditions match that of a 5 kg spring mass system,
 /// and check that the predicted mass parameter equals 5 kg.
-double MASS = 5; // kg
-double STIFFNESS = 100; // N/m
-double PI = 3.14159265358979323846;
-double FINAL_TIME = PI * sqrt(MASS / STIFFNESS);
+const double MASS = 5.0; // kg
+const double PI = 3.14159265358979323846;
 template<typename T>
 class OscillatorMass : public tropter::OptimalControlProblem<T> {
 public:
+    const double STIFFNESS = 100.0; // N/m
+    const double FINAL_TIME = PI * sqrt(MASS / STIFFNESS);
+
     OscillatorMass() {
         this->set_time({0}, {FINAL_TIME});
         this->add_state("x", {-5.0, 5.0}, {-0.5}, {0.25, 0.75});
-        this->add_state("dx", {-20, 20}, {0}, {0});
+        this->add_state("v", {-20, 20}, {0}, {0});
         this->add_parameter("mass", {0, 10});
     }
 
@@ -184,13 +184,14 @@ public:
         //double period = final_time * 2;
         //cost = pow(frequency - (1 / period), 2);
     }
-
+    
 };
 
-// Choose the fewest number of mesh points so the test passes.
-// TODO: reduce number of mesh points needed (try different collocation scheme)
-unsigned N = 350; 
 TEST_CASE("OscillatorMass, IPOPT") {
+    // Choose the fewest number of mesh points so the test passes.
+    // TODO: reduce number of mesh points needed (try different collocation scheme)
+    unsigned N = 350;
+
     SECTION("Finite differences, limited memory") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
