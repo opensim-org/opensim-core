@@ -535,8 +535,6 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             "'*' indicates a bound is violated. " << std::endl;
     stream << "The case of lower==upper==value is ignored." << std::endl;
 
-    // TODO: bounds on initial and final times.
-
     // Bounds on state and control variables.
     // --------------------------------------
     using Eigen::RowVectorXd;
@@ -701,15 +699,14 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
         }
 
     };
-    //Eigen::Index index = 0;
-    //VectorXd time_values(2);
-    //time_values = {ocp_vars.time[index], ocp_vars.time.tail<1>()[index]};
-    //VectorXd time_lower(2);
-    //time_lower = {ocp_vars_lower.time[0], ocp_vars_lower.time.tail<1>()[0]};
-    //VectorXd time_upper(2); 
-    //time_upper = {ocp_vars_upper.time[0], ocp_vars_upper.time.tail<1>()[0]};
-    //print_parameter_bounds("Time bounds", time_names, time_values, time_lower,
-    //    time_upper);
+    VectorXd time_values(2);
+    time_values  << ocp_vars.time[0], ocp_vars.time.tail<1>()[0];
+    VectorXd time_lower(2);
+    time_lower  << ocp_vars_lower.time[0], ocp_vars_lower.time.tail<1>()[0];
+    VectorXd time_upper(2);
+    time_upper  << ocp_vars_upper.time[0], ocp_vars_upper.time.tail<1>()[0];
+    print_parameter_bounds("Time bounds", time_names, time_values, time_lower,
+        time_upper);
     print_parameter_bounds("Parameter bounds", parameter_names, 
         ocp_vars.parameters, ocp_vars_lower.parameters, 
         ocp_vars_upper.parameters);
