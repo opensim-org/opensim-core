@@ -55,13 +55,13 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
         // TODO may not want user to directly use IPOPTSolver; instead, use a
         // generic solver interface?
         IPOPTSolver solver(problem);
-        VectorXd variables = Vector2d(0, 0);
+        VectorXd guess = Vector2d(0, 0);
         solver.set_hessian_approximation("limited-memory");
-        double obj_value = solver.optimize(variables);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(variables[0]) == 1.5);
-        REQUIRE(Approx(variables[1]) == -2.0);
-        REQUIRE(Approx(obj_value)   == 0);
+        REQUIRE(Approx(solution.variables[0]) == 1.5);
+        REQUIRE(Approx(solution.variables[1]) == -2.0);
+        REQUIRE(Approx(solution.objective)   == 0);
 
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.
@@ -69,24 +69,24 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
     SECTION("Finite differences, exact Hessian") {
         Unconstrained<double> problem;
         IPOPTSolver solver(problem);
-        VectorXd variables = Vector2d(0, 0);
+        VectorXd guess = Vector2d(0, 0);
         solver.set_hessian_approximation("exact");
-        double obj_value = solver.optimize(variables);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(variables[0]) == 1.5);
-        REQUIRE(Approx(variables[1]) == -2.0);
-        REQUIRE(Approx(obj_value)   == 0);
+        REQUIRE(Approx(solution.variables[0]) == 1.5);
+        REQUIRE(Approx(solution.variables[1]) == -2.0);
+        REQUIRE(Approx(solution.objective)   == 0);
     }
     SECTION("ADOL-C") {
         // Make sure it's okay to not have constraints.
         Unconstrained<adouble> problem;
         IPOPTSolver solver(problem);
-        VectorXd variables = Vector2d(0, 0);
-        double obj_value = solver.optimize(variables);
+        VectorXd guess = Vector2d(0, 0);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(Approx(variables[0]) == 1.5);
-        REQUIRE(Approx(variables[1]) == -2.0);
-        REQUIRE(Approx(obj_value)   == 0);
+        REQUIRE(Approx(solution.variables[0]) == 1.5);
+        REQUIRE(Approx(solution.variables[1]) == -2.0);
+        REQUIRE(Approx(solution.objective)   == 0);
 
         // TODO throw exception if constraints() is unimplemented and
         // there are nonzero number of constraints.
@@ -117,42 +117,42 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
         HS071<double> problem;
         IPOPTSolver solver(problem);
         solver.set_hessian_approximation("limited-memory");
-        VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
-        double obj_value = solver.optimize(variables);
+        VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(       variables[0]  == 1.0);
-        REQUIRE(Approx(variables[1]) == 4.743);
-        REQUIRE(Approx(variables[2]) == 3.82115);
-        REQUIRE(Approx(variables[3]) == 1.379408);
+        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[1]) == 4.743);
+        REQUIRE(Approx(solution.variables[2]) == 3.82115);
+        REQUIRE(Approx(solution.variables[3]) == 1.379408);
 
-        REQUIRE(Approx(obj_value) == 17.014);
+        REQUIRE(Approx(solution.objective) == 17.014);
     }
     SECTION("Finite differences, exact Hessian") {
         HS071<double> problem;
         IPOPTSolver solver(problem);
         solver.set_hessian_approximation("exact");
-        VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
-        double obj_value = solver.optimize(variables);
+        VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(       variables[0]  == 1.0);
-        REQUIRE(Approx(variables[1]) == 4.743);
-        REQUIRE(Approx(variables[2]) == 3.82115);
-        REQUIRE(Approx(variables[3]) == 1.379408);
+        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[1]) == 4.743);
+        REQUIRE(Approx(solution.variables[2]) == 3.82115);
+        REQUIRE(Approx(solution.variables[3]) == 1.379408);
 
-        REQUIRE(Approx(obj_value) == 17.014);
+        REQUIRE(Approx(solution.objective) == 17.014);
     }
     SECTION("ADOL-C") {
         HS071<adouble> problem;
         IPOPTSolver solver(problem);
-        VectorXd variables = Vector4d(1.5, 2.5, 3.5, 4.5);
-        double obj_value = solver.optimize(variables);
+        VectorXd guess = Vector4d(1.5, 2.5, 3.5, 4.5);
+        auto solution = solver.optimize(guess);
 
-        REQUIRE(       variables[0]  == 1.0);
-        REQUIRE(Approx(variables[1]) == 4.743);
-        REQUIRE(Approx(variables[2]) == 3.82115);
-        REQUIRE(Approx(variables[3]) == 1.379408);
+        REQUIRE(       solution.variables[0]  == 1.0);
+        REQUIRE(Approx(solution.variables[1]) == 4.743);
+        REQUIRE(Approx(solution.variables[2]) == 3.82115);
+        REQUIRE(Approx(solution.variables[3]) == 1.379408);
 
-        REQUIRE(Approx(obj_value) == 17.014);
+        REQUIRE(Approx(solution.objective) == 17.014);
     }
 }
 

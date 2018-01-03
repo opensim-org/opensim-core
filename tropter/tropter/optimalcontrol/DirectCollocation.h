@@ -47,6 +47,12 @@ public:
         return m_transcription->deconstruct_iterate(
                 decorator->make_initial_guess_from_bounds());
     }
+    OptimalControlIterate make_random_iterate_within_bounds() const {
+        // We only need this decorator to form an iterate.
+        auto decorator = m_transcription->make_decorator();
+        return m_transcription->deconstruct_iterate(
+                decorator->make_random_iterate_within_bounds());
+    }
     /// Get the OptimizationSolver, through which you can query optimizer
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
@@ -104,7 +110,8 @@ public:
     void print_constraint_values(const OptimalControlIterate& vars,
                                  std::ostream& stream = std::cout) const;
 private:
-    OptimalControlSolution solve_internal(Eigen::VectorXd& variables) const;
+    OptimalControlSolution solve_internal(
+            const Eigen::VectorXd& guess) const;
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Base<T>> m_transcription;

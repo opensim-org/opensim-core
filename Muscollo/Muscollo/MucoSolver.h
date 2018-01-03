@@ -57,7 +57,7 @@ public:
     explicit MucoSolver(const MucoProblem& problem);
 
     /// Clear the internally-set MucoProblem.
-    void resetProblem();
+    void clearProblem();
 
     /// Call this to prepare the solver for use on the provided problem.
     // TODO can only call once?
@@ -65,17 +65,23 @@ public:
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
     // TODO use a wrapper class (like MODelegate).
-    void resetProblem(const MucoProblem& problem);
+    void setProblem(const MucoProblem& problem);
 
     const MucoProblem& getProblem() const {
-        OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set; call "
-                "resetProblem() with a problem.");
+        OPENSIM_THROW_IF(!m_problem, Exception,
+                "Problem not set; call setProblem().");
         return m_problem.getRef();
     }
 
 protected:
 
     //OpenSim_DECLARE_LIST_PROPERTY(options, MucoSolverOption, "TODO");
+
+    /// This is a service for derived classes, because
+    /// MucoSolution::setStatus() and MucoSolution::setSuccess() are private
+    /// but this class is a friend of MucoSolution.
+    static void setSolutionStatusAndSuccess(MucoSolution&,
+            bool success, const std::string& status);
 
 private:
 
@@ -86,10 +92,10 @@ private:
     friend MucoTool;
 
     /// Claer any cache based on the MucoProblem.
-    virtual void resetProblemImpl() = 0;
+    virtual void clearProblemImpl() = 0;
     /// Perform any necessary caching based on the MucoProblem.
     /// @
-    virtual void resetProblemImpl(const MucoProblem& problem) = 0;
+    virtual void setProblemImpl(const MucoProblem& problem) = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;

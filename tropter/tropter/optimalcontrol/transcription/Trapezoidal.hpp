@@ -27,6 +27,13 @@ namespace tropter {
 namespace transcription {
 
 template<typename T>
+void Trapezoidal<T>::set_num_mesh_points(unsigned N) {
+    TROPTER_THROW_IF(N < 2, "Expected number of mesh points to be at "
+            "least 2, but got %i", N);
+    m_num_mesh_points = N;
+}
+
+template<typename T>
 void Trapezoidal<T>::set_ocproblem(
         std::shared_ptr<const OCProblem> ocproblem) {
     m_ocproblem = ocproblem;
@@ -378,7 +385,7 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     // Check columns.
     if (interpolate) {
         TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
-                        || traj.time.size() != traj.controls.cols(),
+                         || traj.time.size() != traj.controls.cols(),
                 "Expected time, states, and controls to have the same number "
                         "of columns (they have %i, %i, %i column(s), "
                         "respectively).", traj.time.size(), traj.states.cols(),
@@ -407,6 +414,8 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     } else {
         traj_to_use = &traj;
     }
+
+    // TODO reorder columns !!!!!
 
     Eigen::VectorXd iterate(this->get_num_variables());
     // Initial and final time.
@@ -589,19 +598,55 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
     // Differential equation defects.
     // ------------------------------
-    stream << "\nDifferential equation defects:" << std::endl;
-    stream << std::setw(max_name_length) << " " << "  norm across the mesh"
-            << std::endl;
+    //stream << "\nDifferential equation defects:" << std::endl;
+    //stream << std::setw(max_name_length) << " "
+    //        << " L2 norm across the mesh"
+    //        << "   max abs value" // infinity norm.
+    //        << "   time of max abs"
+    //        << std::endl;
+    stream << "\nDifferential equation defects:"
+        << "\n  L2 norm across mesh, max abs value (L1 norm), time of max abs"
+        << std::endl;
+
     std::string spacer(7, ' ');
+    Eigen::RowVectorXd rowd(values.defects.cols());
     for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
-        auto& norm = static_cast<const double&>(
-                values.defects.row(i_state).norm());
+        RowVectorX<T> rowT = values.defects.row(i_state);
+        for (int i = 0; i < rowd.size(); ++i)
+            rowd[i] = static_cast<const double&>(rowT[i]);
+        const double L2 = rowd.norm();
+        Eigen::Index argmax;
+        const double L1 = rowd.cwiseAbs().maxCoeff(&argmax);
+        const double time_of_max = ocp_vars.time[argmax];
 
         stream << std::setw(max_name_length) << state_names[i_state]
                 << spacer
                 << std::setprecision(2) << std::scientific << std::setw(9)
-                << norm << std::endl;
+                << L2 << spacer << L1 << spacer
+                << std::setprecision(6) << std::fixed << time_of_max
+                << std::endl;
     }
+    /*
+    stream << "Differential equation defects for each mesh interval:"
+            << std::endl;
+    stream << std::setw(9) << "time" << "  ";
+    for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+        stream << std::setw(9) << i_state << "  ";
+    }
+    stream << std::endl;
+    for (int i_mesh = 0; i_mesh < (int)values.defects.cols(); ++i_mesh) {
+
+        stream << std::setw(4) << i_mesh << "  "
+                << ocp_vars.time[i_mesh] << "  ";
+        for (size_t i_state = 0; i_state < state_names.size(); ++i_state) {
+            auto& value = static_cast<const double&>(
+                    values.defects(i_state, i_mesh));
+            stream << std::setprecision(2) << std::scientific << std::setw(9)
+                    << value << "  ";
+        }
+        stream << std::endl;
+    }
+     */
 
     // Path constraints.
     // -----------------
@@ -619,17 +664,27 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
                     compare_size)->size();
     stream << std::setw(max_pathcon_name_length) << " "
-            << "  norm across the mesh" << std::endl;
+            << " L2 norm across the mesh" << std::endl;
+    rowd.resize(values.path_constraints.cols());
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
-        auto& norm = static_cast<const double&>(
-                values.path_constraints.row(i_pc).norm());
+        RowVectorX<T> rowT = values.path_constraints.row(i_pc);
+        for (int i = 0; i < rowd.size(); ++i)
+            rowd[i] = static_cast<const double&>(rowT[i]);
+        const double L2 = rowd.norm();
+        Eigen::Index argmax;
+        const double L1 = rowd.cwiseAbs().maxCoeff(&argmax);
+        const auto time_of_max = ocp_vars.time[argmax];
+
         stream << std::setw(2) << i_pc << ":"
                 << std::setw(max_pathcon_name_length) << pathcon_names[i_pc]
                 << spacer
                 << std::setprecision(2) << std::scientific << std::setw(9)
-                << norm << std::endl;
+                << L2 << spacer << L1 << spacer
+                << std::setprecision(6) << std::fixed << time_of_max
+                << std::endl;
     }
     stream << "Path constraint values at each mesh point:" << std::endl;
+    stream << std::setw(9) << "time" << "  ";
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         stream << std::setw(9) << i_pc << "  ";
     }
@@ -637,7 +692,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     for (size_t i_mesh = 0; i_mesh < size_t(values.path_constraints.cols());
          ++i_mesh) {
 
-        stream << std::setw(4) << i_mesh << "  ";
+        stream << std::setw(4) << i_mesh << "  "
+                << ocp_vars.time[i_mesh] << "  ";
         for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
             auto& value = static_cast<const double&>(
                     values.path_constraints(i_pc, i_mesh));

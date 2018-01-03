@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MuscolloUtilities.cpp                                               *
+ * OpenSim Muscollo: MuscolloUtilities.cpp                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -19,14 +19,43 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
-#include <Simbody/internal/Visualizer_InputListener.h>
+#include <simbody/internal/Visualizer_InputListener.h>
 
 using namespace OpenSim;
 
+
+SimTK::Vector OpenSim::createVectorLinspace(
+        int length, double start, double end) {
+    SimTK::Vector v(length);
+    for (int i = 0; i < length; ++i) {
+        v[i] = start + i * (end - start) / (length - 1);
+    }
+    return v;
+}
+
+SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
+        const SimTK::Vector& y, const SimTK::Vector& newX) {
+    PiecewiseLinearFunction function(x.size(), &x[0], &y[0]);
+    SimTK::Vector newY(newX.size(), SimTK::NaN);
+    for (int i = 0; i < newX.size(); ++i) {
+        const auto& newXi = newX[i];
+        if (x[0] <= newXi && newXi <= x[x.size()-1])
+            newY[i] = function.calcValue(SimTK::Vector(1, newXi));
+    }
+    return newY;
+}
+
 Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
+
     Storage sto;
+    if (table.hasTableMetaDataKey("inDegrees") &&
+        table.getTableMetaDataAsString("inDegrees") == "yes") {
+        sto.setInDegrees(true);
+    }
+
     OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
     labels[0] = "time";
     for (int i = 0; i < (int)table.getNumColumns(); ++i) {
@@ -39,6 +68,17 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
         sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
     }
     return sto;
+}
+
+/// TODO: doc
+OSIMMUSCOLLO_API TimeSeriesTable OpenSim::filterLowpass(const TimeSeriesTable & table, double cutoffFreq, bool padData) {
+    auto storage = convertTableToStorage(table);
+    if (padData) {
+        storage.pad(storage.getSize() / 2);
+    }
+    storage.lowpassIIR(cutoffFreq);
+
+    return storage.exportToTable();
 }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
@@ -59,7 +99,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     // -------------
     statesSto.resample(1.0 / dataRate, 4 /* degree */);
     auto statesTraj =
-            StatesTrajectory::createFromStatesStorage(model, statesSto);
+            StatesTrajectory::createFromStatesStorage(model, statesSto,
+                    true, true);
     const int numStates = (int)statesTraj.getSize();
 
     // Must setUseVisualizer() *after* createFromStatesStorage(), otherwise
@@ -67,12 +108,12 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     model.setUseVisualizer(true);
     model.initSystem();
 
-    OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
-            "Model is not compatible with the provided StatesTrajectory.");
+    //OPENSIM_THROW_IF(!statesTraj.isCompatibleWith(model), Exception,
+    //        "Model is not compatible with the provided StatesTrajectory.");
 
     // Set up visualization.
     // ---------------------
-    model.updMatterSubsystem().setShowDefaultGeometry(true);
+    // model.updMatterSubsystem().setShowDefaultGeometry(true);
     auto& viz = model.updVisualizer().updSimbodyVisualizer();
     std::string modelName = model.getName().empty() ? "<unnamed>"
                                                     : model.getName();
@@ -85,6 +126,8 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     viz.setDesiredBufferLengthInSec(0);
     viz.setDesiredFrameRate(frameRate);
     viz.setShowSimTime(true);
+    //viz.setBackgroundType(viz.SolidColor);
+    //viz.setBackgroundColor(SimTK::White);
     //viz.setShowFrameRate(true);
     //viz.setShowFrameNumber(true);
     auto& silo = model.updVisualizer().updInputSilo();

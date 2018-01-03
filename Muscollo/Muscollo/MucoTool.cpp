@@ -42,7 +42,7 @@ void MucoTool::constructProperties() {
 
 MucoProblem& MucoTool::updProblem() {
     m_solverInitialized = false;
-    upd_solver().resetProblem();
+    upd_solver().clearProblem();
     return upd_problem();
 }
 
@@ -53,7 +53,7 @@ void MucoTool::ensureInitSolver() {
 MucoSolver& MucoTool::initSolverInternal() {
     // TODO what to do if we already have a solver (from cloning?)
     // TODO how to persist Solver settings when solving multiple times.
-    upd_solver().resetProblem(get_problem());
+    upd_solver().setProblem(get_problem());
     m_solverInitialized = true;
     return upd_solver();
 }
@@ -71,11 +71,14 @@ MucoSolution MucoTool::solve() const {
     // TODO avoid const_cast.
     const_cast<Self*>(this)->ensureInitSolver();
     MucoSolution solution = get_solver().solve();
+    bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
         OpenSim::IO::makeDir(get_write_solution());
         std::string prefix = getName().empty() ? "MucoTool" : getName();
+        solution.unseal();
         solution.write(get_write_solution() +
                 SimTK::Pathname::getPathSeparator() + prefix + "_solution.sto");
+        if (originallySealed) solution.seal();
     }
     return solution;
 }

@@ -24,10 +24,11 @@ using Eigen::VectorXi;
 // TODO building the tropter library should not *require* snopt.
 #if !defined(TROPTER_WITH_SNOPT)
 
-double SNOPTSolver::optimize_impl(VectorXd& /*variables*/) const
+OptimizationSolution
+SNOPTSolver::optimize_impl(const VectorXd& /*variables*/) const
 {
     throw std::runtime_error("SNOPT is not available.");
-    return -1; // TODO return NaN.
+    return OptimizationSolution(); // TODO return NaN.
 }
 
 #else
@@ -41,6 +42,43 @@ namespace {
 // TODO another option is to derive from snoptProblemA.
 // TODO another option is to pass the pointer within cu (see Drake).
 const OptimizationProblemDecorator* probproxy = nullptr;
+
+std::string convert_info_integer_to_string(int info) {
+    switch(info) {
+    case 1: return "Finished successfully: optimality conditions satisfied";
+    case 2: return "Finished successfully: feasible point found";
+    case 3: return "Finished successfully: requested accuracy could not be achieved";
+    case 11: return "The problem appears to be infeasible: infeasible linear constraints";
+    case 12: return "The problem appears to be infeasible: infeasible linear equalities";
+    case 13: return "The problem appears to be infeasible: nonlinear infeasibilities minimized";
+    case 14: return "The problem appears to be infeasible: infeasibilities minimized";
+    case 21: return "The problem appears to be unbounded: unbounded objective";
+    case 22: return "The problem appears to be unbounded: constraint violation limit reached";
+    case 31: return "Resource limit error: iteration limit reached";
+    case 32: return "Resource limit error: major iteration limit reached";
+    case 33: return "Resource limit error: the superbasics limit is too small";
+    case 41: return "Terminated after numerical diffculties: current point cannot be improved";
+    case 42: return "Terminated after numerical diffculties: singular basis";
+    case 43: return "Terminated after numerical diffculties: cannot satisfy the general constraints";
+    case 44: return "Terminated after numerical diffculties: ill-conditioned null-space basis";
+    case 51: return "Error in the user-supplied functions: incorrect objective derivatives";
+    case 52: return "Error in the user-supplied functions: incorrect constraint derivatives";
+    case 61: return "Undefined user-supplied functions: undefined function at the first feasible point";
+    case 62: return "Undefined user-supplied functions: undefined function at the initial point";
+    case 63: return "Undefined user-supplied functions: unable to proceed into undefined region";
+    case 71: return "User requested termination: terminated during function evaluation";
+    case 74: return "User requested termination: terminated from monitor routine";
+    case 81: return "Insufficient storage allocated: work arrays must have at least 500 elements";
+    case 82: return "Insufficient storage allocated: not enough character storage";
+    case 83: return "Insufficient storage allocated: not enough integer storage";
+    case 84: return "Insufficient storage allocated: not enough real storage";
+    case 91: return "Input arguments out of range: invalid input argument";
+    case 92: return "Input arguments out of range: basis file dimensions do not match this problem";
+    case 141: return "System error: wrong number of basic variables";
+    case 142: return "System error: error in basis package";
+    default: return "Unrecognized SNOPT return status";
+    }
+}
 }
 
 void snopt_userfunction(int*   /* Status */,
@@ -69,7 +107,10 @@ void snopt_userfunction(int*   /* Status */,
     }
 }
 
-double SNOPTSolver::optimize_impl(VectorXd& variables) const {
+OptimizationSolution
+SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
+
+    VectorXd variables(variablesArg);
 
     probproxy = m_problem.get();
 
@@ -197,9 +238,15 @@ double SNOPTSolver::optimize_impl(VectorXd& variables) const {
     // Solve the problem.
     // snJac is called implicitly in this case to compute the Jacobian.
     int Cold = 0 /*, Basis = 1, Warm = 2 */;
-    snopt_prob.solve(Cold);
+    int info = snopt_prob.solve(Cold);
 
-    return F[0];
+    OptimizationSolution solution;
+    solution.variables = variables;
+    solution.objective = F[0];
+    solution.status = convert_info_integer_to_string(info);
+    solution.success = (info == 1 || info == 2 || info == 3);
+    return solution;
 }
+
 
 #endif // !defined(TROPTER_WITH_SNOPT)

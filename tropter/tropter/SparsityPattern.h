@@ -195,6 +195,11 @@ calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         x[j] = x0[j];
         diff = output - output0;
         for (int i = 0; i < (int)num_outputs; ++i) {
+            if (std::isnan(diff[i])) {
+                std::cout << "[tropter] Warning: NaN encountered when "
+                        "detecting sparsity of Jacobian; entry ("
+                        << i << ", " << j << ")." << std::endl;
+            }
             if (diff[i] != 0) sparsity.set_nonzero(i, j);
         }
         diff.setZero();

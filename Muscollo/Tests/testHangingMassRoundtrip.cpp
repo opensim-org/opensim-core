@@ -68,8 +68,8 @@ void testHangingMassRoundtrip() {
 
         // Simulate!
         SimTK::State state = model.initSystem();
-        Manager manager(model);
-        manager.integrate(state, 1.0);
+        Manager manager(model, state);
+        state = manager.integrate(1.0);
 
         // Print the model and states trajectory to files.
         model.print("testHangingMassRoundtrip_model.osim");

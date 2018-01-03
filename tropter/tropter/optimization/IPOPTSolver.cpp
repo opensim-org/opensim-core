@@ -123,7 +123,36 @@ void IPOPTSolver::print_available_options() {
     app->Initialize();
 }
 
-double IPOPTSolver::optimize_impl(VectorXd& variables) const {
+/// Based on a similar function in Simbody.
+std::string convert_IPOPT_ApplicationReturnStatus_to_string(
+        Ipopt::ApplicationReturnStatus status) {
+    using namespace Ipopt;
+    switch(status) {
+    case Solve_Succeeded: return "Solve succeeded";
+    case Solved_To_Acceptable_Level: return "Solved to acceptable level";
+    case Infeasible_Problem_Detected: return "Infeasible problem detected";
+    case Search_Direction_Becomes_Too_Small: return "Search direction becomes too small";
+    case Diverging_Iterates: return "Diverging iterates";
+    case User_Requested_Stop: return "User requested stop";
+    case Feasible_Point_Found: return "Feasible point found";
+    case Maximum_Iterations_Exceeded: return "Maximum iterations exceeded";
+    case Restoration_Failed: return "Restoration failed";
+    case Error_In_Step_Computation: return "Error in step computation";
+    case Maximum_CpuTime_Exceeded: return "Maximum CPU time exceeded";
+    case Not_Enough_Degrees_Of_Freedom: return "Not enough degrees of freedom";
+    case Invalid_Problem_Definition: return "Invalid problem definition";
+    case Invalid_Option: return "Invalid option";
+    case Invalid_Number_Detected: return "Invalid number detected";
+    case Unrecoverable_Exception: return "Unrecoverable exception";
+    case NonIpopt_Exception_Thrown: return "Non-Ipopt exception thrown";
+    case Insufficient_Memory: return "Insufficient memory";
+    case Internal_Error: return "Internal error";
+    default: return "Unrecognized IPOPT return status";
+    }
+}
+
+OptimizationSolution
+IPOPTSolver::optimize_impl(const VectorXd& variables) const {
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
@@ -176,9 +205,6 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
     status = app->Initialize();
     TROPTER_THROW_IF(status != Ipopt::Solve_Succeeded,
             "Error during initialization");
-    //if (status != Ipopt::Solve_Succeeded) {
-    //    std::cerr << "Error during initialization" << std::endl;
-    //}
 
     // Create NLP.
     // -----------
@@ -190,17 +216,21 @@ double IPOPTSolver::optimize_impl(VectorXd& variables) const {
     // Optimize!!!
     // -----------
     status = app->OptimizeTNLP(nlp);
-    if (status != Ipopt::Solve_Succeeded
-            && status != Ipopt::Solved_To_Acceptable_Level) {
-        // TODO give detailed diagnostics.
-        // TODO throw exception.
+    OptimizationSolution solution;
+    solution.variables = nlp->get_solution();
+    solution.objective = nlp->get_optimal_objective_value();
+    if (status == Ipopt::Solve_Succeeded
+            || status == Ipopt::Solved_To_Acceptable_Level
+            || status == Ipopt::Feasible_Point_Found) {
+        solution.success = true;
+    } else {
+        solution.success = false;
         // http://llvm.org/doxygen/classllvm_1_1ErrorOr.html
         // https://akrzemi1.wordpress.com/2017/07/12/your-own-error-code/
         std::cerr << "[tropter] Failed to find a solution." << std::endl;
-        TROPTER_THROW("Failed to find a solution.");
     }
-    variables = nlp->get_solution();
-    return nlp->get_optimal_objective_value();
+    solution.status = convert_IPOPT_ApplicationReturnStatus_to_string(status);
+    return solution;
 }
 
 IPOPTSolver::TNLP::TNLP(

@@ -18,12 +18,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "MucoWeightSet.h"
 #include "MucoStateTrackingCost.h"
+#include "MucoMarkerTrackingCost.h"
+#include "MucoControlCost.h"
 #include "MucoIterate.h"
 #include "MucoProblem.h"
 #include "MucoSolver.h"
 #include "MucoTool.h"
 #include "MucoTropterSolver.h"
+#include "MuscolloUtilities.h"
 
 #include "RegisterTypes_osimMuscollo.h"
 

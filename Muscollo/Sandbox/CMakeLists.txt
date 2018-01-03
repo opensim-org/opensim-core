@@ -1,17 +1,29 @@
-add_executable(sandboxSlidingMass EXCLUDE_FROM_ALL
-        sandboxSlidingMass.cpp)
-set_target_properties(sandboxSlidingMass PROPERTIES
-        FOLDER "Muscollo/Sandbox")
-target_link_libraries(sandboxSlidingMass osimMuscollo tropter)
+include(CMakeParseArguments)
 
-add_executable(sandboxTendonForceState EXCLUDE_FROM_ALL
-        sandboxTendonForceState.cpp)
-set_target_properties(sandboxTendonForceState PROPERTIES
-        FOLDER "Muscollo/Sandbox")
-target_link_libraries(sandboxTendonForceState osimMuscollo tropter)
+function(MuscolloAddSandboxExecutable)
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs LIB_DEPENDS RESOURCES SOURCE_FILES)
+    cmake_parse_arguments(MUCOSAND
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    add_executable(${MUCOSAND_NAME} EXCLUDE_FROM_ALL ${MUCOSAND_NAME}.cpp 
+            ${MUCOSAND_SOURCE_FILES})
+    set_target_properties(${MUCOSAND_NAME} PROPERTIES
+            FOLDER "Muscollo/Sandbox")
+    target_link_libraries(${MUCOSAND_NAME} ${MUCOSAND_LIB_DEPENDS})
+    file(COPY ${MUCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+endfunction()
 
-add_executable(sandboxImplicitActivationDynamics EXCLUDE_FROM_ALL
-        sandboxImplicitActivationDynamics.cpp)
-set_target_properties(sandboxImplicitActivationDynamics PROPERTIES
-        FOLDER "Muscollo/Sandbox")
-target_link_libraries(sandboxImplicitActivationDynamics osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
+        LIB_DEPENDS osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxContact
+        LIB_DEPENDS osimMuscollo osimAnalyses tropter)
+MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
+        LIB_DEPENDS osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxTendonForceState
+        LIB_DEPENDS osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
+        LIB_DEPENDS osimMuscollo tropter)
+		
+add_subdirectory(sandboxWholeBodyTracking)
+add_subdirectory(sandboxMarkerTrackingWholeBody)

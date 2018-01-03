@@ -63,9 +63,10 @@ public:
         set_num_mesh_points(num_mesh_points);
         set_ocproblem(ocproblem);
     }
+    /// The number of mesh points must be at least 2.
     // TODO order of calls?
     // TODO right now, must call this BEFORE set_problem.
-    void set_num_mesh_points(unsigned N) { m_num_mesh_points = N; }
+    void set_num_mesh_points(unsigned N);
     void set_ocproblem(std::shared_ptr<const OCProblem> ocproblem);
 
     void calc_objective(const VectorX<T>& x, T& obj_value) const override;

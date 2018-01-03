@@ -59,18 +59,27 @@ public:
         initializeImpl();
     }
 protected:
-    /// Perform any caching.
-    /// Upon entry, getMode() is available.
+    /// Perform any caching. Make sure to first clear any caches, as this is
+    /// invoked every time the problem is solved.
+    /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
     /// Precondition: state is realized to SimTK::Stage::Position.
+    /// If you need access to the controls, you must realize to Velocity:
+    /// @code
+    /// getModel().realizeVelocity(state);
+    /// @endcode
     virtual void calcIntegralCostImpl(const SimTK::State& state,
             double& integrand) const;
     /// The endpoint cost cannot depend on actuator controls.
     virtual void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const;
     /// For use within virtual function implementations.
-    const Model& getModel() const { return m_model.getRef(); }
+    const Model& getModel() const {
+        OPENSIM_THROW_IF(!m_model, Exception,
+                "Model is not available until the start of initializing.");
+        return m_model.getRef();
+    }
 private:
     void constructProperties();
 

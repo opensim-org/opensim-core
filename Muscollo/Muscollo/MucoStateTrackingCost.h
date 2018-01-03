@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoCost.h"
+#include "MucoWeightSet.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/GCVSplineSet.h>
@@ -26,7 +27,8 @@
 namespace OpenSim {
 
 // TODO can we track generailzed speeds too?
-// TODO weights for each state.
+// TODO allow raising error to different powers (cubed).
+// TODO allow a "deadband."
 
 /// The squared difference between a state variable value and a reference
 /// state variable value, summed over the state variables for which a
@@ -57,8 +59,33 @@ public:
         m_table = ref;
     }
 
+    /// Set the weight for an individual state variable. If a weight is
+    /// already set for the requested state, then the provided weight
+    /// replaces the previous weight. An exception is thrown if a weight
+    /// for an unknown state is provided.
+    void setWeight(const std::string& stateName, const double& weight) {
+        if (get_state_weights().contains(stateName)) {
+            upd_state_weights().get(stateName).setWeight(weight);
+        } else {
+            upd_state_weights().cloneAndAppend({stateName, weight});
+        }
+    }
+
+    /// Provide a MucoWeightSet to weight the state variables in the cost.
+    /// Replaces the weight set if it already exists.
+    void setWeightSet(const MucoWeightSet& weightSet) {
+        upd_state_weights() = weightSet;
+    }
+
     /// If no reference file has been provided, this returns an empty string.
     std::string getReferenceFile() const { return get_reference_file(); }
+
+    /// Specify whether or not extra columns in the reference are allowed.
+    /// If set true, the extra references will be ignored by the cost.
+    /// If false, extra reference will cause an Exception to be raised.
+    void setAllowUnusedReferences(bool tf) {
+        set_allow_unused_references(tf);
+    }
 
 protected:
     // TODO check that the reference covers the entire possible time range.
@@ -71,14 +98,26 @@ private:
             "(coordinates, speeds, activation, etc.) to track. Column labels "
             "should be state variable paths, e.g., 'knee/flexion/value'");
 
+    OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
+            "Flag to determine whether or not references contained in the "
+            "reference_file are allowed to be ignored by the cost.");
+
+    OpenSim_DECLARE_PROPERTY(state_weights, MucoWeightSet,
+            "Set of weight objects to weight the tracking of individual "
+            "state variables in the cost.");
+
     void constructProperties() {
         constructProperty_reference_file("");
+        constructProperty_allow_unused_references(false);
+        constructProperty_state_weights(MucoWeightSet());
     }
 
     TimeSeriesTable m_table;
     mutable GCVSplineSet m_refsplines;
     /// The indices in Y corresponding to the provided reference coordinates.
     mutable std::vector<int> m_sysYIndices;
+    mutable std::vector<double> m_state_weights;
+
 };
 
 } // namespace OpenSim

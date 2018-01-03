@@ -21,6 +21,7 @@ using namespace OpenSim;
 
 MucoCost::MucoCost() {
     constructProperties();
+    if (getName().empty()) setName("cost");
 }
 
 void MucoCost::constructProperties() {

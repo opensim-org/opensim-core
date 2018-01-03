@@ -22,6 +22,22 @@ if(NOT MUSCOLLO_COPY_DEPENDENCIES)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 endif()
 
+# Directory in which to install.
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}-install" CACHE PATH
+        "The directory in which to install this project." FORCE)
+endif()
+
+# Set the default for CMAKE_BUILD_TYPE.
+# CMAKE_BUILD_TYPE is only applicable for single-configuration generators.
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+        "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
+endif()
+
 # Make targets go in the same binary directory.
 # These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
@@ -57,6 +73,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshorten-64-to-32")
+        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
+        # many warnings.
     endif()
     # The assert() macro is omitted in Release, causing "unused-variable"
     # warnings. It is sufficient to just catch such warnings in Debug.
@@ -67,6 +85,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
             "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-parameter")
     endforeach()
 endif()
+
+# TODO add /WX flag for Windows.
 
 enable_testing()
 

@@ -87,14 +87,32 @@ void MucoPhase::setControlInfo(const std::string& name,
     else           upd_control_infos(idx) = info;
 }
 void MucoPhase::addCost(const MucoCost& cost) {
-    // TODO check if a cost with the provided name already exists.
-    int index = append_costs(cost);
+    OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
+        "Cannot add a cost if it does not have a name (use setName()).");
+    int idx = getProperty_costs().findIndexForName(cost.getName());
+    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
+        "A cost with name '" + cost.getName() + "' already exists.");
+    append_costs(cost);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
     return MucoInitialBounds(getProperty_time_initial_bounds());
 }
 MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
     return MucoFinalBounds(getProperty_time_final_bounds());
+}
+std::vector<std::string> MucoPhase::createStateInfoNames() const {
+    std::vector<std::string> names(getProperty_state_infos().size());
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        names[i] = get_state_infos(i).getName();
+    }
+    return names;
+}
+std::vector<std::string> MucoPhase::createControlInfoNames() const {
+    std::vector<std::string> names(getProperty_control_infos().size());
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        names[i] = get_control_infos(i).getName();
+    }
+    return names;
 }
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
@@ -114,6 +132,26 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
 void MucoPhase::initialize(const Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
+    const auto stateNames = model.getStateVariableNames();
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        const auto& name = get_state_infos(i).getName();
+        OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
+                "State info provided for nonexistant state '" + name + "'.");
+    }
+    OpenSim::Array<std::string> actuNames;
+    const auto modelPath = model.getAbsolutePath();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        actuNames.append(
+                actu.getAbsolutePath().formRelativePath(modelPath).toString());
+    }
+    // TODO can only handle ScalarActuators?
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        const auto& name = get_control_infos(i).getName();
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
+                "Control info provided for nonexistant actuator '"
+                        + name + "'.");
+    }
+
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }

@@ -2,7 +2,7 @@
 
 AddDependency(NAME       opensim-core
               # StatesTrajectory::createFromStatesStorage() assembles the states.
-              URL        https://github.com/opensim-org/opensim-core/archive/7513accaa13a9431cf37e2bbc35ee7111f50baa6.zip
+              URL        https://github.com/opensim-org/opensim-core/archive/e05338dde404e055f300f7685397dc61cc495961.zip
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
@@ -11,15 +11,9 @@ AddDependency(NAME       opensim-core
 if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
-    if(UNIX AND NOT APPLE)
-        set(SIMBODY_GIT_TAG fix_Ipopt_symbols)
-    else()
-        set(SIMBODY_GIT_TAG fd5c03115038a7398ed5ac04169f801a2aa737f2)
-    endif()
-
     AddDependency(NAME simbody
                   GIT_URL    https://github.com/simbody/simbody.git
-                  GIT_TAG    ${SIMBODY_GIT_TAG}
+                  GIT_TAG    1fb07d6b0725f595a03065cb3343af485018a439
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
