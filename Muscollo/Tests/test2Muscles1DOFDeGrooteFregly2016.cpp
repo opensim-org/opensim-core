@@ -102,6 +102,7 @@ public:
     }
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& /*final_states*/,
+            const tropter::VectorX<T>& /*parameters*/,
             T& cost) const override {
         cost = final_time;
     }
@@ -260,6 +261,7 @@ public:
     }
     void calc_endpoint_cost(const T& final_time,
         const tropter::VectorX<T>& /*final_states*/,
+        const tropter::VectorX<T>& /*parameters*/,
         T& cost) const override {
         cost = final_time;
     }

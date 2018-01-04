@@ -262,6 +262,7 @@ public:
     void calc_integral_cost(const T& /*time*/,
             const tropter::VectorX<T>& /*states*/,
             const tropter::VectorX<T>& controls,
+            const tropter::VectorX<T>& /*parameters*/,
             T& integrand) const override {
         integrand = controls.squaredNorm();
     }

@@ -97,9 +97,11 @@ OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
     solution.time = traj.time;
     solution.states = traj.states;
     solution.controls = traj.controls;
+    solution.parameters = traj.parameters;
     solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
+    solution.parameter_names = traj.parameter_names;
     solution.success = optsol.success;
     solution.status = optsol.status;
     return solution;

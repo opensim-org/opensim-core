@@ -92,6 +92,7 @@ public:
     }
     void calc_endpoint_cost(const T& final_time,
             const tropter::VectorX<T>& /*final_states*/,
+            const tropter::VectorX<T>& /*parameters*/,
             T& cost) const override {
         cost = final_time;
     }
@@ -235,7 +236,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = controls[0] * controls[0];
     }
 private:
@@ -303,7 +305,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = controls[0] * controls[0];
     }
 private:

@@ -618,7 +618,8 @@ public:
     }
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = 0;
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),
@@ -633,7 +634,7 @@ public:
         }
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            T& cost) const override {
+            const VectorX<T>& /*parameters*/, T& cost) const override {
         cost = 0;
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),

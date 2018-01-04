@@ -30,8 +30,8 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
     std::ifstream f(filepath);
     TROPTER_THROW_IF(!f, "Could not read '%s'.", filepath);
 
-    // Grab the number of state and control variables.
-    // -----------------------------------------------
+    // Grab the number of state, control, and parameter variables.
+    // -----------------------------------------------------------
     std::string line;
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_states=") != 0,
             "Could not read num_states from '%s'.", filepath);
@@ -42,6 +42,13 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
             "Could not read num_controls from '%s'.", filepath);
     std::string num_controls_str = line.substr(line.find('=') + 1);
     int num_controls = std::stoi(num_controls_str);
+
+    TROPTER_THROW_IF(!std::getline(f, line) || 
+            line.find("num_parameters=") != 0,
+            "Could not read num_parameters from '%s'.", filepath);
+    std::string num_parameters_str = line.substr(line.find('=') + 1);
+    int num_parameters = std::stoi(num_parameters_str);
+
 
     // Grab the column labels.
     // -----------------------
@@ -58,14 +65,17 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
         // States come first.
         if (i_label < num_states)
             state_names.push_back(label);
-        else
+        else if (i_label < num_states + num_controls)
             control_names.push_back(label);
+        else
+            parameter_names.push_back(label);
         ++i_label;
     }
-    TROPTER_THROW_IF(i_label != num_states + num_controls,
+    TROPTER_THROW_IF(i_label != num_states + num_controls + num_parameters,
             "In '%s', expected %i columns but got %i columns.",
             // Add 1 for the time column.
-            filepath, 1 + num_states + num_controls, 1 + i_label);
+            filepath, 1 + num_states + num_controls + num_parameters, 
+            1 + i_label);
 
     // Get number of times.
     // --------------------
@@ -84,6 +94,7 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
     // File and in-memory matrices are transposed.
     states.resize(num_states, num_times);
     controls.resize(num_controls, num_times);
+    parameters.resize(num_parameters);
     std::string element;
     // For each line of data.
     int i_time = 0;
@@ -99,8 +110,11 @@ OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
             std::stringstream element_ss(element);
             if (i_var < num_states)
                 element_ss >> states(i_var, i_time);
-            else
+            else if (i_var < num_states + num_controls)
                 element_ss >> controls(i_var - num_states, i_time);
+            else 
+                if (i_time == 0)
+                    element_ss >> parameters(i_var - num_states - num_controls);
             ++i_var;
         }
         ++i_time;
@@ -175,30 +189,46 @@ void OptimalControlIterate::write(const std::string& filepath) const {
     // Header.
     f << "num_states=" << states.rows() << std::endl;
     f << "num_controls=" << controls.rows() << std::endl;
+    f << "num_parameters=" << parameters.rows() << std::endl;
 
     // Column labels.
     f << "time";
     if (state_names.size() == (size_t)states.rows() &&
-            control_names.size() == (size_t)controls.rows()) {
+            control_names.size() == (size_t)controls.rows() &&
+            parameter_names.size() == (size_t)parameters.rows()) {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << "," << state_names[i_state];
         for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << "," << control_names[i_control];
+        for (int i_parameter = 0; i_parameter < parameters.rows(); 
+                ++i_parameter)
+            f << "," << parameter_names[i_parameter];
     } else {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << ",state" << i_state;
         for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << ",control" << i_control;
+        for (int i_parameter = 0; i_parameter < parameters.rows(); 
+                ++i_parameter)
+            f << ",parameter" << i_parameter;
     }
     f << std::endl;
 
     // Data.
     for (int i_mesh = 0; i_mesh < time.size(); ++i_mesh) {
         f << time[i_mesh];
-        for (int i_state = 0; i_state< states.rows(); ++i_state)
+        for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << "," << states(i_state, i_mesh);
-        for (int i_control = 0; i_control< controls.rows(); ++i_control)
+        for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << "," << controls(i_control, i_mesh);
+        for (int i_parameter = 0; i_parameter < parameters.rows(); 
+                ++i_parameter)
+            if (i_mesh == 0) {
+                f << "," << parameters(i_parameter);
+            } else {
+                f << "," << std::numeric_limits<double>::quiet_NaN();
+            }
+            
         f << std::endl;
     }
     f.close();

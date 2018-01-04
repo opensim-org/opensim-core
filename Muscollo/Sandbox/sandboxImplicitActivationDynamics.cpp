@@ -91,7 +91,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = controls[0] * controls[0];
     }
 private:
@@ -159,7 +160,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& /*states*/,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls,
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = controls[0] * controls[0];
     }
 private:
@@ -244,7 +246,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& states,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = states[0] * states[0] + 0.01 * controls[0] * controls[0];
     }
 private:
@@ -320,7 +323,8 @@ public:
     }
     void calc_integral_cost(const T& /*time*/,
             const VectorX<T>& states,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         integrand = states[0] * states[0] + 0.01 * controls[0] * controls[0];
     }
 private:

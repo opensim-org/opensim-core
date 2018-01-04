@@ -193,7 +193,8 @@ public:
     }
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& /*parameters*/, T& integrand) const override {
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -211,7 +212,7 @@ public:
         integrand = m_phase0.calcIntegralCost(m_state);
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            T& cost) const override {
+            const VectorX<T>& /*parameters*/, T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),

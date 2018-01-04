@@ -95,7 +95,7 @@ public:
         this->add_control("tau1", {-50, 50});
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& final_states,
-            T& cost) const override
+            const VectorX<T>& /*parameters*/, T& cost) const override
     {
         // TODO a final state constraint probably makes more sense.
         const auto& q0 = final_states[0];
@@ -192,6 +192,7 @@ public:
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& /*controls*/,
+            const VectorX<T>& /*parameters*/,
             T& integrand) const
     {
         VectorX<T> desired(2);
@@ -289,6 +290,7 @@ public:
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& /*controls*/,
+            const VectorX<T>& /*parameters*/,
             T& integrand) const
     {
         VectorX<T> desired(2);
