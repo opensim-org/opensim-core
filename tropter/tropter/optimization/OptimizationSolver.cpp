@@ -27,49 +27,75 @@ OptimizationSolver::OptimizationSolver(
         const AbstractOptimizationProblem& problem)
         : m_problem(problem.make_decorator()) {}
 
-int OptimizationSolver::get_verbosity() const {
-    return m_verbosity;
-}
 void OptimizationSolver::set_verbosity(int verbosity) {
     TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
             "verbosity", verbosity, "0 or 1");
     m_verbosity = verbosity;
     m_problem->set_verbosity(verbosity);
 }
-
-Optional<int> OptimizationSolver::get_max_iterations() const {
-    return m_max_iterations;
+int OptimizationSolver::get_verbosity() const {
+    return m_verbosity;
 }
+
 void OptimizationSolver::set_max_iterations(int max_iterations) {
     TROPTER_VALUECHECK(max_iterations > 0,
             "max_iterations", max_iterations, "positive");
     m_max_iterations = max_iterations;
 }
-
-Optional<std::string> OptimizationSolver::get_hessian_approximation() const {
-    return m_hessian_approximation;
+Optional<int> OptimizationSolver::get_max_iterations() const {
+    return m_max_iterations;
 }
+
+void OptimizationSolver::set_convergence_tolerance(double value) {
+    TROPTER_VALUECHECK(value > 0, "convergence_tolerance", value, "positive");
+    m_convergence_tolerance = value;
+}
+Optional<double> OptimizationSolver::get_convergence_tolerance() const {
+    return m_convergence_tolerance;
+}
+void OptimizationSolver::set_constraint_tolerance(double value) {
+    TROPTER_VALUECHECK(value > 0, "constraint_tolerance", value, "positive");
+    m_constraint_tolerance = value;
+}
+Optional<double> OptimizationSolver::get_constraint_tolerance() const {
+    return m_constraint_tolerance;
+}
+
 void OptimizationSolver::set_hessian_approximation(const std::string& value) {
     m_hessian_approximation = value;
 }
-void OptimizationSolver::set_findiff_hessian_mode(const std::string& setting) {
-    m_problem->set_findiff_hessian_mode(setting);
+Optional<std::string> OptimizationSolver::get_hessian_approximation() const {
+    return m_hessian_approximation;
 }
-void OptimizationSolver::set_findiff_hessian_step_size(double setting) {
-    m_problem->set_findiff_hessian_step_size(setting);
+void OptimizationSolver::set_findiff_hessian_mode(const std::string& value) {
+    m_problem->set_findiff_hessian_mode(value);
+}
+void OptimizationSolver::set_findiff_hessian_step_size(double value) {
+    m_problem->set_findiff_hessian_step_size(value);
 }
 
 void OptimizationSolver::print_option_values(std::ostream& stream) const {
+    const std::string unset("<unset>");
     stream << "OptimizationSolver option values:\n";
     // Print non-advanced options first.
     stream << "  max iterations: ";
     if (m_max_iterations) stream << m_max_iterations.value();
-    else                  stream << "<unset>";
+    else                  stream << unset;
+    stream << "\n";
+
+    stream << "  convergence tolerance: ";
+    if (m_convergence_tolerance) stream << m_convergence_tolerance.value();
+    else                         stream << unset;
+    stream << "\n";
+
+    stream << "  constraint tolerance: ";
+    if (m_constraint_tolerance) stream << m_constraint_tolerance.value();
+    else                        stream << unset;
     stream << "\n";
 
     stream << "  hessian_approximation: ";
     if (m_hessian_approximation) stream << m_hessian_approximation.value();
-    else                         stream << "<unset>";
+    else                         stream << unset;
     stream << "\n";
 
     std::vector<std::string> available_options_string;
@@ -84,26 +110,29 @@ void OptimizationSolver::print_option_values(std::ostream& stream) const {
     };
 
     // Print advanced options.
+    const std::string unrecognized(" (unrecognized)");
     for (const auto& opt : m_advanced_options_string) {
         stream << "  [string] " << opt.first;
         if (!contains(available_options_string, opt.first))
-            stream << " (unrecognized)";
-        stream << ": " << opt.second.value_or("<unset>");
+            stream << unrecognized;
+        stream << ": " << opt.second.value_or(unset);
     }
     for (const auto& opt : m_advanced_options_int) {
         stream << "  [int] " << opt.first;
         if (!contains(available_options_int, opt.first))
-            stream << " (unrecognized)";
+            stream << unrecognized;
+        stream << ": ";
         if (opt.second) stream << opt.second.value();
-        else            stream << "<unset>";
+        else            stream << unset;
         stream << "\n";
     }
     for (const auto& opt : m_advanced_options_real) {
         stream << "  [real] " << opt.first;
         if (!contains(available_options_real, opt.first))
-            stream << " (unrecognized)";
+            stream << unrecognized;
+        stream << ": ";
         if (opt.second) stream << opt.second.value();
-        else            stream << "<unset>";
+        else            stream << unset;
         stream << "\n";
     }
     stream << std::flush;
@@ -125,7 +154,9 @@ void OptimizationSolver::set_advanced_option_real(const std::string& name,
 OptimizationSolution
 OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
 {
-    if (m_verbosity > 0) print_option_values();
+    // if (m_verbosity > 0) print_option_values();
+    // IPOPT can print the option values for us.
+
     // If the user did not provide an initial guess, then we choose
     // the initial guess based on the bounds.
     //if (variables.size() == 0) {

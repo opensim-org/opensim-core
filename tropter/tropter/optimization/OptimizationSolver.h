@@ -37,6 +37,11 @@ struct OptimizationSolution {
     std::string status;
 };
 
+/// The OptimizationSolver class contains some generic options that are
+/// common across different concrete solvers. To learn how the different
+/// solves interpret these generic options, view the documentaiton for the
+/// concrete solvers.
+///
 /// @ingroup optimization
 class OptimizationSolver {
 public:
@@ -61,15 +66,19 @@ public:
     /// verbosity.
     void set_verbosity(int value);
     /// The maximum number of iterations the optimizer is allowed to take.
-    void set_max_iterations(int setting);
+    void set_max_iterations(int value);
+    /// The tolerance used to determine if the objective is minimized.
+    void set_convergence_tolerance(double value);
+    /// The tolerance used to determine if the constraints are satisfied.
+    void set_constraint_tolerance(double value);
     /// Whether a full Hessian should be computed or if the Hessian
     /// should be approximated from the gradient using BFGS updates.
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
-    void set_hessian_approximation(const std::string& setting);
+    void set_hessian_approximation(const std::string& value);
     /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_mode()
-    void set_findiff_hessian_mode(const std::string& setting);
+    void set_findiff_hessian_mode(const std::string& value);
     /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_step_size()
-    void set_findiff_hessian_step_size(double setting);
+    void set_findiff_hessian_step_size(double value);
     /// @}
 
     /// @name Set solver-specific advanced options.
@@ -103,6 +112,10 @@ public:
     int get_verbosity() const;
     /// @copydoc set_max_iterations()
     Optional<int> get_max_iterations() const;
+    /// @copydoc set_convergence_tolerance()
+    Optional<double> get_convergence_tolerance() const;
+    /// @copydoc set_constraint_tolerance()
+    Optional<double> get_constraint_tolerance() const;
     /// @copydoc set_hessian_approximation()
     Optional<std::string> get_hessian_approximation() const;
     /// @}
@@ -133,6 +146,8 @@ protected:
 private:
     int m_verbosity;
     Optional<int> m_max_iterations;
+    Optional<double> m_convergence_tolerance;
+    Optional<double> m_constraint_tolerance;
     Optional<std::string> m_hessian_approximation;
 
     OptionsMap<std::string> m_advanced_options_string;

@@ -155,11 +155,27 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
     auto ipoptions = app->Options();
+    ipoptions->SetStringValue("print_user_options", "yes");
+
     if (get_verbosity() == 0) {
         ipoptions->SetIntegerValue("print_level", 0);
     }
     if (const auto opt = get_max_iterations()) {
         ipoptions->SetIntegerValue("max_iter", opt.value());
+    }
+    if (const auto opt = get_convergence_tolerance()) {
+        // This is based on what Simbody does.
+        ipoptions->SetNumericValue("tol", opt.value());
+        ipoptions->SetNumericValue("dual_inf_tol", opt.value());
+        ipoptions->SetNumericValue("compl_inf_tol", opt.value());
+        ipoptions->SetNumericValue("acceptable_tol", opt.value());
+        ipoptions->SetNumericValue("acceptable_dual_inf_tol", opt.value());
+        ipoptions->SetNumericValue("acceptable_compl_inf_tol", opt.value());
+    }
+    if (const auto opt = get_constraint_tolerance()) {
+        // This is based on what Simbody does.
+        ipoptions->SetNumericValue("constr_viol_tol", opt.value());
+        ipoptions->SetNumericValue("acceptable_constr_viol_tol", opt.value());
     }
     if (const auto opt = get_hessian_approximation()) {
         const auto& value = opt.value();
