@@ -132,6 +132,11 @@ private:
     void constructProperties();
 };
 
+// ============================================================================
+// MucoParameterInfo
+// ============================================================================
+
+/// Bounds on parameter variables. The 
 
 // ============================================================================
 // MucoPhase
@@ -225,6 +230,14 @@ public:
     // TODO by default, use the actuator's control_min and control_max.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set information about a single parameter variable in this phase.
+    /// Similar to setStateInfo(), except no initial or final bounds are
+    /// required for parameters.  
+    ///
+    /// @precondition
+    ///     The completed model must be set.
+    // TODO how to specify name?
+    void setParameterBounds(const std::string& name, const MucoBounds&);
     /// Add a cost term to this phase. The passed-in cost is copied, and thus
     /// any subsequent edits have no effect.
     /// Cost terms must have a name (MucoCost::setName()), and it must be
@@ -300,6 +313,8 @@ protected: // Protected so that doxygen shows the properties.
             "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos, MucoVariableInfo,
             "The control variables' bounds.");
+    //OpenSim_DECLARE_LIST_PROPERTY(parameter_bounds, MucoBounds,
+    //        "The parameter variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
 

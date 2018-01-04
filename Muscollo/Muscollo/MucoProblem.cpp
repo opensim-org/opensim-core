@@ -59,6 +59,7 @@ void MucoPhase::constructProperties() {
     constructProperty_time_final_bounds();
     constructProperty_state_infos();
     constructProperty_control_infos();
+    //constructProperty_parameter_bounds();
     constructProperty_costs();
 }
 void MucoPhase::setModel(const Model& model) {
@@ -86,6 +87,12 @@ void MucoPhase::setControlInfo(const std::string& name,
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
 }
+//void MucoPhase::setParameterBounds(const std::string& name, 
+//        const MucoBounds& bounds) {
+//    int idx = getProperty_parameter_bounds().findIndexForName(name);
+//
+//    MucoBounds mb(
+//}
 void MucoPhase::addCost(const MucoCost& cost) {
     OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
         "Cannot add a cost if it does not have a name (use setName()).");

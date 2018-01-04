@@ -56,10 +56,12 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     SimTK::Vector time((int)tropTime.size(), tropTime.data());
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
+    const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
+    int numParameters = (int)parameter_names.size();
     SimTK::Matrix states(numTimes, numStates);
     for (int itime = 0; itime < numTimes; ++itime) {
         for (int istate = 0; istate < numStates; ++istate) {
@@ -72,7 +74,12 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             controls(itime, icontrol) = tropSol.controls(icontrol, itime);
         }
     }
-    return {time, state_names, control_names, states, controls};
+    SimTK::RowVector parameters(numParameters);
+    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
+        parameters(iparameter) = tropSol.parameters(iparameter);
+    }
+    return {time, state_names, control_names, parameter_names, states, 
+            controls, parameters};
 }
 
 MucoSolution convert(const tropter::OptimalControlSolution& tropSol) {

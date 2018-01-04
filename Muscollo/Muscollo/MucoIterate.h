@@ -36,8 +36,10 @@ public:
     MucoIterate(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
+            std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
-            const SimTK::Matrix& controlsTrajectory);
+            const SimTK::Matrix& controlsTrajectory,
+            const SimTK::RowVector& parameterValues);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
     // TODO describe format.
@@ -49,7 +51,8 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_state_names.size() || m_control_names.size());
+                m_parameters.nelt() || m_state_names.size() || 
+                m_control_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -122,6 +125,9 @@ public:
     /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
     void setControl(const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single parameter variable. This value is invariant
+    /// across time.
+    void setParameter(const std::string& name, const SimTK::Real& value);
 
     /// Set the time vector. The provided vector must have the same number of
     /// elements as the pre-existing time vector; use setNumTimes() or the
@@ -210,12 +216,17 @@ public:
     {   ensureUnsealed(); return m_state_names; }
     const std::vector<std::string>& getControlNames() const
     {   ensureUnsealed(); return m_control_names; }
+    const std::vector<std::string>& getParameterNames() const
+    {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView getState(const std::string& name) const;
     SimTK::VectorView getControl(const std::string& name) const;
+    const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
     const SimTK::Matrix& getControlsTrajectory() const
     {   ensureUnsealed(); return m_controls; }
+    SimTK::RowVectorView getParameters() const
+    {   ensureUnsealed(); return m_parameters; }
 
     /// @}
 
@@ -276,10 +287,13 @@ private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
+    std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
     // Dimensions: time x controls
     SimTK::Matrix m_controls;
+    // Dimensions: 1 x parameters
+    SimTK::RowVector m_parameters;
 
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).
