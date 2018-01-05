@@ -37,41 +37,40 @@ int OptimizationSolver::get_verbosity() const {
     return m_verbosity;
 }
 
-void OptimizationSolver::set_max_iterations(int max_iterations) {
-    TROPTER_VALUECHECK(max_iterations > 0,
-            "max_iterations", max_iterations, "positive");
-    m_max_iterations = max_iterations;
+void OptimizationSolver::set_max_iterations(Optional<int> v) {
+    TROPTER_VALUECHECK(!v || *v > 0, "max_iterations", *v, "positive");
+    m_max_iterations = v;
 }
 Optional<int> OptimizationSolver::get_max_iterations() const {
     return m_max_iterations;
 }
 
-void OptimizationSolver::set_convergence_tolerance(double value) {
-    TROPTER_VALUECHECK(value > 0, "convergence_tolerance", value, "positive");
-    m_convergence_tolerance = value;
+void OptimizationSolver::set_convergence_tolerance(Optional<double> v) {
+    TROPTER_VALUECHECK(!v || *v > 0, "convergence_tolerance", *v, "positive");
+    m_convergence_tolerance = v;
 }
 Optional<double> OptimizationSolver::get_convergence_tolerance() const {
     return m_convergence_tolerance;
 }
-void OptimizationSolver::set_constraint_tolerance(double value) {
-    TROPTER_VALUECHECK(value > 0, "constraint_tolerance", value, "positive");
-    m_constraint_tolerance = value;
+void OptimizationSolver::set_constraint_tolerance(Optional<double> v) {
+    TROPTER_VALUECHECK(!v || *v > 0, "constraint_tolerance", *v, "positive");
+    m_constraint_tolerance = v;
 }
 Optional<double> OptimizationSolver::get_constraint_tolerance() const {
     return m_constraint_tolerance;
 }
 
-void OptimizationSolver::set_hessian_approximation(const std::string& value) {
-    m_hessian_approximation = value;
+void OptimizationSolver::set_hessian_approximation(Optional<std::string> v) {
+    m_hessian_approximation = v;
 }
 Optional<std::string> OptimizationSolver::get_hessian_approximation() const {
     return m_hessian_approximation;
 }
-void OptimizationSolver::set_findiff_hessian_mode(const std::string& value) {
-    m_problem->set_findiff_hessian_mode(value);
+void OptimizationSolver::set_findiff_hessian_mode(const std::string& v) {
+    m_problem->set_findiff_hessian_mode(v);
 }
-void OptimizationSolver::set_findiff_hessian_step_size(double value) {
-    m_problem->set_findiff_hessian_step_size(value);
+void OptimizationSolver::set_findiff_hessian_step_size(double v) {
+    m_problem->set_findiff_hessian_step_size(v);
 }
 
 void OptimizationSolver::print_option_values(std::ostream& stream) const {
@@ -157,12 +156,13 @@ OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
     // if (m_verbosity > 0) print_option_values();
     // IPOPT can print the option values for us.
 
-    // If the user did not provide an initial guess, then we choose
-    // the initial guess based on the bounds.
-    //if (variables.size() == 0) {
-    //    variables = m_problem->make_initial_guess_from_bounds();
-    //} // else TODO make sure variables has the correct size.
-    return optimize_impl(variables.size() == 0
-                         ? m_problem->make_initial_guess_from_bounds()
-                         : variables);
+    TROPTER_THROW_IF(variables.size() != m_problem->get_num_variables(),
+            "Expected guess to have %i elements, but it has %i elements.",
+            m_problem->get_num_variables(), variables.size() );
+    return optimize_impl(variables);
+}
+
+OptimizationSolution
+OptimizationSolver::optimize() const {
+    return optimize_impl(m_problem->make_initial_guess_from_bounds());
 }
