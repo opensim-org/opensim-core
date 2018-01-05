@@ -219,6 +219,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     if (const auto opt = get_max_iterations()) { // TODO untested
         snopt_prob.setIntParameter("Iterations", opt.value());
     }
+    // TODO handle set_convergence_tolerance, set_constraint_tolerance.
     snopt_prob.setIntParameter("Verify level ", 3);
 
     // TODO string options?
