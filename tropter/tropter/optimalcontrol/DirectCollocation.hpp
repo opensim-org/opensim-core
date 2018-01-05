@@ -69,28 +69,21 @@ void DirectCollocationSolver<T>::set_verbosity(int verbosity) {
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve() const
 {
-    Eigen::VectorXd variables;
-    return solve_internal(variables);
+    OptimalControlIterate initial_guess;
+    return solve(initial_guess);
 }
 
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve(
         const OptimalControlIterate& initial_guess) const {
-    if (initial_guess.empty()) return solve();
-    Eigen::VectorXd variables =
-            m_transcription->construct_iterate(initial_guess, true);
-    auto solution = solve_internal(variables);
-    if (!solution && m_verbosity) {
-        std::cerr << "[tropter] DirectCollocationSolver did not succeed:\n"
-                << solution.status << std::endl;
+    OptimizationSolution optsol;
+    if (initial_guess.empty()) {
+        optsol = m_optsolver->optimize();
+    } else {
+        Eigen::VectorXd variables =
+                m_transcription->construct_iterate(initial_guess, true);
+        optsol = m_optsolver->optimize(variables);
     }
-    return solution;
-}
-
-template<typename T>
-OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
-        const Eigen::VectorXd& variables) const {
-    OptimizationSolution optsol = m_optsolver->optimize(variables);
     OptimalControlIterate traj =
             m_transcription->deconstruct_iterate(optsol.variables);
     OptimalControlSolution solution;
@@ -102,6 +95,11 @@ OptimalControlSolution DirectCollocationSolver<T>::solve_internal(
     solution.control_names = traj.control_names;
     solution.success = optsol.success;
     solution.status = optsol.status;
+    solution.num_iterations = optsol.num_iterations;
+    if (!solution && m_verbosity) {
+        std::cerr << "[tropter] DirectCollocationSolver did not succeed:\n"
+                << solution.status << std::endl;
+    }
     return solution;
 }
 

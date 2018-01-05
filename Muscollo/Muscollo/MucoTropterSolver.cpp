@@ -238,6 +238,8 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_verbosity(2);
     constructProperty_optim_solver("ipopt");
     constructProperty_optim_max_iterations(-1);
+    constructProperty_optim_convergence_tolerance(-1);
+    constructProperty_optim_constraint_tolerance(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_ipopt_print_level(-1);
 
@@ -364,6 +366,17 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     if (get_optim_max_iterations() != -1)
         optsolver.set_max_iterations(get_optim_max_iterations());
 
+    checkPropertyInRangeOrSet(*this,
+            getProperty_optim_convergence_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    if (get_optim_convergence_tolerance() != -1)
+        optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
+    checkPropertyInRangeOrSet(*this,
+            getProperty_optim_constraint_tolerance(),
+            0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
+    if (get_optim_constraint_tolerance() != -1)
+        optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
+
     optsolver.set_hessian_approximation(get_optim_hessian_approximation());
 
     if (get_optim_solver() == "ipopt") {
@@ -393,8 +406,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
 
     MucoSolution mucoSolution = convert(tropSolution);
     // TODO move this to convert():
-    MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
-            tropSolution.success, tropSolution.status);
+    MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,
+            tropSolution.status, tropSolution.num_iterations);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
