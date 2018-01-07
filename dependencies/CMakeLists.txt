@@ -175,6 +175,8 @@ include(colpack.cmake)
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
+set(SUPERBUILD_ipopt ON CACHE BOOL 
+    "Automatically download, configure, build and install ipopt")
 if (WIN32)
 
     if(SUPERBUILD_adolc)
@@ -192,8 +194,6 @@ if (WIN32)
     endif()
 
 
-    set(SUPERBUILD_ipopt ON CACHE BOOL 
-        "Automatically download, configure, build and install ipopt")
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries from the YARP/iCub project.
         # This binary distribution comes with MUMPS (which contains Fortran
@@ -229,6 +229,16 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+    endif()
+
+    if(SUPERBUILD_ipopt)
+        # TODO --enable-debug if building in Debug.
+        ExternalProject_Add(ipopt
+            URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
+            INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
