@@ -54,6 +54,12 @@ public:
     OpenSim_DECLARE_PROPERTY(optim_max_iterations, int,
     "Maximum number of iterations in the optimization solver "
     "(-1 for solver's default).");
+    OpenSim_DECLARE_PROPERTY(optim_convergence_tolerance, double,
+    "Tolerance used to determine if the objective is minimized "
+    "(-1 for solver's default)");
+    OpenSim_DECLARE_PROPERTY(optim_constraint_tolerance, double,
+    "Tolerance used to determine if the constraints are satisfied "
+    "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,

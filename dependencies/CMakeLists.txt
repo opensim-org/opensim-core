@@ -179,6 +179,8 @@ include(colpack.cmake)
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
+set(SUPERBUILD_ipopt ON CACHE BOOL 
+    "Automatically download, configure, build and install ipopt")
 if (WIN32)
 
     if(SUPERBUILD_adolc)
@@ -196,8 +198,6 @@ if (WIN32)
     endif()
 
 
-    set(SUPERBUILD_ipopt ON CACHE BOOL 
-        "Automatically download, configure, build and install ipopt")
     if(SUPERBUILD_ipopt)
         # Ipopt: Download pre-built binaries from the YARP/iCub project.
         # This binary distribution comes with MUMPS (which contains Fortran
@@ -222,6 +222,8 @@ else()
         # TODO for macOS, will need to make ADOL-C change where it expects to
         # find ColPack's libraries (lib, not lib64).
         # https://github.com/Homebrew/homebrew-science/blob/master/adol-c.rb
+        # TODO must have autoreconf, glibtoolize (brew install autoconf,
+        # automake, libtool?)
         ExternalProject_Add(adolc
             DEPENDS           colpack
             GIT_REPOSITORY    https://gitlab.com/adol-c/adol-c.git
@@ -233,6 +235,22 @@ else()
                 COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
                                                --enable-sparse
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
+            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+    endif()
+
+    if(SUPERBUILD_ipopt)
+        # TODO --enable-debug if building in Debug.
+        # TODO must have gfortran for MUMPS (brew install gcc).
+	# TODO CMake documentation says "Whether the current working directory
+        # is preserved between commands is not defined. Behavior of shell
+        # operators like && is not defined."
+        ExternalProject_Add(ipopt
+            URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
+            INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
+            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} -j4
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()

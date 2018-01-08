@@ -145,6 +145,7 @@ if(NOT WIN32)
         string(REPLACE "-l"                "" IPOPT_DEP ${IPOPT_DEP})
         string(REPLACE "\n"                "" IPOPT_DEP ${IPOPT_DEP})
         string(REPLACE "ipopt"             "" IPOPT_DEP ${IPOPT_DEP})       # remove any possible auto-dependency
+        string(REPLACE "Accelerate"        "" IPOPT_DEP ${IPOPT_DEP})
         separate_arguments(IPOPT_DEP)
 
         # use the find_library command in order to prepare rpath correctly

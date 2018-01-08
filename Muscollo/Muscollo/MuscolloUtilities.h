@@ -20,6 +20,8 @@
 
 #include <OpenSim/Common/Storage.h>
 
+#include <set>
+
 #include "osimMuscolloDLL.h"
 
 namespace OpenSim {
@@ -31,6 +33,13 @@ class Model;
 /// linearly spaced between start and end.
 OSIMMUSCOLLO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
+
+/// Linearly interpolate y(x) at new values of x.
+/// The returned vector will have NaN for any values of newX outside of the
+/// range of x.
+OSIMMUSCOLLO_API
+SimTK::Vector interpolate(const SimTK::Vector& x,
+        const SimTK::Vector& y, const SimTK::Vector& newX);
 
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.

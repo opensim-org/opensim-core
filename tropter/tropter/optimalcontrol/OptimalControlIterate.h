@@ -70,8 +70,8 @@ struct OptimalControlSolution : public OptimalControlIterate {
     bool success;
     /// A solver-defined string describing the return status of the optimizer.
     std::string status;
-    // TODO allow reading, to use this as an initial guess.
-    // related class: OptimalControlIterate
+    /// Number of solver iterations at which this solution was obtained.
+    int num_iterations = -1;
 };
 
 } // namespace tropter

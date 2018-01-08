@@ -309,6 +309,9 @@ public:
     /// Obtain a solver-dependent string describing the return status of the
     /// optimization.
     const std::string& getStatus() const { return m_status; }
+    /// Number of solver iterations at which this solution was obtained
+    /// (-1 if not set).
+    int getNumIterations() const { return m_numIterations; }
 
     /// @name Access control
     /// @{
@@ -330,8 +333,11 @@ private:
         m_success = success;
     }
     void setStatus(std::string status) { m_status = std::move(status); }
+    void setNumIterations(int numIterations)
+    {   m_numIterations = numIterations; };
     bool m_success = true;
     std::string m_status;
+    int m_numIterations = -1;
     // Allow solvers to set success, status, and construct a solution.
     friend class MucoSolver;
 };
