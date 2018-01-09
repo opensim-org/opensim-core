@@ -8,8 +8,8 @@ else()
 endif()
 find_package(PythonInterp ${required_python_version} REQUIRED)
 
-set(WINLIBSUFFIX ".pyd")
-set(MACLIBSUFFIX ".so")
+set(WINLIBSUFFIX "pyd")
+set(UNIXLIBSUFFIX "so")
 
 # We update the python install dir to include the python version,
 # now that we know it. We replace the token "VERSION" with the actual python
@@ -191,14 +191,14 @@ macro(MuscolloAddPythonModule)
     # Resulting library must be named with .so on Unix, .pyd on Windows.
     set_target_properties(${_libname} PROPERTIES
         PROJECT_LABEL "Python - ${_libname}"
-        FOLDER "Bindings"
+        FOLDER "Muscollo/Bindings"
         PREFIX ""
     )
     if(WIN32)
-        set_target_properties(${_libname} PROPERTIES SUFFIX ${WINLIBSUFFIX})
+        set_target_properties(${_libname} PROPERTIES SUFFIX ".${WINLIBSUFFIX}")
     elseif(APPLE)
         # Defaults to .dylib; change to .so.
-        set_target_properties(${_libname} PROPERTIES SUFFIX ${MACLIBSUFFIX})
+        set_target_properties(${_libname} PROPERTIES SUFFIX ".${UNIXLIBSUFFIX}")
     endif()
     
     if(MUSCOLLO_COPY_DEPENDENCIES)
@@ -272,7 +272,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.in
     "${CMAKE_CURRENT_BINARY_DIR}/version.py" @ONLY)
 
 # Copy modules from opensim's installed python package.
-set(libsuffix "so")
+set(libsuffix ${UNIXLIBSUFFIX})
 if(WIN32)
     set(libsuffix ${WINLIBSUFFIX})
 endif()

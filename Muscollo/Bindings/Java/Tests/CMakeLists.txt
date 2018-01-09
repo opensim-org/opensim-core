@@ -33,7 +33,7 @@ macro(MuscolloAddJavaTest TESTNAME)
             add_test(NAME Java_${TESTNAME}_${cfg}
                 COMMAND ${Java_JAVA_EXECUTABLE}
                         -enableassertions
-                        -Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}${_sep}${OpenSim_LIB_DIR}
+                        "-Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}${_sep}${OpenSim_LIB_DIR}"
                         -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                         ${TESTNAME}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${TESTNAME}"
@@ -44,7 +44,7 @@ macro(MuscolloAddJavaTest TESTNAME)
         add_test(NAME Java_${TESTNAME}
             COMMAND ${Java_JAVA_EXECUTABLE}
                     -enableassertions
-                    -Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}${_sep}${OpenSim_LIB_DIR}
+                    "-Djava.library.path=${CMAKE_BINARY_DIR}/${cfg}${_sep}${OpenSim_LIB_DIR}"
                     -classpath "${TESTNAME}.jar${_sep}${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
                     ${TESTNAME}
             WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${TESTNAME}"

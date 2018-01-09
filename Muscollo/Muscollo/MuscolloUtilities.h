@@ -60,9 +60,11 @@ OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table,
 // TODO handle degrees.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
+#ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
+#endif
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.

@@ -61,10 +61,10 @@ endfunction()
 add_custom_target(RunMuscolloMatlabTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex Matlab
                                    --build-config ${CMAKE_CFG_INTDIR}
-                                   --extra-verbose
+                                   --extra-verbose)
+set_target_properties(RunMuscolloMatlabTests PROPERTIES
     PROJECT_LABEL "Matlab - run tests"
-    FOLDER "Muscollo/Bindings"
-    )
+    FOLDER "Muscollo/Bindings")
 
 add_dependencies(RunMuscolloMatlabTests MuscolloJavaBindings)
 
