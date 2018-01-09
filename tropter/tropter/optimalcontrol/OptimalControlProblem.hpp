@@ -109,7 +109,7 @@ void OptimalControlProblem<T>::
 initialize_on_mesh(const Eigen::VectorXd&) const
 {}
 
-template<typename T>
+template<typename T>    
 void OptimalControlProblem<T>::
 calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
 {}

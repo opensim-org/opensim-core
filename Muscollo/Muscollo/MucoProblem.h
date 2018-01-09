@@ -1,11 +1,11 @@
 #ifndef MUSCOLLO_MUCOPROBLEM_H
 #define MUSCOLLO_MUCOPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoProblem.h                                           *
+ * OpenSim Muscollo: MucoProblem.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoCost.h"
+#include "MucoParameter.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -26,6 +27,7 @@ namespace OpenSim {
 
 class MucoPhase;
 class MucoVariableInfo;
+class MucoParameter;
 
 /// Small struct to handle bounds.
 /// You can access the bound values directly (.lower, .upper).
@@ -75,6 +77,7 @@ protected:
 
     friend MucoPhase;
     friend MucoVariableInfo;
+    friend MucoParameter;
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
 struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
@@ -132,24 +135,20 @@ private:
     void constructProperties();
 };
 
-// ============================================================================
-// MucoParameterInfo
-// ============================================================================
-
-/// Bounds on parameter variables. The 
 
 // ============================================================================
 // MucoPhase
 // ============================================================================
 
-/// The states, controls, dynamics, and costs for a phase of the problem.
+/// The states, controls, dynamics, parameters, and costs for a phase of the 
+/// problem.
 /// The dynamics are provided by the %OpenSim Model.
 ///
 /// Workflow
 /// --------
 /// 1. Set the model (setModel()).
 /// 2. Set time bounds, state and control information.
-/// 3. Add cost terms.
+/// 3. Add parameter and cost terms.
 ///
 /// Supported %Model Component%s
 /// ----------------------------
@@ -230,14 +229,15 @@ public:
     // TODO by default, use the actuator's control_min and control_max.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
-    /// Set information about a single parameter variable in this phase.
-    /// Similar to setStateInfo(), except no initial or final bounds are
-    /// required for parameters.  
+    /// Add a parameter to this phase. The passed-in parameter is copied, and
+    /// thus any subsequent edits have not effect.
+    /// Parameter variables must have a name (MucoParameter::setName()), and it
+    /// must be unique. Note that parameters have the name "parameter" by 
+    /// default, but choosing a more appropriate name is recommended.
     ///
     /// @precondition
     ///     The completed model must be set.
-    // TODO how to specify name?
-    void setParameterBounds(const std::string& name, const MucoBounds&);
+    void addParameter(const MucoParameter&);
     /// Add a cost term to this phase. The passed-in cost is copied, and thus
     /// any subsequent edits have no effect.
     /// Cost terms must have a name (MucoCost::setName()), and it must be
@@ -313,8 +313,8 @@ protected: // Protected so that doxygen shows the properties.
             "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos, MucoVariableInfo,
             "The control variables' bounds.");
-    //OpenSim_DECLARE_LIST_PROPERTY(parameter_bounds, MucoBounds,
-    //        "The parameter variables' bounds.");
+    OpenSim_DECLARE_LIST_PROPERTY(parameters, MucoParameter,
+            "Parameter variables (model property values) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
 
@@ -330,9 +330,9 @@ private:
 /// A description of an optimal control problem, backed by %OpenSim Model%s.
 /// A MucoProblem is composed as follows:
 ///   - 1 or more MucoPhase%s (only 1 phase supported currently).
-///      - OpenSim Model
-///      - state and control variable info (e.g., bounds)
-///      - cost terms
+///   - OpenSim Model
+///   - state and control variable info (e.g., bounds)
+///   - parameter and cost terms
 /// Most problems only have 1 phase. This class has convenience methods to
 /// configure the first (0-th) phase.
 class OSIMMUSCOLLO_API MucoProblem : public Object {
@@ -355,6 +355,8 @@ public:
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Add a parameter term for phase 0.
+    void addParameter(const MucoParameter&);
     /// Add a cost term for phase 0.
     void addCost(const MucoCost&);
     /// @}

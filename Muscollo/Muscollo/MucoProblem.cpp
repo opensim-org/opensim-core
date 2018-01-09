@@ -3,7 +3,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -45,8 +45,6 @@ void MucoVariableInfo::constructProperties() {
 }
 
 
-
-
 // ============================================================================
 // MucoPhase
 // ============================================================================
@@ -59,7 +57,7 @@ void MucoPhase::constructProperties() {
     constructProperty_time_final_bounds();
     constructProperty_state_infos();
     constructProperty_control_infos();
-    //constructProperty_parameter_bounds();
+    constructProperty_parameters();
     constructProperty_costs();
 }
 void MucoPhase::setModel(const Model& model) {
@@ -87,12 +85,14 @@ void MucoPhase::setControlInfo(const std::string& name,
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
 }
-//void MucoPhase::setParameterBounds(const std::string& name, 
-//        const MucoBounds& bounds) {
-//    int idx = getProperty_parameter_bounds().findIndexForName(name);
-//
-//    MucoBounds mb(
-//}
+void MucoPhase::addParameter(const MucoParameter& parameter) {
+    OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
+        "Cannot add a parameter if it does not have a name (use setName()).");
+    int idx = getProperty_costs().findIndexForName(parameter.getName());
+    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
+        "A parameter with name '" + parameter.getName() + "' already exists.");
+    append_parameters(parameter);
+}
 void MucoPhase::addCost(const MucoCost& cost) {
     OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
         "Cannot add a cost if it does not have a name (use setName()).");
@@ -159,6 +159,10 @@ void MucoPhase::initialize(const Model& model) const {
                         + name + "'.");
     }
 
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        const_cast<MucoParameter&>(get_parameters(i)).initialize(model);
+    }
+
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
@@ -190,6 +194,9 @@ void MucoProblem::setControlInfo(const std::string& name,
         const MucoBounds& bounds,
         const MucoInitialBounds& initial, const MucoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
+}
+void MucoProblem::addParameter(const MucoParameter& parameter) {
+    upd_phases(0).addParameter(parameter);
 }
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
