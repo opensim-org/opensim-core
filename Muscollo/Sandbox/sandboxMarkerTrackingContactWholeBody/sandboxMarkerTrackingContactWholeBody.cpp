@@ -311,7 +311,8 @@ MucoSolution solveMarkerTrackingProblem() {
 
     tracking.setMarkersReference(markersRef);
     tracking.setAllowUnusedReferences(true);
-    tracking.set_weight(0.000001);
+    tracking.set_weight(1);
+    // TODO tracking.set_weight(0.000001);
     tracking.setFreeRadius(0.01);
     tracking.setTrackedMarkerComponents("xy");
     mp.addCost(tracking);
@@ -328,7 +329,8 @@ MucoSolution solveMarkerTrackingProblem() {
     grfTracking.m_refspline_y =
             GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
     double normGRFs = 0.001;
-    double weight = 0.000001;
+    double weight = 0.001;
+    // TODO double weight = 0.000001;
     grfTracking.set_weight(normGRFs * weight);
     grfTracking.append_forces("R.Heel.Distal_contact");
     grfTracking.append_forces("R.Ball.Lat_contact");
@@ -350,6 +352,8 @@ MucoSolution solveMarkerTrackingProblem() {
     ms.set_optim_hessian_approximation("exact");
     ms.set_dynamics_mode("implicit");
     ms.set_optim_max_iterations(1000);
+    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_constraint_tolerance(1e-3);
 
     // Create guess.
     // =============
@@ -362,6 +366,7 @@ MucoSolution solveMarkerTrackingProblem() {
     //STOFileAdapter::write(statesRefFilt, "state_reference_radians.sto");
     //guess.setStatesTrajectory(statesRefFilt, true, true);
     //ms.setGuess(guess);
+    // TODO describe how this guess is generated (without contact).
     ms.setGuess(MucoIterate(
             "sandboxMarkerTrackingContactWholeBody_guess.sto"));
 
