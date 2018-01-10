@@ -50,6 +50,14 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
+SimTK::RowVector convert(const Eigen::VectorXd& tropParameters) {
+    int numParameters = (int)tropParameters.size();
+    SimTK::RowVector parameters(numParameters);
+    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
+        parameters(iparameter) = tropParameters(iparameter);
+    }
+}
+
 template <typename MucoIterateType, typename tropIterateType>
 MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& tropTime = tropSol.time;
@@ -94,18 +102,22 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
     using Eigen::Map;
     using Eigen::RowVectorXd;
     using Eigen::MatrixXd;
+    using Eigen::VectorXd;
 
     const auto& time = mucoIter.getTime();
     tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
 
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
+    tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
+    int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
+    const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
     tropIter.states = Map<const MatrixXd>(
@@ -115,6 +127,11 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
                 &controls(0, 0), numTimes, numControls).transpose();
     } else {
         tropIter.controls.resize(numControls, numTimes);
+    }
+    if (numParameters) {
+        tropIter.parameters = Map<const VectorXd>(&parameters(0));
+    } else {
+        tropIter.parameters.resize(numParameters);
     }
     return tropIter;
 }
@@ -159,6 +176,11 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
+        for (int i = 0; i < m_phase0.getProperty_parameters().size(); ++i) {
+            const MucoParameter& parameter = m_phase0.get_parameters(i);
+            this->add_parameter(parameter.getName(),
+                    convert(parameter.getBounds());
+        }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
         m_mucoProb.initialize(m_model);
@@ -172,9 +194,16 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
+        const auto& parameters = in.parameters;
+
+        if (parameters.size()) {
+            SimTK::Vector mucoParams(parameters.size(), 
+                    parameters.data(), true);
+            m_phase0.applyParametersToModel(mucoParams);
+            m_model.initSystem();
+        }
 
         m_state.setTime(in.time);
-
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
         //
@@ -201,7 +230,13 @@ public:
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls, 
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+            const VectorX<T>& parameters, T& integrand) const override {
+        if (parameters.size()) {
+            SimTK::Vector mucoParams(parameters.size(),
+                parameters.data(), true);
+            m_phase0.applyParametersToModel(mucoParams);
+            m_model.initSystem();
+        }
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -219,7 +254,13 @@ public:
         integrand = m_phase0.calcIntegralCost(m_state);
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            const VectorX<T>& /*parameters*/, T& cost) const override {
+            const VectorX<T>& parameters, T& cost) const override {
+        if (parameters.size()) {
+            SimTK::Vector mucoParams(parameters.size(),
+                parameters.data(), true);
+            m_phase0.applyParametersToModel(mucoParams);
+            m_model.initSystem();
+        }
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -235,6 +276,7 @@ private:
     const MucoPhase& m_phase0;
     Model m_model;
     mutable SimTK::State m_state;
+    // TODO: mutable SimTK::Vector m_mucoParams;
 };
 
 MucoTropterSolver::MucoTropterSolver() {

@@ -26,7 +26,7 @@ namespace tropter {
 /// This struct holds the values the variables in an optimal control problem.
 /// Iterates can be written to and read from CSV files. The file format is as
 /// follows (note that parameter values only appear in the first row, while the
-/// remaining rows are filled with NaNs):
+/// remaining rows in parameter columns are filled with NaNs):
 /// @verbatim
 /// num_states=<number-of-state-variables>
 /// num_controls=<number-of-control-variables>

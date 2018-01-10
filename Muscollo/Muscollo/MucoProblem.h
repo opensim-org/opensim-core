@@ -169,17 +169,9 @@ public:
     {   set_model_component(modelComponent); }
 
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const {
-        OPENSIM_THROW_IF(get_model_component().empty(), Exception,
-            "TODO: must set component name");
-        OPENSIM_THROW_IF(get_model_property().empty(), Exception,
-            "TODO: must set property name");
-
-
-        // TODO: check that component and property actually exist
-        m_property.reset(&model.getComponent(
-            get_model_component()).getPropertyByName(get_model_property()));
-    }
+    void initialize(const Model& model) const;
+    /// Set the value of the model property to the passed-in parameter value.
+    void applyParameterToModel(const double& value);
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
@@ -189,7 +181,7 @@ private:
     // TODO: make this a list property (model_components)
     OpenSim_DECLARE_PROPERTY(model_component, std::string, "TODO");
 
-    mutable SimTK::ReferencePtr<const AbstractProperty> m_property;
+    mutable SimTK::ReferencePtr<Property<double>> m_property;
     void constructProperties();
 };
 
@@ -320,8 +312,10 @@ public:
     std::vector<std::string> createParameterNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
+    const MucoParameter& getParameter(const std::string& name) const;
+    MucoParameter& updParameter(const std::string& name);
 
-    // TODO add getParameter() and/or updParameter().
+
     // TODO add getCost() and/or updCost().
 
 
@@ -353,6 +347,8 @@ public:
         }
         return cost;
     }
+
+    void applyParametersToModel(const SimTK::RowVector& parameterValues);
 
     /// @}
 

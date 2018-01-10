@@ -69,6 +69,26 @@ void MucoParameter::constructProperties() {
     constructProperty_model_component("");
 }
 
+void MucoParameter::initialize(const Model& model) const {
+    OPENSIM_THROW_IF(get_model_component().empty(), Exception,
+        "TODO: must set component name");
+    auto& component = model.getComponent(get_model_component());
+    OPENSIM_THROW_IF(get_model_property().empty(), Exception,
+        "TODO: must set property name");
+
+    // TODO: get rid of need for const_cast
+    auto& property = dynamic_cast<Property<double>&>(
+        const_cast<AbstractProperty&>(
+            component.getPropertyByName(get_model_property())));
+
+    // TODO: check that component and property actually exist
+    m_property.reset(&property);
+}
+
+void MucoParameter::applyParameterToModel(const double& value) {
+    m_property->setValue(value);
+}
+
 // ============================================================================
 // MucoPhase
 // ============================================================================
@@ -167,6 +187,22 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
             "No info provided for control for '" + name + "'.");
     return get_control_infos(idx);
 }
+const MucoParameter& MucoPhase::getParameter(
+        const std::string& name) const {
+
+    int idx = getProperty_parameters().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No parameter with name '" + name + "' found.");
+    return get_parameters(idx);
+}
+MucoParameter& MucoPhase::updParameter(
+    const std::string& name) {
+
+    int idx = getProperty_parameters().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+        "No parameter with name '" + name + "' found.");
+    return upd_parameters(idx);
+}
 void MucoPhase::initialize(const Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
@@ -198,8 +234,12 @@ void MucoPhase::initialize(const Model& model) const {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
 }
-
-
+void MucoPhase::applyParametersToModel(
+        const SimTK::RowVector& parameterValues) {
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        upd_parameters(i).applyParameterToModel(parameterValues(i));
+    }
+}
 
 // ============================================================================
 // MucoProblem

@@ -225,7 +225,7 @@ public:
     {   ensureUnsealed(); return m_states; }
     const SimTK::Matrix& getControlsTrajectory() const
     {   ensureUnsealed(); return m_controls; }
-    SimTK::RowVectorView getParameters() const
+    const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
     /// @}
