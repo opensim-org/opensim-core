@@ -32,7 +32,7 @@ const bool useActivationCoordinateActuators = false;
 using namespace OpenSim;
 
 /// Convenience function to apply an ActivationCoordinateActuator to the model.
-void addActivationCoordinateActuator(Model& model, std::string coordName,
+void addCoordinateActuator(Model& model, std::string coordName,
     double optimalForce) {
 
     auto& coordSet = model.updCoordinateSet();
@@ -69,19 +69,19 @@ void setModelAndBounds(MucoProblem& mp) {
 
     Model model("gait1018_subject01_onefoot_v30516.osim");
 
-    //addActivationCoordinateActuator(model, "lumbar_extension", 100);
-    //addActivationCoordinateActuator(model, "pelvis_tilt", 100);
-    //addActivationCoordinateActuator(model, "pelvis_tx", 1000);
-    //addActivationCoordinateActuator(model, "pelvis_ty", 1000);
-    //addActivationCoordinateActuator(model, "hip_flexion_r", 100);
-    //addActivationCoordinateActuator(model, "knee_angle_r", 100);
-    //addActivationCoordinateActuator(model, "ankle_angle_r", 100);
-    //addActivationCoordinateActuator(model, "hip_flexion_l", 100);
-    //addActivationCoordinateActuator(model, "knee_angle_l", 100);
-    //addActivationCoordinateActuator(model, "ankle_angle_l", 100);
-    addActivationCoordinateActuator(model, "rz", 250); // TODO 100);
-    addActivationCoordinateActuator(model, "tx", 5000); // TODO 1000);
-    addActivationCoordinateActuator(model, "ty", 5000); // TODO 1000);
+    //addCoordinateActuator(model, "lumbar_extension", 100);
+    //addCoordinateActuator(model, "pelvis_tilt", 100);
+    //addCoordinateActuator(model, "pelvis_tx", 1000);
+    //addCoordinateActuator(model, "pelvis_ty", 1000);
+    //addCoordinateActuator(model, "hip_flexion_r", 100);
+    //addCoordinateActuator(model, "knee_angle_r", 100);
+    //addCoordinateActuator(model, "ankle_angle_r", 100);
+    //addCoordinateActuator(model, "hip_flexion_l", 100);
+    //addCoordinateActuator(model, "knee_angle_l", 100);
+    //addCoordinateActuator(model, "ankle_angle_l", 100);
+    addCoordinateActuator(model, "rz", 250); // TODO 100);
+    addCoordinateActuator(model, "tx", 5000); // TODO 1000);
+    addCoordinateActuator(model, "ty", 5000); // TODO 1000);
 
     const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
     model.addMarker(new Marker("R.Heel.Distal", calcn,
