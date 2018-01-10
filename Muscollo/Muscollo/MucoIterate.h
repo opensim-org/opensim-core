@@ -210,8 +210,8 @@ public:
     {   ensureUnsealed(); return m_state_names; }
     const std::vector<std::string>& getControlNames() const
     {   ensureUnsealed(); return m_control_names; }
-    SimTK::VectorView getState(const std::string& name) const;
-    SimTK::VectorView getControl(const std::string& name) const;
+    SimTK::VectorView_<double> getState(const std::string& name) const;
+    SimTK::VectorView_<double> getControl(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
     const SimTK::Matrix& getControlsTrajectory() const

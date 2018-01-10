@@ -15,6 +15,9 @@ dependencies/*
 !dependencies/CMakeLists.txt
 !dependencies/*.cmake
 
+# python
+*.pyc
+
 # Clion
 # -----
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
