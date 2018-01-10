@@ -29,7 +29,6 @@
 #include "MucoStateTrackingCost.h"
 #include "MucoMarkerTrackingCost.h"
 #include "MucoControlCost.h"
-#include "MucoParameter.h"
 
 #include <exception>
 #include <iostream>
@@ -51,7 +50,6 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoProblem());
         Object::registerType(MucoTool());
         Object::registerType(MucoTropterSolver());
-        Object::registerType(MucoParameter());
 
 
         Object::registerType(GlobalStaticOptimization());

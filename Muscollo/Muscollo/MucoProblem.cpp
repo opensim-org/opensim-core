@@ -44,6 +44,30 @@ void MucoVariableInfo::constructProperties() {
     constructProperty_final_bounds();
 }
 
+// ============================================================================
+// MucoParameter
+// ============================================================================
+
+MucoParameter::MucoParameter() {
+    constructProperties();
+    if (getName().empty()) setName("parameter");
+}
+
+MucoParameter::MucoParameter(const std::string& name,
+    const std::string& modelProperty,
+    const std::string& modelComponent,
+    const MucoBounds& bounds) : MucoParameter() {
+    setName(name);
+    set_bounds(bounds.getAsArray());
+    set_model_property(modelProperty);
+    set_model_component(modelComponent);
+}
+
+void MucoParameter::constructProperties() {
+    constructProperty_bounds();
+    constructProperty_model_property("");
+    constructProperty_model_component("");
+}
 
 // ============================================================================
 // MucoPhase
@@ -121,6 +145,13 @@ std::vector<std::string> MucoPhase::createControlInfoNames() const {
     }
     return names;
 }
+std::vector<std::string> MucoPhase::createParameterNames() const {
+    std::vector<std::string> names(getProperty_parameters().size());
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        names[i] = get_parameters(i).getName();
+    }
+    return names;
+}
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
     int idx = getProperty_state_infos().findIndexForName(name);
@@ -167,7 +198,6 @@ void MucoPhase::initialize(const Model& model) const {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
 }
-
 
 
 
