@@ -140,7 +140,7 @@ private:
 
 /// TODO: docs
 class OSIMMUSCOLLO_API MucoParameter : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
 public:
     // Default constructor.
     MucoParameter();
@@ -171,7 +171,7 @@ public:
     /// For use by solvers. This also performs error checks on the Problem.
     void initialize(const Model& model) const;
     /// Set the value of the model property to the passed-in parameter value.
-    void applyParameterToModel(const double& value);
+    void applyParameterToModel(const double& value) const;
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
@@ -348,7 +348,7 @@ public:
         return cost;
     }
 
-    void applyParametersToModel(const SimTK::RowVector& parameterValues);
+    void applyParametersToModel(const SimTK::Vector& parameterValues) const;
 
     /// @}
 

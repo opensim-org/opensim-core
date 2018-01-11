@@ -50,13 +50,14 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
-SimTK::RowVector convert(const Eigen::VectorXd& tropParameters) {
-    int numParameters = (int)tropParameters.size();
-    SimTK::RowVector parameters(numParameters);
-    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
-        parameters(iparameter) = tropParameters(iparameter);
-    }
-}
+//SimTK::RowVector convert(const Eigen::VectorXd& tropParameters) {
+//    int numParameters = (int)tropParameters.size();
+//    SimTK::RowVector parameters(numParameters);
+//    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
+//        parameters(iparameter) = tropParameters(iparameter);
+//    }
+//    return parameters;
+//}
 
 template <typename MucoIterateType, typename tropIterateType>
 MucoIterateType convert(const tropIterateType& tropSol) {
@@ -129,7 +130,8 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
         tropIter.controls.resize(numControls, numTimes);
     }
     if (numParameters) {
-        tropIter.parameters = Map<const VectorXd>(&parameters(0));
+        tropIter.parameters = Map<const VectorXd>(
+                &parameters(0), numParameters);
     } else {
         tropIter.parameters.resize(numParameters);
     }
@@ -176,10 +178,10 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
-        for (int i = 0; i < m_phase0.getProperty_parameters().size(); ++i) {
-            const MucoParameter& parameter = m_phase0.get_parameters(i);
-            this->add_parameter(parameter.getName(),
-                    convert(parameter.getBounds());
+        for (std::string name : m_phase0.createParameterNames()) {
+            const MucoParameter& parameter = m_phase0.getParameter(name);
+            this->add_parameter(name,
+                    convert(parameter.getBounds()));
         }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
@@ -197,7 +199,8 @@ public:
         const auto& parameters = in.parameters;
 
         if (parameters.size()) {
-            SimTK::Vector mucoParams(parameters.size(), 
+            SimTK::Vector mucoParams(
+                    (int)m_phase0.createParameterNames().size(),
                     parameters.data(), true);
             m_phase0.applyParametersToModel(mucoParams);
             m_model.initSystem();
@@ -232,7 +235,8 @@ public:
             const VectorX<T>& controls, 
             const VectorX<T>& parameters, T& integrand) const override {
         if (parameters.size()) {
-            SimTK::Vector mucoParams(parameters.size(),
+            SimTK::Vector mucoParams(
+                (int)m_phase0.createParameterNames().size(),
                 parameters.data(), true);
             m_phase0.applyParametersToModel(mucoParams);
             m_model.initSystem();
@@ -256,8 +260,9 @@ public:
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
             const VectorX<T>& parameters, T& cost) const override {
         if (parameters.size()) {
-            SimTK::Vector mucoParams(parameters.size(),
-                parameters.data(), true);
+            SimTK::Vector mucoParams(
+                    (int)m_phase0.createParameterNames().size(),
+                    parameters.data(), true);
             m_phase0.applyParametersToModel(mucoParams);
             m_model.initSystem();
         }
@@ -274,7 +279,7 @@ private:
     const MucoSolver& m_mucoSolver;
     const MucoProblem& m_mucoProb;
     const MucoPhase& m_phase0;
-    Model m_model;
+    mutable Model m_model;
     mutable SimTK::State m_state;
     // TODO: mutable SimTK::Vector m_mucoParams;
 };
@@ -308,7 +313,6 @@ void MucoTropterSolver::clearProblemImpl() {
 
 void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
     clearProblemImpl();
-
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
@@ -442,6 +446,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     }
 
     MucoSolution mucoSolution = convert(tropSolution);
+
     // TODO move this to convert():
     MucoSolver::setSolutionStatusAndSuccess(mucoSolution,
             tropSolution.success, tropSolution.status);

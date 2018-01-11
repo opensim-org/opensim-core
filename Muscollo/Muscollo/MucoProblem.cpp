@@ -85,7 +85,7 @@ void MucoParameter::initialize(const Model& model) const {
     m_property.reset(&property);
 }
 
-void MucoParameter::applyParameterToModel(const double& value) {
+void MucoParameter::applyParameterToModel(const double& value) const {
     m_property->setValue(value);
 }
 
@@ -235,9 +235,9 @@ void MucoPhase::initialize(const Model& model) const {
     }
 }
 void MucoPhase::applyParametersToModel(
-        const SimTK::RowVector& parameterValues) {
+        const SimTK::Vector& parameterValues) const {
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
-        upd_parameters(i).applyParameterToModel(parameterValues(i));
+        get_parameters(i).applyParameterToModel(parameterValues(i));
     }
 }
 

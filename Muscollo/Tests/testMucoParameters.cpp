@@ -48,6 +48,10 @@ Model createOscillatorModel() {
     spring->setStiffness(STIFFNESS);
     spring->setViscosity(0.0);
     model.addComponent(spring);
+
+    auto& s = model.initSystem();
+    model.printDetailedInfo(s);
+    return model;
 }
 
 class FinalPositionCost : public MucoCost {
@@ -61,7 +65,7 @@ protected:
 };
 
 void testOscillatorMass() {
-    int N = 10;
+    int N = 50;
 
     MucoTool muco;
     muco.setName("oscillator_mass");
@@ -83,7 +87,11 @@ void testOscillatorMass() {
     MucoSolution sol = muco.solve();
     sol.write("testMucoParameters_testOscillatorMass_sol.sto");
 
-    SimTK_TEST_EQ(sol.getParameter("oscillator_mass"), MASS);
+    
+    std::cout << "debug: " << sol.getParameter("oscillator_mass") << std::endl;
+
+    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.005);
+
 }
 
 
