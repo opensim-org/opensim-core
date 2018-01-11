@@ -5,6 +5,9 @@ language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
+
+# For thread_local support on macOS.
+osx_image: xcode8
     
 matrix:
   include:
