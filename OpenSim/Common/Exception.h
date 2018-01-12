@@ -276,9 +276,7 @@ public:
 
 class IOError : public Exception {
 public:
-#ifndef SWIG
     using Exception::Exception;
-#endif
 };
 
 }; //namespace
