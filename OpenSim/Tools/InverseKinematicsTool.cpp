@@ -227,7 +227,6 @@ operator=(const InverseKinematicsTool &aTool)
     _ikTaskSet = aTool._ikTaskSet;
     _markerFileName = aTool._markerFileName;
     _timeRange = aTool._timeRange;
-    _reportErrors = aTool._reportErrors; 
     _coordinateFileName = aTool._coordinateFileName;
     _reportErrors = aTool._reportErrors;
     _outputMotionFileName = aTool._outputMotionFileName;
@@ -371,8 +370,8 @@ bool InverseKinematicsTool::run()
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
             kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
-        // Once done, remove the analysis we added
-        _model->removeAnalysis(&kinematicsReporter);
+        // Once done, remove the analysis we added, don't delete as it was allocated on stack
+        _model->removeAnalysis(&kinematicsReporter, false);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);

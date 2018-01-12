@@ -27,6 +27,7 @@
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
 #include <unordered_map>
+#include <set>
 
 using namespace SimTK;
 

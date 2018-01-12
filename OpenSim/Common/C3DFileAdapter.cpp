@@ -211,7 +211,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         const int nf = fp_force_pts->GetFrontItem()->GetFrameNumber();
         
         std::vector<double> force_times(nf);
-        SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, labels.size());
+        SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, (int)labels.size());
 
         double time_step{1.0 / acquisition->GetAnalogFrequency()};
 
