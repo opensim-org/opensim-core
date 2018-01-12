@@ -9,10 +9,10 @@ MuscolloAddSandboxExecutable(NAME sandboxMarkerTrackingContactWholeBody
         )
 
 MuscolloAddSandboxExecutable(NAME sandboxCalibrateContact
-        LIB_DEPENDS osimMuscollo tropter
+        LIB_DEPENDS osimTools osimMuscollo tropter
         RESOURCES
             gait1018_subject01_onefoot_v30516.osim
+            ../walk_marker_trajectories.trc
             ../walk_gait1018_state_reference.mot
             ../walk_gait1018_subject01_grf.mot
-            ../walk_marker_trajectories.trc
         )

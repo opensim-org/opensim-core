@@ -236,7 +236,7 @@ public:
         const SimTK::Real velNormal = vel[1];
         // TODO should project vel into ground.
         const SimTK::Real velSliding = vel[0];
-        const SimTK::Real depth = 0 - y;
+        // const SimTK::Real depth = 0 - y;
         const SimTK::Real depthRate = 0 - velNormal;
         const SimTK::Real Kval = get_stiffness();
         const SimTK::Real Cval = get_dissipation();

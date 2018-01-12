@@ -16,7 +16,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// Minimize
 
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
@@ -99,7 +98,6 @@ public:
             const auto& y = m_yTraj[it];
             const auto simContactForce = contact_force(stiffness, y);
             const auto& expContactForce = m_contactForceTraj[it];
-            // TODO normalize.
             obj_value += pow(simContactForce - expContactForce, 2);
         }
     }
@@ -108,36 +106,251 @@ private:
     Eigen::VectorXd m_contactForceTraj;
 };
 
-class ContactCalibration : public tropter::OptimizationProblem<double> {
-public:
-    ContactCalibration() : tropter::OptimizationProblem<double>() {
-        // Kinematics data.
-
-        // Foot–ground contact data.
-        auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
-        auto time = data.getIndependentColumn();
-        SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
-        SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
-        GCVSpline FxSpline(5, (int)time.size(), time.data(), &Fx[0]);
-        GCVSpline FySpline(5, (int)time.size(), time.data(), &Fy[0]);
-
-    }
-
-    void calc_objective(const VectorXd& x, double& obj_value) const override {
-        obj_value = 0; // TODO
-    }
-};
-
 void calibrateBall() {
     const auto exp = BouncingBallLinear<adouble>::run();
-
     Eigen::VectorXd Fy(exp.time.size());
     for (int it = 0; it < exp.time.size(); ++it) {
         Fy[it] = contact_force(BouncingBallLinear<double>::stiffness,
                 exp.states(0, it));
     }
-
     BallCalibration problem(exp.states.row(0).transpose(), Fy);
+    tropter::IPOPTSolver solver(problem);
+    solver.set_verbosity(1);
+    auto solution = solver.optimize();
+    std::cout << solution.variables << std::endl;
+}
+
+/// Optimize the stiffness of contact points to match the ground reaction
+/// force.
+class ContactCalibration : public tropter::OptimizationProblem<double> {
+public:
+    double forceScalingFactor = 1e9;
+    ContactCalibration() : tropter::OptimizationProblem<double>(3, 0) {
+        set_variable_bounds(
+                Eigen::Vector3d(0, 0, 0),
+                Eigen::Vector3d(1, 1, 1));
+
+        // Model.
+        // ------
+        m_model = Model("gait1018_subject01_onefoot_v30516.osim");
+        m_model.initSystem();
+
+        // TODO increase mass of foot!!!!
+
+        addCoordinateActuator(m_model, "rz", 250); // TODO 100);
+        addCoordinateActuator(m_model, "tx", 5000); // TODO 1000);
+        addCoordinateActuator(m_model, "ty", 5000); // TODO 1000);
+
+        const auto& calcn = dynamic_cast<Body&>(m_model.updComponent("calcn_r"));
+        m_model.addMarker(new Marker("R.Heel.Distal", calcn,
+                SimTK::Vec3(0.01548, -0.0272884, -0.00503735)));
+        m_model.addMarker(new Marker("R.Ball.Lat", calcn,
+                SimTK::Vec3(0.16769, -0.0272884, 0.066)));
+        m_model.addMarker(new Marker("R.Ball.Med", calcn,
+                SimTK::Vec3(0.1898, -0.0272884, -0.03237)));
+        m_contacts.emplace_back(addContact(m_model, "R.Heel.Distal", 5e7));
+        m_contacts.emplace_back(addContact(m_model, "R.Ball.Lat", 7.5e7));
+        m_contacts.emplace_back(addContact(m_model, "R.Ball.Med", 7.5e7));
+
+        // Kinematics data.
+        // ----------------
+        {
+            /* CANNOT USE THESE JOINT ANGLES FROM ANOTEHR MODEL.
+            auto ref =
+                    STOFileAdapter::read("walk_gait1018_state_reference.mot");
+            // Convert treadmill data to overground data.
+            const auto& reftime = ref.getIndependentColumn();
+            ref.updDependentColumn("ground_pelvis/pelvis_ty/value") -= 0.05;
+            auto reftx = ref.updDependentColumn("ground_pelvis/pelvis_tx/value");
+            // I got this speed with "guess and check" by observing, in
+            // visualization, if the foot stayed in the same spot during stance.
+            const double walkingSpeed = 1.10; // m/s
+            for (int i = 0; i < reftx.nrow(); ++i) {
+                reftx[i] += walkingSpeed * reftime[i];
+            }
+            auto refFilt = convertTableToStorage(filterLowpass(ref, 6.0, true));
+            m_model.getSimbodyEngine().convertDegreesToRadians(refFilt);
+            m_statesTraj = StatesTrajectory::createFromStatesStorage(m_model,
+                    refFilt, true);
+            */
+
+
+            // TODO: use marker data, do IK, yada yada.
+            const std::string trcFile = "sandboxCalibrateContact_markers.trc";
+            const std::string motFile = "sandboxCalibrateContact.mot";
+            {
+                auto ref = TRCFileAdapter::read("walk_marker_trajectories.trc");
+                // Convert from millimeters to meters.
+                ref.updMatrix() /= 1000;
+                const auto& reftime = ref.getIndependentColumn();
+                const double walkingSpeed = 1.05; // m/s
+                for (int i = 0; i < (int)ref.getNumColumns(); ++i) {
+                    SimTK::VectorView_<SimTK::Vec3> col =
+                            ref.updDependentColumnAtIndex(i);
+                    for (int j = 0; j < col.size(); ++j) {
+                        col[j][0] += walkingSpeed * reftime[j]; // x
+                        col[j][1] -= 0.03; // y TODO
+                    }
+                }
+                TimeSeriesTable refFilt = filterLowpass(ref.flatten({ "_x", "_y", "_z" }),
+                        6.0, true);
+                // TODO TRCFileAdapter::write(ref, trcFile);
+                auto refPacked = refFilt.pack<double>();
+                TimeSeriesTableVec3 refToUse(refPacked);
+
+                Set<MarkerWeight> markerWeights;
+                markerWeights.cloneAndAppend({ "R.Heel", 2 });
+                markerWeights.cloneAndAppend({ "R.Toe.Tip", 2 });
+                MarkersReference markersRef(refToUse, &markerWeights);
+
+                MucoTool muco;
+                MucoProblem& mp = muco.updProblem();
+                mp.setModel(m_model);
+                MucoBounds defaultSpeedBounds(-25, 25);
+                mp.setTimeBounds(0.48, 1.8); // TODO [.58, 1.8] for gait cycle of right leg.
+                mp.setStateInfo("ground_toes/rz/value", { -10, 10 });
+                mp.setStateInfo("ground_toes/rz/speed", defaultSpeedBounds);
+                mp.setStateInfo("ground_toes/tx/value", { -10, 10 });
+                mp.setStateInfo("ground_toes/tx/speed", defaultSpeedBounds);
+                mp.setStateInfo("ground_toes/ty/value", { -10, 10 });
+                mp.setStateInfo("ground_toes/ty/speed", defaultSpeedBounds);
+                mp.setControlInfo("tau_rz", { -1, 1 });
+                mp.setControlInfo("tau_tx", { -1, 1 });
+                mp.setControlInfo("tau_ty", { -1, 1 });
+
+                MucoMarkerTrackingCost tracking;
+                tracking.setMarkersReference(markersRef);
+                tracking.setAllowUnusedReferences(true);
+                tracking.setTrackedMarkerComponents("xy");
+                mp.addCost(tracking);
+
+                auto& ms = muco.initSolver();
+                ms.set_num_mesh_points(30);
+                ms.set_optim_convergence_tolerance(1e-2);
+                ms.set_optim_constraint_tolerance(1e-2);
+
+                MucoSolution solution = muco.solve();
+                m_statesTraj = solution.exportToStatesTrajectory(mp);
+
+                /* TODO: avoid IKTool bug with num markers.
+                InverseKinematicsTool ikTool;
+                Model modelForIK(m_model);
+                ikTool.setModel(modelForIK);
+                ikTool.setMarkerDataFileName(trcFile);
+                ikTool.setOutputMotionFileName(motFile);
+                ikTool.run();
+                */
+
+                visualize(m_model, solution.exportToStatesStorage());
+            }
+
+            /*
+            Storage ref(motFile);
+            // TODO ref.pad(ref.getSize() / 2);
+            ref.lowpassIIR(6.0);
+            m_model.getSimbodyEngine().convertDegreesToRadians(ref);
+            m_statesTraj = StatesTrajectory::createFromStatesStorage(m_model,
+                    ref, true);
+                    */
+            // TODO visualize!
+
+        }
+
+        // Foot–ground contact data.
+        // -------------------------
+        auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
+        auto time = data.getIndependentColumn();
+        SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
+        SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
+        // TODO GCVSpline FxSpline(5, (int)time.size(), time.data(), &Fx[0]);
+        m_FySpline = GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
+    }
+
+    void applyParametersToModel(const VectorXd& x, Model& model) const {
+        int icontact = 0;
+        for (auto& contact :
+                model.updComponentList<AckermannVanDenBogert2010Force>()) {
+            contact.set_stiffness(forceScalingFactor * x[icontact]);
+            ++icontact;
+        }
+    }
+
+    void calc_objective(const VectorXd& x, double& obj_value) const override {
+        obj_value = 0;
+
+        // Apply parameters.
+        // -----------------
+        //assert(x.size() == (int)m_contacts.size());
+        /*
+        for (int icontact = 0; icontact < (int)m_contacts.size(); ++icontact) {
+            m_contacts[icontact]->set_stiffness(
+                    forceScalingFactor * x[icontact]);
+        }
+        */
+        applyParametersToModel(x, m_model);
+        // TODO is this expensive?
+        m_model.initSystem();
+
+        // Compute contact force error.
+        // ----------------------------
+
+        // TODO add fore-aft force.
+
+        for (const auto& state : m_statesTraj) {
+            m_model.realizeVelocity(state);
+            SimTK::Real simFy = 0;
+            for (const auto& contact : m_contacts) {
+                simFy += contact->calcContactForce(state)[1];
+            }
+
+            SimTK::Vector timeVec(1, state.getTime());
+            SimTK::Real expFy = m_FySpline.calcValue(timeVec);
+            obj_value += pow(simFy - expFy, 2);
+        }
+    }
+private:
+
+    mutable Model m_model;
+    StatesTrajectory m_statesTraj;
+    std::vector<SimTK::ReferencePtr<AckermannVanDenBogert2010Force>> m_contacts;
+    GCVSpline m_FySpline;
+
+    /// Convenience function to apply a CoordinateActuator to the model.
+    static void addCoordinateActuator(Model& model, std::string coordName,
+            double optimalForce) {
+
+        auto& coordSet = model.updCoordinateSet();
+
+        CoordinateActuator* actu = nullptr;
+        //auto* actActu = new ActivationCoordinateActuator();
+        //actActu->set_default_activation(0.1);
+        //actu = actActu;
+        actu = new CoordinateActuator();
+        actu->setName("tau_" + coordName);
+        actu->setCoordinate(&coordSet.get(coordName));
+        actu->setOptimalForce(optimalForce);
+        model.addComponent(actu);
+    }
+
+    static AckermannVanDenBogert2010Force*
+    addContact(Model& model, std::string markerName, double stiffness = 5e7) {
+        //const double stiffness = 5e7;
+        const double friction_coefficient = 0.95;
+        const double velocity_scaling = 0.3;
+        auto* contact = new AckermannVanDenBogert2010Force();
+        contact->setName(markerName + "_contact");
+        contact->set_stiffness(stiffness);
+        contact->set_friction_coefficient(friction_coefficient);
+        contact->set_tangent_velocity_scaling_factor(velocity_scaling);
+        model.addComponent(contact);
+        contact->updSocket("station").setConnecteeName(markerName);
+        return contact;
+    }
+};
+
+void calibrateContact() {
+
+    ContactCalibration problem;
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
     auto solution = solver.optimize();
@@ -147,7 +360,9 @@ void calibrateBall() {
 
 int main() {
 
-    calibrateBall();
+    // calibrateBall();
+
+    calibrateContact();
 
     return EXIT_SUCCESS;
 }
