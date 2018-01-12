@@ -142,6 +142,14 @@ class TestTables {
             double shouldThrow = col1.get(5);
             assert false;
         } catch (java.lang.RuntimeException exc) {}
+        try {
+            row0.set(4, 0);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
+        try {
+            col1.set(5, 0);
+            assert false;
+        } catch (java.lang.RuntimeException exc) {}
         // Access row with index/time out of bounds. Exception expected.
         try {
             RowVectorView shouldThrow = table.getRowAtIndex(5);
