@@ -178,8 +178,12 @@ public:
 
             SimTK::Vector timeVec(1, state.getTime());
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
+            // std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
             obj_value += pow(simFy - expFy, 2);
         }
+        const double mg = m_model.getTotalMass(m_statesTraj.front()) *
+                        m_model.getGravity().norm();
+        obj_value /= mg;
     }
 private:
 
@@ -246,16 +250,15 @@ void calibrateContact() {
     // Kinematics data.
     // ----------------
     StatesTrajectory statesTraj;
-    MucoSolution mucoSol;
+    std::unique_ptr<Storage> motion;
     {
-        // TODO: use marker data, do IK, yada yada.
         const std::string trcFile = "sandboxCalibrateContact_markers.trc";
         const std::string motFile = "sandboxCalibrateContact.mot";
         auto ref = TRCFileAdapter::read("walk_marker_trajectories.trc");
         // Convert from millimeters to meters.
         ref.updMatrix() /= 1000;
         const auto& reftime = ref.getIndependentColumn();
-        const double walkingSpeed = 1.05; // m/s
+        const double walkingSpeed = 1.10; // m/s
         for (int i = 0; i < (int)ref.getNumColumns(); ++i) {
             SimTK::VectorView_<SimTK::Vec3> col =
                     ref.updDependentColumnAtIndex(i);
@@ -264,9 +267,45 @@ void calibrateContact() {
                 col[j][1] -= 0.03; // y TODO
             }
         }
-        TimeSeriesTable refFilt = filterLowpass(ref.flatten({ "_x", "_y", "_z" }),
-                6.0, true);
-        // TODO TRCFileAdapter::write(ref, trcFile);
+        TimeSeriesTable refFilt = filterLowpass(
+                ref.flatten({ "_x", "_y", "_z" }), 6.0, true);
+        {
+            // Convert back to millimeters.
+            TimeSeriesTableVec3 refMM(ref);
+            refMM.updMatrix() *= 1000;
+            TRCFileAdapter::write(refMM, trcFile);
+        }
+
+        InverseKinematicsTool ikTool;
+        Model modelForIK(model);
+        ikTool.setModel(modelForIK);
+        ikTool.setMarkerDataFileName(trcFile);
+        ikTool.setOutputMotionFileName(motFile);
+        ikTool.run();
+
+        motion.reset(new Storage(motFile));
+        // TODO motion.pad(motion.getSize() / 2);
+        motion->lowpassIIR(6.0);
+        // Estimate speeds from coordinates;
+        // see AnalyzeTool::loadStatesFromFile().
+        Storage* qStore = nullptr;
+        Storage* uStore = nullptr;
+        SimTK::State s = model.initSystem();
+        model.getSimbodyEngine().formCompleteStorages(s, *motion, qStore,
+                uStore);
+        model.getSimbodyEngine().convertDegreesToRadians(*qStore);
+        model.getSimbodyEngine().convertDegreesToRadians(*uStore);
+        uStore->addToRdStorage(*qStore,
+                qStore->getFirstTime(), qStore->getLastTime());
+        motion.reset(new Storage(512, "states"));
+        model.formStateStorage(*qStore, *motion.get(), false);
+        delete qStore;
+        delete uStore;
+        statesTraj = StatesTrajectory::createFromStatesStorage(model,
+                *motion, true);
+        visualize(model, *motion);
+
+        /*
         auto refPacked = refFilt.pack<double>();
         TimeSeriesTableVec3 refToUse(refPacked);
 
@@ -303,18 +342,8 @@ void calibrateContact() {
 
         mucoSol = muco.solve();
         statesTraj = mucoSol.exportToStatesTrajectory(mp);
-
         visualize(model, mucoSol.exportToStatesStorage());
-
-        /*
-        Storage ref(motFile);
-        // TODO ref.pad(ref.getSize() / 2);
-        ref.lowpassIIR(6.0);
-        m_model.getSimbodyEngine().convertDegreesToRadians(ref);
-        m_statesTraj = StatesTrajectory::createFromStatesStorage(m_model,
-                ref, true);
-                */
-        // TODO visualize!
+         */
 
     }
 
@@ -323,8 +352,8 @@ void calibrateContact() {
     solver.set_verbosity(1);
     auto solution = solver.optimize();
     problem.applyParametersToModel(solution.variables, model);
-    visualize(model, mucoSol.exportToStatesStorage());
     std::cout << solution.variables << std::endl;
+    visualize(model, *motion);
 }
 
 
