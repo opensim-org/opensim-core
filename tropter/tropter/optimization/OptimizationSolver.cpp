@@ -156,6 +156,7 @@ OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
     // if (m_verbosity > 0) print_option_values();
     // IPOPT can print the option values for us.
 
+    m_problem->validate();
     TROPTER_THROW_IF(variables.size() != m_problem->get_num_variables(),
             "Expected guess to have %i elements, but it has %i elements.",
             m_problem->get_num_variables(), variables.size() );
@@ -164,5 +165,6 @@ OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
 
 OptimizationSolution
 OptimizationSolver::optimize() const {
+    m_problem->validate();
     return optimize_impl(m_problem->make_initial_guess_from_bounds());
 }
