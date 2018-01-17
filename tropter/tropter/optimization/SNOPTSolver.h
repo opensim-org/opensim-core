@@ -1,5 +1,5 @@
-#ifndef TROPTER_SNOPTSOLVER_H
-#define TROPTER_SNOPTSOLVER_H
+#ifndef TROPTER_OPTIMIZATION_SNOPTSOLVER_H
+#define TROPTER_OPTIMIZATION_SNOPTSOLVER_H
 // ----------------------------------------------------------------------------
 // tropter: SNOPTSolver.h
 // ----------------------------------------------------------------------------
@@ -16,9 +16,10 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimizationSolver.h"
+#include "Solver.h"
 
 namespace tropter {
+namespace optimization {
 
 /// Options
 /// =======
@@ -26,22 +27,23 @@ namespace tropter {
 /// - **convergence_tolerance**: Currently ignored.
 /// - **constraint_tolerance**: Currently ignored.
 /// @ingroup optimization
-class SNOPTSolver : public OptimizationSolver {
+class SNOPTSolver : public Solver {
 public:
     // TODO this means the SNOPTSolver *would* get access to the Problem,
     // and we don't want that.
-    SNOPTSolver(const AbstractOptimizationProblem& problem)
-            : OptimizationSolver(problem) {}
+    SNOPTSolver(const AbstractProblem& problem)
+            : Solver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
 protected:
-    OptimizationSolution
+    Solution
     optimize_impl(const Eigen::VectorXd& guess) const override;
 private:
     // TODO come up with a better name; look at design patterns book?
     class TNLP;
 };
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_SNOPTSOLVER_H
+#endif // TROPTER_OPTIMIZATION_SNOPTSOLVER_H

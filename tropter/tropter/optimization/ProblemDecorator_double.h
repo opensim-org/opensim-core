@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMIZATIONPROBLEMDECORATOR_DOUBLE_H
-#define TROPTER_OPTIMIZATIONPROBLEMDECORATOR_DOUBLE_H
+#ifndef TROPTER_OPTIMIZATION_PROBLEMDECORATOR_DOUBLE_H
+#define TROPTER_OPTIMIZATION_PROBLEMDECORATOR_DOUBLE_H
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblemDecorator_double.h
+// tropter: ProblemDecorator_double.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -16,10 +16,12 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimizationProblem.h"
-#include "OptimizationProblemDecorator.h"
+#include "Problem.h"
+#include "ProblemDecorator.h"
 
 namespace tropter {
+
+namespace optimization {
 
 class JacobianColoring;
 class HessianColoring;
@@ -31,10 +33,10 @@ class HessianColoring;
 /// is your Jacobian? Graph coloring for computing derivatives." SIAM review
 /// 47.4 (2005): 629-705.
 template<>
-class OptimizationProblem<double>::Decorator
-        : public OptimizationProblemDecorator {
+class Problem<double>::Decorator
+        : public ProblemDecorator {
 public:
-    Decorator(const OptimizationProblem<double>& problem);
+    Decorator(const Problem<double>& problem);
     ~Decorator();
     void calc_sparsity(const Eigen::VectorXd& variables_guess,
             std::vector<unsigned int>& jacobian_row_indices,
@@ -82,7 +84,7 @@ private:
             const Eigen::Map<const Eigen::VectorXd>& lambda,
             double& lagrangian_value) const;
 
-    const OptimizationProblem<double>& m_problem;
+    const Problem<double>& m_problem;
 
     // Working memory shared by multiple functions.
     mutable Eigen::VectorXd m_x_working;
@@ -135,6 +137,7 @@ private:
             unsigned num_nonzeros, double* nonzeros) const;
 };
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_OPTIMIZATIONPROBLEMDECORATOR_DOUBLE_H
+#endif // TROPTER_OPTIMIZATION_PROBLEMDECORATOR_DOUBLE_H

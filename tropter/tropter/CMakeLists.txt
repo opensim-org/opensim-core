@@ -6,17 +6,17 @@ add_library(tropter SHARED
         EigenUtilities.h
         SparsityPattern.h
         SparsityPattern.cpp
-        optimization/AbstractOptimizationProblem.h
-        optimization/AbstractOptimizationProblem.cpp
-        optimization/OptimizationProblem.h
-        optimization/OptimizationProblem.cpp
-        optimization/OptimizationProblemDecorator.h
-        optimization/OptimizationProblemDecorator_double.h
-        optimization/OptimizationProblemDecorator_double.cpp
-        optimization/OptimizationProblemDecorator_adouble.h
-        optimization/OptimizationProblemDecorator_adouble.cpp
-        optimization/OptimizationSolver.h
-        optimization/OptimizationSolver.cpp
+        optimization/AbstractProblem.h
+        optimization/AbstractProblem.cpp
+        optimization/Problem.h
+        optimization/Problem.cpp
+        optimization/ProblemDecorator.h
+        optimization/ProblemDecorator_double.h
+        optimization/ProblemDecorator_double.cpp
+        optimization/ProblemDecorator_adouble.h
+        optimization/ProblemDecorator_adouble.cpp
+        optimization/Solver.h
+        optimization/Solver.cpp
         optimization/SNOPTSolver.h
         optimization/SNOPTSolver.cpp
         optimization/IPOPTSolver.h

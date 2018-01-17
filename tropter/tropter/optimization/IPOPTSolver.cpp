@@ -14,7 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #include "IPOPTSolver.h"
-#include "OptimizationProblem.h"
+#include "Problem.h"
 #include <tropter/Exception.hpp>
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -25,26 +25,26 @@ using Eigen::Ref;
 using Ipopt::Index;
 using Ipopt::Number;
 
-using namespace tropter;
+using namespace tropter::optimization;
 
 class IPOPTSolver::TNLP : public Ipopt::TNLP {
 public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
-    TNLP(const OptimizationProblemDecorator& problem);
+    TNLP(const ProblemDecorator& problem);
     void initialize(const Eigen::VectorXd& guess, const bool&);
     const Eigen::VectorXd& get_solution() const { return m_solution; }
     const double& get_optimal_objective_value() const
     {   return m_optimal_obj_value; }
     const int& get_num_iterations() const { return m_num_iterations; }
 private:
-    // TODO move to OptimizationProblem if more than one solver would need this.
+    // TODO move to Problem if more than one solver would need this.
     // TODO should use fancy arguments to avoid temporaries and to exploit
     // expression templates.
 //    void lagrangian(double obj_factor, const VectorXa& x,
 //            const Eigen::VectorXd& lambda,
 //            adouble& result) const;
-    // TODO should move to OptimizationProblem<adouble>
+    // TODO should move to Problem<adouble>
 //    double trace_objective(short int tag, Index num_variables, const Number* x);
 //    void trace_constraints(short int tag, Index num_variables, const Number* x,
 //            Index num_constraints, Number* g);
@@ -92,9 +92,9 @@ private:
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
 
     // Members.
-//    const OptimizationProblemDecorator& m_problem;
+//    const ProblemDecorator& m_problem;
     // TODO reconsider the type of this variable:
-    const OptimizationProblemDecorator& m_problem;
+    const ProblemDecorator& m_problem;
 
     unsigned m_num_variables = std::numeric_limits<unsigned>::max();
     unsigned m_num_constraints = std::numeric_limits<unsigned>::max();
@@ -149,8 +149,7 @@ std::string convert_IPOPT_ApplicationReturnStatus_to_string(
     }
 }
 
-OptimizationSolution
-IPOPTSolver::optimize_impl(const VectorXd& variables) const {
+Solution IPOPTSolver::optimize_impl(const VectorXd& variables) const {
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
@@ -230,7 +229,7 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     // Optimize!!!
     // -----------
     status = app->OptimizeTNLP(nlp);
-    OptimizationSolution solution;
+    Solution solution;
     solution.variables = nlp->get_solution();
     solution.objective = nlp->get_optimal_objective_value();
     if (status == Ipopt::Solve_Succeeded
@@ -248,8 +247,7 @@ IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     return solution;
 }
 
-IPOPTSolver::TNLP::TNLP(
-        const OptimizationProblemDecorator& problem)
+IPOPTSolver::TNLP::TNLP(const ProblemDecorator& problem)
         : m_problem(problem)
 {
     m_num_variables = m_problem.get_num_variables();
@@ -273,7 +271,7 @@ bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
 void IPOPTSolver::TNLP::initialize(const VectorXd& guess,
         const bool& need_exact_hessian) {
     // TODO all of this content should be taken care of for us by
-    // OptimizationProblem.
+    // Problem.
 
     // TODO should not be storing the solution at all.
     // TODO consider giving an error if initialize()

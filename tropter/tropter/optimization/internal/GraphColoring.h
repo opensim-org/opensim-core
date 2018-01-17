@@ -1,5 +1,20 @@
-#ifndef TROPTER_GRAPHCOLORING_H
-#define TROPTER_GRAPHCOLORING_H
+#ifndef TROPTER_OPTIMIZATION_INTERNAL_GRAPHCOLORING_H
+#define TROPTER_OPTIMIZATION_INTERNAL_GRAPHCOLORING_H
+// ----------------------------------------------------------------------------
+// tropter: GraphColoring.h
+// ----------------------------------------------------------------------------
+// Copyright (c) 2017 tropter authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// not use this file except in compliance with the License. You may obtain a
+// copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ----------------------------------------------------------------------------
 
 #include <tropter/SparsityPattern.h>
 
@@ -16,6 +31,7 @@ class HessianRecovery;
 }
 
 namespace tropter {
+namespace optimization {
 
 namespace internal {
 // We resort to using a unique_ptr with a custom deleter because ColPack
@@ -25,7 +41,7 @@ using UnsignedInt2DPtr =
         std::unique_ptr<unsigned* [], std::function<void(unsigned**)>>;
 using Double2DPtr =
         std::unique_ptr<double*[], std::function<void(double**)>>;
-}
+} // namespace internal
 
 /// This class determines the directions in which to perturb
 /// This class supports computing sparse finite differences of a Jacobian
@@ -210,6 +226,7 @@ private:
 
 };
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_GRAPHCOLORING_H
+#endif // TROPTER_OPTIMIZATION_INTERNAL_GRAPHCOLORING_H

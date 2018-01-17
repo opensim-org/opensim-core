@@ -15,20 +15,20 @@
 // ----------------------------------------------------------------------------
 
 #include "SNOPTSolver.h"
-#include "OptimizationProblem.h"
+#include "Problem.h"
 
-using namespace tropter;
+using namespace tropter::optimization;
 using Eigen::VectorXd;
 using Eigen::VectorXi;
 
 // TODO building the tropter library should not *require* snopt.
 #if !defined(TROPTER_WITH_SNOPT)
 
-OptimizationSolution
+Solution
 SNOPTSolver::optimize_impl(const VectorXd& /*variables*/) const
 {
     throw std::runtime_error("SNOPT is not available.");
-    return OptimizationSolution(); // TODO return NaN.
+    return Solution(); // TODO return NaN.
 }
 
 #else
@@ -41,7 +41,7 @@ namespace {
 // not if they capture variables (like the Decorator pointer).
 // TODO another option is to derive from snoptProblemA.
 // TODO another option is to pass the pointer within cu (see Drake).
-const OptimizationProblemDecorator* probproxy = nullptr;
+const ProblemDecorator* probproxy = nullptr;
 
 std::string convert_info_integer_to_string(int info) {
     switch(info) {
@@ -107,7 +107,7 @@ void snopt_userfunction(int*   /* Status */,
     }
 }
 
-OptimizationSolution
+Solution
 SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
 
     VectorXd variables(variablesArg);
@@ -241,7 +241,7 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     int Cold = 0 /*, Basis = 1, Warm = 2 */;
     int info = snopt_prob.solve(Cold);
 
-    OptimizationSolution solution;
+    Solution solution;
     solution.variables = variables;
     solution.objective = F[0];
     solution.status = convert_info_integer_to_string(info);

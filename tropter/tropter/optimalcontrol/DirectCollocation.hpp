@@ -47,6 +47,7 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     std::string optsolver_lower = optsolver;
     std::transform(optsolver_lower.begin(), optsolver_lower.end(),
             optsolver_lower.begin(), ::tolower);
+    using namespace optimization;
     if (optsolver_lower == "ipopt") {
         // TODO this may not be good for IPOPTSolver; IPOPTSolver should
         // have a shared_ptr??
@@ -76,7 +77,7 @@ OptimalControlSolution DirectCollocationSolver<T>::solve() const
 template<typename T>
 OptimalControlSolution DirectCollocationSolver<T>::solve(
         const OptimalControlIterate& initial_guess) const {
-    OptimizationSolution optsol;
+    optimization::Solution optsol;
     if (initial_guess.empty()) {
         optsol = m_optsolver->optimize();
     } else {

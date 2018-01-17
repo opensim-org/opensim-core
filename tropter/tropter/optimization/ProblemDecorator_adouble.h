@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMIZATIONPROBLEMDECORATOR_ADOUBLE_H
-#define TROPTER_OPTIMIZATIONPROBLEMDECORATOR_ADOUBLE_H
+#ifndef TROPTER_OPTIMIZATION_PROBLEMDECORATOR_ADOUBLE_H
+#define TROPTER_OPTIMIZATION_PROBLEMDECORATOR_ADOUBLE_H
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblemDecorator_double.h
+// tropter: ProblemDecorator_adouble.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -16,19 +16,20 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimizationProblem.h"
-#include "OptimizationProblemDecorator.h"
+#include "Problem.h"
+#include "ProblemDecorator.h"
 
 namespace tropter {
+namespace optimization {
 
 /// This specialization uses automatic differentiation (via ADOL-C) to
 /// compute the derivatives of the objective and constraints.
 /// @ingroup optimization
 template<>
-class OptimizationProblem<adouble>::Decorator
-        : public OptimizationProblemDecorator {
+class Problem<adouble>::Decorator
+        : public ProblemDecorator {
 public:
-    Decorator(const OptimizationProblem<adouble>& problem);
+    Decorator(const Problem<adouble>& problem);
     /// Delete memory allocated by ADOL-C.
     virtual ~Decorator();
     void calc_sparsity(const Eigen::VectorXd& variables,
@@ -66,7 +67,7 @@ private:
             unsigned num_constraints, const double* lambda,
             double& lagrangian_value) const;
 
-    const OptimizationProblem<adouble>& m_problem;
+    const Problem<adouble>& m_problem;
 
     // ADOL-C
     // ------
@@ -93,6 +94,7 @@ private:
     std::vector<int> m_sparse_hess_options;
 };
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_OPTIMIZATIONPROBLEMDECORATOR_ADOUBLE_H
+#endif // TROPTER_OPTIMIZATION_PROBLEMDECORATOR_ADOUBLE_H

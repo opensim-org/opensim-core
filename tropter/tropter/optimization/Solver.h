@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMIZATIONSOLVER_H
-#define TROPTER_OPTIMIZATIONSOLVER_H
+#ifndef TROPTER_OPTIMIZATION_SOLVER_H
+#define TROPTER_OPTIMIZATION_SOLVER_H
 // ----------------------------------------------------------------------------
-// tropter: OptimizationSolver.h
+// tropter::optimization::Solver.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -23,12 +23,13 @@
 #include <unordered_map>
 
 namespace tropter {
+namespace optimization {
 
-class AbstractOptimizationProblem;
+class AbstractProblem;
 
-class OptimizationProblemDecorator;
+class ProblemDecorator;
 
-struct OptimizationSolution {
+struct Solution {
     Eigen::VectorXd variables;
     double objective = std::numeric_limits<double>::quiet_NaN();
     bool success = false;
@@ -43,10 +44,10 @@ struct OptimizationSolution {
 /// concrete solvers.
 ///
 /// @ingroup optimization
-class OptimizationSolver {
+class Solver {
 public:
     /// Provide the problem to solve.
-    OptimizationSolver(const AbstractOptimizationProblem& problem);
+    Solver(const AbstractProblem& problem);
     /// Optimize the optimization problem.
     /// @param[in] guess
     ///     Initial guess to the problem; the length must match the number of
@@ -54,13 +55,13 @@ public:
     /// @returns the solution (optimal variables, objective, and the solver's
     ///     return status).
     /// @returns The value of the objective function evaluated at the solution.
-    OptimizationSolution optimize(const Eigen::VectorXd& guess) const;
+    Solution optimize(const Eigen::VectorXd& guess) const;
     /// Optimize the optimization problem, without providing your own initial
     /// guess.
     /// The guess will be based on the variables' bounds (see
     /// OptimizationProblemProxy::make_initial_guess_from_bounds()).
     /// @returns The value of the objective function evaluated at the solution.
-    OptimizationSolution optimize() const;
+    Solution optimize() const;
 
     /// @name Set common options
     /// @{
@@ -128,7 +129,7 @@ public:
     /// @}
 
 protected:
-    virtual OptimizationSolution
+    virtual Solution
     optimize_impl(const Eigen::VectorXd& variables) const = 0;
     virtual void get_available_options(
             std::vector<std::string>& options_string,
@@ -138,7 +139,7 @@ protected:
 
 
 
-    std::unique_ptr<OptimizationProblemDecorator> m_problem;
+    std::unique_ptr<ProblemDecorator> m_problem;
 
     template <typename T>
     using OptionsMap = std::unordered_map<std::string, Optional<T>>;
@@ -162,10 +163,11 @@ private:
     OptionsMap<double> m_advanced_options_real;
 };
 
-inline void OptimizationSolver::get_available_options(
+inline void Solver::get_available_options(
         std::vector<std::string>&, std::vector<std::string>&,
         std::vector<std::string>&) const {}
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_OPTIMIZATIONSOLVER_H
+#endif // TROPTER_OPTIMIZATION_SOLVER_H

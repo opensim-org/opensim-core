@@ -380,7 +380,7 @@ const MucoIterate& MucoTropterSolver::getGuess() const {
 
 void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
     if (solver == "ipopt") {
-        tropter::IPOPTSolver::print_available_options();
+        tropter::optimization::IPOPTSolver::print_available_options();
     } else {
         std::cout << "No info available for " << solver << " options." <<
                 std::endl;

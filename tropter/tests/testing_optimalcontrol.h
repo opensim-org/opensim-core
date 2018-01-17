@@ -18,7 +18,7 @@
 
 #include "testing.h"
 
-#include <tropter/optimization/OptimizationProblemDecorator.h>
+#include <tropter/optimization/ProblemDecorator.h>
 #include <tropter/optimalcontrol/DirectCollocation.h>
 #include <tropter/optimalcontrol/transcription/Base.h>
 
@@ -92,7 +92,7 @@ private:
         return mat;
     }
     static void calc_derivatives(
-            const OptimizationProblemDecorator* nlp,
+            const optimization::ProblemDecorator* nlp,
             const Eigen::VectorXd& x, Eigen::VectorXd& grad,
             Eigen::SparseMatrix<double>& jac,
             Eigen::SparseMatrix<double>& hes) {

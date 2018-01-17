@@ -5,9 +5,9 @@ Nocedal's book says to use partial separability for auto diff, and also that
 you can get benefits by evalulating the objective and constraints at the same
 time, in case they share a lot of the computaitonal graph.
 
-Move ADOL-C code from IPOPTSolver::TNLP to OptimizationProblem<adouble>.
+Move ADOL-C code from IPOPTSolver::TNLP to Problem<adouble>.
 
-Trying non-virtual interface for OptimizationProblem, but a Decorator class could
+Trying non-virtual interface for Problem, but a Decorator class could
  be preferable.
 
  For finite diff version (with doubles), make SURE to use Map<Matrix> to
@@ -18,7 +18,7 @@ Trying non-virtual interface for OptimizationProblem, but a Decorator class coul
 
  For Eigen, use mat.setZero() instead of static Mat::Zero() as much as possible.
 
- Rename AbstractOptimizationProblem to OptimizationProblemBase?
+ Rename AbstractProblem to OptimizationProblemBase?
 
  Eigen has spline support.
 

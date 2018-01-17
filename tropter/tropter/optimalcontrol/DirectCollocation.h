@@ -24,7 +24,9 @@
 
 namespace tropter {
 
-class OptimizationSolver;
+namespace optimization {
+class Solver;
+} // namespace optimization
 
 namespace transcription {
 template<typename T>
@@ -57,11 +59,11 @@ public:
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
     /// non-const variant below if you need to change settings.
-    const OptimizationSolver& get_opt_solver() const
+    const optimization::Solver& get_opt_solver() const
     {   return *m_optsolver.get(); }
     /// Get the OptimizationSolver, through which you can set optimizer
     /// settings like maximum number of iterations.
-    OptimizationSolver& get_opt_solver()
+    optimization::Solver& get_opt_solver()
     {   return *m_optsolver.get(); }
 
     const transcription::Base<T>& get_transcription() const
@@ -113,7 +115,7 @@ private:
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Base<T>> m_transcription;
-    std::unique_ptr<OptimizationSolver> m_optsolver;
+    std::unique_ptr<optimization::Solver> m_optsolver;
 
     int m_verbosity = 1;
 };

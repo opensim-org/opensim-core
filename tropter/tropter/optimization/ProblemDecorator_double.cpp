@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblemDecorator_double.cpp
+// tropter: ProblemDecorator_double.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblemDecorator_double.h"
+#include "ProblemDecorator_double.h"
 #include <tropter/Exception.hpp>
 #include "internal/GraphColoring.h"
 
@@ -44,16 +44,17 @@ using Eigen::VectorXd;
 // http://epubs.siam.org/doi/pdf/10.1137/0716078
 
 namespace tropter {
+namespace optimization {
 
 // We must implement the destructor in a context where the JacobianColoring
 // class is complete (since it's used in a unique ptr member variable.).
-OptimizationProblem<double>::Decorator::~Decorator() {}
+Problem<double>::Decorator::~Decorator() {}
 
-OptimizationProblem<double>::Decorator::Decorator(
-        const OptimizationProblem<double>& problem) :
-        OptimizationProblemDecorator(problem), m_problem(problem) {}
+Problem<double>::Decorator::Decorator(
+        const Problem<double>& problem) :
+        ProblemDecorator(problem), m_problem(problem) {}
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_sparsity(const Eigen::VectorXd& /*guess*/,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
@@ -132,7 +133,7 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
 }
 
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_sparsity_hessian_lagrangian(
         const VectorXd& x,
         std::vector<unsigned int>& hessian_row_indices,
@@ -145,8 +146,7 @@ calc_sparsity_hessian_lagrangian(
     if (m_problem.get_use_supplied_sparsity_hessian_lagrangian()) {
 
         using CalcSparsityHessianLagrangianNotImplemented =
-                AbstractOptimizationProblem::
-                CalcSparsityHessianLagrangianNotImplemented;
+                AbstractProblem::CalcSparsityHessianLagrangianNotImplemented;
         try {
             m_problem.calc_sparsity_hessian_lagrangian(x, hescon_sparsity,
                     hesobj_sparsity);
@@ -168,7 +168,7 @@ calc_sparsity_hessian_lagrangian(
         // We get the sparsity pattern of the Hessian of the objective and
         // the Hessian of lambda*constraints *separately* because we use
         // different algorithms to compute these two Hessians. However, we
-        // have to report the total sparsity for use in the OptimizationSolver.
+        // have to report the total sparsity for use in the Solver.
 
         // Sparsity of Hessian of lambda*constraints; conservative estimate.
         hescon_sparsity =
@@ -201,7 +201,7 @@ calc_sparsity_hessian_lagrangian(
 }
 
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_objective(unsigned num_variables, const double* variables,
         bool /*new_x*/,
         double& obj_value) const
@@ -211,7 +211,7 @@ calc_objective(unsigned num_variables, const double* variables,
     m_problem.calc_objective(xvec, obj_value);
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
@@ -225,7 +225,7 @@ calc_constraints(unsigned num_variables, const double* variables,
     std::copy(constrvec.data(), constrvec.data() + num_constraints, constr);
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
@@ -265,7 +265,7 @@ calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     }
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
@@ -297,7 +297,7 @@ calc_jacobian(unsigned num_variables, const double* variables, bool /*new_x*/,
     m_jacobian_coloring->recover(m_jacobian_compressed, jacobian_values);
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
         bool new_x, double obj_factor,
         unsigned num_constraints, const double* lambda_raw,
@@ -409,7 +409,7 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     m_hessian_coloring->convert(hessian, hessian_values_raw);
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_hessian_objective(const VectorXd& x0,
         VectorXd& hesobj_values) const {
     assert(m_hesobj_row_indices.size() == m_hesobj_col_indices.size());
@@ -493,7 +493,7 @@ calc_hessian_objective(const VectorXd& x0,
     // }
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda_raw,
@@ -556,7 +556,7 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
     }
 }
 
-void OptimizationProblem<double>::Decorator::
+void Problem<double>::Decorator::
 calc_lagrangian(const Eigen::VectorXd& x, double obj_factor,
         const Eigen::Map<const Eigen::VectorXd>& lambda,
         double& lagrangian_value) const {
@@ -575,6 +575,7 @@ calc_lagrangian(const Eigen::VectorXd& x, double obj_factor,
 }
 
 
+} // namespace optimization
 } // namespace tropter
 
 //#ifdef TROPTER_WITH_OPENMP && _OPENMP

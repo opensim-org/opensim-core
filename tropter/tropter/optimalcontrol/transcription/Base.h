@@ -17,8 +17,8 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
-#include <tropter/optimization/OptimizationProblemDecorator_double.h>
-#include <tropter/optimization/OptimizationProblemDecorator_adouble.h>
+#include <tropter/optimization/ProblemDecorator_double.h>
+#include <tropter/optimization/ProblemDecorator_adouble.h>
 #include <tropter/optimalcontrol/OptimalControlIterate.h>
 
 //namespace transcription {
@@ -31,12 +31,12 @@
 //}
 
 //template<typename T>
-//class TrapezoidalTranscription : public OptimizationProblem<T> {
+//class TrapezoidalTranscription : public Problem<T> {
 //
 //};
 
 //template<typename T>
-//class Trapezoidal : public OptimizationProblem<T> {
+//class Trapezoidal : public Problem<T> {
 //public:
 //    struct Trajectory {
 //        Eigen::RowVectorXd time;
@@ -56,7 +56,7 @@ namespace transcription {
 
 /// @ingroup optimalcontrol
 template<typename T>
-class Base : public OptimizationProblem<T> {
+class Base : public optimization::Problem<T> {
 public:
     // TODO do we still need this type? Use OptimalControlIterate instead.
     //struct Trajectory {
