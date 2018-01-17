@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.2)
-project(Muscollo)
+project(Muscollo VERSION 0.1)
 
 # Muscollo settings.
 # ------------------
 # Copy dependencies' libraries into Muscollo's installation?
 set(MUSCOLLO_COPY_DEPENDENCIES ON)
+
+option(MUSCOLLO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
+
+option(MUSCOLLO_PYTHON_BINDINGS "Build Python interface." OFF)
+set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
+    "The major Python version (2 or 3) for which to build the wrapping.")
+# To create a drop-down in the CMake GUI:
+set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
 
 # CMake settings.
@@ -49,9 +57,19 @@ set(MUSCOLLO_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
 set(MUSCOLLO_INSTALL_EXAMPLEDIR ${CMAKE_INSTALL_DOCDIR}/Examples)
 if(WIN32)
     set(MUSCOLLO_INSTALL_CMAKEDIR cmake)
+    set(MUSCOLLO_INSTALL_PYTHONDIR sdk/python)
+    set(MUSCOLLO_INSTALL_SCRIPTSDIR sdk/Scripts)
+    set(CMAKE_INSTALL_SYSCONFDIR sdk)
+    set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_BINDIR}")
 else()
     set(MUSCOLLO_INSTALL_CMAKEDIR ${CMAKE_INSTALL_LIBDIR}/cmake/Muscollo)
+    set(MUSCOLLO_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    set(MUSCOLLO_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+    set(MUSCOLLO_INSTALL_SHAREDLIBDIR "${CMAKE_INSTALL_LIBDIR}")
 endif()
+set(MUSCOLLO_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
+set(MUSCOLLO_INSTALL_MATLABEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Matlab")
+set(MUSCOLLO_INSTALL_PYTHONEXDIR "${MUSCOLLO_INSTALL_SCRIPTSDIR}/Python")
 
 # This is used to provide the user with information about config. options.
 include(FeatureSummary)
@@ -69,26 +87,23 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # TODO treat Ipopt and such as system headers to ignore their warnings.
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
         OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+    add_compile_options(-Wall -Wextra)
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wshorten-64-to-32")
+        add_compile_options(-Wshorten-64-to-32)
         # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
         # many warnings.
     endif()
     # The assert() macro is omitted in Release, causing "unused-variable"
     # warnings. It is sufficient to just catch such warnings in Debug.
-    foreach(cfg RELEASE RELWITHDEBINFO MINSIZEREL)
-        set(CMAKE_CXX_FLAGS_${cfg}
-            "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-variable")
-        set(CMAKE_CXX_FLAGS_${cfg}
-            "${CMAKE_CXX_FLAGS_${cfg}} -Wno-unused-parameter")
-    endforeach()
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
+                        $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
 endif()
 
 # TODO add /WX flag for Windows.
 
 enable_testing()
+include(CTest)
 
 add_subdirectory(tropter)
 

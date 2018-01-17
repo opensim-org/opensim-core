@@ -48,6 +48,8 @@ public:
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_problem.get_constraint_upper_bounds(); }
 
+    void validate() const { m_problem.validate(); }
+
     /// @see AbstractOptimizationProblem::make_initial_guess_from_bounds()
     Eigen::VectorXd make_initial_guess_from_bounds() const
     {   return m_problem.make_initial_guess_from_bounds(); }

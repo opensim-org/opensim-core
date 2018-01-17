@@ -5,6 +5,7 @@
 # 4. Install Muscollo.
 # The script will make multiple directories adjacent to the directory
 # containing this script.
+git submodule update --init
 mkdir ..\muscollo_dependencies_build
 cd ..\muscollo_dependencies_build
 cmake ..\muscollo\dependencies `

@@ -20,6 +20,22 @@
 
 namespace tropter {
 
+/// Options
+/// =======
+/// Here is how the IPOPTSolver applies the options in OptimizationSolver.
+/// - **convergence_tolerance**: This sets the following IPOPT options:
+///   - "tol",
+///   - "dual_inf_tol",
+///   - "compl_inf_tol",
+///   - "acceptable_tol"
+///   - "acceptable_dual_inf_tol"
+///   - "acceptable_compl_inf_tol"
+/// - **constraint_tolerance**: This sets the following IPOPT options:
+///   - constr_viol_tol
+///   - acceptable_constr_viol_tol
+/// If you need more fine-grained control, you can use
+/// OptimizationSolver::set_advanced_option_real().
+///
 /// @ingroup optimization
 class IPOPTSolver : public OptimizationSolver {
 public:

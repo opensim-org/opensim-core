@@ -215,4 +215,25 @@ TEST_CASE("Test exceptions and error messages") {
     }
 }
 
+TEST_CASE("OptimizerSolver options") {
+    HS071<double> problem;
+    IPOPTSolver solver(problem);
+    const OptimizationSolution sol_default = solver.optimize();
+
+    {
+        solver.set_convergence_tolerance(1e-2);
+        const auto solution = solver.optimize();
+        REQUIRE(solution.num_iterations < sol_default.num_iterations);
+        // Unset.
+        solver.set_convergence_tolerance({});
+    }
+    {
+        solver.set_constraint_tolerance(1e-12);
+        const auto solution = solver.optimize();
+        REQUIRE(solution.num_iterations > sol_default.num_iterations);
+        solver.set_constraint_tolerance({});
+    }
+
+}
+
 

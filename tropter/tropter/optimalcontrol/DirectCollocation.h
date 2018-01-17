@@ -95,8 +95,8 @@ public:
     /// The guess will be linearly interpolated to have the requested number of
     /// mesh points.
     ///
-    /// If initial_guess is empty (see OptimalControlIterate::empty()), then
-    /// the no-argument solve() (above) is called.
+    /// Providing an empty initial_guess (see OptimalControlIterate::empty())
+    /// is the same as calling the no-argument solve() above.
     /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
     // TODO make it even easier to create an initial guess; e.g., creating a
     // guess template.
@@ -110,8 +110,6 @@ public:
     void print_constraint_values(const OptimalControlIterate& vars,
                                  std::ostream& stream = std::cout) const;
 private:
-    OptimalControlSolution solve_internal(
-            const Eigen::VectorXd& guess) const;
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Base<T>> m_transcription;

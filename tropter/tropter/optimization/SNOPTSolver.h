@@ -20,6 +20,11 @@
 
 namespace tropter {
 
+/// Options
+/// =======
+/// Here is how the SNOPTSolver applies the options in OptimizationSolver.
+/// - **convergence_tolerance**: Currently ignored.
+/// - **constraint_tolerance**: Currently ignored.
 /// @ingroup optimization
 class SNOPTSolver : public OptimizationSolver {
 public:
