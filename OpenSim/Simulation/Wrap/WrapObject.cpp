@@ -182,7 +182,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
         int versionNumber) {
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {
-        if (documentVersion < 30515) {
+        if (documentVersion < 30507) {
             // Replace 3.3 display_preference, color, and VisibleObject with
             // Appearance's visible and color.
             // We ignore most of VisibleObject's other properties (e.g.,
@@ -203,9 +203,8 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                     defaultSurfProp);
             SimTK::Xml::Element rep("representation");
-            rep.setValue("3"); // VisualRepresentation::DrawSurface
+            rep.setValue("2"); // VisualRepresentation::DrawSurface
             defaultSurfProp.insertNodeAfter(defaultSurfProp.element_end(), rep);
-            bool appearanceModified = false;
 
             // color.
             SimTK::Xml::element_iterator colorIter =
@@ -213,7 +212,6 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             if (colorIter != node.element_end()) {
                 color.setValue(colorIter->getValue());
                 node.removeNode(colorIter);
-                appearanceModified = true;
             }
 
             // display_preference -> visible, representation
@@ -223,13 +221,11 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             if (dispPrefIter != node.element_end()) {
                 if (dispPrefIter->getValueAs<int>() == 0) {
                     visibleNode.setValue("false");
-                    appearanceModified = true;
                 } else if (dispPrefIter->getValueAs<int>() < 4) {
                     // Set `representation`.
                     // If the value is 4, we use 3 instead, which is the
                     // default (above).
                     rep.setValue(dispPrefIter->getValue());
-                    appearanceModified = true;
                 }
                 node.removeNode(dispPrefIter);
             }
@@ -241,7 +237,6 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                 if (voDispPrefIter != visObjIter->element_end()) {
                     if (voDispPrefIter->getValueAs<int>() == 0) {
                         visibleNode.setValue("false");
-                        appearanceModified = true;
                     } else if (rep.getValue() == "3" && 
                             voDispPrefIter->getValueAs<int>() < 4) {
                         // Set `representation`.
@@ -249,7 +244,6 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                         // meaning the user only specified the inner display
                         // preference, therefore we should use this one.
                         rep.setValue(voDispPrefIter->getValue());
-                        appearanceModified = true;
                     }
                 }
                 node.removeNode(visObjIter);
@@ -257,13 +251,11 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             if (visibleNode.getValue() != "") {
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                         visibleNode);
-                appearanceModified = true;
             }
-
+            // Regardless, we'll add Appearance since default for WrapObject is different from 
+            // default Appearance object (shaded, all white, visible)
             // Add Appearance to the WrapObject.
-            if (appearanceModified) {
-                node.insertNodeAfter(node.element_end(), appearanceNode);
-            }
+            node.insertNodeAfter(node.element_end(), appearanceNode);
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
