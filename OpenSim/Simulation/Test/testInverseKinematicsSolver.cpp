@@ -69,8 +69,11 @@ int main()
 {
     SimTK::Array_<std::string> failures;
 
-    testMarkersReference();
-
+    try { testMarkersReference(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testMarkersReference");
+    }
     try { testAccuracy(); }
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testAccuracy");
