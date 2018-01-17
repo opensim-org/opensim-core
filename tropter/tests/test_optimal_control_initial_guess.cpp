@@ -218,7 +218,7 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     it0.controls.resize(num_controls, num_times);
     it0.controls.setRandom();
 
-    it0.parameters.resize(num_parameters, num_times);
+    it0.parameters.resize(num_parameters);
     it0.parameters.setRandom();
 
     it0.state_names = {"a", "b", "c"};
