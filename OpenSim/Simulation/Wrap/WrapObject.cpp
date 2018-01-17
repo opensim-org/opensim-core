@@ -203,7 +203,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                     defaultSurfProp);
             SimTK::Xml::Element rep("representation");
-            rep.setValue("2"); // VisualRepresentation::DrawSurface
+            rep.setValue("3"); // VisualRepresentation::DrawSurface
             defaultSurfProp.insertNodeAfter(defaultSurfProp.element_end(), rep);
 
             // color.
