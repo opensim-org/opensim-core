@@ -7,6 +7,7 @@ add_library(tropter SHARED
         SparsityPattern.h
         SparsityPattern.cpp
         optimization/AbstractOptimizationProblem.h
+        optimization/AbstractOptimizationProblem.cpp
         optimization/OptimizationProblem.h
         optimization/OptimizationProblem.cpp
         optimization/OptimizationProblemDecorator.h

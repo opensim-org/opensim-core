@@ -78,10 +78,10 @@ protected:
     //OpenSim_DECLARE_LIST_PROPERTY(options, MucoSolverOption, "TODO");
 
     /// This is a service for derived classes, because
-    /// MucoSolution::setStatus() and MucoSolution::setSuccess() are private
+    /// MucoSolution::setStatus(), MucoSolution::setSuccess(), etc. are private
     /// but this class is a friend of MucoSolution.
-    static void setSolutionStatusAndSuccess(MucoSolution&,
-            bool success, const std::string& status);
+    static void setSolutionStats(MucoSolution&,
+            bool success, const std::string& status, int numIterations);
 
 private:
 

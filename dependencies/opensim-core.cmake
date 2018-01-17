@@ -1,10 +1,16 @@
 # This file is included by the CMakeLists.txt in this directory.
 
+# We list (and update) the opensim-core submodule commit here so that AppVeyor
+# will invalidate its cached opensim-core installation if we change the commit.
+# This commented commit hash is not actually used in the superbuild.
+# opensim-core commit: 766f5a1354269b7f9872aac6502b1eec12ce3398
+
 AddDependency(NAME       opensim-core
-              # StatesTrajectory::createFromStatesStorage() assembles the states.
-              URL        https://github.com/opensim-org/opensim-core/archive/e05338dde404e055f300f7685397dc61cc495961.zip
+              URL        ${CMAKE_SOURCE_DIR}/../opensim-core
               CMAKE_ARGS -DBUILD_API_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
+                         -DBUILD_JAVA_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
+                         -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
                          -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
                          -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt)
 

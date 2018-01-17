@@ -32,9 +32,16 @@ struct OptimizationSolution {
     Eigen::VectorXd variables;
     double objective = std::numeric_limits<double>::quiet_NaN();
     bool success = false;
+    /// Number of solver iterations at which this solution was obtained.
+    int num_iterations = -1;
     std::string status;
 };
 
+/// The OptimizationSolver class contains some generic options that are
+/// common across different concrete solvers. To learn how the different
+/// solves interpret these generic options, view the documentaiton for the
+/// concrete solvers.
+///
 /// @ingroup optimization
 class OptimizationSolver {
 public:
@@ -42,13 +49,18 @@ public:
     OptimizationSolver(const AbstractOptimizationProblem& problem);
     /// Optimize the optimization problem.
     /// @param[in] guess
-    ///     Initial guess to the problem, or leave empty to use a naive initial
-    ///     guess based on the variables' bounds
-    ///     (see OptimizationProblemProxy::make_initial_guess_from_bounds()).
+    ///     Initial guess to the problem; the length must match the number of
+    /// variables.
     /// @returns the solution (optimal variables, objective, and the solver's
     ///     return status).
     /// @returns The value of the objective function evaluated at the solution.
     OptimizationSolution optimize(const Eigen::VectorXd& guess) const;
+    /// Optimize the optimization problem, without providing your own initial
+    /// guess.
+    /// The guess will be based on the variables' bounds (see
+    /// OptimizationProblemProxy::make_initial_guess_from_bounds()).
+    /// @returns The value of the objective function evaluated at the solution.
+    OptimizationSolution optimize() const;
 
     /// @name Set common options
     /// @{
@@ -59,15 +71,21 @@ public:
     /// verbosity.
     void set_verbosity(int value);
     /// The maximum number of iterations the optimizer is allowed to take.
-    void set_max_iterations(int setting);
+    void set_max_iterations(Optional<int> v);
+    /// The tolerance used to determine if the objective is minimized.
+    void set_convergence_tolerance(Optional<double> value);
+    /// The tolerance used to determine if the constraints are satisfied.
+    void set_constraint_tolerance(Optional<double> value);
     /// Whether a full Hessian should be computed or if the Hessian
     /// should be approximated from the gradient using BFGS updates.
     /// See https://www.coin-or.org/Ipopt/documentation/node53.html#SECTION0001113010000000000000
-    void set_hessian_approximation(const std::string& setting);
+    void set_hessian_approximation(Optional<std::string> v);
+    void set_hessian_approximation(const std::string& v)
+    {   set_hessian_approximation(nonstd::optional_lite::make_optional(v)); }
     /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_mode()
-    void set_findiff_hessian_mode(const std::string& setting);
+    void set_findiff_hessian_mode(const std::string& v);
     /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_step_size()
-    void set_findiff_hessian_step_size(double setting);
+    void set_findiff_hessian_step_size(double value);
     /// @}
 
     /// @name Set solver-specific advanced options.
@@ -96,11 +114,15 @@ public:
     /// @{
 
     /// Print a list of options you've set and their current values.
-    void print_option_values() const;
+    void print_option_values(std::ostream& = std::cout) const;
     /// @copydoc set_verbosity()
     int get_verbosity() const;
     /// @copydoc set_max_iterations()
     Optional<int> get_max_iterations() const;
+    /// @copydoc set_convergence_tolerance()
+    Optional<double> get_convergence_tolerance() const;
+    /// @copydoc set_constraint_tolerance()
+    Optional<double> get_constraint_tolerance() const;
     /// @copydoc set_hessian_approximation()
     Optional<std::string> get_hessian_approximation() const;
     /// @}
@@ -131,6 +153,8 @@ protected:
 private:
     int m_verbosity;
     Optional<int> m_max_iterations;
+    Optional<double> m_convergence_tolerance;
+    Optional<double> m_constraint_tolerance;
     Optional<std::string> m_hessian_approximation;
 
     OptionsMap<std::string> m_advanced_options_string;

@@ -1,0 +1,3 @@
+[submodule "opensim-core"]
+	path = opensim-core
+	url = https://github.com/opensim-org/opensim-core

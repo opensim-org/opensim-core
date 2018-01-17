@@ -60,8 +60,8 @@ struct OSIMMUSCOLLO_API MucoBounds {
         }
         return vec;
     }
-    double lower = SimTK::NTraits<double>::getNaN();
-    double upper = SimTK::NTraits<double>::getNaN();
+    double getLower() const { return lower; }
+    double getUpper() const { return upper; }
 protected:
     /// Used internally to create Bounds from a list property.
     /// The list property must have either 0, 1 or 2 elements.
@@ -73,6 +73,9 @@ protected:
             else               upper = p[0];
         }
     }
+
+    double lower = SimTK::NTraits<double>::getNaN();
+    double upper = SimTK::NTraits<double>::getNaN();
 
     friend MucoPhase;
     friend MucoVariableInfo;

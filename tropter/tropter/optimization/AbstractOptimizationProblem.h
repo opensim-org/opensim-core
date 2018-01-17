@@ -45,6 +45,11 @@ public:
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_constraint_upper_bounds; }
 
+    /// This method throws an exception if the following are not true:
+    /// - the number of variable bounds matches the number of variables,
+    /// - the number of constraint bounds matches the number of constraints.
+    void validate() const;
+
     /// Create an initial guess for this problem according to the
     /// following rules:
     ///   - unconstrained variable: 0.
