@@ -1,5 +1,5 @@
-#ifndef TROPTER_DIRECTCOLLOCATION_HPP
-#define TROPTER_DIRECTCOLLOCATION_HPP
+#ifndef TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_HPP
+#define TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_HPP
 // ----------------------------------------------------------------------------
 // tropter: DirectCollocation.hpp
 // ----------------------------------------------------------------------------
@@ -68,15 +68,15 @@ void DirectCollocationSolver<T>::set_verbosity(int verbosity) {
 }
 
 template<typename T>
-OptimalControlSolution DirectCollocationSolver<T>::solve() const
+Solution DirectCollocationSolver<T>::solve() const
 {
-    OptimalControlIterate initial_guess;
+    Iterate initial_guess;
     return solve(initial_guess);
 }
 
 template<typename T>
-OptimalControlSolution DirectCollocationSolver<T>::solve(
-        const OptimalControlIterate& initial_guess) const {
+Solution DirectCollocationSolver<T>::solve(
+        const Iterate& initial_guess) const {
     optimization::Solution optsol;
     if (initial_guess.empty()) {
         optsol = m_optsolver->optimize();
@@ -85,9 +85,9 @@ OptimalControlSolution DirectCollocationSolver<T>::solve(
                 m_transcription->construct_iterate(initial_guess, true);
         optsol = m_optsolver->optimize(variables);
     }
-    OptimalControlIterate traj =
+    Iterate traj =
             m_transcription->deconstruct_iterate(optsol.variables);
-    OptimalControlSolution solution;
+    Solution solution;
     solution.time = traj.time;
     solution.states = traj.states;
     solution.controls = traj.controls;
@@ -108,10 +108,10 @@ OptimalControlSolution DirectCollocationSolver<T>::solve(
 
 template<typename T>
 void DirectCollocationSolver<T>::print_constraint_values(
-        const OptimalControlIterate& ocp_vars, std::ostream& stream) const {
+        const Iterate& ocp_vars, std::ostream& stream) const {
     m_transcription->print_constraint_values(ocp_vars, stream);
 }
 
 } // namespace tropter
 
-#endif // TROPTER_DIRECTCOLLOCATION_HPP
+#endif // TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_HPP

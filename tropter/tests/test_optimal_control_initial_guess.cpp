@@ -40,7 +40,7 @@ using namespace Catch;
 /// equally desirable; the initial guess should determine which final position
 /// the optimizer finds.
 template<typename T>
-class FinalPositionLocalOptima : public tropter::OptimalControlProblem<T> {
+class FinalPositionLocalOptima : public tropter::Problem<T> {
 public:
     FinalPositionLocalOptima()
     {
@@ -88,13 +88,13 @@ TEST_CASE("Final position and parameter cost with two local optima", "[initial_g
 
         // TODO allow getting a guess template, so that we don't need to
         // manually fill in all parts of the guess.
-        OptimalControlIterate guess;
+        Iterate guess;
         guess.time.setLinSpaced(N, 0, 1);
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, -1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
         ocp->set_parameter_guess(guess, "p", -1);
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == -1/sqrt(2));
@@ -108,13 +108,13 @@ TEST_CASE("Final position and parameter cost with two local optima", "[initial_g
 
         // TODO allow getting a guess template, so that we don't need to
         // manually fill in all parts of the guess.
-        OptimalControlIterate guess;
+        Iterate guess;
         guess.time.setLinSpaced(N, 0, 1);
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, +1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
         ocp->set_parameter_guess(guess, "p", +1);
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == +1/sqrt(2));
@@ -127,9 +127,9 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     int N = 15;
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
 
-    OptimalControlIterate guess;
+    Iterate guess;
 
-    // Check for exceptions with OptimalControlProblem set_*_guess().
+    // Check for exceptions with Problem set_*_guess().
     // --------------------------------------------------------------
     // Must set guess.time first.
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
@@ -202,9 +202,9 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 }
 
 
-TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
+TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     // Create an iterate.
-    OptimalControlIterate it0;
+    Iterate it0;
     int num_times = 15;
     int num_states = 3;
     int num_controls = 2;
@@ -230,7 +230,7 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     it0.write(filename);
 
     // Deserialize.
-    OptimalControlIterate it1(filename);
+    Iterate it1(filename);
 
     // Test.
     TROPTER_REQUIRE_EIGEN(it0.time, it1.time, 1e-5);
@@ -253,7 +253,7 @@ TEST_CASE("Interpolating an initial guess") {
 
     // We create an initial guess with 5 time points and upsample it.
     SECTION("Upsampling") {
-        OptimalControlIterate it0;
+        Iterate it0;
         int num_times = 5;
         int num_states = 2;
         int num_controls = 3;
@@ -273,7 +273,7 @@ TEST_CASE("Interpolating an initial guess") {
         it0.control_names = {"gamma", "rho", "phi"};
 
         // Upsampling.
-        OptimalControlIterate it1 = it0.interpolate(9);
+        Iterate it1 = it0.interpolate(9);
         REQUIRE(it1.state_names == it0.state_names);
         REQUIRE(it1.control_names == it0.control_names);
         TROPTER_REQUIRE_EIGEN(it1.time,
@@ -306,7 +306,7 @@ TEST_CASE("Interpolating an initial guess") {
 
     // Re back to the original number of points; should recover it0.
     SECTION("Roundtrip") {
-        OptimalControlIterate it0;
+        Iterate it0;
         int num_times = 5;
         int num_states = 2;
         int num_controls = 3;
@@ -329,7 +329,7 @@ TEST_CASE("Interpolating an initial guess") {
     }
 
     SECTION("Original times must be sorted") {
-        OptimalControlIterate it;
+        Iterate it;
         it.time.resize(5);
         it.time << 0, 1, 2, 1.5, 3;
         REQUIRE_THROWS_WITH(it.interpolate(20),

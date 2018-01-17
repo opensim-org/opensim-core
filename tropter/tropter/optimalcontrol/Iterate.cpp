@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimalControlIterate.cpp
+// tropter: Iterate.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,7 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimalControlIterate.h"
+#include "Iterate.h"
 #include <tropter/Exception.hpp>
 
 #include <fstream>
@@ -24,7 +24,7 @@
 
 using namespace tropter;
 
-OptimalControlIterate::OptimalControlIterate(const std::string& filepath) {
+Iterate::Iterate(const std::string& filepath) {
     TROPTER_THROW_IF(filepath.empty(), "filepath is empty.");
 
     std::ifstream f(filepath);
@@ -164,15 +164,15 @@ namespace {
     }
 }
 
-OptimalControlIterate
-OptimalControlIterate::interpolate(int desired_num_columns) const {
+Iterate
+Iterate::interpolate(int desired_num_columns) const {
     if (time.size() == desired_num_columns) return *this;
 
     assert(desired_num_columns > 0);
     TROPTER_THROW_IF(!std::is_sorted(time.data(), time.data() + time.size()),
             "Expected time to be non-decreasing.");
 
-    OptimalControlIterate out;
+    Iterate out;
     out.state_names = state_names;
     out.control_names = control_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
@@ -183,7 +183,7 @@ OptimalControlIterate::interpolate(int desired_num_columns) const {
 }
 
 /// Write the states and controls trajectories to a plain-text CSV file.
-void OptimalControlIterate::write(const std::string& filepath) const {
+void Iterate::write(const std::string& filepath) const {
     std::ofstream f(filepath);
 
     // Header.

@@ -42,8 +42,8 @@ Also, PETSc (suggested by Millard's colleague):
 
 Automatically generate a nice initial guess:
 //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
-    //OptimalControlIterate initial_guess = ocp->make_guess_template();
-    //OptimalControlSolution solution = dircol.solve(initial_guess);
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
 
 
 Test problems with scenarios where the tendon would buckle (MTU length <

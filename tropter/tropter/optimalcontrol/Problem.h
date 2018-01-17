@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMALCONTROLPROBLEM_H
-#define TROPTER_OPTIMALCONTROLPROBLEM_H
+#ifndef TROPTER_OPTIMALCONTROL_PROBLEM_H
+#define TROPTER_OPTIMALCONTROL_PROBLEM_H
 // ----------------------------------------------------------------------------
-// tropter: OptimalControlProblem.h
+// tropter: Problem.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -16,7 +16,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimalControlIterate.h"
+#include "Iterate.h"
 #include <tropter/common.h>
 #include <Eigen/Dense>
 
@@ -112,7 +112,7 @@ struct DAEOutput {
 /// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
 template <typename T>
-class OptimalControlProblem {
+class Problem {
 private:
     struct ContinuousVariableInfo {
         ContinuousVariableInfo(std::string, Bounds, InitialBounds, FinalBounds);
@@ -131,9 +131,9 @@ private:
     };
 public:
 
-    OptimalControlProblem() = default;
-    OptimalControlProblem(const std::string& name) : m_name(name) {}
-    virtual ~OptimalControlProblem() = default;
+    Problem() = default;
+    Problem(const std::string& name) : m_name(name) {}
+    virtual ~Problem() = default;
     /// @name Get information about the problem
     /// @{
     int get_num_states() const
@@ -304,7 +304,7 @@ public:
     /// @param[in] value
     ///     This must have the same number of columns as `guess.time` and
     ///     `guess.states`.
-    void set_state_guess(OptimalControlIterate& guess,
+    void set_state_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
     /// Set a guess for the trajectory of a single control variable with name
@@ -322,7 +322,7 @@ public:
     /// @param[in] value
     ///     This must have the same number of columns as `guess.time` and
     ///     `guess.controls`.
-    void set_control_guess(OptimalControlIterate& guess,
+    void set_control_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
     /// Set a guess for the value of a single parameter variable with name
@@ -335,7 +335,7 @@ public:
     ///     Name of the parameter variable (provided in add_parameter()).
     /// @param[in] value
     ///     This value is time-invariant in the iterate `guess`.
-    void set_parameter_guess(OptimalControlIterate& guess,
+    void set_parameter_guess(Iterate& guess,
             const std::string& name,
             const double& value);
     /// @}
@@ -378,5 +378,5 @@ private:
 
 } // namespace tropter
 
-#endif // TROPTER_OPTIMALCONTROLPROBLEM_H
+#endif // TROPTER_OPTIMALCONTROL_PROBLEM_H
 

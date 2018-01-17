@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimalControlProblem.cpp
+// tropter: Problem.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -13,11 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimalControlProblem.hpp"
+#include "Problem.hpp"
 
 namespace tropter {
 
-template class OptimalControlProblem<double>;
-template class OptimalControlProblem<adouble>;
+template class Problem<double>;
+template class Problem<adouble>;
 
 } // namespace tropter

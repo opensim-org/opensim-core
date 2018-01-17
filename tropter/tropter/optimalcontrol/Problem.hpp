@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMALCONTROLPROBLEM_HPP
-#define TROPTER_OPTIMALCONTROLPROBLEM_HPP
+#ifndef TROPTER_OPTIMALCONTROL_PROBLEM_HPP
+#define TROPTER_OPTIMALCONTROL_PROBLEM_HPP
 // ----------------------------------------------------------------------------
-// tropter: OptimalControlProblem.hpp
+// tropter: Problem.hpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -16,7 +16,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimalControlProblem.h"
+#include "Problem.h"
 
 #include <tropter/Exception.hpp>
 
@@ -32,7 +32,7 @@ Bounds::Bounds(double lower_bound, double upper_bound) {
 }
 
 template<typename T>
-OptimalControlProblem<T>::ContinuousVariableInfo::
+Problem<T>::ContinuousVariableInfo::
 ContinuousVariableInfo(std::string n, Bounds b,
         InitialBounds ib, FinalBounds fb)
         : name(n), bounds(b), initial_bounds(ib), final_bounds(fb) {
@@ -59,7 +59,7 @@ ContinuousVariableInfo(std::string n, Bounds b,
 }
 
 template<typename T>
-void OptimalControlProblem<T>::print_description() const {
+void Problem<T>::print_description() const {
     using std::cout;
     using std::endl;
     auto print_continuous_var_info = [](
@@ -105,29 +105,29 @@ void OptimalControlProblem<T>::print_description() const {
 }
 
 template<typename T>
-void OptimalControlProblem<T>::
+void Problem<T>::
 initialize_on_mesh(const Eigen::VectorXd&) const
 {}
 
 template<typename T>    
-void OptimalControlProblem<T>::
+void Problem<T>::
 calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
 {}
 
 template<typename T>
-void OptimalControlProblem<T>::
+void Problem<T>::
 calc_endpoint_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
 {}
 
 template<typename T>
-void OptimalControlProblem<T>::
+void Problem<T>::
 calc_integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, 
         const VectorX<T>&, T&) const
 {}
 
 template<typename T>
-void OptimalControlProblem<T>::
-set_state_guess(OptimalControlIterate& guess,
+void Problem<T>::
+set_state_guess(Iterate& guess,
         const std::string& name,
         const Eigen::VectorXd& value) {
     // Check for errors.
@@ -160,8 +160,8 @@ set_state_guess(OptimalControlIterate& guess,
 }
 
 template<typename T>
-void OptimalControlProblem<T>::
-set_control_guess(OptimalControlIterate& guess,
+void Problem<T>::
+set_control_guess(Iterate& guess,
         const std::string& name,
         const Eigen::VectorXd& value)
 {
@@ -195,8 +195,8 @@ set_control_guess(OptimalControlIterate& guess,
 }
 
 template<typename T>
-void OptimalControlProblem<T>::
-set_parameter_guess(OptimalControlIterate& guess,
+void Problem<T>::
+set_parameter_guess(Iterate& guess,
         const std::string& name,
         const double& value)
 {
@@ -225,7 +225,7 @@ set_parameter_guess(OptimalControlIterate& guess,
 }
 
 template<typename T>
-void OptimalControlProblem<T>::get_all_bounds(
+void Problem<T>::get_all_bounds(
         double& initial_time_lower, double& initial_time_upper,
         double& final_time_lower, double& final_time_upper,
         Eigen::Ref<Eigen::VectorXd> states_lower,
@@ -303,4 +303,4 @@ void OptimalControlProblem<T>::get_all_bounds(
 
 } // namespace tropter
 
-#endif // TROPTER_OPTIMALCONTROLPROBLEM_HPP
+#endif // TROPTER_OPTIMALCONTROL_PROBLEM_HPP

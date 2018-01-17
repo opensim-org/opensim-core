@@ -30,7 +30,7 @@ using Eigen::MatrixXd;
 using namespace tropter;
 
 template<typename T>
-class SlidingMass : public tropter::OptimalControlProblem<T> {
+class SlidingMass : public tropter::Problem<T> {
 public:
     SlidingMass() {
         this->set_time({0}, {2});
@@ -60,10 +60,10 @@ TEST_CASE("IPOPT") {
     SECTION("ADOL-C") {
         auto ocp = std::make_shared<SlidingMass<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         solution.write("sliding_mass_solution.csv");
-        //OptimalControlIterate initial_guess = ocp->make_guess_template();
-        //OptimalControlSolution solution = dircol.solve(initial_guess);
+        //Iterate initial_guess = ocp->make_guess_template();
+        //Solution solution = dircol.solve(initial_guess);
 
         // Initial and final position.
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
@@ -94,7 +94,7 @@ TEST_CASE("IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
         REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
         // Initial and final speed.
@@ -110,7 +110,7 @@ TEST_CASE("IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         REQUIRE(Approx(solution.states(0, 0)) == 0.0);
         REQUIRE(Approx(solution.states.rightCols<1>()[0]) == 1.0);
         // Initial and final speed.
@@ -128,10 +128,10 @@ TEST_CASE("SNOPT") {
 
     auto ocp = std::make_shared<SlidingMass<adouble>>();
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt");
-    OptimalControlSolution solution = dircol.solve();
+    Solution solution = dircol.solve();
     solution.write("sliding_mass_solution.csv");
-    //OptimalControlIterate initial_guess = ocp->make_guess_template();
-    //OptimalControlSolution solution = dircol.solve(initial_guess);
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
 
     // Initial and final position.
     REQUIRE(Approx(solution.states(0, 0)) == 0.0);

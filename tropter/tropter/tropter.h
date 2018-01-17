@@ -28,8 +28,8 @@
 #include "optimization/SNOPTSolver.h"
 #include "optimization/IPOPTSolver.h"
 
-#include "optimalcontrol/OptimalControlIterate.h"
-#include "optimalcontrol/OptimalControlProblem.h"
+#include "tropter/optimalcontrol/Iterate.h"
+#include "tropter/optimalcontrol/Problem.h"
 #include "optimalcontrol/DirectCollocation.h"
 
 #include "optimalcontrol/transcription/Trapezoidal.h"

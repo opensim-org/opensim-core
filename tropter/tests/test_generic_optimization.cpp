@@ -26,7 +26,7 @@ using Eigen::Vector4d;
 using Eigen::Vector2d;
 using Eigen::VectorXd;
 
-using namespace tropter;
+using tropter::VectorX;
 using namespace tropter::optimization;
 
 // TODO elegantly handle the case where the objective is not defined (do not

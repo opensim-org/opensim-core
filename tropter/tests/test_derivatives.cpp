@@ -29,7 +29,9 @@ using Eigen::Vector4d;
 using Vector5d = Eigen::Matrix<double, 5, 1>;
 using Eigen::MatrixXd;
 
-using namespace tropter;
+using tropter::VectorX;
+using tropter::SparsityPattern;
+using tropter::SymmetricSparsityPattern;
 using namespace tropter::optimization;
 
 template<typename T>
