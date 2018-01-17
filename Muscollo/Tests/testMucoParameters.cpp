@@ -32,8 +32,8 @@ Model createOscillatorModel() {
     Model model;
     model.setName("oscillator");
     model.set_gravity(SimTK::Vec3(0, 0, 0));
-    // Set body with incorrect mass value.
-    auto* body = new Body("body", 7.5, SimTK::Vec3(0), SimTK::Inertia(0));
+    // Set model with incorrect mass value.
+    auto* body = new Body("body", MASS*0.5, SimTK::Vec3(0), SimTK::Inertia(0));
     model.addComponent(body);
 
     // Allows translation along x.
@@ -75,7 +75,7 @@ void testOscillatorMass() {
     mp.setStateInfo("slider/position/value", {-5.0, 5.0}, -0.5, {0.25, 0.75});
     mp.setStateInfo("slider/position/speed", {-20, 20}, 0, 0);
     
-    MucoParameter mass("oscillator_mass", "mass", "body", MucoBounds(0, 10));
+    MucoParameter mass("oscillator_mass", "body", "mass", MucoBounds(0, 10));
     mp.addParameter(mass);
 
     FinalPositionCost cost;
@@ -87,11 +87,7 @@ void testOscillatorMass() {
     MucoSolution sol = muco.solve();
     sol.write("testMucoParameters_testOscillatorMass_sol.sto");
 
-    
-    std::cout << "debug: " << sol.getParameter("oscillator_mass") << std::endl;
-
     SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.005);
-
 }
 
 

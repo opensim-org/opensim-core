@@ -54,32 +54,32 @@ MucoParameter::MucoParameter() {
 }
 
 MucoParameter::MucoParameter(const std::string& name,
-    const std::string& modelProperty,
-    const std::string& modelComponent,
+    const std::string& componentName,
+    const std::string& propertyName,
     const MucoBounds& bounds) : MucoParameter() {
     setName(name);
     set_bounds(bounds.getAsArray());
-    set_model_property(modelProperty);
-    set_model_component(modelComponent);
+    set_component_name(componentName);
+    set_property_name(propertyName);
 }
 
 void MucoParameter::constructProperties() {
     constructProperty_bounds();
-    constructProperty_model_property("");
-    constructProperty_model_component("");
+    constructProperty_property_name("");
+    constructProperty_component_name("");
 }
 
 void MucoParameter::initialize(const Model& model) const {
-    OPENSIM_THROW_IF(get_model_component().empty(), Exception,
-        "TODO: must set component name");
-    auto& component = model.getComponent(get_model_component());
-    OPENSIM_THROW_IF(get_model_property().empty(), Exception,
-        "TODO: must set property name");
+    OPENSIM_THROW_IF(get_component_name().empty(), Exception,
+        "A model component name must be provided.");
+    auto& component = model.getComponent(get_component_name());
+    OPENSIM_THROW_IF(get_property_name().empty(), Exception,
+        "A component property name must be provided.");
 
     // TODO: get rid of need for const_cast
     auto& property = dynamic_cast<Property<double>&>(
         const_cast<AbstractProperty&>(
-            component.getPropertyByName(get_model_property())));
+            component.getPropertyByName(get_property_name())));
 
     // TODO: check that component and property actually exist
     m_property.reset(&property);

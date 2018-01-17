@@ -202,6 +202,7 @@ public:
             SimTK::Vector mucoParams(
                     (int)m_phase0.createParameterNames().size(),
                     parameters.data(), true);
+
             m_phase0.applyParametersToModel(mucoParams);
             m_model.initSystem();
         }

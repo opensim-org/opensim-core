@@ -138,35 +138,38 @@ private:
 // MucoParameter
 // ============================================================================
 
-/// TODO: docs
+/// The bounds and model information (component and property) for a parameter
+/// to be optimized in the model. The parameter name does not need to match the 
+/// name of the model property. 
 class OSIMMUSCOLLO_API MucoParameter : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
 public:
     // Default constructor.
     MucoParameter();
     // Simple parameter constructor.
-    MucoParameter(const std::string& name, const std::string& modelProperty,
-        const std::string& modelComponent, const MucoBounds&);
-    // Generic parameter constructor.
-    //MucoParameter(const std::string& name, const std::string& modelProperty, 
-    //        const std::vector<std::string>& modelComponents,
-    //        const MucoBounds&, const unsigned& propertyElement = 0);
+    MucoParameter(const std::string& name, const std::string& componentName,
+        const std::string& propertyName, const MucoBounds&);
+    // TODO: Generic parameter constructor.
+    //MucoParameter(const std::string& name, 
+    //  const std::vector<std::string>& componentNames,
+    //  const std::string& propertyName, const MucoBounds&, 
+    //  const unsigned& propertyElement = 0);
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBounds() const
     {   return MucoBounds(getProperty_bounds()); }
-    std::string getModelProperty() const
-    {   return get_model_property(); }
-    std::string getModelComponent() const
-    {   return get_model_component(); }
+    std::string getPropertyName() const
+    {   return get_property_name(); }
+    std::string getComponentName() const
+    {   return get_component_name(); }
     void setBounds(const MucoBounds& bounds)
     {   set_bounds(bounds.getAsArray()); }
-    void setModelProperty(const std::string& modelProperty)
-    {   set_model_property(modelProperty); }
-    void setModelComponent(const std::string& modelComponent)
-    {   set_model_component(modelComponent); }
+    void setPropertyName(const std::string& propertyName)
+    {   set_property_name(propertyName); }
+    void setComponentName(const std::string& componentName)
+    {   set_component_name(componentName); }
 
     /// For use by solvers. This also performs error checks on the Problem.
     void initialize(const Model& model) const;
@@ -177,10 +180,12 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "
         "2 values: lower, upper bounds on value over all time.");
-    OpenSim_DECLARE_PROPERTY(model_property, std::string, "TODO");
-    // TODO: make this a list property (model_components)
-    OpenSim_DECLARE_PROPERTY(model_component, std::string, "TODO");
-
+    // TODO: make this a list property
+    OpenSim_DECLARE_PROPERTY(component_name, std::string, "The model component "
+        "that owns the property associated with the MucoParameter.");
+    OpenSim_DECLARE_PROPERTY(property_name, std::string, "The model property "
+        "associated with the MucoParameter.");
+    
     mutable SimTK::ReferencePtr<Property<double>> m_property;
     void constructProperties();
 };

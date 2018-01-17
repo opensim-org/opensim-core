@@ -360,8 +360,8 @@ bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
     std::sort(mpsn.begin(), mpsn.end());
     auto mpcn = mp.getPhase().createControlInfoNames();
     std::sort(mpcn.begin(), mpcn.end());
-    //auto mppn = mp.getPhase().createParameterInfoNames();
-    //std::sort(mppn.begin(), mppn.end());
+    auto mppn = mp.getPhase().createParameterNames();
+    std::sort(mppn.begin(), mppn.end());
 
     auto sn(m_state_names);
     std::sort(sn.begin(), sn.end());
@@ -369,10 +369,10 @@ bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
     auto cn(m_control_names);
     std::sort(cn.begin(), cn.end());
 
-    //auto pn(m_parameter_names);
-    //std::sort(pn.begin(), pn.end()); 
+    auto pn(m_parameter_names);
+    std::sort(pn.begin(), pn.end()); 
 
-    bool compatible = mpsn == sn && mpcn == cn; // && mppn == pn;
+    bool compatible = mpsn == sn && mpcn == cn && mppn == pn;
 
     // TODO more detailed error message specifying exactly what's different.
     OPENSIM_THROW_IF(!compatible && throwOnError, Exception,
