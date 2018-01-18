@@ -156,9 +156,9 @@ public:
         applyMarkerHeight("R.Heel.Distal", x[0]);
         applyMarkerHeight("R.Ball.Lat", x[1]);
         applyMarkerHeight("R.Ball.Med", x[2]);
-        std::cout << "DEBUG " <<
-                model.getComponent<Marker>("R.Heel.Distal").get_location() <<
-                std::endl;
+        //std::cout << "DEBUG " <<
+        //        model.getComponent<Marker>("R.Heel.Distal").get_location() <<
+        //        std::endl;
 
         int icontact = 0;
         for (auto& contact :
@@ -171,9 +171,10 @@ public:
     void calc_objective(const VectorXd& x, double& obj_value) const override {
         obj_value = 0;
 
-        std::cout << "DEBUG " << std::setprecision(16) <<
-                x[0] << "\n" << x[1] << "\n" << x[2] << "\n" <<
-                x[3] << "\n" << x[4] << "\n" << x[5] << std::endl;
+        //std::cout << "DEBUGx " << x << std::endl;
+        //std::cout << "DEBUG " << std::setprecision(16) <<
+        //        x[0] << "\n" << x[1] << "\n" << x[2] << "\n" <<
+        //        x[3] << "\n" << x[4] << "\n" << x[5] << std::endl;
 
         // Apply parameters.
         // -----------------
@@ -185,10 +186,23 @@ public:
         // ----------------------------
 
         // TODO add fore-aft force.
+        // TODO
+//        std::cout << "DEBUG " <<
+//                m_model.getComponent<Marker>("R.Heel.Distal").get_location() <<
+//                std::endl;
 
         auto contacts =
                 m_model.updComponentList<AckermannVanDenBogert2010Force>();
-        for (const auto& state : m_statesTraj) {
+        // TODO
+        //for (auto& contact : contacts) {
+        //    std::cout << "DEBUGcalc_objective get_location: "
+        //            << contact.getConnectee<Marker>("station").get_location()
+        //            << std::endl;
+        //}
+        for (auto state : m_statesTraj) {
+            // Making a copy of the state (auto state instead of const auto&
+            // state) is important for invalidating the cached contact point
+            // locations.
             m_model.realizeVelocity(state);
             SimTK::Real simFy = 0;
 
@@ -208,7 +222,6 @@ public:
     }
     void printContactComparison(const VectorXd& x,
             const std::string& filename) {
-
         TimeSeriesTable table;
 
         // Apply parameters.
@@ -225,7 +238,7 @@ public:
         auto contacts =
                 m_model.updComponentList<AckermannVanDenBogert2010Force>();
         table.setColumnLabels({"simulation", "experiment"});
-        for (const auto& state : m_statesTraj) {
+        for (auto state : m_statesTraj) {
             m_model.realizeVelocity(state);
             SimTK::RowVector row(2, 0.0);
 
@@ -358,7 +371,7 @@ void calibrateContact() {
         delete uStore;
         statesTraj = StatesTrajectory::createFromStatesStorage(model,
                 *motion, true);
-        visualize(model, *motion);
+        // visualize(model, *motion);
 
         /*
         auto refPacked = refFilt.pack<double>();
@@ -407,7 +420,8 @@ void calibrateContact() {
     ContactCalibration problem(model, statesTraj);
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
-    solver.set_hessian_approximation("exact");
+    solver.set_max_iterations(100);
+    //solver.set_hessian_approximation("exact");
     auto solution = solver.optimize();
     problem.applyParametersToModel(solution.variables, model);
     std::cout << solution.variables << std::endl;
