@@ -431,11 +431,33 @@ void calibrateContact() {
 }
 
 
+void toyCMAES() {
+    class OptSys : public SimTK::OptimizerSystem {
+    public:
+        OptSys() : SimTK::OptimizerSystem(2) {}
+        int objectiveFunc(const SimTK::Vector& vars, bool, SimTK::Real& f)
+                const override {
+            const double x = vars[0];
+            const double y = vars[1];
+            f = 0.5 * (3 * x * x + 4 * x * y + 6 * y * y) - 2 * x + 8 * y;
+            return 0;
+        }
+    };
+    OptSys sys;
+    SimTK::Vector results(2);
+    SimTK::Optimizer opt(sys, SimTK::CMAES);
+    double f = opt.optimize(results);
+    std::cout << "objective: " << f << std::endl;
+    std::cout << "variables: " << results << std::endl;
+}
+
 int main() {
 
     // calibrateBall();
 
-    calibrateContact();
+    // calibrateContact();
+
+    toyCMAES();
 
     return EXIT_SUCCESS;
 }
