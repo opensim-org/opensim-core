@@ -163,7 +163,7 @@ public:
         int icontact = 0;
         for (auto& contact :
                 model.updComponentList<AckermannVanDenBogert2010Force>()) {
-            // TODO contact.set_stiffness(forceScalingFactor * x[icontact + 3]);
+            contact.set_stiffness(forceScalingFactor * x[icontact + 3]);
             ++icontact;
         }
     }
@@ -172,8 +172,8 @@ public:
         obj_value = 0;
 
         std::cout << "DEBUG " << std::setprecision(16) <<
-                x[0] << "," << x[1] << "," << x[2] << "," <<
-                x[3] << "," << x[4] << "," << x[5] << std::endl;
+                x[0] << "\n" << x[1] << "\n" << x[2] << "\n" <<
+                x[3] << "\n" << x[4] << "\n" << x[5] << std::endl;
 
         // Apply parameters.
         // -----------------
@@ -407,6 +407,7 @@ void calibrateContact() {
     ContactCalibration problem(model, statesTraj);
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
+    solver.set_hessian_approximation("exact");
     auto solution = solver.optimize();
     problem.applyParametersToModel(solution.variables, model);
     std::cout << solution.variables << std::endl;
