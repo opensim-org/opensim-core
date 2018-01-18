@@ -126,9 +126,10 @@ class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
     double forceScalingFactor = 1e9;
     ContactCalibration(Model model, StatesTrajectory statesTraj) :
-            tropter::OptimizationProblem<double>(3, 0),
+            tropter::OptimizationProblem<double>(6, 0),
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)) {
-        set_variable_bounds(Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(1, 1, 1));
+        set_variable_bounds(
+                Eigen::VectorXd::Zero(6), Eigen::VectorXd::Ones(6));
 
         m_model.initSystem();
 
@@ -144,16 +145,35 @@ public:
     }
 
     void applyParametersToModel(const VectorXd& x, Model& model) const {
+        auto applyMarkerHeight = [&model](const std::string& name,
+                                          const double& normHeight) {
+            auto& marker = model.updComponent<Marker>(name);
+            // index 1 for y component.
+            const double lower = -0.04;
+            const double upper = -0.01;
+            marker.upd_location()[1] = lower + normHeight * (upper - lower);
+        };
+        applyMarkerHeight("R.Heel.Distal", x[0]);
+        applyMarkerHeight("R.Ball.Lat", x[1]);
+        applyMarkerHeight("R.Ball.Med", x[2]);
+        std::cout << "DEBUG " <<
+                model.getComponent<Marker>("R.Heel.Distal").get_location() <<
+                std::endl;
+
         int icontact = 0;
         for (auto& contact :
                 model.updComponentList<AckermannVanDenBogert2010Force>()) {
-            contact.set_stiffness(forceScalingFactor * x[icontact]);
+            // TODO contact.set_stiffness(forceScalingFactor * x[icontact + 3]);
             ++icontact;
         }
     }
 
     void calc_objective(const VectorXd& x, double& obj_value) const override {
         obj_value = 0;
+
+        std::cout << "DEBUG " << std::setprecision(16) <<
+                x[0] << "," << x[1] << "," << x[2] << "," <<
+                x[3] << "," << x[4] << "," << x[5] << std::endl;
 
         // Apply parameters.
         // -----------------
@@ -178,12 +198,47 @@ public:
 
             SimTK::Vector timeVec(1, state.getTime());
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
-            // std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
+            //std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
             obj_value += pow(simFy - expFy, 2);
         }
         const double mg = m_model.getTotalMass(m_statesTraj.front()) *
                         m_model.getGravity().norm();
-        obj_value /= mg;
+        // TODO how should we normalize?
+        obj_value /= mg * m_statesTraj.getSize();
+    }
+    void printContactComparison(const VectorXd& x,
+            const std::string& filename) {
+
+        TimeSeriesTable table;
+
+        // Apply parameters.
+        // -----------------
+        applyParametersToModel(x, m_model);
+        // TODO is this expensive?
+        m_model.initSystem();
+
+        // Compute contact force error.
+        // ----------------------------
+
+        // TODO add fore-aft force.
+
+        auto contacts =
+                m_model.updComponentList<AckermannVanDenBogert2010Force>();
+        table.setColumnLabels({"simulation", "experiment"});
+        for (const auto& state : m_statesTraj) {
+            m_model.realizeVelocity(state);
+            SimTK::RowVector row(2, 0.0);
+
+            for (auto& contact : contacts) {
+                row[0] += contact.calcContactForce(state)[1];
+            }
+
+            SimTK::Vector timeVec(1, state.getTime());
+            row[1] = m_FySpline.calcValue(timeVec);
+
+            table.appendRow(state.getTime(), row);
+        }
+        STOFileAdapter::write(table, filename);
     }
 private:
 
@@ -230,8 +285,6 @@ void calibrateContact() {
     Model model("gait1018_subject01_onefoot_v30516.osim");
     model.initSystem();
 
-    // TODO increase mass of foot!!!!
-
     addCoordinateActuator(model, "rz", 250);
     addCoordinateActuator(model, "tx", 5000);
     addCoordinateActuator(model, "ty", 5000);
@@ -246,6 +299,8 @@ void calibrateContact() {
     addContact(model, "R.Heel.Distal", 5e7);
     addContact(model, "R.Ball.Lat", 7.5e7);
     addContact(model, "R.Ball.Med", 7.5e7);
+
+    // TODO add a lot of contact points!
 
     // Kinematics data.
     // ----------------
@@ -347,12 +402,16 @@ void calibrateContact() {
 
     }
 
+    std::cout << "Number of states in trajectory: " << statesTraj.getSize()
+            << std::endl;
     ContactCalibration problem(model, statesTraj);
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
     auto solution = solver.optimize();
     problem.applyParametersToModel(solution.variables, model);
     std::cout << solution.variables << std::endl;
+    problem.printContactComparison(solution.variables,
+            "sandboxCalibrateContact_comparison.sto");
     visualize(model, *motion);
 }
 
