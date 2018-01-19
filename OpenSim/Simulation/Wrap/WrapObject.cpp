@@ -252,9 +252,9 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                         visibleNode);
             }
-            // Regardless, we'll add Appearance since default for WrapObject is different from 
-            // default Appearance object (shaded, all white, visible)
-            // Add Appearance to the WrapObject.
+            // Regardless of whether any display options were given in XML, 
+            // we'll add Appearance since default for WrapObject is different
+            // from default Appearance object (shaded, all white, visible)
             node.insertNodeAfter(node.element_end(), appearanceNode);
         }
     }
