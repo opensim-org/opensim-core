@@ -124,13 +124,14 @@ void calibrateBall() {
 /// force.
 class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
-    static constexpr int numVariables = 6;
-    double forceScalingFactor = 1e9;
-    ContactCalibration(Model model, StatesTrajectory statesTraj) :
-            tropter::OptimizationProblem<double>(numVariables, 0),
-            m_model(std::move(model)), m_statesTraj(std::move(statesTraj)) {
-        set_variable_bounds(Eigen::VectorXd::Zero(numVariables),
-                Eigen::VectorXd::Ones(numVariables));
+    double forceScalingFactor = 1e8;
+    ContactCalibration(Model model, StatesTrajectory statesTraj,
+            int numContacts) :
+            tropter::OptimizationProblem<double>(2 * numContacts, 0),
+            m_model(std::move(model)), m_statesTraj(std::move(statesTraj)),
+            m_numContacts(numContacts) {
+        set_variable_bounds(Eigen::VectorXd::Zero(2 * numContacts),
+                Eigen::VectorXd::Ones(2 * numContacts));
 
         m_model.initSystem();
 
@@ -151,12 +152,13 @@ public:
             auto& marker = model.updComponent<Marker>(name);
             // index 1 for y component.
             const double lower = -0.04;
-            const double upper = -0.01;
+            const double upper =  0.01;
             marker.upd_location()[1] = lower + normHeight * (upper - lower);
         };
-        applyMarkerHeight("R.Heel.Distal", x[0]);
-        applyMarkerHeight("R.Ball.Lat", x[1]);
-        applyMarkerHeight("R.Ball.Med", x[2]);
+        for (int icontact = 0; icontact < m_numContacts; ++icontact) {
+            const std::string name = "marker" + std::to_string(icontact);
+            applyMarkerHeight(name, x[icontact]);
+        }
         //std::cout << "DEBUG " <<
         //        model.getComponent<Marker>("R.Heel.Distal").get_location() <<
         //        std::endl;
@@ -164,7 +166,8 @@ public:
         int icontact = 0;
         for (auto& contact :
                 model.updComponentList<AckermannVanDenBogert2010Force>()) {
-            contact.set_stiffness(forceScalingFactor * x[icontact + 3]);
+            contact.set_stiffness(
+                    forceScalingFactor * x[icontact + m_numContacts]);
             ++icontact;
         }
     }
@@ -259,16 +262,22 @@ private:
     mutable Model m_model;
     StatesTrajectory m_statesTraj;
     GCVSpline m_FySpline;
+    int m_numContacts;
 
 };
 
 class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
-    SimTKContactCalibration(Model model, StatesTrajectory statesTraj)
-            : SimTK::OptimizerSystem(ContactCalibration::numVariables),
-              m_tropProb(std::move(model), std::move(statesTraj)) {
-        int N = ContactCalibration::numVariables;
+    SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
+            int numContacts)
+            : SimTK::OptimizerSystem(2 * numContacts),
+              m_tropProb(std::move(model), std::move(statesTraj), numContacts) {
+        int N = 2 * numContacts;
         setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
+    }
+    void applyParametersToModel(const SimTK::Vector& vars, Model& model) const {
+        Eigen::VectorXd x = Eigen::Map<const VectorXd>(&vars[0], vars.size());
+        m_tropProb.applyParametersToModel(x, model);
     }
     int objectiveFunc(const SimTK::Vector& vars, bool, SimTK::Real& f)
     const override {
@@ -329,6 +338,7 @@ void calibrateContact() {
     addCoordinateActuator(model, "ty", 5000);
 
     const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
+    /*
     model.addMarker(new Marker("R.Heel.Distal", calcn,
             SimTK::Vec3(0.01548, -0.0272884, -0.00503735)));
     model.addMarker(new Marker("R.Ball.Lat", calcn,
@@ -338,8 +348,21 @@ void calibrateContact() {
     addContact(model, "R.Heel.Distal", 5e7);
     addContact(model, "R.Ball.Lat", 7.5e7);
     addContact(model, "R.Ball.Med", 7.5e7);
+    */
+    // Programmatically add contact points across the foot.
+    const SimTK::Real xHeel = 0.0;
+    const SimTK::Real xToes = 0.23;
+    const int numContacts = 10;
+    for (int icontact = 0; icontact < numContacts; ++icontact) {
+        const std::string name = "marker" + std::to_string(icontact);
+        const SimTK::Real x = xHeel +
+                SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
+                        (xToes - xHeel);
+        model.addMarker(new Marker(name, calcn, SimTK::Vec3(x, -0.027, -0.04)));
+        addContact(model, name);
 
-    // TODO add a lot of contact points!
+    }
+
 
     // Kinematics data.
     // ----------------
@@ -447,7 +470,7 @@ void calibrateContact() {
     // IPOPT
     // -----
     /*
-    ContactCalibration problem(model, statesTraj);
+    ContactCalibration problem(model, statesTraj, numContacts);
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
     solver.set_max_iterations(100);
@@ -462,9 +485,10 @@ void calibrateContact() {
 
     // CMAES
     // -----
-    SimTKContactCalibration sys(model, statesTraj);
-    SimTK::Vector results(ContactCalibration::numVariables, 0.5);
+    SimTKContactCalibration sys(model, statesTraj, numContacts);
+    SimTK::Vector results(2 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
+    opt.setMaxIterations(300);
     opt.setDiagnosticsLevel(3);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     double f = opt.optimize(results);
@@ -472,6 +496,8 @@ void calibrateContact() {
     std::cout << "variables: " << results << std::endl;
     sys.printContactComparison(results,
             "sandboxCalibrateContact_comparison_cmaes.sto");
+    sys.applyParametersToModel(results, model);
+    visualize(model, *motion);
 }
 
 
