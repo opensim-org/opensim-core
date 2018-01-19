@@ -561,7 +561,7 @@ void testNumberOfMarkersMismatch()
 
         auto namesIter = usedMarkerNames.begin();
         for (int j = 0; j < nme; ++j) {
-            auto& markerName = ikSolver.getMarkerNameForIndex(j);
+            const auto& markerName = ikSolver.getMarkerNameForIndex(j);
             cout << " " << markerName << " error = " << markerErrors[j];
 
             SimTK_ASSERT_ALWAYS( *namesIter++ != "unused",
