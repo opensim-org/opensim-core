@@ -151,8 +151,8 @@ public:
                                           const double& normHeight) {
             auto& marker = model.updComponent<Marker>(name);
             // index 1 for y component.
-            const double lower = -0.04;
-            const double upper =  0.01;
+            const double lower = -0.05;
+            const double upper =  0.05;
             marker.upd_location()[1] = lower + normHeight * (upper - lower);
         };
         for (int icontact = 0; icontact < m_numContacts; ++icontact) {
@@ -173,6 +173,7 @@ public:
     }
 
     void calc_objective(const VectorXd& x, double& obj_value) const override {
+
         obj_value = 0;
 
         //std::cout << "DEBUGx " << x << std::endl;
@@ -281,9 +282,11 @@ public:
     }
     int objectiveFunc(const SimTK::Vector& vars, bool, SimTK::Real& f)
     const override {
-        std::cout << "DEBUG " << vars << std::endl;
+        ++m_objCount;
         Eigen::VectorXd x = Eigen::Map<const VectorXd>(&vars[0], vars.size());
         m_tropProb.calc_objective(x, f);
+        std::cout << "DEBUG " << m_objCount << " " << f << " " << vars <<
+                std::endl;
         return 0;
     }
     void printContactComparison(const SimTK::Vector& vars,
@@ -293,7 +296,7 @@ public:
     }
 private:
     ContactCalibration m_tropProb;
-
+    mutable std::atomic<int> m_objCount {0};
 };
 
 /// Convenience function to apply a CoordinateActuator to the model.
@@ -350,8 +353,8 @@ void calibrateContact() {
     addContact(model, "R.Ball.Med", 7.5e7);
     */
     // Programmatically add contact points across the foot.
-    const SimTK::Real xHeel = 0.0;
-    const SimTK::Real xToes = 0.23;
+    const SimTK::Real xHeel = -0.05;
+    const SimTK::Real xToes =  0.30;
     const int numContacts = 10;
     for (int icontact = 0; icontact < numContacts; ++icontact) {
         const std::string name = "marker" + std::to_string(icontact);
@@ -488,8 +491,9 @@ void calibrateContact() {
     SimTKContactCalibration sys(model, statesTraj, numContacts);
     SimTK::Vector results(2 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
-    opt.setMaxIterations(300);
+    opt.setMaxIterations(100);
     opt.setDiagnosticsLevel(3);
+    opt.setConvergenceTolerance(1e-1);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     double f = opt.optimize(results);
     std::cout << "objective: " << f << std::endl;
