@@ -124,12 +124,13 @@ void calibrateBall() {
 /// force.
 class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
+    static constexpr int numVariables = 6;
     double forceScalingFactor = 1e9;
     ContactCalibration(Model model, StatesTrajectory statesTraj) :
-            tropter::OptimizationProblem<double>(6, 0),
+            tropter::OptimizationProblem<double>(numVariables, 0),
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)) {
-        set_variable_bounds(
-                Eigen::VectorXd::Zero(6), Eigen::VectorXd::Ones(6));
+        set_variable_bounds(Eigen::VectorXd::Zero(numVariables),
+                Eigen::VectorXd::Ones(numVariables));
 
         m_model.initSystem();
 
@@ -258,6 +259,31 @@ private:
     mutable Model m_model;
     StatesTrajectory m_statesTraj;
     GCVSpline m_FySpline;
+
+};
+
+class SimTKContactCalibration : public SimTK::OptimizerSystem {
+public:
+    SimTKContactCalibration(Model model, StatesTrajectory statesTraj)
+            : SimTK::OptimizerSystem(ContactCalibration::numVariables),
+              m_tropProb(std::move(model), std::move(statesTraj)) {
+        int N = ContactCalibration::numVariables;
+        setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
+    }
+    int objectiveFunc(const SimTK::Vector& vars, bool, SimTK::Real& f)
+    const override {
+        std::cout << "DEBUG " << vars << std::endl;
+        Eigen::VectorXd x = Eigen::Map<const VectorXd>(&vars[0], vars.size());
+        m_tropProb.calc_objective(x, f);
+        return 0;
+    }
+    void printContactComparison(const SimTK::Vector& vars,
+            const std::string& filename) {
+        Eigen::VectorXd x = Eigen::Map<const VectorXd>(&vars[0], vars.size());
+        m_tropProb.printContactComparison(x, filename);
+    }
+private:
+    ContactCalibration m_tropProb;
 
 };
 
@@ -417,6 +443,10 @@ void calibrateContact() {
 
     std::cout << "Number of states in trajectory: " << statesTraj.getSize()
             << std::endl;
+
+    // IPOPT
+    // -----
+    /*
     ContactCalibration problem(model, statesTraj);
     tropter::IPOPTSolver solver(problem);
     solver.set_verbosity(1);
@@ -428,6 +458,20 @@ void calibrateContact() {
     problem.printContactComparison(solution.variables,
             "sandboxCalibrateContact_comparison.sto");
     visualize(model, *motion);
+     */
+
+    // CMAES
+    // -----
+    SimTKContactCalibration sys(model, statesTraj);
+    SimTK::Vector results(ContactCalibration::numVariables, 0.5);
+    SimTK::Optimizer opt(sys, SimTK::CMAES);
+    opt.setDiagnosticsLevel(3);
+    opt.setAdvancedRealOption("init_stepsize", 0.5);
+    double f = opt.optimize(results);
+    std::cout << "objective: " << f << std::endl;
+    std::cout << "variables: " << results << std::endl;
+    sys.printContactComparison(results,
+            "sandboxCalibrateContact_comparison_cmaes.sto");
 }
 
 
@@ -455,9 +499,9 @@ int main() {
 
     // calibrateBall();
 
-    // calibrateContact();
+    calibrateContact();
 
-    toyCMAES();
+    // toyCMAES();
 
     return EXIT_SUCCESS;
 }
