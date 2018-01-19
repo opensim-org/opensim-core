@@ -67,15 +67,13 @@ void testUpdateMarkerWeights();
 void testTrackWithUpdateMarkerWeights();
 
 // Verify that solver does not confuse/mismanage markers when reference
-// has more markers than the model.
-// the solver solution (coordinates) can be trusted as it is tightened.
+// has more markers than the model, order is changed or marker reference
+// includes intervals with NaNs (no observation)
 void testNumberOfMarkersMismatch();
 
 int main()
 {
     SimTK::Array_<std::string> failures;
-
-    testNumberOfMarkersMismatch();
 
     try { testMarkersReference(); }
     catch (const std::exception& e) {
@@ -95,6 +93,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testTrackWithUpdateMarkerWeights");
+    }
+
+    try { testNumberOfMarkersMismatch(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testNumberOfMarkersMismatch");
     }
 
     if (!failures.empty()) {
