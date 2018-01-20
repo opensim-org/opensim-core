@@ -10,7 +10,10 @@ c3dpath = fullfile(path,filename);
 import org.opensim.modeling.*
 
 %% Construct an opensimC3D object with input c3d path
-c3d = opensimC3D(c3dpath);
+c3d = osimC3D(c3dpath);
+% get the file name and directory
+name = c3d.getFileName();
+path = c3d.getPath();
 
 %% Get some stats...
 % Get the number of marker trajectories
@@ -35,3 +38,20 @@ markerTable = c3d.getTable_markers();
 forceTable = c3d.getTable_forces();
 % Get as Matlab Structures
 [markerStruct forceStruct] = c3d.getAsStructs();
+
+%% Write TRC to file
+% Replace any illegal column characters
+osimTable = osimUpdateMarkerNames(markerTable);
+% Replace [0,0,0] values with NaN's
+osimTable = osimZerosToNans(osimTable);
+
+% Make an export filename
+[pathstr,trcname,ext] = fileparts(fullfile(path,filename));
+% Print to file
+TRCFileAdapter().write(osimTable, fullfile(pathstr,[trcname '.trc']))
+
+
+
+
+
+

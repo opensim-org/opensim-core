@@ -3,7 +3,7 @@ classdef osimC3D < matlab.mixin.SetGet
 %   Utility  Class that uses OpenSim's C3DFileAdapter() class to produce
 %   OpenSim tables. Methods include Simbody rotation.
     properties (Access = private)
-        path
+        filePath
         markers
         forces
     end
@@ -11,11 +11,15 @@ classdef osimC3D < matlab.mixin.SetGet
         function obj = osimC3D(path2c3d)
             % Class Constructor: input is an absolute path to a C3D file. 
             
+            % Class Constructor: input is an absolute path to a C3D file. 
+            if nargin == 0
+                error('No input given. Input must be path to C3D file')
+            end
             % verify the file path is correct
             if exist(path2c3d, 'file') == 0
                 error('File does not exist. Check path is correct')
             else
-                obj.path = path2c3d;
+                obj.filePath = path2c3d;
             end
             % load java libs
             import org.opensim.modeling.*
@@ -51,11 +55,11 @@ classdef osimC3D < matlab.mixin.SetGet
         end
         function name = getFileName(obj)
             % Get the name of the c3d file
-            [filedirectory, name, extension] = fileparts(obj.path);
+            [filepath, name, extension] = fileparts(obj.filePath);
         end
-        function filedirectory = getDirectory(obj)
-            % Get the directory path for the c3d file
-            [filedirectory, name, extension] = fileparts(obj.path);
+        function filepath = getPath(obj)
+            % Get the path for the c3d file
+            [filepath, name, extension] = fileparts(obj.filePath);
         end
         function table = getTable_markers(obj)
             table = obj.markers().clone();
@@ -123,5 +127,6 @@ classdef osimC3D < matlab.mixin.SetGet
                 table.setRowAtIndex(iRow,rowVec_rotated)
             end
         end
+
    end
 end 
