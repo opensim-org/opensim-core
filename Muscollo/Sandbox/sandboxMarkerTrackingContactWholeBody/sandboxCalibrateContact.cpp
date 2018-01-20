@@ -152,7 +152,7 @@ public:
                                           const double& normHeight) {
             auto& marker = model.updComponent<Marker>(name);
             // index 1 for y component.
-            const double lower = -0.05;
+            const double lower = -0.06;
             const double upper =  0.05;
             marker.upd_location()[1] = lower + normHeight * (upper - lower);
         };
@@ -366,15 +366,15 @@ void calibrateContact() {
     addContact(model, "R.Ball.Med", 7.5e7);
     */
     // Programmatically add contact points across the foot.
-    const SimTK::Real xHeel = -0.05;
-    const SimTK::Real xToes =  0.30;
-    const int numContacts = 10;
+    const SimTK::Real xHeel = -0.03;
+    const SimTK::Real xToes =  0.28;
+    const int numContacts = 6;
     for (int icontact = 0; icontact < numContacts; ++icontact) {
         const std::string name = "marker" + std::to_string(icontact);
         const SimTK::Real x = xHeel +
                 SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
                         (xToes - xHeel);
-        model.addMarker(new Marker(name, calcn, SimTK::Vec3(x, -0.027, -0.04)));
+        model.addMarker(new Marker(name, calcn, SimTK::Vec3(x, -0.027, 0.0)));
         addContact(model, name);
 
     }
@@ -504,7 +504,7 @@ void calibrateContact() {
     SimTKContactCalibration sys(model, statesTraj, numContacts);
     SimTK::Vector results(2 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
-    // opt.setMaxIterations(100);
+    opt.setMaxIterations(3000);
     opt.setDiagnosticsLevel(3);
     opt.setConvergenceTolerance(1e-3);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
