@@ -143,7 +143,7 @@ public:
         auto time = data.getIndependentColumn();
         SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
         SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
-        // TODO GCVSpline FxSpline(5, (int)time.size(), time.data(), &Fx[0]);
+        m_FxSpline = GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
         m_FySpline = GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
     }
 
@@ -219,16 +219,20 @@ public:
             // state) is important for invalidating the cached contact point
             // locations.
             model.realizeVelocity(state);
-            SimTK::Real simFy = 0;
 
+            SimTK::Real simFx = 0;
+            SimTK::Real simFy = 0;
             for (auto& contact : contacts) {
-                simFy += contact.calcContactForce(state)[1];
+                SimTK::Vec3 force = contact.calcContactForce(state);
+                simFx += force[0];
+                simFy += force[1];
             }
 
             SimTK::Vector timeVec(1, state.getTime());
+            SimTK::Real expFx = m_FySpline.calcValue(timeVec);
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
             //std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
-            obj_value += pow(simFy - expFy, 2);
+            obj_value += pow(simFx - expFx, 2) + pow(simFy - expFy, 2);
         }
         const double mg = model.getTotalMass(m_statesTraj.front()) *
                         model.getGravity().norm();
@@ -252,17 +256,20 @@ public:
 
         auto contacts =
                 m_model.updComponentList<AckermannVanDenBogert2010Force>();
-        table.setColumnLabels({"simulation", "experiment"});
+        table.setColumnLabels({"Fx_sim", "Fy_sim", "Fx_exp", "Fy_exp"});
         for (auto state : m_statesTraj) {
             m_model.realizeVelocity(state);
-            SimTK::RowVector row(2, 0.0);
+            SimTK::RowVector row(4, 0.0);
 
             for (auto& contact : contacts) {
-                row[0] += contact.calcContactForce(state)[1];
+                SimTK::Vec3 force = contact.calcContactForce(state);
+                row[0] += force[0];
+                row[1] += force[1];
             }
 
             SimTK::Vector timeVec(1, state.getTime());
-            row[1] = m_FySpline.calcValue(timeVec);
+            row[2] = m_FxSpline.calcValue(timeVec);
+            row[3] = m_FySpline.calcValue(timeVec);
 
             table.appendRow(state.getTime(), row);
         }
@@ -272,6 +279,7 @@ private:
 
     mutable Model m_model;
     StatesTrajectory m_statesTraj;
+    GCVSpline m_FxSpline;
     GCVSpline m_FySpline;
     int m_numContacts;
 
