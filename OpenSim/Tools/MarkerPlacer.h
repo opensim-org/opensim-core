@@ -162,7 +162,7 @@ public:
         _coordinateFileNameProp.setValueIsDefault(false);
     }
 
-    const std::string getMarkerFileName() const {return _markerFileName; }
+    const std::string& getMarkerFileName() const {return _markerFileName; }
     void setMarkerFileName( const std::string& aMarkerFileName)
     {
         _markerFileName=aMarkerFileName;
