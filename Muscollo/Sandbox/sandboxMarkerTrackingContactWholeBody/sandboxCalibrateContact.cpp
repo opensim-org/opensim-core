@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 
+#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
@@ -181,11 +182,18 @@ public:
         //        x[0] << "\n" << x[1] << "\n" << x[2] << "\n" <<
         //        x[3] << "\n" << x[4] << "\n" << x[5] << std::endl;
 
+        const auto thread_id = std::this_thread::get_id();
+        if (m_workingModels.count(thread_id) == 0) {
+            m_workingModels[thread_id] = m_model;
+            m_workingModels[thread_id].initSystem();
+        }
+        Model& model = m_workingModels[thread_id];
+
         // Apply parameters.
         // -----------------
-        applyParametersToModel(x, m_model);
+        applyParametersToModel(x, model);
         // TODO is this expensive?
-        m_model.initSystem();
+        model.initSystem();
 
         // Compute contact force error.
         // ----------------------------
@@ -197,7 +205,7 @@ public:
 //                std::endl;
 
         auto contacts =
-                m_model.updComponentList<AckermannVanDenBogert2010Force>();
+                model.updComponentList<AckermannVanDenBogert2010Force>();
         // TODO
         //for (auto& contact : contacts) {
         //    std::cout << "DEBUGcalc_objective get_location: "
@@ -208,7 +216,7 @@ public:
             // Making a copy of the state (auto state instead of const auto&
             // state) is important for invalidating the cached contact point
             // locations.
-            m_model.realizeVelocity(state);
+            model.realizeVelocity(state);
             SimTK::Real simFy = 0;
 
             for (auto& contact : contacts) {
@@ -220,8 +228,8 @@ public:
             //std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
             obj_value += pow(simFy - expFy, 2);
         }
-        const double mg = m_model.getTotalMass(m_statesTraj.front()) *
-                        m_model.getGravity().norm();
+        const double mg = model.getTotalMass(m_statesTraj.front()) *
+                        model.getGravity().norm();
         // TODO how should we normalize?
         obj_value /= mg * m_statesTraj.getSize();
     }
@@ -264,6 +272,8 @@ private:
     StatesTrajectory m_statesTraj;
     GCVSpline m_FySpline;
     int m_numContacts;
+
+    mutable std::unordered_map<std::thread::id, Model> m_workingModels;
 
 };
 
@@ -491,13 +501,16 @@ void calibrateContact() {
     SimTKContactCalibration sys(model, statesTraj, numContacts);
     SimTK::Vector results(2 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
-    opt.setMaxIterations(100);
+    // opt.setMaxIterations(100);
     opt.setDiagnosticsLevel(3);
     opt.setConvergenceTolerance(1e-1);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
+    opt.setAdvancedStrOption("parallel", "multithreading");
+    Stopwatch watch;
     double f = opt.optimize(results);
     std::cout << "objective: " << f << std::endl;
     std::cout << "variables: " << results << std::endl;
+    std::cout << "Runtime: " << watch.getElapsedTimeFormatted() << std::endl;
     sys.printContactComparison(results,
             "sandboxCalibrateContact_comparison_cmaes.sto");
     sys.applyParametersToModel(results, model);
@@ -511,26 +524,43 @@ void toyCMAES() {
         OptSys() : SimTK::OptimizerSystem(2) {}
         int objectiveFunc(const SimTK::Vector& vars, bool, SimTK::Real& f)
                 const override {
+            ++m_count;
+            const auto id = std::this_thread::get_id();
+            if (m_map.count(id) == 0) m_map[id] = 0;
+            m_map[id]++;
+            std::stringstream ss;
+            ss << "DEBUG " << m_count << " " << id;
+            std::cout << ss.str() << std::endl;
             const double x = vars[0];
             const double y = vars[1];
             f = 0.5 * (3 * x * x + 4 * x * y + 6 * y * y) - 2 * x + 8 * y;
             return 0;
         }
+        mutable std::atomic<int> m_count;
+        mutable std::unordered_map<std::thread::id, int> m_map;
     };
     OptSys sys;
     SimTK::Vector results(2);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
+    opt.setAdvancedStrOption("parallel", "multithreading");
     double f = opt.optimize(results);
     std::cout << "objective: " << f << std::endl;
     std::cout << "variables: " << results << std::endl;
+    for (const auto& entry : sys.m_map) {
+        std::cout << entry.second << std::endl;
+    }
 }
 
 int main() {
+
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     // calibrateBall();
 
     calibrateContact();
 
+    // OpenSim::LogBuffer::sync() is not threadsafe.
     // toyCMAES();
 
     return EXIT_SUCCESS;
