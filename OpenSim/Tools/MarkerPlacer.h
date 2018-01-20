@@ -161,7 +161,14 @@ public:
         _coordinateFileName = aCoordinateFileName;
         _coordinateFileNameProp.setValueIsDefault(false);
     }
-    
+
+    const std::string& getMarkerFileName() const {return _markerFileName; }
+    void setMarkerFileName( const std::string& aMarkerFileName)
+    {
+        _markerFileName=aMarkerFileName;
+        _markerFileNameProp.setValueIsDefault(false);
+    }
+
     double getMaxMarkerMovement() const { return _maxMarkerMovement; }
     void setMaxMarkerMovement(double aMaxMarkerMovement)
     {
