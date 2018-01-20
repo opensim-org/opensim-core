@@ -184,7 +184,9 @@ public:
 
         const auto thread_id = std::this_thread::get_id();
         if (m_workingModels.count(thread_id) == 0) {
+            std::unique_lock<std::mutex> lock(m_modelMutex);
             m_workingModels[thread_id] = m_model;
+            lock.unlock();
             m_workingModels[thread_id].initSystem();
         }
         Model& model = m_workingModels[thread_id];
@@ -273,6 +275,7 @@ private:
     GCVSpline m_FySpline;
     int m_numContacts;
 
+    mutable std::mutex m_modelMutex;
     mutable std::unordered_map<std::thread::id, Model> m_workingModels;
 
 };
@@ -503,7 +506,7 @@ void calibrateContact() {
     SimTK::Optimizer opt(sys, SimTK::CMAES);
     // opt.setMaxIterations(100);
     opt.setDiagnosticsLevel(3);
-    opt.setConvergenceTolerance(1e-1);
+    opt.setConvergenceTolerance(1e-3);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     opt.setAdvancedStrOption("parallel", "multithreading");
     Stopwatch watch;
