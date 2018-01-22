@@ -570,11 +570,11 @@ void testNumberOfMarkersMismatch()
             
             if (markerName == "m0") {// marker we biased shoulder the error
                 SimTK_ASSERT_ALWAYS(abs(markerErrors[j]-err) <= tol,
-                    "InverseKinematicsSolver mangled marker oder.");
+                    "InverseKinematicsSolver mangled marker order.");
             }
             else { // other markers should be minimally affected
                 SimTK_ASSERT_ALWAYS(markerErrors[j] <= tol,
-                    "InverseKinematicsSolver mangled marker oder.");
+                    "InverseKinematicsSolver mangled marker order.");
             }
         }
         cout << endl;
