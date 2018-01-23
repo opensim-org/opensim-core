@@ -126,13 +126,16 @@ void calibrateBall() {
 class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
     double forceScalingFactor = 1e8;
+    double frictionCoeffScalingFactor = 1.0;
+    double velScalingMin = 0.03;
+    double velScalingMax = 0.10;
     ContactCalibration(Model model, StatesTrajectory statesTraj,
             int numContacts) :
-            tropter::OptimizationProblem<double>(2 * numContacts, 0),
+            tropter::OptimizationProblem<double>(4 * numContacts, 0),
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)),
             m_numContacts(numContacts) {
-        set_variable_bounds(Eigen::VectorXd::Zero(2 * numContacts),
-                Eigen::VectorXd::Ones(2 * numContacts));
+        set_variable_bounds(Eigen::VectorXd::Zero(get_num_variables()),
+                Eigen::VectorXd::Ones(get_num_variables()));
 
         m_model.initSystem();
 
@@ -169,6 +172,11 @@ public:
                 model.updComponentList<AckermannVanDenBogert2010Force>()) {
             contact.set_stiffness(
                     forceScalingFactor * x[icontact + m_numContacts]);
+            contact.set_friction_coefficient(
+                    frictionCoeffScalingFactor * x[icontact + 2 * m_numContacts]);
+            contact.set_tangent_velocity_scaling_factor(
+                    velScalingMin + x[icontact + 3 * m_numContacts] *
+                            (velScalingMax - velScalingMin));
             ++icontact;
         }
     }
@@ -229,7 +237,7 @@ public:
             }
 
             SimTK::Vector timeVec(1, state.getTime());
-            SimTK::Real expFx = m_FySpline.calcValue(timeVec);
+            SimTK::Real expFx = m_FxSpline.calcValue(timeVec);
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
             //std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
             obj_value += pow(simFx - expFx, 2) + pow(simFy - expFy, 2);
@@ -242,6 +250,18 @@ public:
     void printContactComparison(const VectorXd& x,
             const std::string& filename) {
         TimeSeriesTable table;
+
+        for (int i = 0; i < x.size(); ++i) {
+            if (i < m_numContacts)
+                std::cout << "marker height " << i;
+            else if (i < 2 * m_numContacts)
+                std::cout << "stiffness " << i - m_numContacts;
+            else if (i < 3 * m_numContacts)
+                std::cout << "coefficient of friction " << i - 2*m_numContacts;
+            else
+                std::cout << "transition velocity " << i - 3 * m_numContacts;
+            std::cout << ": " << x[i] << std::endl;
+        }
 
         // Apply parameters.
         // -----------------
@@ -292,9 +312,9 @@ class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
     SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
             int numContacts)
-            : SimTK::OptimizerSystem(2 * numContacts),
+            : SimTK::OptimizerSystem(4 * numContacts),
               m_tropProb(std::move(model), std::move(statesTraj), numContacts) {
-        int N = 2 * numContacts;
+        int N = m_tropProb.get_num_variables();
         setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
     }
     void applyParametersToModel(const SimTK::Vector& vars, Model& model) const {
@@ -337,10 +357,8 @@ static void addCoordinateActuator(Model& model, std::string coordName,
     model.addComponent(actu);
 }
 
-void addContact(Model& model, std::string markerName, double stiffness = 5e7) {
-    //const double stiffness = 5e7;
-    const double friction_coefficient = 0.95;
-    const double velocity_scaling = 0.3;
+void addContact(Model& model, std::string markerName, double stiffness = 5e7,
+        double friction_coefficient = 0.95, double velocity_scaling = 0.3) {
     auto* contact = new AckermannVanDenBogert2010Force();
     contact->setName(markerName + "_contact");
     contact->set_stiffness(stiffness);
@@ -510,7 +528,7 @@ void calibrateContact() {
     // CMAES
     // -----
     SimTKContactCalibration sys(model, statesTraj, numContacts);
-    SimTK::Vector results(2 * numContacts, 0.5);
+    SimTK::Vector results(4 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
     opt.setMaxIterations(3000);
     opt.setDiagnosticsLevel(3);
