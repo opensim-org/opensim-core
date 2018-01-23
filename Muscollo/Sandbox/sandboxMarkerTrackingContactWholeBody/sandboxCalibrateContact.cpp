@@ -127,11 +127,12 @@ class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
     double forceScalingFactor = 1e8;
     double frictionCoeffScalingFactor = 1.0;
-    double velScalingMin = 0.03;
+    double dissipationScalingFactor = 2.0;
+    double velScalingMin = 0.01;
     double velScalingMax = 0.10;
     ContactCalibration(Model model, StatesTrajectory statesTraj,
             int numContacts) :
-            tropter::OptimizationProblem<double>(4 * numContacts, 0),
+            tropter::OptimizationProblem<double>(5 * numContacts, 0),
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)),
             m_numContacts(numContacts) {
         set_variable_bounds(Eigen::VectorXd::Zero(get_num_variables()),
@@ -172,10 +173,12 @@ public:
                 model.updComponentList<AckermannVanDenBogert2010Force>()) {
             contact.set_stiffness(
                     forceScalingFactor * x[icontact + m_numContacts]);
+            contact.set_dissipation(
+                    dissipationScalingFactor * x[icontact + 2 * m_numContacts]);
             contact.set_friction_coefficient(
-                    frictionCoeffScalingFactor * x[icontact + 2 * m_numContacts]);
+                    frictionCoeffScalingFactor * x[icontact + 3 * m_numContacts]);
             contact.set_tangent_velocity_scaling_factor(
-                    velScalingMin + x[icontact + 3 * m_numContacts] *
+                    velScalingMin + x[icontact + 4 * m_numContacts] *
                             (velScalingMax - velScalingMin));
             ++icontact;
         }
@@ -257,9 +260,11 @@ public:
             else if (i < 2 * m_numContacts)
                 std::cout << "stiffness " << i - m_numContacts;
             else if (i < 3 * m_numContacts)
-                std::cout << "coefficient of friction " << i - 2*m_numContacts;
+                std::cout << "dissipation " << i - 2 * m_numContacts;
+            else if (i < 4 * m_numContacts)
+                std::cout << "coefficient of friction " << i - 3*m_numContacts;
             else
-                std::cout << "transition velocity " << i - 3 * m_numContacts;
+                std::cout << "transition velocity " << i - 4 * m_numContacts;
             std::cout << ": " << x[i] << std::endl;
         }
 
@@ -312,7 +317,7 @@ class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
     SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
             int numContacts)
-            : SimTK::OptimizerSystem(4 * numContacts),
+            : SimTK::OptimizerSystem(5 * numContacts),
               m_tropProb(std::move(model), std::move(statesTraj), numContacts) {
         int N = m_tropProb.get_num_variables();
         setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
@@ -358,10 +363,12 @@ static void addCoordinateActuator(Model& model, std::string coordName,
 }
 
 void addContact(Model& model, std::string markerName, double stiffness = 5e7,
+        double dissipation = 1.0,
         double friction_coefficient = 0.95, double velocity_scaling = 0.3) {
     auto* contact = new AckermannVanDenBogert2010Force();
     contact->setName(markerName + "_contact");
     contact->set_stiffness(stiffness);
+    contact->set_dissipation(dissipation);
     contact->set_friction_coefficient(friction_coefficient);
     contact->set_tangent_velocity_scaling_factor(velocity_scaling);
     model.addComponent(contact);
@@ -417,7 +424,7 @@ void calibrateContact() {
         // Convert from millimeters to meters.
         ref.updMatrix() /= 1000;
         const auto& reftime = ref.getIndependentColumn();
-        const double walkingSpeed = 1.10; // m/s
+        const double walkingSpeed = 1.15; // m/s
         for (int i = 0; i < (int)ref.getNumColumns(); ++i) {
             SimTK::VectorView_<SimTK::Vec3> col =
                     ref.updDependentColumnAtIndex(i);
@@ -460,6 +467,10 @@ void calibrateContact() {
         model.formStateStorage(*qStore, *motion.get(), false);
         delete qStore;
         delete uStore;
+        int initialNumStates = motion->getSize();
+        double duration = motion->getLastTime() - motion->getFirstTime();
+        // Double the step size to reduce the number of states.
+        motion->resample(2 * duration / (initialNumStates - 1), 5);
         statesTraj = StatesTrajectory::createFromStatesStorage(model,
                 *motion, true);
         // visualize(model, *motion);
@@ -528,7 +539,7 @@ void calibrateContact() {
     // CMAES
     // -----
     SimTKContactCalibration sys(model, statesTraj, numContacts);
-    SimTK::Vector results(4 * numContacts, 0.5);
+    SimTK::Vector results(5 * numContacts, 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
     opt.setMaxIterations(3000);
     opt.setDiagnosticsLevel(3);
@@ -540,6 +551,8 @@ void calibrateContact() {
     std::cout << "objective: " << f << std::endl;
     std::cout << "variables: " << results << std::endl;
     std::cout << "Runtime: " << watch.getElapsedTimeFormatted() << std::endl;
+    std::cout << "Number of states in trajectory: " << statesTraj.getSize()
+            << std::endl;
     sys.printContactComparison(results,
             "sandboxCalibrateContact_comparison_cmaes.sto");
     sys.applyParametersToModel(results, model);
