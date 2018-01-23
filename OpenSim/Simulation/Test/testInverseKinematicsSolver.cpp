@@ -536,7 +536,7 @@ void testNumberOfMarkersMismatch()
     cout << "After reorder and NaN injections:\n" << markerTable << endl;
 
     MarkersReference markersRef(markerTable);
-    int nm = markersRef.getNumRefs();
+    int nmr = markersRef.getNumRefs();
     auto& markerNames = markersRef.getNames();
     cout << markerNames << endl;
 
@@ -548,6 +548,8 @@ void testNumberOfMarkersMismatch()
     ikSolver.setAccuracy(tol);
     ikSolver.assemble(state);
 
+    int nm = ikSolver.getNumMarkersInUse();
+
     SimTK::Array_<double> markerErrors(nm);
     for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
         state.updTime() = i*dt;
@@ -557,8 +559,12 @@ void testNumberOfMarkersMismatch()
         ikSolver.computeCurrentMarkerErrors(markerErrors);
 
         int nme = markerErrors.size();
-        cout << "time: " << state.getTime() << " |";
 
+        SimTK_ASSERT_ALWAYS(nme = nm,
+            "InverseKinematicsSolver failed to account "
+            "for unused marker reference (observation).");
+
+        cout << "time: " << state.getTime() << " |";
         auto namesIter = usedMarkerNames.begin();
         for (int j = 0; j < nme; ++j) {
             const auto& markerName = ikSolver.getMarkerNameForIndex(j);
