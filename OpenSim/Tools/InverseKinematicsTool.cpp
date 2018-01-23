@@ -310,8 +310,10 @@ bool InverseKinematicsTool::run()
         int Nframes = int((final_time-start_time)/dt)+1;
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
-        // max number of markers
-        int nm = markersReference.getNumRefs();
+        // Get the actual number of markers the Solver is using, which
+        // can be fewer than the number of references if there isn't a
+        // corresponding model marker for each reference.
+        int nm = ikSolver.getNumMarkersInUse();
         SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
         
@@ -329,10 +331,6 @@ bool InverseKinematicsTool::run()
                 int worst = -1;
 
                 ikSolver.computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
-                // if a marker is not present in the model or its reference value 
-                // is NaN it is not included. Therefore, size of the errors can
-                // vary from frame to frame.
-                nm = squaredMarkerErrors.size();
                 for(int j=0; j<nm; ++j){
                     totalSquaredMarkerError += squaredMarkerErrors[j];
                     if(squaredMarkerErrors[j] > maxSquaredMarkerError){

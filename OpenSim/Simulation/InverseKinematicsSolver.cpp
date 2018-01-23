@@ -77,6 +77,11 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 
 }
 
+int InverseKinematicsSolver::getNumMarkersInUse() const
+{
+    return _markerAssemblyCondition->getNumMarkers();
+}
+
 /* Change the weighting of a marker to take effect when assemble or track is called next. 
    Update a marker's weight by name. */
 void InverseKinematicsSolver::updateMarkerWeight(const std::string &markerName, double value)
