@@ -482,7 +482,7 @@ void testNumberOfMarkersMismatch()
         << endl;
 
     std::unique_ptr<Model> pendulum{ constructPendulumWithMarkers() };
-    Coordinate& coord = pendulum->getCoordinateSet()[0];
+    const Coordinate& coord = pendulum->getCoordinateSet()[0];
 
     SimTK::State state = pendulum->initSystem();
     StatesTrajectory states;
@@ -560,7 +560,7 @@ void testNumberOfMarkersMismatch()
 
         int nme = markerErrors.size();
 
-        SimTK_ASSERT_ALWAYS(nme = nm,
+        SimTK_ASSERT_ALWAYS(nme == nm,
             "InverseKinematicsSolver failed to account "
             "for unused marker reference (observation).");
 
@@ -574,7 +574,7 @@ void testNumberOfMarkersMismatch()
                 "InverseKinematicsSolver failed to ignore "
                 "unused marker reference (observation).");
             
-            if (markerName == "m0") {// marker we biased shoulder the error
+            if (markerName == "m0") {//should see error on biased marker
                 SimTK_ASSERT_ALWAYS(abs(markerErrors[j]-err) <= tol,
                     "InverseKinematicsSolver mangled marker order.");
             }
