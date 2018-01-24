@@ -329,7 +329,8 @@ public:
             SimTK::Vector timeVec(1, m_statesTraj[itime].getTime());
             SimTK::Real expFx = m_FxSpline.calcValue(timeVec);
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
-            obj_value += pow(simFx - expFx, 2) + pow(simFy - expFy, 2);
+            // Weight horizontal error more strongly.
+            obj_value += 4 * pow(simFx - expFx, 2) + pow(simFy - expFy, 2);
         }
         const double mg = model.getTotalMass(m_statesTraj.front()) *
                 model.getGravity().norm();
@@ -624,7 +625,7 @@ void calibrateContact(ContactModel contactModel) {
         int initialNumStates = motion->getSize();
         double duration = motion->getLastTime() - motion->getFirstTime();
         // Double the step size to reduce the number of states.
-        motion->resample(2 * duration / (initialNumStates - 1), 5);
+        motion->resample(/* TODO 2 * */duration / (initialNumStates - 1), 5);
         statesTraj = StatesTrajectory::createFromStatesStorage(model,
                 *motion, true);
         // visualize(model, *motion);
@@ -698,6 +699,7 @@ void calibrateContact(ContactModel contactModel) {
     opt.setMaxIterations(10000);
     opt.setDiagnosticsLevel(3);
     opt.setConvergenceTolerance(1e-3);
+    opt.setAdvancedIntOption("popsize", 30);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     opt.setAdvancedStrOption("parallel", "multithreading");
     // To obtain repeatable results.
@@ -757,8 +759,8 @@ int main() {
 
     // calibrateBall();
 
-    //calibrateContact(ContactModel::AckermannVanDenBogert);
-    calibrateContact(ContactModel::HuntCrossley);
+    calibrateContact(ContactModel::AckermannVanDenBogert);
+    //calibrateContact(ContactModel::HuntCrossley);
 
     // OpenSim::LogBuffer::sync() is not threadsafe.
     // toyCMAES();
