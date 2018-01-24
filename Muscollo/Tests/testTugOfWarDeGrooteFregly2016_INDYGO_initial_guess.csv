@@ -1,5 +1,6 @@
 num_states=6
 num_controls=4
+num_parameters=0
 time,position,speed,activation_l,activation_r,norm_fiber_length_l,norm_fiber_length_r,excitation_l,excitation_r,norm_fiber_velocity_l,norm_fiber_velocity_r
 0,-0.015,0,0,3.2629e-39,0.924656,1.09782,1.89658e-06,0.483528,0,0
 0.00505051,-0.0149987,0.000529628,3.57774e-07,0.126381,0.924663,1.09335,4.61356e-07,0.386143,0.000264425,-0.177117

@@ -723,7 +723,7 @@ void testMucoIterate() {
         std::vector<std::string> cnames;
         for (int i = 0; i < NC; ++i) cnames.push_back("c" + std::to_string(i));
         std::vector<std::string> pnames;
-        for (int i = 0; i < NP; ++i) cnames.push_back("p" + std::to_string(i));
+        for (int i = 0; i < NP; ++i) pnames.push_back("p" + std::to_string(i));
         SimTK::Matrix states(NT, NS);
         for (int i = 0; i < NS; ++i) {
             states.updCol(i) = createVectorLinspace(NT,

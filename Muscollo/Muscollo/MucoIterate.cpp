@@ -285,8 +285,10 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
     m_controls = table->getMatrixBlock(0, numStates,
             table->getNumRows(), numControls);
-    m_parameters = table->getMatrixBlock(0, numStates + numControls, 1,
-            numParameters).getAsRowVectorBase();
+    if (numParameters) {
+        m_parameters = table->getMatrixBlock(0, numStates + numControls, 1,
+                numParameters).getAsRowVectorBase();
+    }
 }
 
 void MucoIterate::write(const std::string& filepath) const {
