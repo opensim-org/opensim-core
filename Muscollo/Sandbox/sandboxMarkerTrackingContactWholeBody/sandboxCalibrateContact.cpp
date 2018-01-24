@@ -121,25 +121,26 @@ void calibrateBall() {
     std::cout << solution.variables << std::endl;
 }
 
+enum class ContactModel {
+    AckermannVanDenBogert,
+    HuntCrossley
+};
+
 /// Optimize the stiffness of contact points to match the ground reaction
 /// force.
 class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
-    double forceScalingFactor = 1e8;
-    double frictionCoeffScalingFactor = 1.0;
-    double dissipationScalingFactor = 2.0;
-    double velScalingMin = 0.01;
-    double velScalingMax = 0.10;
     ContactCalibration(Model model, StatesTrajectory statesTraj,
-            int numContacts) :
-            tropter::OptimizationProblem<double>(5 * numContacts, 0),
+            ContactModel contactModel, int numContacts) :
+            tropter::OptimizationProblem<double>(
+                (contactModel == ContactModel::AckermannVanDenBogert ? 5 : 6) * numContacts,
+                    0),
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)),
-            m_numContacts(numContacts) {
+            m_contactModel(contactModel), m_numContacts(numContacts) {
         set_variable_bounds(Eigen::VectorXd::Zero(get_num_variables()),
                 Eigen::VectorXd::Ones(get_num_variables()));
 
         m_model.initSystem();
-
 
         // Foot–ground contact data.
         // -------------------------
@@ -152,38 +153,143 @@ public:
     }
 
     void applyParametersToModel(const VectorXd& x, Model& model) const {
-        auto applyMarkerHeight = [&model](const std::string& name,
-                                          const double& normHeight) {
-            auto& marker = model.updComponent<Marker>(name);
-            // index 1 for y component.
-            const double lower = -0.06;
-            const double upper =  0.05;
-            marker.upd_location()[1] = lower + normHeight * (upper - lower);
-        };
-        for (int icontact = 0; icontact < m_numContacts; ++icontact) {
-            const std::string name = "marker" + std::to_string(icontact);
-            applyMarkerHeight(name, x[icontact]);
-        }
-        //std::cout << "DEBUG " <<
-        //        model.getComponent<Marker>("R.Heel.Distal").get_location() <<
-        //        std::endl;
+        if (m_contactModel == ContactModel::AckermannVanDenBogert) {
+            auto applyMarkerHeight = [&model](const std::string& name,
+                    const double& normHeight) {
+                auto& marker = model.updComponent<Marker>(name);
+                // index 1 for y component.
+                const double lower = -0.06;
+                const double upper =  0.05;
+                marker.upd_location()[1] = lower + normHeight * (upper - lower);
+            };
+            for (int icontact = 0; icontact < m_numContacts; ++icontact) {
+                const std::string name = "marker" + std::to_string(icontact);
+                applyMarkerHeight(name, x[icontact]);
+            }
+            // TODO scaling x position of elements.
 
-        int icontact = 0;
-        for (auto& contact :
-                model.updComponentList<AckermannVanDenBogert2010Force>()) {
-            contact.set_stiffness(
-                    forceScalingFactor * x[icontact + m_numContacts]);
-            contact.set_dissipation(
-                    dissipationScalingFactor * x[icontact + 2 * m_numContacts]);
-            contact.set_friction_coefficient(
-                    frictionCoeffScalingFactor * x[icontact + 3 * m_numContacts]);
-            contact.set_tangent_velocity_scaling_factor(
-                    velScalingMin + x[icontact + 4 * m_numContacts] *
-                            (velScalingMax - velScalingMin));
-            ++icontact;
+            double stiffnessScalingFactor = 1e8;
+            double frictionCoeffScalingFactor = 1.0;
+            double dissipationScalingFactor = 2.0;
+            double velScalingMin = 0.01;
+            double velScalingMax = 0.10;
+
+            int icontact = 0;
+            for (auto& contact :
+                    model.updComponentList<AckermannVanDenBogert2010Force>()) {
+                contact.set_stiffness(
+                        stiffnessScalingFactor * x[icontact + m_numContacts]);
+                contact.set_dissipation(
+                        dissipationScalingFactor * x[icontact + 2 * m_numContacts]);
+                contact.set_friction_coefficient(
+                        frictionCoeffScalingFactor * x[icontact + 3 * m_numContacts]);
+                contact.set_tangent_velocity_scaling_factor(
+                        velScalingMin + x[icontact + 4 * m_numContacts] *
+                                (velScalingMax - velScalingMin));
+                ++icontact;
+            }
+        } else if (m_contactModel == ContactModel::HuntCrossley) {
+            for (int icontact = 0; icontact < m_numContacts; ++icontact) {
+                auto& contactGeom = model.updComponent<ContactSphere>(
+                        "contact" + std::to_string(icontact));
+                {
+                    const double lower = -0.06;
+                    const double upper =  0.05;
+                    const auto& normHeight = x[icontact];
+                    // index 1 for y component.
+                    contactGeom.upd_location()[1] = lower + normHeight * (upper - lower);
+                }
+                // TODO scaling x position of elements.
+
+                {
+                    const double lower = 0.01;
+                    const double upper = 0.04;
+                    const auto& normRadius = x[icontact + m_numContacts];
+                    contactGeom.setRadius(
+                            lower + normRadius * (upper - lower));
+                }
+
+                auto& contactForce = model.updComponent<HuntCrossleyForce>(
+                        "contact" + std::to_string(icontact) + "_force");
+                {
+                    double scalingFactor = 1e8;
+                    const auto& normStiffness = x[icontact + 2 * m_numContacts];
+                    contactForce.setStiffness(scalingFactor * normStiffness);
+                }
+                {
+                    const auto& normDissipation = x[icontact + 3 * m_numContacts];
+                    contactForce.setDissipation(normDissipation);
+                }
+                {
+                    const auto& frictionCoeff = x[icontact + 4 * m_numContacts];
+                    contactForce.setStaticFriction(frictionCoeff);
+                    contactForce.setDynamicFriction(frictionCoeff);
+                }
+                {
+                    double lower = 0.01;
+                    double upper = 0.10;
+                    const auto& transitionVelocity =
+                            x[icontact + 5 * m_numContacts];
+                    contactForce.setTransitionVelocity(transitionVelocity);
+                }
+            }
         }
     }
 
+    void calc_contact_force(const Model& model, SimTK::Matrix& forces) const {
+        forces.resize((int)m_statesTraj.getSize(), 2);
+
+        if (m_contactModel == ContactModel::AckermannVanDenBogert) {
+            auto contacts =
+                    model.getComponentList<AckermannVanDenBogert2010Force>();
+            int itime = 0;
+            for (auto state : m_statesTraj) {
+                // Making a copy of the state (auto state instead of const auto&
+                // state) is important for invalidating the cached contact point
+                // locations.
+                model.realizeVelocity(state);
+
+                forces(itime, 0) = 0;
+                forces(itime, 1) = 0;
+                for (auto& contact : contacts) {
+                    SimTK::Vec3 force = contact.calcContactForce(state);
+                    forces(itime, 0) += force[0];
+                    forces(itime, 1) += force[1];
+                }
+                ++itime;
+            }
+        } else if (m_contactModel == ContactModel::HuntCrossley) {
+            auto contacts = model.getComponentList<HuntCrossleyForce>();
+            int itime = 0;
+            for (auto state : m_statesTraj) {
+                model.realizeDynamics(state);
+                forces(itime, 0) = 0;
+                forces(itime, 1) = 0;
+                for (auto& contact : contacts) {
+                    // OpenSim::Array<std::string> recordLabels = contact.getRecordLabels();
+                    // for (int i = 0; i < recordLabels.getSize(); ++i) {
+                    //     std::cout << "DEBUGrlabels " << recordLabels[i] << std::endl;
+                    // }
+                    OpenSim::Array<double> record = contact.getRecordValues(state);
+                    //  0: contacti_force.calcn.force.X
+                    //  1: contacti_force.calcn.force.Y
+                    //  2: contacti_force.calcn.force.Z
+                    //  3: contacti_force.calcn.torque.X
+                    //  4: contacti_force.calcn.torque.Y
+                    //  5: contacti_force.calcn.torque.Z
+                    //  6: contacti_force.ground.force.X
+                    //  7: contacti_force.ground.force.Y
+                    //  8: contacti_force.ground.force.Z
+                    //  9: contacti_force.ground.torque.X
+                    // 10: contacti_force.ground.torque.Y
+                    // 11: contacti_force.ground.torque.Z
+                    forces(itime, 0) += record[0];
+                    forces(itime, 1) += record[1];
+                }
+                ++itime;
+            }
+        }
+    }
     void calc_objective(const VectorXd& x, double& obj_value) const override {
 
         obj_value = 0;
@@ -200,7 +306,13 @@ public:
             lock.unlock();
             m_workingModels[thread_id].initSystem();
         }
+        if (m_workingForces.count(thread_id) == 0) {
+            std::unique_lock<std::mutex> lock(m_forcesMutex);
+            m_workingForces[thread_id] = SimTK::Matrix();
+            lock.unlock();
+        }
         Model& model = m_workingModels[thread_id];
+        SimTK::Matrix& forces = m_workingForces[thread_id];
 
         // Apply parameters.
         // -----------------
@@ -210,62 +322,57 @@ public:
 
         // Compute contact force error.
         // ----------------------------
-
-        // TODO add fore-aft force.
-        // TODO
-//        std::cout << "DEBUG " <<
-//                m_model.getComponent<Marker>("R.Heel.Distal").get_location() <<
-//                std::endl;
-
-        auto contacts =
-                model.updComponentList<AckermannVanDenBogert2010Force>();
-        // TODO
-        //for (auto& contact : contacts) {
-        //    std::cout << "DEBUGcalc_objective get_location: "
-        //            << contact.getConnectee<Marker>("station").get_location()
-        //            << std::endl;
-        //}
-        for (auto state : m_statesTraj) {
-            // Making a copy of the state (auto state instead of const auto&
-            // state) is important for invalidating the cached contact point
-            // locations.
-            model.realizeVelocity(state);
-
-            SimTK::Real simFx = 0;
-            SimTK::Real simFy = 0;
-            for (auto& contact : contacts) {
-                SimTK::Vec3 force = contact.calcContactForce(state);
-                simFx += force[0];
-                simFy += force[1];
-            }
-
-            SimTK::Vector timeVec(1, state.getTime());
+        calc_contact_force(model, forces);
+        for (int itime = 0; itime < (int)m_statesTraj.getSize(); ++itime) {
+            const auto& simFx = forces(itime, 0);
+            const auto& simFy = forces(itime, 1);
+            SimTK::Vector timeVec(1, m_statesTraj[itime].getTime());
             SimTK::Real expFx = m_FxSpline.calcValue(timeVec);
             SimTK::Real expFy = m_FySpline.calcValue(timeVec);
-            //std::cout << "DEBUG " << simFy << " " << expFy << std::endl;
             obj_value += pow(simFx - expFx, 2) + pow(simFy - expFy, 2);
         }
         const double mg = model.getTotalMass(m_statesTraj.front()) *
-                        model.getGravity().norm();
+                model.getGravity().norm();
         // TODO how should we normalize?
         obj_value /= mg * m_statesTraj.getSize();
+
     }
     void printContactComparison(const VectorXd& x,
             const std::string& filename) {
         TimeSeriesTable table;
 
-        for (int i = 0; i < x.size(); ++i) {
-            if (i < m_numContacts)
-                std::cout << "marker height " << i;
-            else if (i < 2 * m_numContacts)
-                std::cout << "stiffness " << i - m_numContacts;
-            else if (i < 3 * m_numContacts)
-                std::cout << "dissipation " << i - 2 * m_numContacts;
-            else if (i < 4 * m_numContacts)
-                std::cout << "coefficient of friction " << i - 3*m_numContacts;
-            else
-                std::cout << "transition velocity " << i - 4 * m_numContacts;
-            std::cout << ": " << x[i] << std::endl;
+        if (m_contactModel == ContactModel::AckermannVanDenBogert) {
+            for (int i = 0; i < x.size(); ++i) {
+                if (i < m_numContacts)
+                    std::cout << "marker height " << i;
+                else if (i < 2 * m_numContacts)
+                    std::cout << "stiffness " << i - m_numContacts;
+                else if (i < 3 * m_numContacts)
+                    std::cout << "dissipation " << i - 2 * m_numContacts;
+                else if (i < 4 * m_numContacts)
+                    std::cout << "coefficient of friction " << i - 3*m_numContacts;
+                else
+                    std::cout << "transition velocity " << i - 4 * m_numContacts;
+                std::cout << ": " << x[i] << std::endl;
+            }
+        } else if (m_contactModel == ContactModel::HuntCrossley) {
+            for (int i = 0; i < x.size(); ++i) {
+                if (i < m_numContacts)
+                    std::cout << "sphere height " << i;
+                else if (i < 2 * m_numContacts)
+                    std::cout << "radius " << i - m_numContacts;
+                else if (i < 3 * m_numContacts)
+                    std::cout << "stiffness " << i - 2 * m_numContacts;
+                else if (i < 4 * m_numContacts)
+                    std::cout << "dissipation " << i - 3 * m_numContacts;
+                else if (i < 5 * m_numContacts)
+                    std::cout << "coefficient of friction "
+                            << i - 4 * m_numContacts;
+                else if (i < 6 * m_numContacts)
+                    std::cout << "transition velocity "
+                            << i - 5 * m_numContacts;
+                std::cout << ": " << x[i] << std::endl;
+            }
         }
 
         // Apply parameters.
@@ -276,27 +383,24 @@ public:
 
         // Compute contact force error.
         // ----------------------------
+        SimTK::Matrix forces;
+        calc_contact_force(m_model, forces);
 
         // TODO add fore-aft force.
 
-        auto contacts =
-                m_model.updComponentList<AckermannVanDenBogert2010Force>();
         table.setColumnLabels({"Fx_sim", "Fy_sim", "Fx_exp", "Fy_exp"});
-        for (auto state : m_statesTraj) {
-            m_model.realizeVelocity(state);
+        for (int itime = 0; itime < (int)m_statesTraj.getSize(); ++itime) {
             SimTK::RowVector row(4, 0.0);
 
-            for (auto& contact : contacts) {
-                SimTK::Vec3 force = contact.calcContactForce(state);
-                row[0] += force[0];
-                row[1] += force[1];
-            }
+            row[0] = forces(itime, 0);
+            row[1] = forces(itime, 1);
 
-            SimTK::Vector timeVec(1, state.getTime());
+            const auto& time = m_statesTraj[itime].getTime();
+            SimTK::Vector timeVec(1, time);
             row[2] = m_FxSpline.calcValue(timeVec);
             row[3] = m_FySpline.calcValue(timeVec);
 
-            table.appendRow(state.getTime(), row);
+            table.appendRow(time, row);
         }
         STOFileAdapter::write(table, filename);
     }
@@ -306,19 +410,24 @@ private:
     StatesTrajectory m_statesTraj;
     GCVSpline m_FxSpline;
     GCVSpline m_FySpline;
+    ContactModel m_contactModel;
     int m_numContacts;
 
     mutable std::mutex m_modelMutex;
     mutable std::unordered_map<std::thread::id, Model> m_workingModels;
+    mutable std::mutex m_forcesMutex;
+    mutable std::unordered_map<std::thread::id, SimTK::Matrix> m_workingForces;
 
 };
 
 class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
     SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
-            int numContacts)
-            : SimTK::OptimizerSystem(5 * numContacts),
-              m_tropProb(std::move(model), std::move(statesTraj), numContacts) {
+            ContactModel contactModel, int numContacts)
+            : SimTK::OptimizerSystem(),
+              m_tropProb(std::move(model), std::move(statesTraj),
+                      contactModel, numContacts) {
+        setNumParameters(m_tropProb.get_num_variables());
         int N = m_tropProb.get_num_variables();
         setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
     }
@@ -375,7 +484,7 @@ void addContact(Model& model, std::string markerName, double stiffness = 5e7,
     contact->updSocket("station").setConnecteeName(markerName);
 }
 
-void calibrateContact() {
+void calibrateContact(ContactModel contactModel) {
 
     // Model.
     // ------
@@ -399,19 +508,64 @@ void calibrateContact() {
     addContact(model, "R.Ball.Med", 7.5e7);
     */
     // Programmatically add contact points across the foot.
-    const SimTK::Real xHeel = -0.03;
-    const SimTK::Real xToes =  0.28;
-    const int numContacts = 6;
-    for (int icontact = 0; icontact < numContacts; ++icontact) {
-        const std::string name = "marker" + std::to_string(icontact);
-        const SimTK::Real x = xHeel +
-                SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
-                        (xToes - xHeel);
-        model.addMarker(new Marker(name, calcn, SimTK::Vec3(x, -0.027, 0.0)));
-        addContact(model, name);
+    int numContacts = -1;
+    if (contactModel == ContactModel::AckermannVanDenBogert) {
+        numContacts = 6;
+        for (int icontact = 0; icontact < numContacts; ++icontact) {
+            const std::string name = "marker" + std::to_string(icontact);
+            const SimTK::Real xHeel = -0.02;
+            const SimTK::Real xToes =  0.27;
+            const SimTK::Real x = xHeel +
+                    SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
+                            (xToes - xHeel);
+            model.addMarker(
+                    new Marker(name, calcn, SimTK::Vec3(x, -0.027, 0.0)));
+            addContact(model, name);
+        }
+    } else if (contactModel == ContactModel::HuntCrossley) {
+        using SimTK::Vec3;
+        auto* groundContact = new ContactHalfSpace(Vec3(0),
+                Vec3(0, 0, -0.5 * SimTK::Pi),
+                model.getGround(), "ground_halfspace");
+        model.addContactGeometry(groundContact);
 
+        numContacts = 5;
+        // TODO make these parameters:
+        const SimTK::Real xHeel =  0.00;
+        const SimTK::Real xToes =  0.25;
+        double radius = 0.04;
+        double stiffness = 1e7;
+        double dissipation = 1;
+        double staticFriction = 0.6;
+        double dynamicFriction = 0.4;
+        double viscosity = 0.01;
+        for (int icontact = 0; icontact < numContacts; ++icontact) {
+            const SimTK::Real x = xHeel +
+                    SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
+                            (xToes - xHeel);
+            const std::string geomName = "contact" + std::to_string(icontact);
+            auto* contactGeom = new ContactSphere(radius, Vec3(x, 0, 0), calcn,
+                    geomName);
+            model.addContactGeometry(contactGeom);
+
+            auto* params = new HuntCrossleyForce::ContactParameters(stiffness,
+                    dissipation, staticFriction, dynamicFriction, viscosity);
+            params->addGeometry(geomName);
+            params->addGeometry("ground_halfspace");
+
+            auto* contactForce = new HuntCrossleyForce(params);
+            contactForce->setName(geomName + "_force");
+            model.addForce(contactForce);
+        }
     }
 
+
+    // model.setUseVisualizer(true);
+    // SimTK::State s = model.initSystem();
+    // Manager manager(model, s);
+    // manager.integrate(2.0);
+    // std::cin.get();
+    // std::exit(-1);
 
     // Kinematics data.
     // ----------------
@@ -538,18 +692,21 @@ void calibrateContact() {
 
     // CMAES
     // -----
-    SimTKContactCalibration sys(model, statesTraj, numContacts);
-    SimTK::Vector results(5 * numContacts, 0.5);
+    SimTKContactCalibration sys(model, statesTraj, contactModel, numContacts);
+    SimTK::Vector results(sys.getNumParameters(), 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
-    opt.setMaxIterations(3000);
+    opt.setMaxIterations(10000);
     opt.setDiagnosticsLevel(3);
     opt.setConvergenceTolerance(1e-3);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     opt.setAdvancedStrOption("parallel", "multithreading");
+    // To obtain repeatable results.
+    opt.setAdvancedIntOption("seed", 42);
+    opt.setAdvancedRealOption("maxTimeFractionForEigendecomposition", 1);
     Stopwatch watch;
     double f = opt.optimize(results);
     std::cout << "objective: " << f << std::endl;
-    std::cout << "variables: " << results << std::endl;
+    // std::cout << "variables: " << results << std::endl;
     std::cout << "Runtime: " << watch.getElapsedTimeFormatted() << std::endl;
     std::cout << "Number of states in trajectory: " << statesTraj.getSize()
             << std::endl;
@@ -600,7 +757,8 @@ int main() {
 
     // calibrateBall();
 
-    calibrateContact();
+    //calibrateContact(ContactModel::AckermannVanDenBogert);
+    calibrateContact(ContactModel::HuntCrossley);
 
     // OpenSim::LogBuffer::sync() is not threadsafe.
     // toyCMAES();
