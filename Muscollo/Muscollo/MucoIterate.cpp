@@ -31,13 +31,13 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         std::vector<std::string> parameter_names, 
         const SimTK::Matrix& statesTrajectory,
         const SimTK::Matrix& controlsTrajectory,
-        const SimTK::RowVector& parameterValues) :
+        const SimTK::RowVector& parameters) :
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_parameter_names(std::move(parameter_names)),
         m_states(statesTrajectory),
         m_controls(controlsTrajectory),
-        m_parameters(parameterValues) {
+        m_parameters(parameters) {
     OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
             Exception, "Inconsistent number of states.");
     OPENSIM_THROW_IF((int)m_control_names.size() != m_controls.ncol(),
@@ -315,13 +315,13 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     data.updBlock(0, 0, numTimes, numStates) = m_states;
     data.updBlock(0, numStates, numTimes, numControls) = m_controls;
     // First row of table contains parameter values.
-    data.updBlock(0, numStates + numControls, 0, numParameters) = m_parameters;
+    data.updBlock(0, numStates + numControls, 1, numParameters) = m_parameters;
     // Remaining rows of table contain NaNs in parameter columns.
-    SimTK::Matrix parameter_nan_rows(numTimes - 1, 
-        (int)m_parameter_names.size());
-    parameter_nan_rows.setToNaN();
+    //SimTK::Matrix parameter_nan_rows(numTimes - 1, 
+    //    (int)m_parameter_names.size());
+    //parameter_nan_rows.setToNaN();
     data.updBlock(1, numStates + numControls, numTimes - 1, numParameters) = 
-        parameter_nan_rows;
+        SimTK::NaN;
     TimeSeriesTable table(time, data, labels);
 
     //table.updTableMetaData().setValueForKey("num_states", numStates);

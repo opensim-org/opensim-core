@@ -44,50 +44,6 @@ void MucoVariableInfo::constructProperties() {
     constructProperty_final_bounds();
 }
 
-// ============================================================================
-// MucoParameter
-// ============================================================================
-
-MucoParameter::MucoParameter() {
-    constructProperties();
-    if (getName().empty()) setName("parameter");
-}
-
-MucoParameter::MucoParameter(const std::string& name,
-    const std::string& componentName,
-    const std::string& propertyName,
-    const MucoBounds& bounds) : MucoParameter() {
-    setName(name);
-    set_bounds(bounds.getAsArray());
-    set_component_name(componentName);
-    set_property_name(propertyName);
-}
-
-void MucoParameter::constructProperties() {
-    constructProperty_bounds();
-    constructProperty_property_name("");
-    constructProperty_component_name("");
-}
-
-void MucoParameter::initialize(const Model& model) const {
-    OPENSIM_THROW_IF(get_component_name().empty(), Exception,
-        "A model component name must be provided.");
-    auto& component = model.getComponent(get_component_name());
-    OPENSIM_THROW_IF(get_property_name().empty(), Exception,
-        "A component property name must be provided.");
-
-    // TODO: get rid of need for const_cast
-    auto& property = dynamic_cast<Property<double>&>(
-        const_cast<AbstractProperty&>(
-            component.getPropertyByName(get_property_name())));
-
-    // TODO: check that component and property actually exist
-    m_property.reset(&property);
-}
-
-void MucoParameter::applyParameterToModel(const double& value) const {
-    m_property->setValue(value);
-}
 
 // ============================================================================
 // MucoPhase
@@ -132,7 +88,7 @@ void MucoPhase::setControlInfo(const std::string& name,
 void MucoPhase::addParameter(const MucoParameter& parameter) {
     OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
         "Cannot add a parameter if it does not have a name (use setName()).");
-    int idx = getProperty_costs().findIndexForName(parameter.getName());
+    int idx = getProperty_parameters().findIndexForName(parameter.getName());
     OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
         "A parameter with name '" + parameter.getName() + "' already exists.");
     append_parameters(parameter);

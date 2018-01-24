@@ -23,10 +23,9 @@
 
 using namespace OpenSim;
 
-const double PI = 3.14159265358979323846;
 const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
-const double FINAL_TIME = PI * sqrt(MASS / STIFFNESS);
+const double FINAL_TIME = SimTK::Pi * sqrt(MASS / STIFFNESS);
 
 Model createOscillatorModel() {
     Model model;
@@ -49,8 +48,6 @@ Model createOscillatorModel() {
     spring->setViscosity(0.0);
     model.addComponent(spring);
 
-    auto& s = model.initSystem();
-    model.printDetailedInfo(s);
     return model;
 }
 
@@ -65,7 +62,7 @@ protected:
 };
 
 void testOscillatorMass() {
-    int N = 50;
+    int N = 100;
 
     MucoTool muco;
     muco.setName("oscillator_mass");
@@ -87,7 +84,7 @@ void testOscillatorMass() {
     MucoSolution sol = muco.solve();
     sol.write("testMucoParameters_testOscillatorMass_sol.sto");
 
-    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.005);
+    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.0005);
 }
 
 

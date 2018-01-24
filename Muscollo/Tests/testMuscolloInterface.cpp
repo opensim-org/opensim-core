@@ -317,6 +317,24 @@ void testBuildingProblem() {
             cEmptyName.setName("");
             SimTK_TEST_MUST_THROW_EXC(mp.addCost(cEmptyName), Exception);
         }
+        // Parameters have the name "parameter" by default.
+        {
+            MucoParameter p0;
+            SimTK_TEST(p0.getName() == "parameter");
+            mp.addParameter(p0);
+        }
+        // Names of parameters must be unique.
+        {
+            MucoParameter p1;
+            SimTK_TEST_MUST_THROW_EXC(mp.addParameter(p1), Exception);
+        }
+        // Parameters must have a name.
+        {
+            MucoParameter pEmptyName;
+            pEmptyName.setName("");
+            SimTK_TEST_MUST_THROW_EXC(mp.addParameter(pEmptyName), Exception);
+        }
+
     }
 }
 
@@ -681,12 +699,9 @@ void testMucoIterate() {
     {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
-        SimTK::RowVector randParams(2);
-        randParams[0] = SimTK::Test::randDouble();
-        randParams[1] = SimTK::Test::randDouble();
         MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m", "n"},
                 SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
-                randParams);
+                SimTK::Test::randVector(2).getAsRowVector());
         orig.write(fname);
 
         MucoIterate deserialized(fname);
