@@ -112,6 +112,14 @@ public:
         solver was constructed. */
     void updateMarkerWeights(const SimTK::Array_<double> &weights);
 
+    /** Get the current reference value for the marker specified by index */
+    const SimTK::Vec3& getMarkerReferenceValue(int markerIndex);
+    /** Get the current reference value for the marker specified by name */
+    const SimTK::Vec3& getMarkerReferenceValue(const std::string &markerName);
+    /** Get the current reference values for all markers in use. Missing
+        reference values at the current instant are denoted by NaN. */
+    void getMarkerReferenceValues(SimTK::Array_<SimTK::Vec3> &markerRefs);
+
     /** Compute and return a marker's spatial location in the ground frame,
         given the marker's name. */
     SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);

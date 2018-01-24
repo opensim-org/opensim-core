@@ -118,6 +118,31 @@ void InverseKinematicsSolver::updateMarkerWeights(const SimTK::Array_<double> &w
         throw Exception("InverseKinematicsSolver::updateMarkerWeights: invalid size of weights.");
 }
 
+/* Get the current reference values for markers*/
+const SimTK::Vec3& InverseKinematicsSolver::getMarkerReferenceValue(int markerIndex)
+{
+    SimTK::Markers::ObservationIx oix(
+        _markerAssemblyCondition->getObservationIxForMarker(
+            SimTK::Markers::MarkerIx(markerIndex)) );
+    return _markerAssemblyCondition->getObservation(oix);
+}
+const SimTK::Vec3& InverseKinematicsSolver::getMarkerReferenceValue(const std::string &markerName)
+{
+    SimTK::Markers::ObservationIx oix(
+        _markerAssemblyCondition->getObservationIxForMarker(
+            _markerAssemblyCondition->getMarkerIx(markerName)) );
+    return _markerAssemblyCondition->getObservation(oix);
+}
+void InverseKinematicsSolver::getMarkerReferenceValues(SimTK::Array_<SimTK::Vec3> &markerRefs)
+{
+    int nm = getNumMarkersInUse();
+    markerRefs.resize(nm);
+
+    for (int i = 0; i < nm; ++i) {
+        markerRefs[i] = getMarkerReferenceValue(i);
+    }
+}
+
 /* Compute and return the spatial location of a marker in ground. */
 SimTK::Vec3 InverseKinematicsSolver::computeCurrentMarkerLocation(const std::string &markerName)
 {
