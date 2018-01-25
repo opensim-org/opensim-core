@@ -341,7 +341,7 @@ bool InverseKinematicsTool::run()
 
                 ikSolver.getMarkerReferenceValues(markerRefValues);
                 for (const Vec3& val : markerRefValues) {
-                    val.isNaN() ? ignore_cnt++ : 0;
+                    if(val.isNaN()) ignore_cnt++;
                 }
 
                 ikSolver.computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
