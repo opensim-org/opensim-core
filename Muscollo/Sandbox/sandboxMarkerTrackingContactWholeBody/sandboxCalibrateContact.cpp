@@ -131,6 +131,7 @@ enum class ContactModel {
 class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
     ContactCalibration(Model model, StatesTrajectory statesTraj,
+            TimeSeriesTable grfData, std::string grfPrefix,
             ContactModel contactModel, int numContacts) :
             tropter::OptimizationProblem<double>(
                 (contactModel == ContactModel::AckermannVanDenBogert ? 5 : 6) * numContacts,
@@ -144,10 +145,9 @@ public:
 
         // Foot–ground contact data.
         // -------------------------
-        auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
-        auto time = data.getIndependentColumn();
-        SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
-        SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
+        auto time = grfData.getIndependentColumn();
+        SimTK::Vector Fx = grfData.getDependentColumn(grfPrefix + "_vx");
+        SimTK::Vector Fy = grfData.getDependentColumn(grfPrefix + "_vy");
         m_FxSpline = GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
         m_FySpline = GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
     }
@@ -226,6 +226,7 @@ public:
                     contactForce.setDynamicFriction(frictionCoeff);
                 }
                 {
+                    // TODO lower and upper are unused.
                     double lower = 0.01;
                     double upper = 0.10;
                     const auto& transitionVelocity =
@@ -424,9 +425,11 @@ private:
 class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
     SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
+            TimeSeriesTable grfData, std::string grfPrefix,
             ContactModel contactModel, int numContacts)
             : SimTK::OptimizerSystem(),
               m_tropProb(std::move(model), std::move(statesTraj),
+                      std::move(grfData), grfPrefix,
                       contactModel, numContacts) {
         setNumParameters(m_tropProb.get_num_variables());
         int N = m_tropProb.get_num_variables();
@@ -455,23 +458,6 @@ private:
     mutable std::atomic<int> m_objCount {0};
 };
 
-/// Convenience function to apply a CoordinateActuator to the model.
-static void addCoordinateActuator(Model& model, std::string coordName,
-        double optimalForce) {
-
-    auto& coordSet = model.updCoordinateSet();
-
-    CoordinateActuator* actu = nullptr;
-    //auto* actActu = new ActivationCoordinateActuator();
-    //actActu->set_default_activation(0.1);
-    //actu = actActu;
-    actu = new CoordinateActuator();
-    actu->setName("tau_" + coordName);
-    actu->setCoordinate(&coordSet.get(coordName));
-    actu->setOptimalForce(optimalForce);
-    model.addComponent(actu);
-}
-
 void addContact(Model& model, std::string markerName, double stiffness = 5e7,
         double dissipation = 1.0,
         double friction_coefficient = 0.95, double velocity_scaling = 0.3) {
@@ -485,16 +471,28 @@ void addContact(Model& model, std::string markerName, double stiffness = 5e7,
     contact->updSocket("station").setConnecteeName(markerName);
 }
 
-void calibrateContact(ContactModel contactModel) {
+enum class DataType {
+    Treadmill,
+    Overground
+};
+
+void calibrateContact(DataType dataType, ContactModel contactModel) {
 
     // Model.
     // ------
-    Model model("gait1018_subject01_onefoot_v30516.osim");
+    Model model;
+    TimeSeriesTable grfData;
+    std::string grfPrefix;
+    if (dataType == DataType::Treadmill) {
+        model = Model("gait1018_subject01_onefoot_v30516.osim");
+        grfData = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
+        grfPrefix = "ground_force";
+    } else if (dataType == DataType::Overground) {
+        model = Model("Rajagopal2016_subject05_v30516.osim");
+        grfData = STOFileAdapter::read("loadedwalking_subject05_noload_free_trial03_grf.mot");
+        grfPrefix = "ground_force_r";
+    }
     model.initSystem();
-
-    addCoordinateActuator(model, "rz", 250);
-    addCoordinateActuator(model, "tx", 5000);
-    addCoordinateActuator(model, "ty", 5000);
 
     const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
     /*
@@ -515,7 +513,12 @@ void calibrateContact(ContactModel contactModel) {
         for (int icontact = 0; icontact < numContacts; ++icontact) {
             const std::string name = "marker" + std::to_string(icontact);
             const SimTK::Real xHeel = -0.02;
-            const SimTK::Real xToes =  0.27;
+            SimTK::Real xToes = SimTK::NaN;
+            if (dataType == DataType::Treadmill) {
+                xToes =  0.27;
+            } else if (dataType == DataType::Overground) {
+                xToes =  0.29;
+            }
             const SimTK::Real x = xHeel +
                     SimTK::Real(icontact) / SimTK::Real(numContacts - 1) *
                             (xToes - xHeel);
@@ -572,7 +575,7 @@ void calibrateContact(ContactModel contactModel) {
     // ----------------
     StatesTrajectory statesTraj;
     std::unique_ptr<Storage> motion;
-    {
+    if (dataType == DataType::Treadmill) {
         const std::string trcFile = "sandboxCalibrateContact_markers.trc";
         const std::string motFile = "sandboxCalibrateContact.mot";
         auto ref = TRCFileAdapter::read("walk_marker_trajectories.trc");
@@ -589,7 +592,7 @@ void calibrateContact(ContactModel contactModel) {
             }
         }
         TimeSeriesTable refFilt = filterLowpass(
-                ref.flatten({ "_x", "_y", "_z" }), 6.0, true);
+                ref.flatten({"_x", "_y", "_z"}), 6.0, true);
         {
             // Convert back to millimeters.
             TimeSeriesTableVec3 refMM(ref);
@@ -605,6 +608,15 @@ void calibrateContact(ContactModel contactModel) {
         ikTool.run();
 
         motion.reset(new Storage(motFile));
+
+    } else if (dataType == DataType::Overground) {
+
+        motion.reset(new Storage("loadedwalking_subject05_noload_free_"
+                "trial03_ik_solution.mot"));
+
+    }
+
+    {
         // TODO motion.pad(motion.getSize() / 2);
         motion->lowpassIIR(6.0);
         // Estimate speeds from coordinates;
@@ -625,51 +637,10 @@ void calibrateContact(ContactModel contactModel) {
         int initialNumStates = motion->getSize();
         double duration = motion->getLastTime() - motion->getFirstTime();
         // Double the step size to reduce the number of states.
-        motion->resample(/* TODO 2 * */duration / (initialNumStates - 1), 5);
+        motion->resample(2 * duration / (initialNumStates - 1), 5);
         statesTraj = StatesTrajectory::createFromStatesStorage(model,
                 *motion, true);
         // visualize(model, *motion);
-
-        /*
-        auto refPacked = refFilt.pack<double>();
-        TimeSeriesTableVec3 refToUse(refPacked);
-
-        Set<MarkerWeight> markerWeights;
-        markerWeights.cloneAndAppend({ "R.Heel", 2 });
-        markerWeights.cloneAndAppend({ "R.Toe.Tip", 2 });
-        MarkersReference markersRef(refToUse, &markerWeights);
-
-        MucoTool muco;
-        MucoProblem& mp = muco.updProblem();
-        mp.setModel(model);
-        MucoBounds defaultSpeedBounds(-25, 25);
-        mp.setTimeBounds(0.48, 1.8); // TODO [.58, 1.8] for gait cycle of right leg.
-        mp.setStateInfo("ground_toes/rz/value", { -10, 10 });
-        mp.setStateInfo("ground_toes/rz/speed", defaultSpeedBounds);
-        mp.setStateInfo("ground_toes/tx/value", { -10, 10 });
-        mp.setStateInfo("ground_toes/tx/speed", defaultSpeedBounds);
-        mp.setStateInfo("ground_toes/ty/value", { -10, 10 });
-        mp.setStateInfo("ground_toes/ty/speed", defaultSpeedBounds);
-        mp.setControlInfo("tau_rz", { -1, 1 });
-        mp.setControlInfo("tau_tx", { -1, 1 });
-        mp.setControlInfo("tau_ty", { -1, 1 });
-
-        MucoMarkerTrackingCost tracking;
-        tracking.setMarkersReference(markersRef);
-        tracking.setAllowUnusedReferences(true);
-        tracking.setTrackedMarkerComponents("xy");
-        mp.addCost(tracking);
-
-        auto& ms = muco.initSolver();
-        ms.set_num_mesh_points(30);
-        ms.set_optim_convergence_tolerance(1e-2);
-        ms.set_optim_constraint_tolerance(1e-2);
-
-        mucoSol = muco.solve();
-        statesTraj = mucoSol.exportToStatesTrajectory(mp);
-        visualize(model, mucoSol.exportToStatesStorage());
-         */
-
     }
 
     std::cout << "Number of states in trajectory: " << statesTraj.getSize()
@@ -693,7 +664,8 @@ void calibrateContact(ContactModel contactModel) {
 
     // CMAES
     // -----
-    SimTKContactCalibration sys(model, statesTraj, contactModel, numContacts);
+    SimTKContactCalibration sys(model, statesTraj, grfData, grfPrefix,
+            contactModel, numContacts);
     SimTK::Vector results(sys.getNumParameters(), 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
     opt.setMaxIterations(10000);
@@ -759,8 +731,9 @@ int main() {
 
     // calibrateBall();
 
-    calibrateContact(ContactModel::AckermannVanDenBogert);
-    //calibrateContact(ContactModel::HuntCrossley);
+    calibrateContact(DataType::Overground, ContactModel::AckermannVanDenBogert);
+    // calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert);
+    // calibrateContact(ContactModel::HuntCrossley);
 
     // OpenSim::LogBuffer::sync() is not threadsafe.
     // toyCMAES();
