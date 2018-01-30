@@ -132,12 +132,27 @@ class ContactCalibration : public tropter::OptimizationProblem<double> {
 public:
     ContactCalibration(Model model, StatesTrajectory statesTraj,
             TimeSeriesTable grfData, std::string grfPrefix,
-            ContactModel contactModel, int numContacts) :
-            tropter::OptimizationProblem<double>(
-                (contactModel == ContactModel::AckermannVanDenBogert ? 5 : 6) * numContacts,
-                    0),
+            ContactModel contactModel, int numContacts,
+            bool optimizeIndividualMarkerHeights) :
             m_model(std::move(model)), m_statesTraj(std::move(statesTraj)),
-            m_contactModel(contactModel), m_numContacts(numContacts) {
+            m_contactModel(contactModel), m_numContacts(numContacts),
+            m_optimizeIndividualMarkerHeights(optimizeIndividualMarkerHeights) {
+
+        int numVariables = -1;
+        if (contactModel == ContactModel::AckermannVanDenBogert) {
+            if (optimizeIndividualMarkerHeights) {
+                numVariables = 5 * numContacts;
+            } else {
+                numVariables = 4 * numContacts + 1;
+            }
+        } else if (contactModel == ContactModel::HuntCrossley) {
+            if (!optimizeIndividualMarkerHeights) {
+                throw std::runtime_error("Hunt-Crossley requires optimizing "
+                        "individual marker heights.");
+            }
+            numVariables = 6 * numContacts;
+        }
+        set_num_variables(numVariables);
         set_variable_bounds(Eigen::VectorXd::Zero(get_num_variables()),
                 Eigen::VectorXd::Ones(get_num_variables()));
 
@@ -164,9 +179,12 @@ public:
             };
             for (int icontact = 0; icontact < m_numContacts; ++icontact) {
                 const std::string name = "marker" + std::to_string(icontact);
-                applyMarkerHeight(name, x[icontact]);
+                if (m_optimizeIndividualMarkerHeights) {
+                    applyMarkerHeight(name, x[icontact]);
+                } else {
+                    applyMarkerHeight(name, x[0]);
+                }
             }
-            // TODO scaling x position of elements.
 
             double stiffnessScalingFactor = 1e8;
             double frictionCoeffScalingFactor = 1.0;
@@ -175,16 +193,17 @@ public:
             double velScalingMax = 0.10;
 
             int icontact = 0;
+            int offset = (m_optimizeIndividualMarkerHeights ? m_numContacts : 1);
             for (auto& contact :
                     model.updComponentList<AckermannVanDenBogert2010Force>()) {
                 contact.set_stiffness(
-                        stiffnessScalingFactor * x[icontact + m_numContacts]);
+                        stiffnessScalingFactor * x[icontact + offset]);
                 contact.set_dissipation(
-                        dissipationScalingFactor * x[icontact + 2 * m_numContacts]);
+                        dissipationScalingFactor * x[icontact + 1 * m_numContacts + offset]);
                 contact.set_friction_coefficient(
-                        frictionCoeffScalingFactor * x[icontact + 3 * m_numContacts]);
+                        frictionCoeffScalingFactor * x[icontact + 2 * m_numContacts + offset]);
                 contact.set_tangent_velocity_scaling_factor(
-                        velScalingMin + x[icontact + 4 * m_numContacts] *
+                        velScalingMin + x[icontact + 3 * m_numContacts + offset] *
                                 (velScalingMax - velScalingMin));
                 ++icontact;
             }
@@ -345,16 +364,17 @@ public:
 
         if (m_contactModel == ContactModel::AckermannVanDenBogert) {
             for (int i = 0; i < x.size(); ++i) {
-                if (i < m_numContacts)
+                int offset = (m_optimizeIndividualMarkerHeights ? m_numContacts : 1);
+                if (i < offset)
                     std::cout << "marker height " << i;
-                else if (i < 2 * m_numContacts)
-                    std::cout << "stiffness " << i - m_numContacts;
-                else if (i < 3 * m_numContacts)
-                    std::cout << "dissipation " << i - 2 * m_numContacts;
-                else if (i < 4 * m_numContacts)
-                    std::cout << "coefficient of friction " << i - 3*m_numContacts;
+                else if (i < 1 * m_numContacts + offset)
+                    std::cout << "stiffness " << i - offset;
+                else if (i < 2 * m_numContacts + offset)
+                    std::cout << "dissipation " << i - 1 * m_numContacts - offset;
+                else if (i < 3 * m_numContacts + offset)
+                    std::cout << "coefficient of friction " << i - 2*m_numContacts - offset;
                 else
-                    std::cout << "transition velocity " << i - 4 * m_numContacts;
+                    std::cout << "transition velocity " << i - 3 * m_numContacts - offset;
                 std::cout << ": " << x[i] << std::endl;
             }
         } else if (m_contactModel == ContactModel::HuntCrossley) {
@@ -414,6 +434,7 @@ private:
     GCVSpline m_FySpline;
     ContactModel m_contactModel;
     int m_numContacts;
+    bool m_optimizeIndividualMarkerHeights;
 
     mutable std::mutex m_modelMutex;
     mutable std::unordered_map<std::thread::id, Model> m_workingModels;
@@ -426,11 +447,13 @@ class SimTKContactCalibration : public SimTK::OptimizerSystem {
 public:
     SimTKContactCalibration(Model model, StatesTrajectory statesTraj,
             TimeSeriesTable grfData, std::string grfPrefix,
-            ContactModel contactModel, int numContacts)
+            ContactModel contactModel, int numContacts,
+            bool optimizeIndividualMarkerHeights)
             : SimTK::OptimizerSystem(),
               m_tropProb(std::move(model), std::move(statesTraj),
                       std::move(grfData), grfPrefix,
-                      contactModel, numContacts) {
+                      contactModel, numContacts,
+                      optimizeIndividualMarkerHeights) {
         setNumParameters(m_tropProb.get_num_variables());
         int N = m_tropProb.get_num_variables();
         setParameterLimits(SimTK::Vector(N, 0.0), SimTK::Vector(N, 1.0));
@@ -476,7 +499,8 @@ enum class DataType {
     Overground
 };
 
-void calibrateContact(DataType dataType, ContactModel contactModel) {
+void calibrateContact(DataType dataType, ContactModel contactModel,
+        bool optimizeIndividualMarkerHeights = true) {
 
     // Model.
     // ------
@@ -665,7 +689,7 @@ void calibrateContact(DataType dataType, ContactModel contactModel) {
     // CMAES
     // -----
     SimTKContactCalibration sys(model, statesTraj, grfData, grfPrefix,
-            contactModel, numContacts);
+            contactModel, numContacts, optimizeIndividualMarkerHeights);
     SimTK::Vector results(sys.getNumParameters(), 0.5);
     SimTK::Optimizer opt(sys, SimTK::CMAES);
     opt.setMaxIterations(10000);
@@ -731,8 +755,10 @@ int main() {
 
     // calibrateBall();
 
-    calibrateContact(DataType::Overground, ContactModel::AckermannVanDenBogert);
-    // calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert);
+    // calibrateContact(DataType::Overground, ContactModel::AckermannVanDenBogert);
+    // calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert,
+    //         false);
+    calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert);
     // calibrateContact(ContactModel::HuntCrossley);
 
     // OpenSim::LogBuffer::sync() is not threadsafe.
