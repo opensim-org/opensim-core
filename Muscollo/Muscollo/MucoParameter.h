@@ -55,11 +55,11 @@ public:
     // Simple parameter constructor.
     MucoParameter(const std::string& name, const std::string& componentPath,
         const std::string& propertyName, const MucoBounds&);
-    // TODO: Generic parameter constructor.
-    //MucoParameter(const std::string& name, 
-    //  const std::vector<std::string>& componentPaths,
-    //  const std::string& propertyName, const MucoBounds&, 
-    //  const unsigned& propertyElt = 0);
+    // Generic parameter constructor.
+    MucoParameter(const std::string& name, 
+      const std::vector<std::string>& componentPaths,
+      const std::string& propertyName, const MucoBounds&, 
+      const unsigned& propertyElt = 0);
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
@@ -68,14 +68,14 @@ public:
     {   return MucoBounds(getProperty_bounds()); }
     std::string getPropertyName() const
     {   return get_property_name(); }
-    std::string getComponentPath() const
-    {   return get_component_path(); }
+    //std::string getComponentPath() const
+    //{   return get_component_path(); }
     void setBounds(const MucoBounds& bounds)
     {   set_bounds(bounds.getAsArray()); }
     void setPropertyName(const std::string& propertyName)
     {   set_property_name(propertyName); }
-    void setComponentPath(const std::string& componentPath)
-    {   set_component_path(componentPath); }
+    void appendComponentPath(const std::string& componentPath)
+    {   append_component_paths(componentPath); }
 
     /// For use by solvers. This also performs error checks.
     void initialize(const Model& model) const;
@@ -86,14 +86,13 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "
         "2 values: lower, upper bounds on value.");
-    // TODO: support multiple components (i.e. make this a list property)
-    OpenSim_DECLARE_PROPERTY(component_path, std::string, "The path to the "
+    OpenSim_DECLARE_LIST_PROPERTY(component_paths, std::string, "The path to the "
         "model component that owns the property associated with the "
         "MucoParameter.");
     OpenSim_DECLARE_PROPERTY(property_name, std::string, "The name of the "
         "model property associated with the MucoParameter.");
 
-    mutable SimTK::ReferencePtr<Property<double>> m_property;
+    mutable std::vector<SimTK::ReferencePtr<Property<double>>> m_property_refs;
     void constructProperties();
 };
 

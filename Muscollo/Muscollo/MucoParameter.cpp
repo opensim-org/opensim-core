@@ -32,33 +32,49 @@ MucoParameter::MucoParameter(const std::string& name,
     const MucoBounds& bounds) : MucoParameter() {
     setName(name);
     set_bounds(bounds.getAsArray());
-    set_component_path(componentPath);
+    append_component_paths(componentPath);
+    set_property_name(propertyName);
+}
+
+MucoParameter::MucoParameter(const std::string& name,
+    const std::vector<std::string>& componentPaths,
+    const std::string& propertyName,
+    const MucoBounds& bounds,
+    const unsigned& propertyElt) : MucoParameter() {
+    setName(name);
+    set_bounds(bounds.getAsArray());
+    set_component_paths(componentPaths.get_allocator());
     set_property_name(propertyName);
 }
 
 void MucoParameter::constructProperties() {
     constructProperty_bounds();
     constructProperty_property_name("");
-    constructProperty_component_path("");
+    constructProperty_component_paths();
 }
 
 void MucoParameter::initialize(const Model& model) const {
-    // Get model component.
-    OPENSIM_THROW_IF(get_component_path().empty(), Exception,
+    
+    OPENSIM_THROW_IF(getProperty_component_paths().empty(), Exception,
         "A model component name must be provided.");
-    auto& component = model.getComponent(get_component_path());
-
-    // Get component property.
     OPENSIM_THROW_IF(get_property_name().empty(), Exception,
         "A component property name must be provided.");
-    // TODO: get rid of need for const_cast
-    auto& property = dynamic_cast<Property<double>&>(
-        const_cast<AbstractProperty&>(
-            component.getPropertyByName(get_property_name())));
 
-    m_property.reset(&property);
+    for (int i = 0; i < (int)getProperty_component_paths().size(); ++i) {
+        // Get model component.
+        auto& component = model.getComponent(get_component_paths(i));
+        // Get component property.
+        // TODO: get rid of need for const_cast
+        auto& property = dynamic_cast<Property<double>&>(
+            const_cast<AbstractProperty&>(
+                component.getPropertyByName(get_property_name())));
+
+        m_property_refs.emplace_back(&property);
+    }
 }
 
 void MucoParameter::applyParameterToModel(const double& value) const {
-    m_property->setValue(value);
+    for (auto& propRef : m_property_refs) {
+        propRef->setValue(value);
+    }
 }

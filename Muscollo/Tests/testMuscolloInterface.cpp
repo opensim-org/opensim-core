@@ -272,9 +272,6 @@ void testBounds() {
     // TODO what to do if the user does not specify info for some variables?
 
     // Get error if state/control name does not exist.
-    //{
-    //    auto model = createSlidingMassModel();
-    //}
 
     {
         auto model = createSlidingMassModel();
