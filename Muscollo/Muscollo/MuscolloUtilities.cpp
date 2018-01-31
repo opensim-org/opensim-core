@@ -117,10 +117,18 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     auto& viz = model.updVisualizer().updSimbodyVisualizer();
     std::string modelName = model.getName().empty() ? "<unnamed>"
                                                     : model.getName();
-    std::string motionName = statesSto.getName().empty() ? "<unnamed>"
-                                                         : statesSto.getName();
-    viz.setWindowTitle("Visualizing model '" + modelName + "' with motion '" +
-            motionName + "'.");
+    std::string title = "Visualizing model '" + modelName + "'";
+    if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
+        title += " with motion '" + statesSto.getName() + "'";
+    {
+        using namespace std::chrono;
+        auto time_now = system_clock::to_time_t(system_clock::now());
+        std::stringstream ss;
+        // ISO standard extended datetime format.
+        ss << std::put_time(std::localtime(&time_now), "%Y-%m-%dT%X");
+        title += " (" + ss.str() + ")";
+    }
+    viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
     viz.setDesiredBufferLengthInSec(0);
