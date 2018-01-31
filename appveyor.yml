@@ -43,7 +43,8 @@ install:
   # We rely on the opensim-core source code submodule for bindings and the
   # superbuild.
   # Don't want to clone the entire repo, so we provide a depth.
-  - git submodule update --depth 200 --init
+  # We tried specifying a depth (--depth=1) but that may cause "Server does not allow request for unadvertised object"
+  - git submodule update --init
 
   # https://blogs.msdn.microsoft.com/vcblog/2016/09/19/vcpkg-a-tool-to-acquire-and-build-c-open-source-libraries-on-windows/
   # https://github.com/Microsoft/vcpkg/blob/master/docs/examples/using-sqlite.md
