@@ -43,18 +43,19 @@ void MucoParameter::constructProperties() {
 }
 
 void MucoParameter::initialize(const Model& model) const {
+    // Get model component.
     OPENSIM_THROW_IF(get_component_path().empty(), Exception,
         "A model component name must be provided.");
     auto& component = model.getComponent(get_component_path());
+
+    // Get component property.
     OPENSIM_THROW_IF(get_property_name().empty(), Exception,
         "A component property name must be provided.");
-
     // TODO: get rid of need for const_cast
     auto& property = dynamic_cast<Property<double>&>(
         const_cast<AbstractProperty&>(
             component.getPropertyByName(get_property_name())));
 
-    // TODO: check that component and property actually exist
     m_property.reset(&property);
 }
 

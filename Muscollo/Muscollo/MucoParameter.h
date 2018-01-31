@@ -59,7 +59,7 @@ public:
     //MucoParameter(const std::string& name, 
     //  const std::vector<std::string>& componentPaths,
     //  const std::string& propertyName, const MucoBounds&, 
-    //  const unsigned& propertyElement = 0);
+    //  const unsigned& propertyElt = 0);
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
