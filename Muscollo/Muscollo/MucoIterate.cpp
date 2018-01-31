@@ -409,7 +409,7 @@ bool sameContents(VecStr v1, VecStr v2) {
 
 // Check that two different vectors of string ("b", "c") contain the same subset
 // vector of strings ("a").
-auto checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
+void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     // set_difference requires sorted containers.
     std::sort(a.begin(), a.end());
     std::sort(b.begin(), b.end());

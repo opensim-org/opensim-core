@@ -701,7 +701,7 @@ void testMucoIterate() {
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
         MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m", "n"},
                 SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
-                SimTK::Test::randVector(2).getAsRowVector());
+                SimTK::Test::randVector(2).transpose());
         orig.write(fname);
 
         MucoIterate deserialized(fname);
@@ -779,11 +779,8 @@ void testMucoIterate() {
         std::vector<std::string> parametersToCompare = {}) {
         std::vector<std::string> pnames;
         for (int i = 0; i < NP; ++i) pnames.push_back("p" + std::to_string(i));
-        SimTK::RowVector parameters(NP);
-        for (int i = 0; i < NP; ++i) {
-            parameters.updElt(1, i) = SimTK::Test::randDouble();
-        }
-        MucoIterate a(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(), 
+        SimTK::RowVector parameters = SimTK::Test::randVector(NP).transpose();
+        MucoIterate a(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
             SimTK::Matrix(), parameters);
         MucoIterate b(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
             SimTK::Matrix(),
