@@ -208,15 +208,25 @@ try
                 'MATLAB as administrator (or with sudo, on UNIX) ' ...
                 ' and re-run configureOpenSim.m.'];
     end
-    if ispc && rmPrev(1) 
+    if ispc
+        lowerPATH = lower(getenv('PATH'));
+        firstopensim = strfind(lowerPATH, 'opensim');
+        positionOfCorrectFolder = strfind(lowerPATH, OpenSimLibPath);
+        if isempty(firstopensim)
+            % There is no PATH entry for OpenSim.
+            msg = [msg ' You MUST add ' OpenSimLibPath ' to your ' ...
+                       'Windows PATH (search for "environment" in ' ...
+                       'the start menu).'];
+        end
+        if isempty(firstopensim) || (~isempty()
+            % There is no PATH entry for opensim or the correct PATH entry is not first.
+        % PATH contains 'opensim'.
         msg = [msg ' Make sure your Windows PATH (search for ' ...
                    '"environment" in the Windows start menu) ' ...
                    'contains ' OpenSimLibPath '.'];
-        % If the user does not have a pre-existing OpenSim installation,
-        % we assume the OpenSim installer successfully edited the PATH;
-        % no need for a message.
     end
-    msg = [msg ' To complete setup, restart MATLAB. To test your set up, ' ...
+    % TODO do newlines work?
+    msg = [msg '\nTo complete setup, restart MATLAB. To test your set up, ' ...
            'type: `model = org.opensim.modeling.Model();`'];
     showMessage(msg, 'OpenSim successfully added', false);
 catch ME
