@@ -17,17 +17,17 @@
   
 shallow_clone: true
 
-os: Visual Studio 2015
+image: Visual Studio 2017
 
 platform: x64
 
 environment:
   matrix:
-    - CMAKE_GENERATOR: "Visual Studio 14 2015"
+    - CMAKE_GENERATOR: "Visual Studio 15 2017"
       NUGET_PACKAGE_ID_SUFFIX: "-x86"
       JAVA_DIR: "C:\\Program Files (x86)\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27"
-    - CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
+    - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
       NUGET_PACKAGE_ID_SUFFIX: "-x64"
       JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
       PYTHON_DIR: "C:\\Python27-x64"
