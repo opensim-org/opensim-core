@@ -343,7 +343,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
-        ocp->print_description();
+        getProblem().printDescription();
+        // We can provide more detail about our problem than tropter can.
+        // ocp->print_description();
     }
 
     // Apply settings/options.

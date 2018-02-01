@@ -24,6 +24,12 @@ MucoCost::MucoCost() {
     if (getName().empty()) setName("cost");
 }
 
+
+void MucoCost::printDescription(std::ostream& stream) const {
+    stream << getName() << ". " << getConcreteClassName() <<
+            " weight: " << get_weight() << std::endl;
+}
+
 void MucoCost::constructProperties() {
     constructProperty_weight(1);
 }
