@@ -125,7 +125,14 @@ void OpenSim::visualize(Model model, Storage statesSto) {
         auto time_now = system_clock::to_time_t(system_clock::now());
         std::stringstream ss;
         // ISO standard extended datetime format.
-        ss << std::put_time(std::localtime(&time_now), "%Y-%m-%dT%X");
+        // https://kjellkod.wordpress.com/2013/01/22/exploring-c11-part-2-localtime-and-time-again/
+        struct tm buf;
+        #if defined(_WIN32)
+            localtime_s(&buf, &time_now);
+        #else
+            localtime_r(&time_now, &buf);
+        #endif
+        ss << std::put_time(&buf, "%Y-%m-%dT%X");
         title += " (" + ss.str() + ")";
     }
     viz.setWindowTitle(title);
