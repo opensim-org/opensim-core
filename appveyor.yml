@@ -22,15 +22,14 @@ image: Visual Studio 2017
 platform: x64
 
 environment:
+  CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
+  JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
+  PYTHON_DIR: "C:\\Python27-x64"
   matrix:
-    - CMAKE_GENERATOR: "Visual Studio 15 2017"
-      NUGET_PACKAGE_ID_SUFFIX: "-x86"
-      JAVA_DIR: "C:\\Program Files (x86)\\Java\\jdk1.8.0"
-      PYTHON_DIR: "C:\\Python27"
-    - CMAKE_GENERATOR: "Visual Studio 15 2017 Win64"
-      NUGET_PACKAGE_ID_SUFFIX: "-x64"
-      JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
-      PYTHON_DIR: "C:\\Python27-x64"
+    - CMAKE_TOOLCHAIN: "v140"
+      NUGET_PACKAGE_ID_SUFFIX: "-VC140"
+    - CMAKE_TOOLCHAIN: "v141"
+      NUGET_PACKAGE_ID_SUFFIX: "-VC141"
 
 branches:
   except:
