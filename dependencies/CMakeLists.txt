@@ -144,7 +144,7 @@ AddDependency(NAME       BTK
               URL        https://github.com/opensim-org/BTKCore.git
               # Include klshrinidhi's fix to stdint.h header with MSVC, and
               # avoiding tr1 with Visual Studio 2017.
-              TAG        2b7a9a874cf2cefcc4cc2492c13225c7ad1d3de3
+              TAG        e91ca871867fc1efb9dd83bc49d257ecf71a7c35
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
