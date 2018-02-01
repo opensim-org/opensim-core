@@ -46,6 +46,27 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
         "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 endif()
 
+# Default paths for finding dependencies.
+set(MUSCOLLO_DEPENDENCIES_DIR
+        "${CMAKE_SOURCE_DIR}/../muscollo_dependencies_install")
+get_filename_component(MUSCOLLO_DEPENDENCIES_DIR "${MUSCOLLO_DEPENDENCIES_DIR}"
+        ABSOLUTE)
+if(NOT CMAKE_PREFIX_PATH
+        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
+        AND NOT "$ENV{IPOPT_DIR}"
+        AND EXISTS "${MUSCOLLO_DEPENDENCIES_DIR}")
+    message(STATUS
+            "Attempting to use dependencies from ${MUSCOLLO_DEPENDENCIES_DIR}")
+    set(dep_install_dirs)
+    foreach(dep opensim-core colpack ipopt)
+        list(APPEND dep_install_dirs "${MUSCOLLO_DEPENDENCIES_DIR}/${dep}")
+    endforeach()
+    set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
+            "Directories containing dependencies.")
+    set(ADOLC_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
+            "Path to ADOL-C install directory.")
+endif()
+
 # Make targets go in the same binary directory.
 # These are CMake-defined variables.
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
