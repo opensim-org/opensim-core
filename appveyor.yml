@@ -26,9 +26,9 @@ environment:
   JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
   PYTHON_DIR: "C:\\Python27-x64"
   matrix:
-    - CMAKE_TOOLCHAIN: "v140"
+    - CMAKE_TOOLSET: "v140"
       NUGET_PACKAGE_ID_SUFFIX: "-VC140"
-    - CMAKE_TOOLCHAIN: "v141"
+    - CMAKE_TOOLSET: "v141"
       NUGET_PACKAGE_ID_SUFFIX: "-VC141"
 
 branches:
@@ -94,7 +94,7 @@ build_script:
   ## Superbuild dependencies. 
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
-  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% # -DSUPERBUILD_simbody=OFF
+  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% # -DSUPERBUILD_simbody=OFF
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
