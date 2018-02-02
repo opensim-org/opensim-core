@@ -504,18 +504,19 @@ void calibrateContact(DataType dataType, ContactModel contactModel,
 
     // Model.
     // ------
-    Model model;
+    std::string modelFileName;
     TimeSeriesTable grfData;
     std::string grfPrefix;
     if (dataType == DataType::Treadmill) {
-        model = Model("gait1018_subject01_onefoot_v30516.osim");
+        modelFileName = "gait1018_subject01_onefoot_v30516.osim";
         grfData = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
         grfPrefix = "ground_force";
     } else if (dataType == DataType::Overground) {
-        model = Model("Rajagopal2016_subject05_v30516.osim");
+        modelFileName = "Rajagopal2016_subject05_v30516.osim";
         grfData = STOFileAdapter::read("loadedwalking_subject05_noload_free_trial03_grf.mot");
         grfPrefix = "ground_force_r";
     }
+    Model model(modelFileName);
     model.initSystem();
 
     const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
@@ -695,7 +696,7 @@ void calibrateContact(DataType dataType, ContactModel contactModel,
     opt.setMaxIterations(10000);
     opt.setDiagnosticsLevel(3);
     opt.setConvergenceTolerance(1e-3);
-    opt.setAdvancedIntOption("popsize", 30);
+    opt.setAdvancedIntOption("popsize", 50);
     opt.setAdvancedRealOption("init_stepsize", 0.5);
     opt.setAdvancedStrOption("parallel", "multithreading");
     // To obtain repeatable results.
@@ -712,6 +713,10 @@ void calibrateContact(DataType dataType, ContactModel contactModel,
             "sandboxCalibrateContact_comparison_cmaes.sto");
     sys.applyParametersToModel(results, model);
     visualize(model, *motion);
+    std::string fileName = modelFileName;
+    std::string ext = ".osim";
+    fileName.replace(fileName.find(ext), ext.length(), "_opt" + ext);
+    model.print(fileName);
 }
 
 
@@ -756,9 +761,9 @@ int main() {
     // calibrateBall();
 
     // calibrateContact(DataType::Overground, ContactModel::AckermannVanDenBogert);
-    // calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert,
-    //         false);
-    calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert);
+    calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert,
+            false);
+    // calibrateContact(DataType::Treadmill, ContactModel::AckermannVanDenBogert);
     // calibrateContact(ContactModel::HuntCrossley);
 
     // OpenSim::LogBuffer::sync() is not threadsafe.
