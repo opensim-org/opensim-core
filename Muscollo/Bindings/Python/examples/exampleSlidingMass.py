@@ -37,6 +37,7 @@ actu.setName('actuator')
 actu.setOptimalForce(1)
 model.addComponent(actu)
 
+body.attachGeometry(osim.Sphere(0.05))
 
 # Create MucoTool.
 # ================
