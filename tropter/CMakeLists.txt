@@ -61,12 +61,9 @@ set_package_properties(Eigen3 PROPERTIES
         PURPOSE "Matrix library")
 
 # Avoid using pkg-config on Windows as it's not easy to get
-# on Windows. On Ubuntu, the pkg-config file for Ipopt provides
+# on Windows. On UNIX, the pkg-config file for Ipopt provides
 # a flag that we must use.
-if(UNIX AND NOT APPLE)
-    set(LINUX TRUE)
-endif()
-if(LINUX)
+if(UNIX)
     find_package(PkgConfig REQUIRED)
 endif()
 
@@ -84,7 +81,7 @@ set_package_properties(ADOLC PROPERTIES
         PURPOSE "Computing derivatives for optimization")
 tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
 
-if(LINUX)
+if(UNIX)
     pkg_check_modules(IPOPT REQUIRED ipopt)
     link_directories(${IPOPT_LIBRARY_DIRS})
 else()
