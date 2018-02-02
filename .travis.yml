@@ -317,8 +317,7 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    # TODO temporarily deply on beta branch so GUI doesn't depend directly on master.
-    branch: 4.0beta_nov2017 
+    branch: master
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
