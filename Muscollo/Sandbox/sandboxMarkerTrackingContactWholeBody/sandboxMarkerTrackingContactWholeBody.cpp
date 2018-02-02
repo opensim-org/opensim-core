@@ -65,9 +65,15 @@ void addContact(Model& model, std::string markerName, const double stiffness = 5
 }
 
 /// Set the model and bounds for the specified MucoProblem.
-void setModelAndBounds(MucoProblem& mp) {
+void setModelAndBounds(MucoProblem& mp, bool useOptimizedModel = false) {
 
-    Model model("gait1018_subject01_onefoot_v30516.osim");
+    std::string modelFile;
+    if (useOptimizedModel) {
+        modelFile = "gait1018_subject01_onefoot_v30516_opt.osim";
+    } else {
+        modelFile = "gait1018_subject01_onefoot_v30516.osim";
+    }
+    Model model(modelFile);
 
     //addCoordinateActuator(model, "lumbar_extension", 100);
     //addCoordinateActuator(model, "pelvis_tilt", 100);
@@ -83,26 +89,28 @@ void setModelAndBounds(MucoProblem& mp) {
     addCoordinateActuator(model, "tx", 5000); // TODO 1000);
     addCoordinateActuator(model, "ty", 5000); // TODO 1000);
 
-    const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
-    model.addMarker(new Marker("R.Heel.Distal", calcn,
-            SimTK::Vec3(0.01548, -0.0272884, -0.00503735)));
-    model.addMarker(new Marker("R.Ball.Lat", calcn,
-            SimTK::Vec3(0.16769, -0.0272884, 0.066)));
-    model.addMarker(new Marker("R.Ball.Med", calcn,
-            SimTK::Vec3(0.1898, -0.0272884, -0.03237)));
-    addContact(model, "R.Heel.Distal", 5e7);
-    addContact(model, "R.Ball.Lat", 7.5e7);
-    addContact(model, "R.Ball.Med", 7.5e7);
-    //addContact(model, "R.Heel");
-    //addContact(model, "R.Toe.Lat");
-    //addContact(model, "R.Toe.Med");
-    //addContact(model, "R.Midfoot.Lat");
-    //addContact(model, "R.Midfoot.Sup");
-    //addContact(model, "L.Heel");
-    //addContact(model, "L.Toe.Lat");
-    //addContact(model, "L.Toe.Med");
-    //addContact(model, "L.Midfoot.Lat");
-    //addContact(model, "L.Midfoot.Sup");
+    if (!useOptimizedModel) {
+        const auto& calcn = dynamic_cast<Body&>(model.updComponent("calcn_r"));
+        model.addMarker(new Marker("R.Heel.Distal", calcn,
+                SimTK::Vec3(0.01548, -0.0272884, -0.00503735)));
+        model.addMarker(new Marker("R.Ball.Lat", calcn,
+                SimTK::Vec3(0.16769, -0.0272884, 0.066)));
+        model.addMarker(new Marker("R.Ball.Med", calcn,
+                SimTK::Vec3(0.1898, -0.0272884, -0.03237)));
+        addContact(model, "R.Heel.Distal", 5e7);
+        addContact(model, "R.Ball.Lat", 7.5e7);
+        addContact(model, "R.Ball.Med", 7.5e7);
+        //addContact(model, "R.Heel");
+        //addContact(model, "R.Toe.Lat");
+        //addContact(model, "R.Toe.Med");
+        //addContact(model, "R.Midfoot.Lat");
+        //addContact(model, "R.Midfoot.Sup");
+        //addContact(model, "L.Heel");
+        //addContact(model, "L.Toe.Lat");
+        //addContact(model, "L.Toe.Med");
+        //addContact(model, "L.Midfoot.Lat");
+        //addContact(model, "L.Midfoot.Sup");
+    }
 
     // TODO
     /*
@@ -260,7 +268,8 @@ MucoSolution solveStateTrackingProblem() {
 /// track the marker trajectories directly.
 ///
 /// Estimated time to solve: ~95 minutes.
-MucoSolution solveMarkerTrackingProblem() {
+MucoSolution solveMarkerTrackingProblem(bool createGuess,
+        bool useOptimizedModel) {
 
     MucoTool muco;
     muco.setName("whole_body_marker_tracking");
@@ -269,8 +278,12 @@ MucoSolution solveMarkerTrackingProblem() {
     // ===================================
     MucoProblem& mp = muco.updProblem();
 
+
     // Bounds and model.
-    setModelAndBounds(mp);
+    setModelAndBounds(mp, useOptimizedModel);
+
+    auto modelCopy = mp.getPhase().getModel();
+    modelCopy.initSystem();
 
     // Cost.
     // -----
@@ -281,7 +294,7 @@ MucoSolution solveMarkerTrackingProblem() {
     ref.updMatrix() /= 1000;
     // TODO shift x and y positions to create "overground" trial.
     const auto& reftime = ref.getIndependentColumn();
-    const double walkingSpeed = 1.05; // m/s
+    const double walkingSpeed = 1.15; // m/s
     for (int i = 0; i < (int)ref.getNumColumns(); ++i) {
         SimTK::VectorView_<SimTK::Vec3> col = ref.updDependentColumnAtIndex(i);
         for (int j = 0; j < col.size(); ++j) {
@@ -315,29 +328,35 @@ MucoSolution solveMarkerTrackingProblem() {
     // TODO tracking.set_weight(0.000001);
     tracking.setFreeRadius(0.01);
     tracking.setTrackedMarkerComponents("xy");
-    mp.addCost(tracking);
-        
-    MucoForceTrackingCost grfTracking;
-    // TODO this is a complete hack!
-    grfTracking.setName("grf");
+    // TODO mp.addCost(tracking);
+
     auto data = STOFileAdapter::read("walk_gait1018_subject01_grf.mot");
     auto time = data.getIndependentColumn();
     SimTK::Vector Fx = data.getDependentColumn("ground_force_vx");
     SimTK::Vector Fy = data.getDependentColumn("ground_force_vy");
-    grfTracking.m_refspline_x =
-            GCVSpline(5, (int)time.size(), time.data(), &Fx[0]);
-    grfTracking.m_refspline_y =
-            GCVSpline(5, (int)time.size(), time.data(), &Fy[0]);
-    double normGRFs = 0.001;
-    double weight = 0.001;
-    // TODO double weight = 0.000001;
-    grfTracking.set_weight(normGRFs * weight);
-    grfTracking.append_forces("R.Heel.Distal_contact");
-    grfTracking.append_forces("R.Ball.Lat_contact");
-    grfTracking.append_forces("R.Ball.Med_contact");
-    grfTracking.set_tracked_grf_components("vertical");
-    grfTracking.set_free_force_window(25.0);
-    mp.addCost(grfTracking);
+    GCVSpline splineFx(5, (int) time.size(), time.data(), &Fx[0]);
+    GCVSpline splineFy(5, (int) time.size(), time.data(), &Fy[0]);
+    if (!createGuess) {
+        MucoForceTrackingCost grfTracking;
+        // TODO this is a complete hack!
+        grfTracking.setName("grf");
+        grfTracking.m_refspline_x = splineFx;
+        grfTracking.m_refspline_y = splineFy;
+        double normGRFs = 0.001;
+        double weight = 0.1;
+        // TODO double weight = 0.000001;
+        grfTracking.set_weight(normGRFs * weight);
+
+        for (const auto& force :
+                modelCopy.getComponentList<AckermannVanDenBogert2010Force>()) {
+            std::cout << "Contact Force: " << force.getName() << std::endl;
+            grfTracking.append_forces(force.getName());
+        }
+        // TODO horizontal component
+        grfTracking.set_tracked_grf_components("vertical");
+        grfTracking.set_free_force_window(25.0);
+        mp.addCost(grfTracking);
+    }
 
     //MucoControlCost effort;
     //effort.setName("effort");
@@ -349,14 +368,19 @@ MucoSolution solveMarkerTrackingProblem() {
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_hessian_approximation("limited-memory"); // TODO "exact");
     ms.set_dynamics_mode("implicit");
-    ms.set_optim_max_iterations(1000);
-    ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_optim_constraint_tolerance(1e-3);
+    ms.set_optim_max_iterations(5000);
+    ms.set_optim_convergence_tolerance(1e-4);
+    ms.set_optim_constraint_tolerance(1e-2);
 
     // Create guess.
     // =============
+    if (!createGuess) {
+        MucoIterate guess("sandboxMarkerTrackingContactWholeBody_guess.sto");
+        ms.setGuess(guess);
+        // muco.visualize(guess);
+    }
     //MucoIterate guess = ms.createGuess();
     //auto model = mp.getPhase().getModel();
     //model.initSystem();
@@ -367,37 +391,34 @@ MucoSolution solveMarkerTrackingProblem() {
     //guess.setStatesTrajectory(statesRefFilt, true, true);
     //ms.setGuess(guess);
     // TODO describe how this guess is generated (without contact).
-    ms.setGuess(MucoIterate(
-            "sandboxMarkerTrackingContactWholeBody_guess.sto"));
 
     // Solve the problem.
     // ==================
     MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxMarkerTrackingContactWholeBody_marker_solution.sto");
+    if (createGuess) {
+        solution.write("sandboxMarkerTrackingContactWholeBody_guess.sto");
+    }
 
     // Compute the contact force for the direct collocation solution.
     const auto statesTraj = solution.exportToStatesTrajectory(mp);
     Model model = mp.getPhase().getModel();
     model.initSystem();
-    const auto& RHeel_contact =
-        model.getComponent<AckermannVanDenBogert2010Force>(
-        "R.Heel.Distal_contact");
-    const auto& RBallLat_contact =
-        model.getComponent<AckermannVanDenBogert2010Force>(
-        "R.Ball.Lat_contact");
-    const auto& RBallMed_contact =
-        model.getComponent<AckermannVanDenBogert2010Force>(
-        "R.Ball.Med_contact");
     TimeSeriesTableVec3 contactForceHistory;
-    contactForceHistory.setColumnLabels(
-    { "ground_force" });
+    contactForceHistory.setColumnLabels({"ground_force"});
+    //{"ground_force_sim", "ground_force_exp"});
 
+    const auto contactForces =
+            model.getComponentList<AckermannVanDenBogert2010Force>();
     for (const auto& s : statesTraj) {
         model.realizeVelocity(s);
-        contactForceHistory.appendRow(s.getTime(),
-        { RHeel_contact.calcContactForce(s) 
-          + RBallLat_contact.calcContactForce(s) 
-          + RBallMed_contact.calcContactForce(s) });
+        SimTK::Vec3 sim(0);
+        for (const auto& force : contactForces) {
+            sim += force.calcContactForce(s);
+        }
+        SimTK::Vector time(1, s.getTime());
+        SimTK::Vec3 exp(splineFx.calcValue(time), splineFy.calcValue(time), 0);
+        contactForceHistory.appendRow(s.getTime(), {sim/*TODO , exp*/});
     }
 
     STOFileAdapter::write(contactForceHistory.flatten({ "_vx", "_vy", "_vz" }),
@@ -437,10 +458,27 @@ MucoSolution solveMarkerTrackingProblem() {
 /// Solve both problems and compare.
 int main() {
 
+    Object::registerType(AckermannVanDenBogert2010Force());
+
+    bool createGuess = false;
+    bool useOptimizedModel = true;
+
+    /*
+    Model model("gait1018_subject01_onefoot_v30516_opt.osim");
+    model.setUseVisualizer(true);
+    SimTK::State s = model.initSystem();
+    model.updCoordinateSet().get("ty").setValue(s, 1.0);
+    Manager manager(model, s);
+    manager.integrate(10.0);
+    std::cin.get();
+    std::exit(-1);
+    */
+
     // TODO won't work with the time range we're using for the right leg:
     // MucoSolution stateTrackingSolution = solveStateTrackingProblem();
 
-    MucoSolution markerTrackingSolution = solveMarkerTrackingProblem();
+    MucoSolution markerTrackingSolution =
+            solveMarkerTrackingProblem(createGuess, useOptimizedModel);
 
     return EXIT_SUCCESS;
 }
