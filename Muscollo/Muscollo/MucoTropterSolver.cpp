@@ -991,6 +991,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     //    optsolver.set_advanced_option(TODO);
     //}
     //optsolver.set_advanced_option_string("print_timing_statistics", "yes");
+    // TODO optsolver.set_advanced_option_string("derivative_test", "second-order");
+    // TODO optsolver.set_findiff_hessian_step_size(1e-3);
 
     tropter::Iterate tropIterate = convert(getGuess());
     tropter::Solution tropSolution = dircol.solve(tropIterate);
