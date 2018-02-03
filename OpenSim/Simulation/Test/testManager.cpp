@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -35,6 +35,7 @@ Manager Tests:
 3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
    arm26 model between subsequent integrations.
 4. testConstructors: Ensure different constructors work as intended.
+5. testSimulate: Ensure the simulate() method works as intended.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -45,6 +46,7 @@ Manager Tests:
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -52,6 +54,7 @@ void testStationCalcWithManager();
 void testStateChangesBetweenIntegration();
 void testExcitationUpdatesWithManager();
 void testConstructors();
+void testSimulate();
 
 int main()
 {
@@ -79,6 +82,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testConstructors();");
+    }
+
+    try { testSimulate(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testSimulate();");
     }
 
     if (!failures.empty()) {
@@ -368,4 +377,46 @@ void testConstructors()
     SimTK::State outState4 = manager4.integrate(duration);
     SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
+}
+
+void testSimulate()
+{
+    cout << "Running testSimulate" << endl;
+
+    using SimTK::Vec3;
+    const double gravity = 9.81;
+
+    // Create a simple model consisting of an unconstrained ball.
+    Model model;
+    model.setGravity(Vec3(0, -gravity, 0));
+    auto ball = new Body("ball", 1., Vec3(0), SimTK::Inertia::sphere(1.));
+    model.addBody(ball);
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
+    model.addJoint(freeJoint);
+
+    // Simulate from time t0 to t1. The ball should end up at -1/2*g*duration^2.
+    auto testSim = [&](double t0, double t1) -> void {
+        cout << "- simulating from t = " << t0 << " to " << t1 << "..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double y1expected = -0.5 * gravity * (t1-t0) * (t1-t0);
+        s.setTime(t0);
+        s = simulate(model, s, t1);
+
+        SimTK_TEST_EQ(s.getTime(), t1);
+        model.realizePosition(s);
+        const Vec3 pos1 = model.getBodySet().get("ball").getPositionInGround(s);
+        SimTK_TEST_EQ(pos1[SimTK::YAxis], y1expected);
+    };
+    testSim(0., 10.);
+    testSim(5., 15.);
+
+    // No simulation should occur if t1 <= t0.
+    {
+        cout << "- ensuring simulation aborts if t1 <= t0..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double t0 = 2.;
+        s.setTime(t0);
+        s = simulate(model, s, t0-1.);
+        SimTK_TEST_EQ(s.getTime(), t0);
+    }
 }
