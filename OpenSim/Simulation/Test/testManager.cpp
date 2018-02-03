@@ -69,25 +69,25 @@ int main()
     try { testStateChangesBetweenIntegration(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testStateChangesBetweenIntegration();");
+        failures.push_back("testStateChangesBetweenIntegration");
     }
 
     try { testExcitationUpdatesWithManager(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testExcitationUpdatesWithManager();");
+        failures.push_back("testExcitationUpdatesWithManager");
     }
 
     try { testConstructors(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testConstructors();");
+        failures.push_back("testConstructors");
     }
 
     try { testSimulate(); }
     catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testSimulate();");
+        failures.push_back("testSimulate");
     }
 
     if (!failures.empty()) {
