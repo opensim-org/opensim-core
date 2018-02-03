@@ -142,42 +142,60 @@ public:
     }
     /// Reset the start time to the current time.
     void reset() {
-        m_startTime = SimTK::realTime();
+        m_startTime = SimTK::realTimeInNs();
     }
     /// Return the amount of time that has elapsed since this object was
     /// constructed or since reset() has been called.
     double getElapsedTime() const {
-        return SimTK::realTime() - m_startTime;
+        return SimTK::realTime() - SimTK::nsToSec(m_startTime);
+    }
+    /// Get elapsed time in nanoseconds. See SimTK::realTimeInNs() for more
+    /// information.
+    long long getElapsedTimeInNs() const {
+        return SimTK::realTimeInNs() - m_startTime;
     }
     /// This provides the elapsed time as a formatted string (using format()).
     std::string getElapsedTimeFormatted() const {
-        return format(getElapsedTime());
+        return formatNs(getElapsedTimeInNs());
     }
-    /// Convert the provided elapsed time in seconds to a string, which may
-    /// contain the time in hours and minutes if the elapsed time is 60 seconds
-    /// or greater.
-    static std::string format(const double& seconds) {
+    /// Format the provided elapsed time in nanoseconds into a string.
+    /// The time may be converted into seconds, milliseconds, or microseconds.
+    /// Additionally, if the time is greater or equal to 60 seconds, the time in
+    /// hours and/or minutes is also added to the string.
+    /// Usually, you can call getElapsedTimeFormatted() instead of calling this
+    /// function directly. If you call this function directly, use
+    /// getElapsedTimeInNs() to get a time in nanoseconds (rather than
+    /// getElapsedTime()).
+    static std::string formatNs(const long long& nanoseconds) {
         std::stringstream ss;
-        int sec = (int)std::round(seconds);
-        ss << sec << " seconds";
-        int minutes = sec / 60;
+        double seconds = SimTK::nsToSec(nanoseconds);
+        int secRounded = (int)std::round(seconds);
+        if (seconds > 1)
+            ss << secRounded << " second(s)";
+        else if (nanoseconds >= 1000000)
+            ss << nanoseconds / 1000000 << " millisecond(s)";
+        else if (nanoseconds >= 1000)
+            ss << nanoseconds / 1000 << " microsecond(s)";
+        else
+            ss << nanoseconds << " nanosecond(s)";
+        int minutes = secRounded / 60;
         int hours = minutes / 60;
         if (minutes || hours) {
             ss << " (";
             if (hours) {
-                ss << hours << " hours, ";
-                ss << minutes % 60 << " minutes, ";
-                ss << sec % 60 << " seconds";
+                ss << hours << " hour(s), ";
+                ss << minutes % 60 << " minute(s), ";
+                ss << secRounded % 60 << " second(s)";
             } else {
-                ss << minutes % 60 << " minutes, ";
-                ss << sec % 60 << " seconds";
+                ss << minutes % 60 << " minute(s), ";
+                ss << secRounded % 60 << " second(s)";
             }
             ss << ")";
         }
         return ss.str();
     }
 private:
-    double m_startTime;
+    long long m_startTime;
 };
 
 } // namespace OpenSim
