@@ -370,7 +370,7 @@ int main() {
         return 1;
     }
     std::cout << "OpenSim example completed successfully" << std::endl;
-    // std::cout << "Press return to continue" << std::endl;
-    // std::cin.get();
+    std::cout << "Press return to continue" << std::endl;
+    std::cin.get();
     return 0;
 }
