@@ -17,7 +17,7 @@ find_package(OpenSim 4.0 REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")
 # Debug by default, which does not work with the OpenSim API
 # distributed via the GUI.
 set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
-		CACHE STRING "Supported configuration types." FORCE)
+        CACHE STRING "Supported configuration types." FORCE)
 
 # Define an executable to be created from the provided C++ source files.
 add_executable(BuildDynamicWalker BuildDynamicWalkerModel.cpp)
