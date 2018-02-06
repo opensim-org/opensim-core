@@ -791,10 +791,16 @@ void testMucoIterate() {
         auto rmsExpected = error;
         SimTK_TEST_EQ(rmsBA, rmsExpected);
         auto rmsAB = a.compareParametersRMS(b, parametersToCompare);
+        SimTK_TEST_EQ(rmsAB, rmsExpected);
     };
-
+    // Compare one parameter.
+    testCompareParametersRMS(1, 0.01);
+    // Compare subsets of available parameters.
     testCompareParametersRMS(5, 0.5);
-
+    testCompareParametersRMS(5, 0.5, {"p0"});
+    testCompareParametersRMS(5, 0.5, {"p1", "p2"});
+    // Compare a lot of parameters.
+    testCompareParametersRMS(100, 0.5);
 }
 
 void testInterpolate() {

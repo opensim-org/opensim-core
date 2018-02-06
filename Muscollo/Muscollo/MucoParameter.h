@@ -52,14 +52,20 @@ class OSIMMUSCOLLO_API MucoParameter : public Object {
 public:
     // Default constructor.
     MucoParameter();
-    // Simple parameter constructor.
+    // Generic parameter constructor.
+    MucoParameter(const std::string& name,
+        const std::vector<std::string>& componentPaths,
+        const std::string& propertyName, const MucoBounds&,
+        const int& propertyElt);
+    // Simple parameter constructors.
     MucoParameter(const std::string& name, const std::string& componentPath,
         const std::string& propertyName, const MucoBounds&);
-    // Generic parameter constructor.
-    MucoParameter(const std::string& name, 
-      const std::vector<std::string>& componentPaths,
-      const std::string& propertyName, const MucoBounds&, 
-      const unsigned& propertyElt = 0);
+    MucoParameter(const std::string& name, const std::string& componentPath,
+        const std::string& propertyName, const MucoBounds&, 
+        const int& propertyElt);
+    MucoParameter(const std::string& name,
+        const std::vector<std::string>& componentPaths,
+        const std::string& propertyName, const MucoBounds&);
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
@@ -86,14 +92,23 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "
         "2 values: lower, upper bounds on value.");
-    OpenSim_DECLARE_LIST_PROPERTY(component_paths, std::string, "The path to the "
-        "model component that owns the property associated with the "
+    OpenSim_DECLARE_LIST_PROPERTY(component_paths, std::string, "The path to "
+        "the model component that owns the property associated with the "
         "MucoParameter.");
     OpenSim_DECLARE_PROPERTY(property_name, std::string, "The name of the "
         "model property associated with the MucoParameter.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(property_element, int, "For non-scalar "
+        "model properties, the index of the element desired to be optimized.");
 
-    mutable std::vector<SimTK::ReferencePtr<Property<double>>> m_property_refs;
+    mutable std::vector<SimTK::ReferencePtr<AbstractProperty>> m_property_refs;
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_Vec6
+    };
+    mutable DataType m_data_type;
     void constructProperties();
+    
 };
 
 } // namespace OpenSim

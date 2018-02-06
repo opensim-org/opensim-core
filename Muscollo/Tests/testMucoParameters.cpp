@@ -21,7 +21,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-
+#include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Common/Constant.h>
 
 using namespace OpenSim;
 
@@ -106,7 +107,7 @@ Model createOscillatorTwoSpringsModel() {
     spring1->setName("spring1");
     spring1->set_coordinate("position");
     spring1->setRestLength(0.0);
-    spring1->setStiffness(STIFFNESS);
+    spring1->setStiffness(0.25*STIFFNESS);
     spring1->setViscosity(0.0);
     model.addComponent(spring1);
 
@@ -114,7 +115,7 @@ Model createOscillatorTwoSpringsModel() {
     spring2->setName("spring2");
     spring2->set_coordinate("position");
     spring2->setRestLength(0.0);
-    spring2->setStiffness(STIFFNESS);
+    spring2->setStiffness(0.25*STIFFNESS);
     spring2->setViscosity(0.0);
     model.addComponent(spring2);
 
@@ -138,7 +139,7 @@ void testOneParameterTwoSprings() {
     // Optimize a single stiffness value and apply to both springs.
     std::vector<std::string> components = {"spring1", "spring2"};
     MucoParameter stiffness("spring_stiffness", components, "stiffness", 
-        MucoBounds(0, 10));
+        MucoBounds(0, 100));
     mp.addParameter(stiffness);
 
     FinalPositionCost cost;
@@ -158,7 +159,7 @@ void testOneParameterTwoSprings() {
 
 const double Izz = 2; // kg-m^2
 const double T = 10; // N-m
-const double FINAL_ANG = (T / 2*Izz) * (FINAL_TIME * FINAL_TIME);
+const double FINAL_ANG = (T / (2*Izz)) * (FINAL_TIME * FINAL_TIME);
 const double FINAL_ANGVEL = (T / Izz) * FINAL_TIME;
 Model createRotatingBarModel() {
     Model model;
@@ -166,7 +167,7 @@ Model createRotatingBarModel() {
     model.set_gravity(SimTK::Vec3(0, 0, 0));
     // Set model with incorrect inertia value.
     auto* body = new Body("body", MASS, SimTK::Vec3(0), 
-            SimTK::Inertia(0, 0, 0.5*Izz));
+        SimTK::Inertia(0, 0, Izz));
     model.addComponent(body);
 
     // Allows rotation around z.
@@ -176,15 +177,26 @@ Model createRotatingBarModel() {
     coord.setName("rotation");
     model.addComponent(joint);
 
-    auto* actu = new CoordinateActuator("actuator");
-    actu->setCoordinate(&coord);
-    actu->setOptimalForce(T);
-    model.addComponent(actu);
+    Constant torqueValue(T);
+    Constant zero(0);
+    auto* torque = new PrescribedForce();
+    torque->setName("torque");
+    torque->setPointIsInGlobalFrame(false);
+    torque->setForceIsInGlobalFrame(false);
+    torque->setTorqueFunctions(&zero, &zero, &torqueValue);
+    torque->setForceFunctions(&zero, &zero, &zero);
+    torque->setPointFunctions(&zero, &zero, &zero);
+    torque->setFrameName("body");
+    model.addComponent(torque);
 
-    auto& s = model.initSystem();
-    model.printSubcomponentInfo();
-    model.printDetailedInfo(s);
+    //auto* actu = new CoordinateActuator();
+    //actu->setName("actuator");
+    //actu->setCoordinate(&coord);
+    //actu->setOptimalForce(T);
+    //model.addComponent(actu);
 
+
+    model.print("rotatingBar.osim");
     return model;
 }
 
@@ -198,9 +210,6 @@ protected:
     }
 };
 
-// Optimize the center of mass for a bar attached a single pin joint ("see-saw") 
-// so that the bar remains stationary (i.e. COM located directly above pin 
-// joint).
 void testRotatingBar() {
     int N = 100;
 
@@ -209,22 +218,26 @@ void testRotatingBar() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(createRotatingBarModel());
     mp.setTimeBounds(0, FINAL_TIME);
-    mp.setStateInfo("pin/rotation/value", {0, 2*FINAL_ANG}, 0, 
+    mp.setStateInfo("pin/rotation/value", {0, 10*FINAL_ANG}, 0, 
         {0.75*FINAL_ANG, 1.25*FINAL_ANG});
-    mp.setStateInfo("pin/rotation/speed", {0, 2*FINAL_ANGVEL}, 0, FINAL_ANGVEL);
-    mp.setControlInfo("actuator", 1.0, 1.0, 1.0);
+    mp.setStateInfo("pin/rotation/speed", {0, 5*FINAL_ANGVEL}, 0, FINAL_ANGVEL);
+    //mp.setControlInfo("actuator", {1.0, 1.0}, 1.0, 1.0);
 
     // Choose z moment of inertia vector (3rd element of inertia vector).
     MucoParameter inertia("moment_of_inertia_z", "body", "inertia", 
-            MucoBounds(0, 10), 2);
+            MucoBounds(0, 5), 2);
+    mp.addParameter(inertia);
 
     FinalAngleCost cost;
     mp.addCost(cost);
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(N);
+    ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_optim_max_iterations(10);
 
-    MucoSolution sol = muco.solve();
+    MucoSolution sol = muco.solve().unseal();
+    std::cout << "debug: " << sol.getParameter("moment_of_inertia_z") << std::endl;
     sol.write("testMucoParameters_testRotatingBar_sol.sto");
 
     SimTK_TEST_EQ_TOL(sol.getParameter("moment_of_inertia_z"), Izz, 0.005);
@@ -232,8 +245,8 @@ void testRotatingBar() {
 
 int main() {
     SimTK_START_TEST("testMucoParameters");
-        SimTK_SUBTEST(testOscillatorMass);
-        SimTK_SUBTEST(testOneParameterTwoSprings);
+        //SimTK_SUBTEST(testOscillatorMass);
+        //SimTK_SUBTEST(testOneParameterTwoSprings);
         SimTK_SUBTEST(testRotatingBar);
     SimTK_END_TEST();
 }
