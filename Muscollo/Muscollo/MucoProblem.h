@@ -50,6 +50,9 @@ public:
     MucoFinalBounds getFinalBounds() const
     {   return MucoFinalBounds(getProperty_final_bounds()); }
 
+    /// Print the bounds on this variable.
+    void printDescription(std::ostream& stream = std::cout) const;
+
 protected:
 
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
@@ -199,6 +202,9 @@ public:
 
     // TODO add getCost() and/or updCost().
 
+    /// Print a brief description of the costs and variables in this phase.
+    void printDescription(std::ostream& stream = std::cout) const;
+
 
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
@@ -238,10 +244,6 @@ public:
     void applyParametersToModel(const SimTK::Vector& parameterValues) const;
 
     /// @}
-
-    // TODO print list of state and control names.
-    //void printDescription();
-
 
 protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
@@ -316,6 +318,11 @@ public:
     /// This accesses the internal phases property.
     const MucoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
+
+    /// Print a description of this problem, including costs and variable
+    /// bounds. By default, the description is printed to the console (cout),
+    /// but you can provide your own stream.
+    void printDescription(std::ostream& stream = std::cout) const;
 
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
