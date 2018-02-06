@@ -245,8 +245,8 @@ void testRotatingBar() {
 
 int main() {
     SimTK_START_TEST("testMucoParameters");
-        //SimTK_SUBTEST(testOscillatorMass);
+        SimTK_SUBTEST(testOscillatorMass);
         //SimTK_SUBTEST(testOneParameterTwoSprings);
-        SimTK_SUBTEST(testRotatingBar);
+        //SimTK_SUBTEST(testRotatingBar);
     SimTK_END_TEST();
 }

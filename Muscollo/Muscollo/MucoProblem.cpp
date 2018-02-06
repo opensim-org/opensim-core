@@ -179,6 +179,7 @@ MucoParameter& MucoPhase::updParameter(
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
         "No parameter with name '" + name + "' found.");
     return upd_parameters(idx);
+}
 
 void MucoPhase::printDescription(std::ostream& stream) const {
     stream << "Costs:";
