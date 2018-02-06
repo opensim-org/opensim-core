@@ -312,7 +312,13 @@ bool InverseKinematicsTool::run()
 
         const clock_t start = clock();
         double dt = 1.0/markersReference.getSamplingFrequency();
-        int Nframes = int((final_time-start_time)/dt)+1;
+        int Nframes = int((final_time-start_time)/dt + SimTK::SignificantReal)+1;
+        SimTK_ASSERT1_ALWAYS(
+            isNumericallyEqual(final_time, start_time + dt*(Nframes - 1), 
+                               SimTK::SignificantReal),
+            "InverseKinematicsTool could not specify the precise final time of %f s.",
+            final_time);
+
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
         // Get the actual number of markers the Solver is using, which
