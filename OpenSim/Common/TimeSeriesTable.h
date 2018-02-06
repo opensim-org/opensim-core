@@ -30,7 +30,6 @@ provide an in-memory container for data access and manipulation.              */
 
 #include "OpenSim/Common/DataTable.h"
 
-
 namespace OpenSim {
 
 class InvalidTable : public Exception {
@@ -270,8 +269,10 @@ public:
         const auto& timeCol = DT::getIndependentColumn();
         OPENSIM_THROW_IF(timeCol.size() == 0,
                          EmptyTable);
+        const SimTK::Real eps = SimTK::SignificantReal;
         OPENSIM_THROW_IF(restrictToTimeRange &&
-                         time < timeCol.front() || time > timeCol.back(),
+                         ( (time < timeCol.front()-eps) ||
+                           (time > timeCol.back()+eps) ),
                          TimeOutOfRange,
                          time, timeCol.front(), timeCol.back());
 
