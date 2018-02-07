@@ -302,22 +302,23 @@ bool InverseKinematicsTool::run()
         double final_time = (markersValidTimRange[1] < _timeRange[1]) ?
             markersValidTimRange[1] : _timeRange[1];
 
+        SimTK_ASSERT2_ALWAYS(final_time >= start_time,
+            "InverseKinematicsTool final time (%f) is before start time (%f).",
+            final_time, start_time);
+
+        const auto& markersTable = markersReference.getMarkerTable();
+        const size_t start_ix = markersTable.getNearestRowIndexForTime(start_time);
+        const size_t final_ix = markersTable.getNearestRowIndexForTime(final_time);
+        const size_t Nframes = final_ix - start_ix + 1;
+        const auto& times = markersTable.getIndependentColumn();
+
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, markersReference,
             coordinateReferences, _constraintWeight);
         ikSolver.setAccuracy(_accuracy);
-        s.updTime() = start_time;
+        s.updTime() = times[start_ix];
         ikSolver.assemble(s);
         kinematicsReporter.begin(s);
-
-        const clock_t start = clock();
-        double dt = 1.0/markersReference.getSamplingFrequency();
-        int Nframes = int((final_time-start_time)/dt + SimTK::SignificantReal)+1;
-        SimTK_ASSERT1_ALWAYS(
-            isNumericallyEqual(final_time, start_time + dt*(Nframes - 1), 
-                               SimTK::SignificantReal),
-            "InverseKinematicsTool could not specify the precise final time of %f s.",
-            final_time);
 
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
@@ -333,8 +334,10 @@ bool InverseKinematicsTool::run()
         Storage *modelMarkerErrors = _reportErrors ? 
             new Storage(Nframes, "ModelMarkerErrors") : nullptr;
 
-        for (int i = 0; i < Nframes; i++) {
-            s.updTime() = start_time + i*dt;
+        const clock_t start = clock();
+
+        for (size_t i = start_ix; i <= final_ix; ++i) {
+            s.updTime() = times[i];
             ikSolver.track(s);
             
             if(_reportErrors){
@@ -432,7 +435,7 @@ bool InverseKinematicsTool::run()
 
         success = true;
 
-        cout << "InverseKinematicsTool completed " << Nframes-1 << " frames in "
+        cout << "InverseKinematicsTool completed " << Nframes << " frames in "
             <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
     }
     catch (const std::exception& ex) {
