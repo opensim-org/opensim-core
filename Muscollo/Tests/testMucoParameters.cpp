@@ -233,11 +233,11 @@ void testSeeSawCOM() {
     
     // Update problem model with new mass center.
     // TODO: create method for this, or have MucoTool do it automatically
-    SimTK::Vec3 sol_COM(sol_xCOM, 0, 0);
-    mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
+    // SimTK::Vec3 sol_COM(sol_xCOM, 0, 0);
+    // mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
 
     // Body will be at rest since COM should now be aligned with the pin joint.           
-    muco.visualize(sol);
+    // muco.visualize(sol);
 
     SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.005);
 }
