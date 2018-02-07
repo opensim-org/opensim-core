@@ -167,7 +167,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
     # Don't want to put source files in share/java.
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
-    set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}")
+    set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/CodeExamples")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
 
 else()
@@ -187,7 +187,7 @@ else()
     set(OPENSIM_INSTALL_PYTHONDIR sdk/Python)
     set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
-    set(OPENSIM_INSTALL_APIEXDIR Resources)
+    set(OPENSIM_INSTALL_APIEXDIR Resources/CodeExamples)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
 
 endif()
