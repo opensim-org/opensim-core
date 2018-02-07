@@ -523,7 +523,7 @@ endif()
 
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
-# CMAKE_SKIP_INSTALL_RPATH to OFF.
+# CMAKE_SKIP_INSTALL_RPATH to ON.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
