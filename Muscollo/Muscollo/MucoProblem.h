@@ -183,6 +183,8 @@ public:
     void addCost(const MucoCost&);
 
     const Model& getModel() const { return get_model(); }
+    Model& updModel() { return upd_model(); }
+
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     MucoInitialBounds getTimeInitialBounds() const;
