@@ -405,7 +405,7 @@ if(${BUILD_JAVA_WRAPPING})
     # MAIN_PROGRAM).
     # Also, the mechanism we use to set the java classpath and library path 
     # for MATLAB requires version 7.0 (R14).
-    find_package(Matlab 7.0 COMPONENTS MAIN_PROGRAM)
+    find_package(Matlab COMPONENTS MAIN_PROGRAM)
     # Issue warning if Matlab and OpenSim build architectures differ.
     # That is, one is 64-bit and other is not.
     if(Matlab_FOUND)
