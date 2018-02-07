@@ -246,6 +246,46 @@ public:
         *this = std::move(*table);
     }
 
+    /** Get index of row whose time is nearest/closest to the given value.
+
+    \param time Value to search for.
+    \param restrictToTimeRange  When true -- Exception is thrown if the given
+                                value is out-of-range of the time column.
+                                When false -- If the given value is less than or
+                                equal to the first value in the time column, the
+                                row returned is the first row. If the given value
+                                is greater than or equal to the last value in the
+                                time column, the row returned is the last row.
+                                This operation only returns existing rows and
+                                does not perform any interpolation. Defaults to
+                                'true'.
+
+    \throws TimeOutOfRange If the given value is out-of-range of time column.
+    \throws EmptyTable If the table is empty.                                 */
+    size_t getNearestRowIndexForTime(const double time,
+                                     const bool restrictToTimeRange = true) const {
+        using DT = DataTable_<double, ETY>;
+        const auto& timeCol = DT::getIndependentColumn();
+        OPENSIM_THROW_IF(timeCol.size() == 0,
+            EmptyTable);
+        const SimTK::Real eps = SimTK::SignificantReal;
+        OPENSIM_THROW_IF(restrictToTimeRange &&
+            ((time < timeCol.front() - eps) ||
+            (time > timeCol.back() + eps)),
+            TimeOutOfRange,
+            time, timeCol.front(), timeCol.back());
+
+        auto iter = std::lower_bound(timeCol.begin(), timeCol.end(), time);
+        if (iter == timeCol.end())
+            return timeCol.size() - 1;
+        if (iter == timeCol.begin())
+            return 0;
+        if ((*iter - time) <= (time - *std::prev(iter)))
+            return std::distance(timeCol.begin(), iter);
+        else
+            return std::distance(timeCol.begin(), std::prev(iter));
+    }
+
     /** Get row whose time column is nearest/closest to the given value. 
 
     \param time Value to search for. 
@@ -266,26 +306,8 @@ public:
     getNearestRow(const double& time,
                   const bool restrictToTimeRange = true) const {
         using DT = DataTable_<double, ETY>;
-        const auto& timeCol = DT::getIndependentColumn();
-        OPENSIM_THROW_IF(timeCol.size() == 0,
-                         EmptyTable);
-        const SimTK::Real eps = SimTK::SignificantReal;
-        OPENSIM_THROW_IF(restrictToTimeRange &&
-                         ( (time < timeCol.front()-eps) ||
-                           (time > timeCol.back()+eps) ),
-                         TimeOutOfRange,
-                         time, timeCol.front(), timeCol.back());
-
-        auto iter = std::lower_bound(timeCol.begin(), timeCol.end(), time);
-        if(iter == timeCol.end())
-            return DT::getRowAtIndex(timeCol.size() - 1);
-        if(iter == timeCol.begin())
-            return DT::getRowAtIndex(0);
-        if((*iter - time) <= (time - *std::prev(iter)))
-            return DT::getRowAtIndex(std::distance(timeCol.begin(), iter));
-        else
-            return DT::getRowAtIndex(std::distance(timeCol.begin(),
-                                                   std::prev(iter)));
+        return DT::getRowAtIndex( 
+            getNearestRowIndexForTime(time, restrictToTimeRange) );
     }
 
     /** Get writable reference to row whose time column is nearest/closest to 
@@ -309,24 +331,8 @@ public:
     updNearestRow(const double& time,
                   const bool restrictToTimeRange = true) {
         using DT = DataTable_<double, ETY>;
-        const auto& timeCol = DT::getIndependentColumn();
-        OPENSIM_THROW_IF(timeCol.size() == 0,
-                         EmptyTable);
-        OPENSIM_THROW_IF(restrictToTimeRange &&
-                         time < timeCol.front() || time > timeCol.back(),
-                         TimeOutOfRange,
-                         time, timeCol.front(), timeCol.back());
-
-        auto iter = std::lower_bound(timeCol.begin(), timeCol.end(), time);
-        if(iter == timeCol.end())
-            return DT::updRowAtIndex(timeCol.size() - 1);
-        if(iter == timeCol.begin())
-            return DT::updRowAtIndex(0);
-        if((*iter - time) <= (time - *std::prev(iter)))
-            return DT::updRowAtIndex(std::distance(timeCol.begin(), iter));
-        else
-            return DT::updRowAtIndex(std::distance(timeCol.begin(),
-                                                   std::prev(iter)));
+        return DT::updRowAtIndex(
+            getNearestRowIndexForTime(time, restrictToTimeRange));
     }
 
     /** Compute the average row in the time range (inclusive) given. This
