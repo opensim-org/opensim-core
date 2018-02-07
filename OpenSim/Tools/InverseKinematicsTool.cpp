@@ -307,9 +307,11 @@ bool InverseKinematicsTool::run()
             final_time, start_time);
 
         const auto& markersTable = markersReference.getMarkerTable();
-        const size_t start_ix = markersTable.getNearestRowIndexForTime(start_time);
-        const size_t final_ix = markersTable.getNearestRowIndexForTime(final_time);
-        const size_t Nframes = final_ix - start_ix + 1;
+        const int start_ix = int(
+            markersTable.getNearestRowIndexForTime(start_time) );
+        const int final_ix = int(
+            markersTable.getNearestRowIndexForTime(final_time) );
+        const int Nframes = final_ix - start_ix + 1;
         const auto& times = markersTable.getIndependentColumn();
 
         // create the solver given the input data
@@ -336,7 +338,7 @@ bool InverseKinematicsTool::run()
 
         const clock_t start = clock();
 
-        for (size_t i = start_ix; i <= final_ix; ++i) {
+        for (int i = start_ix; i <= final_ix; ++i) {
             s.updTime() = times[i];
             ikSolver.track(s);
             
