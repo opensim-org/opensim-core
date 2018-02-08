@@ -64,6 +64,16 @@ Model createDoublePendulumModel() {
     tau1->setOptimalForce(1);
     model.addComponent(tau1);
 
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
+    SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    b0->addComponent(b0Center);
+    b0Center->attachGeometry(bodyGeometry.clone());
+    auto* b1Center = new PhysicalOffsetFrame("b1_center", "b1", transform);
+    b1->addComponent(b1Center);
+    b1Center->attachGeometry(bodyGeometry.clone());
+
     return model;
 }
 
@@ -88,8 +98,8 @@ int main() {
     mp.setStateInfo("j0/q0/speed", {-50, 50});
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50});
-    mp.setControlInfo("tau0", {-100, 100}); // TODO tighten.
-    mp.setControlInfo("tau1", {-100, 100});
+    mp.setControlInfo("tau0", {-40, 40});
+    mp.setControlInfo("tau1", {-40, 40});
 
     // Cost.
     // -----
@@ -103,17 +113,6 @@ int main() {
         });
     }
 
-    /*
-    // TODO I want to track a more interesting motion, but this will require
-     support for initial guesses.
-    double period = 1.0;
-    double f = 2 * SimTK::Pi / period;
-    for (double time = 0; time < finalTime; time += 0.01) {
-        ref.appendRow(time, {
-                SimTK::Pi * (0.50 + 0.25 * cos(f * time)),
-                0.25 * cos(f * time)
-        });
-    }*/
     tracking.setReference(ref);
     mp.addCost(tracking);
 

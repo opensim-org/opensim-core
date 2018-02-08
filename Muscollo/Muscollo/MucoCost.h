@@ -33,7 +33,7 @@ class Model;
 /// A term in the cost functional, to be minimized.
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
+OpenSim_DECLARE_ABSTRACT_OBJECT(MucoCost, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
@@ -58,6 +58,10 @@ public:
         m_model.reset(&model);
         initializeImpl();
     }
+
+    /// Print the name, type, and weight for this cost.
+    void printDescription(std::ostream& stream = std::cout) const;
+
 protected:
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.

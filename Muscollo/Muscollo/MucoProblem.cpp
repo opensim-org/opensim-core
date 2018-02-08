@@ -38,6 +38,26 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
     set_final_bounds(final.getAsArray());
 }
 
+void MucoVariableInfo::printDescription(std::ostream& stream) const {
+    const auto bounds = getBounds();
+    stream << getName() << ". bounds: ["
+            << bounds.getLower() << ", "
+            << bounds.getUpper() << "] ";
+    const auto initial = getInitialBounds();
+    if (initial.isSet()) {
+        stream << " initial: ["
+                << initial.getLower() << ", "
+                << initial.getUpper() << "] ";
+    }
+    const auto final = getFinalBounds();
+    if (final.isSet()) {
+        stream << " final: ["
+                << final.getLower() << ", "
+                << final.getUpper() << "] ";
+    }
+    stream << std::endl;
+}
+
 void MucoVariableInfo::constructProperties() {
     constructProperty_bounds();
     constructProperty_initial_bounds();
@@ -129,6 +149,43 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
             "No info provided for control for '" + name + "'.");
     return get_control_infos(idx);
 }
+void MucoPhase::printDescription(std::ostream& stream) const {
+    stream << "Costs:";
+    if (getProperty_costs().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_costs().size() << ")";
+    stream << "\n";
+    for (int i = 0; i < getProperty_costs().size(); ++i) {
+        stream << "  ";
+        get_costs(i).printDescription(stream);
+    }
+
+    stream << "States:";
+    if (getProperty_state_infos().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_state_infos().size() << ")";
+    stream << "\n";
+    // TODO want to loop through the model's state variables and controls, not
+    // just the infos.
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        stream << "  ";
+        get_state_infos(i).printDescription(stream);
+    }
+
+    stream << "Controls:";
+    if (getProperty_control_infos().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_control_infos().size() << "):";
+    stream << "\n";
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        stream << "  ";
+        get_control_infos(i).printDescription(stream);
+    }
+    stream.flush();
+}
 void MucoPhase::initialize(const Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
@@ -186,6 +243,15 @@ void MucoProblem::setControlInfo(const std::string& name,
 }
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
+}
+void MucoProblem::printDescription(std::ostream& stream) const {
+    std::stringstream ss;
+    const int& numPhases = getProperty_phases().size();
+    if (numPhases > 1) stream << "Number of phases: " << numPhases << "\n";
+    for (int i = 0; i < numPhases; ++i) {
+        get_phases(i).printDescription(ss);
+    }
+    stream << ss.str() << std::endl;
 }
 void MucoProblem::initialize(const Model& model) const {
     for (int i = 0; i < getProperty_phases().size(); ++i)

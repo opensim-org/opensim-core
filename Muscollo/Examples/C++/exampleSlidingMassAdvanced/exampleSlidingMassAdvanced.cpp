@@ -59,6 +59,8 @@ Model createSlidingMassModel() {
     actu->setOptimalForce(1);
     model.addComponent(actu);
 
+    body->attachGeometry(new Sphere(0.05));
+
     return model;
 }
 
