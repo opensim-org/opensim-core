@@ -49,6 +49,7 @@ class MucoProblem;
 ///  : , : ,..., : ,...,  :  ,...
 /// <#>,<#>,...,<#>,...,<NaN>,...
 /// @endsamplefile
+/// (If stored in a STO file, the delimiters are tabs, not commas.)
 class OSIMMUSCOLLO_API MucoIterate {
 public:
     MucoIterate() = default;
@@ -295,7 +296,7 @@ public:
     double compareStatesControlsRMS(const MucoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {}) const;
-    /// Compute the root-mean-square error between the pararmeters in this
+    /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
     /// number of parameters compared.

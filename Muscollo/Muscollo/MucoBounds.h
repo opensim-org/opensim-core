@@ -30,7 +30,6 @@ class MucoVariableInfo;
 class MucoParameter;
 
 /// Small struct to handle bounds.
-/// You can access the bound values directly (.lower, .upper).
 struct OSIMMUSCOLLO_API MucoBounds {
     /// The bounds are NaN, which means (-inf, inf).
     MucoBounds() = default;
