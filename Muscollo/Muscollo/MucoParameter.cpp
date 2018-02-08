@@ -72,7 +72,7 @@ void MucoParameter::constructProperties() {
     constructProperty_property_element();
 }
 
-void MucoParameter::initialize(const Model& model) const {
+void MucoParameter::initialize(Model& model) const {
     
     OPENSIM_THROW_IF_FRMOBJ(getProperty_component_paths().empty(), Exception,
         "A model component name must be provided.");
@@ -81,10 +81,9 @@ void MucoParameter::initialize(const Model& model) const {
 
     for (int i = 0; i < (int)getProperty_component_paths().size(); ++i) {
         // Get model component.
-        auto& component = model.getComponent(get_component_paths(i));
+        auto& component = model.updComponent(get_component_paths(i));
         // Get component property.
-        auto* ap  = const_cast<AbstractProperty*>(&component.getPropertyByName(
-            get_property_name()));
+        auto* ap = &component.updPropertyByName(get_property_name());
         OPENSIM_THROW_IF_FRMOBJ(ap->isListProperty(), Exception, 
             "MucoParameter does not support list properties.");
 

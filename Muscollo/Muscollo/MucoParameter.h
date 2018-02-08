@@ -101,8 +101,11 @@ public:
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
 
-    /// For use by solvers. This also performs error checks.
-    void initialize(const Model& model) const;
+    /// For use by solvers. This performs error checks and caches information
+    /// about the model that is useful during the optimization.
+    /// This method takes a non-const reference to the model because parameters
+    /// need to be able to alter the model.
+    void initialize(Model& model) const;
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 
