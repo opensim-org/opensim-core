@@ -33,7 +33,7 @@ class Model;
 /// A term in the cost functional, to be minimized.
 /// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoCost : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoCost, Object);
+OpenSim_DECLARE_ABSTRACT_OBJECT(MucoCost, Object);
 public:
     OpenSim_DECLARE_PROPERTY(weight, double,
             "The cost value is multiplied by this weight (default: 1).");
