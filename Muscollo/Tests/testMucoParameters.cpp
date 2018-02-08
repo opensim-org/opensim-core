@@ -20,16 +20,12 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
-#include <OpenSim/Common/Constant.h>
 
 using namespace OpenSim;
 
 const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
 const double FINAL_TIME = SimTK::Pi * sqrt(MASS / STIFFNESS);
-
 Model createOscillatorModel() {
     Model model;
     model.setName("oscillator");
@@ -55,6 +51,7 @@ Model createOscillatorModel() {
 }
 
 class FinalPositionCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionCost, MucoCost);
 protected:
     void calcEndpointCostImpl(const SimTK::State& finalState,
             SimTK::Real& cost) const override {
@@ -64,6 +61,10 @@ protected:
     }
 };
 
+/// Optimize the mass of a simple harmonic oscillator such that it follows the
+/// correct trajectory specified by the state bounds and the FinalPositionCost.
+/// This tests the ability for MucoParameter to optimize a simple scalar model
+/// property value.
 void testOscillatorMass() {
     int N = 100;
 
@@ -122,9 +123,10 @@ Model createOscillatorTwoSpringsModel() {
     return model;
 }
 
-// Optimize the stiffness in two parallel springs and make sure they sum to the 
-// equivalent stiffness of a single spring that would produce the same 
-// oscillation trajectory.
+/// Optimize the stiffness in two parallel springs and make sure they sum to the 
+/// equivalent stiffness of a single spring that would produce the same 
+/// oscillation trajectory. This tests the ability for MucoParameter to optimize
+/// the value of a model property for two different components.
 void testOneParameterTwoSprings() {
     int N = 100;
 
@@ -157,96 +159,93 @@ void testOneParameterTwoSprings() {
         0.005);
 }
 
-const double Izz = 2; // kg-m^2
-const double T = 10; // N-m
-const double FINAL_ANG = (T / (2*Izz)) * (FINAL_TIME * FINAL_TIME);
-const double FINAL_ANGVEL = (T / Izz) * FINAL_TIME;
-Model createRotatingBarModel() {
+const double L = 1; 
+const double xCOM = -0.25*L;
+Model createSeeSawModel() {
     Model model;
-    model.setName("rotating_bar");
-    model.set_gravity(SimTK::Vec3(0, 0, 0));
-    // Set model with incorrect inertia value.
-    auto* body = new Body("body", MASS, SimTK::Vec3(0), 
-        SimTK::Inertia(0, 0, Izz));
+    model.setName("seesaw");
+    model.set_gravity(SimTK::Vec3(0, -9.81, 0));
+    // Set body with z-rotational inertia and COM at the geometric center.
+    auto* body = new Body("body", MASS, SimTK::Vec3(0),
+        SimTK::Inertia(0, 0, 1));
+    Ellipsoid bodyGeometry(0.5*L, 0.1*L, 0.1*L); // for visualization
+    body->attachGeometry(bodyGeometry.clone());
     model.addComponent(body);
 
-    // Allows rotation around z.
-    auto* joint = new PinJoint("pin", model.getGround(), SimTK::Vec3(0), 
-            SimTK::Vec3(0), *body, SimTK::Vec3(0), SimTK::Vec3(0));
+    // Allows rotation around z. Connected offset from the midpoint of the body.
+    auto* joint = new PinJoint("pin", model.getGround(), SimTK::Vec3(0, 1, 0), 
+            SimTK::Vec3(0), *body, SimTK::Vec3(xCOM, 0, 0), SimTK::Vec3(0));
     auto& coord = joint->updCoordinate(PinJoint::Coord::RotationZ);
     coord.setName("rotation");
     model.addComponent(joint);
 
-    Constant torqueValue(T);
-    Constant zero(0);
-    auto* torque = new PrescribedForce();
-    torque->setName("torque");
-    torque->setPointIsInGlobalFrame(false);
-    torque->setForceIsInGlobalFrame(false);
-    torque->setTorqueFunctions(&zero, &zero, &torqueValue);
-    torque->setForceFunctions(&zero, &zero, &zero);
-    torque->setPointFunctions(&zero, &zero, &zero);
-    torque->setFrameName("body");
-    model.addComponent(torque);
-
-    //auto* actu = new CoordinateActuator();
-    //actu->setName("actuator");
-    //actu->setCoordinate(&coord);
-    //actu->setOptimalForce(T);
-    //model.addComponent(actu);
-
-
-    model.print("rotatingBar.osim");
     return model;
 }
 
-class FinalAngleCost : public MucoCost {
+class RotationalAccelerationCost : public MucoCost {
+OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationCost, MucoCost);
 protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-        SimTK::Real& cost) const override {
-        const auto& finalPosition = finalState.getY()[0];
+    void calcIntegralCostImpl(const SimTK::State& state,
+        SimTK::Real& integrand) const override {
 
-        cost = (finalPosition - FINAL_ANG) * (finalPosition - FINAL_ANG);
+        getModel().realizeAcceleration(state); // TODO would avoid this, ideally.
+        const auto& accel = getModel().getStateVariableDerivativeValue(
+            state, "pin/rotation/speed");
+
+        integrand = accel * accel;
     }
 };
 
-void testRotatingBar() {
-    int N = 100;
+/// Optimize the center of mass location of a body mobilized by pin joint, such
+/// that the body comes to rest, i.e. the body's center of mass becomes aligned
+/// with the pin joint rotation point. This tests the ability of MucoParameter
+/// to optimize an element of a non-scalar model property.
+void testSeeSawCOM() {
+    int N = 25;
 
     MucoTool muco;
-    muco.setName("rotating_bar");
+    muco.setName("seesaw_com");
     MucoProblem& mp = muco.updProblem();
-    mp.setModel(createRotatingBarModel());
-    mp.setTimeBounds(0, FINAL_TIME);
-    mp.setStateInfo("pin/rotation/value", {0, 10*FINAL_ANG}, 0, 
-        {0.75*FINAL_ANG, 1.25*FINAL_ANG});
-    mp.setStateInfo("pin/rotation/speed", {0, 5*FINAL_ANGVEL}, 0, FINAL_ANGVEL);
-    //mp.setControlInfo("actuator", {1.0, 1.0}, 1.0, 1.0);
+    mp.setModel(createSeeSawModel());
+    mp.setTimeBounds(0, 5);
+    mp.setStateInfo("pin/rotation/value", {-10, 10}, 0, {-10, 10});
+    mp.setStateInfo("pin/rotation/speed", {-10, 10}, 0, {-10, 10});
 
-    // Choose z moment of inertia vector (3rd element of inertia vector).
-    MucoParameter inertia("moment_of_inertia_z", "body", "inertia", 
-            MucoBounds(0, 5), 2);
-    mp.addParameter(inertia);
+    // Choose x-location of COM, which is the mass_center property's first 
+    // element.
+    // The bounds were chosen such that initial guess for x-location of the 
+    // body's COM isn't the solution, but close enough for the problem to
+    // converge.
+    int centerOfMassElt = 0; 
+    MucoParameter com("com_location", "body", "mass_center", 
+            MucoBounds(-0.7*L, 0), centerOfMassElt);
+    mp.addParameter(com);
 
-    FinalAngleCost cost;
+    RotationalAccelerationCost cost;
     mp.addCost(cost);
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(N);
-    ms.set_optim_hessian_approximation("limited-memory");
-    ms.set_optim_max_iterations(10);
 
     MucoSolution sol = muco.solve().unseal();
-    std::cout << "debug: " << sol.getParameter("moment_of_inertia_z") << std::endl;
-    sol.write("testMucoParameters_testRotatingBar_sol.sto");
+    const auto& sol_xCOM = sol.getParameter("com_location");
+    sol.write("testMucoParameters_testSeeSawCOM_sol.sto");
+    
+    // Update problem model with new mass center.
+    // TODO: create method for this, or have MucoTool do it automatically
+    // SimTK::Vec3 sol_COM(sol_xCOM, 0, 0);
+    // mp.updPhase(0).updModel().updComponent<Body>("body").setMassCenter(sol_COM);
 
-    SimTK_TEST_EQ_TOL(sol.getParameter("moment_of_inertia_z"), Izz, 0.005);
+    // Body will be at rest since COM should now be aligned with the pin joint.           
+    // muco.visualize(sol);
+
+    SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.005);
 }
 
 int main() {
     SimTK_START_TEST("testMucoParameters");
         SimTK_SUBTEST(testOscillatorMass);
-        //SimTK_SUBTEST(testOneParameterTwoSprings);
-        //SimTK_SUBTEST(testRotatingBar);
+        SimTK_SUBTEST(testOneParameterTwoSprings);
+        SimTK_SUBTEST(testSeeSawCOM);
     SimTK_END_TEST();
 }
