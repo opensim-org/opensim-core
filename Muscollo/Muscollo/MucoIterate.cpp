@@ -176,7 +176,7 @@ const SimTK::Real& MucoIterate::getParameter(const std::string& name) const {
     OPENSIM_THROW_IF(it == m_parameter_names.cend(), Exception,
             "Cannot find parameter named " + name + ".");
     int index = (int)std::distance(m_parameter_names.cbegin(), it);
-    return m_parameters[index];
+    return m_parameters.getElt(0, index);
 }
 
 double MucoIterate::resampleWithNumTimes(int numTimes) {
@@ -549,8 +549,8 @@ double MucoIterate::compareParametersRMS(const MucoIterate& other,
 
     double sumSquaredError = 0;
     for (auto& name : parameterNames) {
-        double selfValue = this->getParameter(name);
-        double otherValue = other.getParameter(name);
+        SimTK::Real selfValue = this->getParameter(name);
+        SimTK::Real otherValue = other.getParameter(name);
         sumSquaredError += SimTK::square(selfValue - otherValue);
     }
 
