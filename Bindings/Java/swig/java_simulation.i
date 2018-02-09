@@ -12,6 +12,8 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+%include "java_preliminaries.i";
+
 %include "arrays_java.i";
 
 %typemap(out) OpenSim::Joint %{ $result = $1; markAdopted(); %}
@@ -59,24 +61,6 @@ using namespace SimTK;
         return availableClassNames;
     }
 }
-
-/* Load the required libraries when this module is loaded.                    */
-%pragma(java) jniclassclassmodifiers="public class"
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-          // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimJavaJNI");
-      }
-      catch(UnsatisfiedLinkError e){
-          new JOptionPane("Required library failed to load. Check that the " +
-                          "dynamic library osimJavaJNI is in your PATH\n" + e,
-        JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
-      }
-  }
-%}
 
 %javamethodmodifiers OpenSim::Model::addModelComponent "private";
 %javamethodmodifiers OpenSim::Model::addBody "private";

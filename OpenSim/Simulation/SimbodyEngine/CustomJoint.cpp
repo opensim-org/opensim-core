@@ -171,20 +171,23 @@ void CustomJoint::constructCoordinates()
                 if (spatialTransform[j].hasFunction()) {
                     lf = dynamic_cast<const LinearFunction*>(
                             &spatialTransform[j].get_function() );
-                    // if displacement on axis is linear (w/ slope of 1) w.r.t.
-                    // the coordinate value, we have a pure rotation/translation
-                    if (lf && lf->getSlope() == 1.0) {
+                    // if displacement on axis is linear (w/ slope of +/-1)
+                    // w.r.t. the coordinate value, we have a pure
+                    // rotation/translation
+                    if (lf && (lf->getSlope() == 1.0 || lf->getSlope() == -1.0))
+                    {
                         // coordinate is pure axis displacement
                         if (j < 3)
                             // coordinate about rotational axis 
                             mt = Coordinate::MotionType::Rotational;
                         else // otherwise translational axis 
                             mt = Coordinate::MotionType::Translational;
-                    }
-                    else { // scaled (slope !=1) or nonlinear relationship means
-                           // not a pure rotational or translational for this axis.
-                           // designate as Coupled unless already defined as
-                           // pure Rotational or Translational about another axis
+                    } else {
+                        // scaled (slope != +/-1) or nonlinear relationship
+                        // means not a pure rotational or translational for
+                        // this axis. designate as Coupled unless already
+                        // defined as pure Rotational or Translational about
+                        // another axis
                         mt = (mt == Coordinate::MotionType::Undefined ?
                             Coordinate::MotionType::Coupled : mt);
                     }
