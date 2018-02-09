@@ -737,47 +737,24 @@ const Component::StateVariable* Component::
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    // Split the prefix from the varName (part of string past the last "/")
-    // In the case where no "/" is found, prefix = name.
-    std::string::size_type back = name.rfind("/");
-    std::string prefix = name.substr(0, back);
-
-    // In the case where no "/" is found, this assigns varName = name.
-    // When "/" is not found, back = UINT_MAX. Then, back + 1 = 0.
-    // Subtracting by UINT_MAX is effectively adding by 1, so the next line
-    // should work in all cases except if name.length() = UINT_MAX.
-    std::string varName = name.substr(back + 1, name.length() - back);
-
-    // first assume that the state variable named belongs to this
-    // top level component
-    std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(varName);
-
-    if (it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable.get();
-    }
+    ComponentPath svPath(name);
 
     const StateVariable* found = nullptr;
-    const Component* comp = traversePathToComponent<Component>(prefix);
-
-    if (comp) {
-        found = comp->findStateVariable(varName);
-    }
-
-    // Path not given or could not find it along given path name
-    // Now try complete search.
-    if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
-            comp = _propertySubcomponents[i]->findComponent(prefix, &found);
-            if (found) {
-                return found;
-            }
-            if (comp) {
-                return comp->findStateVariable(varName);
-            }
+    if (svPath.getNumPathLevels() == 1) {
+        // There was no slash. The state variable should be in this component.
+        auto it = _namedStateVariableInfo.find(name);
+        if (it != _namedStateVariableInfo.end()) {
+            return it->second.stateVariable.get();
+        }
+    } else if (svPath.getNumPathLevels() > 1) {
+        const auto& compPath = svPath.getParentPathString();
+        const Component* comp = traversePathToComponent<Component>(compPath);
+        if (comp) {
+            // This is the leaf of the path:
+            const auto& varName = svPath.getComponentName();
+            found = comp->findStateVariable(varName);
         }
     }
-
     return found;
 }
 
