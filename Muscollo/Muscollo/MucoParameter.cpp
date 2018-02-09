@@ -39,7 +39,10 @@ MucoParameter::MucoParameter(const std::string& name,
     }
     set_component_paths(compPaths);
     set_property_name(propertyName);
-    set_property_element(propertyElt);
+    // Internally, the constructors use -1 to signal that propertyElt was not
+    // provided.
+    if (propertyElt != -1)
+        set_property_element(propertyElt);
 }
 
 MucoParameter::MucoParameter(const std::string& name,
@@ -69,48 +72,55 @@ void MucoParameter::constructProperties() {
     constructProperty_property_element();
 }
 
-void MucoParameter::initialize(const Model& model) const {
+void MucoParameter::initialize(Model& model) const {
     
     OPENSIM_THROW_IF_FRMOBJ(getProperty_component_paths().empty(), Exception,
         "A model component name must be provided.");
     OPENSIM_THROW_IF_FRMOBJ(get_property_name().empty(), Exception,
         "A component property name must be provided.");
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_property_element().empty(), Exception,
-        "A value for the property element must be specified: either -1 if a "
-        "scalar property or a valid index if a vector property.");
 
     for (int i = 0; i < (int)getProperty_component_paths().size(); ++i) {
         // Get model component.
-        auto& component = model.getComponent(get_component_paths(i));
+        auto& component = model.updComponent(get_component_paths(i));
         // Get component property.
-        auto* ap  = const_cast<AbstractProperty*>(&component.getPropertyByName(
-            get_property_name()));
+        auto* ap = &component.updPropertyByName(get_property_name());
         OPENSIM_THROW_IF_FRMOBJ(ap->isListProperty(), Exception, 
-            "A MucoParameter cannot be a list property.");
+            "MucoParameter does not support list properties.");
 
         // Type detection and property element value error checking.
         if (auto* p = dynamic_cast<Property<double>*>(ap)) {
-            OPENSIM_THROW_IF(get_property_element() >= 0, Exception, 
-                "A non-negative property element index was specified for "
+            OPENSIM_THROW_IF_FRMOBJ(!getProperty_property_element().empty(),
+                Exception,
+                "A property element index was specified for "
                 "a scalar model property. Check if model property was intended "
                 "to be non-scalar or if property element was provided by "
                 "mistake (e.g. wrong constructor used).");
             m_data_type = Type_double;
-        } else if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
-            OPENSIM_THROW_IF((get_property_element() < 0) ||
-                (get_property_element() > 2), Exception, "The property element "
-                "for a Vec3 property must be between 0 and 2, but the value "
-                + std::to_string(get_property_element()) + "was provided.");
-            m_data_type = Type_Vec3;
-        } else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
-            OPENSIM_THROW_IF((get_property_element() < 0) ||
-                (get_property_element() > 5), Exception, "The property element "
-                "for a Vec6 property must be between 0 and 5, but the value "
-                + std::to_string(get_property_element()) + "was provided.");
-            m_data_type = Type_Vec6;
-        } else { 
-            OPENSIM_THROW(Exception, "Data type of specified model property "
-                "not supported."); 
+        } else {
+            OPENSIM_THROW_IF_FRMOBJ(getProperty_property_element().empty(),
+                Exception, "Must specify a property element for "
+                "non-scalar propeties.");
+            OPENSIM_THROW_IF_FRMOBJ(get_property_element() < 0, Exception,
+                "Expected property element to be non-negative, but "
+                + std::to_string(get_property_element()) + " was provided.");
+            if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
+                OPENSIM_THROW_IF(get_property_element() > 2, Exception,
+                    "The property element for a Vec3 property must be between "
+                    "0 and 2, but the value "
+                    + std::to_string(get_property_element()) + "was provided.");
+                m_data_type = Type_Vec3;
+            }
+            else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
+                OPENSIM_THROW_IF(get_property_element() > 5, Exception,
+                    "The property element for a Vec6 property must be between "
+                    "0 and 5, but the value "
+                    + std::to_string(get_property_element()) + "was provided.");
+                m_data_type = Type_Vec6;
+            }
+            else {
+                OPENSIM_THROW(Exception,
+                    "Data type of specified model property not supported.");
+            }
         }
 
         m_property_refs.emplace_back(ap);

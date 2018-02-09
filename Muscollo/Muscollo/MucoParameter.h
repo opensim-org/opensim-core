@@ -28,9 +28,24 @@ namespace OpenSim {
 
 class Model;
 
-/// The bounds and model information (component and property) for a parameter
-/// to be optimized in the model. The parameter name does not need to match the 
-/// name of the model property.
+/// A MucoParameter allows you to optimize property values in an OpenSim Model.
+/// To describe this parameter, you must provide the name of the property you
+/// want to optimize, and the path to the component in the model where the
+/// property exists. If the property is not a scalar, then you must also provide
+/// the element index of the property you want to optimize. To optimize multiple
+/// elements of a non-scalar property, use multiple MucoParameters.
+/// By specifying multiple component paths, you can optimize the same property
+/// in multiple components (each property will have the same value, as
+/// determined by this parameter).
+/// The following property types are currently supported:
+///  - double
+///  - Vec3
+///  - Vec6
+///
+/// List properties are not currently supported.
+///
+/// The name you give to a MucoParameter does not need to match the
+/// name of its model property.
 ///
 /// Create a MucoParameter from a property in the model:
 /// @code
@@ -61,7 +76,10 @@ class OSIMMUSCOLLO_API MucoParameter : public Object {
 public:
     // Default constructor.
     MucoParameter();
-    // Generic parameter constructor.
+    /// This is a generic constructor that supports applying this parameter
+    /// to multiple components and to non-scalar properties.
+    /// Specifying propertyElt as -1 is treated as not specifying a property
+    /// element.
     MucoParameter(const std::string& name,
         const std::vector<std::string>& componentPaths,
         const std::string& propertyName, const MucoBounds&,
@@ -99,8 +117,11 @@ public:
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
 
-    /// For use by solvers. This also performs error checks.
-    void initialize(const Model& model) const;
+    /// For use by solvers. This performs error checks and caches information
+    /// about the model that is useful during the optimization.
+    /// This method takes a non-const reference to the model because parameters
+    /// need to be able to alter the model.
+    void initialize(Model& model) const;
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 
@@ -114,7 +135,7 @@ private:
     OpenSim_DECLARE_PROPERTY(property_name, std::string, "The name of the "
         "model property associated with the MucoParameter.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(property_element, int, "For non-scalar "
-        "model properties, the index of the element desired to be optimized.");
+        "model properties, the index of the element to be optimized.");
 
     mutable std::vector<SimTK::ReferencePtr<AbstractProperty>> m_property_refs;
     enum DataType {
