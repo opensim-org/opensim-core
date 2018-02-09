@@ -66,7 +66,7 @@ protected:
 /// This tests the ability for MucoParameter to optimize a simple scalar model
 /// property value.
 void testOscillatorMass() {
-    int N = 100;
+    int N = 25;
 
     MucoTool muco;
     muco.setName("oscillator_mass");
@@ -88,7 +88,7 @@ void testOscillatorMass() {
     MucoSolution sol = muco.solve();
     sol.write("testMucoParameters_testOscillatorMass_sol.sto");
 
-    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.0005);
+    SimTK_TEST_EQ_TOL(sol.getParameter("oscillator_mass"), MASS, 0.003);
 }
 
 Model createOscillatorTwoSpringsModel() {
@@ -128,7 +128,7 @@ Model createOscillatorTwoSpringsModel() {
 /// oscillation trajectory. This tests the ability for MucoParameter to optimize
 /// the value of a model property for two different components.
 void testOneParameterTwoSprings() {
-    int N = 100;
+    int N = 25;
 
     MucoTool muco;
     muco.setName("oscillator_spring_stiffnesses");
@@ -156,7 +156,7 @@ void testOneParameterTwoSprings() {
     // Since springs add in parallel, both stiffness must be the same value
     // and equal half the original spring stiffness.
     SimTK_TEST_EQ_TOL(sol.getParameter("spring_stiffness"), 0.5*STIFFNESS, 
-        0.005);
+        0.003);
 }
 
 const double L = 1; 
@@ -239,7 +239,7 @@ void testSeeSawCOM() {
     // Body will be at rest since COM should now be aligned with the pin joint.           
     // muco.visualize(sol);
 
-    SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.005);
+    SimTK_TEST_EQ_TOL(sol_xCOM, xCOM, 0.003);
 }
 
 int main() {

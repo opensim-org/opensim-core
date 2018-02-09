@@ -547,24 +547,14 @@ double MucoIterate::compareParametersRMS(const MucoIterate& other,
             other.m_parameter_names);
     }
 
-    SimTK::Vector squaredError((int)parameterNames.size(), 0.0);
-    for (int iname = 0; iname < (int)parameterNames.size(); ++iname) {
-
-        auto selfIt = std::find(m_parameter_names.begin(), 
-            m_parameter_names.end(), parameterNames[iname]);
-        auto selfIndex = (int)std::distance(m_parameter_names.begin(), selfIt);
-        double selfValue = m_parameters.getElt(0, selfIndex);
-
-        auto otherIt = std::find(other.m_parameter_names.begin(),
-            other.m_parameter_names.end(), parameterNames[iname]);
-        auto otherIndex = (int)std::distance(other.m_parameter_names.begin(), 
-            otherIt);
-        double otherValue = other.m_parameters.getElt(0, otherIndex);
-        
-        squaredError[iname] += SimTK::square(selfValue - otherValue);
+    double sumSquaredError = 0;
+    for (auto& name : parameterNames) {
+        double selfValue = this->getParameter(name);
+        double otherValue = other.getParameter(name);
+        sumSquaredError += SimTK::square(selfValue - otherValue);
     }
 
-    return sqrt(squaredError.sum() / parameterNames.size());
+    return sqrt(sumSquaredError / parameterNames.size());
 }
 
 void MucoIterate::ensureUnsealed() const {

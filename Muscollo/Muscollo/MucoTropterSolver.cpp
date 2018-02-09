@@ -75,9 +75,6 @@ MucoIterateType convert(const tropIterateType& tropSol) {
         }
     }
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-    //for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
-    //    parameters(iparameter) = tropSol.parameters(iparameter);
-    //}
     return {time, state_names, control_names, parameter_names, states, 
             controls, parameters};
 }

@@ -46,7 +46,16 @@ class Model;
 /// @code
 /// MucoParameter p0("torso_mass", "torso", "mass", MucoBounds(60, 80));
 /// @endcode
-// TODO: generic constructor example when implemented
+///
+/// The generic constructor can be used for more complex MucoParameter 
+/// assignments. Here, we create a MucoParameter for the y-position of the mass
+/// center of three different rigid bodies in the model:
+/// @code
+/// int propertyElt = 1; // y-position is the second element of the mass_center
+/// std::vector<std::string> componentPaths = {"pelvis", "thigh", "shank"};
+/// MucoParameter y_com("y_com", componentPaths, "mass_center", 
+///         MucoBounds(-0.05, 0.05), propertyElt);
+/// @endcode
 class OSIMMUSCOLLO_API MucoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoParameter, Object);
 public:
@@ -74,8 +83,15 @@ public:
     {   return MucoBounds(getProperty_bounds()); }
     std::string getPropertyName() const
     {   return get_property_name(); }
-    //std::string getComponentPath() const
-    //{   return get_component_path(); }
+    std::vector<std::string> getComponentPaths() const
+    {  
+       int numComponents = (int)getProperty_component_paths().size();
+       std::vector<std::string> componentPaths(numComponents);
+       for (int i = 0; i < numComponents; ++i) {
+           componentPaths[i] = get_component_paths(i);
+       }
+       return componentPaths;
+    }
     void setBounds(const MucoBounds& bounds)
     {   set_bounds(bounds.getAsArray()); }
     void setPropertyName(const std::string& propertyName)

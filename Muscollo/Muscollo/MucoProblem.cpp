@@ -252,6 +252,11 @@ void MucoPhase::initialize(const Model& model) const {
 }
 void MucoPhase::applyParametersToModel(
         const SimTK::Vector& parameterValues) const {
+    OPENSIM_THROW_IF(parameterValues.size() != getProperty_parameters().size(), 
+        Exception, "There are " + 
+        std::to_string(getProperty_parameters().size()) + " parameters in "
+        "this MucoProblem, but " + std::to_string(parameterValues.size()) + 
+        " values were provided.");
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
         get_parameters(i).applyParameterToModel(parameterValues(i));
     }
