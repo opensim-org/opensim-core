@@ -219,7 +219,7 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     stream.flush();
 }
 
-void MucoPhase::initialize(const Model& model) const {
+void MucoPhase::initialize(Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
     const auto stateNames = model.getStateVariableNames();
@@ -296,7 +296,7 @@ void MucoProblem::printDescription(std::ostream& stream) const {
     }
     stream << ss.str() << std::endl;
 }
-void MucoProblem::initialize(const Model& model) const {
+void MucoProblem::initialize(Model& model) const {
     for (int i = 0; i < getProperty_phases().size(); ++i)
         get_phases(i).initialize(model);
 }

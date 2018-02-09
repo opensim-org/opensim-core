@@ -215,8 +215,9 @@ public:
     /// @{
 
     /// Invoked by the solver in preparation for solving the problem.
-    // TODO make private and make MucoProblem a friend.
-    void initialize(const Model&) const;
+    /// The passed-in model is a non-const reference because MucoParameter needs
+    /// the ability to make changes to the model.
+    void initialize(Model&) const;
     /// Calculate the sum of integrand over all the integral cost terms in this
     /// phase for the provided state. That is, the returned value is *not* an
     /// integral over time.
@@ -337,7 +338,7 @@ public:
     // non-const intermediate that contains a const MucoProblem; the
     // intermediate can determine what parts of the MucoProblem to
     // reveal/allow changing.
-    void initialize(const Model&) const;
+    void initialize(Model&) const;
 
     /// @}
 
