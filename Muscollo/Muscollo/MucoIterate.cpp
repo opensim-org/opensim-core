@@ -549,8 +549,8 @@ double MucoIterate::compareParametersRMS(const MucoIterate& other,
 
     double sumSquaredError = 0;
     for (auto& name : parameterNames) {
-        SimTK::Real selfValue = this->getParameter(name);
-        SimTK::Real otherValue = other.getParameter(name);
+        const SimTK::Real& selfValue = this->getParameter(name);
+        const SimTK::Real& otherValue = other.getParameter(name);
         sumSquaredError += SimTK::square(selfValue - otherValue);
     }
 
