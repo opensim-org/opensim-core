@@ -83,6 +83,9 @@ tropter_copy_dlls(ADOLC "${ADOLC_DIR}/bin")
 
 if(UNIX)
     pkg_check_modules(IPOPT REQUIRED ipopt)
+    # TODO replace this line with
+    # target_link_libraries(<target> PRIVATE ${IPOPT_LDFLAGS})
+    # https://stackoverflow.com/questions/25043458/does-cmake-have-something-like-target-link-options
     link_directories(${IPOPT_LIBRARY_DIRS})
 else()
     find_package(IPOPT REQUIRED)
