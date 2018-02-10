@@ -272,6 +272,7 @@ void testBounds() {
     // TODO what to do if the user does not specify info for some variables?
 
     // Get error if state/control name does not exist.
+
     {
         auto model = createSlidingMassModel();
         model.initSystem();
@@ -290,7 +291,6 @@ void testBounds() {
             SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
         }
     }
-
     // TODO what if bounds are missing for some states?
 }
 
@@ -317,6 +317,24 @@ void testBuildingProblem() {
             cEmptyName.setName("");
             SimTK_TEST_MUST_THROW_EXC(mp.addCost(cEmptyName), Exception);
         }
+        // Parameters have the name "parameter" by default.
+        {
+            MucoParameter p0;
+            SimTK_TEST(p0.getName() == "parameter");
+            mp.addParameter(p0);
+        }
+        // Names of parameters must be unique.
+        {
+            MucoParameter p1;
+            SimTK_TEST_MUST_THROW_EXC(mp.addParameter(p1), Exception);
+        }
+        // Parameters must have a name.
+        {
+            MucoParameter pEmptyName;
+            pEmptyName.setName("");
+            SimTK_TEST_MUST_THROW_EXC(mp.addParameter(pEmptyName), Exception);
+        }
+
     }
 }
 
@@ -681,12 +699,9 @@ void testMucoIterate() {
     {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
-        SimTK::RowVector randParams(2);
-        randParams[0] = SimTK::Test::randDouble();
-        randParams[1] = SimTK::Test::randDouble();
         MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m", "n"},
                 SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
-                randParams);
+                SimTK::Test::randVector(2).transpose());
         orig.write(fname);
 
         MucoIterate deserialized(fname);
@@ -696,8 +711,8 @@ void testMucoIterate() {
     // TODO ensure that we can't access methods until we unseal.
 
 
-    // compareRMS
-    auto testCompareRMS = [](int NT, int NS, int NC, int NP,
+    // compareStatesControlsRMS
+    auto testCompareStatesControlsRMS = [](int NT, int NS, int NC,
             double duration, double error,
             std::vector<std::string> statesToCompare = {},
             std::vector<std::string> controlsToCompare = {},
@@ -707,8 +722,6 @@ void testMucoIterate() {
         for (int i = 0; i < NS; ++i) snames.push_back("s" + std::to_string(i));
         std::vector<std::string> cnames;
         for (int i = 0; i < NC; ++i) cnames.push_back("c" + std::to_string(i));
-        std::vector<std::string> pnames;
-        for (int i = 0; i < NP; ++i) cnames.push_back("p" + std::to_string(i));
         SimTK::Matrix states(NT, NS);
         for (int i = 0; i < NS; ++i) {
             states.updCol(i) = createVectorLinspace(NT,
@@ -719,20 +732,17 @@ void testMucoIterate() {
             controls.updCol(i) = createVectorLinspace(NT,
                     SimTK::Test::randDouble(), SimTK::Test::randDouble());
         }
-        SimTK::RowVector parameters(NP);
-        for (int i = 0; i < NP; ++i) {
-            parameters.updElt(1,i) = SimTK::Test::randDouble();
-        }
         SimTK::Vector time = createVectorLinspace(NT, t0, t0 + duration);
-        MucoIterate a(time, snames, cnames, pnames, states, controls, 
-                parameters);
-        MucoIterate b(time, snames, cnames, pnames,
+        MucoIterate a(time, snames, cnames, {}, states, controls, 
+                SimTK::RowVector());
+        MucoIterate b(time, snames, cnames, {},
                 states.elementwiseAddScalar(error),
                 controls.elementwiseAddScalar(error),
-                parameters.elementwiseAddScalar(error).getAsRowVector());
+                SimTK::RowVector());
         // If error is constant:
         // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
-        auto rmsBA = b.compareRMS(a, statesToCompare, controlsToCompare);
+        auto rmsBA = b.compareStatesControlsRMS(a, statesToCompare, 
+            controlsToCompare);
         int N = 0;
         if (statesToCompare.empty()) N += NS;
         else if (statesToCompare[0] == "none") N += 0;
@@ -740,29 +750,57 @@ void testMucoIterate() {
         if (controlsToCompare.empty()) N += NC;
         else if (controlsToCompare[0] == "none") N += 0;
         else N += (int)controlsToCompare.size();
-        // TODO: compare parameters
         auto rmsExpected = sqrt(N) * error;
         SimTK_TEST_EQ(rmsBA, rmsExpected);
-        auto rmsAB = a.compareRMS(b, statesToCompare, controlsToCompare);
+        auto rmsAB = a.compareStatesControlsRMS(b, statesToCompare, 
+            controlsToCompare);
         SimTK_TEST_EQ(rmsAB, rmsExpected);
     };
 
-    testCompareRMS(10, 2, 1, 2, 0.6, 0.05);
-    testCompareRMS(21, 2, 0, 2, 15.0, 0.01);
+    testCompareStatesControlsRMS(10, 2, 1, 0.6, 0.05);
+    testCompareStatesControlsRMS(21, 2, 0, 15.0, 0.01);
     // 6 is the minimum required number of times; ensure that it works.
-    testCompareRMS(6, 0, 3, 2, 0.1, 0.9);
+    testCompareStatesControlsRMS(6, 0, 3, 0.1, 0.9);
 
     // Providing a subset of states/columns to compare.
-    testCompareRMS(10, 2, 3, 2, 0.6, 0.05, {"s1"});
-    testCompareRMS(10, 2, 3, 2, 0.6, 0.05, {}, {"c1"});
-    testCompareRMS(10, 2, 3, 2, 0.6, 0.05, {"none"}, {"none"});
+    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"s1"});
+    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {}, {"c1"});
+    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"none"}, {"none"});
     // Can't provide "none" along with other state names.
     SimTK_TEST_MUST_THROW_EXC(
-            testCompareRMS(10, 2, 3, 2, 0.6, 0.05, {"none", "s1"}),
-            Exception);
+        testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"none", "s1"}),
+        Exception);
     SimTK_TEST_MUST_THROW_EXC(
-            testCompareRMS(10, 2, 3, 2, 0.6, 0.05, {}, {"none, c0"}),
-            Exception);
+        testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {}, {"none, c0"}),
+        Exception);
+
+    // compareParametersRMS
+    auto testCompareParametersRMS = [](int NP, double error, 
+        std::vector<std::string> parametersToCompare = {}) {
+        std::vector<std::string> pnames;
+        for (int i = 0; i < NP; ++i) pnames.push_back("p" + std::to_string(i));
+        SimTK::RowVector parameters = SimTK::Test::randVector(NP).transpose();
+        MucoIterate a(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(), parameters);
+        MucoIterate b(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(),
+            parameters.elementwiseAddScalar(error).getAsRowVector());
+        // If error is constant:
+        // sqrt(sum_i^N (err_{i}^2) / N) = err
+        auto rmsBA = b.compareParametersRMS(a, parametersToCompare);
+        auto rmsExpected = error;
+        SimTK_TEST_EQ(rmsBA, rmsExpected);
+        auto rmsAB = a.compareParametersRMS(b, parametersToCompare);
+        SimTK_TEST_EQ(rmsAB, rmsExpected);
+    };
+    // Compare one parameter.
+    testCompareParametersRMS(1, 0.01);
+    // Compare subsets of available parameters.
+    testCompareParametersRMS(5, 0.5);
+    testCompareParametersRMS(5, 0.5, {"p0"});
+    testCompareParametersRMS(5, 0.5, {"p1", "p2"});
+    // Compare a lot of parameters.
+    testCompareParametersRMS(100, 0.5);
 }
 
 void testInterpolate() {

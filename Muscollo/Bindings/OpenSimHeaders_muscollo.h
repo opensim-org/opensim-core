@@ -10,7 +10,9 @@
 #include <Muscollo/MucoStateTrackingCost.h>
 #include <Muscollo/MucoMarkerTrackingCost.h>
 #include <Muscollo/MucoControlCost.h>
+#include <Muscollo/MucoBounds.h>
 #include <Muscollo/MucoProblem.h>
+#include <Muscollo/MucoParameter.h>
 #include <Muscollo/MucoIterate.h>
 #include <Muscollo/MucoTropterSolver.h>
 #include <Muscollo/MucoTool.h>

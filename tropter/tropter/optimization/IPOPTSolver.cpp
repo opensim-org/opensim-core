@@ -206,6 +206,13 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     if (ipoptions->GetStringValue("hessian_approximation", hes_approx_final, "")
             && hes_approx_final == "limited-memory") {
         need_exact_hessian = false;
+
+        std::string derivative_test;
+        if (ipoptions->GetStringValue("derivative_test", derivative_test, "")
+            && derivative_test.find("second-order") != std::string::npos) {
+            TROPTER_THROW("Cannot perform second-order derivative test if "
+                    "using a limited-memory Hessian approximation.");
+        }
     }
     //std::string all_options;
     //app->Options()->PrintList(all_options);

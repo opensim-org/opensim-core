@@ -38,56 +38,32 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
     set_final_bounds(final.getAsArray());
 }
 
+void MucoVariableInfo::printDescription(std::ostream& stream) const {
+    const auto bounds = getBounds();
+    stream << getName() << ". bounds: ["
+            << bounds.getLower() << ", "
+            << bounds.getUpper() << "] ";
+    const auto initial = getInitialBounds();
+    if (initial.isSet()) {
+        stream << " initial: ["
+                << initial.getLower() << ", "
+                << initial.getUpper() << "] ";
+    }
+    const auto final = getFinalBounds();
+    if (final.isSet()) {
+        stream << " final: ["
+                << final.getLower() << ", "
+                << final.getUpper() << "] ";
+    }
+    stream << std::endl;
+}
+
 void MucoVariableInfo::constructProperties() {
     constructProperty_bounds();
     constructProperty_initial_bounds();
     constructProperty_final_bounds();
 }
 
-// ============================================================================
-// MucoParameter
-// ============================================================================
-
-MucoParameter::MucoParameter() {
-    constructProperties();
-    if (getName().empty()) setName("parameter");
-}
-
-MucoParameter::MucoParameter(const std::string& name,
-    const std::string& componentName,
-    const std::string& propertyName,
-    const MucoBounds& bounds) : MucoParameter() {
-    setName(name);
-    set_bounds(bounds.getAsArray());
-    set_component_name(componentName);
-    set_property_name(propertyName);
-}
-
-void MucoParameter::constructProperties() {
-    constructProperty_bounds();
-    constructProperty_property_name("");
-    constructProperty_component_name("");
-}
-
-void MucoParameter::initialize(const Model& model) const {
-    OPENSIM_THROW_IF(get_component_name().empty(), Exception,
-        "A model component name must be provided.");
-    auto& component = model.getComponent(get_component_name());
-    OPENSIM_THROW_IF(get_property_name().empty(), Exception,
-        "A component property name must be provided.");
-
-    // TODO: get rid of need for const_cast
-    auto& property = dynamic_cast<Property<double>&>(
-        const_cast<AbstractProperty&>(
-            component.getPropertyByName(get_property_name())));
-
-    // TODO: check that component and property actually exist
-    m_property.reset(&property);
-}
-
-void MucoParameter::applyParameterToModel(const double& value) const {
-    m_property->setValue(value);
-}
 
 // ============================================================================
 // MucoPhase
@@ -132,7 +108,7 @@ void MucoPhase::setControlInfo(const std::string& name,
 void MucoPhase::addParameter(const MucoParameter& parameter) {
     OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
         "Cannot add a parameter if it does not have a name (use setName()).");
-    int idx = getProperty_costs().findIndexForName(parameter.getName());
+    int idx = getProperty_parameters().findIndexForName(parameter.getName());
     OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
         "A parameter with name '" + parameter.getName() + "' already exists.");
     append_parameters(parameter);
@@ -187,6 +163,7 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
             "No info provided for control for '" + name + "'.");
     return get_control_infos(idx);
 }
+
 const MucoParameter& MucoPhase::getParameter(
         const std::string& name) const {
 
@@ -203,7 +180,46 @@ MucoParameter& MucoPhase::updParameter(
         "No parameter with name '" + name + "' found.");
     return upd_parameters(idx);
 }
-void MucoPhase::initialize(const Model& model) const {
+
+void MucoPhase::printDescription(std::ostream& stream) const {
+    stream << "Costs:";
+    if (getProperty_costs().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_costs().size() << ")";
+    stream << "\n";
+    for (int i = 0; i < getProperty_costs().size(); ++i) {
+        stream << "  ";
+        get_costs(i).printDescription(stream);
+    }
+
+    stream << "States:";
+    if (getProperty_state_infos().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_state_infos().size() << ")";
+    stream << "\n";
+    // TODO want to loop through the model's state variables and controls, not
+    // just the infos.
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        stream << "  ";
+        get_state_infos(i).printDescription(stream);
+    }
+
+    stream << "Controls:";
+    if (getProperty_control_infos().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_control_infos().size() << "):";
+    stream << "\n";
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        stream << "  ";
+        get_control_infos(i).printDescription(stream);
+    }
+    stream.flush();
+}
+
+void MucoPhase::initialize(Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
     const auto stateNames = model.getStateVariableNames();
@@ -236,6 +252,11 @@ void MucoPhase::initialize(const Model& model) const {
 }
 void MucoPhase::applyParametersToModel(
         const SimTK::Vector& parameterValues) const {
+    OPENSIM_THROW_IF(parameterValues.size() != getProperty_parameters().size(), 
+        Exception, "There are " + 
+        std::to_string(getProperty_parameters().size()) + " parameters in "
+        "this MucoProblem, but " + std::to_string(parameterValues.size()) + 
+        " values were provided.");
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
         get_parameters(i).applyParameterToModel(parameterValues(i));
     }
@@ -271,7 +292,16 @@ void MucoProblem::addParameter(const MucoParameter& parameter) {
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
 }
-void MucoProblem::initialize(const Model& model) const {
+void MucoProblem::printDescription(std::ostream& stream) const {
+    std::stringstream ss;
+    const int& numPhases = getProperty_phases().size();
+    if (numPhases > 1) stream << "Number of phases: " << numPhases << "\n";
+    for (int i = 0; i < numPhases; ++i) {
+        get_phases(i).printDescription(ss);
+    }
+    stream << ss.str() << std::endl;
+}
+void MucoProblem::initialize(Model& model) const {
     for (int i = 0; i < getProperty_phases().size(); ++i)
         get_phases(i).initialize(model);
 }

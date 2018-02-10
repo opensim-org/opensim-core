@@ -50,15 +50,6 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
-//SimTK::RowVector convert(const Eigen::VectorXd& tropParameters) {
-//    int numParameters = (int)tropParameters.size();
-//    SimTK::RowVector parameters(numParameters);
-//    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
-//        parameters(iparameter) = tropParameters(iparameter);
-//    }
-//    return parameters;
-//}
-
 template <typename MucoIterateType, typename tropIterateType>
 MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& tropTime = tropSol.time;
@@ -83,10 +74,7 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             controls(itime, icontrol) = tropSol.controls(icontrol, itime);
         }
     }
-    SimTK::RowVector parameters(numParameters);
-    for (int iparameter = 0; iparameter < numParameters; ++iparameter) {
-        parameters(iparameter) = tropSol.parameters(iparameter);
-    }
+    SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
     return {time, state_names, control_names, parameter_names, states, 
             controls, parameters};
 }
@@ -179,8 +167,7 @@ public:
         }
         for (std::string name : m_phase0.createParameterNames()) {
             const MucoParameter& parameter = m_phase0.getParameter(name);
-            this->add_parameter(name,
-                    convert(parameter.getBounds()));
+            this->add_parameter(name, convert(parameter.getBounds()));
         }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
@@ -197,14 +184,8 @@ public:
         const auto& controls = in.controls;
         const auto& parameters = in.parameters;
 
-        if (parameters.size()) {
-            SimTK::Vector mucoParams(
-                    (int)m_phase0.createParameterNames().size(),
-                    parameters.data(), true);
-
-            m_phase0.applyParametersToModel(mucoParams);
-            m_model.initSystem();
-        }
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
 
         m_state.setTime(in.time);
         std::copy(states.data(), states.data() + states.size(),
@@ -234,13 +215,8 @@ public:
             const VectorX<T>& states,
             const VectorX<T>& controls, 
             const VectorX<T>& parameters, T& integrand) const override {
-        if (parameters.size()) {
-            SimTK::Vector mucoParams(
-                (int)m_phase0.createParameterNames().size(),
-                parameters.data(), true);
-            m_phase0.applyParametersToModel(mucoParams);
-            m_model.initSystem();
-        }
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -259,13 +235,8 @@ public:
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
             const VectorX<T>& parameters, T& cost) const override {
-        if (parameters.size()) {
-            SimTK::Vector mucoParams(
-                    (int)m_phase0.createParameterNames().size(),
-                    parameters.data(), true);
-            m_phase0.applyParametersToModel(mucoParams);
-            m_model.initSystem();
-        }
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -282,6 +253,20 @@ private:
     mutable Model m_model;
     mutable SimTK::State m_state;
     // TODO: mutable SimTK::Vector m_mucoParams;
+
+    void applyParametersToModel(const VectorX<T>& parameters) const
+    {
+        if (parameters.size()) {
+            // Warning: memory borrowed, not copied (when third argument to
+            // SimTK::Vector constructor is true)
+            SimTK::Vector mucoParams(
+                (int)m_phase0.createParameterNames().size(),
+                parameters.data(), true);
+
+            m_phase0.applyParametersToModel(mucoParams);
+            m_model.initSystem();
+        }
+    }
 };
 
 MucoTropterSolver::MucoTropterSolver() {
@@ -398,7 +383,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
-        ocp->print_description();
+        getProblem().printDescription();
+        // We can provide more detail about our problem than tropter can.
+        // ocp->print_description();
     }
 
     // Apply settings/options.

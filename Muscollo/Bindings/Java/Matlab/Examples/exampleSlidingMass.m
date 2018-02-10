@@ -36,6 +36,7 @@ actu.setName('actuator');
 actu.setOptimalForce(1);
 model.addComponent(actu);
 
+body.attachGeometry(Sphere(0.05))
 
 % Create MucoTool.
 % ================

@@ -31,13 +31,13 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
         std::vector<std::string> parameter_names, 
         const SimTK::Matrix& statesTrajectory,
         const SimTK::Matrix& controlsTrajectory,
-        const SimTK::RowVector& parameterValues) :
+        const SimTK::RowVector& parameters) :
         m_time(time), m_state_names(std::move(state_names)),
         m_control_names(std::move(control_names)),
         m_parameter_names(std::move(parameter_names)),
         m_states(statesTrajectory),
         m_controls(controlsTrajectory),
-        m_parameters(parameterValues) {
+        m_parameters(parameters) {
     OPENSIM_THROW_IF((int)m_state_names.size() != m_states.ncol(),
             Exception, "Inconsistent number of states.");
     OPENSIM_THROW_IF((int)m_control_names.size() != m_controls.ncol(),
@@ -176,7 +176,7 @@ const SimTK::Real& MucoIterate::getParameter(const std::string& name) const {
     OPENSIM_THROW_IF(it == m_parameter_names.cend(), Exception,
             "Cannot find parameter named " + name + ".");
     int index = (int)std::distance(m_parameter_names.cbegin(), it);
-    return m_parameters[index];
+    return m_parameters.getElt(0, index);
 }
 
 double MucoIterate::resampleWithNumTimes(int numTimes) {
@@ -285,8 +285,10 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
     m_controls = table->getMatrixBlock(0, numStates,
             table->getNumRows(), numControls);
-    m_parameters = table->getMatrixBlock(0, numStates + numControls, 1,
-            numParameters).getAsRowVectorBase();
+    if (numParameters) {
+        m_parameters = table->getMatrixBlock(0, numStates + numControls, 1,
+                numParameters).getAsRowVectorBase();
+    }
 }
 
 void MucoIterate::write(const std::string& filepath) const {
@@ -314,16 +316,18 @@ TimeSeriesTable MucoIterate::convertToTable() const {
     SimTK::Matrix data(numTimes, (int)labels.size());
     data.updBlock(0, 0, numTimes, numStates) = m_states;
     data.updBlock(0, numStates, numTimes, numControls) = m_controls;
-    // First row of table contains parameter values.
-    data.updBlock(0, numStates + numControls, 0, numParameters) = m_parameters;
-    // Remaining rows of table contain NaNs in parameter columns.
-    SimTK::Matrix parameter_nan_rows(numTimes - 1, 
-        (int)m_parameter_names.size());
-    parameter_nan_rows.setToNaN();
-    data.updBlock(1, numStates + numControls, numTimes - 1, numParameters) = 
-        parameter_nan_rows;
+    if (numParameters) {
+        // First row of table contains parameter values.
+        data.updBlock(0, numStates + numControls, 1, numParameters) = 
+            m_parameters;
+        // Remaining rows of table contain NaNs in parameter columns.
+        SimTK::Matrix parameter_nan_rows(numTimes - 1, 
+            (int)m_parameter_names.size());
+        parameter_nan_rows.setToNaN();
+        data.updBlock(1, numStates + numControls, numTimes - 1, 
+            numParameters) = parameter_nan_rows;     
+    }
     TimeSeriesTable table(time, data, labels);
-
     //table.updTableMetaData().setValueForKey("num_states", numStates);
     //table.updTableMetaData().setValueForKey("num_controls", numControls);
     //table.updTableMetaData().setValueForKey("num_parameters", numParameters);
@@ -394,44 +398,49 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
                 1, tol);
 }
 
-double MucoIterate::compareRMS(const MucoIterate& other,
+using VecStr = std::vector<std::string>;
+
+// Check that two different vectors of strings have the same contents.
+bool sameContents(VecStr v1, VecStr v2) {
+    std::sort(v1.begin(), v1.end());
+    std::sort(v2.begin(), v2.end());
+    return v1 == v2;
+}
+
+// Check that two different vectors of string ("b", "c") contain the same subset
+// vector of strings ("a").
+void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
+    // set_difference requires sorted containers.
+    std::sort(a.begin(), a.end());
+    std::sort(b.begin(), b.end());
+    std::sort(c.begin(), c.end());
+    std::vector<std::string> diff;
+    std::set_difference(a.begin(), a.end(), b.begin(), b.end(),
+        std::back_inserter(diff));
+    if (!diff.empty()) {
+        std::string msg = "Expected this iterate's " + type + " names to "
+            "contain the following:";
+        for (const auto& elem : diff) msg += "\n  " + elem;
+        OPENSIM_THROW(Exception, msg);
+    }
+    diff.clear();
+    std::set_difference(a.begin(), a.end(), c.begin(), c.end(),
+        std::back_inserter(diff));
+    if (!diff.empty()) {
+        std::string msg = "Expected the other iterate's " + type +
+            " names to contain the following:";
+        for (const auto& elem : diff) msg += "\n  " + elem;
+        OPENSIM_THROW(Exception, msg);
+    }
+}
+
+double MucoIterate::compareStatesControlsRMS(const MucoIterate& other,
         std::vector<std::string> stateNames,
         std::vector<std::string> controlNames) const {
     ensureUnsealed();
 
     // Process state and control names.
     // --------------------------------
-    using VecStr = std::vector<std::string>;
-    auto sameContents = [](VecStr v1, VecStr v2) {
-        std::sort(v1.begin(), v1.end());
-        std::sort(v2.begin(), v2.end());
-        return v1 == v2;
-    };
-    // Check that b and c contain a.
-    auto checkContains = [](std::string type, VecStr a, VecStr b, VecStr c) {
-        // set_difference requires sorted containers.
-        std::sort(a.begin(), a.end());
-        std::sort(b.begin(), b.end());
-        std::sort(c.begin(), c.end());
-        std::vector<std::string> diff;
-        std::set_difference(a.begin(), a.end(), b.begin(), b.end(),
-                std::back_inserter(diff));
-        if (!diff.empty()) {
-            std::string msg = "Expected this iterate's " + type + " names to "
-                    "contain the following:";
-            for (const auto& elem : diff) msg += "\n  " + elem;
-            OPENSIM_THROW(Exception, msg);
-        }
-        diff.clear();
-        std::set_difference(a.begin(), a.end(), c.begin(), c.end(),
-                std::back_inserter(diff));
-        if (!diff.empty()) {
-            std::string msg = "Expected the other iterate's " + type +
-                    " names to contain the following:";
-            for (const auto& elem : diff) msg += "\n  " + elem;
-            OPENSIM_THROW(Exception, msg);
-        }
-    };
     if (stateNames.empty()) {
         OPENSIM_THROW_IF(!sameContents(m_state_names, other.m_state_names),
                 Exception,
@@ -516,6 +525,36 @@ double MucoIterate::compareRMS(const MucoIterate& other,
     // sqrt(1/T * integral_t (sum_is error_is^2 + sum_ic error_ic^2)
     // `is`: index for states; `ic`: index for controls.
     return sqrt((stateISS + controlISS) / (finalTime - initialTime));
+}
+
+double MucoIterate::compareParametersRMS(const MucoIterate& other, 
+        std::vector<std::string> parameterNames) const {
+    ensureUnsealed();
+
+    // Process parameter names.
+    // ------------------------
+    if (parameterNames.empty()) {
+        OPENSIM_THROW_IF(
+            !sameContents(m_parameter_names, other.m_parameter_names),
+            Exception,
+            "Expected both iterates to have the same parameter names; consider "
+            "specifying the parameters to compare.");
+        parameterNames = m_parameter_names;
+    } else {
+        // Will hold elements of parameterNames that are not in 
+        // m_parameter_names, etc.
+        checkContains("parameter", parameterNames, m_parameter_names, 
+            other.m_parameter_names);
+    }
+
+    double sumSquaredError = 0;
+    for (auto& name : parameterNames) {
+        const SimTK::Real& selfValue = this->getParameter(name);
+        const SimTK::Real& otherValue = other.getParameter(name);
+        sumSquaredError += SimTK::square(selfValue - otherValue);
+    }
+
+    return sqrt(sumSquaredError / parameterNames.size());
 }
 
 void MucoIterate::ensureUnsealed() const {
