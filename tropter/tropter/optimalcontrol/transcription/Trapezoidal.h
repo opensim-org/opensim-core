@@ -52,7 +52,7 @@ namespace transcription {
 template<typename T>
 class Trapezoidal : public Base<T> {
 public:
-    typedef Problem<T> OCProblem;
+    typedef tropter::Problem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
