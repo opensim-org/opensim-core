@@ -29,15 +29,37 @@ class MucoProblem;
 
 /// The values of the variables in an optimal control problem.
 /// This can be used for specifying an initial guess, or holding the solution
-/// returned by a solver.
+/// returned by a solver. 
+///
+/// The file format for reading and writing a MucoIterate is comprised of a 
+/// file header followed by a row of column names and the stored data. The file
+/// header contains the number of states, controls, and parameters (order does
+/// not matter). Order does matter for the column names and corresponding data 
+/// columns. The columns *must* follow this order: time, states, controls, 
+/// parameters. For parameter columns, the value of the parameter is stored in 
+/// the first row of the column, while the rest of the rows are filled with 
+/// NaNs.
+/// @samplefile
+/// num_controls=<number-of-control-variables>
+/// num_parameters=<number-of-parameter-variables>
+/// num_states=<number-of-state-variables>
+/// time,<state-0-name>,...,<control-0-name>,...,<parameter-0-name>,...
+/// <#>,<#>,...,<#>,...,<#>,...
+/// <#>,<#>,...,<#>,...,<NaN>,...
+///  : , : ,..., : ,...,  :  ,...
+/// <#>,<#>,...,<#>,...,<NaN>,...
+/// @endsamplefile
+/// (If stored in a STO file, the delimiters are tabs, not commas.)
 class OSIMMUSCOLLO_API MucoIterate {
 public:
     MucoIterate() = default;
     MucoIterate(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
+            std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
-            const SimTK::Matrix& controlsTrajectory);
+            const SimTK::Matrix& controlsTrajectory,
+            const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
     // TODO describe format.
@@ -49,7 +71,8 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_state_names.size() || m_control_names.size());
+                m_parameters.nelt() || m_state_names.size() || 
+                m_control_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -122,6 +145,9 @@ public:
     /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
     void setControl(const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single parameter variable. This value is invariant
+    /// across time.
+    void setParameter(const std::string& name, const SimTK::Real& value);
 
     /// Set the time vector. The provided vector must have the same number of
     /// elements as the pre-existing time vector; use setNumTimes() or the
@@ -210,12 +236,17 @@ public:
     {   ensureUnsealed(); return m_state_names; }
     const std::vector<std::string>& getControlNames() const
     {   ensureUnsealed(); return m_control_names; }
+    const std::vector<std::string>& getParameterNames() const
+    {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
+    const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
     const SimTK::Matrix& getControlsTrajectory() const
     {   ensureUnsealed(); return m_controls; }
+    const SimTK::RowVector& getParameters() const
+    {   ensureUnsealed(); return m_parameters; }
 
     /// @}
 
@@ -262,9 +293,18 @@ public:
     /// over all states, specify a single element of "none" for stateNames;
     /// likewise for controlNames.
     /// Both iterates must have at least 6 time nodes.
-    double compareRMS(const MucoIterate& other,
+    double compareStatesControlsRMS(const MucoIterate& other,
             std::vector<std::string> stateNames = {},
             std::vector<std::string> controlNames = {}) const;
+    /// Compute the root-mean-square error between the parameters in this
+    /// iterate and another. The RMS is computed by dividing the the sum of the
+    /// squared errors between corresponding parameters and then dividing by the
+    /// number of parameters compared.
+    /// By default, all parameters are compared, and it is expected that both
+    /// iterates have the same parameters. Alternatively, you can specify the
+    /// specific parameters to compare.
+    double compareParametersRMS(const MucoIterate& other,
+        std::vector<std::string> parameterNames = {}) const;
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
@@ -276,10 +316,13 @@ private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
+    std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
     // Dimensions: time x controls
     SimTK::Matrix m_controls;
+    // Dimensions: 1 x parameters
+    SimTK::RowVector m_parameters;
 
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).

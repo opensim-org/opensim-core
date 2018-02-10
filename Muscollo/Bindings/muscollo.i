@@ -6,8 +6,9 @@
 %include <Muscollo/MucoMarkerTrackingCost.h>
 %include <Muscollo/MucoControlCost.h>
 
-
+%include <Muscollo/MucoBounds.h>
 %include <Muscollo/MucoProblem.h>
+%include <Muscollo/MucoParameter.h>
 
 // Workaround for SWIG not supporting inherited constructors.
 %define EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(NAME)
@@ -39,3 +40,4 @@ namespace OpenSim {
 }
 %include <Muscollo/MucoTropterSolver.h>
 %include <Muscollo/MucoTool.h>
+

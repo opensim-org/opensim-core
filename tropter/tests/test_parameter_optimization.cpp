@@ -180,9 +180,9 @@ public:
         cost = (final_states[0] - 0.5) * (final_states[0] - 0.5);
 
         // TODO: Final time cost approach not finding correct mass parameter.
-        //double frequency = sqrt(STIFFNESS / MASS) / (2 * PI);
-        //double period = final_time * 2;
-        //cost = pow(frequency - (1 / period), 2);
+        // double frequency = sqrt(STIFFNESS / MASS) / (2 * PI);
+        // double period = final_time * 2;
+        // cost = pow(frequency - (1 / period), 2);
     }
     
 };

@@ -8,6 +8,7 @@ add_library(osimMuscollo SHARED
         MuscolloUtilities.cpp
         MucoTool.h
         MucoTool.cpp
+        MucoBounds.h
         MucoProblem.h
         MucoProblem.cpp
         MucoCost.h
@@ -25,6 +26,8 @@ add_library(osimMuscollo SHARED
         MucoIterate.cpp
         MucoTropterSolver.h
         MucoTropterSolver.cpp
+        MucoParameter.h
+        MucoParameter.cpp
         InverseMuscleSolver/InverseMuscleSolver.h
         InverseMuscleSolver/InverseMuscleSolver.cpp
         InverseMuscleSolver/GlobalStaticOptimization.h

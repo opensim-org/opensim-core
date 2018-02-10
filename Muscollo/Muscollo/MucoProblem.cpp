@@ -3,7 +3,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -65,8 +65,6 @@ void MucoVariableInfo::constructProperties() {
 }
 
 
-
-
 // ============================================================================
 // MucoPhase
 // ============================================================================
@@ -79,6 +77,7 @@ void MucoPhase::constructProperties() {
     constructProperty_time_final_bounds();
     constructProperty_state_infos();
     constructProperty_control_infos();
+    constructProperty_parameters();
     constructProperty_costs();
 }
 void MucoPhase::setModel(const Model& model) {
@@ -105,6 +104,14 @@ void MucoPhase::setControlInfo(const std::string& name,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
+}
+void MucoPhase::addParameter(const MucoParameter& parameter) {
+    OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
+        "Cannot add a parameter if it does not have a name (use setName()).");
+    int idx = getProperty_parameters().findIndexForName(parameter.getName());
+    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
+        "A parameter with name '" + parameter.getName() + "' already exists.");
+    append_parameters(parameter);
 }
 void MucoPhase::addCost(const MucoCost& cost) {
     OPENSIM_THROW_IF_FRMOBJ(cost.getName().empty(), Exception,
@@ -134,6 +141,13 @@ std::vector<std::string> MucoPhase::createControlInfoNames() const {
     }
     return names;
 }
+std::vector<std::string> MucoPhase::createParameterNames() const {
+    std::vector<std::string> names(getProperty_parameters().size());
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        names[i] = get_parameters(i).getName();
+    }
+    return names;
+}
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
     int idx = getProperty_state_infos().findIndexForName(name);
@@ -149,6 +163,24 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
             "No info provided for control for '" + name + "'.");
     return get_control_infos(idx);
 }
+
+const MucoParameter& MucoPhase::getParameter(
+        const std::string& name) const {
+
+    int idx = getProperty_parameters().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+            "No parameter with name '" + name + "' found.");
+    return get_parameters(idx);
+}
+MucoParameter& MucoPhase::updParameter(
+    const std::string& name) {
+
+    int idx = getProperty_parameters().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+        "No parameter with name '" + name + "' found.");
+    return upd_parameters(idx);
+}
+
 void MucoPhase::printDescription(std::ostream& stream) const {
     stream << "Costs:";
     if (getProperty_costs().empty())
@@ -186,7 +218,8 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     }
     stream.flush();
 }
-void MucoPhase::initialize(const Model& model) const {
+
+void MucoPhase::initialize(Model& model) const {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
     const auto stateNames = model.getStateVariableNames();
@@ -209,13 +242,25 @@ void MucoPhase::initialize(const Model& model) const {
                         + name + "'.");
     }
 
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        const_cast<MucoParameter&>(get_parameters(i)).initialize(model);
+    }
+
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
 }
-
-
-
+void MucoPhase::applyParametersToModel(
+        const SimTK::Vector& parameterValues) const {
+    OPENSIM_THROW_IF(parameterValues.size() != getProperty_parameters().size(), 
+        Exception, "There are " + 
+        std::to_string(getProperty_parameters().size()) + " parameters in "
+        "this MucoProblem, but " + std::to_string(parameterValues.size()) + 
+        " values were provided.");
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        get_parameters(i).applyParameterToModel(parameterValues(i));
+    }
+}
 
 // ============================================================================
 // MucoProblem
@@ -241,6 +286,9 @@ void MucoProblem::setControlInfo(const std::string& name,
         const MucoInitialBounds& initial, const MucoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
+void MucoProblem::addParameter(const MucoParameter& parameter) {
+    upd_phases(0).addParameter(parameter);
+}
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
 }
@@ -253,7 +301,7 @@ void MucoProblem::printDescription(std::ostream& stream) const {
     }
     stream << ss.str() << std::endl;
 }
-void MucoProblem::initialize(const Model& model) const {
+void MucoProblem::initialize(Model& model) const {
     for (int i = 0; i < getProperty_phases().size(); ++i)
         get_phases(i).initialize(model);
 }
