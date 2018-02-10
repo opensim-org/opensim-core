@@ -1076,7 +1076,6 @@ void testGetStateVariableValue() {
     SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
     SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
 
-    top.getStateVariableValue(s, "a/b/subState");
     SimTK_TEST_MUST_THROW_EXC(
             top.getStateVariableValue(s, "typo/b/subState"),
             OpenSim::Exception);
