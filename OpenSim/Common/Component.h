@@ -721,16 +721,20 @@ public:
      */
     template <class C = Component>
     const C& getComponent(const std::string& pathname) const {
+        return getComponent<C>(ComponentPath(pathname));
+    }
+    template <class C = Component>
+    const C& getComponent(const ComponentPath& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'CompType' must be derived from Component.");
 
-        const C* comp = this->template traversePathToComponent<C>({pathname});
+        const C* comp = this->template traversePathToComponent<C>(pathname);
         if (comp) {
             return *comp;
         }
 
         // Only error cases remain
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname,
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname.toString(),
                                                        C::getClassName(),
                                                        getName());
     }
@@ -768,6 +772,10 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        return updComponent<C>(ComponentPath(name));
+    }
+    template <class C = Component>
+    C& updComponent(const ComponentPath& name) {
         clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
@@ -2178,26 +2186,26 @@ protected:
     #pragma clang diagnostic pop
 #endif
 
-    /** Utility method to find a component in the list of sub components of this
-        component and any of their sub components, etc..., by name or state variable name.
-        The search can be sped up considerably if the "path" or even partial path name
-        is known. For example name = "forearm/elbow/elbow_flexion" will find the 
-        Coordinate component of the elbow joint that connects the forearm body in 
-        linear time (linear search for name at each component level. Whereas
-        supplying "elbow_flexion" requires a tree search.
-        Returns NULL if Component of that specified name cannot be found. 
-        If the name provided is a component's state variable name and a
-        StateVariable pointer is provided, the pointer will be set to the 
-        StateVariable object that was found. This facilitates the getting and setting
-        of StateVariables by name. 
+    /** Utility method to find a component in the list of sub components of
+    this component and any of their sub components, etc..., by name or state
+    variable name. The search can be sped up considerably if the "path" or even
+    partial path name is known. For example name = "forearm/elbow/elbow_flexion"
+    will find the Coordinate component of the elbow joint that connects the
+    forearm body in linear time (linear search for name at each component level.
+    Whereas supplying "elbow_flexion" requires a tree search. Returns NULL if
+    Component of that specified name cannot be found. If the name provided is a
+    component's state variable name and a StateVariable pointer is provided, the
+    pointer will be set to the StateVariable object that was found. This
+    facilitates the getting and setting of StateVariables by name. 
         
-        NOTE: If the component name or the state variable name is ambiguous, 
-         an exception is thrown. To disambiguate use the absolute path provided
-         by owning component(s). */
+    NOTE: If the component name or the state variable name is ambiguous, 
+    an exception is thrown. To disambiguate use the absolute path provided
+    by owning component(s). */
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
-    const C* findComponent(const std::string& name, 
+    const C* findComponent(const ComponentPath& pathToFind,
                            const StateVariable** rsv = nullptr) const {
+        const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
         if (name.empty()) {
@@ -2206,7 +2214,6 @@ protected:
         }
 
         ComponentPath thisAbsPath = getAbsolutePath();
-        ComponentPath pathToFind(name);
 
         const C* found = NULL;
         if (thisAbsPath == pathToFind) {
@@ -2975,10 +2982,10 @@ void Socket<C>::findAndConnect(const Component& root) {
 
     try {
         if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path.toString());
+            comp =  &root.template getComponent<C>(path);
         }
         else {
-            comp =  &getOwner().template getComponent<C>(path.toString());
+            comp =  &getOwner().template getComponent<C>(path);
         }
     }
     catch (const ComponentNotFoundOnSpecifiedPath& ex) {
@@ -2988,7 +2995,7 @@ void Socket<C>::findAndConnect(const Component& root) {
             // debug level 0.
             std::cout << ex.getMessage() << std::endl;
         }
-        comp =  root.template findComponent<C>(path.toString());
+        comp =  root.template findComponent<C>(path);
     }
     if (comp)
         connect(*comp);
