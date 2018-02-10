@@ -23,11 +23,13 @@
 #include "MucoMarkerTrackingCost.h"
 #include "MucoControlCost.h"
 #include "MucoIterate.h"
+#include "MucoBounds.h"
 #include "MucoProblem.h"
 #include "MucoSolver.h"
 #include "MucoTool.h"
 #include "MucoTropterSolver.h"
 #include "MuscolloUtilities.h"
+#include "MucoParameter.h"
 
 #include "RegisterTypes_osimMuscollo.h"
 

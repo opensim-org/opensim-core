@@ -48,6 +48,7 @@ public:
         this->add_state("x", {-1.5, 1.5}, {0});
         this->add_state("v", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
+        this->add_parameter("p", {-1.5, 1.5});
     }
     void calc_differential_algebraic_equations(
             const DAEInput<T>& in, DAEOutput<T> out) const override {
@@ -57,6 +58,7 @@ public:
     void calc_integral_cost(const T& /*time*/,
                        const VectorX<T>& /*states*/,
                        const VectorX<T>& controls,
+                       const VectorX<T>& /*parameters*/,
                        T& integrand) const override {
         integrand = 0.001 * pow(controls[0], 2);
     }
@@ -69,12 +71,14 @@ public:
     }
     void calc_endpoint_cost(const T& /*final_time*/,
                        const VectorX<T>& final_states,
+                       const VectorX<T>& parameters,
                        T& cost) const override {
-        cost = 100.0 * two_minima(final_states[0]);
+        cost = 100.0 * (two_minima(final_states[0]) + 
+                        two_minima(parameters[0]));
     }
 };
 
-TEST_CASE("Final position cost with two local optima", "[initial_guess]") {
+TEST_CASE("Final position and parameter cost with two local optima", "[initial_guess]") {
 
     // Guess low.
     {
@@ -89,10 +93,12 @@ TEST_CASE("Final position cost with two local optima", "[initial_guess]") {
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, -1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
+        ocp->set_parameter_guess(guess, "p", -1);
         OptimalControlSolution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == -1/sqrt(2));
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == -1/sqrt(2));
     }
     // Guess high.
     {
@@ -107,10 +113,12 @@ TEST_CASE("Final position cost with two local optima", "[initial_guess]") {
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, +1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
+        ocp->set_parameter_guess(guess, "p", +1);
         OptimalControlSolution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == +1/sqrt(2));
+        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == +1/sqrt(2));
     }
 }
 
@@ -127,7 +135,7 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(ocp->set_state_guess(guess, "x", RowVectorXd::Zero(1)),
                         Contains("guess.time is empty"));
     REQUIRE_THROWS_WITH(
-            ocp->set_control_guess(guess, "x", RowVectorXd::Zero(1)),
+            ocp->set_control_guess(guess, "F", RowVectorXd::Zero(1)),
             Contains("guess.time is empty"));
     guess.time.setLinSpaced(N, 0, 1);
 
@@ -156,9 +164,10 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     // Test for more exceptions when calling solve().
     // ----------------------------------------------
-    guess.time.resize(N - 10);   // incorrect.
-    guess.states.resize(2, N);   // correct.
-    guess.controls.resize(1, N); // correct.
+    guess.time.resize(N - 10);     // incorrect.
+    guess.states.resize(2, N);     // correct.
+    guess.controls.resize(1, N);   // correct.
+    guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 5, "
@@ -166,7 +175,6 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     guess.time.resize(N);        // correct.
     guess.states.resize(6, N);   // incorrect.
-    guess.controls.resize(1, N); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected states to have 2 row(s), but it has 6."));
 
@@ -181,11 +189,16 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected controls to have 1 row(s), but it has 4."));
 
-    guess.controls.resize(1, N - 3); // incorrect
+    guess.controls.resize(1, N - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
             Contains("Expected time, states, and controls to have"
                     " the same number of columns (they have 15, "
                     "15, 12 column(s), respectively)."));
+
+    guess.parameters.resize(2, 1); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess), 
+            Contains("Expected parameters to have 1 elements(s), "
+                     "but it has 2."));
 }
 
 
@@ -195,6 +208,7 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     int num_times = 15;
     int num_states = 3;
     int num_controls = 2;
+    int num_parameters = 2;
     it0.time.resize(num_times);
     it0.time.setRandom();
 
@@ -204,8 +218,12 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     it0.controls.resize(num_controls, num_times);
     it0.controls.setRandom();
 
+    it0.parameters.resize(num_parameters, num_times);
+    it0.parameters.setRandom();
+
     it0.state_names = {"a", "b", "c"};
     it0.control_names = {"x", "y"};
+    it0.parameter_names = {"p0", "p1"};
 
     // Serialize.
     const std::string filename = "test_OptimalControlIterate_serialization.csv";
@@ -218,9 +236,11 @@ TEST_CASE("(De)serialization of OptimalControlIterate", "[iterate_readwrite]") {
     TROPTER_REQUIRE_EIGEN(it0.time, it1.time, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.states, it1.states, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.controls, it1.controls, 1e-5);
+    TROPTER_REQUIRE_EIGEN(it0.parameters, it1.parameters, 1e-5);
 
     REQUIRE(it0.state_names == it1.state_names);
     REQUIRE(it0.control_names == it1.control_names);
+    REQUIRE(it0.parameter_names == it1.parameter_names);
 }
 
 TEST_CASE("Interpolating an initial guess") {

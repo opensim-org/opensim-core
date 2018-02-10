@@ -56,10 +56,12 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     SimTK::Vector time((int)tropTime.size(), tropTime.data());
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
+    const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
+    int numParameters = (int)parameter_names.size();
     SimTK::Matrix states(numTimes, numStates);
     for (int itime = 0; itime < numTimes; ++itime) {
         for (int istate = 0; istate < numStates; ++istate) {
@@ -72,7 +74,9 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             controls(itime, icontrol) = tropSol.controls(icontrol, itime);
         }
     }
-    return {time, state_names, control_names, states, controls};
+    SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
+    return {time, state_names, control_names, parameter_names, states, 
+            controls, parameters};
 }
 
 MucoSolution convert(const tropter::OptimalControlSolution& tropSol) {
@@ -87,18 +91,22 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
     using Eigen::Map;
     using Eigen::RowVectorXd;
     using Eigen::MatrixXd;
+    using Eigen::VectorXd;
 
     const auto& time = mucoIter.getTime();
     tropIter.time = Map<const RowVectorXd>(&time[0], time.size());
 
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
+    tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
+    int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
+    const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
     tropIter.states = Map<const MatrixXd>(
@@ -108,6 +116,12 @@ tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
                 &controls(0, 0), numTimes, numControls).transpose();
     } else {
         tropIter.controls.resize(numControls, numTimes);
+    }
+    if (numParameters) {
+        tropIter.parameters = Map<const VectorXd>(
+                &parameters(0), numParameters);
+    } else {
+        tropIter.parameters.resize(numParameters);
     }
     return tropIter;
 }
@@ -151,6 +165,10 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
+        for (std::string name : m_phase0.createParameterNames()) {
+            const MucoParameter& parameter = m_phase0.getParameter(name);
+            this->add_parameter(name, convert(parameter.getBounds()));
+        }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
         m_mucoProb.initialize(m_model);
@@ -164,9 +182,12 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
+        const auto& parameters = in.parameters;
+
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
 
         m_state.setTime(in.time);
-
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
         //
@@ -192,7 +213,10 @@ public:
     }
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
-            const VectorX<T>& controls, T& integrand) const override {
+            const VectorX<T>& controls, 
+            const VectorX<T>& parameters, T& integrand) const override {
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -210,7 +234,9 @@ public:
         integrand = m_phase0.calcIntegralCost(m_state);
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            T& cost) const override {
+            const VectorX<T>& parameters, T& cost) const override {
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -224,8 +250,23 @@ private:
     const MucoSolver& m_mucoSolver;
     const MucoProblem& m_mucoProb;
     const MucoPhase& m_phase0;
-    Model m_model;
+    mutable Model m_model;
     mutable SimTK::State m_state;
+    // TODO: mutable SimTK::Vector m_mucoParams;
+
+    void applyParametersToModel(const VectorX<T>& parameters) const
+    {
+        if (parameters.size()) {
+            // Warning: memory borrowed, not copied (when third argument to
+            // SimTK::Vector constructor is true)
+            SimTK::Vector mucoParams(
+                (int)m_phase0.createParameterNames().size(),
+                parameters.data(), true);
+
+            m_phase0.applyParametersToModel(mucoParams);
+            m_model.initSystem();
+        }
+    }
 };
 
 MucoTropterSolver::MucoTropterSolver() {
@@ -259,7 +300,6 @@ void MucoTropterSolver::clearProblemImpl() {
 
 void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
     clearProblemImpl();
-
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
@@ -406,6 +446,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     }
 
     MucoSolution mucoSolution = convert(tropSolution);
+
     // TODO move this to convert():
     MucoSolver::setSolutionStats(mucoSolution, tropSolution.success,
             tropSolution.status, tropSolution.num_iterations);

@@ -24,6 +24,8 @@ MuscolloAddTest(NAME testMuscolloInterface)
 
 MuscolloAddTest(NAME testMucoCosts)
 
+MuscolloAddTest(NAME testMucoParameters)
+
 MuscolloAddTest(NAME testHangingMassRoundtrip)
 
 MuscolloAddTest(NAME testSingleMuscle)

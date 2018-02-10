@@ -70,6 +70,10 @@ struct DAEInput {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& controls;
+    /// The vector of time-invariant parameter values.
+    /// @note If you pass this into functions that take an Eigen Vector as
+    /// input, see the note above for the `states` variable.
+    const Eigen::Ref<const VectorX<T>>& parameters;
 };
 /// This struct holds the outputs of
 /// OptimalControlProblem::calc_differntial_algebraic_equations().
@@ -104,6 +108,8 @@ struct DAEOutput {
 /// - *controls*:  a vector of all control variables at a given time.
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
+/// - *parameter*: a single parameter variable.
+/// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
 template <typename T>
 class OptimalControlProblem {
@@ -119,7 +125,10 @@ private:
         const std::string name;
         const Bounds bounds;
     };
-
+    struct ParameterInfo {
+        const std::string name;
+        const Bounds bounds;
+    };
 public:
 
     OptimalControlProblem() = default;
@@ -131,6 +140,8 @@ public:
     {   return (int)m_state_infos.size(); }
     int get_num_controls() const
     {   return (int)m_control_infos.size(); }
+    int get_num_parameters() const
+    {   return (int)m_parameter_infos.size(); }
     int get_num_path_constraints() const
     {   return (int)m_path_constraint_infos.size(); }
     /// Get the names of all the states in the order they appear in the
@@ -153,8 +164,18 @@ public:
         }
         return names;
     }
+    /// Get the names of all the parameters in the order they appear in
+    /// the `parameters` input to calc_differential_algebraic_equations(), etc.
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_parameter_names() const {
+        std::vector<std::string> names;
+        for (const auto& info : m_parameter_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
     /// Get the names of all the path constraints in the order they appear in
-    /// the `states` input to calc_differential_algebraic_equations(), etc.
+    /// the 'path' output to calc_differential_algebraic_equations(), etc.
     /// Note: this function is not free to call.
     std::vector<std::string> get_path_constraint_names() const {
         std::vector<std::string> names;
@@ -199,6 +220,13 @@ public:
         // objects' "is_set()" function.
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
         return (int)m_control_infos.size() - 1;
+    }
+    /// This returns an index that can be used to access this specific parameter
+    /// variable within `dynamics()` , `path_constraints()`, etc.
+    /// TODO check if a parameter with the provided name already exists.
+    int add_parameter(const std::string& name, const Bounds& bounds) {
+        m_parameter_infos.push_back({name, bounds});
+        return (int)m_parameter_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific path
     /// constraint element within `path_constraints()`.
@@ -249,10 +277,12 @@ public:
     // TODO endpoint or terminal cost?
     virtual void calc_endpoint_cost(const T& final_time,
             const VectorX<T>& final_states,
+            const VectorX<T>& parameters,
             T& cost) const;
     virtual void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
+            const VectorX<T>& parameters,
             T& integrand) const;
     /// @}
 
@@ -295,6 +325,19 @@ public:
     void set_control_guess(OptimalControlIterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
+    /// Set a guess for the value of a single parameter variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a parameter variable.
+    /// @param[in,out] guess
+    ///     The element of the parameters vector associated with the provided 
+    ///     name is set to value.
+    /// @param[in] name
+    ///     Name of the parameter variable (provided in add_parameter()).
+    /// @param[in] value
+    ///     This value is time-invariant in the iterate `guess`.
+    void set_parameter_guess(OptimalControlIterate& guess,
+            const std::string& name,
+            const double& value);
     /// @}
 
     // TODO move to "getter" portion.
@@ -318,6 +361,8 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
             Eigen::Ref<Eigen::VectorXd> final_controls_lower,
             Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+            Eigen::Ref<Eigen::VectorXd> parameters_lower,
+            Eigen::Ref<Eigen::VectorXd> parameters_upper,
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
             Eigen::Ref<Eigen::VectorXd> path_constraints_upper) const;
     /// @}
@@ -327,6 +372,7 @@ private:
     FinalBounds m_final_time_bounds;
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
+    std::vector<ParameterInfo> m_parameter_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };
 

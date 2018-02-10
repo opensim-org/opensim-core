@@ -41,10 +41,12 @@ void Trapezoidal<T>::set_ocproblem(
     m_num_controls = m_ocproblem->get_num_controls();
     m_num_continuous_variables = m_num_states+m_num_controls;
     m_num_time_variables = 2;
-    int num_variables = m_num_time_variables
+    m_num_parameters = m_ocproblem->get_num_parameters();
+    m_num_dense_variables = m_num_time_variables + m_num_parameters;
+    int num_variables = m_num_time_variables + m_num_parameters
             + m_num_mesh_points * m_num_continuous_variables;
     this->set_num_variables(num_variables);
-    m_num_defects = m_num_mesh_points - 1;
+    m_num_defects = m_num_states ? m_num_mesh_points - 1 : 0;
     m_num_dynamics_constraints = m_num_defects * m_num_states;
     m_num_path_constraints = m_ocproblem->get_num_path_constraints();
     // TODO rename..."total_path_constraints"?
@@ -71,6 +73,8 @@ void Trapezoidal<T>::set_ocproblem(
     VectorXd initial_controls_upper(m_num_controls);
     VectorXd final_controls_lower(m_num_controls);
     VectorXd final_controls_upper(m_num_controls);
+    VectorXd parameters_upper(m_num_parameters);
+    VectorXd parameters_lower(m_num_parameters);
     VectorXd path_constraints_lower(m_num_path_constraints);
     VectorXd path_constraints_upper(m_num_path_constraints);
     m_ocproblem->get_all_bounds(initial_time_lower, initial_time_upper,
@@ -81,12 +85,13 @@ void Trapezoidal<T>::set_ocproblem(
             controls_lower, controls_upper,
             initial_controls_lower, initial_controls_upper,
             final_controls_lower, final_controls_upper,
+            parameters_lower, parameters_upper,
             path_constraints_lower, path_constraints_upper);
     // TODO validate sizes.
     // Bounds on variables.
     VectorXd variable_lower(num_variables);
     variable_lower <<
-            initial_time_lower, final_time_lower,
+            initial_time_lower, final_time_lower, parameters_lower,
             initial_states_lower, initial_controls_lower,
             (VectorXd(m_num_continuous_variables)
                     << states_lower, controls_lower)
@@ -95,7 +100,7 @@ void Trapezoidal<T>::set_ocproblem(
             final_states_lower, final_controls_lower;
     VectorXd variable_upper(num_variables);
     variable_upper <<
-            initial_time_upper, final_time_upper,
+            initial_time_upper, final_time_upper, parameters_upper,
             initial_states_upper, initial_controls_upper,
             (VectorXd(m_num_continuous_variables)
                     << states_upper, controls_upper)
@@ -155,12 +160,13 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     // data pointer. TODO probably don't even need to update the data pointer!
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
+    auto parameters = make_parameters_view(x);
 
     // Endpoint cost.
     // --------------
     // TODO does this cause the final_states to get copied?
-    m_ocproblem->calc_endpoint_cost(final_time, states.rightCols(1), obj_value);
-
+    m_ocproblem->calc_endpoint_cost(final_time, states.rightCols(1), parameters,
+        obj_value);
 
     // Integral cost.
     // --------------
@@ -168,7 +174,8 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_integral_cost(time,
-                states.col(i_mesh), controls.col(i_mesh), m_integrand[i_mesh]);
+                states.col(i_mesh), controls.col(i_mesh), parameters,
+                m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
     T integral_cost = 0;
@@ -194,6 +201,7 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
 
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
+    auto parameters = make_parameters_view(x);
 
     // Organize the constrants vector.
     ConstraintsView constr_view = make_constraints_view(constraints);
@@ -211,7 +219,8 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         // TODO should pass the time.
         const T time = step_size * i_mesh + initial_time;
         m_ocproblem->calc_differential_algebraic_equations(
-                {i_mesh, time, states.col(i_mesh), controls.col(i_mesh)},
+                {i_mesh, time, states.col(i_mesh), controls.col(i_mesh),
+                 parameters},
                 {m_derivs.col(i_mesh),
                  constr_view.path_constraints.col(i_mesh)});
     }
@@ -220,22 +229,24 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     // ---------------------------
     // Backwards Euler (not used here):
     // defect_i = x_i - (x_{i-1} + h * xdot_i)  for i = 1, ..., N.
-    const unsigned N = m_num_mesh_points;
-    const auto& x_i = states.rightCols(N - 1);
-    const auto& x_im1 = states.leftCols(N - 1);
-    const auto& xdot_i = m_derivs.rightCols(N - 1);
-    const auto& h = step_size;
-    //constr_view.defects = x_i-(x_im1+h*xdot_i);
-    // TODO Trapezoidal:
-    const auto& xdot_im1 = m_derivs.leftCols(N-1);
-    //constr_view.defects = x_i-(x_im1+h*xdot_im1);
-    constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
-    //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
-    //    const auto& h = m_mesh_intervals[i_mesh];
-    //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
-    //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
-    // (i_mesh) + xdot_im1.col(i_mesh)));
-    //}
+    if (m_num_defects) {
+        const unsigned N = m_num_mesh_points;
+        const auto& x_i = states.rightCols(N - 1);
+        const auto& x_im1 = states.leftCols(N - 1);
+        const auto& xdot_i = m_derivs.rightCols(N - 1);
+        const auto& h = step_size;
+        //constr_view.defects = x_i-(x_im1+h*xdot_i);
+        // TODO Trapezoidal:
+        const auto& xdot_im1 = m_derivs.leftCols(N-1);
+        //constr_view.defects = x_i-(x_im1+h*xdot_im1);
+        constr_view.defects = x_i - (x_im1 + 0.5 * h * (xdot_i + xdot_im1));
+        //for (int i_mesh = 0; i_mesh < N - 1; ++i_mesh) {
+        //    const auto& h = m_mesh_intervals[i_mesh];
+        //    constr_view.defects.col(i_mesh) = x_i.col(i_mesh)
+        //            - (x_im1.col(i_mesh) + 0.5 * h * duration * (xdot_i.col
+        // (i_mesh) + xdot_im1.col(i_mesh)));
+        //}
+    }
 
 }
 
@@ -259,7 +270,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     // variables.
     // TODO can be smarter about interaction of variables with time; implicit
     // formulations (see test_double_pendulum) give additional sparsity here.
-    for (int irow = 0; irow < m_num_time_variables; ++irow) {
+    for (int irow = 0; irow < m_num_dense_variables; ++irow) {
         for (int icol = irow; icol < (int)num_variables; ++icol) {
             hescon_sparsity.set_nonzero(irow, icol);
         }
@@ -283,10 +294,12 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 T t = x[0]; // initial time.
                 VectorX<T> s = vars.head(m_num_states);
                 VectorX<T> c = vars.tail(m_num_controls);
+                VectorX<T> p = x.segment(m_num_time_variables,
+                    m_num_parameters).template cast<T>();
                 VectorX<T> deriv(m_num_states);
                 VectorX<T> path(m_num_path_constraints);
                 m_ocproblem->calc_differential_algebraic_equations(
-                        {0, t, s, c}, {deriv, path});
+                        {0, t, s, c, p}, {deriv, path});
                 return idx < m_num_states ? deriv[idx]
                                           : path[idx - m_num_states];
             };
@@ -297,7 +310,8 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 std::bind(calc_dae, std::placeholders::_1, i);
         // Determine the sparsity for this specific derivative/path constraint.
         auto block_sparsity = calc_hessian_sparsity_with_perturbation(
-                x.segment(m_num_time_variables, m_num_continuous_variables),
+                x.segment(m_num_dense_variables,
+                    m_num_continuous_variables),
                 calc_dae_i);
         // Add in this sparsity to the block that we'll repeat.
         dae_sparsity.add_in_nonzeros(block_sparsity);
@@ -305,7 +319,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
 
     // Repeat the block down the diagonal of the Hessian of constraints.
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
-        const auto istart = m_num_time_variables + imesh * num_con_vars;
+        const auto istart = m_num_dense_variables + imesh * num_con_vars;
         hescon_sparsity.set_nonzero_block(istart, istart, dae_sparsity);
     }
 
@@ -313,9 +327,9 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
     // Hessian of objective.
     // ---------------------
 
-    // Assueme time is coupled to all other variables.
+    // Assueme time and parameters are coupled to all other variables.
     // TODO not necessarily; detect this sparsity.
-    for (int irow = 0; irow < m_num_time_variables; ++irow) {
+    for (int irow = 0; irow < m_num_dense_variables; ++irow) {
         for (int icol = irow; icol < (int)num_variables; ++icol) {
             hesobj_sparsity.set_nonzero(irow, icol);
         }
@@ -329,17 +343,19 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
         T t = x[0]; // initial time.
         VectorX<T> s = vars.head(m_num_states);
         VectorX<T> c = vars.tail(m_num_controls);
+        VectorX<T> p = x.segment(m_num_time_variables,
+            m_num_parameters).template cast<T>();
         T integrand = 0;
-        m_ocproblem->calc_integral_cost(t, s, c, integrand);
+        m_ocproblem->calc_integral_cost(t, s, c, p, integrand);
         return integrand;
     };
     SymmetricSparsityPattern integral_cost_sparsity =
             calc_hessian_sparsity_with_perturbation(
                     // Grab the first state and first controls.
-                    x.segment(m_num_time_variables, num_con_vars),
+                    x.segment(m_num_dense_variables, num_con_vars),
                     calc_integral_cost);
     for (int imesh = 0; imesh < m_num_mesh_points; ++imesh) {
-        const auto istart = m_num_time_variables + imesh * num_con_vars;
+        const auto istart = m_num_dense_variables + imesh * num_con_vars;
         hesobj_sparsity.set_nonzero_block(istart, istart,
                 integral_cost_sparsity);
     }
@@ -350,12 +366,14 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
                 T t = x[1]; // final time. TODO see if endpoint cost actually
                 // depends on final time; put it in vars.
                 VectorX<T> s = vars;
+                VectorX<T> p = x.segment(m_num_time_variables,
+                    m_num_parameters).template cast<T>();
                 T cost = 0;
-                m_ocproblem->calc_endpoint_cost(t, s, cost);
+                m_ocproblem->calc_endpoint_cost(t, s, p, cost);
                 return cost;
             };
-    const auto lastmeshstart =
-            m_num_time_variables + (m_num_mesh_points - 1) * num_con_vars;
+    const auto lastmeshstart = m_num_dense_variables +
+        (m_num_mesh_points - 1) * num_con_vars;
     SymmetricSparsityPattern endpoint_cost_sparsity =
                     calc_hessian_sparsity_with_perturbation(
                             // Grab the final state.
@@ -382,6 +400,9 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     TROPTER_THROW_IF(traj.controls.rows() != m_num_controls,
             "Expected controls to have %i row(s), but it has %i.",
             m_num_controls, traj.controls.rows());
+    TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
+            "Expected parameters to have %i elements(s), but it has %i.",
+            m_num_parameters, traj.parameters.size());
     // Check columns.
     if (interpolate) {
         TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
@@ -425,6 +446,8 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
     // dimensions do not match.
     this->make_states_trajectory_view(iterate) = traj_to_use->states;
     this->make_controls_trajectory_view(iterate) = traj_to_use->controls;
+    this->make_parameters_view(iterate) = traj_to_use->parameters;
+
     return iterate;
 }
 
@@ -441,9 +464,11 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
 
     traj.states = this->make_states_trajectory_view(x);
     traj.controls = this->make_controls_trajectory_view(x);
+    traj.parameters = this->make_parameters_view(x);
 
     traj.state_names = m_ocproblem->get_state_names();
     traj.control_names = m_ocproblem->get_control_names();
+    traj.parameter_names = m_ocproblem->get_parameter_names();
 
     return traj;
 }
@@ -478,6 +503,8 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     //ConstraintsView upper = make_constraints_view(upper_T);
     auto state_names = m_ocproblem->get_state_names();
     auto control_names = m_ocproblem->get_control_names();
+    auto parameter_names = m_ocproblem->get_parameter_names();
+    std::vector<std::string> time_names = {"initial_time", "final_time"};
 
     OptimalControlIterate ocp_vars_lower = deconstruct_iterate(
             this->get_variable_lower_bounds());
@@ -503,12 +530,10 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                         compare_size)->size());
     }
 
-    stream << "\nActive or violated bounds" << std::endl;
+    stream << "\nActive or violated continuous variable bounds" << std::endl;
     stream << "L and U indicate which bound is active; "
             "'*' indicates a bound is violated. " << std::endl;
     stream << "The case of lower==upper==value is ignored." << std::endl;
-
-    // TODO bounds on initial and final time.
 
     // Bounds on state and control variables.
     // --------------------------------------
@@ -549,7 +574,6 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             stream << "some bounds active but no bounds violated";
         } else {
             stream << "some bounds active or violated";
-
         }
 
         stream << "\n" << std::setw(max_name_length) << "  "
@@ -575,10 +599,10 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
                             << std::setw(9) << V << " <= "
                             << std::setw(9) << U << " ";
                     // Show if the constraint is violated.
-                    if (V <= L) stream << " ";
-                    else        stream << "L";
-                    if (V >= U) stream << " ";
-                    else        stream << "U";
+                    if (V <= L) stream << "L";
+                    else        stream << " ";
+                    if (V >= U) stream << "U";
+                    else        stream << " ";
                     if (V < L || V > U) stream << "*";
                     stream << std::endl;
                 }
@@ -589,6 +613,103 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
             ocp_vars.states, ocp_vars_lower.states, ocp_vars_upper.states);
     print_bounds("Control bounds", control_names, ocp_vars.time,
             ocp_vars.controls, ocp_vars_lower.controls, ocp_vars_upper.controls);
+
+    // Bounds on time and parameter variables.
+    // ---------------------------------------
+    max_name_length = 0;
+    if (!parameter_names.empty()) {
+        max_name_length = (int)std::max((size_t)max_name_length,
+            std::max_element(parameter_names.begin(),
+                parameter_names.end(),
+                compare_size)->size());
+    }
+    // Check if max parameter name length is larger than "initial_time".
+    if (max_name_length < (int)time_names[0].size()) {
+        max_name_length = (int)time_names[0].size();
+    }
+
+    stream << "\nActive or violated parameter bounds" << std::endl;
+    stream << "L and U indicate which bound is active; "
+        "'*' indicates a bound is violated. " << std::endl;
+    stream << "The case of lower==upper==value is ignored." << std::endl;
+
+    using Eigen::VectorXd;
+    auto print_parameter_bounds = [&stream, max_name_length](
+        const std::string& description,
+        const std::vector<std::string>& names,
+        const VectorXd& values,
+        const VectorXd& lower, const VectorXd& upper) {
+
+        stream << "\n" << description << ": ";
+
+        bool bounds_active = false;
+        bool bounds_violated = false;
+        for (Eigen::Index ivar = 0; ivar < values.rows(); ++ivar) {
+            const auto& L = lower(ivar);
+            const auto& V = values(ivar);
+            const auto& U = upper(ivar);
+            if (V <= L || V >= U) {
+                if (V == L && L == U) continue;
+                bounds_active = true;
+                if (V < L || V > U) {
+                    bounds_violated = true;
+                    break;
+                }
+            }
+        }
+
+        if (!bounds_active && !bounds_violated) {
+            stream << "no bounds active or violated" << std::endl;
+            return;
+        }
+
+        if (!bounds_violated) {
+            stream << "some bounds active but no bounds violated";
+        }
+        else {
+            stream << "some bounds active or violated";
+        }
+
+        stream << "\n" << std::setw(max_name_length) << "  "
+            << std::setw(9) << "lower" << "    "
+            << std::setw(9) << "value" << "    "
+            << std::setw(9) << "upper" << " " << std::endl;
+
+        for (Eigen::Index ivar = 0; ivar < values.rows(); ++ivar) {
+            const auto& L = lower(ivar);
+            const auto& V = values(ivar);
+            const auto& U = upper(ivar);
+            if (V <= L || V >= U) {
+                // In the case where lower==upper==value, there is no
+                // issue; ignore.
+                if (V == L && L == U) continue;
+                stream << std::setw(max_name_length) << names[ivar] << "  "
+                    << std::setprecision(2) << std::scientific
+                    << std::setw(9) << L << " <= "
+                    << std::setw(9) << V << " <= "
+                    << std::setw(9) << U << " ";
+                // Show if the constraint is violated.
+                if (V <= L) stream << "L";
+                else        stream << " ";
+                if (V >= U) stream << "U";
+                else        stream << " ";
+                if (V < L || V > U) stream << "*";
+                stream << std::endl;
+            }
+        }
+
+    };
+    VectorXd time_values(2);
+    time_values  << ocp_vars.time[0], ocp_vars.time.tail<1>()[0];
+    VectorXd time_lower(2);
+    time_lower  << ocp_vars_lower.time[0], ocp_vars_lower.time.tail<1>()[0];
+    VectorXd time_upper(2);
+    time_upper  << ocp_vars_upper.time[0], ocp_vars_upper.time.tail<1>()[0];
+    print_parameter_bounds("Time bounds", time_names, time_values, time_lower,
+        time_upper);
+    print_parameter_bounds("Parameter bounds", parameter_names, 
+        ocp_vars.parameters, ocp_vars_lower.parameters, 
+        ocp_vars_upper.parameters);
 
     // Constraints.
     // ============
@@ -709,13 +830,25 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
 
 template<typename T>
 template<typename S>
+typename Trapezoidal<T>::template ParameterViewConst<S>
+Trapezoidal<T>::make_parameters_view(const VectorX<S>& x) const
+{
+    return {
+            // Pointer to the start of the parameters.
+            x.data() + m_num_time_variables,
+            // Size of the parameter view vector.
+            m_num_parameters};
+}
+
+template<typename T>
+template<typename S>
 typename Trapezoidal<T>::template TrajectoryViewConst<S>
 Trapezoidal<T>::make_states_trajectory_view(const VectorX<S>& x) const
 {
     // TODO move time variables to the end.
     return {
             // Pointer to the start of the states.
-            x.data() + m_num_time_variables,
+            x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
@@ -729,7 +862,7 @@ Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 {
     return {
             // Start of controls for first mesh interval.
-            x.data() + m_num_time_variables + m_num_states,
+            x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.
@@ -739,12 +872,24 @@ Trapezoidal<T>::make_controls_trajectory_view(const VectorX<S>& x) const
 // TODO avoid the duplication with the above.
 template<typename T>
 template<typename S>
+typename Trapezoidal<T>::template ParameterView<S>
+Trapezoidal<T>::make_parameters_view(VectorX<S>& x) const
+{
+    return{
+        // Pointer to the start of the parameters.
+        x.data() + m_num_time_variables,
+        // Size of the parameter view vector.
+        m_num_parameters};
+}
+
+template<typename T>
+template<typename S>
 typename Trapezoidal<T>::template TrajectoryView<S>
 Trapezoidal<T>::make_states_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Pointer to the start of the states.
-            x.data() + m_num_time_variables,
+            x.data() + m_num_dense_variables,
             m_num_states,      // Number of rows.
             m_num_mesh_points, // Number of columns.
             // Distance between the start of each column.
@@ -758,7 +903,7 @@ Trapezoidal<T>::make_controls_trajectory_view(VectorX<S>& x) const
 {
     return {
             // Start of controls for first mesh interval.
-            x.data() + m_num_time_variables + m_num_states,
+            x.data() + m_num_dense_variables + m_num_states,
             m_num_controls,          // Number of rows.
             m_num_mesh_points,       // Number of columns.
             // Distance between the start of each column; same as above.
@@ -770,12 +915,11 @@ typename Trapezoidal<T>::ConstraintsView
 Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 {
     // Starting indices of different parts of the constraints vector.
-    const unsigned d  = 0;                               // defects.
+    T* d_ptr = m_num_defects ?                           // defects.
+               &constr[0] : nullptr;
     T* pc_ptr= m_num_path_constraints ?                  // path constraints.
-               &constr[d + m_num_dynamics_constraints] : nullptr;
-    //const unsigned pc =  // path
-    // constraints.
-    return {DefectsTrajectoryView(&constr[d], m_num_states, m_num_defects),
+               &constr[m_num_dynamics_constraints] : nullptr;
+    return {DefectsTrajectoryView(d_ptr, m_num_states, m_num_defects),
             PathConstraintsTrajectoryView(pc_ptr, m_num_path_constraints,
                     m_num_mesh_points)};
 }
