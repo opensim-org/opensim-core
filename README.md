@@ -48,14 +48,18 @@ with Muscollo/tropter.
 Mac
 ---
 You must first install the following:
+ - `gfortran`
+ - `pkgconfig`
  - `autoreconf`
  - `aclocal`
  - `glibtoolize`
+ - `wget`
+ - `doxygen` (optional)
 
 You can install these with Homebrew:
 
 ```bash
-brew install autoconf libtool automake
+brew install pkgconfig gcc autoconf libtool automake wget doxygen
 ```
 
 If you use Homebrew to obtain ColPack and ADOL-C, make 
