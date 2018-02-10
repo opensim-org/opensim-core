@@ -29,6 +29,9 @@ direct collocation. Currently, Tropter's source code is part of Muscollo.
 On **Linux** and **macOS**, you must obtain these packages on your own. Most of
 them can be found in a package manager (`apt-get` on Ubuntu, Homebrew on macOS).
 
+Build the dependencies by building the CMake project in the `dependencies`
+folder.
+
 Ubuntu
 ------
 
@@ -42,9 +45,20 @@ Install Eigen, ColPack, ADOL-C, and OpenSim using the CMake project in the
 For some reason, the ADOL-C in the Ubuntu package repositories does not work well
 with Muscollo/tropter.
 
-macOS
------
-If you are using Homebrew to obtain ColPack and ADOL-C, make 
+Mac
+---
+You must first install the following:
+ - `autoreconf`
+ - `aclocal`
+ - `glibtoolize`
+
+You can install these with Homebrew:
+
+```bash
+brew install autoconf libtool automake
+```
+
+If you use Homebrew to obtain ColPack and ADOL-C, make 
 sure they are compiled with the same compiler you will use for Muscollo and 
 tropter (by default, Homebrew compiles these with GCC):
 
@@ -52,9 +66,6 @@ tropter (by default, Homebrew compiles these with GCC):
 brew install --cc=clang colpack
 brew install --cc=clang adol-c
 ```
-
-You can use the CMake project in the `dependencies` directory to build some of
-these dependencies (TODO improve instructions).
 
 
 Windows
