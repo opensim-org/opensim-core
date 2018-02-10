@@ -47,9 +47,7 @@ with Muscollo/tropter.
 
 Mac
 ---
-You can use the CMake project in the `dependencies` directory to build some of
-these dependencies (TODO improve instructions). You must first install the
-following:
+You must first install the following:
  - `autoreconf`
  - `aclocal`
  - `glibtoolize`
@@ -68,7 +66,6 @@ tropter (by default, Homebrew compiles these with GCC):
 brew install --cc=clang colpack
 brew install --cc=clang adol-c
 ```
-
 
 
 Windows
