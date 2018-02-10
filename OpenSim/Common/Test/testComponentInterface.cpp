@@ -1108,6 +1108,10 @@ void testTraversePathToComponent() {
     SimTK_TEST(a1->traversePathToComponent<A>({"../a1"}) == a1);
     SimTK_TEST(a1->traversePathToComponent<B>({"../b1"}) == b1);
     SimTK_TEST(a1->traversePathToComponent<B>({"../a1/b2"}) == b2);
+    // Absolute paths.
+    SimTK_TEST(top.traversePathToComponent<A>({"/top/a1"}) == a1);
+    SimTK_TEST(b1->traversePathToComponent<B>({"/top/a1/b2"}) == b2);
+    SimTK_TEST(b2->traversePathToComponent<A>({"/top/a1/a2"}) == a2);
 
     // No component.
     // -------------

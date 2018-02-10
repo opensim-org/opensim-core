@@ -2291,6 +2291,8 @@ protected:
         // component, do not go up to the root.
         ComponentPath absPath;
         try {
+            // If the resulting path is invalid (because it goes farther up
+            // than the root), report that we couldn't find the component.
             absPath = path.formAbsolutePath(this->getAbsolutePath());
         } catch (const Exception&) {
             return nullptr;
