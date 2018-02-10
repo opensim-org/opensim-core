@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimizationSolver.cpp
+// tropter::optimization::Solver.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,68 +14,69 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimizationSolver.h"
-#include "OptimizationProblem.h"
+#include "Solver.h"
+#include "Problem.h"
 
 #include <tropter/Exception.hpp>
 
 using Eigen::VectorXd;
 
 using namespace tropter;
+using namespace tropter::optimization;
 
-OptimizationSolver::OptimizationSolver(
-        const AbstractOptimizationProblem& problem)
+Solver::Solver(
+        const AbstractProblem& problem)
         : m_problem(problem.make_decorator()) {}
 
-void OptimizationSolver::set_verbosity(int verbosity) {
+void Solver::set_verbosity(int verbosity) {
     TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
             "verbosity", verbosity, "0 or 1");
     m_verbosity = verbosity;
     m_problem->set_verbosity(verbosity);
 }
-int OptimizationSolver::get_verbosity() const {
+int Solver::get_verbosity() const {
     return m_verbosity;
 }
 
-void OptimizationSolver::set_max_iterations(Optional<int> v) {
+void Solver::set_max_iterations(Optional<int> v) {
     TROPTER_VALUECHECK(!v || *v > 0, "max_iterations", *v, "positive");
     m_max_iterations = v;
 }
-Optional<int> OptimizationSolver::get_max_iterations() const {
+Optional<int> Solver::get_max_iterations() const {
     return m_max_iterations;
 }
 
-void OptimizationSolver::set_convergence_tolerance(Optional<double> v) {
+void Solver::set_convergence_tolerance(Optional<double> v) {
     TROPTER_VALUECHECK(!v || *v > 0, "convergence_tolerance", *v, "positive");
     m_convergence_tolerance = v;
 }
-Optional<double> OptimizationSolver::get_convergence_tolerance() const {
+Optional<double> Solver::get_convergence_tolerance() const {
     return m_convergence_tolerance;
 }
-void OptimizationSolver::set_constraint_tolerance(Optional<double> v) {
+void Solver::set_constraint_tolerance(Optional<double> v) {
     TROPTER_VALUECHECK(!v || *v > 0, "constraint_tolerance", *v, "positive");
     m_constraint_tolerance = v;
 }
-Optional<double> OptimizationSolver::get_constraint_tolerance() const {
+Optional<double> Solver::get_constraint_tolerance() const {
     return m_constraint_tolerance;
 }
 
-void OptimizationSolver::set_hessian_approximation(Optional<std::string> v) {
+void Solver::set_hessian_approximation(Optional<std::string> v) {
     m_hessian_approximation = v;
 }
-Optional<std::string> OptimizationSolver::get_hessian_approximation() const {
+Optional<std::string> Solver::get_hessian_approximation() const {
     return m_hessian_approximation;
 }
-void OptimizationSolver::set_findiff_hessian_mode(const std::string& v) {
+void Solver::set_findiff_hessian_mode(const std::string& v) {
     m_problem->set_findiff_hessian_mode(v);
 }
-void OptimizationSolver::set_findiff_hessian_step_size(double v) {
+void Solver::set_findiff_hessian_step_size(double v) {
     m_problem->set_findiff_hessian_step_size(v);
 }
 
-void OptimizationSolver::print_option_values(std::ostream& stream) const {
+void Solver::print_option_values(std::ostream& stream) const {
     const std::string unset("<unset>");
-    stream << "OptimizationSolver option values:\n";
+    stream << "optimization::Solver option values:\n";
     // Print non-advanced options first.
     stream << "  max iterations: ";
     if (m_max_iterations) stream << m_max_iterations.value();
@@ -137,21 +138,21 @@ void OptimizationSolver::print_option_values(std::ostream& stream) const {
     stream << std::flush;
 }
 
-void OptimizationSolver::set_advanced_option_string(const std::string& name,
+void Solver::set_advanced_option_string(const std::string& name,
         const std::string& value) {
     m_advanced_options_string[name] = value;
 }
-void OptimizationSolver::set_advanced_option_int(const std::string& name,
+void Solver::set_advanced_option_int(const std::string& name,
         int value) {
     m_advanced_options_int[name] = value;
 }
-void OptimizationSolver::set_advanced_option_real(const std::string& name,
+void Solver::set_advanced_option_real(const std::string& name,
         double value) {
     m_advanced_options_real[name] = value;
 }
 
-OptimizationSolution
-OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
+Solution
+Solver::optimize(const Eigen::VectorXd& variables) const
 {
     // if (m_verbosity > 0) print_option_values();
     // IPOPT can print the option values for us.
@@ -163,8 +164,8 @@ OptimizationSolver::optimize(const Eigen::VectorXd& variables) const
     return optimize_impl(variables);
 }
 
-OptimizationSolution
-OptimizationSolver::optimize() const {
+Solution
+Solver::optimize() const {
     m_problem->validate();
     return optimize_impl(m_problem->make_initial_guess_from_bounds());
 }

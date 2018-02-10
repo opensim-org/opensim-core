@@ -26,7 +26,8 @@ using Eigen::Vector4d;
 using Eigen::Vector2d;
 using Eigen::VectorXd;
 
-using namespace tropter;
+using tropter::VectorX;
+using namespace tropter::optimization;
 
 // TODO elegantly handle the case where the objective is not defined (do not
 // need ADOL-C to do a bunch of stuff.
@@ -36,9 +37,9 @@ using namespace tropter;
 // TODO allow copying the problem...
 
 template<typename T>
-class Unconstrained : public OptimizationProblem<T> {
+class Unconstrained : public Problem<T> {
 public:
-    Unconstrained() : OptimizationProblem<T>(2, 0) {
+    Unconstrained() : Problem<T>(2, 0) {
         this->set_variable_bounds(Vector2d(-5, -5), Vector2d(5, 5));
     }
     void calc_objective(
@@ -96,9 +97,9 @@ TEST_CASE("Unconstrained, IPOPTSolver", "[ipopt]") {
 /// This problem comes from
 /// https://www.coin-or.org/Ipopt/documentation/node23.html
 template<typename T>
-class HS071 : public OptimizationProblem<T> {
+class HS071 : public Problem<T> {
 public:
-    HS071() : OptimizationProblem<T>(4, 2) {
+    HS071() : Problem<T>(4, 2) {
         this->set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
         this->set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
     }
@@ -168,10 +169,10 @@ TEST_CASE("IPOPT C++ tutorial problem HS071; has constraints.") {
 /// [a, inf)    -> guess is a.
 /// @endverbatim
 template<typename T>
-class VarietyOfBounds : public OptimizationProblem<T> {
+class VarietyOfBounds : public Problem<T> {
 public:
     const double inf = std::numeric_limits<double>::infinity();
-    VarietyOfBounds() : OptimizationProblem<T>(4, 0) {
+    VarietyOfBounds() : Problem<T>(4, 0) {
         this->set_variable_bounds(Vector4d(-inf, -20, -inf,  50),
                                   Vector4d( inf,  10,   -8, inf));
     }
@@ -199,16 +200,16 @@ TEST_CASE("Generating an initial guess using problem bounds",
 }
 
 TEST_CASE("Test exceptions and error messages") {
-    SECTION("OptimizationSolver max_iterations") {
-        class Problem : public OptimizationProblem<double> {
+    SECTION("Solver max_iterations") {
+        class Prob : public Problem<double> {
         public:
-            Problem() : OptimizationProblem<double>(2, 0)
+            Prob() : Problem<double>(2, 0)
             {   set_variable_bounds(Vector2d(-5, -5), Vector2d(5, 5)); }
             void calc_objective(const VectorXd& x, double& f) const override
             {   f = x.squaredNorm(); }
         };
 
-        Problem problem;
+        Prob problem;
         IPOPTSolver solver(problem);
         REQUIRE_THROWS_WITH(solver.set_max_iterations(0),
                 Catch::Contains("Invalid value for max_iterations"));
@@ -218,7 +219,7 @@ TEST_CASE("Test exceptions and error messages") {
 TEST_CASE("OptimizerSolver options") {
     HS071<double> problem;
     IPOPTSolver solver(problem);
-    const OptimizationSolution sol_default = solver.optimize();
+    const Solution sol_default = solver.optimize();
 
     {
         solver.set_convergence_tolerance(1e-2);

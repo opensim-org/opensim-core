@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: AbstractOptimizationProblem.cpp
+// tropter: AbstractProblem.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,13 +14,13 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "AbstractOptimizationProblem.h"
+#include "AbstractProblem.h"
 
 #include <tropter/Exception.hpp>
 
-using namespace tropter;
+using namespace tropter::optimization;
 
-void AbstractOptimizationProblem::validate() const {
+void AbstractProblem::validate() const {
     TROPTER_THROW_IF(m_num_variables != m_variable_lower_bounds.size() ||
             m_num_variables != m_variable_upper_bounds.size(),
             "Number of variables does not match number of variable bounds; "

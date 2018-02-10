@@ -1,5 +1,5 @@
-#ifndef TROPTER_IPOPTSOLVER_H
-#define TROPTER_IPOPTSOLVER_H
+#ifndef TROPTER_OPTIMIZATION_IPOPTSOLVER_H
+#define TROPTER_OPTIMIZATION_IPOPTSOLVER_H
 // ----------------------------------------------------------------------------
 // tropter: IPOPTSolver.h
 // ----------------------------------------------------------------------------
@@ -16,9 +16,10 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "OptimizationSolver.h"
+#include "Solver.h"
 
 namespace tropter {
+namespace optimization {
 
 /// Options
 /// =======
@@ -37,18 +38,16 @@ namespace tropter {
 /// OptimizationSolver::set_advanced_option_real().
 ///
 /// @ingroup optimization
-class IPOPTSolver : public OptimizationSolver {
+class IPOPTSolver : public Solver {
 public:
     // TODO this means the IPOPTSolver *would* get access to the Problem,
     // and we don't want that.
-    IPOPTSolver(const AbstractOptimizationProblem& problem)
-            : OptimizationSolver(problem) {}
+    IPOPTSolver(const AbstractProblem& problem) : Solver(problem) {}
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
     static void print_available_options();
 protected:
-    OptimizationSolution
-    optimize_impl(const Eigen::VectorXd& guess) const override;
+    Solution optimize_impl(const Eigen::VectorXd& guess) const override;
     void get_available_options(
             std::vector<std::string>&, std::vector<std::string>&,
             std::vector<std::string>&) const override;
@@ -59,7 +58,7 @@ private:
     class TNLP;
 };
 
-
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_IPOPTSOLVER_H
+#endif // TROPTER_OPTIMIZATION_IPOPTSOLVER_H

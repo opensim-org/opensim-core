@@ -1,5 +1,5 @@
-#ifndef TROPTER_TRANSCRIPTION_BASE_H
-#define TROPTER_TRANSCRIPTION_BASE_H
+#ifndef TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_H
+#define TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_H
 // ----------------------------------------------------------------------------
 // tropter: Base.h
 // ----------------------------------------------------------------------------
@@ -17,9 +17,9 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
-#include <tropter/optimization/OptimizationProblemDecorator_double.h>
-#include <tropter/optimization/OptimizationProblemDecorator_adouble.h>
-#include <tropter/optimalcontrol/OptimalControlIterate.h>
+#include <tropter/optimization/ProblemDecorator_double.h>
+#include <tropter/optimization/ProblemDecorator_adouble.h>
+#include <tropter/optimalcontrol/Iterate.h>
 
 //namespace transcription {
 //
@@ -31,12 +31,12 @@
 //}
 
 //template<typename T>
-//class TrapezoidalTranscription : public OptimizationProblem<T> {
+//class TrapezoidalTranscription : public Problem<T> {
 //
 //};
 
 //template<typename T>
-//class Trapezoidal : public OptimizationProblem<T> {
+//class Trapezoidal : public Problem<T> {
 //public:
 //    struct Trajectory {
 //        Eigen::RowVectorXd time;
@@ -56,9 +56,9 @@ namespace transcription {
 
 /// @ingroup optimalcontrol
 template<typename T>
-class Base : public OptimizationProblem<T> {
+class Base : public optimization::Problem<T> {
 public:
-    // TODO do we still need this type? Use OptimalControlIterate instead.
+    // TODO do we still need this type? Use Iterate instead.
     //struct Trajectory {
     //    Eigen::RowVectorXd time;
     //    Eigen::MatrixXd states;
@@ -68,18 +68,18 @@ public:
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
     virtual Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate&,
+    construct_iterate(const Iterate&,
             bool interpolate = false) const = 0;
     // TODO change interface to be a templated function so users can pass in
     // writeable blocks of a matrix.
-    virtual OptimalControlIterate
+    virtual Iterate
     deconstruct_iterate(const Eigen::VectorXd& x) const = 0;
     /// Print the value of constraint vector for the given iterate. This is
     /// helpful for troubleshooting why a problem may be infeasible.
     /// This function will try to give meaningful names to the
     /// elements of the constraint vector.
     virtual void print_constraint_values(
-            const OptimalControlIterate&,
+            const Iterate&,
             std::ostream& stream = std::cout) const
     {
         stream << "The function print_constraint_values() is unimplemented for "
@@ -91,4 +91,4 @@ public:
 
 } // namespace tropter
 
-#endif // TROPTER_TRANSCRIPTION_BASE_H
+#endif // TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_H

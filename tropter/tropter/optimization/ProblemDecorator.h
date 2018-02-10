@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMIZATIONPROBLEMDECORATOR_H
-#define TROPTER_OPTIMIZATIONPROBLEMDECORATOR_H
+#ifndef TROPTER_OPTIMIZATION_PROBLEMDECORATOR_H
+#define TROPTER_OPTIMIZATION_PROBLEMDECORATOR_H
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblemDecorator.h
+// tropter: ProblemDecorator.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -19,9 +19,10 @@
 #include <tropter/common.h>
 #include <tropter/utilities.h>
 
-#include "AbstractOptimizationProblem.h"
+#include "AbstractProblem.h"
 
 namespace tropter {
+namespace optimization {
 
 /// This class provides an interface of the OptimizationProblem to the
 /// OptimizationSolvers.
@@ -31,10 +32,10 @@ namespace tropter {
 /// or automatic differentiation).
 /// @ingroup optimization
 // TODO alternative name: OptimizationProblemDelegate
-class OptimizationProblemDecorator {
+class ProblemDecorator {
 public:
-    OptimizationProblemDecorator(const AbstractOptimizationProblem& problem)
-            : m_problem(problem) {}
+    ProblemDecorator(const AbstractProblem& problem)
+            :m_problem(problem) { }
     unsigned get_num_variables() const
     {   return m_problem.get_num_variables(); }
     unsigned get_num_constraints() const
@@ -47,9 +48,7 @@ public:
     {   return m_problem.get_constraint_lower_bounds(); }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_problem.get_constraint_upper_bounds(); }
-
     void validate() const { m_problem.validate(); }
-
     /// @see AbstractOptimizationProblem::make_initial_guess_from_bounds()
     Eigen::VectorXd make_initial_guess_from_bounds() const
     {   return m_problem.make_initial_guess_from_bounds(); }
@@ -83,7 +82,6 @@ public:
             double obj_factor,
             unsigned num_constraints, const double* lambda, bool new_lambda,
             unsigned num_nonzeros, double* nonzeros) const = 0;
-
     /// 0 for silent, 1 for verbose.
     void set_verbosity(int verbosity);
     /// @copydoc set_verbosity()
@@ -101,46 +99,36 @@ public:
     ///  - "fast": default
     ///  - "slow": Slower mode to be used only for debugging.
     void set_findiff_hessian_mode(const std::string& setting);
-
     /// @copydoc set_findiff_hessian_step_size()
     double get_findiff_hessian_step_size() const;
     const std::string& get_findiff_hessian_mode() const;
     /// @}
 
 protected:
-    template <typename ...Types>
+    template<typename ...Types>
     void print(const std::string& format_string, Types... args) const;
 private:
-    const AbstractOptimizationProblem& m_problem;
-
+    const AbstractProblem& m_problem;
     int m_verbosity = 1;
     double m_findiff_hessian_step_size = 1e-5;
     std::string m_findiff_hessian_mode = "fast";
-
 };
 
-inline int OptimizationProblemDecorator::get_verbosity() const {
-    return m_verbosity;
-}
-
-inline double OptimizationProblemDecorator::
-get_findiff_hessian_step_size() const {
-    return m_findiff_hessian_step_size;
-}
-
-inline const std::string& OptimizationProblemDecorator::
-get_findiff_hessian_mode() const {
-    return m_findiff_hessian_mode;
-}
-
-template <typename ...Types>
-inline void OptimizationProblemDecorator::print(
+inline int ProblemDecorator::get_verbosity() const
+{   return m_verbosity; }
+inline double ProblemDecorator::get_findiff_hessian_step_size() const
+{   return m_findiff_hessian_step_size; }
+inline const std::string& ProblemDecorator::get_findiff_hessian_mode() const
+{   return m_findiff_hessian_mode; }
+template<typename ...Types>
+inline void ProblemDecorator::print(
         const std::string& format_string, Types... args) const {
     if (m_verbosity)
         std::cout << "[tropter] " << format(format_string.c_str(), args...) <<
                 std::endl;
 }
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_OPTIMIZATIONPROBLEMDECORATOR_H
+#endif // TROPTER_OPTIMIZATION_PROBLEMDECORATOR_H

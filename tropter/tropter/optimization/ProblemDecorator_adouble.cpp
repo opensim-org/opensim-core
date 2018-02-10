@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblemDecorator_adouble.cpp
+// tropter: ProblemDecorator_adouble.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblemDecorator_adouble.h"
+#include "ProblemDecorator_adouble.h"
 #include <tropter/Exception.hpp>
 
 #ifdef _MSC_VER
@@ -33,10 +33,11 @@ using Eigen::VectorXd;
 using Eigen::Ref;
 
 namespace tropter {
+namespace optimization {
 
-OptimizationProblem<adouble>::Decorator::Decorator(
-        const OptimizationProblem<adouble>& problem) :
-        OptimizationProblemDecorator(problem), m_problem(problem)
+Problem<adouble>::Decorator::Decorator(
+        const Problem<adouble>& problem) :
+        ProblemDecorator(problem), m_problem(problem)
 {
     // Use 0 (default) for all 4 options to ADOL-C's sparse_jac().
     // [0]: Way of sparsity pattern computation (propagation of index domains).
@@ -55,7 +56,7 @@ OptimizationProblem<adouble>::Decorator::Decorator(
     m_sparse_hess_options[1] = 0;
 }
 
-OptimizationProblem<adouble>::Decorator::~Decorator() {
+Problem<adouble>::Decorator::~Decorator() {
     if (m_jacobian_row_indices) {
         delete [] m_jacobian_row_indices;
         m_jacobian_row_indices = nullptr;
@@ -74,7 +75,7 @@ OptimizationProblem<adouble>::Decorator::~Decorator() {
     }
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_sparsity(const Eigen::VectorXd& x,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
@@ -178,7 +179,7 @@ calc_sparsity(const Eigen::VectorXd& x,
     }
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_objective(unsigned num_variables, const double* x,
         bool /*new_x*/,
         double& obj_value) const
@@ -196,7 +197,7 @@ calc_objective(unsigned num_variables, const double* x,
     // TODO if status != 3, retape.
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_constraints(unsigned num_variables, const double* variables,
         bool /*new_variables*/,
         unsigned num_constraints, double* constr) const
@@ -212,7 +213,7 @@ calc_constraints(unsigned num_variables, const double* variables,
     assert(status >= 0);
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
         double* grad) const
 {
@@ -220,7 +221,7 @@ calc_gradient(unsigned num_variables, const double* x, bool /*new_x*/,
     assert(status); // TODO error codes can be -2,-1,0,1,2,3; improve assert!
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
         unsigned /*num_nonzeros*/, double* jacobian_values) const
 {
@@ -238,7 +239,7 @@ calc_jacobian(unsigned num_variables, const double* x, bool /*new_x*/,
     // previous memory for row indices, etc.
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 calc_hessian_lagrangian(unsigned num_variables, const double* x,
         bool /*new_x*/, double obj_factor,
         unsigned num_constraints, const double* lambda,
@@ -293,7 +294,7 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x,
     assert(status >= 0);
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 trace_objective(short int tag,
         unsigned num_variables, const double* x,
         double& obj_value) const
@@ -313,7 +314,7 @@ trace_objective(short int tag,
     // =========================================================================
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 trace_constraints(short int tag,
         unsigned num_variables, const double* x,
         unsigned num_constraints, double* constr) const
@@ -335,7 +336,7 @@ trace_constraints(short int tag,
     // =========================================================================
 }
 
-void OptimizationProblem<adouble>::Decorator::
+void Problem<adouble>::Decorator::
 trace_lagrangian(short int tag,
         unsigned num_variables, const double* x, const double& obj_factor,
         unsigned num_constraints, const double* lambda,
@@ -377,4 +378,5 @@ trace_lagrangian(short int tag,
     // =========================================================================
 }
 
+} // namespace optimization
 } // namespace tropter

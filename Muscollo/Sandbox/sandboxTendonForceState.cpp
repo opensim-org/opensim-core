@@ -28,7 +28,7 @@ using tropter::VectorX;
 // the final time is longer than with the fiber length state variable).
 
 class DeGrooteFregly2016MuscleLiftMinTimeDynamic
-        : public tropter::OptimalControlProblem<adouble> {
+        : public tropter::Problem<adouble> {
 public:
     using T = adouble;
     const double g = 9.81;
@@ -41,7 +41,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MuscleLiftMinTimeDynamic() :
-            tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
+            tropter::Problem<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         // TODO these functions should return indices for these variables.
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
@@ -110,7 +110,7 @@ solveForTrajectoryINDYGO() {
             "ipopt", 100);
     // The quasi-Newton method gives a pretty good speedup for this problem.
     dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-    tropter::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::Solution ocp_solution = dircol.solve();
     dircol.print_constraint_values(ocp_solution);
     std::string trajectoryFile =
             "sandboxTendonForceState_INDYGO_trajectory.csv";
@@ -171,7 +171,7 @@ solveForTrajectoryINDYGO() {
 }
 
 class SimpleInverseTendonForceState
-        : public tropter::OptimalControlProblem<adouble> {
+        : public tropter::Problem<adouble> {
 public:
     using T = adouble;
     const double max_isometric_force = 30;
@@ -183,7 +183,7 @@ public:
     const double duration = 2.0;
 
     SimpleInverseTendonForceState() :
-            tropter::OptimalControlProblem<T>("simple_inverse") {
+            tropter::Problem<T>("simple_inverse") {
         this->set_time(0, duration);
         // TODO these functions should return indices for these variables.
         this->add_state("activation", {0, 1});
@@ -245,7 +245,7 @@ private:
 };
 
 class SimpleInverseFiberLengthState
-        : public tropter::OptimalControlProblem<adouble> {
+        : public tropter::Problem<adouble> {
 public:
     using T = adouble;
     const double max_isometric_force = 30;
@@ -257,7 +257,7 @@ public:
     const double duration = 2.0;
 
     SimpleInverseFiberLengthState() :
-            tropter::OptimalControlProblem<T>("simple_inverse") {
+            tropter::Problem<T>("simple_inverse") {
         this->set_time(0, duration);
         // TODO these functions should return indices for these variables.
         this->add_state("activation", {0, 1});
@@ -315,7 +315,7 @@ private:
 
 int main() {
     //solveForTrajectoryINDYGO();
-    tropter::OptimalControlSolution tendonForceStateSolution;
+    tropter::Solution tendonForceStateSolution;
     {
         auto ocp = std::make_shared<SimpleInverseTendonForceState>();
         int N = 100;
@@ -324,7 +324,7 @@ int main() {
         tendonForceStateSolution = dircol.solve();
         tendonForceStateSolution.write("DEBUG_sandboxTendonForceState.csv");
     }
-    tropter::OptimalControlSolution fiberLengthStateSolution;
+    tropter::Solution fiberLengthStateSolution;
     {
         auto ocp = std::make_shared<SimpleInverseFiberLengthState>();
         int N = 100;

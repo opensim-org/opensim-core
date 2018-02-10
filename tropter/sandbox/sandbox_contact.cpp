@@ -19,7 +19,7 @@
 using namespace tropter;
 
 template<typename T>
-class BouncingBallLinear : public OptimalControlProblem<T> {
+class BouncingBallLinear : public Problem<T> {
 public:
     const double mass = 50.0; // kg
     const double stiffness = 6000.0; // N/m
@@ -47,7 +47,7 @@ public:
         auto ocp = std::make_shared<BouncingBallLinear<T>>();
         const int N = 1000;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         //std::cout << "States: " << solution.states << std::endl;
         solution.write("bouncing_ball_solution.csv");
     }
@@ -58,7 +58,7 @@ void condassign(double& a, const double& b, const double& c, const double& d) {
 }
 
 template<typename T>
-class BouncingBallAckermann2010 : public OptimalControlProblem<T> {
+class BouncingBallAckermann2010 : public Problem<T> {
 public:
     const double mass = 50.0; // kg
     double a; // N/m^3
@@ -97,8 +97,8 @@ public:
                 stiffness_fictitious * depth;
         out.dynamics[1] = -g + (contact_normal_force) / mass;
     }
-    static OptimalControlSolution run(std::string suffix, double a,
-            const OptimalControlIterate& guess = OptimalControlIterate(),
+    static Solution run(std::string suffix, double a,
+            const Iterate& guess = Iterate(),
             double b = 0,
             std::string hessian_approx = "exact") {
         std::cout << std::string(79, '=') << "\n";
@@ -108,14 +108,14 @@ public:
         const int N = 1000;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         dircol.print_constraint_values(solution);
         solution.write(
                 "bouncing_ball_Ackermann2010_solution" + suffix + ".csv");
         std::cout << std::string(79, '=') << std::endl;
         return solution;
         /*
-        OptimalControlSolution solution0;
+        Solution solution0;
         {
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(5e5);
             const int N = 1000;
@@ -129,12 +129,12 @@ public:
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(5e5);
             const int N = 1000;
             DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
-            OptimalControlSolution solution1 = dircol.solve(solution0);
+            Solution solution1 = dircol.solve(solution0);
             //std::cout << "States: " << solution.states << std::endl;
             solution1.write("bouncing_ball_Ackermann2010_solution1.csv");
         }
         // Increase stiffness.
-        OptimalControlSolution solution2;
+        Solution solution2;
         {
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(5e6);
             const int N = 1000;
@@ -148,12 +148,12 @@ public:
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(5e6);
             const int N = 1000;
             DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
-            OptimalControlSolution solution3 = dircol.solve(solution2);
+            Solution solution3 = dircol.solve(solution2);
             //std::cout << "States: " << solution.states << std::endl;
             solution3.write("bouncing_ball_Ackermann2010_solution3.csv");
         }
         // Bump up the stiffness again.
-        OptimalControlSolution solution1e7;
+        Solution solution1e7;
         {
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(1e7);
             const int N = 1000;
@@ -167,7 +167,7 @@ public:
             auto ocp = std::make_shared<BouncingBallAckermann2010<T>>(2e7);
             const int N = 1000;
             DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
-            OptimalControlSolution solution5e7 = dircol.solve(solution1e7);
+            Solution solution5e7 = dircol.solve(solution1e7);
             //std::cout << "States: " << solution.states << std::endl;
             solution5e7.write("bouncing_ball_Ackermann2010_solution5.csv");
         }
@@ -176,7 +176,7 @@ public:
 };
 
 template<typename T>
-class Ball2DAckermann2010 : public OptimalControlProblem<T> {
+class Ball2DAckermann2010 : public Problem<T> {
 public:
     const double mass = 50.0; // kg
     double a; // N/m^3
@@ -252,8 +252,8 @@ public:
 //        std::cout << "DEBUG " << in.time << " " << out.dynamics[2] << std::endl;
         out.dynamics[3] = -g + (total_normal_force) / mass;
     }
-    static OptimalControlSolution run(std::string suffix, double a,
-            const OptimalControlIterate& guess = OptimalControlIterate(),
+    static Solution run(std::string suffix, double a,
+            const Iterate& guess = Iterate(),
             double b = 0,
             std::string hessian_approx = "exact",
             double vx0 = 0) {
@@ -265,7 +265,7 @@ public:
         // adolc gives error code 11 if N = 300...
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         dircol.print_constraint_values(solution);
         solution.write("Ball2DAckermann2010" + suffix + ".csv");
         std::cout << std::string(79, '=') << std::endl;

@@ -1,7 +1,7 @@
-#ifndef TROPTER_ABSTRACTOPTIMIZATIONPROBLEM_H
-#define TROPTER_ABSTRACTOPTIMIZATIONPROBLEM_H
+#ifndef TROPTER_OPTIMIZATION_ABSTRACTPROBLEM_H
+#define TROPTER_OPTIMIZATION_ABSTRACTPROBLEM_H
 // ----------------------------------------------------------------------------
-// tropter: AbstractOptimizationProblem.h
+// tropter: AbstractProblem.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -22,34 +22,34 @@
 
 namespace tropter {
 
-class OptimizationProblemDecorator;
 class SymmetricSparsityPattern;
 
+namespace optimization {
+
+class ProblemDecorator;
+
 /// @ingroup optimization
-class AbstractOptimizationProblem {
+class AbstractProblem {
 public:
 
-    AbstractOptimizationProblem() = default;
-    AbstractOptimizationProblem(
-            unsigned num_variables, unsigned num_constraints)
-            : m_num_variables(num_variables),
-              m_num_constraints(num_constraints) {}
+    AbstractProblem() = default;
+    AbstractProblem(unsigned num_variables, unsigned num_constraints)
+            :m_num_variables(num_variables),
+             m_num_constraints(num_constraints) { }
     unsigned get_num_variables() const { return m_num_variables; }
     unsigned get_num_constraints() const { return m_num_constraints; }
-    const Eigen::VectorXd& get_variable_lower_bounds() const
-    {   return m_variable_lower_bounds; }
-    const Eigen::VectorXd& get_variable_upper_bounds() const
-    {   return m_variable_upper_bounds; }
-    const Eigen::VectorXd& get_constraint_lower_bounds() const
-    {   return m_constraint_lower_bounds; }
-    const Eigen::VectorXd& get_constraint_upper_bounds() const
-    {   return m_constraint_upper_bounds; }
-
+    const Eigen::VectorXd&
+    get_variable_lower_bounds() const { return m_variable_lower_bounds; }
+    const Eigen::VectorXd&
+    get_variable_upper_bounds() const { return m_variable_upper_bounds; }
+    const Eigen::VectorXd&
+    get_constraint_lower_bounds() const { return m_constraint_lower_bounds; }
+    const Eigen::VectorXd&
+    get_constraint_upper_bounds() const { return m_constraint_upper_bounds; }
     /// This method throws an exception if the following are not true:
     /// - the number of variable bounds matches the number of variables,
     /// - the number of constraint bounds matches the number of constraints.
     void validate() const;
-
     /// Create an initial guess for this problem according to the
     /// following rules:
     ///   - unconstrained variable: 0.
@@ -59,7 +59,6 @@ public:
     /// Create a vector with random variable values within the variable
     /// bounds, potentially for use as an initial guess.
     Eigen::VectorXd make_random_iterate_within_bounds() const;
-
     /// When using finite differences to compute derivatives, should we use
     /// the user-supplied sparsity pattern of the Hessian (provided by
     /// implementing calc_sparsity_hessian_lagrangian())? If false, then we
@@ -93,9 +92,10 @@ public:
     virtual void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             SymmetricSparsityPattern& hescon_sparsity,
             SymmetricSparsityPattern& hesobj_sparsity) const;
+
     class CalcSparsityHessianLagrangianNotImplemented : public Exception {};
 
-    virtual std::unique_ptr<OptimizationProblemDecorator>
+    virtual std::unique_ptr<ProblemDecorator>
     make_decorator() const = 0;
 
 protected:
@@ -142,15 +142,14 @@ private:
     Eigen::VectorXd m_constraint_upper_bounds;
 };
 
-inline void AbstractOptimizationProblem::calc_sparsity_hessian_lagrangian(
+inline void AbstractProblem::calc_sparsity_hessian_lagrangian(
         const Eigen::VectorXd&,
         SymmetricSparsityPattern&,
         SymmetricSparsityPattern&) const {
     throw CalcSparsityHessianLagrangianNotImplemented();
 }
-
 inline Eigen::VectorXd
-AbstractOptimizationProblem::make_initial_guess_from_bounds() const
+AbstractProblem::make_initial_guess_from_bounds() const
 {
     const auto& lower = get_variable_lower_bounds();
     const auto& upper = get_variable_upper_bounds();
@@ -162,14 +161,13 @@ AbstractOptimizationProblem::make_initial_guess_from_bounds() const
             guess[i] = 0.5 * (upper[i] + lower[i]);
         }
         else if (lower[i] != -inf) guess[i] = lower[i];
-        else if (upper[i] !=  inf) guess[i] = upper[i];
+        else if (upper[i] != inf) guess[i] = upper[i];
         else guess[i] = 0;
     }
     return guess;
 }
-
 inline Eigen::VectorXd
-AbstractOptimizationProblem::make_random_iterate_within_bounds() const {
+AbstractProblem::make_random_iterate_within_bounds() const {
     const auto lower = get_variable_lower_bounds().array();
     const auto upper = get_variable_upper_bounds().array();
     // random's values are within [-1, 1]
@@ -178,6 +176,7 @@ AbstractOptimizationProblem::make_random_iterate_within_bounds() const {
     return 0.5 * (random + 1.0) * (upper - lower) + lower;
 }
 
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_ABSTRACTOPTIMIZATIONPROBLEM_H
+#endif // TROPTER_OPTIMIZATION_ABSTRACTPROBLEM_H

@@ -79,13 +79,13 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             controls, parameters};
 }
 
-MucoSolution convert(const tropter::OptimalControlSolution& tropSol) {
+MucoSolution convert(const tropter::Solution& tropSol) {
     // TODO enhance when solution contains more info than iterate.
-    return convert<MucoSolution, tropter::OptimalControlSolution>(tropSol);
+    return convert<MucoSolution, tropter::Solution>(tropSol);
 }
 
-tropter::OptimalControlIterate convert(const MucoIterate& mucoIter) {
-    tropter::OptimalControlIterate tropIter;
+tropter::Iterate convert(const MucoIterate& mucoIter) {
+    tropter::Iterate tropIter;
     if (mucoIter.empty()) return tropIter;
 
     using Eigen::Map;
@@ -137,11 +137,11 @@ tropter::FinalBounds convert(const MucoFinalBounds& mb) {
 }
 
 template <typename T>
-class MucoTropterSolver::OCProblem : public tropter::OptimalControlProblem<T> {
+class MucoTropterSolver::OCProblem : public tropter::Problem<T> {
 public:
     OCProblem(const MucoSolver& solver)
             // TODO set name properly.
-            : tropter::OptimalControlProblem<T>(solver.getProblem().getName()),
+            : tropter::Problem<T>(solver.getProblem().getName()),
               m_mucoSolver(solver),
               m_mucoProb(solver.getProblem()),
               m_phase0(m_mucoProb.getPhase(0)) {
@@ -286,7 +286,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_guess_file("");
 }
 
-std::shared_ptr<const tropter::OptimalControlProblem<double>>
+std::shared_ptr<const tropter::Problem<double>>
 MucoTropterSolver::getTropterProblem() const {
     if (!m_tropProblem) {
         m_tropProblem = std::make_shared<OCProblem<double>>(*this);
@@ -318,13 +318,13 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     tropter::DirectCollocationSolver<double> dircol(ocp, "trapezoidal",
             get_optim_solver(), N);
 
-    tropter::OptimalControlIterate tropIter;
+    tropter::Iterate tropIter;
     if (type == "bounds") {
         tropIter = dircol.make_initial_guess_from_bounds();
     } else if (type == "random") {
         tropIter = dircol.make_random_iterate_within_bounds();
     }
-    return convert<MucoIterate, tropter::OptimalControlIterate>(tropIter);
+    return convert<MucoIterate, tropter::Iterate>(tropIter);
 }
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
@@ -365,7 +365,7 @@ const MucoIterate& MucoTropterSolver::getGuess() const {
 
 void MucoTropterSolver::printOptimizationSolverOptions(std::string solver) {
     if (solver == "ipopt") {
-        tropter::IPOPTSolver::print_available_options();
+        tropter::optimization::IPOPTSolver::print_available_options();
     } else {
         std::cout << "No info available for " << solver << " options." <<
                 std::endl;
@@ -438,8 +438,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     //    optsolver.set_advanced_option(TODO);
     //}
 
-    tropter::OptimalControlIterate tropIterate = convert(getGuess());
-    tropter::OptimalControlSolution tropSolution = dircol.solve(tropIterate);
+    tropter::Iterate tropIterate = convert(getGuess());
+    tropter::Solution tropSolution = dircol.solve(tropIterate);
 
     if (get_verbosity()) {
         dircol.print_constraint_values(tropSolution);

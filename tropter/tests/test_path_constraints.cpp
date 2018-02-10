@@ -27,7 +27,7 @@ using Eigen::MatrixXd;
 using Eigen::Ref;
 
 template<typename T>
-class SlidingMassPathConstraint : public tropter::OptimalControlProblem<T> {
+class SlidingMassPathConstraint : public tropter::Problem<T> {
 public:
     const double mass = 10.0;
     const double Fmax = 10;
@@ -53,9 +53,9 @@ public:
             const override {
         cost = final_time;
     }
-    OptimalControlSolution actual_solution(const VectorXd& time) const
+    Solution actual_solution(const VectorXd& time) const
     {
-        OptimalControlSolution sol;
+        Solution sol;
         sol.time = time;
         sol.states.resize(2, time.size());
         sol.controls.resize(2, time.size());
@@ -91,10 +91,10 @@ TEST_CASE("Sliding mass minimum time using path constraints", "[path]")
     const int halfN = 25;
     const int N = 2*halfN;
     DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
-    OptimalControlSolution solution = dircol.solve();
+    Solution solution = dircol.solve();
     solution.write("sliding_mass_minimum_time_path_constraints_solution.csv");
 
-    OptimalControlSolution expected = ocp->actual_solution(solution.time);
+    Solution expected = ocp->actual_solution(solution.time);
 
     TROPTER_REQUIRE_EIGEN(solution.states, expected.states, 0.001);
     TROPTER_REQUIRE_EIGEN(solution.controls, expected.controls, 0.001);

@@ -36,7 +36,7 @@ constexpr double PI = 3.14159;
 /// an actual optimal control problem, one must derive from this class
 /// template and define boundary conditions, cost terms, etc.
 template<typename T>
-class DoublePendulum : public tropter::OptimalControlProblem<T> {
+class DoublePendulum : public tropter::Problem<T> {
 public:
     constexpr static const double g = 9.81;
     double L0 = 1;
@@ -114,7 +114,7 @@ public:
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
-        tropter::OptimalControlIterate guess;
+        tropter::Iterate guess;
         const int Nguess = 2;
         guess.time.setLinSpaced(Nguess, 0, 1);
         // Give a hint.
@@ -128,7 +128,7 @@ public:
                 Eigen::RowVectorXd::LinSpaced(Nguess, -50, 50));
         ocp->set_control_guess(guess, "tau1",
                 Eigen::RowVectorXd::LinSpaced(Nguess, 50, -50));
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         solution.write("double_pendulum_horizontal_to_vertical_solution.csv");
         // Check the final states.
         INFO(solution.states);
@@ -202,7 +202,7 @@ public:
 
     }
 
-    static OptimalControlSolution run_test(const std::string& solver,
+    static Solution run_test(const std::string& solver,
             const std::string& hessian_approx, int N = 50) {
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<T>>();
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
@@ -211,7 +211,7 @@ public:
         // from the solution using an exact Hessian does not converge.
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         //dircol.print_constraint_values(solution);
         solution.write("double_pendulum_coordinate_tracking.csv");
 
@@ -229,7 +229,7 @@ public:
 /// derive from this class template and define boundary conditions, cost terms,
 /// etc.
 template<typename T>
-class ImplicitDoublePendulum : public tropter::OptimalControlProblem<T> {
+class ImplicitDoublePendulum : public tropter::Problem<T> {
 public:
     constexpr static const double g = 9.81;
     double L0 = 1;
@@ -298,7 +298,7 @@ public:
                    (time / 1.0) * 0.25 * PI;
         integrand = (states.template head<2>() - desired).squaredNorm();
     }
-    static OptimalControlSolution run_test(const std::string& solver,
+    static Solution run_test(const std::string& solver,
             const std::string& hessian_approx, int N = 50) {
         auto ocp =
                 std::make_shared<ImplicitDoublePendulumCoordinateTracking<T>>();
@@ -307,7 +307,7 @@ public:
                 hessian_approx);
          dircol.get_opt_solver().set_advanced_option_string
                  ("print_timing_statistics", "yes");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         // dircol.print_constraint_values(solution);
         solution.write("implicit_double_pendulum_coordinate_tracking.csv");
 
@@ -405,7 +405,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         const auto explicit_solution =
                 DoublePendulumCoordinateTracking<adouble>::run_test("ipopt");
         auto ocp = std::make_shared<DoublePendulumCoordinateTracking<adouble>>();
-        tropter::OptimalControlIterate guess;
+        tropter::Iterate guess;
 
         const int N = 100;
         guess.time.setLinSpaced(N, 0, 1);
@@ -418,7 +418,7 @@ TEST_CASE("Double pendulum coordinate tracking",
         ocp->set_control_guess(guess, "tau0", Eigen::RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "tau1", Eigen::RowVectorXd::Zero(N));
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "snopt", N);
-        OptimalControlSolution solution = dircol.solve(guess);
+        Solution solution = dircol.solve(guess);
         dircol.print_constraint_values(solution);
         solution.write("double_pendulum_coordinate_tracking_snopt.csv");
     }

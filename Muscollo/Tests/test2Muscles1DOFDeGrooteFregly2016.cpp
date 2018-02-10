@@ -48,7 +48,7 @@ const double ACCEL_GRAVITY = 9.81;
 /// where l1_m, 12_m, v1_m and v2_m are determined from the muscle-tendon
 /// lengths and velocities with the assumption of rigid tendons.
 class DeGrooteFregly2016MusclesLiftMinTimeStatic
-    : public tropter::OptimalControlProblem<adouble> {
+    : public tropter::Problem<adouble> {
 public:
     using T = adouble;
     const double g = ACCEL_GRAVITY;
@@ -62,7 +62,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MusclesLiftMinTimeStatic() :
-            tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
+            tropter::Problem<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
         this->add_state("speed", {-10, 10}, 0, 0);
@@ -119,7 +119,7 @@ solveForTrajectoryGSO() {
     ocp->print_description();
     tropter::DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal",
                                                   "ipopt", 100);
-    tropter::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::Solution ocp_solution = dircol.solve();
     std::string trajectoryFile = 
             "test2Muscles1DOFDeGrooteFregly2016_GSO_trajectory.csv";
     ocp_solution.write(trajectoryFile);
@@ -182,7 +182,7 @@ solveForTrajectoryGSO() {
 /// Making the initial fiber velocity 0 helps avoid a sharp spike in fiber
 /// velocity at the beginning of the motion.
 class DeGrooteFregly2016MusclesLiftMinTimeDynamic
-    : public tropter::OptimalControlProblem<adouble> {
+    : public tropter::Problem<adouble> {
 public:
     using T = adouble;
     const double g = ACCEL_GRAVITY;
@@ -196,7 +196,7 @@ public:
     const double max_contraction_velocity = 10;
 
     DeGrooteFregly2016MusclesLiftMinTimeDynamic() :
-        tropter::OptimalControlProblem<T>("hanging_muscle_min_time") {
+        tropter::Problem<T>("hanging_muscle_min_time") {
         this->set_time(0, {0.01, 1.0});
         this->add_state("position", {0, 0.3}, 0.15, 0.10);
         this->add_state("speed", {-10, 10}, 0, 0);
@@ -281,7 +281,7 @@ solveForTrajectoryINDYGO() {
         "ipopt", 100);
     // The quasi-Newton method gives a pretty good speedup for this problem.
     dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-    tropter::OptimalControlSolution ocp_solution = dircol.solve();
+    tropter::Solution ocp_solution = dircol.solve();
     std::string trajectoryFile =
         "test2Muscles1DOFDeGrooteFregly2016_INDYGO_trajectory.csv";
     ocp_solution.write(trajectoryFile);

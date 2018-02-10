@@ -53,7 +53,7 @@ get_filename_component(MUSCOLLO_DEPENDENCIES_DIR "${MUSCOLLO_DEPENDENCIES_DIR}"
         ABSOLUTE)
 if(NOT CMAKE_PREFIX_PATH
         AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
-        AND NOT "$ENV{IPOPT_DIR}"
+        AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
         AND EXISTS "${MUSCOLLO_DEPENDENCIES_DIR}")
     message(STATUS
             "Attempting to use dependencies from ${MUSCOLLO_DEPENDENCIES_DIR}")
@@ -65,6 +65,10 @@ if(NOT CMAKE_PREFIX_PATH
             "Directories containing dependencies.")
     set(ADOLC_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
             "Path to ADOL-C install directory.")
+    if(WIN32)
+        set(IPOPT_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/ipopt" CACHE PATH
+            "Path to IPOPT install directory.")
+    endif()
 endif()
 
 # Make targets go in the same binary directory.

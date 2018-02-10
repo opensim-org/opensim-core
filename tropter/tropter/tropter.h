@@ -22,14 +22,14 @@
 #include "EigenUtilities.h"
 #include "SparsityPattern.h"
 
-#include "optimization/AbstractOptimizationProblem.h"
-#include "optimization/OptimizationProblem.h"
-#include "optimization/OptimizationSolver.h"
+#include "tropter/optimization/AbstractProblem.h"
+#include "tropter/optimization/Problem.h"
+#include "tropter/optimization/Solver.h"
 #include "optimization/SNOPTSolver.h"
 #include "optimization/IPOPTSolver.h"
 
-#include "optimalcontrol/OptimalControlIterate.h"
-#include "optimalcontrol/OptimalControlProblem.h"
+#include "tropter/optimalcontrol/Iterate.h"
+#include "tropter/optimalcontrol/Problem.h"
 #include "optimalcontrol/DirectCollocation.h"
 
 #include "optimalcontrol/transcription/Trapezoidal.h"

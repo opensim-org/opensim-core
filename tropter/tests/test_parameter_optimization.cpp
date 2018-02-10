@@ -28,7 +28,7 @@ using namespace tropter;
 /// test_generic_optimization.cpp as an optimal control problem, now using
 /// parameters instead of directly defining optimization variables.
 template<typename T>
-class Unconstrained : public tropter::OptimalControlProblem<T> {
+class Unconstrained : public tropter::Problem<T> {
 public:
     Unconstrained() {
         this->set_time({0}, {1});
@@ -52,7 +52,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         auto ocp = std::make_shared<Unconstrained<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
@@ -64,7 +64,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         // Check correct optimization solution is obtained.
         REQUIRE(Approx(solution.parameters[0]) == 1.5);
@@ -75,7 +75,7 @@ TEST_CASE("Unconstrained, IPOPT") {
         // Solve the optimal control problem.
         auto ocp = std::make_shared<Unconstrained<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         solution.write("unconstrained_solution.csv");
 
         // Check correct optimization solution is obtained.
@@ -91,7 +91,7 @@ TEST_CASE("Unconstrained, IPOPT") {
 /// squared (g = 9.80665).
 const double GRAV_ACCEL = 9.80665;
 template<typename T>
-class GravitationalAcceleration : public tropter::OptimalControlProblem<T> {
+class GravitationalAcceleration : public tropter::Problem<T> {
 public:
     GravitationalAcceleration() {
         this->set_time({0}, {1});
@@ -122,7 +122,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         auto ocp = std::make_shared<GravitationalAcceleration<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
         REQUIRE(Approx(solution.objective) == 0);
@@ -132,7 +132,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
         REQUIRE(Approx(solution.objective) == 0);
@@ -140,7 +140,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
     SECTION("ADOL-C") {
         auto ocp = std::make_shared<GravitationalAcceleration<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         dircol.print_constraint_values(solution);
 
         REQUIRE(Approx(solution.parameters[0]) == GRAV_ACCEL);
@@ -153,7 +153,7 @@ TEST_CASE("GravitationalAcceleration, IPOPT") {
 /// and check that the predicted mass parameter equals 5 kg.
 const double PI = 3.14159265358979323846;
 template<typename T>
-class OscillatorMass : public tropter::OptimalControlProblem<T> {
+class OscillatorMass : public tropter::Problem<T> {
 public:
     const double STIFFNESS = 100.0; // N/m
     const double MASS = 5.0; // kg
@@ -196,7 +196,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
@@ -206,7 +206,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
         REQUIRE(Approx(solution.objective) == 0);
@@ -214,7 +214,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
     SECTION("ADOL-C") {
         auto ocp = std::make_shared<OscillatorMass<adouble>>();
         DirectCollocationSolver<adouble> dircol(ocp, "trapezoidal", "ipopt", N);
-        OptimalControlSolution solution = dircol.solve();
+        Solution solution = dircol.solve();
         dircol.print_constraint_values(solution);
 
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);

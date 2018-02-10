@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_HPP
-#define MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_HPP
+#ifndef TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_HPP
+#define TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_HPP
 // ----------------------------------------------------------------------------
 // tropter: Trapezoidal.hpp
 // ----------------------------------------------------------------------------
@@ -388,11 +388,11 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
 
 template<typename T>
 Eigen::VectorXd Trapezoidal<T>::
-construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
+construct_iterate(const Iterate& traj, bool interpolate) const
 {
     // Check for errors with dimensions.
     // ---------------------------------
-    // TODO move some of this to OptimalControlIterate::validate().
+    // TODO move some of this to Iterate::validate().
     // Check rows.
     TROPTER_THROW_IF(traj.states.rows() != m_num_states,
             "Expected states to have %i row(s), but it has %i.",
@@ -425,8 +425,8 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 
     // Interpolate the guess, as it might have a different number of mesh
     // points than m_num_mesh_points.
-    OptimalControlIterate traj_interp;
-    const OptimalControlIterate* traj_to_use;
+    Iterate traj_interp;
+    const Iterate* traj_to_use;
     if (interpolate) {
         // TODO will actually need to provide the mesh spacing as well, when we
         // no longer have uniform mesh spacing.
@@ -452,13 +452,13 @@ construct_iterate(const OptimalControlIterate& traj, bool interpolate) const
 }
 
 template<typename T>
-OptimalControlIterate Trapezoidal<T>::
+Iterate Trapezoidal<T>::
 deconstruct_iterate(const Eigen::VectorXd& x) const
 {
     // TODO move time variables to the end.
     const double& initial_time = x[0];
     const double& final_time = x[1];
-    OptimalControlIterate traj;
+    Iterate traj;
     traj.time = Eigen::RowVectorXd::LinSpaced(m_num_mesh_points,
             initial_time, final_time);
 
@@ -475,7 +475,7 @@ deconstruct_iterate(const Eigen::VectorXd& x) const
 
 template<typename T>
 void Trapezoidal<T>::
-print_constraint_values(const OptimalControlIterate& ocp_vars,
+print_constraint_values(const Iterate& ocp_vars,
         std::ostream& stream) const
 {
     // TODO also print_bounds() information.
@@ -506,9 +506,9 @@ print_constraint_values(const OptimalControlIterate& ocp_vars,
     auto parameter_names = m_ocproblem->get_parameter_names();
     std::vector<std::string> time_names = {"initial_time", "final_time"};
 
-    OptimalControlIterate ocp_vars_lower = deconstruct_iterate(
+    Iterate ocp_vars_lower = deconstruct_iterate(
             this->get_variable_lower_bounds());
-    OptimalControlIterate ocp_vars_upper = deconstruct_iterate(
+    Iterate ocp_vars_upper = deconstruct_iterate(
             this->get_variable_upper_bounds());
 
     // TODO handle the case where there are no states or no controls.
@@ -927,4 +927,4 @@ Trapezoidal<T>::make_constraints_view(Eigen::Ref<VectorX<T>> constr) const
 } // namespace transcription
 } // namespace tropter
 
-#endif // MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_HPP
+#endif // TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_HPP

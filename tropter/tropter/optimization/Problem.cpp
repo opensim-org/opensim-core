@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblem.cpp
+// tropter: Problem.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -13,25 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#include "OptimizationProblemDecorator_double.h"
-#include "OptimizationProblemDecorator_adouble.h"
+#include "ProblemDecorator_double.h"
+#include "ProblemDecorator_adouble.h"
 #include <tropter/Exception.hpp>
 
 namespace tropter {
+namespace optimization {
 
-void OptimizationProblemDecorator::set_verbosity(int verbosity) {
+void ProblemDecorator::set_verbosity(int verbosity) {
     TROPTER_VALUECHECK(verbosity == 0 || verbosity == 1,
             "verbosity", verbosity, "0 or 1");
     m_verbosity = verbosity;
 }
 
-void OptimizationProblemDecorator::set_findiff_hessian_step_size(double value) {
+void ProblemDecorator::set_findiff_hessian_step_size(double value) {
     TROPTER_VALUECHECK(value > 0, "findiff_hessian_step_size", value,
             "positive");
     m_findiff_hessian_step_size = value;
 }
 
-void OptimizationProblemDecorator::set_findiff_hessian_mode(
+void ProblemDecorator::set_findiff_hessian_mode(
         const std::string& value) {
     TROPTER_VALUECHECK(value == "fast" || value == "slow",
             "findiff_hessian_mode", value, "'fast' or 'slow'");
@@ -39,8 +40,10 @@ void OptimizationProblemDecorator::set_findiff_hessian_mode(
 }
 
 // Explicit instantiation.
-template class OptimizationProblem<double>;
-template class OptimizationProblem<adouble>;
+
+template class Problem<double>;
+template class Problem<adouble>;
 // TODO extern to avoid implicit instantiation and improve compile time?
 
+} // namespace optimization
 } // namespace tropter

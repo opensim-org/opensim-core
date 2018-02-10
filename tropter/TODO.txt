@@ -5,9 +5,9 @@ Nocedal's book says to use partial separability for auto diff, and also that
 you can get benefits by evalulating the objective and constraints at the same
 time, in case they share a lot of the computaitonal graph.
 
-Move ADOL-C code from IPOPTSolver::TNLP to OptimizationProblem<adouble>.
+Move ADOL-C code from IPOPTSolver::TNLP to Problem<adouble>.
 
-Trying non-virtual interface for OptimizationProblem, but a Decorator class could
+Trying non-virtual interface for Problem, but a Decorator class could
  be preferable.
 
  For finite diff version (with doubles), make SURE to use Map<Matrix> to
@@ -18,7 +18,7 @@ Trying non-virtual interface for OptimizationProblem, but a Decorator class coul
 
  For Eigen, use mat.setZero() instead of static Mat::Zero() as much as possible.
 
- Rename AbstractOptimizationProblem to OptimizationProblemBase?
+ Rename AbstractProblem to OptimizationProblemBase?
 
  Eigen has spline support.
 
@@ -42,8 +42,8 @@ Also, PETSc (suggested by Millard's colleague):
 
 Automatically generate a nice initial guess:
 //// TODO no initial guess; midpoint between bounds, or 0 if no bounds?
-    //OptimalControlIterate initial_guess = ocp->make_guess_template();
-    //OptimalControlSolution solution = dircol.solve(initial_guess);
+    //Iterate initial_guess = ocp->make_guess_template();
+    //Solution solution = dircol.solve(initial_guess);
 
 
 Test problems with scenarios where the tendon would buckle (MTU length <

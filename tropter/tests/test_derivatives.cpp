@@ -29,12 +29,15 @@ using Eigen::Vector4d;
 using Vector5d = Eigen::Matrix<double, 5, 1>;
 using Eigen::MatrixXd;
 
-using namespace tropter;
+using tropter::VectorX;
+using tropter::SparsityPattern;
+using tropter::SymmetricSparsityPattern;
+using namespace tropter::optimization;
 
 template<typename T>
-class Unconstrained : public OptimizationProblem<T> {
+class Unconstrained : public Problem<T> {
 public:
-    Unconstrained() : OptimizationProblem<T>(3, 0)
+    Unconstrained() : Problem<T>(3, 0)
     {
         this->set_variable_bounds(Vector3d(-3, -3, -3), Vector3d(3, 3, 3));
     }
@@ -115,9 +118,9 @@ TEST_CASE("Unconstrained Hessian")
 }
 
 template<typename T>
-class HS071 : public OptimizationProblem<T> {
+class HS071 : public Problem<T> {
 public:
-    HS071() : OptimizationProblem<T>(4, 2) {
+    HS071() : Problem<T>(4, 2) {
         this->set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
         this->set_constraint_bounds(Vector2d(25, 40), Vector2d(2e19, 40.0));
     }
@@ -339,9 +342,9 @@ TEST_CASE("Check derivatives with analytical deriv.")
 }
 
 template<typename T>
-class SparseJacobian : public OptimizationProblem<T> {
+class SparseJacobian : public Problem<T> {
 public:
-    SparseJacobian() : OptimizationProblem<T>(4, 5) {
+    SparseJacobian() : Problem<T>(4, 5) {
         this->set_variable_bounds(Vector4d(1, 1, 1, 1), Vector4d(5, 5, 5, 5));
         this->set_constraint_bounds(VectorXd::Ones(5) * -2e19,
                                     VectorXd::Ones(5) *  2e19);
@@ -753,11 +756,9 @@ TEST_CASE("User-supplied sparsity of Hessian of Lagrangian")
 TEST_CASE("Validate sparsity input") {
 
     SECTION("Number of rows") {
-        class ConfigurableUserSpecifiedSparsity
-                : public OptimizationProblem<double> {
+        class ConfigurableUserSpecifiedSparsity : public Problem<double> {
         public:
-            ConfigurableUserSpecifiedSparsity() :
-                    OptimizationProblem<double>(4, 0) {}
+            ConfigurableUserSpecifiedSparsity() : Problem<double>(4, 0) {}
             void calc_objective(const VectorXd&, double&) const override {}
             void calc_constraints(const VectorXd&,
                     Eigen::Ref<VectorXd>) const override {}

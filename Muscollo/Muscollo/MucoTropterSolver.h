@@ -24,7 +24,7 @@
 
 namespace tropter {
 template <typename T>
-class OptimalControlProblem;
+class Problem;
 }
 
 namespace OpenSim {
@@ -122,7 +122,7 @@ protected:
     template <typename T>
     class OCProblem;
 
-    std::shared_ptr<const tropter::OptimalControlProblem<double>>
+    std::shared_ptr<const tropter::Problem<double>>
     getTropterProblem() const;
 
     void clearProblemImpl() override;

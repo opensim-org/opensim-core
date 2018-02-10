@@ -1,4 +1,5 @@
-#ifndef TROPTER_DIRECTCOLLOCATION_H
+#ifndef TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_H
+#define TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_H
 // ----------------------------------------------------------------------------
 // tropter: DirectCollocation.h
 // ----------------------------------------------------------------------------
@@ -14,17 +15,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-#define TROPTER_DIRECTCOLLOCATION_H
 
 #include <tropter/common.h>
-#include "OptimalControlProblem.h"
-#include "OptimalControlIterate.h"
+#include "Problem.h"
+#include "Iterate.h"
 #include <fstream>
 #include <memory>
 
 namespace tropter {
 
-class OptimizationSolver;
+namespace optimization {
+class Solver;
+} // namespace optimization
 
 namespace transcription {
 template<typename T>
@@ -35,19 +37,19 @@ class Base;
 template<typename T>
 class DirectCollocationSolver {
 public:
-    typedef OptimalControlProblem<T> OCProblem;
+    typedef Problem<T> OCProblem;
     DirectCollocationSolver(std::shared_ptr<const OCProblem> ocproblem,
                             const std::string& transcription_method,
                             const std::string& optimization_solver,
                             // TODO remove; put somewhere better.
                             const unsigned& num_mesh_points = 20);
-    OptimalControlIterate make_initial_guess_from_bounds() const {
+    Iterate make_initial_guess_from_bounds() const {
         // We only need this decorator to form an initial guess from the bounds.
         auto decorator = m_transcription->make_decorator();
         return m_transcription->deconstruct_iterate(
                 decorator->make_initial_guess_from_bounds());
     }
-    OptimalControlIterate make_random_iterate_within_bounds() const {
+    Iterate make_random_iterate_within_bounds() const {
         // We only need this decorator to form an iterate.
         auto decorator = m_transcription->make_decorator();
         return m_transcription->deconstruct_iterate(
@@ -57,11 +59,11 @@ public:
     /// settings like maximum number of iterations. This provides only const
     /// access, so it does not let you edit settings of the solver; see the
     /// non-const variant below if you need to change settings.
-    const OptimizationSolver& get_opt_solver() const
+    const optimization::Solver& get_opt_solver() const
     {   return *m_optsolver.get(); }
     /// Get the OptimizationSolver, through which you can set optimizer
     /// settings like maximum number of iterations.
-    OptimizationSolver& get_opt_solver()
+    optimization::Solver& get_opt_solver()
     {   return *m_optsolver.get(); }
 
     const transcription::Base<T>& get_transcription() const
@@ -75,7 +77,7 @@ public:
 
     /// Solve the problem using an initial guess that is based on the bounds
     /// on the variables.
-    OptimalControlSolution solve() const;
+    Solution solve() const;
     /// Solve the problem using the provided initial guess. See
     /// OptimalControlProblem::set_state_guess() and
     /// OptimalControlProblem::set_control_guess() for help with
@@ -100,24 +102,24 @@ public:
     /// TODO right now, initial_guess.time MUST have equally-spaced intervals.
     // TODO make it even easier to create an initial guess; e.g., creating a
     // guess template.
-    OptimalControlSolution solve(const OptimalControlIterate& initial_guess)
+    Solution solve(const Iterate& initial_guess)
             const;
 
     /// Print the value of constraint vector for the given iterate. This is
     /// helpful for troubleshooting why a problem may be infeasible.
     /// This function will try to give meaningful names to the
     /// elements of the constraint vector.
-    void print_constraint_values(const OptimalControlIterate& vars,
+    void print_constraint_values(const Iterate& vars,
                                  std::ostream& stream = std::cout) const;
 private:
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
     std::unique_ptr<transcription::Base<T>> m_transcription;
-    std::unique_ptr<OptimizationSolver> m_optsolver;
+    std::unique_ptr<optimization::Solver> m_optsolver;
 
     int m_verbosity = 1;
 };
 
 } // namespace tropter
 
-#endif // TROPTER_DIRECTCOLLOCATION_H
+#endif // TROPTER_OPTIMALCONTROL_DIRECTCOLLOCATION_H

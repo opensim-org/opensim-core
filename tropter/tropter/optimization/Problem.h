@@ -1,7 +1,7 @@
-#ifndef TROPTER_OPTIMIZATIONPROBLEM_H
-#define TROPTER_OPTIMIZATIONPROBLEM_H
+#ifndef TROPTER_OPTIMIZATION_PROBLEM_H
+#define TROPTER_OPTIMIZATION_PROBLEM_H
 // ----------------------------------------------------------------------------
-// tropter: OptimizationProblem.h
+// tropter: Problem.h
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -17,12 +17,12 @@
 // ----------------------------------------------------------------------------
 
 #include <tropter/common.h>
-#include "AbstractOptimizationProblem.h"
-#include "OptimizationProblemDecorator.h"
+#include "AbstractProblem.h"
+#include "ProblemDecorator.h"
 #include <memory>
 
 namespace tropter {
-
+namespace optimization {
 
 /// Users define an optimization problem by deriving from this class template.
 /// The type T determines how the derivatives of the objective and constraint
@@ -30,18 +30,18 @@ namespace tropter {
 /// for automatic differentiation.
 /// @ingroup optimization
 template<typename T>
-class OptimizationProblem : public AbstractOptimizationProblem {
+class Problem : public AbstractProblem {
 public:
     /// The Decorator computes the gradient, Jacobian, and Hessian in a
     /// generic way for the objective and constraint functions provided in
     /// OptimizationProblem.
     class Decorator;
 
-    virtual ~OptimizationProblem() = default;
-    OptimizationProblem() = default;
+    virtual ~Problem() = default;
+    Problem() = default;
 
-    OptimizationProblem(unsigned num_variables, unsigned num_constraints) :
-            AbstractOptimizationProblem(num_variables, num_constraints) {}
+    Problem(unsigned num_variables, unsigned num_constraints) :
+            AbstractProblem(num_variables, num_constraints) {}
 
     /// Implement this function to compute the objective function.
     /// @param variables
@@ -67,7 +67,7 @@ public:
     /// of the objective and constraint functions. This is for use by the
     /// optimization solver, but users might call this if they are interested
     /// in obtaining the sparsity pattern or derivatives for their problem.
-    std::unique_ptr<OptimizationProblemDecorator> make_decorator()
+    std::unique_ptr<ProblemDecorator> make_decorator()
             const override final;
 
     // TODO can override to provide custom derivatives.
@@ -77,28 +77,30 @@ public:
 };
 
 template<typename T>
-std::unique_ptr<OptimizationProblemDecorator>
-OptimizationProblem<T>::make_decorator() const {
+std::unique_ptr<ProblemDecorator>
+Problem<T>::make_decorator() const {
     return std::unique_ptr<Decorator>(new Decorator(*this));
 }
 
 template<typename T>
-void OptimizationProblem<T>::calc_objective(const VectorX<T>&, T&) const {
+void Problem<T>::calc_objective(const VectorX<T>&, T&) const {
     // TODO proper error messages.
     throw std::runtime_error("Not implemented.");
 }
 
 template<typename T>
-void OptimizationProblem<T>::calc_constraints(const VectorX<T>&,
+void Problem<T>::calc_constraints(const VectorX<T>&,
         Eigen::Ref<VectorX<T>>) const
 {}
 
 /// We must specialize this template for each scalar type.
 /// @ingroup optimization
 template<typename T>
-class OptimizationProblem<T>::Decorator : public OptimizationProblemDecorator {
+class Problem<T>::Decorator : public ProblemDecorator {
 };
 
+
+} // namespace optimization
 } // namespace tropter
 
-#endif // TROPTER_OPTIMIZATIONPROBLEM_H
+#endif // TROPTER_OPTIMIZATION_PROBLEM_H

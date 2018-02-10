@@ -1,5 +1,5 @@
-#ifndef MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_H
-#define MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_H
+#ifndef TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_H
+#define TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_H
 // ----------------------------------------------------------------------------
 // tropter: Trapezoidal.h
 // ----------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 // ----------------------------------------------------------------------------
 
 #include "Base.h"
-#include <tropter/optimalcontrol/OptimalControlProblem.h>
+#include <tropter/optimalcontrol/Problem.h>
 
 namespace tropter {
 namespace transcription {
@@ -52,7 +52,7 @@ namespace transcription {
 template<typename T>
 class Trapezoidal : public Base<T> {
 public:
-    typedef OptimalControlProblem<T> OCProblem;
+    typedef tropter::Problem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
     Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
@@ -82,13 +82,13 @@ public:
 
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd
-    construct_iterate(const OptimalControlIterate& traj,
+    construct_iterate(const Iterate& traj,
             bool interpolate = false) const override;
     // TODO can this have a generic implementation in the Base class?
-    OptimalControlIterate
+    Iterate
     deconstruct_iterate(const Eigen::VectorXd& x) const override;
     void print_constraint_values(
-            const OptimalControlIterate& vars,
+            const Iterate& vars,
             std::ostream& stream = std::cout) const override;
 
 protected:
@@ -187,4 +187,4 @@ private:
 } // namespace transcription
 } // namespace tropter
 
-#endif // MUSCOLLO_TRANSCRIPTION_TRAPEZOIDAL_H
+#endif // TROPTER_OPTIMALCONTROL_TRANSCRIPTION_TRAPEZOIDAL_H
