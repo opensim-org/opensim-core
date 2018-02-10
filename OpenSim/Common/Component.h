@@ -695,7 +695,7 @@ public:
     bool hasComponent(const std::string& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'C' must be derived from Component.");
-        const C* comp = this->template traversePathToComponent<C>(pathname);
+        const C* comp = this->template traversePathToComponent<C>({pathname});
         return comp != nullptr;
     }
 
@@ -724,7 +724,7 @@ public:
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'CompType' must be derived from Component.");
 
-        const C* comp = this->template traversePathToComponent<C>(pathname);
+        const C* comp = this->template traversePathToComponent<C>({pathname});
         if (comp) {
             return *comp;
         }
@@ -2285,70 +2285,39 @@ protected:
 #endif
 
     template<class C>
-    const C* traversePathToComponent(const std::string& path) const
+    const C* traversePathToComponent(const ComponentPath& path) const
     {
-        const Component* current = this;
-        ComponentPath pathToFind(path);
-        std::string pathNameToFind = pathToFind.getComponentName();
-        size_t numPathLevels = pathToFind.getNumPathLevels();
-        size_t ind = 0;
-        ComponentPath currentSubpath;
-        ComponentPath upPath("..");
-        ComponentPath curCompPath(".");
-
-        while (ind < numPathLevels && current) {
-            currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
-            ComponentPath currentPathName(current->getName());
-
-            if (currentSubpath == upPath && current->hasOwner())
-                current = &current->getOwner();
-            // if currentPathName matches currentSubpath traversing the path
-            else if (currentPathName == currentSubpath) {
-                ind++;
-                continue;
-            }
-            // if currentSubpath is empty we are at root or have a nameless 
-            // comp
-            // if currentSubpath is '.' we are in the right owner, and loop
-            // again so that currentSubpath is the name of the component we want
-            else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
-                if (current->getNumImmediateSubcomponents() == 0) {
-                    current = nullptr;
-                    continue;
-                }
-                auto compsList = current->getComponentList<Component>();
-                // descend to next component in the path otherwise not found
-                ComponentPath currentAbsPathPlusSubpath = current->getAbsolutePath();
-                currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
-                for (const Component& comp : compsList) {
-                    ComponentPath compAbsPath = comp.getAbsolutePath();
-                    std::string compName = comp.getName();
-                    // Check if we're in the right component
-                    if (compAbsPath == currentAbsPathPlusSubpath) {
-                        // In the right component and has matching name
-                        // update current to this comp
-                        current = &comp;
-                        if (compName == pathNameToFind) {
-                            // now verify type
-                            const C* compC = dynamic_cast<const C*>(&comp);
-                            if (compC)
-                                return  compC;
-                            else // keep traversing this list
-                                continue;
-                        } 
-                        // get out of this list and start going down the new current
-                        break;
-                    }
-                    // No match in this component
-                    current = nullptr;
-                }
-            }
-            ind++;
+        // TODO if path indicates the subcomponent is a subcomponent of this
+        // component, do not go up to the root.
+        ComponentPath absPath;
+        try {
+            absPath = path.formAbsolutePath(this->getAbsolutePath());
+        } catch (const Exception&) {
+            return nullptr;
         }
+        if (absPath.getNumPathLevels() == 0) return nullptr;
+        using RefComp = SimTK::ReferencePtr<const Component>;
 
-        if (currentSubpath == pathNameToFind)
-            return dynamic_cast<const C*>(current);
-
+        // Move up to the root component.
+        const Component* current = this;
+        while (current->hasOwner()) current = &current->getOwner();
+        // Skip over the root component name.
+        for (int i = 1; i < absPath.getNumPathLevels(); ++i) {
+            // At this depth in the tree, is there a component whose name
+            // matches the corresponding path element?
+            const auto& currentPathElement =
+                absPath.getSubcomponentNameAtLevel(i);
+            const auto& currentSubs = current->getImmediateSubcomponents();
+            const auto it = std::find_if(currentSubs.begin(), currentSubs.end(),
+                    [currentPathElement](const RefComp& sub)
+                    { return sub->getName() == currentPathElement; });
+            if (it != currentSubs.end())
+                current = it->get();
+            else
+                return nullptr;
+        }
+        if (const C* comp = dynamic_cast<const C*>(current))
+            return comp;
         return nullptr;
     }
 
