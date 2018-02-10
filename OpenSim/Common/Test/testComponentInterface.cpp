@@ -1062,9 +1062,8 @@ void testTraversePathToComponent() {
     // traversePathToSubcomponent().
     auto addLotsOfSubcomponents = [](Component& c) {
         for (int i = 0; i < 100; ++i) {
-            // Uncomment if doing a speed test:
-            // c.addComponent(new A("unuseda" + std::to_string(i)));
-            // c.addComponent(new B("unusedb" + std::to_string(i)));
+            c.addComponent(new A("unuseda" + std::to_string(i)));
+            c.addComponent(new B("unusedb" + std::to_string(i)));
         }
     };
 

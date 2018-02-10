@@ -101,6 +101,12 @@ public:
     /// of getInvalidChars()
     bool isLegalPathElement(const std::string& pathElement) const;
 
+    /// Cleans up a path. This includes removing "." and resolving ".." if
+    /// possible (i.e. it will not remove leading ".." but otherwise will
+    /// remove the previous pathElement from _path. This method also checks
+    /// if a path is invalid due to an absolute path starting with "..".
+    void cleanPath();
+
 protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
@@ -144,12 +150,6 @@ private:
     /// is legal. An Exception is thrown if the pathElement contains an 
     /// invalid character or if it is an empty string.
     void appendPathElement(const std::string& pathElement);
-
-    /// Cleans up a path. This includes removing "." and resolving ".." if
-    /// possible (i.e. it will not remove leading ".." but otherwise will
-    /// remove the previous pathElement from _path. This method also checks
-    /// if a path is invalid due to an absolute path starting with "..".
-    void cleanPath();
 
     /// Return the sub-path, on the range [first, last).
     std::vector<std::string> getSubPathVec(size_t first, size_t last) const

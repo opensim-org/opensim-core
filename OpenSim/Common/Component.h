@@ -2285,30 +2285,39 @@ protected:
 #endif
 
     template<class C>
-    const C* traversePathToComponent(const ComponentPath& path) const
+    const C* traversePathToComponent(ComponentPath path) const
     {
-        // TODO if path indicates the subcomponent is a subcomponent of this
-        // component, do not go up to the root.
-        ComponentPath absPath;
-        try {
-            // If the resulting path is invalid (because it goes farther up
-            // than the root), report that we couldn't find the component.
-            absPath = path.formAbsolutePath(this->getAbsolutePath());
-        } catch (const Exception&) {
-            return nullptr;
+        // Get rid of all the ".."'s that are not at the front of the path.
+        path.cleanPath();
+
+        //if (path.getNumPathLevels() == 0) return nullptr;
+
+        // Move up either to the root component or just enough to resolve all
+        // the ".."'s.
+        int iPathEltStart = 0;
+        const Component* current = this;
+        if (path.isAbsolute()) {
+            while (current->hasOwner()) current = &current->getOwner();
+            // Skip over the root name.
+            iPathEltStart = 1;
+        } else {
+            while (iPathEltStart < path.getNumPathLevels() &&
+                    path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
+                // The path sends us up farther than the root.
+                if (!current->hasOwner()) return nullptr;
+                current = &current->getOwner();
+                ++iPathEltStart;
+            }
         }
-        if (absPath.getNumPathLevels() == 0) return nullptr;
+        
         using RefComp = SimTK::ReferencePtr<const Component>;
 
-        // Move up to the root component.
-        const Component* current = this;
-        while (current->hasOwner()) current = &current->getOwner();
         // Skip over the root component name.
-        for (int i = 1; i < absPath.getNumPathLevels(); ++i) {
+        for (int i = iPathEltStart; i < path.getNumPathLevels(); ++i) {
             // At this depth in the tree, is there a component whose name
             // matches the corresponding path element?
             const auto& currentPathElement =
-                absPath.getSubcomponentNameAtLevel(i);
+                path.getSubcomponentNameAtLevel(i);
             const auto& currentSubs = current->getImmediateSubcomponents();
             const auto it = std::find_if(currentSubs.begin(), currentSubs.end(),
                     [currentPathElement](const RefComp& sub)
