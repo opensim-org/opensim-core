@@ -210,7 +210,8 @@ void ball2d() {
 
     solution.write("ball2d_solution.sto");
 
-    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+            << std::endl;
 
     // Visualize.
     // ==========
@@ -290,7 +291,8 @@ void pendulum() {
 
     solution.write("pendulum_solution.sto");
 
-    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+            << std::endl;
 
     // Visualize.
     // ==========
@@ -379,7 +381,8 @@ void pendulumActivationCoordinateActuator() {
 
     solution.write("pendulumaca_solution.sto");
 
-    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+     << std::endl;
 
     // Visualize.
     // ==========
@@ -631,7 +634,8 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MucoSolution solution = muco.solve().unseal();
     solution.write("slip_solution.sto");
-    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+            << std::endl;
     muco.visualize(solution);
 }
 
@@ -803,7 +807,8 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
     MucoSolution solution = muco.solve().unseal();
     solution.write("slipSolveForForce_solution.sto");
-    std::cout << "RMS: " << solution.compareRMS(guess) << std::endl;
+    std::cout << "RMS: " << solution.compareStatesControlsRMS(guess)
+            << std::endl;
 
     SimTK::Vector springForceRecovered =
             interpolate(solution.getTime(),
