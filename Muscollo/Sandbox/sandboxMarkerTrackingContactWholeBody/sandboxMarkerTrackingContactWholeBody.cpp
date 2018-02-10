@@ -416,7 +416,7 @@ MucoSolution solveMarkerTrackingProblem(bool createGuess,
         model.realizeVelocity(s);
         SimTK::Vec3 sim(0);
         for (const auto& force : contactForces) {
-            sim += force.calcContactForce(s);
+            sim += force.calcContactForceOnStation(s);
         }
         SimTK::Vector time(1, s.getTime());
         SimTK::Vec3 exp(splineFx.calcValue(time), splineFy.calcValue(time), 0);

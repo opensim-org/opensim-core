@@ -84,8 +84,85 @@ private:
     }
 };
 
-class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Force : public Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force, Force);
+class /*TODO OSIMMUSCOLLO_API*/StationPlaneContactForce : public Force {
+    OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
+public:
+    OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3,
+            calcContactForceOnStation, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
+
+    void computeForce(const SimTK::State& s,
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+            SimTK::Vector& /*generalizedForces*/) const override {
+        const SimTK::Vec3 force = calcContactForceOnStation(s);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& frame = pt.getParentFrame();
+        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
+        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
+    }
+
+    OpenSim::Array<std::string> getRecordLabels() const override {
+        OpenSim::Array<std::string> labels;
+        const auto stationName = getConnectee("station").getName();
+        labels.append(getName() + "." + stationName + ".force.X");
+        labels.append(getName() + "." + stationName + ".force.Y");
+        labels.append(getName() + "." + stationName + ".force.Z");
+        return labels;
+    }
+    OpenSim::Array<double> getRecordValues(const SimTK::State& s)
+    const override {
+        OpenSim::Array<double> values;
+        // TODO cache.
+        const SimTK::Vec3 force = calcContactForceOnStation(s);
+        values.append(force[0]);
+        values.append(force[1]);
+        values.append(force[2]);
+        return values;
+    }
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+            const SimTK::State& s,
+            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override {
+        Super::generateDecorations(fixed, hints, s, geoms);
+        if (!fixed) {
+            getModel().realizeVelocity(s);
+            // Normalize contact force vector by body weight so that the line
+            // is 1 meter long if the contact force magnitude is equal to
+            // body weight.
+            const double arrowLengthPerForce = 1.0 / 1000.0; // meters / Newton
+            //const double mg =
+            //        getModel().getTotalMass(s) * getModel().getGravity().norm();
+            // TODO avoid recalculating.
+            const auto& pt = getConnectee<Station>("station");
+            const auto pt1 = pt.getLocationInGround(s);
+            const SimTK::Vec3 force = calcContactForceOnStation(s);
+            // std::cout << "DEBUGgd force " << force << std::endl;
+            const SimTK::Vec3 pt2 = pt1 + force * arrowLengthPerForce; // mg;
+            SimTK::DecorativeLine line(pt1, pt2);
+            line.setColor(SimTK::Green);
+            line.setLineThickness(0.10);
+            geoms.push_back(line);
+
+            // TODO move to fixed.
+            SimTK::DecorativeSphere sphere;
+            sphere.setColor(SimTK::Green);
+            sphere.setRadius(0.01);
+            sphere.setBodyId(pt.getParentFrame().getMobilizedBodyIndex());
+            sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
+            sphere.setTransform(SimTK::Transform(pt.get_location()));
+            geoms.push_back(sphere);
+        }
+    }
+    // TODO potential energy.
+    virtual SimTK::Vec3 calcContactForceOnStation(
+            const SimTK::State& s) const = 0;
+};
+
+class /*TODO OSIMMUSCOLLO_API*/AckermannVanDenBogert2010Force
+        : public StationPlaneContactForce {
+    OpenSim_DECLARE_CONCRETE_OBJECT(AckermannVanDenBogert2010Force,
+            StationPlaneContactForce);
 public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^3");
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
@@ -93,18 +170,14 @@ public:
     // TODO rename to transition_velocity
     OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
 
-    OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3, calcContactForce,
-            SimTK::Stage::Velocity);
-
-    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
-
     AckermannVanDenBogert2010Force() {
         constructProperties();
     }
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForce(const SimTK::State& s) const {
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+            const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
@@ -135,69 +208,6 @@ public:
         force[0] = frictionForce;
         return force;
     }
-    void computeForce(const SimTK::State& s,
-            SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-            SimTK::Vector& /*generalizedForces*/) const override {
-        const SimTK::Vec3 force = calcContactForce(s);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& frame = pt.getParentFrame();
-        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
-        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
-    }
-
-    OpenSim::Array<std::string> getRecordLabels() const override {
-        OpenSim::Array<std::string> labels;
-        const auto stationName = getConnectee("station").getName();
-        labels.append(getName() + "." + stationName + ".force.X");
-        labels.append(getName() + "." + stationName + ".force.Y");
-        labels.append(getName() + "." + stationName + ".force.Z");
-        return labels;
-    }
-    OpenSim::Array<double> getRecordValues(const SimTK::State& s)
-    const override {
-        OpenSim::Array<double> values;
-        // TODO cache.
-        const SimTK::Vec3 force = calcContactForce(s);
-        values.append(force[0]);
-        values.append(force[1]);
-        values.append(force[2]);
-        return values;
-    }
-
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-            const SimTK::State& s,
-            SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override {
-        Super::generateDecorations(fixed, hints, s, geoms);
-        if (!fixed) {
-            getModel().realizeVelocity(s);
-            // Normalize contact force vector by body weight so that the line
-            // is 1 meter long if the contact force magnitude is equal to
-            // body weight.
-            const double arrowLengthPerForce = 1.0 / 1000.0; // meters / Newton
-            //const double mg =
-            //        getModel().getTotalMass(s) * getModel().getGravity().norm();
-            // TODO avoid recalculating.
-            const auto& pt = getConnectee<Station>("station");
-            const auto pt1 = pt.getLocationInGround(s);
-            const SimTK::Vec3 force = calcContactForce(s);
-            // std::cout << "DEBUGgd force " << force << std::endl;
-            const SimTK::Vec3 pt2 = pt1 + force * arrowLengthPerForce; // mg;
-            SimTK::DecorativeLine line(pt1, pt2);
-            line.setColor(SimTK::Green);
-            line.setLineThickness(0.10);
-            geoms.push_back(line);
-
-            // TODO move to fixed.
-            SimTK::DecorativeSphere sphere;
-            sphere.setColor(SimTK::Green);
-            sphere.setRadius(0.01);
-            sphere.setBodyId(pt.getParentFrame().getMobilizedBodyIndex());
-            sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
-            sphere.setTransform(SimTK::Transform(pt.get_location()));
-            geoms.push_back(sphere);
-        }
-    }
 
     // TODO potential energy.
 private:
@@ -209,17 +219,14 @@ private:
     }
 };
 
-class /*TODO OSIMMUSCOLLO_API*/ MeyerFregly2016Force : public Force {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force, Force);
+class /*TODO OSIMMUSCOLLO_API*/ MeyerFregly2016Force
+        : public StationPlaneContactForce {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
+            StationPlaneContactForce);
 public:
     OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m");
     OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
     OpenSim_DECLARE_PROPERTY(tscale, double, "TODO");
-
-    OpenSim_DECLARE_OUTPUT(force_on_station, SimTK::Vec3, calcContactForce,
-        SimTK::Stage::Velocity);
-
-    OpenSim_DECLARE_SOCKET(station, Station, "TODO");
 
     MeyerFregly2016Force() {
         constructProperties();
@@ -227,7 +234,8 @@ public:
 
     /// Compute the force applied to body to which the station is attached, at
     /// the station, expressed in ground.
-    SimTK::Vec3 calcContactForce(const SimTK::State& s) const {
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+            const override {
         SimTK::Vec3 force(0);
         const auto& pt = getConnectee<Station>("station");
         const auto& pos = pt.getLocationInGround(s);
@@ -273,69 +281,6 @@ public:
         return force;
     }
 
-    void computeForce(const SimTK::State& s,
-        SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& /*generalizedForces*/) const override {
-        const SimTK::Vec3 force = calcContactForce(s);
-        const auto& pt = getConnectee<Station>("station");
-        const auto& pos = pt.getLocationInGround(s);
-        const auto& frame = pt.getParentFrame();
-        applyForceToPoint(s, frame, pt.get_location(), force, bodyForces);
-        applyForceToPoint(s, getModel().getGround(), pos, -force, bodyForces);
-    }
-
-    OpenSim::Array<std::string> getRecordLabels() const override {
-        OpenSim::Array<std::string> labels;
-        const auto stationName = getConnectee("station").getName();
-        labels.append(getName() + "." + stationName + ".force.X");
-        labels.append(getName() + "." + stationName + ".force.Y");
-        labels.append(getName() + "." + stationName + ".force.Z");
-        return labels;
-    }
-    OpenSim::Array<double> getRecordValues(const SimTK::State& s)
-        const override {
-        OpenSim::Array<double> values;
-        // TODO cache.
-        const SimTK::Vec3 force = calcContactForce(s);
-        values.append(force[0]);
-        values.append(force[1]);
-        values.append(force[2]);
-        return values;
-    }
-
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
-        const SimTK::State& s,
-        SimTK::Array_<SimTK::DecorativeGeometry>& geoms) const override {
-        Super::generateDecorations(fixed, hints, s, geoms);
-        if (!fixed) {
-            getModel().realizeVelocity(s);
-            // Normalize contact force vector by body weight so that the line
-            // is 1 meter long if the contact force magnitude is equal to
-            // body weight.
-            const double mg =
-                getModel().getTotalMass(s) * getModel().getGravity().norm();
-            // TODO avoid recalculating.
-            const auto& pt = getConnectee<Station>("station");
-            const auto pt1 = pt.getLocationInGround(s);
-            const SimTK::Vec3 force = calcContactForce(s);
-            // std::cout << "DEBUGgd force " << force << std::endl;
-            const SimTK::Vec3 pt2 = pt1 + force / mg;
-            SimTK::DecorativeLine line(pt1, pt2);
-            line.setColor(SimTK::Green);
-            line.setLineThickness(0.10);
-            geoms.push_back(line);
-
-            // TODO move to fixed.
-            SimTK::DecorativeSphere sphere;
-            sphere.setColor(SimTK::Green);
-            sphere.setRadius(0.01);
-            sphere.setBodyId(pt.getParentFrame().getMobilizedBodyIndex());
-            sphere.setRepresentation(SimTK::DecorativeGeometry::DrawWireframe);
-            sphere.setTransform(SimTK::Transform(pt.get_location()));
-            geoms.push_back(sphere);
-        }
-    }
-
 private:
     void constructProperties() {
         constructProperty_stiffness(1e4);
@@ -343,6 +288,82 @@ private:
         constructProperty_tscale(1.0);
     }
 
+};
+
+/// Esposito, E. R., & Miller, R. H. (2018). Maintenance of muscle strength
+/// retains a normal metabolic cost in simulated walking after transtibial limb
+/// loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
+class /*TODO OSIMMUSCOLLO_API*/ EspositoMiller2018Force
+        : public StationPlaneContactForce {
+OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,
+        StationPlaneContactForce);
+public:
+    OpenSim_DECLARE_PROPERTY(stiffness, double, "TODO N/m^2");
+    OpenSim_DECLARE_PROPERTY(dissipation, double, "TODO s/m");
+    OpenSim_DECLARE_PROPERTY(friction_coefficient, double, "TODO");
+    // TODO rename to transition_velocity
+    OpenSim_DECLARE_PROPERTY(tangent_velocity_scaling_factor, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(depth_offset, double, "TODO y0 m");
+
+    EspositoMiller2018Force() {
+        constructProperties();
+    }
+
+    void extendFinalizeFromProperties() override {
+        m_depthOffsetSquared = SimTK::square(get_depth_offset());
+    }
+
+    /// Compute the force applied to body to which the station is attached, at
+    /// the station, expressed in ground.
+    SimTK::Vec3 calcContactForceOnStation(const SimTK::State& s)
+            const override {
+        using SimTK::square;
+        SimTK::Vec3 force(0);
+        const auto& pt = getConnectee<Station>("station");
+        const auto& pos = pt.getLocationInGround(s);
+        const auto& vel = pt.getVelocityInGround(s);
+        const SimTK::Real height = pos[1];
+        const SimTK::Real velNormal = vel[1];
+        // TODO should project vel into ground.
+        const SimTK::Real velSliding = vel[0];
+
+        // The Appendix of Esposito and Miller 2018 uses height above ground,
+        // but we use penetration depth, so some signs are reversed.
+
+        // Normal force.
+        const SimTK::Real depth = 0 - height;
+        const SimTK::Real depthRate = 0 - velNormal;
+        const SimTK::Real a = get_stiffness();
+        const SimTK::Real b = get_dissipation();
+
+        // dy approaches 0 as y -> inf
+        //               depth as y -> -inf
+        const SimTK::Real dy =
+                0.5 * (sqrt(square(depth) + m_depthOffsetSquared) + depth);
+        const SimTK::Real voidStiffness = 1.0; // N/m
+        force[1] = a * square(dy) * (1 + b * depthRate) + voidStiffness * depth;
+
+        // Friction (TODO handle 3D).
+        const SimTK::Real velSlidingScaling =
+                get_tangent_velocity_scaling_factor();
+        const SimTK::Real transition = tanh(velSliding / velSlidingScaling);
+
+        const SimTK::Real frictionForce =
+                -transition * get_friction_coefficient() * force[1];
+        force[0] = frictionForce;
+        return force;
+    }
+
+    // TODO potential energy.
+private:
+    void constructProperties() {
+        constructProperty_stiffness(2.0e6);
+        constructProperty_dissipation(1.0);
+        constructProperty_friction_coefficient(1.0);
+        constructProperty_tangent_velocity_scaling_factor(0.05);
+        constructProperty_depth_offset(0.001);
+    }
+    SimTK::Real m_depthOffsetSquared;
 };
 
 // TODO rename ContactForceTracking? ExternalForceTracking?
@@ -362,18 +383,18 @@ protected:
         m_forces.clear();
         for (int i = 0; i < getProperty_forces().size(); ++i) {
             m_forces.emplace_back(
-                    dynamic_cast<const AckermannVanDenBogert2010Force&>(
-                            getModel().getComponent(get_forces(i))));
+                    getModel().getComponent<StationPlaneContactForce>(
+                            get_forces(i)));
         }
     }
 
     void calcIntegralCostImpl(const SimTK::State& state, double& integrand)
-    const override {
+            const override {
         getModel().realizeVelocity(state);
         SimTK::Vec3 netForce(0);
         SimTK::Vec3 ref(0);
         for (const auto& force : m_forces) {
-            netForce += force->calcContactForce(state);
+            netForce += force->calcContactForceOnStation(state);
         }
         SimTK::Vector timeVec(1, state.getTime());
         ref[0] = m_refspline_x.calcValue(timeVec);
@@ -402,8 +423,7 @@ private:
         constructProperty_tracked_grf_components("all");
         constructProperty_free_force_window(0.0);
     }
-    mutable 
-    std::vector<SimTK::ReferencePtr<const AckermannVanDenBogert2010Force>>
+    mutable std::vector<SimTK::ReferencePtr<const StationPlaneContactForce>>
         m_forces;
 
 

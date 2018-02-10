@@ -479,12 +479,19 @@ Model createModelSLIP() {
     model.addComponent(force);
     force->connectSocket_station(*station);
 
-    //auto* force = new MeyerFregly2016Force();
-    ////force->set_dissipation(1.0);
-    ////force->set_stiffness(1e4);
-    //force->setName("contact");
-    //model.addComponent(force);
-    //force->connectSocket_station(*station);
+    // auto* force = new MeyerFregly2016Force();
+    // // force->set_dissipation(1.0);
+    // // force->set_stiffness(1e4);
+    // force->setName("contact");
+    // model.addComponent(force);
+    // force->connectSocket_station(*station);
+
+    // auto* force = new EspositoMiller2018Force();
+    // force->set_stiffness(1e5);
+    // force->setName("contact");
+    // model.addComponent(force);
+    // force->connectSocket_station(*station);
+
 
     // Leg muscles.
     // TODO spring force should be felt all the time; similar to contact.
@@ -548,12 +555,18 @@ Model createModelSLIPActuated() {
     model.addComponent(force);
     force->connectSocket_station(*station);
 
-    //auto* force = new MeyerFregly2016Force();
-    //force->set_dissipation(1.0);
-    //force->set_stiffness(1e4);
-    //force->setName("contact");
-    //model.addComponent(force);
-    //force->connectSocket_station(*station);
+    // auto* force = new MeyerFregly2016Force();
+    // force->set_dissipation(1.0);
+    // force->set_stiffness(1e4);
+    // force->setName("contact");
+    // model.addComponent(force);
+    // force->connectSocket_station(*station);
+
+    // auto* force = new EspositoMiller2018Force();
+    // force->set_stiffness(1e5);
+    // force->setName("contact");
+    // model.addComponent(force);
+    // force->connectSocket_station(*station);
 
     auto* actuator = new CoordinateActuator();
     actuator->setCoordinate(&length);
@@ -578,7 +591,7 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     auto model = createModelSLIP();
     auto state = model.initSystem();
     model.setStateVariableValue(state, "planar/rz/value", rzvalue0);
-    model.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
+    model.setStateVariableValue(state, "planar/rz/speed", rzspeed0);
     SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     integrator.setAccuracy(1e-5);
     integrator.setMaximumStepSize(0.05);
@@ -643,7 +656,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     modelTS.addComponent(markersReporter);
     auto state = modelTS.initSystem();
     modelTS.setStateVariableValue(state, "planar/rz/value", rzvalue0);
-    modelTS.setStateVariableValue(state, "palanr/rz/speed", rzspeed0);
+    modelTS.setStateVariableValue(state, "planar/rz/speed", rzspeed0);
     SimTK::RungeKuttaMersonIntegrator integrator(modelTS.getMultibodySystem());
     integrator.setAccuracy(1e-5);
     integrator.setMaximumStepSize(0.05);
@@ -775,6 +788,15 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     //ms.set_num_mesh_points(50);
     //ms.set_optim_max_iterations(2);
     ms.set_optim_hessian_approximation("exact");
+    // I tried setting convergence and constraint tolerances to 1e-3, and the
+    // time to solve increased from 11 to 16 minutes (using EspositoMiller2018
+    // for contact). Setting the tolerance to 1e-2 decreases the solve time from
+    // 11 to 6 minutes. The error in the actuator force is definitely larger (up
+    // to 50 N), but the match is still very good. This was all without contact
+    // tracking. With contact tracking and AckermannVanDenBogert2010, the solve
+    // time is about 5 minutes whether or not the convergence tolerance is set.
+    // ms.set_optim_convergence_tolerance(1e-2);
+    // ms.set_optim_constraint_tolerance(1e-2);
     MucoIterate guess = ms.createGuess();
     guess.setStatesTrajectory(statesToTrack, true);
     ms.setGuess(guess);
@@ -795,7 +817,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     Model model = mp.getPhase().getModel();
     model.initSystem();
     const auto& contact =
-            model.getComponent<AckermannVanDenBogert2010Force>("contact");
+            model.getComponent<StationPlaneContactForce>("contact");
     TimeSeriesTableVec3 contactForceHistory;
     contactForceHistory.setColumnLabels(
             {"SLIPcontactforce_on_station"});
@@ -803,7 +825,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     for (const auto& s : statesTraj) {
         model.realizeVelocity(s);
         contactForceHistory.appendRow(s.getTime(),
-                {contact.calcContactForce(s)});
+                {contact.calcContactForceOnStation(s)});
     }
 
     STOFileAdapter::write(contactForceHistory.flatten({"x", "y", "z"}),
@@ -859,7 +881,7 @@ int main() {
 
     //slip();
 
-    // slip(0.1 * SimTK::Pi, -0.5);
+    // slip(0.05 * SimTK::Pi, -0.5);
 
     // TODO need to add an actuator that can rotate the leg.
 
