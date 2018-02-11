@@ -154,7 +154,7 @@ public:
             geoms.push_back(sphere);
         }
     }
-    // TODO potential energy.
+    // TODO rename to computeContactForceOnStation
     virtual SimTK::Vec3 calcContactForceOnStation(
             const SimTK::State& s) const = 0;
 };
@@ -188,8 +188,8 @@ public:
         const SimTK::Real velSliding = vel[0];
         const SimTK::Real depth = 0 - y;
         const SimTK::Real depthRate = 0 - velNormal;
-        const SimTK::Real a = get_stiffness();
-        const SimTK::Real b = get_dissipation();
+        const SimTK::Real& a = get_stiffness();
+        const SimTK::Real& b = get_dissipation();
         if (depth > 0) {
             force[1] = fmax(0, a * pow(depth, 3) * (1 + b * depthRate));
         }
@@ -209,7 +209,6 @@ public:
         return force;
     }
 
-    // TODO potential energy.
 private:
     void constructProperties() {
         constructProperty_friction_coefficient(1.0);
@@ -290,6 +289,15 @@ private:
 
 };
 
+/// This contact model uses a continuous equation to transition between in and
+/// out of contact. The equation for the smooth transition was published in
+/// the following two papers:
+///
+/// Koelewijn, A. D., & van den Bogert, A. J. (2016). Joint contact forces can
+/// be reduced by improving joint moment symmetry in below-knee amputee gait
+/// simulations. Gait & Posture, 49, 219–225.
+/// http://doi.org/10.1016/j.gaitpost.2016.07.007
+///
 /// Esposito, E. R., & Miller, R. H. (2018). Maintenance of muscle strength
 /// retains a normal metabolic cost in simulated walking after transtibial limb
 /// loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
