@@ -242,7 +242,7 @@ else()
     if(SUPERBUILD_ipopt)
         # TODO --enable-debug if building in Debug.
         # TODO must have gfortran for MUMPS (brew install gcc).
-	# TODO CMake documentation says "Whether the current working directory
+        # TODO CMake documentation says "Whether the current working directory
         # is preserved between commands is not defined. Behavior of shell
         # operators like && is not defined."
         ExternalProject_Add(ipopt

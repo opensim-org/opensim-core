@@ -187,7 +187,12 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     bool paused = false;
 
     while (true) {
-        if (istate == numStates) istate = 0;
+        if (istate == numStates) {
+            istate = 0;
+            // Without this line, all but the first replay will be shown as
+            // fast as possible rather than as real-time.
+            viz.setMode(SimTK::Visualizer::RealTime);
+        }
 
         // Slider input.
         int sliderIndex;

@@ -1,7 +1,7 @@
 #ifndef MUSCOLLO_MUSCOLLOUTILITIES_H
 #define MUSCOLLO_MUSCOLLOUTILITIES_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MuscolloUtilities.h                                               *
+ * OpenSim Muscollo: MuscolloUtilities.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -23,6 +23,8 @@
 #include <set>
 
 #include "osimMuscolloDLL.h"
+
+#include <set>
 
 namespace OpenSim {
 

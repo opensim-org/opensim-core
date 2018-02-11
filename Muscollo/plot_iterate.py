@@ -30,6 +30,8 @@ parser.add_argument('file', type=str, nargs='+',
                     help="Paths to MucoIterate files.")
 parser.add_argument('--zero', action='store_true',
                     help="Plot y=0 on all plots.")
+parser.add_argument('--common', action='store_true',
+                    help="Plot only common data columns across files.")
 
 args = parser.parse_args()
 
@@ -37,10 +39,13 @@ datafiles = args.file
 
 include_zero = args.zero
 
+common_cols = args.common
+
 
 data = list()
 column_names = list()
-for filepath in datafiles:
+curr_column_names = list()
+for ifile, filepath in enumerate(datafiles):
     num_header_rows = 1
     with open(filepath) as f:
         for line in f:
@@ -52,10 +57,27 @@ for filepath in datafiles:
                               skip_header=num_header_rows)
     data.append(this_data)
 
-    # Skip time column.
-    for name in this_data.dtype.names[1:]:
-        if not name in column_names:
-            column_names.append(name)
+    if common_cols:
+        # Skip time column.
+        for name in this_data.dtype.names[1:]:
+            curr_column_names.append(name)
+
+        # Unless first file in datafiles, find intersection of column names
+        if ifile == 0:
+            column_names = curr_column_names
+        else:
+            column_names = list(set(column_names) & set(curr_column_names))
+
+        # Without this, the ordering of plots is not deterministic.
+        column_names.sort()
+
+        # Clear current column names list.
+        curr_column_names = []
+    else:
+        # Skip time column.
+        for name in this_data.dtype.names[1:]:
+            if (not name in column_names):
+                column_names.append(name)
 
 # If headers have a common prefix, remove it (to avoid very long plot titles).
 name_prefix = os.path.commonprefix(column_names)
@@ -94,9 +116,11 @@ for i in range(num_plots):
         if column_names[i] in dat.dtype.names:
             ax.plot(dat['time'], dat[column_names[i]])
         else:
-            # Still plot something so that we the datafile colors are consistent
-            # across plots, but have nothing nothing show up on the graph.
-            ax.plot(np.nan, np.nan)
+            # If not plotting only common data commons, plot something so that 
+            # the datafile colors are consistent across plots, but have
+            # nothing nothing show up on the graph.
+            if not common_cols:
+                ax.plot(np.nan, np.nan)
     if i == 0:
         ax.legend(legend_entries)
 

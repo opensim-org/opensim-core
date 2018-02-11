@@ -402,7 +402,6 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
     //m_time_hesobj +=
     //        duration_cast<duration<double>>(high_resolution_clock::now() -
     //                start).count();
-
     //std::cout << "DEBUG " << m_time_hescon << " " << m_time_hesobj << std::endl;
 
     // Convert the SparseMatrix into coordinate format.
