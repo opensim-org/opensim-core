@@ -784,8 +784,9 @@ print_constraint_values(const Iterate& ocp_vars,
     const int max_pathcon_name_length =
             (int)std::max_element(pathcon_names.begin(), pathcon_names.end(),
                     compare_size)->size();
-    stream << std::setw(max_pathcon_name_length) << " "
-            << " L2 norm across the mesh" << std::endl;
+    stream <<
+            "\n  L2 norm across mesh, max abs value (L1 norm), time of max abs"
+            << std::endl;
     rowd.resize(values.path_constraints.cols());
     for (size_t i_pc = 0; i_pc < pathcon_names.size(); ++i_pc) {
         RowVectorX<T> rowT = values.path_constraints.row(i_pc);

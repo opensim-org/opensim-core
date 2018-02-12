@@ -715,8 +715,7 @@ void testMucoIterate() {
     auto testCompareStatesControlsRMS = [](int NT, int NS, int NC,
             double duration, double error,
             std::vector<std::string> statesToCompare = {},
-            std::vector<std::string> controlsToCompare = {},
-            std::vector<std::string> parametersToCompare = {}) {
+            std::vector<std::string> controlsToCompare = {}) {
         const double t0 = 0.2;
         std::vector<std::string> snames;
         for (int i = 0; i < NS; ++i) snames.push_back("s" + std::to_string(i));
