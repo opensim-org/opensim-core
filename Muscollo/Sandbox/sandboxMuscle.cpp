@@ -27,12 +27,24 @@
 
 using namespace OpenSim;
 
+/// This muscle model was published in De Groote et al. 2016.
 /// DGF stands for DeGroote-Fregly. The abbreviation is temporary, and is used
 /// to avoid a name conflict with the existing DeGrooteFregly2016Muscle class
 /// (which doesn't inherit from OpenSim::Force).
+/// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
+/// Direct Collocation Optimal Control Problem Formulations for Solving the
+/// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
+/// http://doi.org/10.1007/s10439-016-1591-9
 class /*OSIMMUSCOLLO_API*/DGF2016Muscle : public PathActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(DGF2016Muscle, PathActuator);
 public:
+
+    OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
+            "TODO");
+
+    OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
+            "TODO");
+
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
     "Smaller value means activation can change more rapidly (units: seconds).");
 
@@ -41,6 +53,12 @@ public:
 
     DGF2016Muscle() {
         constructProperties();
+    }
+
+    void extendFinalizeFromProperties() override {
+        OPENSIM_THROW_IF(!getProperty_optimal_force().getValueIsDefault(),
+        Exception, "The optimal_force property is ignored for this Force; "
+        "use max_isometric_force instead.");
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
@@ -68,12 +86,53 @@ public:
     }
 
     double computeActuation(const SimTK::State& s) const override {
-        return getStateVariableValue(s, "activation") * get_optimal_force();
+        const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
+        const SimTK::Real activeForceLengthMult =
+                calcActiveForceLengthMultiplier(normFiberLength);
+        const SimTK::Real& activation = getStateVariableValue(s, "activation");
+        return activation * get_max_isometric_force() * activeForceLengthMult;
+    }
+
+    SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
+        const SimTK::Real& fiberLength = getLength(s);
+        return fiberLength / get_optimal_fiber_length();
+    }
+
+    SimTK::Real calcActiveForceLengthMultiplier(
+            const SimTK::Real& normFiberLength) const {
+        static const double b11 =  0.815;
+        static const double b21 =  1.055;
+        static const double b31 =  0.162;
+        static const double b41 =  0.063;
+        static const double b12 =  0.433;
+        static const double b22 =  0.717;
+        static const double b32 = -0.030;
+        static const double b42 =  0.200;
+        static const double b13 =  0.100;
+        static const double b23 =  1.000;
+        static const double b33 =  0.354;
+        static const double b43 =  0.000;
+        // Sum of 3 gaussians.
+        return gaussian(normFiberLength, b11, b21, b31, b41) +
+                gaussian(normFiberLength, b12, b22, b32, b42) +
+                gaussian(normFiberLength, b13, b23, b33, b43);
     }
 private:
     void constructProperties() {
+        constructProperty_max_isometric_force(1000);
+        constructProperty_optimal_fiber_length(0.1);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
+    }
+    /// This is a Gaussian-like function used in the active force-length curve.
+    /// A proper Gaussian function does not have the variable in the denominator
+    /// of the exponent.
+    /// The supplement for De Groote et al., 2016 has a typo:
+    /// the denominator should be squared.
+    static SimTK::Real gaussian(const SimTK::Real& x,const double& b1,
+            const double& b2, const double& b3, const double& b4) {
+        using SimTK::square;
+        return b1 * exp((-0.5 * square(x - b2)) / square(b3 + b4 * x));
     }
 };
 
@@ -91,15 +150,14 @@ Model createHangingMuscleModel() {
     model.addComponent(joint);
 
     auto* actu = new DGF2016Muscle();
-    actu->set_optimal_force(30);
 
     // auto* actu = new Thelen2003Muscle();
 
     // auto* actu = new Millard2012EquilibriumMuscle();
     // actu->set_fiber_damping(0); // TODO
     actu->setName("actuator");
-    //actu->set_max_isometric_force(30.0);
-    //actu->set_optimal_fiber_length(0.10);
+    actu->set_max_isometric_force(30.0);
+    actu->set_optimal_fiber_length(0.10);
     //actu->set_tendon_slack_length(0.05);
     //actu->set_pennation_angle_at_optimal(0.1);
     //actu->set_max_contraction_velocity(10);
@@ -150,7 +208,7 @@ int main() {
     //        model.getStateVariableValue(state, "actuator/fiber_length")
     //        << std::endl;
     mp.setModel(model);
-    mp.setTimeBounds(0, {0.1, 1.0});
+    mp.setTimeBounds(0, {0.05, 1.0});
     mp.setStateInfo("joint/height/value", {0, 0.3}, 0.15, 0.14);
     mp.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
     // TODO initial fiber length?
