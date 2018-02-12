@@ -199,14 +199,36 @@ public:
             auto& osimControls = m_model.updControls(m_state);
             std::copy(controls.data(), controls.data() + controls.size(),
                     &osimControls[0]);
-
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
+        //std::cout << "DEBUG " <<
+        //        m_state.getY() <<
+        //        m_model.getStateVariableValue(m_state, "actuator/activation")
+        //        << std::endl;
 
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
         m_model.realizeAcceleration(m_state);
+        /*
+        std::cout << "DEBUG "
+                << m_model.getStateVariableValue(m_state, "actuator/activation")
+                << " "
+                << m_model.getStateVariableValue(m_state, "actuator/fiber_length")
+                << " " <<
+                m_model.getComponent<Muscle>("actuator").getNormalizedFiberLength(m_state)
+                << " " <<
+                m_model.getComponent<Muscle>("actuator").getNormalizedFiberVelocity(m_state)
+                << " " <<
+                m_model.getComponent<Muscle>("actuator").getActiveForceLengthMultiplier(m_state)
+                << " " <<
+                m_model.getComponent<Muscle>("actuator").getForceVelocityMultiplier(m_state)
+                << " " <<
+                m_model.getComponent<Muscle>("actuator").getTendonForce(m_state)
+                << " " << m_state.getYDot()[1] << " "
+                << std::endl;
+        */
+        // std::cout << "DEBUGacc " << m_state.getYDot() << std::endl;
         std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
                 out.dynamics.data());
 
