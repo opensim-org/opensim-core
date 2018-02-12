@@ -18,6 +18,7 @@
 import sys
 import math
 import os
+import datetime
 
 import numpy as np
 import pylab as pl
@@ -32,6 +33,8 @@ parser.add_argument('--zero', action='store_true',
                     help="Plot y=0 on all plots.")
 parser.add_argument('--common', action='store_true',
                     help="Plot only common data columns across files.")
+parser.add_argument('--title', action='store',
+                    help="Set the title for the plot window")
 
 args = parser.parse_args()
 
@@ -40,6 +43,8 @@ datafiles = args.file
 include_zero = args.zero
 
 common_cols = args.common
+
+window_title = args.title
 
 
 data = list()
@@ -103,7 +108,13 @@ else:
     if (num_rows * num_cols) > (num_plots + num_cols):
         # There's an extra row that we don't need.
         num_rows -= 1
-fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows))
+
+now = datetime.datetime.now()
+if not window_title: 
+    window_title = args.file[0]
+    if len(args.file) > 1: window_title += ' and others'
+    window_title += ' (%s)' % now.strftime('%Y-%m-%dT%H:%M')
+fig = pl.figure(figsize=(4 * num_cols, 2 * num_rows), num=window_title)
 
 for i in range(num_plots):
     ax = fig.add_subplot(num_rows, num_cols, i + 1)
