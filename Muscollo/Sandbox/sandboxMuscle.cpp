@@ -27,6 +27,7 @@
 
 using namespace OpenSim;
 
+/// TODO prohibit fiber length from going below 0.2.
 /// This muscle model was published in De Groote et al. 2016.
 /// DGF stands for DeGroote-Fregly. The abbreviation is temporary, and is used
 /// to avoid a name conflict with the existing DeGrooteFregly2016Muscle class
@@ -43,6 +44,8 @@ public:
     "Maximum isometric force that the fibers can generate.");
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
     "Optimal length of the muscle fibers.");
+    OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,
+    "Resting length of the tendon");
     OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
     "Maximum contraction velocity of the fibers, in "
     "optimal_fiber_length/second");
@@ -100,13 +103,24 @@ public:
         const SimTK::Real forceVelocityMult =
                 calcForceVelocityMultiplier(normFiberVelocity);
         const SimTK::Real& activation = getStateVariableValue(s, "activation");
-        return activation * get_max_isometric_force() * activeForceLengthMult
-                * forceVelocityMult;
+
+        const SimTK::Real passiveForceMult =
+                calcPassiveForceMultiplier(normFiberLength);
+
+        const SimTK::Real normActiveForce =
+                activation * activeForceLengthMult * forceVelocityMult;
+        // std::cout << "DEBUG " << s.getTime() << " "
+        //         << normFiberLength << " "
+        //         << normActiveForce << " "
+        //         << passiveForceMult
+        //         << std::endl;
+        return get_max_isometric_force() * (normActiveForce + passiveForceMult);
     }
 
     // TODO replace with getNormalizedFiberLength from Muscle.
     SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
-        const SimTK::Real& fiberLength = getLength(s);
+        const SimTK::Real& fiberLength =
+                getLength(s) - get_tendon_slack_length();
         return fiberLength / get_optimal_fiber_length();
     }
 
@@ -151,11 +165,31 @@ public:
         const SimTK::Real tempLogArg = tempV + sqrt(square(tempV) + 1.0);
         return d1 * log(tempLogArg) + d4;
     }
+
+    /// This is the passive force-length curve.
+    SimTK::Real calcPassiveForceMultiplier(
+            const SimTK::Real& normFiberLength) const {
+        // Passive force-length curve.
+        // TODO turn some of these into properties:
+        static const double kPE = 4.0;
+        static const double e0  = 0.6;
+        static const double denom = exp(kPE) - 1;
+        static const double min_norm_fiber_length = 0.2;
+        static const double numer_offset =
+                exp(kPE * (min_norm_fiber_length - 1)/e0);
+        // The version of this equation in the supplementary materials of De
+        // Groote, et al. 2016 has an error. The correct equation passes
+        // through y = 0 at x = 0.2, and therefore is never negative within
+        // the allowed range of the optimal fiber length. The version in the
+        // supplementary materials allows for negative forces.
+        return (exp(kPE * (normFiberLength - 1.0) / e0) - numer_offset) / denom;
+    }
     /// @}
 private:
     void constructProperties() {
         constructProperty_max_isometric_force(1000);
         constructProperty_optimal_fiber_length(0.1);
+        constructProperty_tendon_slack_length(0.2);
         constructProperty_max_contraction_velocity(10);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
@@ -189,20 +223,31 @@ Model createHangingMuscleModel() {
     model.addComponent(joint);
 
     auto* actu = new DGF2016Muscle();
-
-    // auto* actu = new Thelen2003Muscle();
-
-    // auto* actu = new Millard2012EquilibriumMuscle();
-    // actu->set_fiber_damping(0); // TODO
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
     actu->set_optimal_fiber_length(0.10);
-    //actu->set_tendon_slack_length(0.05);
+    actu->set_tendon_slack_length(0.05);
     //actu->set_pennation_angle_at_optimal(0.1);
     //actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(actu);
+
+
+    /*
+    auto* actu = new Millard2012EquilibriumMuscle();
+    actu->set_fiber_damping(0); // TODO
+    actu->setName("actuator");
+    actu->set_max_isometric_force(30.0);
+    actu->set_optimal_fiber_length(0.10);
+    actu->set_ignore_tendon_compliance(true);
+    actu->set_tendon_slack_length(0.05);
+    actu->set_pennation_angle_at_optimal(0.1);
+    actu->set_max_contraction_velocity(10);
+    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    model.addComponent(actu);
+    */
 
     /*
     auto* actu = new ActivationCoordinateActuator();
@@ -229,8 +274,11 @@ int main() {
     MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel();
     SimTK::State state = model.initSystem();
-    model.setStateVariableValue(state, "joint/height/value", 0.15);
-    // model.equilibrateMuscles(state);
+    bool hasFiberDynamics = false;
+    if (hasFiberDynamics) {
+        model.setStateVariableValue(state, "joint/height/value", 0.15);
+        model.equilibrateMuscles(state);
+    }
 
     // TODO
     //Manager manager(model, state);
@@ -252,8 +300,10 @@ int main() {
     mp.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
     // TODO initial fiber length?
     // TODO how to enforce initial equilibrium?
-    // mp.setStateInfo("actuator/fiber_length", {0, 0.3},
-    //         model.getStateVariableValue(state, "actuator/fiber_length"));
+    if (hasFiberDynamics) {
+        mp.setStateInfo("actuator/fiber_length", {0, 0.3},
+                model.getStateVariableValue(state, "actuator/fiber_length"));
+    }
     // OpenSim might not allow activations of 0.
     mp.setStateInfo("actuator/activation", {0, 1}, 0);
     mp.setControlInfo("actuator", {0, 1});
@@ -269,6 +319,9 @@ int main() {
     solution.write("sandboxMuscle_solution.sto");
     std::cout << "DEBUG " << solution.getState("joint/height/value") << std::endl;
     std::cout << "DEBUG " << solution.getState("joint/height/speed") << std::endl;
+
+    // TODO perform forward simulation using optimized controls; see if we
+    // end up at the correct final state.
 
 
     return EXIT_SUCCESS;
