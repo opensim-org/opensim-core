@@ -20,10 +20,12 @@
 // testSingleMuscleDeGrooteFregly2016.
 
 #include <Muscollo/osimMuscollo.h>
+
+#include <MuscolloSandboxShared.h>
+
+#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
-#include <MuscolloSandboxShared.h>
-#include <OpenSim/Simulation/Model/PathActuator.h>
 
 using namespace OpenSim;
 
@@ -322,6 +324,31 @@ int main() {
 
     // TODO perform forward simulation using optimized controls; see if we
     // end up at the correct final state.
+    {
+
+        // Add a controller to the model.
+        const SimTK::Vector& time = solution.getTime();
+        const auto control = solution.getControl("actuator");
+        auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0],
+                &control[0]);
+        auto* controller = new PrescribedController();
+        controller->addActuator(model.getComponent<Actuator>("actuator"));
+        controller->prescribeControlForActuator("actuator", controlFunction);
+        model.addController(controller);
+
+        // Set the initial state.
+        SimTK::State state = model.initSystem();
+        model.setStateVariableValue(state, "joint/height/value", 0.15);
+        model.setStateVariableValue(state, "actuator/activation", 0);
+
+        // Integrate.
+        Manager manager(model, state);
+        SimTK::State finalState = manager.integrate(time[time.nrow() - 1]);
+        std::cout << "DEBUG "
+                << model.getStateVariableValue(finalState, "joint/height/value")
+                << std::endl;
+        manager.getStateStorage().print("sandboxMuscle_timestepping.sto");
+    }
 
 
     return EXIT_SUCCESS;
