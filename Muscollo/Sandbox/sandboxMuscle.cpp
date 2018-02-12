@@ -40,14 +40,14 @@ class /*OSIMMUSCOLLO_API*/DGF2016Muscle : public PathActuator {
 public:
 
     OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
-            "TODO");
-
+    "Maximum isometric force that the fibers can generate.");
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-            "TODO");
-
+    "Optimal length of the muscle fibers.");
+    OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
+    "Maximum contraction velocity of the fibers, in "
+    "optimal_fiber_length/second");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
     "Smaller value means activation can change more rapidly (units: seconds).");
-
     OpenSim_DECLARE_PROPERTY(default_activation, double,
     "Value of activation in the default state returned by initSystem().");
 
@@ -56,9 +56,15 @@ public:
     }
 
     void extendFinalizeFromProperties() override {
+        Super::extendFinalizeFromProperties();
         OPENSIM_THROW_IF(!getProperty_optimal_force().getValueIsDefault(),
         Exception, "The optimal_force property is ignored for this Force; "
         "use max_isometric_force instead.");
+
+        // TODO validate properties (nonnegative, etc.).
+
+        m_maxContractionVelocityInMeters =
+                get_max_contraction_velocity() * get_optimal_fiber_length();
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
@@ -87,19 +93,36 @@ public:
 
     double computeActuation(const SimTK::State& s) const override {
         const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
+        const SimTK::Real normFiberVelocity = calcNormalizedFiberVelocity(s);
+
         const SimTK::Real activeForceLengthMult =
                 calcActiveForceLengthMultiplier(normFiberLength);
+        const SimTK::Real forceVelocityMult =
+                calcForceVelocityMultiplier(normFiberVelocity);
         const SimTK::Real& activation = getStateVariableValue(s, "activation");
-        return activation * get_max_isometric_force() * activeForceLengthMult;
+        return activation * get_max_isometric_force() * activeForceLengthMult
+                * forceVelocityMult;
     }
 
+    // TODO replace with getNormalizedFiberLength from Muscle.
     SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
         const SimTK::Real& fiberLength = getLength(s);
         return fiberLength / get_optimal_fiber_length();
     }
 
-    SimTK::Real calcActiveForceLengthMultiplier(
-            const SimTK::Real& normFiberLength) const {
+    /// This returns the fiber velocity normalized by the max contraction
+    /// velocity. The normalized fiber velocity is unitless and should be in
+    /// [-1, 1].
+    // TODO replace with getNormalizedFiberVelocity from Muscle.
+    SimTK::Real calcNormalizedFiberVelocity(const SimTK::State& s) const {
+        const SimTK::Real& fiberVelocity = getLengtheningSpeed(s);
+        return fiberVelocity / m_maxContractionVelocityInMeters;
+    }
+
+    /// @name Calculate multipliers.
+    /// @{
+    static SimTK::Real calcActiveForceLengthMultiplier(
+            const SimTK::Real& normFiberLength) {
         static const double b11 =  0.815;
         static const double b21 =  1.055;
         static const double b31 =  0.162;
@@ -112,15 +135,28 @@ public:
         static const double b23 =  1.000;
         static const double b33 =  0.354;
         static const double b43 =  0.000;
-        // Sum of 3 gaussians.
-        return gaussian(normFiberLength, b11, b21, b31, b41) +
-                gaussian(normFiberLength, b12, b22, b32, b42) +
-                gaussian(normFiberLength, b13, b23, b33, b43);
+        return calcGaussian(normFiberLength, b11, b21, b31, b41) +
+                calcGaussian(normFiberLength, b12, b22, b32, b42) +
+                calcGaussian(normFiberLength, b13, b23, b33, b43);
     }
+    /// Domain: [-1, 1]
+    static SimTK::Real calcForceVelocityMultiplier(
+            const SimTK::Real& normFiberVelocity) {
+        using SimTK::square;
+        static const double d1 = -0.318;
+        static const double d2 = -8.149;
+        static const double d3 = -0.374;
+        static const double d4 =  0.886;
+        const SimTK::Real tempV = d2 * normFiberVelocity + d3;
+        const SimTK::Real tempLogArg = tempV + sqrt(square(tempV) + 1.0);
+        return d1 * log(tempLogArg) + d4;
+    }
+    /// @}
 private:
     void constructProperties() {
         constructProperty_max_isometric_force(1000);
         constructProperty_optimal_fiber_length(0.1);
+        constructProperty_max_contraction_velocity(10);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
     }
@@ -129,11 +165,14 @@ private:
     /// of the exponent.
     /// The supplement for De Groote et al., 2016 has a typo:
     /// the denominator should be squared.
-    static SimTK::Real gaussian(const SimTK::Real& x,const double& b1,
+    static SimTK::Real calcGaussian(const SimTK::Real& x,const double& b1,
             const double& b2, const double& b3, const double& b4) {
         using SimTK::square;
         return b1 * exp((-0.5 * square(x - b2)) / square(b3 + b4 * x));
     }
+
+
+    SimTK::Real m_maxContractionVelocityInMeters;
 };
 
 Model createHangingMuscleModel() {
