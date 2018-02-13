@@ -407,7 +407,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
