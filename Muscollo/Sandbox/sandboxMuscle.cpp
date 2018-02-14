@@ -132,7 +132,6 @@ public:
             const SimTK::Real activeForceMult =
                     calcActiveForceLengthMultiplier(normFiberLength);
 
-            // TODO std::cout << "DEBUG getLength():" << getLength(s) << std::endl;
             const SimTK::Real normTendonLength = calcNormalizedTendonLength(s);
             const SimTK::Real normTendonForce =
                     calcTendonForceMultiplier(normTendonLength);
@@ -194,48 +193,68 @@ public:
 
         if (get_ignore_tendon_compliance()) return;
 
-        const SimTK::Real tolerance = 1e-10;
-        SimTK::Real left = m_minNormFiberLength;
-        SimTK::Real right = m_maxNormFiberLength;
-        SimTK::Real midpoint = left;
         const SimTK::Real activation = getActivation(s);
         const SimTK::Real muscleTendonLength = getLength(s);
         const SimTK::Real normFiberVelocity = 0.0;
 
-        auto func = [this, &activation,
+        auto calcResidual = [this, &activation,
                 &muscleTendonLength,
                 &normFiberVelocity](const SimTK::Real& normFiberLength) {
             return calcFiberEquilibriumResidual(activation,
                     muscleTendonLength, normFiberLength, normFiberVelocity);
         };
 
-        OPENSIM_THROW_IF(func(left) * func(right) >= 0, Exception,
-                "Ill-formed bisection problem: bounds [" +
+        const SimTK::Real equilNormFiberLength =
+                solveBisection(calcResidual, m_minNormFiberLength,
+                m_maxNormFiberLength);
+
+        // TODO create setNormFiberLength().
+        setStateVariableValue(s, "norm_fiber_length", equilNormFiberLength);
+    }
+
+    /// Solve for the root of the provided function calcResidual using
+    /// bisection, starting with bounds left and right. Iteration stops when
+    /// maxIterations is reached, the width of the search interal is less than
+    /// the xTolerance, or the value of the function is less than the
+    /// yTolerance.
+    SimTK::Real solveBisection(
+            std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
+            SimTK::Real left, SimTK::Real right,
+            const SimTK::Real& xTolerance = 1e-10,
+            const SimTK::Real& yTolerance = 1e-10,
+            int maxIterations = 100) const {
+        SimTK::Real midpoint = left;
+
+        assert(maxIterations > 0);
+        OPENSIM_THROW_IF(calcResidual(left) * calcResidual(right) >= 0,
+                Exception, "Ill-formed bisection problem: bounds [" +
                 std::to_string(left) + "," + std::to_string(right) +
                 "] have the same sign.");
 
         // TODO use error in residual as tolerance?
         SimTK::Real residualMidpoint;
-        SimTK::Real residualLeft = func(left);
+        SimTK::Real residualLeft = calcResidual(left);
         int iterCount = 0;
-        while ((right - left) >= tolerance) {
+        while (iterCount < maxIterations && (right - left) >= xTolerance) {
             midpoint = 0.5 * (left + right);
-            residualMidpoint = func(midpoint);
-            if (std::abs(residualMidpoint) < tolerance) {
+            residualMidpoint = calcResidual(midpoint);
+            if (std::abs(residualMidpoint) < yTolerance) {
                 break;
             } else if (residualMidpoint * residualLeft < 0) {
                 // The solution is to the left of the current midpoint.
                 right = midpoint;
             } else {
                 left = midpoint;
-                residualLeft = func(left);
+                residualLeft = calcResidual(left);
             }
             ++iterCount;
         }
+        if (iterCount == maxIterations)
+            std::cout << "Warning: bisection reached max iterations ("
+                    << getConcreteClassName() << " " << getName() << ")."
+                    << std::endl;
         std::cout << "DEBUG " << iterCount << std::endl;
-
-        // TODO create setNormFiberLength().
-        setStateVariableValue(s, "norm_fiber_length", midpoint);
+        return midpoint;
     }
 
     SimTK::Real calcFiberEquilibriumResidual(
