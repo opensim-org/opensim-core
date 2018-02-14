@@ -29,6 +29,8 @@
 
 using namespace OpenSim;
 
+/// TODO handle the singularity with activation = 0. Add damping? how to handle
+/// this during time stepping?
 /// TODO prohibit fiber length from going below 0.2.
 /// This muscle model was published in De Groote et al. 2016.
 /// DGF stands for DeGroote-Fregly. The abbreviation is temporary, and is used
@@ -41,16 +43,23 @@ using namespace OpenSim;
 class /*OSIMMUSCOLLO_API*/DGF2016Muscle : public PathActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(DGF2016Muscle, PathActuator);
 public:
-
     OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
     "Maximum isometric force that the fibers can generate.");
     OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
     "Optimal length of the muscle fibers.");
     OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,
-    "Resting length of the tendon");
+    "Resting length of the tendon.");
+    OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
+    "Angle between tendon and fibers at optimal fiber length, in radians.");
     OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
     "Maximum contraction velocity of the fibers, in "
-    "optimal_fiber_length/second");
+    "optimal_fiber_length/second.");
+    // TODO avoid checking this everywhere.
+    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
+    "Compute muscle dynamics ignoring tendon compliance. "
+    "Tendon is assumed to be rigid.");
+    OpenSim_DECLARE_PROPERTY(default_norm_fiber_length, double,
+    "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
     "Smaller value means activation can change more rapidly (units: seconds).");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
@@ -74,37 +83,196 @@ public:
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
         Super::extendAddToSystem(system);
-        addStateVariable("activation", SimTK::Stage::Dynamics);
+        addStateVariable(ACTIVATION, SimTK::Stage::Dynamics);
+        if (!get_ignore_tendon_compliance()) {
+            addStateVariable(NORM_FIBER_LENGTH, SimTK::Stage::Position);
+        }
     }
 
     void extendInitStateFromProperties(SimTK::State& s) const override {
         Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "activation", get_default_activation());
+        setStateVariableValue(s, ACTIVATION, get_default_activation());
+        if (!get_ignore_tendon_compliance()) {
+            setStateVariableValue(s, NORM_FIBER_LENGTH,
+                    get_default_norm_fiber_length());
+        }
     }
 
     void extendSetPropertiesFromState(const SimTK::State& s) override {
         Super::extendSetPropertiesFromState(s);
-        set_default_activation(getStateVariableValue(s, "activation"));
+        // TODO getActivation(s)?
+        set_default_activation(getStateVariableValue(s, ACTIVATION));
+        if (!get_ignore_tendon_compliance()) {
+            set_default_norm_fiber_length(
+                    getStateVariableValue(s, NORM_FIBER_LENGTH));
+        }
     }
 
     // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
     void computeStateVariableDerivatives(const SimTK::State& s) const override {
         const auto& tau = get_activation_time_constant();
-        const auto& u = getControl(s);
-        const auto& a = getStateVariableValue(s, "activation");
-        const SimTK::Real adot = (u - a) / tau;
-        setStateVariableDerivativeValue(s, "activation", adot);
+        const auto& excitation = getControl(s);
+        const auto& activation = getActivation(s);
+        const SimTK::Real activationDot = (excitation - activation) / tau;
+        setStateVariableDerivativeValue(s, ACTIVATION, activationDot);
+
+        if (!get_ignore_tendon_compliance()) {
+            // TODO if not ignoring fiber dynamics.
+            // TODO explain these equations.
+
+            std::cout << format("DEBUG %f %f", s.getTime(), getLength(s))
+                    << std::endl;
+
+            // TODO should use getNormalizedFiberLength():
+            const SimTK::Real normFiberLength =
+                    calcNormalizedFiberLength(s);
+
+            const SimTK::Real passiveForceMult =
+                    calcPassiveForceMultiplier(normFiberLength);
+            const SimTK::Real activeForceMult =
+                    calcActiveForceLengthMultiplier(normFiberLength);
+
+            // TODO std::cout << "DEBUG getLength():" << getLength(s) << std::endl;
+            const SimTK::Real normTendonLength = calcNormalizedTendonLength(s);
+            const SimTK::Real normTendonForce =
+                    calcTendonForceMultiplier(normTendonLength);
+
+
+            // TODO handle pennation.
+            const SimTK::Real normFiberForce = normTendonForce;
+            const SimTK::Real fiberVelocityMult =
+                    (normFiberForce - passiveForceMult) /
+                            (activation * activeForceMult);
+
+            // TODO maximum fiber velocity should be max_contraction_velocity,
+            // but then fiber equilibrium is violated.
+
+            // normFiberVelocity is unitless but we need units of 1/second.
+            const SimTK::Real normFiberVelocity =
+                    calcForceVelocityInverseCurve(fiberVelocityMult);
+            // norm_fiber_length/second = norm_fiber_length/second * unitless
+            const SimTK::Real normFiberLengthDot =
+                   get_max_contraction_velocity() * normFiberVelocity;
+            if (std::abs(normFiberVelocity) > 1.0) {
+                std::cout << format("DEBUG normFiberVelocity out of range "
+                                "t: %f"
+                                "\n\tnormFiberVelocity: %f"
+                                "\n\tmuscleTendonLength: %f"
+                                "\n\tnormFiberLength: %f"
+                                "\n\tnormTendonLength: %f"
+                                "\n\tnormFiberForce: %f"
+                                "\n\tpassiveForceMult: %f"
+                                "\n\tactivation: %f"
+                                "\n\tactiveForceMult: %f"
+                                "\n\tfiberVelocityMult: %f",
+                        s.getTime(),
+                        normFiberVelocity,
+                        getLength(s),
+                        normFiberLength, normTendonLength,
+                        normFiberForce, passiveForceMult,
+                        activation, activeForceMult, fiberVelocityMult)
+                        << std::endl;
+            }
+            setStateVariableDerivativeValue(s, NORM_FIBER_LENGTH,
+                    normFiberLengthDot);
+        }
     }
 
     double computeActuation(const SimTK::State& s) const override {
+        // TODO use fiber or tendon force?
+        const SimTK::Real& activation = getActivation(s);
         const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
         const SimTK::Real normFiberVelocity = calcNormalizedFiberVelocity(s);
+
+        const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
+                activation, normFiberLength, normFiberVelocity);
+
+        return get_max_isometric_force() * normFiberForce;
+    }
+
+    void computeInitialFiberEquilibrium(SimTK::State& s) const /*TODO override */ {
+
+        if (get_ignore_tendon_compliance()) return;
+
+        const SimTK::Real tolerance = 1e-10;
+        SimTK::Real left = m_minNormFiberLength;
+        SimTK::Real right = m_maxNormFiberLength;
+        SimTK::Real midpoint = left;
+        const SimTK::Real activation = getActivation(s);
+        const SimTK::Real muscleTendonLength = getLength(s);
+        const SimTK::Real normFiberVelocity = 0.0;
+
+        auto func = [this, &activation,
+                &muscleTendonLength,
+                &normFiberVelocity](const SimTK::Real& normFiberLength) {
+            return calcFiberEquilibriumResidual(activation,
+                    muscleTendonLength, normFiberLength, normFiberVelocity);
+        };
+
+        OPENSIM_THROW_IF(func(left) * func(right) >= 0, Exception,
+                "Ill-formed bisection problem: bounds [" +
+                std::to_string(left) + "," + std::to_string(right) +
+                "] have the same sign.");
+
+        // TODO use error in residual as tolerance?
+        SimTK::Real residualMidpoint;
+        SimTK::Real residualLeft = func(left);
+        int iterCount = 0;
+        while ((right - left) >= tolerance) {
+            midpoint = 0.5 * (left + right);
+            residualMidpoint = func(midpoint);
+            if (std::abs(residualMidpoint) < tolerance) {
+                break;
+            } else if (residualMidpoint * residualLeft < 0) {
+                // The solution is to the left of the current midpoint.
+                right = midpoint;
+            } else {
+                left = midpoint;
+                residualLeft = func(left);
+            }
+            ++iterCount;
+        }
+        std::cout << "DEBUG " << iterCount << std::endl;
+
+        // TODO create setNormFiberLength().
+        setStateVariableValue(s, "norm_fiber_length", midpoint);
+    }
+
+    SimTK::Real calcFiberEquilibriumResidual(
+            const SimTK::Real& activation,
+            const SimTK::Real& muscleTendonLength,
+            const SimTK::Real& normFiberLength,
+            const SimTK::Real& normFiberVelocity) const {
+
+        const SimTK::Real normFiberForce = calcNormFiberForceAlongTendon(
+                activation, normFiberLength, normFiberVelocity);
+
+        const SimTK::Real fiberLength =
+                get_optimal_fiber_length() * normFiberLength;
+        const SimTK::Real normTendonLength = calcNormalizedTendonLength(
+                muscleTendonLength, fiberLength);
+        const SimTK::Real normTendonForce =
+                calcTendonForceMultiplier(normTendonLength);
+
+        return normFiberForce - normTendonForce;
+    }
+
+    /// TODO no pennation yet.
+    SimTK::Real calcNormFiberForceAlongTendon(const SimTK::Real& activation,
+            const SimTK::Real& normFiberLength,
+            const SimTK::Real& normFiberVelocity) const {
+        // TODO consider pennation.
+        return calcNormFiberForce(activation, normFiberLength,
+                normFiberVelocity);
+    }
+    SimTK::Real calcNormFiberForce(const SimTK::Real& activation,
+            const SimTK::Real& normFiberLength,
+            const SimTK::Real& normFiberVelocity) const {
 
         const SimTK::Real activeForceLengthMult =
                 calcActiveForceLengthMultiplier(normFiberLength);
         const SimTK::Real forceVelocityMult =
                 calcForceVelocityMultiplier(normFiberVelocity);
-        const SimTK::Real& activation = getStateVariableValue(s, "activation");
 
         const SimTK::Real passiveForceMult =
                 calcPassiveForceMultiplier(normFiberLength);
@@ -116,14 +284,51 @@ public:
         //         << normActiveForce << " "
         //         << passiveForceMult
         //         << std::endl;
-        return get_max_isometric_force() * (normActiveForce + passiveForceMult);
+        return normActiveForce + passiveForceMult;
+
+    }
+
+    SimTK::Real getActivation(const SimTK::State& s) const {
+        return getStateVariableValue(s, ACTIVATION);
     }
 
     // TODO replace with getNormalizedFiberLength from Muscle.
+    // TODO these next few methods are convoluted; using MuscleLengthInfo will
+    // be better!
     SimTK::Real calcNormalizedFiberLength(const SimTK::State& s) const {
-        const SimTK::Real& fiberLength =
-                getLength(s) - get_tendon_slack_length();
-        return fiberLength / get_optimal_fiber_length();
+        // TODO get from state variable.
+        if (get_ignore_tendon_compliance()) {
+            return calcFiberLength(s) / get_optimal_fiber_length();
+        } else {
+            return getStateVariableValue(s, NORM_FIBER_LENGTH);
+        }
+    }
+
+    SimTK::Real calcFiberLength(const SimTK::State& s) const {
+        if (get_ignore_tendon_compliance()) {
+            return getLength(s) - get_tendon_slack_length();
+        } else {
+            return get_optimal_fiber_length() * calcNormalizedFiberLength(s);
+        }
+    }
+
+    SimTK::Real calcNormalizedTendonLength(const SimTK::State& s) const {
+        if (get_ignore_tendon_compliance())
+            return 1.0;
+        else
+            return calcNormalizedTendonLength(getLength(s), calcFiberLength(s));
+    }
+    SimTK::Real calcNormalizedTendonLength(
+            const SimTK::Real& muscleTendonLength,
+            const SimTK::Real& fiberLength) const {
+        if (get_ignore_tendon_compliance()) {
+            // TODO handle muscle-tendon length is less than tendon slack length
+            // (buckling).
+            return 1.0;
+        } else {
+            return (muscleTendonLength - fiberLength) /
+                    get_tendon_slack_length();
+        }
     }
 
     /// This returns the fiber velocity normalized by the max contraction
@@ -156,16 +361,24 @@ public:
                 calcGaussian(normFiberLength, b13, b23, b33, b43);
     }
     /// Domain: [-1, 1]
+    /// Range: [0, 1.789]
     static SimTK::Real calcForceVelocityMultiplier(
             const SimTK::Real& normFiberVelocity) {
         using SimTK::square;
-        static const double d1 = -0.318;
-        static const double d2 = -8.149;
-        static const double d3 = -0.374;
-        static const double d4 =  0.886;
         const SimTK::Real tempV = d2 * normFiberVelocity + d3;
         const SimTK::Real tempLogArg = tempV + sqrt(square(tempV) + 1.0);
         return d1 * log(tempLogArg) + d4;
+    }
+
+    /// This is the inverse of the force-velocity multiplier function, and
+    /// returns the normalized fiber velocity (in [-1, 1]) as a function of
+    /// the force-velocity multiplier.
+    static SimTK::Real calcForceVelocityInverseCurve(
+            const SimTK::Real& forceVelocityMult) {
+        // The version of this equation in the supplementary materials of De
+        // Groote et al., 2016 has an error (it's missing a "-d3" before
+        // dividing by "d2").
+        return (sinh(1.0 / d1 * (forceVelocityMult - d4)) - d3) / d2;
     }
 
     /// This is the passive force-length curve.
@@ -180,11 +393,17 @@ public:
         static const double numer_offset =
                 exp(kPE * (min_norm_fiber_length - 1)/e0);
         // The version of this equation in the supplementary materials of De
-        // Groote, et al. 2016 has an error. The correct equation passes
+        // Groote et al., 2016 has an error. The correct equation passes
         // through y = 0 at x = 0.2, and therefore is never negative within
         // the allowed range of the optimal fiber length. The version in the
         // supplementary materials allows for negative forces.
         return (exp(kPE * (normFiberLength - 1.0) / e0) - numer_offset) / denom;
+    }
+
+    /// The normalized tendon force as a function of normalized tendon length.
+    SimTK::Real calcTendonForceMultiplier(
+            const SimTK::Real& normTendonLength) const {
+        return c1 * exp(kT * (normTendonLength - c2)) - c3;
     }
     /// @}
 private:
@@ -193,6 +412,8 @@ private:
         constructProperty_optimal_fiber_length(0.1);
         constructProperty_tendon_slack_length(0.2);
         constructProperty_max_contraction_velocity(10);
+        constructProperty_ignore_tendon_compliance(false);
+        constructProperty_default_norm_fiber_length(1.0);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
     }
@@ -201,15 +422,38 @@ private:
     /// of the exponent.
     /// The supplement for De Groote et al., 2016 has a typo:
     /// the denominator should be squared.
-    static SimTK::Real calcGaussian(const SimTK::Real& x,const double& b1,
+    static SimTK::Real calcGaussian(const SimTK::Real& x, const double& b1,
             const double& b2, const double& b3, const double& b4) {
         using SimTK::square;
         return b1 * exp((-0.5 * square(x - b2)) / square(b3 + b4 * x));
     }
 
+    // Parameters for the tendon force curve.
+    // TODO allow users to set kT; it has a huge effect on the runtime of
+    // INDYGO.
+    constexpr static double kT = 35;
+    constexpr static double c1 = 0.200;
+    constexpr static double c2 = 0.995;
+    constexpr static double c3 = 0.250;
+
+    // Parameters for the force-velocity curve. The notation comes from De
+    // Groote et al, 2016.
+    constexpr static double d1 = -0.318;
+    constexpr static double d2 = -8.149;
+    constexpr static double d3 = -0.374;
+    constexpr static double d4 =  0.886;
+
+    constexpr static double m_minNormFiberLength = 0.2;
+    constexpr static double m_maxNormFiberLength = 1.8;
+
+    static const std::string ACTIVATION;
+    static const std::string NORM_FIBER_LENGTH;
 
     SimTK::Real m_maxContractionVelocityInMeters;
 };
+
+const std::string DGF2016Muscle::ACTIVATION("activation");
+const std::string DGF2016Muscle::NORM_FIBER_LENGTH("norm_fiber_length");
 
 Model createHangingMuscleModel() {
     Model model;
@@ -275,19 +519,41 @@ int main() {
     MucoTool muco;
     MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel();
+
+
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("actuator"));
+    controller->prescribeControlForActuator("actuator", new Constant(0.5));
+    model.addController(controller);
+
     SimTK::State state = model.initSystem();
-    bool hasFiberDynamics = false;
+    const auto& actuator = model.getComponent("actuator");
+    const DGF2016Muscle* dgf = dynamic_cast<const DGF2016Muscle*>(&actuator);
+    bool usingDGF = dgf != nullptr;
+    bool hasFiberDynamics = !(
+            usingDGF ? dgf->get_ignore_tendon_compliance() :
+            dynamic_cast<const Muscle&>(actuator).get_ignore_tendon_compliance());
+
+
     if (hasFiberDynamics) {
+        model.setStateVariableValue(state, "actuator/activation", 0.01);
         model.setStateVariableValue(state, "joint/height/value", 0.15);
-        model.equilibrateMuscles(state);
+        if (usingDGF) {
+            model.realizePosition(state);
+            model.getComponent<DGF2016Muscle>("actuator").computeInitialFiberEquilibrium(state);
+            std::cout << "DEBUG " << model.getStateVariableValue(state, "actuator/norm_fiber_length")
+                    << std::endl;
+        } else {
+            model.equilibrateMuscles(state);
+        }
     }
 
     // TODO
-    //Manager manager(model, state);
-    //manager.integrate(2.0);
-    //
-    //visualize(model, manager.getStateStorage());
-    //std::exit(-1);
+    Manager manager(model, state);
+    manager.integrate(2.0);
+
+    visualize(model, manager.getStateStorage());
+    std::exit(-1);
 
     //std::cout << "DEBUG " <<
     //        model.getStateVariableValue(state, "actuator/fiber_length")
@@ -298,17 +564,26 @@ int main() {
     //        << std::endl;
     mp.setModel(model);
     mp.setTimeBounds(0, {0.05, 1.0});
-    mp.setStateInfo("joint/height/value", {0, 0.3}, 0.15, 0.14);
+    // TODO this might have been the culprit when using the Millard muscle:
+    // TODO TODO TODO
+    mp.setStateInfo("joint/height/value", {0.10, 0.20}, 0.15, 0.14);
     mp.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
     // TODO initial fiber length?
     // TODO how to enforce initial equilibrium?
     if (hasFiberDynamics) {
-        mp.setStateInfo("actuator/fiber_length", {0, 0.3},
-                model.getStateVariableValue(state, "actuator/fiber_length"));
+        if (usingDGF) {
+            std::cout << "DEBUG " <<
+                    model.getStateVariableValue(state, "actuator/norm_fiber_length") << std::endl;
+            mp.setStateInfo("actuator/norm_fiber_length", {0.2, 1.8},
+                    model.getStateVariableValue(state, "actuator/norm_fiber_length"));
+        } else {
+            mp.setStateInfo("actuator/fiber_length", {0, 0.3},
+                    model.getStateVariableValue(state, "actuator/fiber_length"));
+        }
     }
     // OpenSim might not allow activations of 0.
-    mp.setStateInfo("actuator/activation", {0, 1}, 0);
-    mp.setControlInfo("actuator", {0, 1});
+    mp.setStateInfo("actuator/activation", {0.01, 1}, 0.01);
+    mp.setControlInfo("actuator", {0.01, 1});
 
     mp.addCost(MucoFinalTimeCost());
 
@@ -347,9 +622,25 @@ int main() {
         std::cout << "DEBUG "
                 << model.getStateVariableValue(finalState, "joint/height/value")
                 << std::endl;
+        SimTK_TEST_EQ_TOL(
+                model.getStateVariableValue(finalState, "joint/height/value"),
+                0.14, 1e-4);
         manager.getStateStorage().print("sandboxMuscle_timestepping.sto");
     }
 
+    // Test that the force-velocity curve inverse is correct.
+    // TODO move into the actual test case.
+    const auto normFiberVelocity = createVectorLinspace(100, -1, 1);
+    DGF2016Muscle muscle;
+    for (int i = 0; i < normFiberVelocity.nrow(); ++i) {
+        const SimTK::Real& vMTilde = normFiberVelocity[i];
+        SimTK_TEST_EQ(muscle.calcForceVelocityInverseCurve(
+                muscle.calcForceVelocityMultiplier(vMTilde)), vMTilde);
+    }
+
+
+    // TODO support constraining initial fiber lengths to their equilibrium
+    // lengths in Tropter!!!!!!!!!!!!!! (in explicit mode).
 
     return EXIT_SUCCESS;
 }
