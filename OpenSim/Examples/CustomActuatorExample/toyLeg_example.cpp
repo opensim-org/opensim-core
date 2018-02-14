@@ -196,7 +196,7 @@ int main()
 
         // Set to true to visualize the simulation, which can be useful for
         // debugging.
-        osimModel.setUseVisualizer(true);
+        osimModel.setUseVisualizer(false);
 
         // Initialize system
         SimTK::State& si = osimModel.initSystem();
