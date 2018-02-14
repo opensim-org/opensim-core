@@ -135,6 +135,38 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
     }
 }
 
+/// @name Filling in a string with variables.
+/// @{
+
+/// Return type for make_printable()
+template<typename T> struct make_printable_return { typedef T type; };
+/// Convert to types that can be printed with sprintf() (vsnprintf()).
+/// The generic template does not alter the type.
+template<typename T>
+inline typename make_printable_return<T>::type make_printable(const T& x)
+{ return x; }
+
+/// Specialization for std::string.
+template<> struct make_printable_return<std::string>
+{ typedef const char* type; };
+/// Specialization for std::string.
+template<> inline
+typename make_printable_return<std::string>::type
+make_printable(const std::string& x) { return x.c_str(); }
+
+/// Format a char array using (C interface; mainly for internal use).
+std::string format_c(const char*, ...);
+
+/// Format a string in the style of sprintf. For example, the code
+/// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
+/// "adding 2 and 2 yields 4".
+template <typename ...Types>
+std::string format(const std::string& formatString, Types... args) {
+    return format_c(formatString.c_str(), make_printable(args)...);
+}
+
+/// @}
+
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
 class Stopwatch {
 public:
