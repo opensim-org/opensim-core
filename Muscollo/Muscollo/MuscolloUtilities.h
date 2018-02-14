@@ -165,6 +165,14 @@ std::string format(const std::string& formatString, Types... args) {
     return format_c(formatString.c_str(), make_printable(args)...);
 }
 
+/// Print a formatted string to std::cout. A newline is not included, but the
+/// stream is flushed.
+template <typename ...Types>
+void printMessage(const std::string& formatString, Types... args) {
+    std::cout << format(formatString, args...);
+    std::cout.flush();
+}
+
 /// @}
 
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
