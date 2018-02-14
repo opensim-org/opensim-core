@@ -1,5 +1,5 @@
-#ifndef _ControllableSpring_h_
-#define _ControllableSpring_h_
+#ifndef OPENSIM_CONTROLLABLE_SPRING_H_
+#define OPENSIM_CONTROLLABLE_SPRING_H_
 /* -------------------------------------------------------------------------- *
  *                       OpenSim:  ControllableSpring.h                       *
  * -------------------------------------------------------------------------- *
@@ -23,11 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/*
- * Author: Matt DeMers
- */
-
-
 #include "PistonActuator.h"
 
 //=============================================================================
@@ -39,7 +34,6 @@
  * so that control*optimalForce = stiffness.
  *
  * @author Matt DeMers
- * @version 2.0
  */
 
 namespace OpenSim {
@@ -51,10 +45,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(ControllableSpring, PistonActuator);
 // DATA
 //=============================================================================
 protected:
-    // Additional Properties specific to a controllable spring need to be defined
-    /** rest length of the spring */
+    // Additional Properties specific to a controllable spring need to be
+    // defined.
     OpenSim_DECLARE_PROPERTY(rest_length, double,
-    "rest length of the spring.");
+            "rest length of the spring.");
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -62,32 +56,26 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-/* The constructor takes the same form as the PistonActuator constructor. */
-ControllableSpring( std::string aBodyNameA="", std::string aBodyNameB="") :
-    PistonActuator(aBodyNameA, aBodyNameB)
-{
-    constructProperties();
-}
-
-/* use the default destructor */
-virtual ~ControllableSpring() {};
+    ControllableSpring() { constructProperties(); }
+    /** The constructor has the same form as the PistonActuator constructor. */
+    ControllableSpring(const PhysicalFrame& frameA, const PhysicalFrame& frameB)
+        : PistonActuator(frameA, frameB)
+    {
+        constructProperties();
+    }
 
     //--------------------------------------------------------------------------
     // GET and SET
     //--------------------------------------------------------------------------
 
-/* define private utilities to be used by the constructors. */
 private:
-void constructProperties() {
-    constructProperty_rest_length(1.0);
-}
-
-void setNull()
-{
-}
-
-// getter and setter
+    /* Define private utilities to be used by the constructors. */
+    void constructProperties() {
+        constructProperty_rest_length(1.0);
+    }
+    
 public:
+    // Getter and setter.
     void setRestLength(double aLength) { set_rest_length(aLength); };
     double getRestLength() const { return get_rest_length(); };
 
@@ -95,69 +83,64 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
 
-/* The computeForce method is the meat of this simple actuator example.  It 
-** computes the direction and distance between the two application points.  It
-** then uses the difference between it's current length and rest length to determine
-** the force magnitude, then applies the force at the application points, in the
-** direction between them. */
-void computeForce(const SimTK::State& s, 
-                              SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-                              SimTK::Vector& generalizedForces) const override
-{
-    // make sure the model and bodies are instantiated
-    if (!_model) return;
-    
-    if(_bodyA ==NULL || _bodyB ==NULL)
-        return;
-    
-    /* store _pointA and _pointB positions in the global frame.  If not
-    ** already in the body frame, transform _pointA and _pointB into their
-    ** respective body frames. */
-
-    SimTK::Vec3 pointA_inGround, pointB_inGround;
-
-    SimTK::Vec3 _pointA = get_pointA();
-    SimTK::Vec3 _pointB = get_pointB();
-    Ground ground = getModel().getGround();
-
-    if (get_points_are_global())
+    /* The computeForce method is the meat of this simple actuator example. It
+     * computes the direction and distance between the two application points.
+     * It then uses the difference between its current length and rest length
+     * to determine the force magnitude, then applies the force at the
+     * application points, in the direction between them. */
+    void computeForce(const SimTK::State& s, 
+            SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+            SimTK::Vector& generalizedForces) const override
     {
-        pointA_inGround = _pointA;
-        pointB_inGround = _pointB;
-        _pointA = ground.findStationLocationInAnotherFrame(s, _pointA, *_bodyA);
-        _pointB = ground.findStationLocationInAnotherFrame(s, _pointB, *_bodyB);
+        const PhysicalFrame& frameA = getFrameA();
+        const PhysicalFrame& frameB = getFrameB();
+
+        // We need points A and B expressed both in their frame and expressed in
+        // ground.
+        SimTK::Vec3 pointA_inGround;
+        SimTK::Vec3 pointB_inGround;
+
+        SimTK::Vec3 pointA = get_pointA();
+        SimTK::Vec3 pointB = get_pointB();
+        Ground ground = getModel().getGround();
+        if (get_points_are_global())
+        {
+            pointA_inGround = pointA;
+            pointB_inGround = pointB;
+            pointA = ground.findStationLocationInAnotherFrame(s, pointA, frameA);
+            pointB = ground.findStationLocationInAnotherFrame(s, pointB, frameB);
+        }
+        else
+        {
+            pointA_inGround = frameA.findStationLocationInGround(s, pointA);
+            pointB_inGround = frameB.findStationLocationInGround(s, pointB);
+        }
+
+        // Find the direction along which the actuator applies its force.
+        SimTK::Vec3 r = pointA_inGround - pointB_inGround;
+        SimTK::UnitVec3 direction(r);
+        double length = r.norm();
+
+        /* find the stiffness.  computeActuation is defined in PistonActuator and
+         * just returns the product of the actuator's control and it's
+         * _optimalForce.  We're using this to mean stiffness. */
+        double stiffness = computeActuation(s);
+
+        // find the force magnitude and set it. then form the force vector
+        double forceMagnitude = (get_rest_length() - length)*stiffness;
+        setActuation(s, forceMagnitude);
+        SimTK::Vec3 force = forceMagnitude*direction;
+
+        // Apply equal and opposite forces to the bodies.
+        applyForceToPoint(s, frameA, pointA, force, bodyForces);
+        applyForceToPoint(s, frameB, pointB, -force, bodyForces);
     }
-    else
-    {
-        pointA_inGround = _bodyA->findStationLocationInGround(s, _pointA);
-        pointB_inGround = _bodyB->findStationLocationInGround(s, _pointB);
-    }
-
-    // find the direction along which the actuator applies its force
-    SimTK::Vec3 r = pointA_inGround - pointB_inGround;
-    SimTK::UnitVec3 direction(r);
-    double length = sqrt(~r*r);
-
-    /* find the stiffness.  computeActuation is defined in PistonActuator and just returns
-    ** the product of the actuator's control and it's _optimalForce.  We're using this to mean
-    ** stiffness. */
-    double stiffness = computeActuation(s);
-
-    // find the force magnitude and set it. then form the force vector
-    double forceMagnitude = (get_rest_length() - length)*stiffness;
-    setActuation(s, forceMagnitude);
-    SimTK::Vec3 force = forceMagnitude*direction;
-
-    // apply equal and opposite forces to the bodies
-    applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
-    applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
-}
 
 //=============================================================================
-};  // END of class ControllableSpring  
+}; // END of class ControllableSpring  
 
-} //Namespace
+} // namespace OpenSim
 //=============================================================================
 //=============================================================================
 
-#endif // _ControllableSpring_h_
+#endif // OPENSIM_CONTROLLABLE_SPRING_H_
