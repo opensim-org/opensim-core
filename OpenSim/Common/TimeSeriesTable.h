@@ -250,15 +250,15 @@ public:
 
     \param time Value to search for.
     \param restrictToTimeRange  When true -- Exception is thrown if the given
-                                value is out-of-range of the time column.
+                                value is out-of-range of the time column. A value
+                                within SimTK::SignifcantReal of a time column
+                                bound is considered to be equal to the bound.
                                 When false -- If the given value is less than or
                                 equal to the first value in the time column, the
-                                row returned is the first row. If the given value
-                                is greater than or equal to the last value in the
-                                time column, the row returned is the last row.
-                                This operation only returns existing rows and
-                                does not perform any interpolation. Defaults to
-                                'true'.
+                                index returned is of the first row. If the given
+                                value is greater than or equal to the last value
+                                in the time column, the index of the last row is
+                                returned. Defaults to 'true'.
 
     \throws TimeOutOfRange If the given value is out-of-range of time column.
     \throws EmptyTable If the table is empty.                                 */
