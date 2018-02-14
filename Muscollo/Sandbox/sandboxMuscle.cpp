@@ -120,6 +120,7 @@ public:
             // TODO if not ignoring fiber dynamics.
             // TODO explain these equations.
 
+            /*
             std::cout << format("DEBUG %f %f", s.getTime(), getLength(s))
                     << std::endl;
 
@@ -172,6 +173,27 @@ public:
                         activation, activeForceMult, fiberVelocityMult)
                         << std::endl;
             }
+             */
+
+            const SimTK::Real muscleTendonLength = getLength(s);
+            const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
+            auto calcResidual = [this, &activation,
+                    &muscleTendonLength,
+                    &normFiberLength](const SimTK::Real& normFiberVelocity) {
+                return calcFiberEquilibriumResidual(activation,
+                        muscleTendonLength, normFiberLength, normFiberVelocity);
+            };
+            // TODO bounds of -1 and 1?
+            const SimTK::Real equilNormFiberVelocity =
+                    solveBisection(calcResidual, -1, 1);
+
+            std::cout << format("DEBUG derivatives t: %f normFiberVelocity: %f",
+                    s.getTime(), equilNormFiberVelocity) << std::endl;
+
+
+            // norm_fiber_length/second = norm_fiber_length/second * unitless
+            const SimTK::Real normFiberLengthDot =
+                    get_max_contraction_velocity() * equilNormFiberVelocity;
             setStateVariableDerivativeValue(s, NORM_FIBER_LENGTH,
                     normFiberLengthDot);
         }
@@ -250,9 +272,9 @@ public:
             ++iterCount;
         }
         if (iterCount == maxIterations)
-            std::cout << "Warning: bisection reached max iterations ("
-                    << getConcreteClassName() << " " << getName() << ")."
-                    << std::endl;
+            printMessage("Warning: bisection reached max iterations "
+                    "at x = %g (%s %s).\n", midpoint,
+                    getConcreteClassName(), getName());
         std::cout << "DEBUG " << iterCount << std::endl;
         return midpoint;
     }
