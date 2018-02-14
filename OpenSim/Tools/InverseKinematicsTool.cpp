@@ -145,7 +145,7 @@ void InverseKinematicsTool::setNull()
 void InverseKinematicsTool::setupProperties()
 {
     _modelFileNameProp.setComment(
-        "Name of the model (.osim) to use for inverse kinematics.");
+        "Name of the model file (.osim) to use for inverse kinematics.");
     _modelFileNameProp.setName("model_file");
     _propertySet.append( &_modelFileNameProp );
 
@@ -175,7 +175,7 @@ void InverseKinematicsTool::setupProperties()
     _markerFileNameProp.setComment(
         "TRC file (.trc) containing the time history of observations of marker "
         "positions obtained during a motion capture experiment. Markers in this "
-        "file that have a corresponidng task and model marker are included.");
+        "file that have a corresponding task and model marker are included.");
     _markerFileNameProp.setName("marker_file");
     _propertySet.append(&_markerFileNameProp);
 
@@ -212,7 +212,7 @@ void InverseKinematicsTool::setupProperties()
 
     _reportMarkerLocationsProp.setComment(
         "Flag indicating whether or not to report model marker locations. "
-        "Note, model marker location are expresssed in Ground.");
+        "Note, model marker locations are expressed in Ground.");
     _reportMarkerLocationsProp.setName("report_marker_locations");
     _reportMarkerLocationsProp.setValue(false);
     _propertySet.append(&_reportMarkerLocationsProp);
