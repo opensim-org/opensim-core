@@ -35,6 +35,9 @@
 # 
 # Modified by chrisdembia to remove "-nojvm" flag, since we need MATLAB's JVM
 # to run our tests.
+# TODO: Recent versions of CMake have removed the "-nojvm" flag, so we could
+# remove this file from our repo if we make the minimum required CMake version
+# 3.7 or above.
 
 
 # Usage: cmake

@@ -6,8 +6,11 @@ language: cpp
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
 
-# For thread_local support on macOS.
-osx_image: xcode8
+# For thread_local support on macOS, we require xcode8 or greater.
+# Before 2018, xcode7 was the default. Now that xcode8.3 is the default,
+# we no longer need to specify an osx_image.
+# https://docs.travis-ci.com/user/reference/osx/#OS-X-Version
+# osx_image: xcode8
     
 matrix:
   include:
@@ -314,8 +317,7 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    # TODO temporarily deply on beta branch so GUI doesn't depend directly on master.
-    branch: 4.0beta_nov2017 
+    branch: master
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"
