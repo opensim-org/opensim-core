@@ -33,6 +33,11 @@ using namespace OpenSim;
 /// this during time stepping?
 /// TODO prohibit fiber length from going below 0.2.
 /// This muscle model was published in De Groote et al. 2016.
+/// The parameters of the active force-length and force-velocity curves have
+/// been slightly modified from what was published to ensure the curves go
+/// through key points:
+///   - Active force-length curve goes through (1, 1).
+///   - Force-velocity curve goes through (-1, 0) and (0, 1).
 /// DGF stands for DeGroote-Fregly. The abbreviation is temporary, and is used
 /// to avoid a name conflict with the existing DeGrooteFregly2016Muscle class
 /// (which doesn't inherit from OpenSim::Force).
@@ -385,18 +390,21 @@ public:
     /// @{
     static SimTK::Real calcActiveForceLengthMultiplier(
             const SimTK::Real& normFiberLength) {
-        static const double b11 =  0.815;
-        static const double b21 =  1.055;
-        static const double b31 =  0.162;
-        static const double b41 =  0.063;
-        static const double b12 =  0.433;
-        static const double b22 =  0.717;
-        static const double b32 = -0.030;
-        static const double b42 =  0.200;
-        static const double b13 =  0.100;
-        static const double b23 =  1.000;
-        static const double b33 =  0.354;
-        static const double b43 =  0.000;
+        // Values are taken from https://simtk.org/projects/optcntrlmuscle
+        // rather than the paper supplement. b11 was modified to ensure that
+        // f(1) = 1.
+        static const double b11 =  0.8150671134243542;
+        static const double b21 =  1.055033428970575;
+        static const double b31 =  0.162384573599574;
+        static const double b41 =  0.063303448465465;
+        static const double b12 =  0.433004984392647;
+        static const double b22 =  0.716775413397760;
+        static const double b32 = -0.029947116970696;
+        static const double b42 =  0.200356847296188;
+        static const double b13 =  0.1;
+        static const double b23 =  1.0;
+        static const double b33 =  0.5 * sqrt(0.5);
+        static const double b43 =  0.0;
         return calcGaussian(normFiberLength, b11, b21, b31, b41) +
                 calcGaussian(normFiberLength, b12, b22, b32, b42) +
                 calcGaussian(normFiberLength, b13, b23, b33, b43);
@@ -430,9 +438,8 @@ public:
         static const double kPE = 4.0;
         static const double e0  = 0.6;
         static const double denom = exp(kPE) - 1;
-        static const double min_norm_fiber_length = 0.2;
         static const double numer_offset =
-                exp(kPE * (min_norm_fiber_length - 1)/e0);
+                exp(kPE * (m_minNormFiberLength - 1)/e0);
         // The version of this equation in the supplementary materials of De
         // Groote et al., 2016 has an error. The correct equation passes
         // through y = 0 at x = 0.2, and therefore is never negative within
@@ -442,6 +449,8 @@ public:
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
+    /// Note that this curve does not go through (1, 0); when normTendonLength=1,
+    /// this function returns a slightly negative number.
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
         return c1 * exp(kT * (normTendonLength - c2)) - c3;
@@ -466,23 +475,31 @@ private:
     static SimTK::Real calcGaussian(const SimTK::Real& x, const double& b1,
             const double& b2, const double& b3, const double& b4) {
         using SimTK::square;
-        return b1 * exp((-0.5 * square(x - b2)) / square(b3 + b4 * x));
+        return b1 * exp(-0.5 * square(x - b2) / square(b3 + b4 * x));
     }
+
+    // Curve parameters.
+    // Notation comes from De Groote et al, 2016 (supplement).
 
     // Parameters for the tendon force curve.
     // TODO allow users to set kT; it has a huge effect on the runtime of
     // INDYGO.
     constexpr static double kT = 35;
     constexpr static double c1 = 0.200;
-    constexpr static double c2 = 0.995;
-    constexpr static double c3 = 0.250;
+    constexpr static double c2 = 0.995; // TODO 1.0?
+    constexpr static double c3 = 0.250; // TODO 0.2 (c3)?
 
-    // Parameters for the force-velocity curve. The notation comes from De
-    // Groote et al, 2016.
-    constexpr static double d1 = -0.318;
+    // Parameters for the force-velocity curve.
+    // The parameters from the paper supplement are rounded/truncated and cause
+    // the curve to not go through the points (-1, 0) and (0, 1). We solved for
+    // different values of d1 and d4 so that the curve goes through (-1, 0) and
+    // (0, 1).
+    // The values from the code at https://simtk.org/projects/optcntrlmuscle
+    // also do not go through (-1, 0) and (0, 1).
+    constexpr static double d1 = -0.3211346127989808;
     constexpr static double d2 = -8.149;
     constexpr static double d3 = -0.374;
-    constexpr static double d4 =  0.886;
+    constexpr static double d4 =  0.8825327733249912;
 
     constexpr static double m_minNormFiberLength = 0.2;
     constexpr static double m_maxNormFiberLength = 1.8;
@@ -557,6 +574,17 @@ Model createHangingMuscleModel() {
 }
 
 int main() {
+
+    DGF2016Muscle m;
+    printMessage("%f %f %f %f %f %f\n",
+            m.calcTendonForceMultiplier(1),
+            m.calcPassiveForceMultiplier(1),
+            m.calcActiveForceLengthMultiplier(1),
+            m.calcForceVelocityMultiplier(-1),
+            m.calcForceVelocityMultiplier(0),
+            m.calcForceVelocityMultiplier(1));
+
+
     MucoTool muco;
     MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel();
