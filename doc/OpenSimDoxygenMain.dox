@@ -257,7 +257,7 @@ provided there.
 This license, based on the maximally-permissive Apache 2.0 License, defines the 
 terms under which we offer OpenSim.
 \code{.cpp}
- * -------------------------------------------------------------------------- *
+/* -------------------------------------------------------------------------- *
  *                              OpenSim: License                              *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
@@ -277,7 +277,7 @@ terms under which we offer OpenSim.
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
- * -------------------------------------------------------------------------- *
+ * -------------------------------------------------------------------------- */
 \endcode
 
 <h2>How to Acknowledge Us</h2>
