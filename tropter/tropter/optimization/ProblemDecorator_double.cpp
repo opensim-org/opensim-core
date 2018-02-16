@@ -56,11 +56,9 @@ Problem<double>::Decorator::Decorator(
 
 void Problem<double>::Decorator::
 calc_sparsity(const Eigen::VectorXd& variables,
-        std::vector<unsigned int>& jacobian_row_indices,
-        std::vector<unsigned int>& jacobian_col_indices,
-        bool provide_hessian_indices,
-        std::vector<unsigned int>& hessian_row_indices,
-        std::vector<unsigned int>& hessian_col_indices) const
+        SparsityCoordinates& jacobian_sparsity_coordinates,
+        bool provide_hessian_sparsity,
+        SparsityCoordinates& hessian_sparsity_coordinates) const
 {
     const auto num_vars = get_num_variables();
     m_x_working = VectorXd::Zero(num_vars);
@@ -99,8 +97,7 @@ calc_sparsity(const Eigen::VectorXd& variables,
                     num_jac_rows, calc_constraints);
 
     m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
-    m_jacobian_coloring->get_coordinate_format(
-            jacobian_row_indices, jacobian_col_indices);
+    m_jacobian_coloring->get_coordinate_format(jacobian_sparsity_coordinates);
     int num_jacobian_seeds = (int)m_jacobian_coloring->get_seed_matrix().cols();
     print("Number of seeds for Jacobian: %i", num_jacobian_seeds);
     // jacobian_sparsity.write("DEBUG_findiff_jacobian_sparsity.csv");
@@ -112,9 +109,9 @@ calc_sparsity(const Eigen::VectorXd& variables,
 
     // Hessian.
     // ========
-    if (provide_hessian_indices) {
+    if (provide_hessian_sparsity) {
         calc_sparsity_hessian_lagrangian(variables,
-                hessian_row_indices, hessian_col_indices);
+                hessian_sparsity_coordinates);
 
         // TODO produce a more informative number/description.
         print("Number of seeds for Hessian of constraints: %i",
@@ -124,18 +121,15 @@ calc_sparsity(const Eigen::VectorXd& variables,
         // m_constr_working.resize(num_jac_rows);
 
         if (get_findiff_hessian_mode() == "slow") {
-            m_hessian_row_indices = hessian_row_indices;
-            m_hessian_col_indices = hessian_col_indices;
+            m_hessian_indices = hessian_sparsity_coordinates;
         }
     }
 }
 
 
 void Problem<double>::Decorator::
-calc_sparsity_hessian_lagrangian(
-        const VectorXd& x,
-        std::vector<unsigned int>& hessian_row_indices,
-        std::vector<unsigned int>& hessian_col_indices) const {
+calc_sparsity_hessian_lagrangian(const VectorXd& x,
+        SparsityCoordinates& hessian_sparsity_coordinates) const {
     const int num_vars = (int)m_problem.get_num_variables();
 
     SymmetricSparsityPattern hescon_sparsity(num_vars);
@@ -159,7 +153,7 @@ calc_sparsity_hessian_lagrangian(
         } catch (const CalcSparsityHessianLagrangianNotImplemented&) {
             TROPTER_THROW("User requested use of user-supplied sparsity for "
                 "the Hessian of the Lagrangian, but "
-                "calc_sparsity_hessian_lagrangian() is not implemented.")
+                "calc_sparsity_hessian_lagrangian() is not implemented.");
         }
 
     } else {
@@ -183,8 +177,7 @@ calc_sparsity_hessian_lagrangian(
     // Create GraphColoring objects.
     m_hescon_coloring.reset(new HessianColoring(hescon_sparsity));
     m_hesobj_coloring.reset(new HessianColoring(hesobj_sparsity));
-    m_hesobj_coloring->get_coordinate_format(
-            m_hesobj_row_indices, m_hesobj_col_indices);
+    m_hesobj_coloring->get_coordinate_format(m_hesobj_indices);
 
     // Sparsity of Hessian of Lagrangian.
     // ----------------------------------
@@ -192,8 +185,7 @@ calc_sparsity_hessian_lagrangian(
     hessian_sparsity.add_in_nonzeros(hesobj_sparsity);
 
     m_hessian_coloring.reset(new HessianColoring(hessian_sparsity));
-    m_hessian_coloring->get_coordinate_format(
-            hessian_row_indices, hessian_col_indices);
+    m_hessian_coloring->get_coordinate_format(hessian_sparsity_coordinates);
 
     //hessian_sparsity.write("DEBUG_findiff_hessian_lagrangian_sparsity.csv");
 }
@@ -409,9 +401,9 @@ calc_hessian_lagrangian(unsigned num_variables, const double* x_raw,
 void Problem<double>::Decorator::
 calc_hessian_objective(const VectorXd& x0,
         VectorXd& hesobj_values) const {
-    assert(m_hesobj_row_indices.size() == m_hesobj_col_indices.size());
+    assert(m_hesobj_indices.row.size() == m_hesobj_indices.col.size());
 
-    hesobj_values = VectorXd::Zero(m_hesobj_row_indices.size());
+    hesobj_values = VectorXd::Zero(m_hesobj_indices.row.size());
 
     const double& eps = get_findiff_hessian_step_size();
     const double eps_squared = eps * eps;
@@ -437,9 +429,9 @@ calc_hessian_objective(const VectorXd& x0,
         }
         return m_perturbed_objective_cache[i];
     };
-    for (int inz = 0; inz < (int)m_hesobj_row_indices.size(); ++inz) {
-        int i = m_hesobj_row_indices[inz];
-        int j = m_hesobj_col_indices[inz];
+    for (int inz = 0; inz < (int)m_hesobj_indices.row.size(); ++inz) {
+        int i = m_hesobj_indices.row[inz];
+        int j = m_hesobj_indices.col[inz];
 
         if (i == j) {
 
@@ -484,8 +476,8 @@ calc_hessian_objective(const VectorXd& x0,
     }
     // std::cout << "DEBUG hessian_objective\n";
     // for (int inz = 0; inz < (int)hesobj_values.size(); ++inz) {
-    //     std::cout << "(" << m_hesobj_row_indices[inz] << "," <<
-    //             m_hesobj_col_indices[inz] << "): " <<
+    //     std::cout << "(" << m_hesobj_indices.row[inz] << "," <<
+    //             m_hesobj_indices.col[inz] << "): " <<
     //             hesobj_values[inz] << std::endl;
     // }
 }
@@ -508,12 +500,12 @@ calc_hessian_lagrangian_slow(unsigned num_variables, const double* x_raw,
     double lagr_0;
     calc_lagrangian(x, obj_factor, lambda, lagr_0);
 
-    assert(m_hessian_row_indices.size() == m_hessian_col_indices.size());
+    assert(m_hessian_indices.row.size() == m_hessian_indices.col.size());
 
     // TODO can avoid computing f(x + eps * e_i) multiple times.
-    for (int inz = 0; inz < (int)m_hessian_row_indices.size(); ++inz) {
-        int i = m_hessian_row_indices[inz];
-        int j = m_hessian_col_indices[inz];
+    for (int inz = 0; inz < (int)m_hessian_indices.row.size(); ++inz) {
+        int i = m_hessian_indices.row[inz];
+        int j = m_hessian_indices.col[inz];
 
         if (i == j) {
 

@@ -17,6 +17,7 @@
 #include "Solver.h"
 #include "Problem.h"
 
+#include <tropter/SparsityPattern.h>
 #include <tropter/Exception.hpp>
 
 using Eigen::VectorXd;
@@ -180,11 +181,10 @@ Solver::optimize() const {
 }
 
 void Solver::calc_sparsity(const Eigen::VectorXd guess,
-        std::vector<unsigned int>& jacobian_row_indices,
-        std::vector<unsigned int>& jacobian_col_indices,
-        bool provide_hessian_indices,
-        std::vector<unsigned int>& hessian_row_indices,
-        std::vector<unsigned int>& hessian_col_indices) const {
+        SparsityCoordinates& jacobian_sparsity,
+        bool provide_hessian_sparsity,
+        SparsityCoordinates& hessian_sparsity
+) const {
     VectorXd variables_random;
     const VectorXd* variables_for_sparsity = nullptr;
     if (get_sparsity_detection() == "initial-guess") {
@@ -194,12 +194,11 @@ void Solver::calc_sparsity(const Eigen::VectorXd guess,
         variables_for_sparsity = &variables_random;
     }
     assert(variables_for_sparsity);
-    m_problem->calc_sparsity(*variables_for_sparsity,
-            jacobian_row_indices, jacobian_col_indices,
-            provide_hessian_indices, hessian_row_indices, hessian_col_indices);
+    m_problem->calc_sparsity(*variables_for_sparsity, jacobian_sparsity,
+            provide_hessian_sparsity, hessian_sparsity);
 
-    TROPTER_THROW_IF(!provide_hessian_indices && (
-            hessian_row_indices.size() || hessian_col_indices.size()),
+    TROPTER_THROW_IF(!provide_hessian_sparsity && (
+            hessian_sparsity.row.size() || hessian_sparsity.col.size()),
             "Hessian sparsity not requested but was provided.");
 }
 

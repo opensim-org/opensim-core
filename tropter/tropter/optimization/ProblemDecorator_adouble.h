@@ -20,6 +20,9 @@
 #include "ProblemDecorator.h"
 
 namespace tropter {
+
+struct SparsityCoordinates;
+
 namespace optimization {
 
 /// This specialization uses automatic differentiation (via ADOL-C) to
@@ -33,11 +36,9 @@ public:
     /// Delete memory allocated by ADOL-C.
     virtual ~Decorator();
     void calc_sparsity(const Eigen::VectorXd& variables,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            bool provide_hessian_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const override;
+            SparsityCoordinates& jacobian,
+            bool provide_hessian_sparsity,
+            SparsityCoordinates& hessian) const override;
     void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const override;

@@ -86,8 +86,7 @@ public:
     /// Get the sparsity pattern in coordinate (row, column) format.
     /// The length of both arguments will be the number of nonzeros.
     /// This is the coordinate format used by ColPack in recover().
-    void get_coordinate_format(std::vector<unsigned int>& row_indices,
-            std::vector<unsigned int>& col_indices) const;
+    void get_coordinate_format(SparsityCoordinates& sparsity) const;
 
     /// Given a compressed dense Jacobian (probably computed using finite
     /// differences by perturbing by each of the seed's columns), recover the
@@ -158,8 +157,7 @@ public:
     /// Get the sparsity pattern in coordinate (row, column) format.
     /// The length of both arguments will be the number of nonzeros.
     /// This is the coordinate format used by ColPack in recover().
-    void get_coordinate_format(std::vector<unsigned int>& row_indices,
-            std::vector<unsigned int>& col_indices) const;
+    void get_coordinate_format(SparsityCoordinates& sparsity) const;
 
     /// Convert a compressed Hessian (num_variables x num_seeds) into the
     /// corresponding coordinate format with (row, col) coordinates given by

@@ -140,10 +140,9 @@ JacobianColoring::JacobianColoring(SparsityPattern sparsity)
 }
 
 void JacobianColoring::get_coordinate_format(
-        std::vector<unsigned int>& row_indices,
-        std::vector<unsigned int>& col_indices) const {
-    row_indices = m_recovered_row_indices;
-    col_indices = m_recovered_col_indices;
+        SparsityCoordinates& sparsity) const {
+    sparsity.row = m_recovered_row_indices;
+    sparsity.col = m_recovered_col_indices;
 }
 
 void JacobianColoring::recover(const Eigen::MatrixXd& jacobian_compressed,
@@ -272,10 +271,9 @@ HessianColoring::HessianColoring(const SymmetricSparsityPattern& sparsity)
 HessianColoring::~HessianColoring() {}
 
 void HessianColoring::get_coordinate_format(
-        std::vector<unsigned int>& row_indices,
-        std::vector<unsigned int>& col_indices) const {
-    row_indices = m_recovered_row_indices;
-    col_indices = m_recovered_col_indices;
+        SparsityCoordinates& sparsity) const {
+    sparsity.row = m_recovered_row_indices;
+    sparsity.col = m_recovered_col_indices;
 }
 
 void HessianColoring::recover(const Eigen::MatrixXd& hessian_compressed,

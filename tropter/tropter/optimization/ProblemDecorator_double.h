@@ -19,6 +19,8 @@
 #include "Problem.h"
 #include "ProblemDecorator.h"
 
+#include <tropter/SparsityPattern.h>
+
 namespace tropter {
 
 namespace optimization {
@@ -38,12 +40,10 @@ class Problem<double>::Decorator
 public:
     Decorator(const Problem<double>& problem);
     ~Decorator();
-    void calc_sparsity(const Eigen::VectorXd& variables_guess,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            bool provide_hessian_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const override;
+    void calc_sparsity(const Eigen::VectorXd& variables,
+            SparsityCoordinates& jacobian_sparsity,
+            bool provide_hessian_sparsity,
+            SparsityCoordinates& hessian_sparsity) const override;
     void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const override;
@@ -72,8 +72,7 @@ public:
 private:
 
     void calc_sparsity_hessian_lagrangian(
-            const Eigen::VectorXd&,
-            std::vector<unsigned int>&, std::vector<unsigned int>&) const;
+            const Eigen::VectorXd&, SparsityCoordinates&) const;
 
     void calc_hessian_objective(const Eigen::VectorXd& x0,
             Eigen::VectorXd& hesobj_values) const;
@@ -117,11 +116,9 @@ private:
     mutable std::unique_ptr<HessianColoring> m_hesobj_coloring;
     mutable std::unique_ptr<HessianColoring> m_hessian_coloring;
     // TODO temporary until we use ColPack.
-    mutable std::vector<unsigned int> m_hesobj_row_indices;
-    mutable std::vector<unsigned int> m_hesobj_col_indices;
+    mutable SparsityCoordinates m_hesobj_indices;
     // Only set if using the slow Hessian approximation.
-    mutable std::vector<unsigned int> m_hessian_row_indices;
-    mutable std::vector<unsigned int> m_hessian_col_indices;
+    mutable SparsityCoordinates m_hessian_indices;
     // Working memory.
     // mutable Eigen::VectorXd m_constr_working;
     mutable Eigen::Matrix<bool, Eigen::Dynamic, 1>

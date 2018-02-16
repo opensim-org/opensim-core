@@ -23,6 +23,9 @@
 #include <unordered_map>
 
 namespace tropter {
+
+struct SparsityCoordinates;
+
 namespace optimization {
 
 class AbstractProblem;
@@ -154,11 +157,9 @@ protected:
     /// @throws if provide_hessian_indices is false but the decorator provides
     ///         Hessian indices.
     void calc_sparsity(const Eigen::VectorXd guess,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            bool provide_hessian_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const;
+            SparsityCoordinates& jacobian_sparsity,
+            bool provide_hessian_sparsity,
+            SparsityCoordinates& hessian_sparsity) const;
     /// @}
 
 

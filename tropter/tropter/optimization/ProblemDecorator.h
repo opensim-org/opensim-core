@@ -22,6 +22,9 @@
 #include "AbstractProblem.h"
 
 namespace tropter {
+
+struct SparsityCoordinates;
+
 namespace optimization {
 
 /// This class provides an interface of the OptimizationProblem to the
@@ -62,11 +65,9 @@ public:
     // TODO create a struct to hold row and col indices.
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
     virtual void calc_sparsity(const Eigen::VectorXd& variables,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            bool provide_hessian_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const = 0;
+            SparsityCoordinates& jacobian_sparsity,
+            bool provide_hessian_sparsity,
+            SparsityCoordinates& hessian_sparsity) const = 0;
     virtual void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const = 0;
