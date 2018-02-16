@@ -32,7 +32,11 @@ public:
     using Index = Ipopt::Index;
     using Number = Ipopt::Number;
     TNLP(const ProblemDecorator& problem);
-    void initialize(const Eigen::VectorXd& guess, const bool&);
+    void initialize(const VectorXd& guess,
+            std::vector<unsigned int> jacobian_row_indices,
+            std::vector<unsigned int> jacobian_col_indices,
+            std::vector<unsigned int> hessian_row_indices,
+            std::vector<unsigned int> hessian_col_indices);
     const Eigen::VectorXd& get_solution() const { return m_solution; }
     const double& get_optimal_objective_value() const
     {   return m_optimal_obj_value; }
@@ -149,7 +153,7 @@ std::string convert_IPOPT_ApplicationReturnStatus_to_string(
     }
 }
 
-Solution IPOPTSolver::optimize_impl(const VectorXd& variables) const {
+Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
     // Set options.
@@ -231,7 +235,15 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& variables) const {
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(*m_problem.get());
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
-    nlp->initialize(variables, need_exact_hessian);
+    std::vector<unsigned int> jacobian_row_indices;
+    std::vector<unsigned int> jacobian_col_indices;
+    std::vector<unsigned int> hessian_row_indices;
+    std::vector<unsigned int> hessian_col_indices;
+    calc_sparsity(guess, jacobian_row_indices, jacobian_col_indices,
+            need_exact_hessian, hessian_row_indices, hessian_col_indices);
+    nlp->initialize(guess,
+            std::move(jacobian_row_indices), std::move(jacobian_col_indices),
+            std::move(hessian_row_indices), std::move(hessian_col_indices));
 
     // Optimize!!!
     // -----------
@@ -276,7 +288,10 @@ bool IPOPTSolver::TNLP::get_nlp_info(Index& num_variables,
 }
 
 void IPOPTSolver::TNLP::initialize(const VectorXd& guess,
-        const bool& need_exact_hessian) {
+        std::vector<unsigned int> jacobian_row_indices,
+        std::vector<unsigned int> jacobian_col_indices,
+        std::vector<unsigned int> hessian_row_indices,
+        std::vector<unsigned int> hessian_col_indices) {
     // TODO all of this content should be taken care of for us by
     // Problem.
 
@@ -285,19 +300,15 @@ void IPOPTSolver::TNLP::initialize(const VectorXd& guess,
     // is ever called twice...TNLP should be one-time use!
     assert(m_solution.size() == 0);
     //m_solution.resize(0);
-    // TODO be smart about the need to copy "guess" (could be long)?
     m_initial_guess = guess;
-    // TODO check their sizes.
     assert(guess.size() == m_num_variables);
 
-    m_problem.calc_sparsity(guess,
-            m_jacobian_row_indices, m_jacobian_col_indices,
-            need_exact_hessian, m_hessian_row_indices, m_hessian_col_indices);
-    m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
+    m_jacobian_row_indices = std::move(jacobian_row_indices);
+    m_jacobian_col_indices = std::move(jacobian_col_indices);
+    m_hessian_row_indices = std::move(hessian_row_indices);
+    m_hessian_col_indices = std::move(hessian_col_indices);
 
-    TROPTER_THROW_IF(!need_exact_hessian && (
-            m_hessian_row_indices.size() || m_hessian_col_indices.size()),
-            "Exact Hessian not needed but sparsity pattern was provided.");
+    m_jacobian_num_nonzeros = (unsigned)m_jacobian_row_indices.size();
     m_hessian_num_nonzeros = (unsigned)m_hessian_row_indices.size();
 }
 

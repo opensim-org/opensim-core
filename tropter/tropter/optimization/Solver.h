@@ -48,6 +48,7 @@ class Solver {
 public:
     /// Provide the problem to solve.
     Solver(const AbstractProblem& problem);
+    virtual ~Solver() = default;
     /// Optimize the optimization problem.
     /// @param[in] guess
     ///     Initial guess to the problem; the length must match the number of
@@ -83,9 +84,16 @@ public:
     void set_hessian_approximation(Optional<std::string> v);
     void set_hessian_approximation(const std::string& v)
     {   set_hessian_approximation(nonstd::optional_lite::make_optional(v)); }
-    /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_mode()
-    void set_findiff_hessian_mode(const std::string& v);
-    /// @copydoc OptimizationProblemDecorator::set_findiff_hessian_step_size()
+
+    /// What point should be used to detect the sparsity of the Jacobian and
+    /// Hessian?
+    ///   - "initial-guess": perturb about the initial guess (default).
+    ///   - "random": perturb about a random point.
+    void set_sparsity_detection(std::string v);
+
+    /// @copydoc ProblemDecorator::set_findiff_hessian_mode()
+    void set_findiff_hessian_mode(std::string v);
+    /// @copydoc ProblemDecorator::set_findiff_hessian_step_size()
     void set_findiff_hessian_step_size(double value);
     /// @}
 
@@ -126,16 +134,33 @@ public:
     Optional<double> get_constraint_tolerance() const;
     /// @copydoc set_hessian_approximation()
     Optional<std::string> get_hessian_approximation() const;
+    const std::string& get_sparsity_detection() const;
     /// @}
 
 protected:
-    virtual Solution
-    optimize_impl(const Eigen::VectorXd& variables) const = 0;
+    virtual Solution optimize_impl(const Eigen::VectorXd& guess) const = 0;
     virtual void get_available_options(
             std::vector<std::string>& options_string,
             std::vector<std::string>& options_int,
             std::vector<std::string>& options_real) const;
     virtual void print_available_options_impl() const {}
+
+    /// @name Services to derived classes.
+    /// @{
+
+    /// This calls the decorator's calc_sparsity() function with the appropriate
+    /// handling of the sparsity_detection setting. The provided guess may not
+    /// be used.
+    /// @throws if provide_hessian_indices is false but the decorator provides
+    ///         Hessian indices.
+    void calc_sparsity(const Eigen::VectorXd guess,
+            std::vector<unsigned int>& jacobian_row_indices,
+            std::vector<unsigned int>& jacobian_col_indices,
+            bool provide_hessian_indices,
+            std::vector<unsigned int>& hessian_row_indices,
+            std::vector<unsigned int>& hessian_col_indices) const;
+    /// @}
+
 
 
 
@@ -157,6 +182,7 @@ private:
     Optional<double> m_convergence_tolerance;
     Optional<double> m_constraint_tolerance;
     Optional<std::string> m_hessian_approximation;
+    std::string m_sparsity_detection = "initial-guess";
 
     OptionsMap<std::string> m_advanced_options_string;
     OptionsMap<int> m_advanced_options_int;

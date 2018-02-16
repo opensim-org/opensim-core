@@ -58,6 +58,7 @@ public:
     Eigen::VectorXd make_initial_guess_from_bounds() const;
     /// Create a vector with random variable values within the variable
     /// bounds, potentially for use as an initial guess.
+    // TODO rename to random_variables
     Eigen::VectorXd make_random_iterate_within_bounds() const;
     /// When using finite differences to compute derivatives, should we use
     /// the user-supplied sparsity pattern of the Hessian (provided by

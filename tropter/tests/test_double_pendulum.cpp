@@ -114,6 +114,7 @@ public:
         const int N = 100;
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.get_opt_solver().set_hessian_approximation(hessian_approx);
+        dircol.get_opt_solver().set_sparsity_detection("random");
         tropter::Iterate guess;
         const int Nguess = 2;
         guess.time.setLinSpaced(Nguess, 0, 1);
@@ -211,6 +212,7 @@ public:
         // from the solution using an exact Hessian does not converge.
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
+        dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
         //dircol.print_constraint_values(solution);
         solution.write("double_pendulum_coordinate_tracking.csv");
@@ -305,8 +307,9 @@ public:
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", solver, N);
         dircol.get_opt_solver().set_hessian_approximation(
                 hessian_approx);
-         dircol.get_opt_solver().set_advanced_option_string
-                 ("print_timing_statistics", "yes");
+        dircol.get_opt_solver().set_sparsity_detection("random");
+        dircol.get_opt_solver().set_advanced_option_string
+                ("print_timing_statistics", "yes");
         Solution solution = dircol.solve();
         // dircol.print_constraint_values(solution);
         solution.write("implicit_double_pendulum_coordinate_tracking.csv");

@@ -38,6 +38,7 @@ namespace tropter {
 /// <#>,<#>,...,<#>,...,<NaN>,...
 /// @endverbatim
 /// @ingroup optimalcontrol
+// TODO rename to Variables?
 struct Iterate {
     Eigen::RowVectorXd time;
     Eigen::MatrixXd states;

@@ -56,19 +56,22 @@ TEST_CASE("Unconstrained Hessian")
     auto deca = problem.make_decorator();
 
     // Expected derivatives.
-    // -------------------
-    std::vector<unsigned int> jacobian_row_indices;
-    std::vector<unsigned int> jacobian_col_indices;
-    std::vector<unsigned int> hessian_row_indices;
-    std::vector<unsigned int> hessian_col_indices;
-    deca->calc_sparsity(deca->make_initial_guess_from_bounds(),
-            jacobian_row_indices, jacobian_col_indices,
-            true, hessian_row_indices, hessian_col_indices);
+    // ---------------------
+    int num_hessian_nonzeros;
+    {
+        std::vector<unsigned int> jacobian_row_indices;
+        std::vector<unsigned int> jacobian_col_indices;
+        std::vector<unsigned int> hessian_row_indices;
+        std::vector<unsigned int> hessian_col_indices;
+        deca->calc_sparsity(deca->make_initial_guess_from_bounds(),
+                jacobian_row_indices, jacobian_col_indices,
+                true, hessian_row_indices, hessian_col_indices);
+        num_hessian_nonzeros = (int)hessian_row_indices.size();
+    }
 
     // Hessian.
     const double obj_factor = 1.0;
     VectorXd lambda(problem.get_num_constraints());
-    int num_hessian_nonzeros = (int)hessian_row_indices.size();
     VectorXd expected_hessian_values(num_hessian_nonzeros);
     deca->calc_hessian_lagrangian(
             problem.get_num_variables(), x.data(), true, obj_factor,
@@ -85,7 +88,7 @@ TEST_CASE("Unconstrained Hessian")
         std::vector<unsigned int> jacobian_col_indices;
         std::vector<unsigned int> hessian_row_indices;
         std::vector<unsigned int> hessian_col_indices;
-        decorator->calc_sparsity(decorator->make_initial_guess_from_bounds(),
+        decorator->calc_sparsity(decorator->make_random_iterate_within_bounds(),
                 jacobian_row_indices, jacobian_col_indices,
                 true, hessian_row_indices, hessian_col_indices);
 
@@ -831,6 +834,77 @@ TEST_CASE("Validate sparsity input") {
                 Catch::Contains("must be in the upper triangle"));
     }
 
+}
+
+
+// Provide access to the protected calc_sparsity() function.
+class IPOPTSolverCalcSparsity : public IPOPTSolver {
+public:
+    using IPOPTSolver::IPOPTSolver;
+    void calc_sparsity(const Eigen::VectorXd guess,
+            std::vector<unsigned int>& jri, std::vector<unsigned int>& jci,
+            bool provide_hessian_indices, std::vector<unsigned int>& hri,
+            std::vector<unsigned int>& hci) const {
+        IPOPTSolver::calc_sparsity(guess, jri, jci, provide_hessian_indices,
+                hri, hci);
+    }
+};
+template <typename T>
+class SparsityDetectionProblem : public Problem<T> {
+public:
+    SparsityDetectionProblem() : Problem<T>(2, 2) {
+        this->set_variable_bounds(Vector2d(0, 0), Vector2d(1, 1));
+        this->set_constraint_bounds(Vector2d(0, 0), Vector2d(0, 0));
+    }
+    void calc_objective(const VectorX<T>&, T& obj_value)
+    const override {
+        obj_value = 0;
+    }
+    void calc_constraints(const VectorX<T>& x, Eigen::Ref<VectorX<T>> constr)
+    const override {
+        // If x is random, the Jacobian has 2 entries.
+        // If x is the initial guess, the Jacobian has 3 entries.
+        constr.setZero();
+        constr[0] = x[0] * x[1];
+        // Need a loose tolerance, as the perturbation
+        if (((*guess) - x).norm() < 1e-4) {
+            constr[1] = x[1];
+        }
+    }
+    const VectorXd* guess = nullptr;
+
+    static void run_test() {
+        SparsityDetectionProblem<double> problem;
+        const auto decorator = problem.make_decorator();
+        IPOPTSolverCalcSparsity solver(problem);
+        REQUIRE(solver.get_sparsity_detection() == "initial-guess");
+        std::vector<unsigned int> jacobian_row_indices;
+        std::vector<unsigned int> jacobian_col_indices;
+        std::vector<unsigned int> hessian_row_indices;
+        std::vector<unsigned int> hessian_col_indices;
+        VectorXd guess = decorator->make_initial_guess_from_bounds();
+        problem.guess = &guess;
+        solver.calc_sparsity(guess, jacobian_row_indices, jacobian_col_indices,
+                false, hessian_row_indices, hessian_col_indices);
+        CAPTURE(jacobian_row_indices);
+        CAPTURE(jacobian_col_indices);
+        REQUIRE(jacobian_row_indices.size() == 3);
+        REQUIRE(jacobian_col_indices.size() == 3);
+
+        solver.set_sparsity_detection("random");
+        solver.calc_sparsity(guess, jacobian_row_indices, jacobian_col_indices,
+                false, hessian_row_indices, hessian_col_indices);
+        REQUIRE(jacobian_row_indices.size() == 2);
+        REQUIRE(jacobian_col_indices.size() == 2);
+
+        REQUIRE_THROWS(solver.set_sparsity_detection("invalid"));
+    }
+};
+TEST_CASE("ProblemDecorator sparsity_detection") {
+    // Ensure that the sparsity_detection setting is processed properly.
+
+    SparsityDetectionProblem<double>::run_test();
+    SparsityDetectionProblem<adouble>::run_test();
 }
 
 // TODO add test_derivatives_optimal_control

@@ -196,6 +196,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         auto ocp = std::make_shared<OscillatorMass<double>>();
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_hessian_approximation("limited-memory");
+        dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);
@@ -206,6 +207,7 @@ TEST_CASE("OscillatorMass, IPOPT") {
         DirectCollocationSolver<double> dircol(ocp, "trapezoidal", "ipopt", N);
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         dircol.get_opt_solver().set_hessian_approximation("exact");
+        dircol.get_opt_solver().set_sparsity_detection("random");
         Solution solution = dircol.solve();
 
         REQUIRE(Approx(solution.parameters[0]) == ocp->MASS);

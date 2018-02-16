@@ -83,6 +83,7 @@ public:
         DirectCollocationSolver<T> dircol(ocp, "trapezoidal", "ipopt", N);
         //dircol.get_opt_solver().set_advanced_option_string
         //        ("derivative_test", "second-order");
+        dircol.get_opt_solver().set_sparsity_detection("random");
         dircol.get_opt_solver().set_findiff_hessian_step_size(1e-3);
         Solution solution = dircol.solve();
         solution.write("sliding_mass_minimum_time_solution.csv");

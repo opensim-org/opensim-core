@@ -55,7 +55,7 @@ Problem<double>::Decorator::Decorator(
         ProblemDecorator(problem), m_problem(problem) {}
 
 void Problem<double>::Decorator::
-calc_sparsity(const Eigen::VectorXd& /*guess*/,
+calc_sparsity(const Eigen::VectorXd& variables,
         std::vector<unsigned int>& jacobian_row_indices,
         std::vector<unsigned int>& jacobian_col_indices,
         bool provide_hessian_indices,
@@ -64,8 +64,6 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
 {
     const auto num_vars = get_num_variables();
     m_x_working = VectorXd::Zero(num_vars);
-
-    VectorXd xrand = m_problem.make_random_iterate_within_bounds();
 
     // Gradient.
     // =========
@@ -78,7 +76,8 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
                 return obj_value;
             };
     SparsityPattern gradient_sparsity =
-            calc_gradient_sparsity_with_perturbation(xrand, calc_objective);
+            calc_gradient_sparsity_with_perturbation(variables,
+                    calc_objective);
     m_gradient_nonzero_indices =
             gradient_sparsity.convert_to_CompressedRowSparsity()[0];
 
@@ -96,7 +95,7 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
                 m_problem.calc_constraints(vars, constr);
             };
     SparsityPattern jacobian_sparsity =
-            calc_jacobian_sparsity_with_perturbation(xrand,
+            calc_jacobian_sparsity_with_perturbation(variables,
                     num_jac_rows, calc_constraints);
 
     m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
@@ -114,7 +113,7 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
     // Hessian.
     // ========
     if (provide_hessian_indices) {
-        calc_sparsity_hessian_lagrangian(xrand,
+        calc_sparsity_hessian_lagrangian(variables,
                 hessian_row_indices, hessian_col_indices);
 
         // TODO produce a more informative number/description.
@@ -129,7 +128,6 @@ calc_sparsity(const Eigen::VectorXd& /*guess*/,
             m_hessian_col_indices = hessian_col_indices;
         }
     }
-
 }
 
 

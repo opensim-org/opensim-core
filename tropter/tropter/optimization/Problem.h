@@ -37,11 +37,12 @@ public:
     /// OptimizationProblem.
     class Decorator;
 
-    virtual ~Problem() = default;
     Problem() = default;
 
     Problem(unsigned num_variables, unsigned num_constraints) :
             AbstractProblem(num_variables, num_constraints) {}
+
+    virtual ~Problem() = default;
 
     /// Implement this function to compute the objective function.
     /// @param variables
