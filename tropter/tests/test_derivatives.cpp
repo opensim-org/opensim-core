@@ -840,7 +840,7 @@ public:
         constr.setZero();
         constr[0] = x[0] * x[1];
         // Need a loose tolerance, as the perturbation
-        if (((*guess) - x).norm() < 1e-4) {
+        if ((guess->cast<T>() - x).norm() < 1e-4) {
             constr[1] = x[1];
         }
     }
