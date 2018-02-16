@@ -26,6 +26,7 @@ using Eigen::Ref;
 using Ipopt::Index;
 using Ipopt::Number;
 
+using tropter::SparsityCoordinates;
 using namespace tropter::optimization;
 
 class IPOPTSolver::TNLP : public Ipopt::TNLP {
