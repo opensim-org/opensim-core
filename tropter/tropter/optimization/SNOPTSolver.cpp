@@ -13,7 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // ----------------------------------------------------------------------------
-
 #include "SNOPTSolver.h"
 #include "Problem.h"
 
@@ -156,11 +155,9 @@ SNOPTSolver::optimize_impl(const VectorXd& variablesArg) const {
     // TODO do not need these:
     std::vector<unsigned int> hessian_row_indices;
     std::vector<unsigned int> hessian_col_indices;
-    m_problem->calc_sparsity(variables,
+    calc_sparsity(variables,
             jacobian_row_indices, jacobian_col_indices, false,
             hessian_row_indices,  hessian_col_indices);
-    assert(hessian_row_indices.size() == 0);
-    assert(hessian_col_indices.size() == 0);
     int jacobian_num_nonzeros = (int)jacobian_row_indices.size();
     int length_G = num_variables + jacobian_num_nonzeros;
     int num_nonzeros_G = length_G;

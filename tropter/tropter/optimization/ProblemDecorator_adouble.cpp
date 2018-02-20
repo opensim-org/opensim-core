@@ -14,6 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #include "ProblemDecorator_adouble.h"
+#include <tropter/SparsityPattern.h>
 #include <tropter/Exception.hpp>
 
 #ifdef _MSC_VER
@@ -77,11 +78,9 @@ Problem<adouble>::Decorator::~Decorator() {
 
 void Problem<adouble>::Decorator::
 calc_sparsity(const Eigen::VectorXd& x,
-        std::vector<unsigned int>& jacobian_row_indices,
-        std::vector<unsigned int>& jacobian_col_indices,
-        bool provide_hessian_indices,
-        std::vector<unsigned int>& hessian_row_indices,
-        std::vector<unsigned int>& hessian_col_indices) const
+        SparsityCoordinates& jacobian_sparsity,
+        bool provide_hessian_sparsity,
+        SparsityCoordinates& hessian_sparsity) const
 {
     const auto& num_variables = get_num_variables();
     assert(x.size() == num_variables);
@@ -120,15 +119,15 @@ calc_sparsity(const Eigen::VectorXd& x,
         //assert(success == 3);
         assert(success >= 0);
         delete [] jacobian_values;
-        jacobian_row_indices.resize(m_jacobian_num_nonzeros);
-        jacobian_col_indices.resize(m_jacobian_num_nonzeros);
+        jacobian_sparsity.row.resize(m_jacobian_num_nonzeros);
+        jacobian_sparsity.col.resize(m_jacobian_num_nonzeros);
         // Copy ADOL-C's sparsity memory into Tropter's sparsity memory.
         std::copy(m_jacobian_row_indices,
                 m_jacobian_row_indices + m_jacobian_num_nonzeros,
-                jacobian_row_indices.data());
+                jacobian_sparsity.row.data());
         std::copy(m_jacobian_col_indices,
                 m_jacobian_col_indices + m_jacobian_num_nonzeros,
-                jacobian_col_indices.data());
+                jacobian_sparsity.col.data());
         // TODO don't duplicate the memory consumption for storing the sparsity
         // pattern: store the pointer to Ipopt's sparsity pattern?
 
@@ -142,7 +141,7 @@ calc_sparsity(const Eigen::VectorXd& x,
     TROPTER_THROW_IF(m_problem.get_use_supplied_sparsity_hessian_lagrangian(),
             "Cannot use supplied sparsity pattern for "
             "Hessian of Lagrangian when using automatic differentiation.");
-    if (provide_hessian_indices) {
+    if (provide_hessian_sparsity) {
         VectorXd lambda_vector = Eigen::VectorXd::Ones(num_constraints);
         double lagr_value; // Unused.
         trace_lagrangian(m_lagrangian_tag, num_variables, x.data(), 1.0,
@@ -159,14 +158,14 @@ calc_sparsity(const Eigen::VectorXd& x,
         // TODO improve error handling.
         assert(status >= 0);
         delete [] hessian_values;
-        hessian_row_indices.resize(m_hessian_num_nonzeros);
-        hessian_col_indices.resize(m_hessian_num_nonzeros);
+        hessian_sparsity.row.resize(m_hessian_num_nonzeros);
+        hessian_sparsity.col.resize(m_hessian_num_nonzeros);
         std::copy(m_hessian_row_indices,
                 m_hessian_row_indices + m_hessian_num_nonzeros,
-                hessian_row_indices.data());
+                hessian_sparsity.row.data());
         std::copy(m_hessian_col_indices,
                 m_hessian_col_indices + m_hessian_num_nonzeros,
-                hessian_col_indices.data());
+                hessian_sparsity.col.data());
         // TODO don't duplicate the memory consumption for storing the sparsity
         // pattern: store the pointer to IPOPT's sparsity pattern?
 
@@ -174,7 +173,7 @@ calc_sparsity(const Eigen::VectorXd& x,
         m_hessian_obj_factor_lambda.resize(1 + num_constraints);
 
         //SparsityPattern hes_sparsity(num_variables, num_variables,
-        //        hessian_row_indices, hessian_col_indices);
+        //        hessian_sparsity.row, hessian_sparsity.col);
         //hes_sparsity.write("DEBUG_adolc_hessian_lagrangian_sparsity.csv");
     }
 }

@@ -22,6 +22,9 @@
 #include "AbstractProblem.h"
 
 namespace tropter {
+
+struct SparsityCoordinates;
+
 namespace optimization {
 
 /// This class provides an interface of the OptimizationProblem to the
@@ -55,15 +58,16 @@ public:
     /// @see AbstractOptimizationProblem::make_random_iterate_within_bounds()
     Eigen::VectorXd make_random_iterate_within_bounds() const
     {   return m_problem.make_random_iterate_within_bounds(); }
+    /// This function determines the sparsity pattern of the Jacobian and
+    /// Hessian, using the provided variables.
+    /// You must call this function first before calling calc_objective(),
+    /// calc_constraints(), etc.
+    // TODO create a struct to hold row and col indices.
     // TODO b/c of SNOPT, want to be able to ask for sparsity separately.
-    // You must call this function first before calling objective(),
-    // constraints(), etc.
     virtual void calc_sparsity(const Eigen::VectorXd& variables,
-            std::vector<unsigned int>& jacobian_row_indices,
-            std::vector<unsigned int>& jacobian_col_indices,
-            bool provide_hessian_indices,
-            std::vector<unsigned int>& hessian_row_indices,
-            std::vector<unsigned int>& hessian_col_indices) const = 0;
+            SparsityCoordinates& jacobian_sparsity,
+            bool provide_hessian_sparsity,
+            SparsityCoordinates& hessian_sparsity) const = 0;
     virtual void calc_objective(unsigned num_variables, const double* variables,
             bool new_variables,
             double& obj_value) const = 0;
@@ -96,11 +100,14 @@ public:
     /// [1] Bohme TJ, Frank B. Hybrid Systems, Optimal Control and Hybrid
     /// Vehicles: Theory, Methods and Applications. Springer 2017.
     void set_findiff_hessian_step_size(double value);
-    ///  - "fast": default
-    ///  - "slow": Slower mode to be used only for debugging.
-    void set_findiff_hessian_mode(const std::string& setting);
+    ///  - "fast": default. Reduce the number of calls to the constraint
+    ///    function by using graph coloring.
+    ///  - "slow": Slower mode to be used only for debugging. Each nonzero of
+    ///    the Hessian of the Lagrangian is computed separately.
+    void set_findiff_hessian_mode(std::string value);
     /// @copydoc set_findiff_hessian_step_size()
     double get_findiff_hessian_step_size() const;
+    /// @copydoc set_findiff_hessian_mode()
     const std::string& get_findiff_hessian_mode() const;
     /// @}
 

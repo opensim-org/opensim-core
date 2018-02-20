@@ -17,6 +17,7 @@
 #include "Solver.h"
 #include "Problem.h"
 
+#include <tropter/SparsityPattern.h>
 #include <tropter/Exception.hpp>
 
 using Eigen::VectorXd;
@@ -67,8 +68,17 @@ void Solver::set_hessian_approximation(Optional<std::string> v) {
 Optional<std::string> Solver::get_hessian_approximation() const {
     return m_hessian_approximation;
 }
-void Solver::set_findiff_hessian_mode(const std::string& v) {
-    m_problem->set_findiff_hessian_mode(v);
+void Solver::set_sparsity_detection(std::string v) {
+    TROPTER_VALUECHECK(v == "random" || v == "initial-guess",
+            "sparsity_detection", v, "'random' or 'initial-guess'");
+    m_sparsity_detection = std::move(v);
+}
+const std::string& Solver::get_sparsity_detection() const {
+    return m_sparsity_detection;
+}
+
+void Solver::set_findiff_hessian_mode(std::string v) {
+    m_problem->set_findiff_hessian_mode(std::move(v));
 }
 void Solver::set_findiff_hessian_step_size(double v) {
     m_problem->set_findiff_hessian_step_size(v);
@@ -169,3 +179,29 @@ Solver::optimize() const {
     m_problem->validate();
     return optimize_impl(m_problem->make_initial_guess_from_bounds());
 }
+
+void Solver::calc_sparsity(const Eigen::VectorXd guess,
+        SparsityCoordinates& jacobian_sparsity,
+        bool provide_hessian_sparsity,
+        SparsityCoordinates& hessian_sparsity
+) const {
+    VectorXd variables_random;
+    const VectorXd* variables_for_sparsity = nullptr;
+    if (get_sparsity_detection() == "initial-guess") {
+        variables_for_sparsity = &guess;
+    } else if (get_sparsity_detection() == "random") {
+        variables_random = m_problem->make_random_iterate_within_bounds();
+        variables_for_sparsity = &variables_random;
+    }
+    assert(variables_for_sparsity);
+    m_problem->calc_sparsity(*variables_for_sparsity, jacobian_sparsity,
+            provide_hessian_sparsity, hessian_sparsity);
+
+    TROPTER_THROW_IF(!provide_hessian_sparsity && (
+            hessian_sparsity.row.size() || hessian_sparsity.col.size()),
+            "Hessian sparsity not requested but was provided.");
+}
+
+
+
+

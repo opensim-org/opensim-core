@@ -32,11 +32,10 @@ void ProblemDecorator::set_findiff_hessian_step_size(double value) {
     m_findiff_hessian_step_size = value;
 }
 
-void ProblemDecorator::set_findiff_hessian_mode(
-        const std::string& value) {
+void ProblemDecorator::set_findiff_hessian_mode(std::string value) {
     TROPTER_VALUECHECK(value == "fast" || value == "slow",
             "findiff_hessian_mode", value, "'fast' or 'slow'");
-    m_findiff_hessian_mode = value;
+    m_findiff_hessian_mode = std::move(value);
 }
 
 // Explicit instantiation.

@@ -239,6 +239,14 @@ calc_hessian_sparsity_with_perturbation(
     return sparsity;
 }
 
+/// This struct can hold the sparsity pattern of a matrix in "coordinate
+/// format": two vectors holding the row and column indicies of nonzeros in a
+/// matrix. For example, (row[0], col[0]) is location the first nonzero.
+struct SparsityCoordinates {
+    std::vector<unsigned int> row;
+    std::vector<unsigned int> col;
+};
+
 } // tropter
 
 #endif // TROPTER_SPARSITYPATTERN_H

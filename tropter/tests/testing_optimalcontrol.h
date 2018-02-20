@@ -98,10 +98,10 @@ private:
             Eigen::SparseMatrix<double>& hes) {
         const int num_constraints = nlp->get_num_constraints();
         const int num_variables = nlp->get_num_variables();
-        std::vector<unsigned int> jacrow, jaccol, hesrow, hescol;
-        nlp->calc_sparsity(x, jacrow, jaccol, true, hesrow, hescol);
-        const unsigned num_jac_nonzeros = (unsigned)jacrow.size();
-        const unsigned num_hes_nonzeros = (unsigned)hesrow.size();
+        SparsityCoordinates jac_sparsity, hes_sparsity;
+        nlp->calc_sparsity(x, jac_sparsity, true, hes_sparsity);
+        const unsigned num_jac_nonzeros = (unsigned)jac_sparsity.row.size();
+        const unsigned num_hes_nonzeros = (unsigned)hes_sparsity.row.size();
 
         // Gradient.
         grad.resize(x.size());
@@ -113,7 +113,7 @@ private:
         nlp->calc_jacobian((int)x.size(), x.data(), true,
                 num_jac_nonzeros, jac_vec.data());
         jac = convert_to_SparseMatrix(num_constraints, num_variables,
-                jacrow, jaccol, jac_vec);
+                jac_sparsity.row, jac_sparsity.col, jac_vec);
 
         // Hessian.
         VectorXd hes_vec(num_hes_nonzeros);
@@ -122,8 +122,8 @@ private:
                 (int)x.size(), x.data(), true, 1.0,
                 num_constraints, lambda.data(), true,
                 num_hes_nonzeros, hes_vec.data());
-        hes = convert_to_SparseMatrix(num_variables, num_variables, hesrow,
-                hescol, hes_vec);
+        hes = convert_to_SparseMatrix(num_variables, num_variables,
+                hes_sparsity.row, hes_sparsity.col, hes_vec);
     }
     static void compare_sparse(const Eigen::SparseMatrix<double>& a,
             const Eigen::SparseMatrix<double>& b, double rel_error_tolerance) {
