@@ -1,3 +1,5 @@
+%newobject *::clone;
+
 %include <Muscollo/osimMuscolloDLL.h>
 %include <Muscollo/MuscolloUtilities.h>
 %include <Muscollo/MucoCost.h>

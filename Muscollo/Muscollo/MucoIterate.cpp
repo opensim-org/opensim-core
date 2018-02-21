@@ -328,6 +328,7 @@ TimeSeriesTable MucoIterate::convertToTable() const {
             numParameters) = parameter_nan_rows;     
     }
     TimeSeriesTable table(time, data, labels);
+    // TODO table.updTableMetaData().setValueForKey("header", m_name);
     //table.updTableMetaData().setValueForKey("num_states", numStates);
     //table.updTableMetaData().setValueForKey("num_controls", numControls);
     //table.updTableMetaData().setValueForKey("num_parameters", numParameters);
@@ -558,9 +559,7 @@ double MucoIterate::compareParametersRMS(const MucoIterate& other,
 }
 
 void MucoIterate::ensureUnsealed() const {
-    OPENSIM_THROW_IF(m_sealed, Exception,
-            "This iterate is sealed, to force you to acknowledge the "
-            "solver failed; call unseal() to gain access.");
+    OPENSIM_THROW_IF(m_sealed, MucoIterateIsSealed);
 }
 
 

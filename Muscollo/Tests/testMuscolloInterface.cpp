@@ -708,7 +708,36 @@ void testMucoIterate() {
         SimTK_TEST(deserialized.isNumericallyEqual(orig));
     }
 
-    // TODO ensure that we can't access methods until we unseal.
+    // Test sealing/unsealing.
+    {
+        // Create a class that gives access to the sealed functions, which are
+        // otherwise protected.
+        class MucoIterateDerived : public MucoIterate {
+        public:
+            using MucoIterate::MucoIterate;
+            MucoIterateDerived* clone() const override
+            {   return new MucoIterateDerived(*this); }
+            void setSealedD(bool sealed) { MucoIterate::setSealed(sealed); }
+            bool isSealedD() const { return MucoIterate::isSealed(); }
+        };
+        MucoIterateDerived iterate;
+        SimTK_TEST(!iterate.isSealedD());
+        iterate.setSealedD(true);
+        SimTK_TEST(iterate.isSealedD());
+        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getTime(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getStateNames(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getControlNames(),
+                MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getControlNames(),
+                MucoIterateIsSealed);
+
+        // The clone() function doesn't call ensureSealed(), but the clone should
+        // preserve the value of m_sealed.
+        std::unique_ptr<MucoIterateDerived> ptr(iterate.clone());
+        SimTK_TEST(ptr->isSealedD());
+        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);
+    }
 
 
     // compareStatesControlsRMS
@@ -839,8 +868,6 @@ int main() {
         //SimTK_SUBTEST(testOMUCOSerialization);
         SimTK_SUBTEST(testBounds);
         SimTK_SUBTEST(testBuildingProblem);
-        // TODO what happens when Ipopt does not converge.
-        // TODO specifying optimizer options.
 
         SimTK_SUBTEST(testInterpolate);
     SimTK_END_TEST();
