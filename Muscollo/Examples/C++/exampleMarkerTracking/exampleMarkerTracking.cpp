@@ -91,22 +91,22 @@ int main() {
 
     // Define the optimal control problem.
     // ===================================
-    MucoProblem& mp = muco.updProblem();
+    MucoProblem& problem = muco.updProblem();
 
     // Model (dynamics).
     // -----------------
-    mp.setModel(createDoublePendulumModel());
+    problem.setModel(createDoublePendulumModel());
 
     // Bounds.
     // -------
     double finalTime = 1.0;
-    mp.setTimeBounds(0, finalTime);
-    mp.setStateInfo("j0/q0/value", { -10, 10 });
-    mp.setStateInfo("j0/q0/speed", { -50, 50 });
-    mp.setStateInfo("j1/q1/value", { -10, 10 });
-    mp.setStateInfo("j1/q1/speed", { -50, 50 });
-    mp.setControlInfo("tau0", { -40, 40 });
-    mp.setControlInfo("tau1", { -40, 40 });
+    problem.setTimeBounds(0, finalTime);
+    problem.setStateInfo("j0/q0/value", { -10, 10 });
+    problem.setStateInfo("j0/q0/speed", { -50, 50 });
+    problem.setStateInfo("j1/q1/value", { -10, 10 });
+    problem.setStateInfo("j1/q1/speed", { -50, 50 });
+    problem.setControlInfo("tau0", { -40, 40 });
+    problem.setControlInfo("tau1", { -40, 40 });
 
     // Cost.
     // -----
@@ -135,15 +135,15 @@ int main() {
     // Create cost, set reference, and attach to problem.
     MucoMarkerTrackingCost markerTracking;
     markerTracking.setMarkersReference(ref);
-    mp.addCost(markerTracking);
+    problem.addCost(markerTracking);
 
     // Configure the solver.
     // =====================
-    MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
-    ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
+    MucoTropterSolver& solver = muco.initSolver();
+    solver.set_num_mesh_points(50);
+    solver.set_verbosity(2);
+    solver.set_optim_solver("ipopt");
+    solver.set_optim_hessian_approximation("exact");
 
     // Solve the problem.
     // ==================
