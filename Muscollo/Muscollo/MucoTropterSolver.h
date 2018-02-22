@@ -94,14 +94,17 @@ public:
     /// initial states, to create a guess that is dynamically consistent
     /// (constraint errors should be small). The time range for the simulation
     /// is the upper bound on the initial time and the lower bound on the final
-    /// time.
+    /// time. The initial state values are the default state values unless:
+    ///  - initial bounds are an equality constraint: use the bound value
+    ///  - default value is not within the initial bounds: use midpoint of
+    ///    initial bounds.
     ///
     /// The number of times in the iterate is the number of successful
     /// integration steps.
     ///
     /// @note This function does not yet support problems with parameters.
     ///
-    /// @throws Exception if the lower bound on the final time is less than or
+    /// @throws Exception If the lower bound on the final time is less than or
     /// equal to the upper bound on the initial time. This situation is okay in
     /// general; it's just that this function doesn't support it.
     ///

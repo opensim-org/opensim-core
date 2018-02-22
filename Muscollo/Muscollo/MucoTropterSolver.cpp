@@ -372,6 +372,24 @@ MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
     Model model(phase.getModel());
     // Disable all controllers?
     SimTK::State state = model.initSystem();
+
+    // Modify initial state values as necessary.
+    Array<std::string> svNames = model.getStateVariableNames();
+    for (int isv = 0; isv < svNames.getSize(); ++isv) {
+        const auto& svName = svNames[isv];
+        const auto& initBounds = phase.getStateInfo(svName).getInitialBounds();
+        const auto defaultValue = model.getStateVariableValue(state, svName);
+        SimTK::Real valueToUse = defaultValue;
+        if (initBounds.isEquality()) {
+            valueToUse = initBounds.getLower();
+        } else if (!initBounds.isWithinBounds(defaultValue)) {
+            valueToUse = 0.5 * (initBounds.getLower() + initBounds.getUpper());
+        }
+        if (valueToUse != defaultValue) {
+            model.setStateVariableValue(state, svName, valueToUse);
+        }
+    }
+
     state.setTime(initialTime);
     Manager manager(model, state);
     manager.integrate(finalTime);

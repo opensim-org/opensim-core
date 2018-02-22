@@ -761,12 +761,6 @@ void testGuessForwardSimulation() {
     problem.setStateInfo("j0/q0/value", {-10, 10}, initialAngle);
     problem.setStateInfo("j0/q0/speed", {-50, 50}, 0);
     problem.setControlInfo("tau0", 0);
-    {
-        auto& model = muco.updProblem().updPhase().updModel();
-        model.finalizeFromProperties();
-        auto& coord = model.updComponent<Coordinate>("j0/q0");
-        coord.setDefaultValue(initialAngle);
-    }
     MucoTropterSolver& solver = muco.initSolver();
     solver.set_num_mesh_points(20);
     solver.setGuess("random");
@@ -786,6 +780,7 @@ void testGuessForwardSimulation() {
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
+        modelCopy.setStateVariableValue(state, "j0/q0/value", initialAngle);
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
