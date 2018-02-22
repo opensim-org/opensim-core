@@ -48,6 +48,11 @@ struct OSIMMUSCOLLO_API MucoBounds {
     bool isSet() const {
         return !SimTK::isNaN(lower) && !SimTK::isNaN(upper);
     }
+    /// True if the lower and upper bounds are the same, resulting in an
+    /// equality constraint.
+    bool isEquality() const {
+        return isSet() && lower == upper;
+    }
     /// The returned array has either 0, 1, or 2 elements.
     /// - 0 elements: bounds are not set.
     /// - 1 element: equality constraint
@@ -62,6 +67,14 @@ struct OSIMMUSCOLLO_API MucoBounds {
     }
     double getLower() const { return lower; }
     double getUpper() const { return upper; }
+    void printDescription(std::ostream& stream) const {
+        if (isEquality()) {
+            stream << lower;
+        } else {
+            stream << "[" << lower << ", " << upper << "]";
+        }
+        stream.flush();
+    }
 protected:
     /// Used internally to create Bounds from a list property.
     /// The list property must have either 0, 1 or 2 elements.

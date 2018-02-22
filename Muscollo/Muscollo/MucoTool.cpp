@@ -62,6 +62,10 @@ MucoTropterSolver& MucoTool::initSolver() {
     return initCustomSolver<MucoTropterSolver>();
 }
 
+MucoTropterSolver& MucoTool::updSolver() {
+    return updCustomSolver<MucoTropterSolver>();
+}
+
 template <typename SolverType>
 void MucoTool::setCustomSolver() {
     set_solver(SolverType());

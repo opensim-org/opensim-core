@@ -358,6 +358,46 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
     return StatesTrajectory::createFromStatesStorage(model, storage);
 }
 
+/*static*/ MucoIterate MucoIterate::createFromStatesControlsTables(
+        const MucoProblem& problem,
+        const TimeSeriesTable& statesTrajectory,
+        const TimeSeriesTable& controlsTrajectory) {
+    const int statesNumRows = (int)statesTrajectory.getNumRows();
+    const int controlsNumRows = (int)controlsTrajectory.getNumRows();
+    OPENSIM_THROW_IF(statesNumRows != controlsNumRows, Exception,
+            "Expected statesTrajectory (" +
+            std::to_string(statesNumRows) + " rows) and controlsTrajectory (" +
+            std::to_string(controlsNumRows) +
+            " rows) to have the same number of rows.");
+    // TODO interpolate instead of creating this error.
+    for (int i = 0; i < statesNumRows; ++i) {
+        const auto& statesTime = statesTrajectory.getIndependentColumn()[i];
+        const auto& controlsTime = controlsTrajectory.getIndependentColumn()[i];
+        OPENSIM_THROW_IF(statesTime != controlsTime, Exception,
+                "Expected time columns of statesTrajectory and "
+                "controlsTrajectory to match, but they differ at i = " +
+                std::to_string(i) + " (states time: " +
+                std::to_string(statesTime) + "; controls time: " +
+                std::to_string(controlsTime) + ").");
+    }
+
+    // TODO Support controlsTrajectory being empty.
+
+    const auto& statesTimes = statesTrajectory.getIndependentColumn();
+    // The "true" means to not copy the data.
+    SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
+
+    // TODO MucoProblem should be able to produce a MucoIterate template; it's
+    // what knows the state, control, and parameter names.
+    return MucoIterate(time,
+            statesTrajectory.getColumnLabels(),
+            controlsTrajectory.getColumnLabels(),
+            {}, // TODO (parameter_names)
+            statesTrajectory.getMatrix(),
+            controlsTrajectory.getMatrix(),
+            SimTK::RowVector(0));
+}
+
 bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
     ensureUnsealed();
 

@@ -94,6 +94,7 @@ public:
 
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories, and set all times, states, and controls to NaN.
+    /// @note Parameters are NOT set to NaN.
     // TODO rename to setNumPoints() or setNumTimePoints().
     void setNumTimes(int numTimes)
     {
@@ -229,6 +230,7 @@ public:
     /// @param allowExtraColumns
     ///     If false, an exception is thrown if there are states in the
     ///     table that are not in the iterate.
+    /// @see createFromStatesControlsTables.
     // TODO add tests in testMuscolloInterface.
     // TODO add setStatesTrajectory(const StatesTrajectory&)
     // TODO handle rotational coordinates specified in degrees.
@@ -262,23 +264,8 @@ public:
 
     /// @}
 
-    /// @name Convert to other formats
+    /// @name Comparisons
     /// @{
-
-    /// Save the iterate to file(s). Use a ".sto" file extension.
-    void write(const std::string& filepath) const;
-
-    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
-    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
-    ///
-    /// Controls are not carried over to the states storage.
-    // TODO use TimeSeriesTable instead?
-    Storage exportToStatesStorage() const;
-    /// Controls are not carried over to the StatesTrajectory.
-    /// The MucoProblem is necessary because we need the underlying Model to
-    /// order the state variables correctly.
-    StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
-    /// @}
 
     /// Do the state and control names in this iterate match those in the
     /// problem? This may not catch all possible incompatibilities.
@@ -314,6 +301,39 @@ public:
     /// specific parameters to compare.
     double compareParametersRMS(const MucoIterate& other,
         std::vector<std::string> parameterNames = {}) const;
+    /// @}
+
+    /// @name Convert to other formats
+    /// @{
+
+    /// Save the iterate to file(s). Use a ".sto" file extension.
+    void write(const std::string& filepath) const;
+
+    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
+    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
+    ///
+    /// Controls are not carried over to the states storage.
+    // TODO use TimeSeriesTable instead?
+    Storage exportToStatesStorage() const;
+    /// Controls are not carried over to the StatesTrajectory.
+    /// The MucoProblem is necessary because we need the underlying Model to
+    /// order the state variables correctly.
+    StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
+    /// @}
+
+    /// @name Convert from other formats
+    /// @{
+
+    /// (Experimental) Create an iterate from a states trajectory and controls
+    /// trajectory (i.e, from Manager::getStatesTable() and
+    /// Model::getControlsTable()). The time columns from the two tables must
+    /// match exactly. The times in the iterate will be those from the tables.
+    /// This does not (yet) handle parameters.
+    static MucoIterate createFromStatesControlsTables(
+            const MucoProblem&,
+            const TimeSeriesTable& statesTrajectory,
+            const TimeSeriesTable& controlsTrajectory);
+    /// @}
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
