@@ -33,6 +33,7 @@ MuscolloAddSandboxExecutable(NAME sandboxTestContact
 MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxMuscle
+        SOURCE_FILES shared/DeGrooteFregly2016Muscle.h
         LIB_DEPENDS osimMuscollo)
 
 
