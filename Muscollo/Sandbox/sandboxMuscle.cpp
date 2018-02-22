@@ -188,13 +188,22 @@ public:
                 return calcFiberEquilibriumResidual(activation,
                         muscleTendonLength, normFiberLength, normFiberVelocity);
             };
+            const double TODO = 10;
+            const auto x = createVectorLinspace(1000, -TODO, TODO);
+            TimeSeriesTable table;
+            table.setColumnLabels({"residual"});
+            SimTK::RowVector row(1);
+            for (int i = 0; i < x.nrow(); ++i) {
+                row[0] = calcResidual(x[i]);
+                table.appendRow(x[i], row);
+            }
+            STOFileAdapter::write(table, "DEBUG_equilibrium_residual.sto");
             // TODO bounds of -1 and 1?
             const SimTK::Real equilNormFiberVelocity =
-                    solveBisection(calcResidual, -1, 1);
+                    solveBisection(calcResidual, -TODO, TODO); // TODO -1, 1);
 
             std::cout << format("DEBUG derivatives t: %f normFiberVelocity: %f",
                     s.getTime(), equilNormFiberVelocity) << std::endl;
-
 
             // norm_fiber_length/second = norm_fiber_length/second * unitless
             const SimTK::Real normFiberLengthDot =
@@ -323,6 +332,7 @@ public:
         return calcNormFiberForce(activation, normFiberLength,
                 normFiberVelocity);
     }
+
     SimTK::Real calcNormFiberForce(const SimTK::Real& activation,
             const SimTK::Real& normFiberLength,
             const SimTK::Real& normFiberVelocity) const {
