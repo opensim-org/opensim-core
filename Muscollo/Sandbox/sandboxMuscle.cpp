@@ -299,6 +299,19 @@ public:
         const SimTK::Real normTendonForce =
                 calcTendonForceMultiplier(normTendonLength);
 
+        /*
+        std::cout << format("DEBUG equil"
+                        "\n\tactivation: %f"
+                        "\n\tmuscleTendonLength: %f"
+                        "\n\tnormFiberLength: %f"
+                        "\n\tnormFiberVelocity: %f"
+                        "\n\tnormFiberForce: %f"
+                        "\n\tnormTendonLength: %f"
+                        "\n\tnormTendonForce: %f",
+                activation, muscleTendonLength, normFiberLength,
+                normFiberVelocity, normFiberForce, normTendonLength,
+                normTendonForce)
+                << std::endl;*/
         return normFiberForce - normTendonForce;
     }
 
