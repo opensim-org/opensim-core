@@ -284,6 +284,21 @@ void testCopy() {
  */
 
 void testBounds() {
+    {
+        SimTK_TEST(!MucoBounds().isSet());
+        SimTK_TEST(MucoBounds(5.3).isSet());
+        SimTK_TEST(!MucoBounds(5.3, SimTK::NaN).isSet());
+        SimTK_TEST(!MucoBounds(SimTK::NaN, 5.3).isSet());
+        SimTK_TEST(MucoBounds(5.3).isEquality());
+        SimTK_TEST(MucoBounds(5.3, 5.3).isSet());
+        SimTK_TEST(MucoBounds(5.3, 5.3).isEquality());
+        SimTK_TEST(!MucoBounds(5.3, 5.3 + SimTK::SignificantReal).isEquality());
+
+        SimTK_TEST(MucoBounds(5.3).isWithinBounds(5.3));
+        SimTK_TEST(
+                !MucoBounds(5.3).isWithinBounds(5.3 + SimTK::SignificantReal));
+        SimTK_TEST(MucoBounds(5.2, 5.4).isWithinBounds(5.3));
+    }
     // TODO what to do about clamped coordinates? Use the range in the
     // coordinate, or ignore that? I think that if the coordinate is clamped,
     // then

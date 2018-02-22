@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoProblem.h"
+#include "MuscolloUtilities.h"
 
 using namespace OpenSim;
 
@@ -36,6 +37,35 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
     set_bounds(bounds.getAsArray());
     set_initial_bounds(initial.getAsArray());
     set_final_bounds(final.getAsArray());
+    validate();
+}
+
+void MucoVariableInfo::validate() const {
+    const auto& n = getName();
+    const auto b = getBounds();
+    const auto ib = getInitialBounds();
+    const auto fb = getFinalBounds();
+
+    OPENSIM_THROW_IF(ib.isSet() && ib.getLower() < b.getLower(), Exception,
+            format("For variable %s, expected "
+                    "[initial value lower bound] >= [lower bound], but "
+                    "intial value lower bound=%g, lower bound=%g.",
+            n, ib.getLower(), b.getLower()));
+    OPENSIM_THROW_IF(fb.isSet() && fb.getLower() < b.getLower(), Exception,
+            format("For variable %s, expected "
+                    "[final value lower bound] >= [lower bound], but "
+                    "final value lower bound=%g, lower bound=%g.",
+            n, fb.getLower(), b.getLower()));
+    OPENSIM_THROW_IF(ib.isSet() && ib.getUpper() > b.getUpper(), Exception,
+            format("For variable %s, expected "
+                    "[initial value upper bound] >= [upper bound], but "
+                    "initial value upper bound=%g, upper bound=%g.",
+            n, ib.getUpper(), b.getUpper()));
+    OPENSIM_THROW_IF(fb.isSet() && fb.getUpper() > b.getUpper(), Exception,
+            format("For variable %s, expected "
+                    "[final value upper bound] >= [upper bound], but "
+                    "final value upper bound=%g, upper bound=%g.",
+            n, fb.getUpper(), b.getUpper()));
 }
 
 void MucoVariableInfo::printDescription(std::ostream& stream) const {

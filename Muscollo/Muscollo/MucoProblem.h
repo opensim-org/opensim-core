@@ -50,6 +50,10 @@ public:
     MucoFinalBounds getFinalBounds() const
     {   return MucoFinalBounds(getProperty_final_bounds()); }
 
+    /// Throws an exception if initial and final bounds are not within bounds.
+    // TODO Move to finalizeFromProperties() and cache MucoBounds.
+    void validate() const;
+
     /// Print the bounds on this variable.
     void printDescription(std::ostream& stream = std::cout) const;
 
