@@ -40,20 +40,17 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
 
 void MucoVariableInfo::printDescription(std::ostream& stream) const {
     const auto bounds = getBounds();
-    stream << getName() << ". bounds: ["
-            << bounds.getLower() << ", "
-            << bounds.getUpper() << "] ";
+    stream << getName() << ". bounds: ";
+    bounds.printDescription(stream);
     const auto initial = getInitialBounds();
     if (initial.isSet()) {
-        stream << " initial: ["
-                << initial.getLower() << ", "
-                << initial.getUpper() << "] ";
+        stream << " initial: ";
+        initial.printDescription(stream);
     }
     const auto final = getFinalBounds();
     if (final.isSet()) {
-        stream << " final: ["
-                << final.getLower() << ", "
-                << final.getUpper() << "] ";
+        stream << " final: ";
+        final.printDescription(stream);
     }
     stream << std::endl;
 }

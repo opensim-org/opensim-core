@@ -27,6 +27,17 @@ namespace OpenSim {
 
 class MucoProblem;
 
+/// This exception is thrown if you try to invoke most methods on MucoIterate
+/// while the iterate is sealed.
+class OSIMMUSCOLLO_API MucoIterateIsSealed : public Exception {
+public:
+    MucoIterateIsSealed(const std::string& file, size_t line,
+            const std::string& func) : Exception(file, line, func) {
+        addMessage("This iterate is sealed, to force you to acknowledge the "
+                "solver failed; call unseal() to gain access.");
+    }
+};
+
 /// The values of the variables in an optimal control problem.
 /// This can be used for specifying an initial guess, or holding the solution
 /// returned by a solver. 
@@ -66,7 +77,8 @@ public:
     explicit MucoIterate(const std::string& filepath);
     /// Returns a dynamically-allocated copy of this iterate. You must manage
     /// the memory for return value.
-    MucoIterate* clone() const { return new MucoIterate(*this); }
+    /// @note This works even if the iterate is sealed.
+    virtual MucoIterate* clone() const { return new MucoIterate(*this); }
 
     bool empty() const {
         ensureUnsealed();
@@ -82,6 +94,7 @@ public:
 
     /// Resize the time vector and the time dimension of the states and controls
     /// trajectories, and set all times, states, and controls to NaN.
+    /// @note Parameters are NOT set to NaN.
     // TODO rename to setNumPoints() or setNumTimePoints().
     void setNumTimes(int numTimes)
     {
@@ -217,6 +230,7 @@ public:
     /// @param allowExtraColumns
     ///     If false, an exception is thrown if there are states in the
     ///     table that are not in the iterate.
+    /// @see createFromStatesControlsTables.
     // TODO add tests in testMuscolloInterface.
     // TODO add setStatesTrajectory(const StatesTrajectory&)
     // TODO handle rotational coordinates specified in degrees.
@@ -250,23 +264,8 @@ public:
 
     /// @}
 
-    /// @name Convert to other formats
+    /// @name Comparisons
     /// @{
-
-    /// Save the iterate to file(s). Use a ".sto" file extension.
-    void write(const std::string& filepath) const;
-
-    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
-    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
-    ///
-    /// Controls are not carried over to the states storage.
-    // TODO use TimeSeriesTable instead?
-    Storage exportToStatesStorage() const;
-    /// Controls are not carried over to the StatesTrajectory.
-    /// The MucoProblem is necessary because we need the underlying Model to
-    /// order the state variables correctly.
-    StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
-    /// @}
 
     /// Do the state and control names in this iterate match those in the
     /// problem? This may not catch all possible incompatibilities.
@@ -281,11 +280,8 @@ public:
     /// Compute the root-mean-square error between this iterate and another.
     /// The RMS is computed by numerically integrating the sum of squared
     /// error across states and controls and dividing by the larger of the
-    /// two time ranges. If the time ranges do not match between this and the
-    /// other iterate, then we assume values of 0 for the iterate with the
-    /// shorter time range.
-    /// When one iterate does not cover the same time range as the other, we
-    /// assume values of 0 for the iterate with "missing" time.
+    /// two time ranges. When one iterate does not cover the same time range as
+    /// the other, we assume values of 0 for the iterate with "missing" time.
     /// Numerical integration is performed using the trapezoidal rule.
     /// By default, all states and controls are compared, and it is expected
     /// that both iterates have the same states and controls. Alternatively,
@@ -305,14 +301,49 @@ public:
     /// specific parameters to compare.
     double compareParametersRMS(const MucoIterate& other,
         std::vector<std::string> parameterNames = {}) const;
+    /// @}
+
+    /// @name Convert to other formats
+    /// @{
+
+    /// Save the iterate to file(s). Use a ".sto" file extension.
+    void write(const std::string& filepath) const;
+
+    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
+    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
+    ///
+    /// Controls are not carried over to the states storage.
+    // TODO use TimeSeriesTable instead?
+    Storage exportToStatesStorage() const;
+    /// Controls are not carried over to the StatesTrajectory.
+    /// The MucoProblem is necessary because we need the underlying Model to
+    /// order the state variables correctly.
+    StatesTrajectory exportToStatesTrajectory(const MucoProblem&) const;
+    /// @}
+
+    /// @name Convert from other formats
+    /// @{
+
+    /// (Experimental) Create an iterate from a states trajectory and controls
+    /// trajectory (i.e, from Manager::getStatesTable() and
+    /// Model::getControlsTable()). The time columns from the two tables must
+    /// match exactly. The times in the iterate will be those from the tables.
+    /// This does not (yet) handle parameters.
+    static MucoIterate createFromStatesControlsTables(
+            const MucoProblem&,
+            const TimeSeriesTable& statesTrajectory,
+            const TimeSeriesTable& controlsTrajectory);
+    /// @}
 
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
     bool isSealed() const { return m_sealed; }
+    /// @throws MucoIterateIsSealed if the iterate is sealed.
     void ensureUnsealed() const;
 
 private:
     TimeSeriesTable convertToTable() const;
+    // TODO std::string m_name;
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
@@ -344,6 +375,10 @@ private:
 /// prevents you from silently proceeding with a failed solution.
 class OSIMMUSCOLLO_API MucoSolution : public MucoIterate {
 public:
+    /// Returns a dynamically-allocated copy of this solution. You must manage
+    /// the memory for return value.
+    /// @note This works even if the iterate is sealed.
+    virtual MucoSolution* clone() const { return new MucoSolution(*this); }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }

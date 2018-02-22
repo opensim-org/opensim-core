@@ -100,13 +100,15 @@ class TestSwigAddtlInterface(unittest.TestCase):
         time.set(2, 0.2)
         st = osim.Matrix(3, 2)
         ct = osim.Matrix(3, 3)
-        it = osim.MucoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'], st, ct)
+        p = osim.RowVector(2, 0.0)
+        it = osim.MucoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
+                              ['p0', 'p1'], st, ct, p)
         
         it.setTime([15, 25, 35])
         assert(it.getTime().get(0) == 15)
         assert(it.getTime().get(1) == 25)
         assert(it.getTime().get(2) == 35)
-        
+
         it.setState('s0', [5, 3, 10])
         s0traj = it.getState('s0')
         assert(s0traj[0] == 5)
@@ -117,7 +119,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(s1traj[0] == 2)
         assert(s1traj[1] == 6)
         assert(s1traj[2] == 1)
-        
+
         it.setControl('c0', [10, 46, -5])
         c0traj = it.getControl('c0')
         assert(c0traj[0] == 10)
@@ -128,3 +130,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(c2traj[0] == 5)
         assert(c2traj[1] == 12)
         assert(c2traj[2] == -1)
+
+        it.setParameter('p0', 25)
+        it.setParameter('p1', 30)
+        p = it.getParameters()
+        assert(p[0] == 25)
+        assert(p[1] == 30)
+        p0 = it.getParameter('p0')
+        assert(p0 == 25)

@@ -81,16 +81,23 @@ public:
     /// Throws an exception if you try calling this after initSolver() and
     /// before solve().
     /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the problem, which will
-    /// have no effect on this MucoTool.
+    /// return type; otherwise, you'll make a copy of the problem, and the copy
+    /// will have no effect on this MucoTool.
     MucoProblem& updProblem();
 
     /// Call this method once you have finished setting up your MucoProblem.
     /// This returns a reference to the MucoSolver, which you can then edit.
     /// If using this method in C++, make sure to include the "&" in the
-    /// return type; otherwise, you'll make a copy of the solver, which will
-    /// have no effect on this MucoTool.
+    /// return type; otherwise, you'll make a copy of the solver, and the copy
+    /// will have no effect on this MucoTool.
     MucoTropterSolver& initSolver();
+
+    /// Access the solver. The solver will be initialized only if it hasn't been
+    /// initialized already.
+    /// If using this method in C++, make sure to include the "&" in the
+    /// return type; otherwise, you'll make a copy of the solver, and the copy
+    /// will have no effect on this MucoTool.
+    MucoTropterSolver& updSolver();
 
     /// Solve the provided MucoProblem using the provided MucoSolver, and
     /// obtain the solution to the problem. If the write_solution property
@@ -122,6 +129,12 @@ public:
     template <typename SolverType>
     SolverType& initCustomSolver() {
         return dynamic_cast<SolverType&>(initSolverInternal());
+    }
+
+    template <typename SolverType>
+    SolverType& updCustomSolver() {
+        ensureInitSolver();
+        return dynamic_cast<SolverType&>(upd_solver());
     }
     /// @}
 

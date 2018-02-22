@@ -45,35 +45,35 @@ muco.setName('sliding_mass');
 
 % Define the optimal control problem.
 % ===================================
-mp = muco.updProblem();
+problem = muco.updProblem();
 
 % Model (dynamics).
 % -----------------
-mp.setModel(model);
+problem.setModel(model);
 
 % Bounds.
 % -------
 % Initial time must be 0, final time can be within [0, 5].
-mp.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0., 5.));
+problem.setTimeBounds(MucoInitialBounds(0.), MucoFinalBounds(0., 5.));
 
 % Initial position must be 0, final position must be 1.
-mp.setStateInfo('slider/position/value', MucoBounds(-5, 5), ...
+problem.setStateInfo('slider/position/value', MucoBounds(-5, 5), ...
     MucoInitialBounds(0), MucoFinalBounds(1));
 % Initial and final speed must be 0. Use compact syntax.
-mp.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
+problem.setStateInfo('slider/position/speed', [-50, 50], [0], [0]);
 
 % Applied force must be between -50 and 50.
-mp.setControlInfo('actuator', MucoBounds(-50, 50));
+problem.setControlInfo('actuator', MucoBounds(-50, 50));
 
 % Cost.
 % -----
 ftCost = MucoFinalTimeCost();
-mp.addCost(ftCost);
+problem.addCost(ftCost);
 
 % Configure the solver.
 % =====================
-ms = muco.initSolver();
-ms.set_num_mesh_points(50);
+solver = muco.initSolver();
+solver.set_num_mesh_points(50);
 
 % Now that we've finished setting up the tool, print it to a file.
 muco.print('sliding_mass.omuco');

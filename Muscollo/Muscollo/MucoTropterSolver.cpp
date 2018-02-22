@@ -19,6 +19,8 @@
 #include "MucoProblem.h"
 #include "MuscolloUtilities.h"
 
+#include <OpenSim/Simulation/Manager/Manager.h>
+
 #include <tropter/tropter.h>
 
 using namespace OpenSim;
@@ -325,11 +327,19 @@ void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
-    OPENSIM_THROW_IF_FRMOBJ(type != "bounds" && type != "random",
+    OPENSIM_THROW_IF_FRMOBJ(
+               type != "bounds"
+            && type != "random"
+            && type != "forward-simulation",
             Exception,
             "Unexpected guess type '" + type +
-            "'; supported types are 'bounds' and 'random'.");
+            "'; supported types are 'bounds', 'random', and "
+            "'forward-simulation'.");
     auto ocp = getTropterProblem();
+
+    if (type == "forward-simulation") {
+        return createGuessForwardSimulation();
+    }
 
     // TODO avoid performing error checks multiple times; use
     // isObjectUpToDateWithProperties();
@@ -347,6 +357,31 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
         tropIter = dircol.make_random_iterate_within_bounds();
     }
     return convert<MucoIterate, tropter::Iterate>(tropIter);
+}
+
+MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
+    const auto& problem = getProblem();
+    const auto& phase = problem.getPhase();
+    const auto& initialTime = phase.getTimeInitialBounds().getUpper();
+    const auto& finalTime = phase.getTimeFinalBounds().getLower();
+    OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
+        "Expected lower bound on final time to be greater than "
+        "upper bound on initial time, but "
+        "final_time.lower: " + std::to_string(finalTime) + "; " +
+        "initial_time.upper: " + std::to_string(initialTime) + ".");
+    Model model(phase.getModel());
+    // Disable all controllers?
+    SimTK::State state = model.initSystem();
+    state.setTime(initialTime);
+    Manager manager(model, state);
+    manager.integrate(finalTime);
+
+    const auto& statesTable = manager.getStatesTable();
+    const auto controlsTable = model.getControlsTable();
+
+    // TODO handle parameters.
+    return MucoIterate::createFromStatesControlsTables(
+            problem, statesTable, controlsTable);
 }
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
