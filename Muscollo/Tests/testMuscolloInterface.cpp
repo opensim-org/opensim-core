@@ -17,9 +17,11 @@
  * -------------------------------------------------------------------------- */
 
 #include <Muscollo/osimMuscollo.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
@@ -70,6 +72,40 @@ MucoTool createSlidingMassMucoTool() {
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(20);
     return muco;
+}
+
+/// This model is torque-actuated.
+Model createPendulumModel() {
+    Model model;
+    model.setName("pendulum");
+
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    auto* b0 = new Body("b0", 1, Vec3(0), Inertia(1));
+    model.addBody(b0);
+
+    // Default pose: COM of pendulum is 1 meter down from the pin.
+    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+            *b0, Vec3(0, 1.0, 0), Vec3(0));
+    auto& q0 = j0->updCoordinate();
+    q0.setName("q0");
+    model.addJoint(j0);
+
+    auto* tau0 = new CoordinateActuator();
+    tau0->setCoordinate(&j0->updCoordinate());
+    tau0->setName("tau0");
+    tau0->setOptimalForce(1);
+    model.addForce(tau0);
+
+    // Add display geometry.
+    Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
+    SimTK::Transform transform(SimTK::Vec3(0, 0.5, 0));
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    b0->addComponent(b0Center);
+    b0Center->attachGeometry(bodyGeometry.clone());
+
+    return model;
 }
 
 void testSlidingMass() {
@@ -694,6 +730,68 @@ void testGuess() {
     // after they get the mutable reference.
 }
 
+void testGuessForwardSimulation() {
+    // This problem is just a simulation (there are no costs), and so the
+    // forward simulation guess should reduce the number of iterations to
+    // converge, and the guess and solution should also match our own forward
+    // simulation.
+    MucoTool muco;
+    muco.setName("pendulum");
+    muco.set_write_solution("false");
+    auto& problem = muco.updProblem();
+    problem.setModel(createPendulumModel());
+    const SimTK::Real initialAngle = 0.25 * SimTK::Pi;
+    // Make the simulation interesting.
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("j0/q0/value", {-10, 10}, initialAngle);
+    problem.setStateInfo("j0/q0/speed", {-50, 50}, 0);
+    problem.setControlInfo("tau0", 0);
+    {
+        auto& model = muco.updProblem().updPhase().updModel();
+        model.finalizeFromProperties();
+        auto& coord = model.updComponent<Coordinate>("j0/q0");
+        coord.setDefaultValue(initialAngle);
+    }
+    MucoTropterSolver& solver = muco.initSolver();
+    solver.set_num_mesh_points(20);
+    solver.setGuess("random");
+    // With MUMPS: 4 iterations.
+    MucoSolution solutionRandom = muco.solve();
+
+    solver.setGuess("forward-simulation");
+    // With MUMPS: 2 iterations.
+    MucoSolution solutionSim = muco.solve();
+
+    SimTK_TEST(solutionSim.getNumIterations() <
+            solutionRandom.getNumIterations());
+
+    {
+        MucoIterate guess = solver.createGuess("forward-simulation");
+        SimTK_TEST(solutionSim.compareStatesControlsRMS(guess) < 1e-2);
+
+        Model modelCopy(muco.updProblem().getPhase().getModel());
+        SimTK::State state = modelCopy.initSystem();
+        Manager manager(modelCopy, state);
+        manager.integrate(1.0);
+
+        const auto iterateFromManager =
+                MucoIterate::createFromStatesControlsTables(
+                muco.updProblem(), manager.getStatesTable(),
+                        modelCopy.getControlsTable());
+        SimTK_TEST(solutionSim.compareStatesControlsRMS(iterateFromManager) <
+                        1e-2);
+    }
+
+    // Ensure the forward simulation guess uses the correct time bounds.
+    {
+        muco.updProblem().setTimeBounds({-10, -5}, {6, 15});
+        MucoTropterSolver& solver = muco.initSolver();
+        MucoIterate guess = solver.createGuess("forward-simulation");
+        SimTK_TEST(guess.getTime()[0] == -5);
+        SimTK_TEST(guess.getTime()[guess.getNumTimes()-1] == 6);
+    }
+}
+
 void testMucoIterate() {
     // Reading and writing.
     {
@@ -708,7 +806,36 @@ void testMucoIterate() {
         SimTK_TEST(deserialized.isNumericallyEqual(orig));
     }
 
-    // TODO ensure that we can't access methods until we unseal.
+    // Test sealing/unsealing.
+    {
+        // Create a class that gives access to the sealed functions, which are
+        // otherwise protected.
+        class MucoIterateDerived : public MucoIterate {
+        public:
+            using MucoIterate::MucoIterate;
+            MucoIterateDerived* clone() const override
+            {   return new MucoIterateDerived(*this); }
+            void setSealedD(bool sealed) { MucoIterate::setSealed(sealed); }
+            bool isSealedD() const { return MucoIterate::isSealed(); }
+        };
+        MucoIterateDerived iterate;
+        SimTK_TEST(!iterate.isSealedD());
+        iterate.setSealedD(true);
+        SimTK_TEST(iterate.isSealedD());
+        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getTime(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getStateNames(), MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getControlNames(),
+                MucoIterateIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(iterate.getControlNames(),
+                MucoIterateIsSealed);
+
+        // The clone() function doesn't call ensureSealed(), but the clone should
+        // preserve the value of m_sealed.
+        std::unique_ptr<MucoIterateDerived> ptr(iterate.clone());
+        SimTK_TEST(ptr->isSealedD());
+        SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);
+    }
 
 
     // compareStatesControlsRMS
@@ -831,6 +958,7 @@ int main() {
         SimTK_SUBTEST(testSolverOptions);
         SimTK_SUBTEST(testStateTracking);
         SimTK_SUBTEST(testGuess);
+        SimTK_SUBTEST(testGuessForwardSimulation);
         SimTK_SUBTEST(testMucoIterate);
 
         //SimTK_SUBTEST(testEmpty);
@@ -839,8 +967,6 @@ int main() {
         //SimTK_SUBTEST(testOMUCOSerialization);
         SimTK_SUBTEST(testBounds);
         SimTK_SUBTEST(testBuildingProblem);
-        // TODO what happens when Ipopt does not converge.
-        // TODO specifying optimizer options.
 
         SimTK_SUBTEST(testInterpolate);
     SimTK_END_TEST();

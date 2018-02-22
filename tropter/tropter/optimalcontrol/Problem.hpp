@@ -34,8 +34,7 @@ Bounds::Bounds(double lower_bound, double upper_bound) {
 template<typename T>
 Problem<T>::ContinuousVariableInfo::
 ContinuousVariableInfo(std::string n, Bounds b,
-        InitialBounds ib, FinalBounds fb)
-        : name(n), bounds(b), initial_bounds(ib), final_bounds(fb) {
+        InitialBounds ib, FinalBounds fb) {
     TROPTER_THROW_IF(ib.is_set() && ib.lower < b.lower,
             "For variable %s, expected "
             "[initial value lower bound] >= [lower bound], but "
@@ -56,6 +55,23 @@ ContinuousVariableInfo(std::string n, Bounds b,
             "[final value upper bound] >= [upper bound], but "
             "final value upper bound=%g, upper bound=%g.",
             n, fb.upper, b.upper);
+    name = std::move(n);
+    bounds = std::move(b);
+    initial_bounds = std::move(ib);
+    final_bounds = std::move(fb);
+}
+
+template<typename T>
+void Problem<T>::set_time(const InitialBounds& initial_time,
+        const FinalBounds& final_time) {
+    // TODO should we force users to set time bounds? or should we
+    // default to -inf, +inf?
+    // TROPTER_THROW_IF(!initial_time.is_set(),
+    //         "Expected initial time bounds to be specified.");
+    // TROPTER_THROW_IF(!final_time.is_set(),
+    //         "Expected final time bounds to be specified.");
+    m_initial_time_bounds = initial_time;
+    m_final_time_bounds = final_time;
 }
 
 template<typename T>
@@ -252,8 +268,6 @@ void Problem<T>::get_all_bounds(
         const auto& info = m_state_infos[is];
         states_lower[is]         = info.bounds.lower;
         states_upper[is]         = info.bounds.upper;
-        // TODO do not create initial/final bounds constraints if they
-        // are not necessary.
         if (info.initial_bounds.is_set()) {
             initial_states_lower[is] = info.initial_bounds.lower;
             initial_states_upper[is] = info.initial_bounds.upper;
