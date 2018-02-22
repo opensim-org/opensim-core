@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "INDYGO.h"
-#include "DeGrooteFregly2016Muscle.h"
+#include "DeGrooteFregly2016MuscleStandalone.h"
 #include "InverseMuscleSolverMotionData.h"
 #include "GlobalStaticOptimization.h"
 
@@ -175,7 +175,7 @@ public:
         for (const auto& osimMus : _model.getComponentList<Muscle>()) {
             if (!osimMus.get_appliesForce()) continue;
 
-            _muscles[i_mus] = DeGrooteFregly2016Muscle<T>(
+            _muscles[i_mus] = DeGrooteFregly2016MuscleStandalone<T>(
                     osimMus.get_max_isometric_force(),
                     osimMus.get_optimal_fiber_length(),
                     osimMus.get_tendon_slack_length(),
@@ -645,7 +645,7 @@ private:
     Eigen::VectorXd _optimalForce;
 
     // De Groote muscles.
-    std::vector<DeGrooteFregly2016Muscle<T>> _muscles;
+    std::vector<DeGrooteFregly2016MuscleStandalone<T>> _muscles;
 };
 
 INDYGO::INDYGO() {

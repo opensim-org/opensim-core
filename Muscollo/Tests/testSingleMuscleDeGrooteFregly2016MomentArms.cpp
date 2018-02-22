@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 #include <Muscollo/InverseMuscleSolver/INDYGO.h>
 #include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
-#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 #include <tropter/tropter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -105,7 +105,7 @@ public:
         } else {
             this->add_control("activation", {0, 1});
         }
-        m_muscle = DeGrooteFregly2016Muscle<T>(
+        m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
@@ -179,7 +179,7 @@ public:
         cost = final_time;
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle;
     bool m_muscleDynamics;
 };
 
@@ -243,7 +243,7 @@ solveForTrajectoryGSO() {
     // ------------------------------------------------------
     // TimeSeriesTable actualInvDyn;
     // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGrooteFregly2016Muscle<double> muscle(ocp->max_isometric_force,
+    // DeGrooteFregly2016MuscleStandalone<double> muscle(ocp->max_isometric_force,
     //                                   ocp->optimal_fiber_length,
     //                                   ocp->tendon_slack_length,
     //                                   ocp->pennation_angle_at_optimal,
@@ -337,7 +337,7 @@ solveForTrajectoryINDYGO() {
     // ------------------------------------------------------
     // TimeSeriesTable actualInvDyn;
     // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGrooteFregly2016Muscle<double> muscle(ocp->max_isometric_force,
+    // DeGrooteFregly2016MuscleStandalone<double> muscle(ocp->max_isometric_force,
     //                                   ocp->optimal_fiber_length,
     //                                   ocp->tendon_slack_length,
     //                                   ocp->pennation_angle_at_optimal,

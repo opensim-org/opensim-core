@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 #include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Muscollo/InverseMuscleSolver/INDYGO.h>
-#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 #include <Muscollo/InverseMuscleSolver/InverseMuscleSolverMotionData.h>
 #include <tropter/tropter.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -80,8 +80,8 @@ public:
     int m_i_vy = -1;
     int m_i_activation_l = -1;
     int m_i_activation_r = -1;
-    DeGrooteFregly2016Muscle<T> m_muscleL;
-    DeGrooteFregly2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscleL;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscleR;
     struct NetForce {
         T x;
         T y;
@@ -100,7 +100,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGrooteFregly2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016MuscleStandalone<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -110,7 +110,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGrooteFregly2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016MuscleStandalone<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),
@@ -231,8 +231,8 @@ public:
     int m_i_fiber_equilibrium_l = -1;
     int m_i_norm_fiber_velocity_r = -1;
     int m_i_fiber_equilibrium_r = -1;
-    DeGrooteFregly2016Muscle<T> m_muscleL;
-    DeGrooteFregly2016Muscle<T> m_muscleR;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscleL;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscleR;
     struct NetForce {
         T x;
         T y;
@@ -264,7 +264,7 @@ public:
         {
             const auto& osimMuscleL =
                     dynamic_cast<const Muscle&>(model.getComponent("left"));
-            m_muscleL = DeGrooteFregly2016Muscle<T>(
+            m_muscleL = DeGrooteFregly2016MuscleStandalone<T>(
                     osimMuscleL.get_max_isometric_force(),
                     osimMuscleL.get_optimal_fiber_length(),
                     osimMuscleL.get_tendon_slack_length(),
@@ -274,7 +274,7 @@ public:
         {
             const auto& osimMuscleR =
                     dynamic_cast<const Muscle&>(model.getComponent("right"));
-            m_muscleR = DeGrooteFregly2016Muscle<T>(
+            m_muscleR = DeGrooteFregly2016MuscleStandalone<T>(
                     osimMuscleR.get_max_isometric_force(),
                     osimMuscleR.get_optimal_fiber_length(),
                     osimMuscleR.get_tendon_slack_length(),

@@ -17,7 +17,7 @@
 * -------------------------------------------------------------------------- */
 #include <Muscollo/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Muscollo/InverseMuscleSolver/INDYGO.h>
-#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 #include <Muscollo/InverseMuscleSolver/InverseMuscleSolverMotionData.h>
 #include <tropter/tropter.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -68,11 +68,11 @@ public:
         this->add_state("speed", {-10, 10}, 0, 0);
         this->add_control("activation_1", {0, 1});
         this->add_control("activation_2", {0, 1});
-        m_muscle_1 = DeGrooteFregly2016Muscle<T>(
+        m_muscle_1 = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force_1, optimal_fiber_length_1, 
                 tendon_slack_length, pennation_angle_at_optimal,
                 max_contraction_velocity);
-        m_muscle_2 = DeGrooteFregly2016Muscle<T>(
+        m_muscle_2 = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force_2, optimal_fiber_length_2,
                 tendon_slack_length, pennation_angle_at_optimal,
                 max_contraction_velocity);
@@ -107,8 +107,8 @@ public:
         cost = final_time;
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle_1;
-    DeGrooteFregly2016Muscle<T> m_muscle_2;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle_1;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle_2;
 };
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
@@ -210,11 +210,11 @@ public:
         this->add_control("norm_fiber_velocity_2", {-1, 1}, 0);
         this->add_path_constraint("fiber_equilibrium_1", 0);
         this->add_path_constraint("fiber_equilibrium_2", 0);
-        m_muscle_1 = DeGrooteFregly2016Muscle<T>(
+        m_muscle_1 = DeGrooteFregly2016MuscleStandalone<T>(
             max_isometric_force_1, optimal_fiber_length_1,
             tendon_slack_length, pennation_angle_at_optimal,
             max_contraction_velocity);
-        m_muscle_2 = DeGrooteFregly2016Muscle<T>(
+        m_muscle_2 = DeGrooteFregly2016MuscleStandalone<T>(
             max_isometric_force_2, optimal_fiber_length_2,
             tendon_slack_length, pennation_angle_at_optimal,
             max_contraction_velocity);
@@ -267,8 +267,8 @@ public:
         cost = final_time;
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle_1;
-    DeGrooteFregly2016Muscle<T> m_muscle_2;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle_1;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle_2;
 };
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
