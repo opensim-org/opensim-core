@@ -1,5 +1,8 @@
 %newobject *::clone;
 
+/* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
+typedef SimTK::RowVector_<double> RowVector;
+
 %include <Muscollo/osimMuscolloDLL.h>
 %include <Muscollo/MuscolloUtilities.h>
 %include <Muscollo/MucoCost.h>
