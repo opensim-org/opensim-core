@@ -53,6 +53,10 @@ struct OSIMMUSCOLLO_API MucoBounds {
     bool isEquality() const {
         return isSet() && lower == upper;
     }
+    /// Returns true if the provided value is within these bounds.
+    bool isWithinBounds(const double& value) const {
+        return lower <= value && value <= upper;
+    }
     /// The returned array has either 0, 1, or 2 elements.
     /// - 0 elements: bounds are not set.
     /// - 1 element: equality constraint
