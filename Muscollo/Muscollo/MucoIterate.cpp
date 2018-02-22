@@ -97,7 +97,7 @@ void MucoIterate::setParameter(const std::string& name,
     OPENSIM_THROW_IF(it == m_parameter_names.cend(), Exception,
             "Cannot find parameter named " + name + ".");
     int index = (int)std::distance(m_parameter_names.cbegin(), it);
-    m_parameters.updElt(1, index) = value;
+    m_parameters.updElt(0, index) = value;
 }
 
 void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
