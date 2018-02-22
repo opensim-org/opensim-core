@@ -116,18 +116,18 @@ class Problem {
 private:
     struct ContinuousVariableInfo {
         ContinuousVariableInfo(std::string, Bounds, InitialBounds, FinalBounds);
-        const std::string name;
-        const Bounds bounds;
-        const InitialBounds initial_bounds;
-        const FinalBounds final_bounds;
+        std::string name;
+        Bounds bounds;
+        InitialBounds initial_bounds;
+        FinalBounds final_bounds;
     };
     struct PathConstraintInfo {
-        const std::string name;
-        const Bounds bounds;
+        std::string name;
+        Bounds bounds;
     };
     struct ParameterInfo {
-        const std::string name;
-        const Bounds bounds;
+        std::string name;
+        Bounds bounds;
     };
 public:
 
@@ -192,13 +192,9 @@ public:
     /// @name Assemble the problem
     /// @{
     void set_time(const InitialBounds& initial_time,
-            const FinalBounds& final_time) {
-        m_initial_time_bounds = initial_time;
-        m_final_time_bounds = final_time;
-    }
-    // TODO make sure initial and final bounds are within the bounds.
+            const FinalBounds& final_time);
     /// This returns an index that can be used to access this specific state
-    /// variable within `dynamics()` , `path_constraints()`, etc.
+    /// variable within `dynamics()`, `path_constraints()`, etc.
     /// TODO check if a state with the provided name already exists.
     int add_state(const std::string& name, const Bounds& bounds,
             const InitialBounds& initial_bounds = InitialBounds(),
