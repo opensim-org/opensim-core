@@ -254,9 +254,8 @@ public:
 
         assert(maxIterations > 0);
         OPENSIM_THROW_IF(calcResidual(left) * calcResidual(right) >= 0,
-                Exception, "Ill-formed bisection problem: bounds [" +
-                std::to_string(left) + "," + std::to_string(right) +
-                "] have the same sign.");
+                Exception, format(
+                "Function has same sign at bounds of %f and %f.", left, right));
 
         // TODO use error in residual as tolerance?
         SimTK::Real residualMidpoint;
