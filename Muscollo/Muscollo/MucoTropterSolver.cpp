@@ -490,7 +490,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         }
     }
 
-    optsolver.set_sparsity_detection("random");
+    // TODO optsolver.set_sparsity_detection("random");
 
     // Set advanced settings.
     //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {

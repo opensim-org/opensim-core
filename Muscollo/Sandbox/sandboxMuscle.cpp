@@ -557,7 +557,7 @@ Model createHangingMuscleModel() {
     //actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
-    model.addComponent(actu);
+    model.addForce(actu);
 
 
     /*
@@ -611,11 +611,10 @@ int main() {
     MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel();
 
-
-    auto* controller = new PrescribedController();
-    controller->addActuator(model.getComponent<Actuator>("actuator"));
-    controller->prescribeControlForActuator("actuator", new Constant(0.5));
-    model.addController(controller);
+    // auto* controller = new PrescribedController();
+    // controller->addActuator(model.getComponent<Actuator>("actuator"));
+    // controller->prescribeControlForActuator("actuator", new Constant(0.5));
+    // model.addController(controller);
 
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("actuator");
@@ -640,11 +639,10 @@ int main() {
     }
 
     // TODO
-    Manager manager(model, state);
-    manager.integrate(2.0);
-
-    visualize(model, manager.getStateStorage());
-    std::exit(-1);
+    // Manager manager(model, state);
+    // manager.integrate(2.0);
+    // visualize(model, manager.getStateStorage());
+    // std::exit(-1);
 
     //std::cout << "DEBUG " <<
     //        model.getStateVariableValue(state, "actuator/fiber_length")
@@ -682,7 +680,10 @@ int main() {
     // TODO i feel like the force-velocity effect is much more strict than it
     // should be.
 
-    // MucoTropterSolver& ms = muco.initSolver();
+    MucoTropterSolver& solver = muco.initSolver();
+    // TODO set initial guess from forward simulation.
+    solver.setGuess("forward-simulation");
+
     MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxMuscle_solution.sto");
     std::cout << "DEBUG " << solution.getState("joint/height/value") << std::endl;
