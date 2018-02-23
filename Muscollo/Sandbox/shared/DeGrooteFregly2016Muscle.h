@@ -255,9 +255,9 @@ public:
         SimTK::Real midpoint = left;
 
         assert(maxIterations > 0);
-        OPENSIM_THROW_IF(calcResidual(left) * calcResidual(right) >= 0,
+        OPENSIM_THROW_IF_FRMOBJ(calcResidual(left) * calcResidual(right) >= 0,
                 Exception, format(
-                        "Function has same sign at bounds of %f and %f.", left, right));
+                "Function has same sign at bounds of %f and %f.", left, right));
 
         // TODO use error in residual as tolerance?
         SimTK::Real residualMidpoint;

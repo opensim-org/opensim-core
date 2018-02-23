@@ -30,6 +30,63 @@
 
 using namespace OpenSim;
 
+// TODO move into the actual test case.
+void testDeGrooteFregly2016Muscle() {
+    // Test that the force-velocity curve inverse is correct.
+    // ------------------------------------------------------
+    const auto normFiberVelocity = createVectorLinspace(100, -1, 1);
+    DGF2016Muscle muscle;
+    for (int i = 0; i < normFiberVelocity.nrow(); ++i) {
+        const SimTK::Real& vMTilde = normFiberVelocity[i];
+        SimTK_TEST_EQ(muscle.calcForceVelocityInverseCurve(
+                muscle.calcForceVelocityMultiplier(vMTilde)), vMTilde);
+    }
+
+    // solveBisection().
+    // -----------------
+    {
+        auto calcResidual = [](const SimTK::Real& x) {
+            return x - 3.78;
+        };
+        {
+            const auto root =
+                    muscle.solveBisection(calcResidual, -5, 5, 1e-6, 1e-12);
+            SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
+            // Make sure the x tolerance has an effect.
+            SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
+        }
+        {
+            const auto root =
+                    muscle.solveBisection(calcResidual, -5, 5, 1e-10, 1e-12);
+            SimTK_TEST_EQ_TOL(root, 3.78, 1e-10);
+        }
+        // Make sure the y tolerance has an effect.
+        {
+            const auto root =
+                    muscle.solveBisection(calcResidual, -5, 5, 1e-12, 1e-4);
+            const auto residual = calcResidual(root);
+            SimTK_TEST_EQ_TOL(residual, 0, 1e-4);
+            // Make sure the x tolerance has an effect.
+            SimTK_TEST_NOTEQ_TOL(residual, 0, 1e-10);
+        }
+        {
+            const auto root =
+                    muscle.solveBisection(calcResidual, -5, 5, 1e-12, 1e-10);
+            const auto residual = calcResidual(root);
+            SimTK_TEST_EQ_TOL(residual, 0, 1e-10);
+        }
+    }
+    {
+        auto parabola = [](const SimTK::Real& x) {
+            return SimTK::square(x - 2.5);
+        };
+        SimTK_TEST_MUST_THROW_EXC(muscle.solveBisection(parabola, -5, 5),
+                Exception);
+    }
+
+
+}
+
 Model createHangingMuscleModel() {
     Model model;
     model.setName("isometric_muscle");
@@ -91,6 +148,7 @@ Model createHangingMuscleModel() {
 }
 
 int main() {
+    testDeGrooteFregly2016Muscle();
 
     DGF2016Muscle m;
     printMessage("%f %f %f %f %f %f\n",
@@ -217,16 +275,6 @@ int main() {
                 model.getStateVariableValue(finalState, "joint/height/value"),
                 0.14, 1e-4);
         manager.getStateStorage().print("sandboxMuscle_timestepping.sto");
-    }
-
-    // Test that the force-velocity curve inverse is correct.
-    // TODO move into the actual test case.
-    const auto normFiberVelocity = createVectorLinspace(100, -1, 1);
-    DGF2016Muscle muscle;
-    for (int i = 0; i < normFiberVelocity.nrow(); ++i) {
-        const SimTK::Real& vMTilde = normFiberVelocity[i];
-        SimTK_TEST_EQ(muscle.calcForceVelocityInverseCurve(
-                muscle.calcForceVelocityMultiplier(vMTilde)), vMTilde);
     }
 
 
