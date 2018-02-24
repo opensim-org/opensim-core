@@ -175,6 +175,11 @@ public:
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
         m_mucoProb.initialize(m_model);
     }
+    void initialize_on_iterate(const Eigen::VectorXd& parameters)
+            const override {
+        // If they exist, apply parameter values to the model.
+        this->applyParametersToModel(parameters);
+    }
     // TODO rename argument "states" to "state".
     void calc_differential_algebraic_equations(
             const tropter::DAEInput<T>& in,
@@ -184,10 +189,6 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
-        const auto& parameters = in.parameters;
-
-        // If they exist, apply parameter values to the model.
-        this->applyParametersToModel(parameters);
 
         m_state.setTime(in.time);
         std::copy(states.data(), states.data() + states.size(),
@@ -217,8 +218,6 @@ public:
             const VectorX<T>& states,
             const VectorX<T>& controls, 
             const VectorX<T>& parameters, T& integrand) const override {
-        // If they exist, apply parameter values to the model.
-        this->applyParametersToModel(parameters);
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -237,8 +236,6 @@ public:
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
             const VectorX<T>& parameters, T& cost) const override {
-        // If they exist, apply parameter values to the model.
-        this->applyParametersToModel(parameters);
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -254,7 +251,6 @@ private:
     const MucoPhase& m_phase0;
     mutable Model m_model;
     mutable SimTK::State m_state;
-    // TODO: mutable SimTK::Vector m_mucoParams;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

@@ -162,6 +162,10 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto controls = make_controls_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
+    // Initialize on iterate.
+    // ----------------------
+    m_ocproblem->initialize_on_iterate(parameters);
+
     // Endpoint cost.
     // --------------
     // TODO does this cause the final_states to get copied?
@@ -202,6 +206,10 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto parameters = make_parameters_view(x);
+
+    // Initialize on iterate.
+    // ======================
+    m_ocproblem->initialize_on_iterate(parameters);
 
     // Organize the constrants vector.
     ConstraintsView constr_view = make_constraints_view(constraints);
