@@ -55,8 +55,9 @@ public:
     typedef tropter::Problem<T> OCProblem;
 
     // TODO why would we want a shared_ptr? A copy would use the same Problem.
-    Trapezoidal(std::shared_ptr<const OCProblem> ocproblem,
-            unsigned num_mesh_points = 50) {
+    Trapezoidal(const DirectCollocationSolverProxy<T>& dcs_proxy,
+            std::shared_ptr<const OCProblem> ocproblem,
+            unsigned num_mesh_points = 50) : Base<T>(dcs_proxy) {
         if (std::is_same<T, double>::value) {
             this->set_use_supplied_sparsity_hessian_lagrangian(true);
         }

@@ -41,6 +41,10 @@ public:
     const double& get_optimal_objective_value() const
     {   return m_optimal_obj_value; }
     const int& get_num_iterations() const { return m_num_iterations; }
+    /// Obtain the current iteration in the optimization process (while solving
+    /// an optimization problem). Once the problem is solved, this is set to
+    /// the final number of iterations (get_num_iterations()).
+    const int& get_current_iteration() const { return m_current_iteration; }
 private:
     // TODO move to Problem if more than one solver would need this.
     // TODO should use fancy arguments to avoid temporaries and to exploit
@@ -95,6 +99,17 @@ private:
                            Number obj_value, const Ipopt::IpoptData* ip_data,
                            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
 
+    // This is invoked for each iteration.
+    bool intermediate_callback(Ipopt::AlgorithmMode mode,
+            Index iter, Number obj_value,
+            Number inf_pr, Number inf_du,
+            Number mu, Number d_norm,
+            Number regularization_size,
+            Number alpha_du, Number alpha_pr,
+            Index ls_trials,
+            const Ipopt::IpoptData* ip_data,
+            Ipopt::IpoptCalculatedQuantities* ip_cq) override;
+
     // Members.
 //    const ProblemDecorator& m_problem;
     // TODO reconsider the type of this variable:
@@ -107,6 +122,7 @@ private:
     Eigen::VectorXd m_solution;
     double m_optimal_obj_value = std::numeric_limits<double>::quiet_NaN();
     int m_num_iterations = -1;
+    int m_current_iteration = -1;
 
     unsigned m_hessian_num_nonzeros = std::numeric_limits<unsigned>::max();
     SparsityCoordinates m_hessian_sparsity;
@@ -116,6 +132,11 @@ private:
     //double m_cached_obj_value = std::nan(nullptr);
     // TODO what about for lagrangian??
 };
+
+int IPOPTSolver::get_current iteration() const {
+    if (m_nlp) return m_nlp->get_current_iteration();
+    return -1;
+}
 
 void IPOPTSolver::print_available_options() {
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app = IpoptApplicationFactory();
@@ -231,6 +252,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     // Create NLP.
     // -----------
     Ipopt::SmartPtr<TNLP> nlp = new TNLP(*m_problem.get());
+    m_nlp = Ipopt::GetRawPtr(nlp);
     // TODO avoid copying x (initial guess).
     // Determine sparsity pattern of Jacobian, Hessian, etc.
     SparsityCoordinates jacobian_sparsity;
@@ -258,6 +280,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     }
     solution.status = convert_IPOPT_ApplicationReturnStatus_to_string(status);
     solution.num_iterations = nlp->get_num_iterations();
+    m_nlp = nullptr;
     return solution;
 }
 
@@ -455,6 +478,7 @@ void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
     }
     m_optimal_obj_value = obj_value;
     m_num_iterations = ip_data->iter_count();
+    m_current_iteration = m_num_iterations;
     //printf("\nSolution of the bound multipliers, z_L and z_U\n");
     //for (Index i = 0; i < num_variables; ++i) {
     //    printf("z_L[%d] = %e\n", i, z_L[i]);
@@ -467,6 +491,17 @@ void IPOPTSolver::TNLP::finalize_solution(Ipopt::SolverReturn /*status*/,
     // TODO also implement Ipopt's intermediate_() function.
 }
 
+bool IPOPTSolver::TNLP::intermediate_callback(Ipopt::AlgorithmMode,
+        Index iter, Number,
+        Number, Number,
+        Number, Number,
+        Number,
+        Number, Number,
+        Index,
+        const Ipopt::IpoptData*,
+        Ipopt::IpoptCalculatedQuantities*) {
+    m_current_iteration = iter;
+}
 
 
 

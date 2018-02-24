@@ -38,8 +38,10 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
     std::transform(transcrip_lower.begin(), transcrip_lower.end(),
             transcrip_lower.begin(), ::tolower);
     if (transcrip_lower == "trapezoidal") {
-        m_transcription.reset(new transcription::Trapezoidal<T>(ocproblem,
-                                                             num_mesh_points));
+        m_transcription.reset(
+                new transcription::Trapezoidal<T>(
+                        DirectCollocationSolverProxy<T>(*this),
+                        ocproblem, num_mesh_points));
     } else {
         TROPTER_THROW("Unrecognized transcription method %s.", transcrip);
     }

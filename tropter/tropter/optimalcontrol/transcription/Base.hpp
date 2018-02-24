@@ -1,5 +1,7 @@
+#ifndef TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_HPP
+#define TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_HPP
 // ----------------------------------------------------------------------------
-// tropter: DirectCollocation.cpp
+// tropter: Base.hpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,14 +16,17 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "DirectCollocation.hpp"
+#include "Base.h"
+#include <tropter/optimalcontrol/DirectCollocationSolver.h>
 
 namespace tropter {
+namespace transcription {
+template <typename T>
+int Base<T>::get_current_iteration() const {
+    return m_dcs_proxy.get_current_iteration();
+}
 
-template class DirectCollocationSolver<double>;
-template class DirectCollocationSolver<adouble>;
-
-template class DirectCollocationSolverProxy<double>;
-template class DirectCollocationSolverProxy<adouble>;
-
+} // namespace transcription
 } // namespace tropter
+
+#endif // TROPTER_OPTIMALCONTROL_TRANSCRIPTION_BASE_HPP

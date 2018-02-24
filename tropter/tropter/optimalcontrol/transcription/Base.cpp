@@ -1,5 +1,5 @@
 // ----------------------------------------------------------------------------
-// tropter: DirectCollocation.cpp
+// tropter: Base.cpp
 // ----------------------------------------------------------------------------
 // Copyright (c) 2017 tropter authors
 //
@@ -14,14 +14,15 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "DirectCollocation.hpp"
+#include "Base.cpp"
+#include <tropter/common.h>
 
 namespace tropter {
+namespace transcription {
 
-template class DirectCollocationSolver<double>;
-template class DirectCollocationSolver<adouble>;
+template class Base<double>;
+template class Base<adouble>;
 
-template class DirectCollocationSolverProxy<double>;
-template class DirectCollocationSolverProxy<adouble>;
-
+} // namespace transcription
 } // namespace tropter
+
