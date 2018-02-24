@@ -32,10 +32,13 @@ using namespace OpenSim;
 
 // TODO move into the actual test case.
 void testDeGrooteFregly2016Muscle() {
+
+    DGF2016Muscle muscle;
+    muscle.printCurvesToSTOFiles();
+
     // Test that the force-velocity curve inverse is correct.
     // ------------------------------------------------------
     const auto normFiberVelocity = createVectorLinspace(100, -1, 1);
-    DGF2016Muscle muscle;
     for (int i = 0; i < normFiberVelocity.nrow(); ++i) {
         const SimTK::Real& vMTilde = normFiberVelocity[i];
         SimTK_TEST_EQ(muscle.calcForceVelocityInverseCurve(

@@ -445,7 +445,8 @@ public:
         return (sinh(1.0 / d1 * (forceVelocityMult - d4)) - d3) / d2;
     }
 
-    /// This is the passive force-length curve.
+    /// This is the passive force-length curve. The curve becomes negative below
+    /// the minNormFiberLength.
     SimTK::Real calcPassiveForceMultiplier(
             const SimTK::Real& normFiberLength) const {
         // Passive force-length curve.
@@ -469,6 +470,104 @@ public:
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
         return c1 * exp(kT * (normTendonLength - c2)) - c3;
+    }
+
+    /// Export the active force-length multiplier and passive force multiplier
+    /// curves to a DataTable. If the normFiberLengths argument is omitted, we
+    /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
+    DataTable exportFiberLengthCurvesToTable(
+            const SimTK::Vector& normFiberLengths = SimTK::Vector()) const {
+        SimTK::Vector def;
+        const SimTK::Vector* x = nullptr;
+        if (normFiberLengths.nrow()) {
+            x = &normFiberLengths;
+        } else {
+            def = createVectorLinspace(200, m_minNormFiberLength,
+                    m_maxNormFiberLength);
+            x = &def;
+        }
+
+        DataTable table;
+        table.setColumnLabels(
+                {"active_force_length_multiplier", "passive_force_multiplier"});
+        SimTK::RowVector row(2);
+        for (int irow = 0; irow < x->nrow(); ++irow) {
+            const auto& normFiberLength = x->get(irow);
+            row[0] = calcActiveForceLengthMultiplier(normFiberLength);
+            row[1] = calcPassiveForceMultiplier(normFiberLength);
+            table.appendRow(normFiberLength, row);
+        }
+        return table;
+    }
+    /// Export the fiber force-velocity multiplier curve to a DataTable. If
+    /// the normFiberVelocities argument is omitted, we use
+    /// createVectorLinspace(200, -1.1, 1.1).
+    DataTable exportFiberVelocityMultiplierToTable(
+            const SimTK::Vector& normFiberVelocities = SimTK::Vector()) const {
+        SimTK::Vector def;
+        const SimTK::Vector* x = nullptr;
+        if (normFiberVelocities.nrow()) {
+            x = &normFiberVelocities;
+        } else {
+            def = createVectorLinspace(200, -1.1, 1.1);
+            x = &def;
+        }
+
+        DataTable table;
+        table.setColumnLabels({"force_velocity_multiplier"});
+        SimTK::RowVector row(1);
+        for (int irow = 0; irow < x->nrow(); ++irow) {
+            const auto& normFiberVelocity = x->get(irow);
+            row[0] = calcForceVelocityMultiplier(normFiberVelocity);
+            table.appendRow(normFiberVelocity, row);
+        }
+        return table;
+    }
+    /// Export the fiber tendon force multiplier curve to a DataTable. If
+    /// the normFiberVelocities argument is omitted, we use
+    /// createVectorLinspace(200, 0.95, <1 + strain at 1 norm force>)
+    DataTable exportTendonForceMultiplierToTable(
+            const SimTK::Vector& normTendonLengths = SimTK::Vector()) const {
+        SimTK::Vector def;
+        const SimTK::Vector* x = nullptr;
+        if (normTendonLengths.nrow()) {
+            x = &normTendonLengths;
+        } else {
+            // Evaluate the inverse of the tendon curve at y = 1.
+            const SimTK::Real xAtOneNormForce = log((1.0 + c3) / c1) / kT + c2;
+            def = createVectorLinspace(200, 0.95, xAtOneNormForce);
+            x = &def;
+        }
+
+        DataTable table;
+        table.setColumnLabels({"tendon_force_multiplier"});
+        SimTK::RowVector row(1);
+        for (int irow = 0; irow < x->nrow(); ++irow) {
+            const auto& normTendonLength = x->get(irow);
+            row[0] = calcTendonForceMultiplier(normTendonLength);
+            table.appendRow(normTendonLength, row);
+        }
+        return table;
+    }
+    /// Print the muscle curves to STO files. The files will be named as
+    /// `<muscle-name>_<curve_type>.sto`.
+    ///
+    /// @param directory
+    ///     The directory to which the data files should be written. Do NOT
+    ///     include the filename. By default, the files are printed to the
+    ///     current working directory.
+    void printCurvesToSTOFiles(const std::string& directory = ".") const {
+        std::string prefix = directory + SimTK::Pathname::getPathSeparator() +
+                getName();
+
+        STOFileAdapter::write(exportFiberLengthCurvesToTable(),
+                prefix + "_fiber_length_curves.sto");
+
+        STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
+                prefix + "_fiber_velocity_multiplier.sto");
+
+        STOFileAdapter::write(exportTendonForceMultiplierToTable(),
+                prefix + "_tendon_force_multiplier.sto");
     }
     /// @}
 private:
