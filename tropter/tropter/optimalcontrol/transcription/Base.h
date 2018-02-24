@@ -58,12 +58,6 @@ namespace transcription {
 template<typename T>
 class Base : public optimization::Problem<T> {
 public:
-    // TODO do we still need this type? Use Iterate instead.
-    //struct Trajectory {
-    //    Eigen::RowVectorXd time;
-    //    Eigen::MatrixXd states;
-    //    Eigen::MatrixXd controls;
-    //};
 
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
