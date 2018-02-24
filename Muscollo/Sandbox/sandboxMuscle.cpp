@@ -167,15 +167,6 @@ Model createHangingMuscleModel() {
 int main() {
     testDeGrooteFregly2016Muscle();
 
-    DGF2016Muscle m;
-    printMessage("%f %f %f %f %f %f\n",
-            m.calcTendonForceMultiplier(1),
-            m.calcPassiveForceMultiplier(1),
-            m.calcActiveForceLengthMultiplier(1),
-            m.calcForceVelocityMultiplier(-1),
-            m.calcForceVelocityMultiplier(0),
-            m.calcForceVelocityMultiplier(1));
-
 
     MucoTool muco;
     MucoProblem& mp = muco.updProblem();
