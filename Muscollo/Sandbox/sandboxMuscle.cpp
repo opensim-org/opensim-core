@@ -33,8 +33,22 @@ using namespace OpenSim;
 // TODO move into the actual test case.
 void testDeGrooteFregly2016Muscle() {
 
+    Model model;
     DGF2016Muscle muscle;
+    muscle.addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    muscle.addNewPathPoint("insertion", model.updGround(),
+            SimTK::Vec3(1.0, 0, 0));
+    muscle.finalizeFromProperties();
     muscle.printCurvesToSTOFiles();
+
+    printMessage("%f %f %f %f %f %f\n",
+            muscle.calcTendonForceMultiplier(1),
+            muscle.calcPassiveForceMultiplier(1),
+            muscle.calcActiveForceLengthMultiplier(1),
+            muscle.calcForceVelocityMultiplier(-1),
+            muscle.calcForceVelocityMultiplier(0),
+            muscle.calcForceVelocityMultiplier(1));
+
 
     // Test that the force-velocity curve inverse is correct.
     // ------------------------------------------------------

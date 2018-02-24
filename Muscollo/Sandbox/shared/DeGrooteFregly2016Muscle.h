@@ -31,9 +31,11 @@ namespace OpenSim {
 /// through key points:
 ///   - Active force-length curve goes through (1, 1).
 ///   - Force-velocity curve goes through (-1, 0) and (0, 1).
-/// DGF stands for DeGroote-Fregly. The abbreviation is temporary, and is used
-/// to avoid a name conflict with the existing DeGrooteFregly2016Muscle class
-/// (which doesn't inherit from OpenSim::Force).
+/// The default tendon force curve parameters are modified from that in De
+/// Groote et al., 2016: the curve is parameterized by the strain at 1 norm
+/// force (rather than "kT"), and the default value for this parameter is
+/// 0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
+/// DGF stands for DeGroote-Fregly. The abbreviation is temporary.
 /// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
@@ -63,20 +65,33 @@ public:
     OpenSim_DECLARE_PROPERTY(default_activation, double,
     "Value of activation in the default state returned by initSystem().");
 
+    OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
+    "Tendon strain at a tension of 1 normalized force.");
+
     DGF2016Muscle() {
         constructProperties();
     }
 
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
-        OPENSIM_THROW_IF(!getProperty_optimal_force().getValueIsDefault(),
-                Exception, "The optimal_force property is ignored for this Force; "
-                        "use max_isometric_force instead.");
+        OPENSIM_THROW_IF_FRMOBJ(
+            !getProperty_optimal_force().getValueIsDefault(),
+            Exception,
+            "The optimal_force property is ignored for this Force; "
+            "use max_isometric_force instead.");
+
+        OPENSIM_THROW_IF_FRMOBJ(get_tendon_strain_at_one_norm_force() <= 0,
+            Exception,
+            "Expected the tendon_strain_at_one_norm_force property to be "
+            "positive, but got " +
+            std::to_string(get_tendon_strain_at_one_norm_force()) + ".");
 
         // TODO validate properties (nonnegative, etc.).
 
         m_maxContractionVelocityInMeters =
                 get_max_contraction_velocity() * get_optimal_fiber_length();
+        m_kT = log((1.0 + c3) / c1) /
+                (1.0 + get_tendon_strain_at_one_norm_force() - c2);
     }
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override {
@@ -469,7 +484,7 @@ public:
     /// this function returns a slightly negative number.
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
-        return c1 * exp(kT * (normTendonLength - c2)) - c3;
+        return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
     }
 
     /// Export the active force-length multiplier and passive force multiplier
@@ -534,8 +549,8 @@ public:
             x = &normTendonLengths;
         } else {
             // Evaluate the inverse of the tendon curve at y = 1.
-            const SimTK::Real xAtOneNormForce = log((1.0 + c3) / c1) / kT + c2;
-            def = createVectorLinspace(200, 0.95, xAtOneNormForce);
+            def = createVectorLinspace(200, 0.95,
+                    1.0 + get_tendon_strain_at_one_norm_force());
             x = &def;
         }
 
@@ -580,6 +595,8 @@ private:
         constructProperty_default_norm_fiber_length(1.0);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);
+
+        constructProperty_tendon_strain_at_one_norm_force(0.049);
     }
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
@@ -598,7 +615,6 @@ private:
     // Parameters for the tendon force curve.
     // TODO allow users to set kT; it has a huge effect on the runtime of
     // INDYGO.
-    constexpr static double kT = 35;
     constexpr static double c1 = 0.200;
     constexpr static double c2 = 0.995; // TODO 1.0?
     constexpr static double c3 = 0.250; // TODO 0.2 (c3)?
@@ -621,7 +637,9 @@ private:
     static const std::string ACTIVATION;
     static const std::string NORM_FIBER_LENGTH;
 
-    SimTK::Real m_maxContractionVelocityInMeters;
+    SimTK::Real m_maxContractionVelocityInMeters = SimTK::NaN;
+    // Tendon stiffness parameter from De Groote et al., 2016.
+    SimTK::Real m_kT = SimTK::NaN;
 };
 
 // TODO these should not be in a header.
