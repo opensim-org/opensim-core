@@ -46,9 +46,6 @@ public:
     // TODO explain what happens if initial guess is omitted.
     // TODO cannot use temporary.
     static void print_available_options();
-
-    int get_current iteration() const;
-
 protected:
     Solution optimize_impl(const Eigen::VectorXd& guess) const override;
     void get_available_options(
@@ -59,7 +56,6 @@ protected:
     }
 private:
     class TNLP;
-    mutable TNLP* m_nlp = nullptr;
 };
 
 } // namespace optimization

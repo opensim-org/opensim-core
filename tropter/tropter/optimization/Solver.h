@@ -140,17 +140,6 @@ public:
     const std::string& get_sparsity_detection() const;
     /// @}
 
-    /// @name Obtain the status of the current problem being solved.
-    /// @{
-
-    /// Obtain the current iteration in the optimization process (while solving
-    /// an optimization problem). The exact meaning of this iteration number
-    /// is solver-dependent. This returns -1 if the problem is not
-    /// currently being solved or if the underlying optimization::Solver does
-    /// not support providing the current iteration.
-    virtual int get_current iteration() const { return -1; }
-    /// @}
-
 protected:
     virtual Solution optimize_impl(const Eigen::VectorXd& guess) const = 0;
     virtual void get_available_options(

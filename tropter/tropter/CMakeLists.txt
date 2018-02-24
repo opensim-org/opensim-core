@@ -35,11 +35,10 @@ add_library(tropter SHARED
         optimalcontrol/DirectCollocation.hpp
         optimalcontrol/DirectCollocation.cpp
         optimalcontrol/transcription/Base.h
-        optimalcontrol/transcription/Base.hpp
-        optimalcontrol/transcription/Base.cpp
         optimalcontrol/transcription/Trapezoidal.h
         optimalcontrol/transcription/Trapezoidal.hpp
-        optimalcontrol/transcription/Trapezoidal.cpp)
+        optimalcontrol/transcription/Trapezoidal.cpp
+        )
 
 # TODO generate_export_header() for exporting symbols on Windows.
 

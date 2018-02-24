@@ -51,12 +51,7 @@
 //            DefectsTrajectoryView& defects);
 //};
 
-
 namespace tropter {
-
-template<typename T>
-class DirectCollocationSolverProxy;
-
 namespace transcription {
 
 /// @ingroup optimalcontrol
@@ -69,9 +64,6 @@ public:
     //    Eigen::MatrixXd states;
     //    Eigen::MatrixXd controls;
     //};
-
-    Base(const DirectCollocationSolverProxy<T>& dcs_proxy) :
-            m_dcs_proxy(dcs_proxy) {}
 
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
@@ -93,17 +85,6 @@ public:
         stream << "The function print_constraint_values() is unimplemented for "
                 "this transcription method." << std::endl;
     }
-protected:
-
-    /// @name Interface for the derived transcription
-    /// @{
-
-    /// @see optimization::Solver:;get_current_iteration()
-    int get_current_iteration() const;
-    /// @}
-
-private:
-    const DirectCollocationSolverProxy<T>& m_dcs_proxy;
 };
 
 } // namespace transcription

@@ -21,7 +21,4 @@ namespace tropter {
 template class DirectCollocationSolver<double>;
 template class DirectCollocationSolver<adouble>;
 
-template class DirectCollocationSolverProxy<double>;
-template class DirectCollocationSolverProxy<adouble>;
-
 } // namespace tropter

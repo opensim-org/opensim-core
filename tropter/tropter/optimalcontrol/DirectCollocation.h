@@ -111,16 +111,6 @@ public:
     /// elements of the constraint vector.
     void print_constraint_values(const Iterate& vars,
                                  std::ostream& stream = std::cout) const;
-
-    template <typename T>
-    class DirectCollocationSolverProxy {
-    public:
-        DirectCollocationSolverProxy(const DirectCollocationSolver<T>& dcs)
-                : m_dcs(dcs) {}
-        int get_current_iterate()
-    private:
-        const DirectCollocationSolver<T>& m_dcs;
-    };
 private:
     std::shared_ptr<const OCProblem> m_ocproblem;
     // TODO perhaps ideally DirectCollocationSolver would not be templated?
@@ -128,16 +118,6 @@ private:
     std::unique_ptr<optimization::Solver> m_optsolver;
 
     int m_verbosity = 1;
-};
-
-template <typename T>
-class DirectCollocationSolverProxy {
-public:
-    DirectCollocationSolverProxy(const DirectCollocationSolver<T>& dcs)
-            : m_dcs(dcs) {}
-    int get_current_iterate()
-private:
-    const DirectCollocationSolver<T>& m_dcs;
 };
 
 } // namespace tropter
