@@ -182,6 +182,7 @@ private:
     // Working memory.
     mutable VectorX<T> m_integrand;
     mutable MatrixX<T> m_derivs;
+    mutable std::atomic<int> countTODO {0};
 };
 
 } // namespace transcription
