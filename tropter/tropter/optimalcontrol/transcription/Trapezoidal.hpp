@@ -189,23 +189,10 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     obj_value += integral_cost;
 }
 
-template <typename T>
-double valueTODO(const T& v) { return v; }
-template <>
-double valueTODO(const adouble& v) { return v.value(); }
-
 template<typename T>
 void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
         Eigen::Ref<VectorX<T>> constraints) const
 {
-    Eigen::VectorXd xtemp(x.size());
-    for (int i = 0; i < xtemp.size(); ++i) {
-        xtemp[i] = valueTODO(x[i]);
-    }
-    Iterate it = deconstruct_iterate(xtemp);
-    ++countTODO;
-    it.write("DEBUG_iterate_in_calc_constraints_" + std::to_string(countTODO) + ".csv");
-
     // TODO parallelize.
     const T& initial_time = x[0];
     const T& final_time = x[1];
