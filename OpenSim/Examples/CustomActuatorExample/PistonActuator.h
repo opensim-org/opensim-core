@@ -123,7 +123,7 @@ public:
     // FORCE INTERFACE
     //--------------------------------------------------------------------------
     /** Apply the actuator force to frameA and frameB. */
-    virtual void computeForce(const SimTK::State& s, 
+    void computeForce(const SimTK::State& s, 
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                               SimTK::Vector& generalizedForces) const override;
 
