@@ -97,31 +97,15 @@ int main() {
         orientationInParent = Vec3(0.0, 0.0, 0.0);
         locationInChild = Vec3(0.0, 0.0, 0.0);
         orientationInChild = Vec3(0.0, 0.0, 0.0);
-        FreeJoint *pelvisToPlatform = new FreeJoint("PelvisToPlatform",
+        PlanarJoint *pelvisToPlatform = new PlanarJoint("PelvisToPlatform",
             *platform, locationInParent, orientationInParent,
             *pelvis, locationInChild, orientationInChild);
 
-        // A Free joint has six coordinates, in the following order:
-        //     rot_x, rot_y, rot_z, trans_x, trans_y, trans_z
+        // A planar joint has three coordinates, in the following order:
+        //     rot_z, trans_x, trans_y
         // Set the properties of the coordinates that define the joint
-        Coordinate& pelvis_rx =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::Rotation1X);
-        pelvis_rx.setName("pelvis_rx");
-        double pelvis_rx_range[2] = {-Pi, Pi};
-        pelvis_rx.setRange(pelvis_rx_range);
-        pelvis_rx.setDefaultValue(convertDegreesToRadians(0));
-        pelvis_rx.setDefaultLocked(true);
-
-        Coordinate& pelvis_ry =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::Rotation2Y);
-        pelvis_ry.setName("pelvis_ry");
-        double pelvis_ry_range[2] = { -Pi, Pi };
-        pelvis_ry.setRange(pelvis_ry_range);
-        pelvis_ry.setDefaultValue(convertDegreesToRadians(0));
-        pelvis_ry.setDefaultLocked(true);
-
         Coordinate& pelvis_rz =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::Rotation3Z);
+            pelvisToPlatform->updCoordinate(PlanarJoint::Coord::RotationZ);
         pelvis_rz.setName("pelvis_rz");
         double pelvis_rz_range[2] = { -Pi, Pi };
         pelvis_rz.setRange(pelvis_rz_range);
@@ -129,26 +113,18 @@ int main() {
         pelvis_rz.setDefaultLocked(true);
 
         Coordinate& pelvis_tx =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::TranslationX);
+            pelvisToPlatform->updCoordinate(PlanarJoint::Coord::TranslationX);
         pelvis_tx.setName("pelvis_tx");
         double pelvis_tx_range[2] = { -10, 10 };
         pelvis_tx.setRange(pelvis_tx_range);
         pelvis_tx.setDefaultValue(0);
 
         Coordinate& pelvis_ty =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::TranslationY);
+            pelvisToPlatform->updCoordinate(PlanarJoint::Coord::TranslationY);
         pelvis_ty.setName("pelvis_ty");
         double pelvis_ty_range[2] = { -1, 2 };
         pelvis_ty.setRange(pelvis_ty_range);
         pelvis_ty.setDefaultValue(1);
-
-        Coordinate& pelvis_tz =
-            pelvisToPlatform->updCoordinate(FreeJoint::Coord::TranslationZ);
-        pelvis_tz.setName("pelvis_tz");
-        double pelvis_tz_range[2] = { -1, 1 };
-        pelvis_tz.setRange(pelvis_tz_range);
-        pelvis_tz.setDefaultValue(0);
-        pelvis_tz.setDefaultLocked(true);
 
         // Add the PelvisToPlatform Joint to the Model
         osimModel.addJoint(pelvisToPlatform);
