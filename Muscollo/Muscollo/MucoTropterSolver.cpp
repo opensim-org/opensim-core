@@ -148,6 +148,13 @@ public:
               m_mucoProb(solver.getProblem()),
               m_phase0(m_mucoProb.getPhase(0)) {
         m_model = m_phase0.getModel();
+        // Disable all controllers.
+        // TODO temporary; don't want to actually do this.
+        m_model.finalizeFromProperties();
+        auto controllers = m_model.updComponentList<Controller>();
+        for (auto& controller : controllers) {
+            controller.set_enabled(false);
+        }
         m_state = m_model.initSystem();
 
         this->set_time(convert(m_phase0.getTimeInitialBounds()),
@@ -370,6 +377,7 @@ MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
         "final_time.lower: " + std::to_string(finalTime) + "; " +
         "initial_time.upper: " + std::to_string(initialTime) + ".");
     Model model(phase.getModel());
+
     // Disable all controllers?
     SimTK::State state = model.initSystem();
 
@@ -508,7 +516,8 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         }
     }
 
-    // TODO optsolver.set_sparsity_detection("random");
+    // TODO create formal option for this.
+    // optsolver.set_sparsity_detection("random");
 
     // Set advanced settings.
     //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {

@@ -117,11 +117,14 @@ Model createHangingMuscleModel() {
     coord.setName("height");
     model.addComponent(joint);
 
+    /*
+    */
     auto* actu = new DGF2016Muscle();
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
     actu->set_optimal_fiber_length(0.10);
     actu->set_tendon_slack_length(0.05);
+    actu->set_tendon_strain_at_one_norm_force(0.10);
 
     //actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
@@ -130,19 +133,19 @@ Model createHangingMuscleModel() {
 
 
     /*
+    */
     auto* actu = new Millard2012EquilibriumMuscle();
-    actu->set_fiber_damping(0); // TODO
+    // TODO actu->set_fiber_damping(0); // TODO
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
     actu->set_optimal_fiber_length(0.10);
-    actu->set_ignore_tendon_compliance(true);
+    actu->set_ignore_tendon_compliance(false);
     actu->set_tendon_slack_length(0.05);
-    actu->set_pennation_angle_at_optimal(0.1);
+    actu->set_pennation_angle_at_optimal(0); // TODO 0.1);
     actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
-    model.addComponent(actu);
-    */
+    model.addForce(actu);
 
     /*
     auto* actu = new ActivationCoordinateActuator();
@@ -172,10 +175,22 @@ int main() {
     MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel();
 
-    // auto* controller = new PrescribedController();
-    // controller->addActuator(model.getComponent<Actuator>("actuator"));
-    // controller->prescribeControlForActuator("actuator", new Constant(0.5));
-    // model.addController(controller);
+    auto* controller = new PrescribedController();
+    controller->addActuator(model.getComponent<Actuator>("actuator"));
+    controller->prescribeControlForActuator("actuator", new Constant(0.10));
+    model.addController(controller);
+    model.finalizeFromProperties();
+
+    TableReporter* rep = new TableReporter();
+    /*
+    rep->addToReport(model.getComponent("actuator/geometrypath").getOutput("length"));
+    rep->addToReport(model.getComponent("actuator").getOutput("normalized_fiber_length"));
+    rep->addToReport(model.getComponent("actuator").getOutput("normalized_fiber_velocity"));
+    // rep->addToReport(model.getComponent("actuator").getOutput("fiber_velocity"));
+    rep->addToReport(model.getComponent("actuator").getOutput("force_velocity_multiplier"));
+    rep->set_report_time_interval(0.001);
+    model.addComponent(rep);
+     */
 
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("actuator");
@@ -201,7 +216,10 @@ int main() {
 
     // TODO
     // Manager manager(model, state);
+    // manager.getIntegrator().setAccuracy(1e-10);
+    // manager.getIntegrator().setMaximumStepSize(0.001);
     // manager.integrate(2.0);
+    // STOFileAdapter::write(rep->getTable(), "DEBUG_sandboxMuscle_reporter.sto");
     // visualize(model, manager.getStateStorage());
     // std::exit(-1);
 
@@ -222,7 +240,7 @@ int main() {
     // TODO how to enforce initial equilibrium?
     if (hasFiberDynamics) {
         if (usingDGF) {
-            std::cout << "DEBUG " <<
+            std::cout << "DEBUG norm_fiber_length" <<
                     model.getStateVariableValue(state, "actuator/norm_fiber_length") << std::endl;
             mp.setStateInfo("actuator/norm_fiber_length", {0.2, 1.8},
                     model.getStateVariableValue(state, "actuator/norm_fiber_length"));
@@ -242,17 +260,26 @@ int main() {
     // should be.
 
     MucoTropterSolver& solver = muco.initSolver();
+    solver.set_num_mesh_points(20);
     // TODO set initial guess from forward simulation.
+    // TODO for this to work, we want to enable solving for equilibrium fiber
+    // length.
     solver.setGuess("forward-simulation");
     MucoIterate guessForwardSim = solver.createGuess("forward-simulation");
     guessForwardSim.write("DEBUG_forward_sim.sto");
     std::cout << "DEBUGguessForwardSim " << guessForwardSim.getStatesTrajectory() << std::endl;
     muco.visualize(guessForwardSim);
 
+    solver.setGuess(guessForwardSim);
+
     MucoSolution solution = muco.solve().unseal();
     solution.write("sandboxMuscle_solution.sto");
-    std::cout << "DEBUG " << solution.getState("joint/height/value") << std::endl;
-    std::cout << "DEBUG " << solution.getState("joint/height/speed") << std::endl;
+    std::cout << "DEBUG joint/height/value "
+            << solution.getState("joint/height/value") << std::endl;
+    std::cout << "DEBUG joint/height/speed "
+            << solution.getState("joint/height/speed") << std::endl;
+
+    std::exit(-1);
 
     // TODO perform forward simulation using optimized controls; see if we
     // end up at the correct final state.
@@ -276,7 +303,7 @@ int main() {
         // Integrate.
         Manager manager(model, state);
         SimTK::State finalState = manager.integrate(time[time.nrow() - 1]);
-        std::cout << "DEBUG "
+        std::cout << "DEBUG forward sim joint/height/value history "
                 << model.getStateVariableValue(finalState, "joint/height/value")
                 << std::endl;
         SimTK_TEST_EQ_TOL(
