@@ -732,17 +732,17 @@ std::string Component::getRelativePathName(const Component& wrt) const
 }
 
 const Component::StateVariable* Component::
-    findStateVariable(const std::string& name) const
+    traverseToStateVariable(const std::string& pathName) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    ComponentPath svPath(name);
+    ComponentPath svPath(pathName);
 
     const StateVariable* found = nullptr;
     if (svPath.getNumPathLevels() == 1) {
         // There was no slash. The state variable should be in this component.
-        auto it = _namedStateVariableInfo.find(name);
+        auto it = _namedStateVariableInfo.find(pathName);
         if (it != _namedStateVariableInfo.end()) {
             return it->second.stateVariable.get();
         }
@@ -752,7 +752,7 @@ const Component::StateVariable* Component::
         if (comp) {
             // This is the leaf of the path:
             const auto& varName = svPath.getComponentName();
-            found = comp->findStateVariable(varName);
+            found = comp->traverseToStateVariable(varName);
         }
     }
     return found;
@@ -837,7 +837,7 @@ double Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable with this component or its subcomponents
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
     if (rsv) {
         return rsv->getValue(s);
     }
@@ -868,7 +868,7 @@ double Component::
     } 
     else{
         // otherwise find the component that variable belongs to
-        const StateVariable* rsv = findStateVariable(name);
+        const StateVariable* rsv = traverseToStateVariable(name);
         if (rsv) {
             return rsv->getDerivative(state);
         }
@@ -892,7 +892,7 @@ void Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
 
     if(rsv){ // find required rummaging through the state variable names
             return rsv->setValue(s, value);
@@ -949,7 +949,7 @@ SimTK::Vector Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     Vector stateVariableValues(nsv, SimTK::NaN);
@@ -982,7 +982,7 @@ void Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     for(int i=0; i<nsv; ++i){
