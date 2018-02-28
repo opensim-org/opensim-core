@@ -190,13 +190,39 @@ public:
 
             const SimTK::Real muscleTendonLength = getLength(s);
             const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
-            auto calcResidual = [this, &activation,
-                    &muscleTendonLength,
-                    &normFiberLength](const SimTK::Real& normFiberVelocity) {
-                return calcFiberEquilibriumResidual(activation,
-                        muscleTendonLength, normFiberLength, normFiberVelocity);
+
+            // TODO: this is inefficient because it's recalculating a lot of
+            // terms that don't actually vary with normFiberVelocity (actually,
+            // only one term depends on fiber velocity).
+            const SimTK::Real activeForceLengthMult =
+                    calcActiveForceLengthMultiplier(normFiberLength);
+            const SimTK::Real cosPenn = 1.0; // TODO
+            const SimTK::Real activationActiveForceLengthMultiplierCosPenn =
+                    activation * activeForceLengthMult * cosPenn;
+            const SimTK::Real passiveForceMult =
+                    calcPassiveForceMultiplier(normFiberLength);
+            const SimTK::Real fiberLength =
+                    get_optimal_fiber_length() * normFiberLength;
+            const SimTK::Real normTendonLength = calcNormalizedTendonLength(
+                    muscleTendonLength, fiberLength);
+            const SimTK::Real normTendonForce =
+                    calcTendonForceMultiplier(normTendonLength);
+            const SimTK::Real normActiveFiberForceAlongTendon =
+                    normTendonForce - passiveForceMult * cosPenn;
+
+            auto calcResidual = [this,
+                    &activationActiveForceLengthMultiplierCosPenn,
+                    &normActiveFiberForceAlongTendon](
+                    const SimTK::Real& normFiberVelocity) {
+                return activationActiveForceLengthMultiplierCosPenn
+                        * calcForceVelocityMultiplier(normFiberVelocity)
+                        - normActiveFiberForceAlongTendon;
+                // TODO return calcFiberEquilibriumResidual(activation,
+                //        muscleTendonLength, normFiberLength, normFiberVelocity);
             };
-            const double TODO = 10;
+            std::cout << "DEBUG excitation " << excitation << std::endl;
+            const double TODO = 200000;
+            /*
             const auto x = createVectorLinspace(1000, -TODO, TODO);
             TimeSeriesTable table;
             table.setColumnLabels({"residual"});
@@ -206,12 +232,52 @@ public:
                 table.appendRow(x[i], row);
             }
             STOFileAdapter::write(table, "DEBUG_equilibrium_residual.sto");
-            // TODO bounds of -1 and 1?
-            const SimTK::Real equilNormFiberVelocity =
-                    solveBisection(calcResidual, -TODO, TODO); // TODO -1, 1);
+            */
 
+            /*
+            std::cout << format("DEBUG computeStateVariableDerivatives"
+                            "\n\tactivation: %f"
+                            "\n\tmuscleTendonLength: %f"
+                            "\n\tnormFiberLength: %f"
+                            "\n\tactiveForceLengthMult: %f"
+                            "\n\tnormTendonLength: %f"
+                            "\n\tnormTendonForce: %f",
+                    activation, muscleTendonLength, normFiberLength,
+                    activeForceLengthMult, normTendonLength, normTendonForce)
+                    << std::endl;
+            */
+            // TODO bounds of -1 and 1?
+            SimTK::Real equilNormFiberVelocity;
+            try {
+                equilNormFiberVelocity =
+                    solveBisection(calcResidual, -TODO, TODO); // TODO -1, 1);
+            } catch (const Exception& e) {
+                std::cout << format("DEBUG computeStateVariableDerivatives"
+                                "\n\ttime: %f"
+                                "\n\tactivation: %f"
+                                "\n\tmuscleTendonLength: %f"
+                                "\n\tnormFiberLength: %f"
+                                "\n\tactiveForceLengthMult: %f"
+                                "\n\tpassiveForceMult: %f"
+                                "\n\tnormTendonLength: %f"
+                                "\n\tnormTendonForce: %f"
+                                "\n\tscale: %f"
+                                "\n\toffset: %f"
+                        ,
+                        s.getTime(),
+                        activation, muscleTendonLength, normFiberLength,
+                        activeForceLengthMult, passiveForceMult,
+                        normTendonLength, normTendonForce,
+                        activationActiveForceLengthMultiplierCosPenn,
+                        normActiveFiberForceAlongTendon)
+                        << std::endl;
+                throw;
+            }
+
+            /*
             std::cout << format("DEBUG derivatives t: %f normFiberVelocity: %f",
                     s.getTime(), equilNormFiberVelocity) << std::endl;
+                    */
 
             // norm_fiber_length/second = norm_fiber_length/second * unitless
             const SimTK::Real normFiberLengthDot =
@@ -263,13 +329,27 @@ public:
     /// yTolerance.
     SimTK::Real solveBisection(
             std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-    SimTK::Real left, SimTK::Real right,
-    const SimTK::Real& xTolerance = 1e-10,
-    const SimTK::Real& yTolerance = 1e-10,
-    int maxIterations = 100) const {
+            SimTK::Real left, SimTK::Real right,
+            const SimTK::Real& xTolerance = 1e-7,
+            const SimTK::Real& yTolerance = 1e-7,
+            int maxIterations = 100) const {
         SimTK::Real midpoint = left;
 
-        assert(maxIterations > 0);
+        OPENSIM_THROW_IF_FRMOBJ(maxIterations < 0, Exception,
+                format("Expected maxIterations to be positive, but got %i.",
+                        maxIterations));
+        if (calcResidual(left) * calcResidual(right) >= 0) {
+            std::cout << "DEBUG solveBisection() SAME SIGN" << std::endl;
+            const auto x = createVectorLinspace(1000, left, right);
+            TimeSeriesTable table;
+            table.setColumnLabels({"residual"});
+            SimTK::RowVector row(1);
+            for (int i = 0; i < x.nrow(); ++i) {
+                row[0] = calcResidual(x[i]);
+                table.appendRow(x[i], row);
+            }
+            STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
+        }
         OPENSIM_THROW_IF_FRMOBJ(calcResidual(left) * calcResidual(right) >= 0,
                 Exception, format(
                 "Function has same sign at bounds of %f and %f.", left, right));
@@ -296,7 +376,10 @@ public:
             printMessage("Warning: bisection reached max iterations "
                             "at x = %g (%s %s).\n", midpoint,
                     getConcreteClassName(), getName());
-        std::cout << "DEBUG " << iterCount << std::endl;
+        /*
+                */
+        std::cout << "DEBUG solveBisection iterCount "
+                << iterCount << std::endl;
         return midpoint;
     }
 
@@ -328,7 +411,8 @@ public:
                 activation, muscleTendonLength, normFiberLength,
                 normFiberVelocity, normFiberForce, normTendonLength,
                 normTendonForce)
-                << std::endl;*/
+                << std::endl;
+                */
         return normFiberForce - normTendonForce;
     }
 
