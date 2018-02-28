@@ -40,8 +40,8 @@ namespace OpenSim {
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
 /// http://doi.org/10.1007/s10439-016-1591-9
-class /*OSIMMUSCOLLO_API*/DGF2016Muscle : public PathActuator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DGF2016Muscle, PathActuator);
+class /*OSIMMUSCOLLO_API*/DeGrooteFregly2016Muscle : public PathActuator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, PathActuator);
 public:
     OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
     "Maximum isometric force that the fibers can generate.");
@@ -68,7 +68,7 @@ public:
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
     "Tendon strain at a tension of 1 normalized force.");
 
-    DGF2016Muscle() {
+    DeGrooteFregly2016Muscle() {
         constructProperties();
     }
 
@@ -727,8 +727,8 @@ private:
 };
 
 // TODO these should not be in a header.
-const std::string DGF2016Muscle::ACTIVATION("activation");
-const std::string DGF2016Muscle::NORM_FIBER_LENGTH("norm_fiber_length");
+const std::string DeGrooteFregly2016Muscle::ACTIVATION("activation");
+const std::string DeGrooteFregly2016Muscle::NORM_FIBER_LENGTH("norm_fiber_length");
 
 } // namespace OpenSim
 

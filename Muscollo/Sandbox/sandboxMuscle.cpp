@@ -34,7 +34,7 @@ using namespace OpenSim;
 void testDeGrooteFregly2016Muscle() {
 
     Model model;
-    DGF2016Muscle muscle;
+    DeGrooteFregly2016Muscle muscle;
     muscle.addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     muscle.addNewPathPoint("insertion", model.updGround(),
             SimTK::Vec3(1.0, 0, 0));
@@ -119,7 +119,7 @@ Model createHangingMuscleModel() {
 
     /*
     */
-    auto* actu = new DGF2016Muscle();
+    auto* actu = new DeGrooteFregly2016Muscle();
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
     actu->set_optimal_fiber_length(0.10);
@@ -133,9 +133,8 @@ Model createHangingMuscleModel() {
 
 
     /*
-    */
     auto* actu = new Millard2012EquilibriumMuscle();
-    // TODO actu->set_fiber_damping(0); // TODO
+    // TODO actu->set_fiber_damping(0);
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
     actu->set_optimal_fiber_length(0.10);
@@ -146,6 +145,7 @@ Model createHangingMuscleModel() {
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
+    */
 
     /*
     auto* actu = new ActivationCoordinateActuator();
@@ -194,7 +194,7 @@ int main() {
 
     SimTK::State state = model.initSystem();
     const auto& actuator = model.getComponent("actuator");
-    const DGF2016Muscle* dgf = dynamic_cast<const DGF2016Muscle*>(&actuator);
+    const auto* dgf = dynamic_cast<const DeGrooteFregly2016Muscle*>(&actuator);
     bool usingDGF = dgf != nullptr;
     bool hasFiberDynamics = !(
             usingDGF ? dgf->get_ignore_tendon_compliance() :
@@ -206,7 +206,7 @@ int main() {
         model.setStateVariableValue(state, "joint/height/value", 0.15);
         if (usingDGF) {
             model.realizePosition(state);
-            model.getComponent<DGF2016Muscle>("actuator").computeInitialFiberEquilibrium(state);
+            model.getComponent<DeGrooteFregly2016Muscle>("actuator").computeInitialFiberEquilibrium(state);
             std::cout << "DEBUG " << model.getStateVariableValue(state, "actuator/norm_fiber_length")
                     << std::endl;
         } else {
