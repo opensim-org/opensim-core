@@ -157,7 +157,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     }
     // projectQ is sufficient to satisfy constraints perturbed by _qCorrections
     _model->getMultibodySystem().projectQ(mutableCompState,
-        getModel()->get_assembly_accuracy());
+        getModel()->get_assembly_accuracy()/10);
 
      /* copy  muscle states computed from the actuator system to the muscle states
         for the complete system  then compute forces*/
