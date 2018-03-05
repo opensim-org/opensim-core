@@ -98,8 +98,7 @@ int main() {
         locationInChild = Vec3(0.0, 0.0, 0.0);
         orientationInChild = Vec3(0.0, 0.0, 0.0);
         PlanarJoint *pelvisToPlatform = new PlanarJoint("PelvisToPlatform",
-            *platform, locationInParent, orientationInParent,
-            *pelvis, locationInChild, orientationInChild);
+            *platform, *pelvis);
 
         // A planar joint has three coordinates, in the following order:
         //     rot_z, trans_x, trans_y
