@@ -30,11 +30,13 @@
 #include <OpenSim/Analyses/OutputReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
+#include <OpenSim/Analyses/osimAnalyses.h>
 
 using namespace OpenSim;
 using namespace std;
 
 void testTutorialOne();
+void testAnalyses();
 
 // Test different default activations are respected when activation
 // states are not provided.
@@ -43,6 +45,11 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct);
 int main()
 {
     SimTK::Array_<std::string> failures;
+
+    try { testAnalyses(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testAnalyses");
+    }
 
     try { testTutorialOne(); }
     catch (const std::exception& e) {
@@ -78,6 +85,46 @@ int main()
     cout << "Done" << endl;
     return 0;
 }
+
+
+void testAnalyses() {
+
+    Kinematics* temp = new Kinematics();
+
+    // Get all the Analyses
+    AnalysisSet availableAnalyses;
+    AnalysisSet::getAvailableAnalyses(availableAnalyses);
+
+    const std::string original{ "original" };
+    const std::string modified{ "modified" };
+    
+
+    for (int i = 0; i < availableAnalyses.getSize(); ++i) {
+        Analysis* analysis = &availableAnalyses.get(i);
+        cout << "Testing clone and assignment of "
+            << analysis->getConcreteClassName() << "." << endl;
+
+        randomize(analysis);
+        analysis->setName(original);
+        Analysis* clone = analysis->clone();
+
+        // perform an edit on the original
+        analysis->setName(modified);
+
+        // restore analysis to its unedited state
+        analysis->assign( *clone );
+
+        ASSERT(*analysis == *clone); 
+
+        delete clone;
+
+        ASSERT(analysis->getName() == original);
+
+        cout << "PASSED clone and assignment for  "
+            << analysis->getConcreteClassName() << "." << endl;
+    }
+}
+
 
 void testTutorialOne() {
     AnalyzeTool analyze1("PlotterTool.xml");
