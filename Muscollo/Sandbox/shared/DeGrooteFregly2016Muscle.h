@@ -228,7 +228,10 @@ public:
             /*
             std::cout << "DEBUG excitation " << excitation << std::endl;
              */
-            const double TODO = 200000;
+            // In explicit dynamics mode and during trial integration steps,
+            // the equilibrium solution for normFiberVelocity is not within
+            // [-1, 1].
+            const double velocityBound = 200000;
             /*
             const auto x = createVectorLinspace(1000, -TODO, TODO);
             TimeSeriesTable table;
@@ -257,19 +260,19 @@ public:
             SimTK::Real equilNormFiberVelocity;
             try {
                 equilNormFiberVelocity =
-                    solveBisection(calcResidual, -TODO, TODO); // TODO -1, 1);
+                    solveBisection(calcResidual, -velocityBound, velocityBound);
             } catch (const Exception& e) {
                 std::cout << format("DEBUG computeStateVariableDerivatives"
-                                "\n\ttime: %f"
-                                "\n\tactivation: %f"
-                                "\n\tmuscleTendonLength: %f"
-                                "\n\tnormFiberLength: %f"
-                                "\n\tactiveForceLengthMult: %f"
-                                "\n\tpassiveForceMult: %f"
-                                "\n\tnormTendonLength: %f"
-                                "\n\tnormTendonForce: %f"
-                                "\n\tscale: %f"
-                                "\n\toffset: %f"
+                                "\n\ttime: %g"
+                                "\n\tactivation: %g"
+                                "\n\tmuscleTendonLength: %g"
+                                "\n\tnormFiberLength: %g"
+                                "\n\tactiveForceLengthMult: %g"
+                                "\n\tpassiveForceMult: %g"
+                                "\n\tnormTendonLength: %g"
+                                "\n\tnormTendonForce: %g"
+                                "\n\tscale: %g"
+                                "\n\toffset: %g"
                         ,
                         s.getTime(),
                         activation, muscleTendonLength, normFiberLength,

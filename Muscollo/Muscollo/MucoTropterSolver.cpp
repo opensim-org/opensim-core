@@ -398,6 +398,8 @@ MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
         }
     }
 
+    // TODO Equilibrate fiber length?
+
     state.setTime(initialTime);
     Manager manager(model, state);
     manager.integrate(finalTime);
