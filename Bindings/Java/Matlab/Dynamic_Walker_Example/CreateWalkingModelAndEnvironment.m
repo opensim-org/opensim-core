@@ -109,13 +109,7 @@ pelvis.setMass(PelvisMass);
 pelvis.setInertia(Inertia(smallInertia,PelvisIYY,smallInertia,0,0,0));
 
 % Create Planar Joint
-locationInParent    = Vec3(0,PlatformWidth/2,0);
-orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0,0);
-orientationInChild  = Vec3(0,0,0);
-pelvisToPlatform    = PlanarJoint('PelvisToPlatform', ...
-    platform, locationInParent, orientationInParent, ...
-    pelvis, locationInChild, orientationInChild);
+pelvisToPlatform    = PlanarJoint('PelvisToPlatform', platform, pelvis);
 
 % Update the coordinates of the new joint
 coordinate = pelvisToPlatform.get_coordinates(1);
