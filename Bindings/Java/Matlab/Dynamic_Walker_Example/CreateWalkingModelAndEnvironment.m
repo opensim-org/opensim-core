@@ -27,7 +27,7 @@
 % -----------------------------------------------------------------------
 
 % User Section - Adjust these parameters at will
-outputPath = '../Model/';
+outputPath = './'; % TODO ./Model/';
 outputModelName = 'WalkerModel';
 
 % Model Body Parameters
@@ -93,7 +93,7 @@ platformToGround    = WeldJoint('PlatformToGround', ...
 
 % Add geometry to display in the GUI
 platformGeomOffset = PhysicalOffsetFrame(platform, ...
-    Transform(Vec3(PlatformLength/2, 0, 0)));
+    Transform(Vec3(PlatformLength/2 - PlatformOffset, 0, 0)));
 platformGeomOffset.attachGeometry(...
     Brick(Vec3(PlatformLength, PlatformWidth, 1)));
 platform.addComponent(platformGeomOffset);
