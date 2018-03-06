@@ -27,7 +27,7 @@
 % -----------------------------------------------------------------------
 
 % User Section - Adjust these parameters at will
-outputPath = '../Model/';
+outputPath = './'; % TODO '../Model/';
 outputModelName = 'WalkerModel';
 
 % Model Body Parameters
@@ -112,20 +112,20 @@ pelvis.setInertia(Inertia(smallInertia,PelvisIYY,smallInertia,0,0,0));
 pelvisToPlatform    = PlanarJoint('PelvisToPlatform', platform, pelvis);
 
 % Update the coordinates of the new joint
-coordinate = pelvisToPlatform.get_coordinates(1);
-coordinate.setRange([-10, 10]);
-coordinate.setName('Pelvis_tx');
-coordinate.setDefaultValue(0);
+Pelvis_rz = pelvisToPlatform.upd_coordinates(0);
+Pelvis_rz.setRange([-pi, pi]);
+Pelvis_rz.setName('Pelvis_rz');
+Pelvis_rz.setDefaultValue(0);
 
-coordinate2 = pelvisToPlatform.get_coordinates(2);
-coordinate2.setRange([-1, 2]);
-coordinate2.setName('Pelvis_ty');
-coordinate2.setDefaultValue(1.0);
+Pelvis_tx = pelvisToPlatform.upd_coordinates(1);
+Pelvis_tx.setRange([-10, 10]);
+Pelvis_tx.setName('Pelvis_tx');
+Pelvis_tx.setDefaultValue(0);
 
-coordinate3 = pelvisToPlatform.get_coordinates(0);
-coordinate3.setRange([-pi, pi]);
-coordinate3.setName('Pelvis_rz');
-coordinate3.setDefaultValue(0);
+Pelvis_ty = pelvisToPlatform.upd_coordinates(2);
+Pelvis_ty.setRange([-1, 2]);
+Pelvis_ty.setName('Pelvis_ty');
+Pelvis_ty.setDefaultValue(1.0);
 
 % Add Body to Model
 osimModel.addBody(pelvis);
@@ -151,10 +151,10 @@ LThighToPelvis = PinJoint('LThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, leftThigh, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-coordinate4 = LThighToPelvis.getCoordinate();
-coordinate4.setRange([deg2rad(-100), deg2rad(100)]);
-coordinate4.setName('LHip_rz');
-coordinate4.setDefaultValue(deg2rad(-10));
+LHip_rz = LThighToPelvis.updCoordinate();
+LHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
+LHip_rz.setName('LHip_rz');
+LHip_rz.setDefaultValue(deg2rad(-10));
 
 % Add geometry to display in the GUI
 leftThigh.attachGeometry(...
@@ -179,10 +179,10 @@ RThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
     orientationInParent, rightThigh, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-coordinate5 = RThighToPelvis.getCoordinate();
-coordinate5.setRange([deg2rad(-100), deg2rad(100)]);
-coordinate5.setName('RHip_rz');
-coordinate5.setDefaultValue(deg2rad(30));
+RHip_rz = RThighToPelvis.updCoordinate();
+RHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
+RHip_rz.setName('RHip_rz');
+RHip_rz.setDefaultValue(deg2rad(30));
 
 % Add geometry to display in the GUI
 rightThigh.attachGeometry(...
@@ -207,10 +207,10 @@ LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,  ...
     orientationInParent, leftShank, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-coordinate6 = LShankToThigh.updCoordinate();
-coordinate6.setRange([deg2rad(-100), 0]);
-coordinate6.setName('LKnee_rz');
-coordinate6.setDefaultValue(deg2rad(-30));
+LKnee_rz = LShankToThigh.updCoordinate();
+LKnee_rz.setRange([deg2rad(-100), 0]);
+LKnee_rz.setName('LKnee_rz');
+LKnee_rz.setDefaultValue(deg2rad(-30));
 
 % Add geometry to display in the GUI
 leftShank.attachGeometry(...
@@ -240,10 +240,10 @@ RShankToThigh = PinJoint('RShankToRThigh', ...
     rightShank, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-coordinate7 = RShankToThigh.getCoordinate();
-coordinate7.setRange([deg2rad(-100), 0]);
-coordinate7.setName('RKnee_rz');
-coordinate7.setDefaultValue(deg2rad(-30));
+RKnee_rz = RShankToThigh.updCoordinate();
+RKnee_rz.setRange([deg2rad(-100), 0]);
+RKnee_rz.setName('RKnee_rz');
+RKnee_rz.setDefaultValue(deg2rad(-30));
 
 % Add Body to Model
 osimModel.addBody(rightShank);
