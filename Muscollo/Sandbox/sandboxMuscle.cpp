@@ -242,7 +242,10 @@ int main() {
         if (usingDGF) {
             std::cout << "DEBUG norm_fiber_length" <<
                     model.getStateVariableValue(state, "actuator/norm_fiber_length") << std::endl;
-            mp.setStateInfo("actuator/norm_fiber_length", {0.2, 1.8},
+            // We would prefer to use a range of [0.2, 1.8] but then IPOPT
+            // tries very small fiber lengths that cause tendon stretch to be
+            // HUGE, causing insanely high tendon forces.
+            mp.setStateInfo("actuator/norm_fiber_length", {0.8, 1.8},
                     model.getStateVariableValue(state, "actuator/norm_fiber_length"));
         } else {
             mp.setStateInfo("actuator/fiber_length", {0, 0.3},
@@ -260,7 +263,7 @@ int main() {
     // should be.
 
     MucoTropterSolver& solver = muco.initSolver();
-    solver.set_num_mesh_points(20);
+    // solver.set_num_mesh_points(20);
     // TODO set initial guess from forward simulation.
     // TODO for this to work, we want to enable solving for equilibrium fiber
     // length.

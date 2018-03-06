@@ -35,7 +35,11 @@ namespace OpenSim {
 /// Groote et al., 2016: the curve is parameterized by the strain at 1 norm
 /// force (rather than "kT"), and the default value for this parameter is
 /// 0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
-/// DGF stands for DeGroote-Fregly. The abbreviation is temporary.
+///
+/// The fiber damping helps with numerically solving for fiber velocity at low
+/// activations or with low force-length multipliers, and is likely to be more
+/// useful with explicit fiber dynamics than implicit fiber dynamics.
+///
 /// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
@@ -65,6 +69,8 @@ public:
     OpenSim_DECLARE_PROPERTY(default_activation, double,
     "Value of activation in the default state returned by initSystem().");
 
+    OpenSim_DECLARE_PROPERTY(fiber_damping, double,
+    "The linear damping of the fiber (default: 0.01).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
     "Tendon strain at a tension of 1 normalized force.");
 
@@ -207,20 +213,21 @@ public:
                     muscleTendonLength, fiberLength);
             const SimTK::Real normTendonForce =
                     calcTendonForceMultiplier(normTendonLength);
-            const SimTK::Real normActiveFiberForceAlongTendon =
-                    normTendonForce - passiveForceMult * cosPenn;
+            const SimTK::Real constant =
+                    passiveForceMult * cosPenn - normTendonForce;
 
             auto calcResidual = [this,
                     &activationActiveForceLengthMultiplierCosPenn,
-                    &normActiveFiberForceAlongTendon](
+                    &constant](
                     const SimTK::Real& normFiberVelocity) {
                 return activationActiveForceLengthMultiplierCosPenn
                         * calcForceVelocityMultiplier(normFiberVelocity)
-                        - normActiveFiberForceAlongTendon;
-                // TODO return calcFiberEquilibriumResidual(activation,
-                //        muscleTendonLength, normFiberLength, normFiberVelocity);
+                        + get_fiber_damping() * normFiberVelocity
+                        + constant;
             };
+            /*
             std::cout << "DEBUG excitation " << excitation << std::endl;
+             */
             const double TODO = 200000;
             /*
             const auto x = createVectorLinspace(1000, -TODO, TODO);
@@ -269,7 +276,7 @@ public:
                         activeForceLengthMult, passiveForceMult,
                         normTendonLength, normTendonForce,
                         activationActiveForceLengthMultiplierCosPenn,
-                        normActiveFiberForceAlongTendon)
+                        constant)
                         << std::endl;
                 throw;
             }
@@ -377,9 +384,9 @@ public:
                             "at x = %g (%s %s).\n", midpoint,
                     getConcreteClassName(), getName());
         /*
-                */
         std::cout << "DEBUG solveBisection iterCount "
                 << iterCount << std::endl;
+                */
         return midpoint;
     }
 
@@ -444,7 +451,8 @@ public:
         //         << normActiveForce << " "
         //         << passiveForceMult
         //         << std::endl;
-        return normActiveForce + passiveForceMult;
+        return normActiveForce + passiveForceMult +
+                + get_fiber_damping() * normFiberVelocity;
 
     }
 
@@ -681,6 +689,7 @@ private:
         constructProperty_default_activation(0.5);
 
         constructProperty_tendon_strain_at_one_norm_force(0.049);
+        constructProperty_fiber_damping(0.01);
     }
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
