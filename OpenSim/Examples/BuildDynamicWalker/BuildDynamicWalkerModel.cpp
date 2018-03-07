@@ -1,8 +1,7 @@
 // Make all of OpenSim and Simbody's classes available.
 #include <OpenSim/OpenSim.h>
-// "Use" the OpenSim and SimTK namespace to shorten type names.
-// Note: Several classes appear in both namespaces and require using the
-// fully-qualified class name (for example, OpenSim::Body).
+// "Use" the OpenSim namespace and certain SimTK symbols to shorten
+// code ("using namespace SimTK" would cause conflicts for Body).
 using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Inertia;
@@ -26,7 +25,7 @@ int main() {
         // Get a reference to the ground object
         const Ground& ground = osimModel.getGround();
 
-        // Define the acceleration of gravity
+        // Define the acceleration due to gravity
         osimModel.setGravity(Vec3(0, -9.80665, 0));
 
         // Section: Create the Platform Body
@@ -100,8 +99,8 @@ int main() {
         PlanarJoint *pelvisToPlatform = new PlanarJoint("PelvisToPlatform",
             *platform, *pelvis);
 
-        // A planar joint has three coordinates, in the following order:
-        //     rot_z, trans_x, trans_y
+        // A planar joint has three coordinates:
+        //     RotationZ, TranslationX, TranslationY
         // Set the properties of the coordinates that define the joint
         Coordinate& pelvis_rz =
             pelvisToPlatform->updCoordinate(PlanarJoint::Coord::RotationZ);

@@ -27,7 +27,7 @@
 % -----------------------------------------------------------------------
 
 % User Section - Adjust these parameters at will
-outputPath = './'; % TODO ./Model/';
+outputPath = '../Model/';
 outputModelName = 'WalkerModel';
 
 % Model Body Parameters

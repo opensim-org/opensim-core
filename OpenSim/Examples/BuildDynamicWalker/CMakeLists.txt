@@ -1,4 +1,5 @@
-# CMake file for building a project that uses OpenSim.
+# This is a CMake file for building a project that uses OpenSim.
+# This is the minimum version of CMake that OpenSim requires:
 cmake_minimum_required(VERSION 3.2)
 project(BuildDynamicWalker)
 
