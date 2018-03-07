@@ -18,12 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/Model/PathActuator.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 namespace OpenSim {
 
 /// TODO handle the singularity with activation = 0. Add damping? how to handle
 /// this during time stepping?
+/// TODO avoid checking ignore_tendon_compliance() in each function; might be
+/// slow.
 /// TODO prohibit fiber length from going below 0.2.
 /// This muscle model was published in De Groote et al. 2016.
 /// The parameters of the active force-length and force-velocity curves have
@@ -40,28 +42,27 @@ namespace OpenSim {
 /// activations or with low force-length multipliers, and is likely to be more
 /// useful with explicit fiber dynamics than implicit fiber dynamics.
 ///
+/// @subsection Departures from the Muscle base class
+///
+/// The documentation for Muscle::MuscleLengthInfo states that the
+/// optimalFiberLength of a muscle is also its resting length, but this is not
+/// true for this muscle: there is a non-zero passive fiber force at the
+/// optimal fiber length.
+///
+/// In the Muscle class, setIgnoreTendonCompliance() and
+/// setIngoreActivationDynamics() control modeling options, meaning these settings
+/// could theoretically be changed. However, for this class, the modeling option
+/// is ignored and the values of the ignore_tendon_compliance and
+/// ignore_activation_dynamics properties are used directly.
+///
 /// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
 /// Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
 /// http://doi.org/10.1007/s10439-016-1591-9
-class /*OSIMMUSCOLLO_API*/DeGrooteFregly2016Muscle : public PathActuator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, PathActuator);
+class /*OSIMMUSCOLLO_API*/DeGrooteFregly2016Muscle : public Muscle {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 public:
-    OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
-    "Maximum isometric force that the fibers can generate.");
-    OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
-    "Optimal length of the muscle fibers.");
-    OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,
-    "Resting length of the tendon.");
-    OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
-    "Angle between tendon and fibers at optimal fiber length, in radians.");
-    OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
-    "Maximum contraction velocity of the fibers, in "
-    "optimal_fiber_length/second.");
-    // TODO avoid checking this everywhere.
-    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
-    "Compute muscle dynamics ignoring tendon compliance. "
-    "Tendon is assumed to be rigid.");
+
     OpenSim_DECLARE_PROPERTY(default_norm_fiber_length, double,
     "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
@@ -78,6 +79,13 @@ public:
         constructProperties();
     }
 
+protected:
+
+    //--------------------------------------------------------------------------
+    // COMPONENT INTERFACE
+    //--------------------------------------------------------------------------
+    /// @name Component interface
+    /// @{
     void extendFinalizeFromProperties() override {
         Super::extendFinalizeFromProperties();
         OPENSIM_THROW_IF_FRMOBJ(
@@ -91,6 +99,12 @@ public:
             "Expected the tendon_strain_at_one_norm_force property to be "
             "positive, but got " +
             std::to_string(get_tendon_strain_at_one_norm_force()) + ".");
+
+        OPENSIM_THROW_IF_FRMOBJ(get_ignore_activation_dynamics(), Exception,
+            "Not supported yet.");
+
+        OPENSIM_THROW_IF_FRMOBJ(get_pennation_angle_at_optimal() != 0,
+            Exception, "Not supported yet.");
 
         // TODO validate properties (nonnegative, etc.).
 
@@ -232,17 +246,6 @@ public:
             // the equilibrium solution for normFiberVelocity is not within
             // [-1, 1].
             const double velocityBound = 200000;
-            /*
-            const auto x = createVectorLinspace(1000, -TODO, TODO);
-            TimeSeriesTable table;
-            table.setColumnLabels({"residual"});
-            SimTK::RowVector row(1);
-            for (int i = 0; i < x.nrow(); ++i) {
-                row[0] = calcResidual(x[i]);
-                table.appendRow(x[i], row);
-            }
-            STOFileAdapter::write(table, "DEBUG_equilibrium_residual.sto");
-            */
 
             /*
             std::cout << format("DEBUG computeStateVariableDerivatives"
@@ -296,7 +299,13 @@ public:
                     normFiberLengthDot);
         }
     }
+    /// @}
 
+    //--------------------------------------------------------------------------
+    // ACTUATOR INTERFACE
+    //--------------------------------------------------------------------------
+    /// @name Actuator interface
+    /// @{
     double computeActuation(const SimTK::State& s) const override {
         // TODO use fiber or tendon force?
         const SimTK::Real& activation = getActivation(s);
@@ -308,8 +317,41 @@ public:
 
         return get_max_isometric_force() * normFiberForce;
     }
+    /// @}
 
-    void computeInitialFiberEquilibrium(SimTK::State& s) const /*TODO override */ {
+public:
+
+    //--------------------------------------------------------------------------
+    // MUSCLE INTERFACE
+    //--------------------------------------------------------------------------
+    /// @name Muscle interface
+    /// @{
+    double getActivation(const SimTK::State& s) const override {
+        // We override the Muscle's implementation because Muscle requires
+        // realizing to Dynamics to access activation from MuscleDynamicsInfo,
+        // which is unnecessary if the activation is a state.
+        // TODO handle ignore_activation_dynamics
+        return getStateVariableValue(s, ACTIVATION);
+    }
+
+    void setActivation(SimTK::State& s, double activation) const override {
+        setStateVariableValue(s, ACTIVATION, activation);
+    }
+protected:
+    // virtual double calcInextensibleTendonActiveFiberForce(SimTK::State& s,
+    //         double aActivation) const;
+    // virtual void calcMuscleLengthInfo(const SimTK::State& s,
+    //         MuscleLengthInfo& mli) const;
+    // virtual void calcFiberVelocityInfo(const SimTK::State& s,
+    //         FiberVelocityInfo& fvi) const;
+    // virtual void  calcMuscleDynamicsInfo(const SimTK::State& s,
+    //         MuscleDynamicsInfo& mdi) const;
+    // virtual void calcMusclePotentialEnergyInfo(const SimTK::State& s,
+    //         MusclePotentialEnergyInfo& mpei) const;
+
+public:
+    /// Fiber velocity is assumed to be 0.
+    void computeInitialFiberEquilibrium(SimTK::State& s) const override {
 
         if (get_ignore_tendon_compliance()) return;
 
@@ -331,6 +373,7 @@ public:
         // TODO create setNormFiberLength().
         setStateVariableValue(s, "norm_fiber_length", equilNormFiberLength);
     }
+    /// @}
 
     /// Solve for the root of the provided function calcResidual using
     /// bisection, starting with bounds left and right. Iteration stops when
@@ -457,10 +500,6 @@ public:
         return normActiveForce + passiveForceMult +
                 + get_fiber_damping() * normFiberVelocity;
 
-    }
-
-    SimTK::Real getActivation(const SimTK::State& s) const {
-        return getStateVariableValue(s, ACTIVATION);
     }
 
     // TODO replace with getNormalizedFiberLength from Muscle.
@@ -683,11 +722,6 @@ public:
     /// @}
 private:
     void constructProperties() {
-        constructProperty_max_isometric_force(1000);
-        constructProperty_optimal_fiber_length(0.1);
-        constructProperty_tendon_slack_length(0.2);
-        constructProperty_max_contraction_velocity(10);
-        constructProperty_ignore_tendon_compliance(false);
         constructProperty_default_norm_fiber_length(1.0);
         constructProperty_activation_time_constant(0.010);
         constructProperty_default_activation(0.5);

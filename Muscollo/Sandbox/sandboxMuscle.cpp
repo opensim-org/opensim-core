@@ -34,11 +34,16 @@ using namespace OpenSim;
 void testDeGrooteFregly2016Muscle() {
 
     Model model;
-    DeGrooteFregly2016Muscle muscle;
-    muscle.addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-    muscle.addNewPathPoint("insertion", model.updGround(),
+    auto* musclePtr = new DeGrooteFregly2016Muscle();
+    musclePtr->setName("muscle");
+    musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("insertion", model.updGround(),
             SimTK::Vec3(1.0, 0, 0));
-    muscle.finalizeFromProperties();
+    model.addComponent(musclePtr);
+    auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
+
+    // printCurvesToSTOFiles()
+    // -----------------------
     muscle.printCurvesToSTOFiles();
 
     printMessage("%f %f %f %f %f %f\n",
@@ -100,6 +105,17 @@ void testDeGrooteFregly2016Muscle() {
         SimTK_TEST_MUST_THROW_EXC(muscle.solveBisection(parabola, -5, 5),
                 Exception);
     }
+
+    SimTK::State state = model.initSystem();
+
+    // getActivation(), setActivation()
+    // --------------------------------
+    SimTK_TEST_EQ(muscle.getActivation(state), muscle.get_default_activation());
+    muscle.setActivation(state, 0.451);
+    SimTK_TEST_EQ(muscle.getActivation(state), 0.451);
+    // This model only has the muscle states, so activation is index 0.
+    SimTK_TEST_EQ(state.getY()[0], 0.451);
+
 
 
 }
