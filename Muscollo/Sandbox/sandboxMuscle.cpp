@@ -222,15 +222,13 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         model.setStateVariableValue(state, "actuator/activation",
                 initActivation);
         model.setStateVariableValue(state, "joint/height/value", initHeight);
+        model.equilibrateMuscles(state);
         if (usingDGF) {
-            model.realizePosition(state);
-            dgf->computeInitialFiberEquilibrium(state);
             std::cout << "Equilibrium norm fiber length: "
                     << model.getStateVariableValue(state,
                             "actuator/norm_fiber_length")
                     << std::endl;
         } else {
-            model.equilibrateMuscles(state);
             std::cout << "Equilibrium fiber length: "
                     << model.getStateVariableValue(state,
                             "actuator/fiber_length")
