@@ -312,6 +312,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
 
     constructProperty_guess_file("");
@@ -519,7 +520,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
     }
 
     // TODO create formal option for this.
-    // optsolver.set_sparsity_detection("random");
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"random", "initial-guess"});
+    optsolver.set_sparsity_detection(get_optim_sparsity_detection());
 
     // Set advanced settings.
     //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {

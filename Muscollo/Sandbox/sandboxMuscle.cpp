@@ -276,6 +276,7 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     mp.addCost(MucoFinalTimeCost());
 
     MucoTropterSolver& solver = muco.initSolver();
+    solver.set_optim_sparsity_detection("initial-guess");
     // TODO for this to work, we want to enable solving for equilibrium fiber
     // length.
     MucoIterate guessForwardSim = solver.createGuess("forward-simulation");

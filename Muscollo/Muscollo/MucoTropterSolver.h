@@ -62,6 +62,9 @@ public:
     "(-1 for solver's default)");
     OpenSim_DECLARE_PROPERTY(optim_hessian_approximation, std::string,
     "'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.");
+    OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
+    "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
+    "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
     "IPOPT's verbosity (see IPOPT documentation).");
     // TODO must make more general for multiple phases, mesh refinement.
