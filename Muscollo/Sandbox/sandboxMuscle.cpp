@@ -117,8 +117,6 @@ Model createHangingMuscleModel(bool ignoreTendonCompliance) {
     coord.setName("height");
     model.addComponent(joint);
 
-    /*
-    */
     auto* actu = new DeGrooteFregly2016Muscle();
     actu->setName("actuator");
     actu->set_max_isometric_force(30.0);
@@ -126,6 +124,7 @@ Model createHangingMuscleModel(bool ignoreTendonCompliance) {
     actu->set_tendon_slack_length(0.05);
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
+    actu->set_max_contraction_velocity(10);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
@@ -250,7 +249,7 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
             mp.setStateInfo("actuator/norm_fiber_length", {0.8, 1.8},
                     model.getStateVariableValue(state, "actuator/norm_fiber_length"));
         } else {
-            mp.setStateInfo("actuator/fiber_length", {0, 0.3},
+            mp.setStateInfo("actuator/fiber_length", {0.0, 0.3},
                     model.getStateVariableValue(state, "actuator/fiber_length"));
         }
     }

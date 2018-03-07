@@ -577,6 +577,7 @@ public:
     /// The normalized tendon force as a function of normalized tendon length.
     /// Note that this curve does not go through (1, 0); when normTendonLength=1,
     /// this function returns a slightly negative number.
+    // TODO: In explicit mode, do not allow negative tendon forces?
     SimTK::Real calcTendonForceMultiplier(
             const SimTK::Real& normTendonLength) const {
         return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
