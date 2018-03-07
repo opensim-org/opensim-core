@@ -90,63 +90,9 @@ computeStateVariableDerivatives(const SimTK::State& s) const {
     setStateVariableDerivativeValue(s, ACTIVATION, activationDot);
 
     if (!get_ignore_tendon_compliance()) {
-        // TODO if not ignoring fiber dynamics.
-        // TODO explain these equations.
 
-        /*
-        std::cout << format("DEBUG %f %f", s.getTime(), getLength(s))
-                << std::endl;
-
-        // TODO should use getNormalizedFiberLength():
-        const SimTK::Real normFiberLength =
-                calcNormalizedFiberLength(s);
-
-        const SimTK::Real passiveForceMult =
-                calcPassiveForceMultiplier(normFiberLength);
-        const SimTK::Real activeForceMult =
-                calcActiveForceLengthMultiplier(normFiberLength);
-
-        const SimTK::Real normTendonLength = calcNormalizedTendonLength(s);
-        const SimTK::Real normTendonForce =
-                calcTendonForceMultiplier(normTendonLength);
-
-
-        // TODO handle pennation.
-        const SimTK::Real normFiberForce = normTendonForce;
-        const SimTK::Real fiberVelocityMult =
-                (normFiberForce - passiveForceMult) /
-                        (activation * activeForceMult);
-
-        // TODO maximum fiber velocity should be max_contraction_velocity,
-        // but then fiber equilibrium is violated.
-
-        // normFiberVelocity is unitless but we need units of 1/second.
-        const SimTK::Real normFiberVelocity =
-                calcForceVelocityInverseCurve(fiberVelocityMult);
-        // norm_fiber_length/second = norm_fiber_length/second * unitless
-        const SimTK::Real normFiberLengthDot =
-               get_max_contraction_velocity() * normFiberVelocity;
-        if (std::abs(normFiberVelocity) > 1.0) {
-            std::cout << format("DEBUG normFiberVelocity out of range "
-                            "t: %f"
-                            "\n\tnormFiberVelocity: %f"
-                            "\n\tmuscleTendonLength: %f"
-                            "\n\tnormFiberLength: %f"
-                            "\n\tnormTendonLength: %f"
-                            "\n\tnormFiberForce: %f"
-                            "\n\tpassiveForceMult: %f"
-                            "\n\tactivation: %f"
-                            "\n\tactiveForceMult: %f"
-                            "\n\tfiberVelocityMult: %f",
-                    s.getTime(),
-                    normFiberVelocity,
-                    getLength(s),
-                    normFiberLength, normTendonLength,
-                    normFiberForce, passiveForceMult,
-                    activation, activeForceMult, fiberVelocityMult)
-                    << std::endl;
-        }
-         */
+        // Root-solve the following for v:
+        // a f_L f_V(v) + beta * v + f_P = f_T
 
         const SimTK::Real muscleTendonLength = getLength(s);
         const SimTK::Real normFiberLength = calcNormalizedFiberLength(s);
@@ -187,18 +133,6 @@ computeStateVariableDerivatives(const SimTK::State& s) const {
         // [-1, 1].
         const double velocityBound = 200000;
 
-        /*
-        std::cout << format("DEBUG computeStateVariableDerivatives"
-                        "\n\tactivation: %f"
-                        "\n\tmuscleTendonLength: %f"
-                        "\n\tnormFiberLength: %f"
-                        "\n\tactiveForceLengthMult: %f"
-                        "\n\tnormTendonLength: %f"
-                        "\n\tnormTendonForce: %f",
-                activation, muscleTendonLength, normFiberLength,
-                activeForceLengthMult, normTendonLength, normTendonForce)
-                << std::endl;
-        */
         // TODO bounds of -1 and 1?
         SimTK::Real equilNormFiberVelocity;
         try {
