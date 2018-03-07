@@ -82,19 +82,19 @@ public:
     ///   bounds (the value for variables with ony one bound is the specified
     ///   bound). This is the default type.
     /// - **random**: values are randomly generated within the bounds.
-    /// - **forward-simulation**: see createGuessForwardSimulation().
+    /// - **time-stepping**: see createGuessTimeStepping().
     /// @note Calling this method does *not* set an initial guess to be used
     /// in the solver; you must call setGuess() or setGuessFile() for that.
     /// @precondition You must have called setProblem().
     // TODO problem must be upToDate()?
     MucoIterate createGuess(const std::string& type = "bounds") const;
 
-    /// (Experimental) Run a forward simulation (using the OpenSim Manager),
-    /// using the default controls for actuators and the default states as the
-    /// initial states, to create a guess that is dynamically consistent
-    /// (constraint errors should be small). The time range for the simulation
-    /// is the upper bound on the initial time and the lower bound on the final
-    /// time.
+    /// (Experimental) Run a forward simulation (using the OpenSim Manager,
+    /// which uses a SimTK::Integrator), using the default controls for
+    /// actuators and the default states as the initial states, to create a
+    /// guess that is dynamically consistent (constraint errors should be
+    /// small). The time range for the simulation is the upper bound on the
+    /// initial time and the lower bound on the final time.
     ///
     /// The number of times in the iterate is the number of successful
     /// integration steps.
@@ -107,7 +107,7 @@ public:
     ///
     /// @precondition You must have called setProblem().
     // TODO problem must be upToDate()?
-    MucoIterate createGuessForwardSimulation() const;
+    MucoIterate createGuessTimeStepping() const;
 
     // TODO document; any validation?
     /// The number of time points in the iterate does *not* need to match

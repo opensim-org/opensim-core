@@ -304,15 +304,15 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
                type != "bounds"
             && type != "random"
-            && type != "forward-simulation",
+            && type != "time-stepping",
             Exception,
             "Unexpected guess type '" + type +
             "'; supported types are 'bounds', 'random', and "
-            "'forward-simulation'.");
+            "'time-stepping'.");
     auto ocp = getTropterProblem();
 
-    if (type == "forward-simulation") {
-        return createGuessForwardSimulation();
+    if (type == "time-stepping") {
+        return createGuessTimeStepping();
     }
 
     // TODO avoid performing error checks multiple times; use
@@ -333,7 +333,7 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     return convert<MucoIterate, tropter::Iterate>(tropIter);
 }
 
-MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
+MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     const auto& problem = getProblem();
     const auto& phase = problem.getPhase();
     const auto& initialTime = phase.getTimeInitialBounds().getUpper();
