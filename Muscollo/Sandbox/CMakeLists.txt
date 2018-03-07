@@ -33,7 +33,9 @@ MuscolloAddSandboxExecutable(NAME sandboxTestContact
 MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxMuscle
-        SOURCE_FILES shared/DeGrooteFregly2016Muscle.h
+        SOURCE_FILES
+            shared/DeGrooteFregly2016Muscle.h
+            shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMuscollo)
 
 
