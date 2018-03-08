@@ -51,7 +51,15 @@ public:
     {   return m_problem.get_constraint_lower_bounds(); }
     const Eigen::VectorXd& get_constraint_upper_bounds() const
     {   return m_problem.get_constraint_upper_bounds(); }
+
+    std::vector<std::string> get_variable_names() const
+    {   return m_problem.get_variable_names(); }
+
+    std::vector<std::string> get_constraint_names() const
+    {   return m_problem.get_constraint_names(); }
+
     void validate() const { m_problem.validate(); }
+
     /// @see AbstractOptimizationProblem::make_initial_guess_from_bounds()
     Eigen::VectorXd make_initial_guess_from_bounds() const
     {   return m_problem.make_initial_guess_from_bounds(); }

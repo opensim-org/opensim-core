@@ -81,8 +81,15 @@ public:
             SymmetricSparsityPattern&,
             SymmetricSparsityPattern&) const override;
 
+    /// For continuous variables, the format is
+    /// `<continuous-variable-name>_<mesh-point-index>`. The mesh point index is
+    /// 0-based.
     /// Note: this function is not free to call.
     std::vector<std::string> get_variable_names() const override;
+    /// For defect constraints, the format is
+    /// `<state-variable-name>_<mesh-interval-index>` (1-based index). For path
+    /// constraints, the format is `<path-constraint-name>_<mesh-point-index>`
+    /// (0-based index).
     /// Note: this function is not free to call.
     std::vector<std::string> get_constraint_names() const override;
 

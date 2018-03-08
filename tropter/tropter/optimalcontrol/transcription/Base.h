@@ -65,19 +65,6 @@ public:
     //    Eigen::MatrixXd controls;
     //};
 
-    /// Get a vector of names of all variables in the optimization problem,
-    /// in the correct order. For continuous variables, the format is
-    /// `<continuous-variable-name>_<mesh-point-index>`. The mesh point index is
-    /// 0-based.
-    virtual std::vector<std::string> get_variable_names() const = 0;
-    /// Get a vector of names of the constraints (e.g., defects and path
-    /// constraints for each mesh point) in the optimization problem, in the
-    /// correct order. For defect constraints, the format is
-    /// `<state-variable-name>_<mesh-interval-index>` (1-based index). For path
-    /// constraints, the format is `<path-constraint-name>_<mesh-point-index>`
-    /// (0-based index).
-    virtual std::vector<std::string> get_constraint_names() const = 0;
-
     /// Create a vector of optimization variables (for the generic
     /// optimization problem) from an states and controls.
     virtual Eigen::VectorXd
