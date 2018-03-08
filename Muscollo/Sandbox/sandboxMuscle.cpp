@@ -277,7 +277,7 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     solver.set_optim_sparsity_detection("initial-guess");
     // TODO for this to work, we want to enable solving for equilibrium fiber
     // length.
-    MucoIterate guessForwardSim = solver.createGuess("forward-simulation");
+    MucoIterate guessForwardSim = solver.createGuess("time-stepping");
     solver.setGuess(guessForwardSim);
     guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
     std::cout << "Guess from forward sim: "
