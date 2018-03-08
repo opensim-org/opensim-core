@@ -284,6 +284,21 @@ void testCopy() {
  */
 
 void testBounds() {
+    {
+        SimTK_TEST(!MucoBounds().isSet());
+        SimTK_TEST(MucoBounds(5.3).isSet());
+        SimTK_TEST(!MucoBounds(5.3, SimTK::NaN).isSet());
+        SimTK_TEST(!MucoBounds(SimTK::NaN, 5.3).isSet());
+        SimTK_TEST(MucoBounds(5.3).isEquality());
+        SimTK_TEST(MucoBounds(5.3, 5.3).isSet());
+        SimTK_TEST(MucoBounds(5.3, 5.3).isEquality());
+        SimTK_TEST(!MucoBounds(5.3, 5.3 + SimTK::SignificantReal).isEquality());
+
+        SimTK_TEST(MucoBounds(5.3).isWithinBounds(5.3));
+        SimTK_TEST(
+                !MucoBounds(5.3).isWithinBounds(5.3 + SimTK::SignificantReal));
+        SimTK_TEST(MucoBounds(5.2, 5.4).isWithinBounds(5.3));
+    }
     // TODO what to do about clamped coordinates? Use the range in the
     // coordinate, or ignore that? I think that if the coordinate is clamped,
     // then
@@ -730,7 +745,7 @@ void testGuess() {
     // after they get the mutable reference.
 }
 
-void testGuessForwardSimulation() {
+void testGuessTimeStepping() {
     // This problem is just a simulation (there are no costs), and so the
     // forward simulation guess should reduce the number of iterations to
     // converge, and the guess and solution should also match our own forward
@@ -746,19 +761,13 @@ void testGuessForwardSimulation() {
     problem.setStateInfo("j0/q0/value", {-10, 10}, initialAngle);
     problem.setStateInfo("j0/q0/speed", {-50, 50}, 0);
     problem.setControlInfo("tau0", 0);
-    {
-        auto& model = muco.updProblem().updPhase().updModel();
-        model.finalizeFromProperties();
-        auto& coord = model.updComponent<Coordinate>("j0/q0");
-        coord.setDefaultValue(initialAngle);
-    }
     MucoTropterSolver& solver = muco.initSolver();
     solver.set_num_mesh_points(20);
     solver.setGuess("random");
     // With MUMPS: 4 iterations.
     MucoSolution solutionRandom = muco.solve();
 
-    solver.setGuess("forward-simulation");
+    solver.setGuess("time-stepping");
     // With MUMPS: 2 iterations.
     MucoSolution solutionSim = muco.solve();
 
@@ -766,11 +775,12 @@ void testGuessForwardSimulation() {
             solutionRandom.getNumIterations());
 
     {
-        MucoIterate guess = solver.createGuess("forward-simulation");
+        MucoIterate guess = solver.createGuess("time-stepping");
         SimTK_TEST(solutionSim.compareStatesControlsRMS(guess) < 1e-2);
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
+        modelCopy.setStateVariableValue(state, "j0/q0/value", initialAngle);
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
@@ -786,7 +796,7 @@ void testGuessForwardSimulation() {
     {
         muco.updProblem().setTimeBounds({-10, -5}, {6, 15});
         MucoTropterSolver& solver = muco.initSolver();
-        MucoIterate guess = solver.createGuess("forward-simulation");
+        MucoIterate guess = solver.createGuess("time-stepping");
         SimTK_TEST(guess.getTime()[0] == -5);
         SimTK_TEST(guess.getTime()[guess.getNumTimes()-1] == 6);
     }
@@ -958,7 +968,7 @@ int main() {
         SimTK_SUBTEST(testSolverOptions);
         SimTK_SUBTEST(testStateTracking);
         SimTK_SUBTEST(testGuess);
-        SimTK_SUBTEST(testGuessForwardSimulation);
+        SimTK_SUBTEST(testGuessTimeStepping);
         SimTK_SUBTEST(testMucoIterate);
 
         //SimTK_SUBTEST(testEmpty);

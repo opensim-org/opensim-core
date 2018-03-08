@@ -304,15 +304,15 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
                type != "bounds"
             && type != "random"
-            && type != "forward-simulation",
+            && type != "time-stepping",
             Exception,
             "Unexpected guess type '" + type +
             "'; supported types are 'bounds', 'random', and "
-            "'forward-simulation'.");
+            "'time-stepping'.");
     auto ocp = getTropterProblem();
 
-    if (type == "forward-simulation") {
-        return createGuessForwardSimulation();
+    if (type == "time-stepping") {
+        return createGuessTimeStepping();
     }
 
     // TODO avoid performing error checks multiple times; use
@@ -333,7 +333,7 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
     return convert<MucoIterate, tropter::Iterate>(tropIter);
 }
 
-MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
+MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     const auto& problem = getProblem();
     const auto& phase = problem.getPhase();
     const auto& initialTime = phase.getTimeInitialBounds().getUpper();
@@ -346,6 +346,24 @@ MucoIterate MucoTropterSolver::createGuessForwardSimulation() const {
     Model model(phase.getModel());
     // Disable all controllers?
     SimTK::State state = model.initSystem();
+
+    // Modify initial state values as necessary.
+    Array<std::string> svNames = model.getStateVariableNames();
+    for (int isv = 0; isv < svNames.getSize(); ++isv) {
+        const auto& svName = svNames[isv];
+        const auto& initBounds = phase.getStateInfo(svName).getInitialBounds();
+        const auto defaultValue = model.getStateVariableValue(state, svName);
+        SimTK::Real valueToUse = defaultValue;
+        if (initBounds.isEquality()) {
+            valueToUse = initBounds.getLower();
+        } else if (!initBounds.isWithinBounds(defaultValue)) {
+            valueToUse = 0.5 * (initBounds.getLower() + initBounds.getUpper());
+        }
+        if (valueToUse != defaultValue) {
+            model.setStateVariableValue(state, svName, valueToUse);
+        }
+    }
+
     state.setTime(initialTime);
     Manager manager(model, state);
     manager.integrate(finalTime);
