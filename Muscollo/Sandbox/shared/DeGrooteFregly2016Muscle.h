@@ -71,6 +71,9 @@ public:
     "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
     "Smaller value means activation can change more rapidly (units: seconds).");
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+    "Smaller value means activation can decrease more rapidly "
+    "(units: seconds).");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
     "Value of activation in the default state returned by initSystem().");
 
@@ -416,7 +419,8 @@ public:
 private:
     void constructProperties() {
         constructProperty_default_norm_fiber_length(1.0);
-        constructProperty_activation_time_constant(0.010);
+        constructProperty_activation_time_constant(0.015);
+        constructProperty_deactivation_time_constant(0.060);
         constructProperty_default_activation(0.5);
 
         constructProperty_tendon_strain_at_one_norm_force(0.049);

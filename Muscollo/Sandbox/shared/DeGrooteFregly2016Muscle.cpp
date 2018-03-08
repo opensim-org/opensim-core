@@ -83,11 +83,30 @@ extendSetPropertiesFromState(const SimTK::State& s) {
 
 void DeGrooteFregly2016Muscle::
 computeStateVariableDerivatives(const SimTK::State& s) const {
-    const auto& tau = get_activation_time_constant();
-    const auto& excitation = getControl(s);
     const auto& activation = getActivation(s);
-    const SimTK::Real activationDot = (excitation - activation) / tau;
-    setStateVariableDerivativeValue(s, ACTIVATION, activationDot);
+
+    // On a simple hanging muscle minimum time problem, I got quicker
+    // convergence using the nonlinear activation dynamics from the paper.
+    // const auto& tau = get_activation_time_constant();
+    // const SimTK::Real activationDot = (excitation - activation) / tau;
+    {
+        const auto& excitation = getControl(s);
+        static const double actTimeConst   = get_activation_time_constant();
+        static const double deactTimeConst = get_deactivation_time_constant();
+        static const double tanhSteepness  = 0.1;
+        //     f = 0.5 tanh(b(e - a))
+        //     z = 0.5 + 1.5a
+        // da/dt = [(f + 0.5)/(tau_a * z) + (-f + 0.5)*z/tau_d] * (e - a)
+        const SimTK::Real timeConstFactor = 0.5 + 1.5 * activation;
+        const SimTK::Real tempAct = 1.0 / (actTimeConst * timeConstFactor);
+        const SimTK::Real tempDeact = timeConstFactor / deactTimeConst;
+        const SimTK::Real f =
+                0.5 * tanh(tanhSteepness * (excitation - activation));
+        const SimTK::Real timeConst =
+                tempAct * (f + 0.5) + tempDeact * (-f + 0.5);
+        setStateVariableDerivativeValue(s, ACTIVATION,
+                timeConst * (excitation - activation));
+    }
 
     if (!get_ignore_tendon_compliance()) {
 
