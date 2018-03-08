@@ -252,6 +252,13 @@ public:
     ///             points are normalized and are thus within [0, 1].
     virtual void initialize_on_mesh(const Eigen::VectorXd& mesh) const;
 
+    /// This function is invoked every time there is a new iterate (perhaps
+    /// multiple times), and allows you to perform any initialization or caching
+    /// based on the constant parameter values from the iterate, in case this is
+    /// expensive. Implementing this function is optional, even if your problem
+    /// has parameters.
+    virtual void initialize_on_iterate(const VectorX<T>& parameters) const;
+
     /// Compute the right-hand side of the differntial algebraic equations
     /// (DAE) for the system you want to optimize. This is the function that
     /// provides the dynamics and path constraints.

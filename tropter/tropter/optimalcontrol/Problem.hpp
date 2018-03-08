@@ -125,6 +125,11 @@ void Problem<T>::
 initialize_on_mesh(const Eigen::VectorXd&) const
 {}
 
+template<typename T>
+void Problem<T>::
+initialize_on_iterate(const VectorX<T>&) const
+{}
+
 template<typename T>    
 void Problem<T>::
 calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
