@@ -96,14 +96,14 @@ public:
     const Storage& getForceStorage() const
     {
         return _forceStore;
-    };
+    }
     Storage& updForceStorage()
     {
         return _forceStore;
     }
     
-    /** Get forces table.                                                     */
-    TimeSeriesTable getForcesTable() const {
+    /** Get force table.                                                     */
+    TimeSeriesTable getForceTable() const {
         return _forceStore.exportToTable();
     }
 
