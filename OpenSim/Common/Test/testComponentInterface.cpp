@@ -407,7 +407,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
@@ -1044,6 +1045,41 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
     top.connect();
+}
+
+void testGetStateVariableValue() {
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    SimTK_TEST(s.getNY() == 3);
+    s.updY()[0] = 10; // "top/internalSub/subState"
+    s.updY()[1] = 20; // "top/a/subState"
+    s.updY()[2] = 30; // "top/a/b/subState"
+
+    SimTK_TEST(top.getStateVariableValue(s, "internalSub/subState") == 10);
+    SimTK_TEST(top.getStateVariableValue(s, "a/subState") == 20);
+    SimTK_TEST(top.getStateVariableValue(s, "a/b/subState") == 30);
+    SimTK_TEST(a->getStateVariableValue(s, "subState") == 20);
+    SimTK_TEST(a->getStateVariableValue(s, "b/subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
+    SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            top.getStateVariableValue(s, "typo/b/subState"),
+            OpenSim::Exception);
 }
 
 void testInputOutputConnections()
@@ -2069,6 +2105,7 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);

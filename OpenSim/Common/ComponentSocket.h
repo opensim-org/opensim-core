@@ -888,7 +888,7 @@ private:
     /** This socket was generated with the                               */ \
     /** #OpenSim_DECLARE_SOCKET macro;                                   */ \
     /** see AbstractSocket for more information.                         */ \
-    /** @socketmethods connectSocket_##cname##()                         */ \
+    /** @see connectSocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -962,7 +962,7 @@ private:
     /** In an XML file, you can set this socket's connectee name         */ \
     /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
     /** See AbstractSocket for more information.                         */ \
-    /** @socketmethods connectsocket_##cname##()                         */ \
+    /** @see connectsocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1051,7 +1051,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro;                                    */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1112,7 +1112,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
