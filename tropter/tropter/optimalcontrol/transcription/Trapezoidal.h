@@ -26,6 +26,7 @@ namespace transcription {
 /// @verbatim
 /// ti
 /// tf
+/// parameters
 /// states(t=0)
 /// controls(t=0)
 /// states(t=1)
@@ -79,6 +80,18 @@ public:
     void calc_sparsity_hessian_lagrangian(const Eigen::VectorXd& x,
             SymmetricSparsityPattern&,
             SymmetricSparsityPattern&) const override;
+
+    /// For continuous variables, the format is
+    /// `<continuous-variable-name>_<mesh-point-index>`. The mesh point index is
+    /// 0-based.
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_variable_names() const override;
+    /// For defect constraints, the format is
+    /// `<state-variable-name>_<mesh-interval-index>` (1-based index). For path
+    /// constraints, the format is `<path-constraint-name>_<mesh-point-index>`
+    /// (0-based index).
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_constraint_names() const override;
 
     /// This function checks the dimensions of the matrices in traj.
     Eigen::VectorXd
@@ -178,6 +191,9 @@ private:
     int m_num_dynamics_constraints = -1;
     int m_num_path_constraints = -1;
     Eigen::VectorXd m_trapezoidal_quadrature_coefficients;
+
+    std::vector<std::string> m_variable_names;
+    std::vector<std::string> m_constraint_names;
 
     // Working memory.
     mutable VectorX<T> m_integrand;
