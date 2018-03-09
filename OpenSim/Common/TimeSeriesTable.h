@@ -150,7 +150,10 @@ public:
         const std::vector<std::string>& labels) : 
             DataTable_<double, ETY>(indVec, depData, labels) {
         try {
-            // Perform the validation of the data of this TimeSeriesTable
+            // Perform the validation of the data of this TimeSeriesTable.
+            // validateDependentsMetaData() invoked by the DataTable_
+            // constructor via setColumnLabels(), but we invoke it again
+            // because base classes cannot properly invoke virtual functions.
             this->validateDependentsMetaData();
             for (size_t i = 0; i < indVec.size(); ++i) {
                 this->validateRow(i, indVec[i], depData.row(int(i)));
@@ -163,6 +166,31 @@ public:
             this->removeDependentsMetaDataForKey("labels");
             throw;
         }
+    }
+
+    /** Construct a table with only the independent (time) column and no data (0
+    columns). This constructor is useful if you want to populate the table by
+    appending columns rather than by appending rows.                          */
+    TimeSeriesTable_(const std::vector<double>& indVec) :
+            DataTable_<double, ETY>(indVec) {
+        try {
+            // Perform the validation of the data of this TimeSeriesTable.
+            // validateDependentsMetaData() invoked by the DataTable_
+            // constructor via setColumnLabels(), but we invoke it again
+            // because base classes cannot properly invoke virtual functions.
+            this->validateDependentsMetaData();
+            for (size_t i = 0; i < indVec.size(); ++i) {
+                this->validateRow(i, indVec[i], this->_depData.row(int(i)));
+            }
+        }
+        catch (std::exception&) {
+            // wipe out the data loaded if any
+            this->_indData.clear();
+            this->_depData.clear(); // should be empty
+            this->removeDependentsMetaDataForKey("labels"); // should be empty
+            throw;
+        }
+
     }
 
 #ifndef SWIG
