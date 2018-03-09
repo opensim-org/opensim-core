@@ -8,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib, Peter Loan                                         *
+ * Author(s): Ayman Habib, Peter Loan, Tom Uchida                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -34,6 +34,14 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -47,12 +55,20 @@ void scaleGait2354_GUI(bool useMarkerPlacement);
 void scaleModelWithLigament();
 bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp);
 
+// Test scaling PhysicalOffsetFrames and models with atypical ownership trees.
+void scalePhysicalOffsetFrames();
+
+// Test scaling EllipsoidJoint, CustomJoint, and CoordinateCouplerConstraint.
+void scaleJointsAndConstraints();
+
 int main()
 {
     try {
         scaleGait2354();
         scaleGait2354_GUI(false);
         scaleModelWithLigament();
+        scalePhysicalOffsetFrames();
+        scaleJointsAndConstraints();
     }
     catch (const std::exception& e) {
         cout << e.what() << endl;
@@ -321,4 +337,473 @@ bool compareStdScaleToComputed(const ScaleSet& std, const ScaleSet& comp) {
         }
     }
     return true;
+}
+
+void scalePhysicalOffsetFrames()
+{
+    cout << "Scaling PhysicalOffsetFrames and models with atypical ownership "
+         << "trees..." << endl;
+
+    using namespace SimTK;
+    const Transform tfY = Transform(Vec3(0,1,0));
+
+    // Create ScaleSet to scale the OpenSim::Body named "body".
+    const double scaleFactor = 1.234;
+    ScaleSet scaleSet;
+    Scale* scale = new Scale();
+    scale->setSegmentName("body");
+    scale->setScaleFactors(Vec3(scaleFactor));
+    scale->setApply(true);
+    scaleSet.adoptAndAppend(scale);
+
+    // Expected location of COM in Ground after scaling.
+    Vec3 expectedLoc = Vec3(0, -scaleFactor, 0);
+
+    // Helper function to scale the model, report the COM location, and compare
+    // to the expected location.
+    auto testScaling = [&](Model* model, State& s) -> void
+    {
+        const OpenSim::Body& body = model->getBodySet().get("body");
+        const Vec3 initialLoc = body.findStationLocationInGround(s, Vec3(0));
+        model->scale(s, scaleSet, false);
+        const Vec3 finalLoc = body.findStationLocationInGround(s, Vec3(0));
+
+        ASSERT_EQUAL(finalLoc, expectedLoc, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "Incorrect final COM location:\n  initial: " + initialLoc.toString()
+            + "\n    final: " + finalLoc.toString() + " (expected: "
+            + expectedLoc.toString() + ")");
+    };
+
+    // Case 1: Use PinJoint's convenience constructor to create the child POF
+    //         automatically. The POF will be stored in PinJoint's "frames" list
+    //         property. This is the most typical case.
+    {
+        cout << "- case 1" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint("pin", model->getGround(), Vec3(0), Vec3(0),
+                                            *body, Vec3(0,1,0), Vec3(0));
+        model->addJoint(pin);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 2: Create the child POF manually and store it in
+    //         (a) PinJoint's "frames" list property (i==0)
+    //         (b) PinJoint's "components" list property (i==1)
+    //         (c) Model's "components" list property (i==2)
+    for (int i=0; i<3; ++i)
+    {
+        cout << "- case 2(" << std::string("abc").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            pin->updProperty_frames().adoptAndAppendValue(pof);
+        else if (i==1)
+            pin->addComponent(pof);
+        else
+            model->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+
+    // Case 3: Create the child POF manually and store it in
+    //         (a) a different PinJoint's "frames" list property (i==0)
+    //         (b) a different PinJoint's "components" list property (i==1)
+
+    // TODO: These cases currently throw "Assigned an invalid
+    //       SimTK::MobilizedBodyIndex" Exception on initSystem(). See GitHub
+    //       Issue #1970.
+
+    /*
+    for (int i=0; i<2; ++i)
+    {
+        cout << "- case 3(" << std::string("ab").substr(i,1) << ")" << endl;
+
+        Model* model = new Model();
+
+        // First add a body and joint as in Case 1.
+        OpenSim::Body* otherBody = new OpenSim::Body("otherBody", 1, Vec3(0),
+                                                     Inertia(0));
+        model->addBody(otherBody);
+
+        PinJoint* otherPin = new PinJoint("otherPin",
+                                          model->getGround(), Vec3(0), Vec3(0),
+                                          *otherBody, Vec3(0,1,0), Vec3(0));
+        model->addJoint(otherPin);
+
+        // Now add the components for the test.
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        PinJoint* pin = new PinJoint();
+        pin->setName("pin");
+        model->addJoint(pin);
+
+        PhysicalOffsetFrame* pof = new PhysicalOffsetFrame("pof", *body, tfY);
+        if (i==0)
+            otherPin->updProperty_frames().adoptAndAppendValue(pof);
+        else
+            otherPin->addComponent(pof);
+
+        pin->connectSocket_parent_frame(model->getGround());
+        pin->connectSocket_child_frame(*pof);
+
+        State& s = model->initSystem();
+        testScaling(model, s);
+    }
+    */
+
+    // Case 4: Attach Markers to PhysicalOffsetFrames and assign arbitrary
+    //         ownership. All Markers in this example model should be coincident
+    //         before and after scaling.
+    {
+        cout << "- case 4" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        FreeJoint* free = new FreeJoint("free", model->getGround(), *body);
+        free->setName("free");
+        model->addJoint(free);
+
+        // First Marker is attached to and owned by the Body.
+        const Vec3 offset1 = Vec3(0.3, 0.6, 0.9);
+        Marker* marker1 = new Marker("marker1", *body, offset1);
+        body->addComponent(marker1);
+
+        // Second Marker is attached to the Body via one PhysicalOffsetFrame.
+        // The POF is owned by the Model; the Marker is owned by the Joint.
+        const Vec3 offset2  = offset1 / 2.;
+        const Transform tf2 = Transform(offset2);
+        PhysicalOffsetFrame* pof2 = new PhysicalOffsetFrame("pof2", *body, tf2);
+        model->addComponent(pof2);
+        Marker* marker2 = new Marker("marker2", *pof2, offset2);
+        free->addComponent(marker2);
+
+        // Third Marker is attached to the Body via two PhysicalOffsetFrames.
+        // All new ModelComponents are owned by the first Marker.
+        const Vec3 offset3  = offset1 / 3.;
+        const Transform tf3 = Transform(offset3);
+        PhysicalOffsetFrame* pof3a = new PhysicalOffsetFrame("pof3a", *body, tf3);
+        marker1->addComponent(pof3a);
+        PhysicalOffsetFrame* pof3b = new PhysicalOffsetFrame("pof3b", *pof3a, tf3);
+        marker1->addComponent(pof3b);
+        Marker* marker3 = new Marker("marker3", *pof3b, offset3);
+        marker1->addComponent(marker3);
+
+        State& s = model->initSystem();
+
+        // Ensure all Markers are coincident before scaling.
+        Vec3 expectedMarkerLoc = offset1;
+
+        auto testMarkerLoc =
+            [&](Marker* marker, const State& s, const std::string& msg) -> void
+        {
+            const Vec3 loc = marker->getLocationInGround(s);
+
+            ASSERT_EQUAL(loc, expectedMarkerLoc, SimTK::SignificantReal,
+                __FILE__, __LINE__,
+                "Incorrect location of Marker '" + marker->getName()
+                + "' (" + msg + ")\n  location: " + loc.toString()
+                + "\n  expected: " + expectedMarkerLoc.toString());
+        };
+
+        testMarkerLoc(marker1, s, "before scaling");
+        testMarkerLoc(marker2, s, "before scaling");
+        testMarkerLoc(marker3, s, "before scaling");
+
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
+        model->scale(s, scaleSet, false);
+        expectedMarkerLoc =
+            expectedMarkerLoc.elementwiseMultiply(Vec3(scaleFactor));
+
+        // Ensure all Markers are coincident after scaling.
+        testMarkerLoc(marker1, s, "after scaling");
+        testMarkerLoc(marker2, s, "after scaling");
+        testMarkerLoc(marker3, s, "after scaling");
+    }
+
+    // Case 5: Attach a PathActuator to a PhysicalOffsetFrame. The two
+    //         PathActuators in this example model should be coincident before
+    //         and after scaling.
+    {
+        cout << "- case 5" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+        model->addBody(body);
+
+        FreeJoint* free = new FreeJoint("free", model->getGround(), *body);
+        free->setName("free");
+        model->addJoint(free);
+
+        // First PathActuator is attached to and owned by the Body.
+        const Vec3 offset1 = Vec3(0.2, 0.4, 0.6);
+        PathActuator* act1 = new PathActuator();
+        act1->setName("pathActuator1");
+        act1->addNewPathPoint("point1a", model->updGround(), Vec3(0));
+        act1->addNewPathPoint("point1b", *body, offset1);
+        body->addComponent(act1);
+
+        // Second PathActuator is attached to the Body via a POF. Both new
+        // ModelComponents are owned by the first PathActuator.
+        const Vec3 offset2 = offset1 / 2.;
+        const Transform tf2 = Transform(offset2);
+
+        PhysicalOffsetFrame* pof2 = new PhysicalOffsetFrame("pof2", *body, tf2);
+        act1->addComponent(pof2);
+
+        PathActuator* act2 = new PathActuator();
+        act2->setName("pathActuator2");
+        act2->addNewPathPoint("point2a", model->updGround(), Vec3(0));
+        act2->addNewPathPoint("point2b", *pof2, offset2);
+        act1->addComponent(act2);
+
+        State& s = model->initSystem();
+
+        const std::string pathToAct1 = act1->getAbsolutePathString();
+        const std::string pathToAct2 = act2->getAbsolutePathString();
+
+        // Ensure PathPoints are coincident before scaling.
+        auto testPathPointLoc =
+            [&](const State& s, const std::string& msg) -> void
+        {
+            const PathActuator& pa1 =
+                model->getComponent<PathActuator>(pathToAct1);
+            const PathActuator& pa2 =
+                model->getComponent<PathActuator>(pathToAct2);
+
+            const PathPointSet& pps1 = pa1.getGeometryPath().getPathPointSet();
+            const PathPointSet& pps2 = pa2.getGeometryPath().getPathPointSet();
+
+            for (int i = 0; i < 2; ++i)
+            {
+                const Vec3& p1 = pps1[i].getLocationInGround(s);
+                const Vec3& p2 = pps2[i].getLocationInGround(s);
+
+                ASSERT_EQUAL(p1, p2, SimTK::SignificantReal, __FILE__, __LINE__,
+                    "The location of point " + std::to_string(i)
+                    + " does not match (" + msg + ")\n  PathActuator1: "
+                    + p1.toString() + "\n  PathActuator2: " + p2.toString());
+            }
+        };
+
+        testPathPointLoc(s, "before scaling");
+
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
+        model->scale(s, scaleSet, false);
+
+        // Ensure PathPoints are coincident after scaling.
+        testPathPointLoc(s, "after scaling");
+    }
+}
+
+void scaleJointsAndConstraints()
+{
+    cout << "Scaling Joints and Constraints..." << endl;
+
+    using namespace SimTK;
+
+    // Create ScaleSet to scale "body1" and "body2".
+    const Vec3 scaleFactors = Vec3(1.1, 2.22, 3.333);
+    ScaleSet scaleSet;
+    auto addBodyScale = [&](const std::string& bodyName) -> void {
+        Scale* scale = new Scale();
+        scale->setSegmentName(bodyName);
+        scale->setScaleFactors(scaleFactors);
+        scale->setApply(true);
+        scaleSet.adoptAndAppend(scale);
+    };
+    addBodyScale("body1");
+    addBodyScale("body2");
+
+    // Test EllipsoidJoint scaling. Ensure radii are scaled if the parent is a
+    // Body but does not change if the parent is Ground.
+    {
+        cout << "- EllipsoidJoint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        const Vec3 radii = Vec3(0.123, 0.456, 0.789);
+
+        EllipsoidJoint* ellipsoid1 =
+            new EllipsoidJoint("ellipsoid1", model->getGround(), *body1, radii);
+        model->addJoint(ellipsoid1);
+        EllipsoidJoint* ellipsoid2 =
+            new EllipsoidJoint("ellipsoid2", *body2, model->getGround(), radii);
+        model->addJoint(ellipsoid2);
+
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
+        State& s = model->initSystem();
+        model->scale(s, scaleSet, false);
+
+        // Radii of ellipsoid1 should not have changed.
+        const Vec3& actual1   = ellipsoid1->get_radii_x_y_z();
+        const Vec3& expected1 = radii;
+        ASSERT_EQUAL(actual1, expected1, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "EllipsoidJoint 'ellipsoid1' has incorrect radii.\n  actual: "
+            + actual1.toString() + ", expected: " + expected1.toString());
+
+        // Radii of ellipsoid2 should have been scaled using the scale factors
+        // corresponding to body2.
+        const Vec3& actual2   = ellipsoid2->get_radii_x_y_z();
+        const Vec3& expected2 = radii.elementwiseMultiply(scaleFactors);
+        ASSERT_EQUAL(actual2, expected2, SimTK::SignificantReal,
+            __FILE__, __LINE__,
+            "EllipsoidJoint 'ellipsoid2' has incorrect radii.\n  actual: "
+            + actual2.toString() + ", expected: " + expected2.toString());
+    }
+
+    // Test CustomJoint scaling. Ensure SpatialTransform is scaled if the parent
+    // is a Body but does not change if the parent is Ground.
+    {
+        cout << "- CustomJoint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        SpatialTransform transform;
+        transform[3].setCoordinateNames(OpenSim::Array<std::string>("x", 1, 1));
+        transform[3].setFunction(new LinearFunction(1.234, 5.678));
+
+        // Evaluate LinearFunction before scaling and compare after scaling.
+        const Vector xA = Vector(1, 0.);
+        const double yA = transform[3].getFunction().calcValue(xA);
+        const Vector xB = Vector(1, 123.456);
+        const double yB = transform[3].getFunction().calcValue(xB);
+
+        CustomJoint* custom1 =
+            new CustomJoint("custom1", model->getGround(), *body1, transform);
+        model->addJoint(custom1);
+        CustomJoint* custom2 =
+            new CustomJoint("custom2", *body2, model->getGround(), transform);
+        model->addJoint(custom2);
+
+        // Scale the model (updates the model's properties, reinitializes the
+        // computational system, and updates the State that is passed in).
+        State& s = model->initSystem();
+        model->scale(s, scaleSet, false);
+
+        // Transform of custom1 should not have changed.
+        const OpenSim::Function& fn1 =
+            custom1->getSpatialTransform()[3].getFunction();
+        ASSERT_EQUAL(fn1.calcValue(xA), yA, SimTK::SignificantReal,
+            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
+        ASSERT_EQUAL(fn1.calcValue(xB), yB, SimTK::SignificantReal,
+            __FILE__, __LINE__, "CustomJoint 'custom1' was incorrectly scaled.");
+
+        // Transform of custom2 should have been scaled using the scale factors
+        // corresponding to body2.
+        const OpenSim::Function& fn2 =
+            custom2->getSpatialTransform()[3].getFunction();
+        ASSERT_EQUAL(fn2.calcValue(xA), yA * scaleFactors[0],
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "CustomJoint 'custom2' was incorrectly scaled.");
+        ASSERT_EQUAL(fn2.calcValue(xB), yB * scaleFactors[0],
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "CustomJoint 'custom2' was incorrectly scaled.");
+    }
+
+    // Test CoordinateCouplerConstraint scaling.
+    {
+        cout << "- CoordinateCouplerConstraint" << endl;
+
+        Model* model = new Model();
+        OpenSim::Body* body1 = new OpenSim::Body("body1", 1, Vec3(0), Inertia(0));
+        model->addBody(body1);
+        OpenSim::Body* body2 = new OpenSim::Body("body2", 1, Vec3(0), Inertia(0));
+        model->addBody(body2);
+
+        // Attach bodies to Ground with slider joints.
+        SliderJoint* slider1 =
+            new SliderJoint("slider1", model->getGround(), *body1);
+        slider1->updCoordinate().setName("indepCoord");
+        model->addJoint(slider1);
+
+        SliderJoint* slider2 = new SliderJoint("slider2", *body1, *body2);
+        slider2->updCoordinate().setName("depCoord");
+        model->addJoint(slider2);
+
+        // Constrain Coordinate of slider2.
+        OpenSim::Array<std::string> indepCoordNameArray("indepCoord", 1, 1);
+        const double slope     = 1.234;
+        const double intercept = 5.678;
+
+        CoordinateCouplerConstraint* ccc = new CoordinateCouplerConstraint();
+        ccc->setIndependentCoordinateNames(indepCoordNameArray);
+        ccc->setDependentCoordinateName("depCoord");
+        ccc->setFunction(LinearFunction(slope, intercept));
+        model->addConstraint(ccc);
+
+        // Scale the model with non-uniform scale factors. Should fetch the
+        // scale factors corresponding to body2 and then throw because only
+        // uniform scaling is currently supported.
+        State& s = model->initSystem();
+        ASSERT_THROW(OpenSim::Exception, model->scale(s, scaleSet, false));
+
+        // Test coupling function before scaling.
+        slider1->getCoordinate().setValue(s, 0., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value before scaling.");
+
+        slider1->getCoordinate().setValue(s, 1., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s), intercept + slope,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value before scaling.");
+
+        // Scale body2 uniformly.
+        const double uniformFactor = 1.23456;
+        ScaleSet scaleSetUniform;
+        Scale* scale = new Scale();
+        scale->setSegmentName("body1");
+        scale->setScaleFactors(Vec3(uniformFactor));
+        scale->setApply(true);
+        scaleSetUniform.adoptAndAppend(scale);
+
+        model->scale(s, scaleSetUniform, false);
+
+        // Test coupling function after scaling.
+        slider1->getCoordinate().setValue(s, 0., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+            intercept * uniformFactor,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value after scaling.");
+
+        slider1->getCoordinate().setValue(s, 1., true);
+        ASSERT_EQUAL(slider2->getCoordinate().getValue(s),
+            (intercept + slope) * uniformFactor,
+            SimTK::SignificantReal, __FILE__, __LINE__,
+            "SliderJoint has incorrect Coordinate value after scaling.");
+    }
 }

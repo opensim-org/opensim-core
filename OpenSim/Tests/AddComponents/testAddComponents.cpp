@@ -373,8 +373,9 @@ int main()
 
         // Integrate from initial time to final time
         si.setTime(initialTime);
+        manager.initialize(si);
         cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-        manager.integrate(si, finalTime);
+        manager.integrate(finalTime);
 
         //////////////////////////////
         // SAVE THE RESULTS TO FILE //

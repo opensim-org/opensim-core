@@ -542,7 +542,7 @@ void compareUmbergerProbeToPublishedResults()
     double rec_normalizedForce[numPoints];
     double rec_mechanicalPower[numPoints];
     double rec_totalEnergyRate[numPoints];
-    generateUmbergerMuscleData("rectus femoris", rec_maxIsometricForce,
+    generateUmbergerMuscleData("rectus_femoris", rec_maxIsometricForce,
         rec_optimalFiberLength, 0.76, rec_Arel, rec_Brel, 1.5, 0.35,
         rec_muscleMass, &rec_normalizedForce[0], &rec_mechanicalPower[0],
         &rec_totalEnergyRate[0]);
@@ -639,11 +639,12 @@ Storage simulateModel(Model& model, double t0, double t1)
 
     Manager manager(model, integrator);
     state.setTime(t0);
+    manager.initialize(state);
 
     // Simulate.
     const clock_t tStart = clock();
     cout << "- integrating from " << t0 << " to " << t1 << "s" << endl;
-    manager.integrate(state, t1);
+    manager.integrate(t1);
     cout << "- simulation complete (" << (double)(clock()-tStart)/CLOCKS_PER_SEC
          << " seconds elapsed)" << endl;
 

@@ -42,7 +42,6 @@ PathActuator::PathActuator()
 {
     setNull();
     constructProperties();
-    finalizeFromProperties();
 }
 
 //=============================================================================
@@ -140,7 +139,7 @@ double PathActuator::getStress( const SimTK::State& s) const
  */
 void PathActuator::addNewPathPoint(
          const std::string& proposedName, 
-         PhysicalFrame& aBody, 
+         const PhysicalFrame& aBody, 
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
     updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
@@ -232,47 +231,4 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
 // activation level.
 SimTK::Vec3 PathActuator::computePathColor(const SimTK::State& state) const {
     return SimTK::Vec3(SimTK::NaN);
-}
-
-
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the muscle-tendon
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().preScale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the muscle based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether muscle was successfully scaled or not.
- */
-void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-    updGeometryPath().postScale(s, aScaleSet);
 }

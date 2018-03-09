@@ -48,6 +48,8 @@
 namespace OpenSim {
 
 class Model;
+class Frame;
+class ScaleSet;
 
 //==============================================================================
 //                            MODEL COMPONENT
@@ -108,7 +110,77 @@ public:
      */
     Model& updModel();
 
+    /** Perform any computations that must occur before ModelComponent::scale()
+        is invoked on all ModelComponents in the Model. For example, a
+        GeometryPath must calculate and store its path length in the original
+        model before scaling so that an owning Muscle can use this information
+        to update the properties of the muscle after scaling. This method calls
+        the virtual extendPreScale() method, which may be implemented by any
+        subclass of ModelComponent.
+        @see extendPreScale()
+        @see scale()
+        @see postScale() */
+    void preScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Scale the ModelComponent. This method calls the virtual extendScale()
+        method, which may be implemented by any subclass of ModelComponent.
+        @see preScale()
+        @see extendScale()
+        @see postScale() */
+    void scale(const SimTK::State& s, const ScaleSet& scaleSet);
+
+    /** Perform any computations that must occur after ModelComponent::scale()
+        has been invoked on all ModelComponents in the Model. This method calls
+        the virtual extendPostScale() method, which may be implemented by any
+        subclass of ModelComponent.
+        @see preScale()
+        @see scale()
+        @see extendPostScale() */
+    void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
+
 protected:
+    /** Get the scale factors corresponding to the base OpenSim::Body of the
+        specified Frame. Returns ModelComponent::InvalidScaleFactors if the
+        ScaleSet does not contain scale factors for the base Body. */
+    const SimTK::Vec3& getScaleFactors(const ScaleSet& scaleSet,
+                                       const Frame& frame) const;
+
+    /** Returned by getScaleFactors() if the ScaleSet does not contain scale
+        factors for the base Body associated with the specified Frame. */
+    static const SimTK::Vec3 InvalidScaleFactors;
+
+    /** Perform any computations that must occur before ModelComponent::scale()
+        is invoked on all ModelComponents in the Model. For example, a
+        GeometryPath must calculate and store its path length in the original
+        model before scaling so that an owning Muscle can use this information
+        to update the properties of the muscle after scaling. This method is
+        virtual and may be implemented by any subclass of ModelComponent, but
+        all implementations must begin with a call to `Super::extendPreScale()`
+        to execute the parent class methods before the child class method. The
+        base class implementation in ModelComponent does nothing.
+        @see preScale() */
+    virtual void extendPreScale(const SimTK::State& s,
+                                const ScaleSet& scaleSet) {};
+
+    /** Scale the ModelComponent. This method is virtual and may be implemented
+        by any subclass of ModelComponent, but all implementations must begin
+        with a call to `Super::extendScale()` to execute the parent class
+        methods before the child class method. The base class implementation in
+        ModelComponent does nothing.
+        @see scale() */
+    virtual void extendScale(const SimTK::State& s,
+                             const ScaleSet& scaleSet) {};
+
+    /** Perform any computations that must occur after ModelComponent::scale()
+        has been invoked on all ModelComponents in the Model. This method is
+        virtual and may be implemented by any subclass of ModelComponent, but
+        all implementations must begin with a call to `Super::extendPostScale()`
+        to execute the parent class methods before the child class method. The
+        base class implementation in ModelComponent does nothing.
+        @see postScale() */
+    virtual void extendPostScale(const SimTK::State& s,
+                                 const ScaleSet& scaleSet) {};
+
 template <class T> friend class ModelComponentSet;
     /** @name           ModelComponent Basic Interface
     The interface ensures that deserialization, resolution of inter-connections,

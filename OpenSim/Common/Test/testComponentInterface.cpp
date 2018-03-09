@@ -407,7 +407,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
@@ -918,6 +919,12 @@ void testListSockets() {
 
 void testComponentPathNames()
 {
+    Foo foo;
+    foo.setName("LegWithConstrainedFoot/foot");
+    // verify that this illegal name throws when we try to finalize
+    // the component from its property values
+    ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
+  
     // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
@@ -1038,6 +1045,41 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
     top.connect();
+}
+
+void testGetStateVariableValue() {
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    SimTK_TEST(s.getNY() == 3);
+    s.updY()[0] = 10; // "top/internalSub/subState"
+    s.updY()[1] = 20; // "top/a/subState"
+    s.updY()[2] = 30; // "top/a/b/subState"
+
+    SimTK_TEST(top.getStateVariableValue(s, "internalSub/subState") == 10);
+    SimTK_TEST(top.getStateVariableValue(s, "a/subState") == 20);
+    SimTK_TEST(top.getStateVariableValue(s, "a/b/subState") == 30);
+    SimTK_TEST(a->getStateVariableValue(s, "subState") == 20);
+    SimTK_TEST(a->getStateVariableValue(s, "b/subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
+    SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            top.getStateVariableValue(s, "typo/b/subState"),
+            OpenSim::Exception);
 }
 
 void testInputOutputConnections()
@@ -1889,14 +1931,9 @@ void testSingleValueInputConnecteeSerialization() {
     // Deserialize.
     {
         // Single-value connectee cannot have multiple connectee_names.
-        // TODO Would ideally check for an exception, but we only emit a warning
-        // for now. This is because the way we determine if multiple
-        // connectee names were specified is by looking for spaces, but old
-        // models used have spaces in their names.
-        // SimTK_TEST_MUST_THROW_EXC(
-        //     TheWorld world(modelFileNameMultipleValues),
-        //     OpenSim::Exception);
-        TheWorld world(modelFileNameMultipleValues);
+        SimTK_TEST_MUST_THROW_EXC(
+             TheWorld world(modelFileNameMultipleValues),
+             OpenSim::Exception);
     }
     
     // Test error case: connectee_name has invalid characters.
@@ -2068,6 +2105,7 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);

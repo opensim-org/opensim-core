@@ -51,9 +51,10 @@ Model* constructPendulumWithMarkers();
 // randomly select the noise to be added at each frame.
 TimeSeriesTable_<SimTK::Vec3>
 generateMarkerDataFromModelAndStates(const Model& model,
-                                     const StatesTrajectory& states,
-                                     double noiseRadius = 0, 
-                                     bool constantOffset = false);
+                        const StatesTrajectory& states,
+                        const SimTK::RowVector_<SimTK::Vec3>& biases,
+                        double noiseRadius = 0, 
+                        bool constantOffset = false);
 
 // Verify that accuracy improves the number of decimals points to which
 // the solver solution (coordinates) can be trusted as it is tightened.
@@ -65,12 +66,20 @@ void testUpdateMarkerWeights();
 // weights and marker error is being reduced as its weighting increases.
 void testTrackWithUpdateMarkerWeights();
 
+// Verify that solver does not confuse/mismanage markers when reference
+// has more markers than the model, order is changed or marker reference
+// includes intervals with NaNs (no observation)
+void testNumberOfMarkersMismatch();
+
 int main()
 {
     SimTK::Array_<std::string> failures;
 
-    testMarkersReference();
-
+    try { testMarkersReference(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testMarkersReference");
+    }
     try { testAccuracy(); }
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testAccuracy");
@@ -84,6 +93,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testTrackWithUpdateMarkerWeights");
+    }
+
+    try { testNumberOfMarkersMismatch(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testNumberOfMarkersMismatch");
     }
 
     if (!failures.empty()) {
@@ -196,8 +211,9 @@ void testAccuracy()
     StatesTrajectory states;
     states.append(state);
 
+    SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
     MarkersReference
-        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states));
+        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states, biases));
     markersRef.setDefaultWeight(1.0);
 
     // Reset the initial coordinate value
@@ -295,9 +311,10 @@ void testUpdateMarkerWeights()
     StatesTrajectory states;
     states.append(state);
 
+    SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
     MarkersReference
         markersRef(generateMarkerDataFromModelAndStates(*pendulum,
-                                                        states,
+                                                        states, biases,
                                                         0.02));
     auto& markerNames = markersRef.getNames();
 
@@ -403,9 +420,10 @@ void testTrackWithUpdateMarkerWeights()
         states.append(state);
     } 
 
+    SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
     MarkersReference
         markersRef(generateMarkerDataFromModelAndStates(*pendulum,
-                                                        states,
+                                                        states, biases,
                                                         0.02,
                                                         true));
     auto& markerNames = markersRef.getNames();
@@ -456,6 +474,120 @@ void testTrackWithUpdateMarkerWeights()
     }
 }
 
+
+void testNumberOfMarkersMismatch()
+{
+    cout << 
+        "\ntestInverseKinematicsSolver::testNumberOfMarkersMismatch()"
+        << endl;
+
+    std::unique_ptr<Model> pendulum{ constructPendulumWithMarkers() };
+    const Coordinate& coord = pendulum->getCoordinateSet()[0];
+
+    SimTK::State state = pendulum->initSystem();
+    StatesTrajectory states;
+
+    // sample time
+    double dt = 0.1;
+    int N = 11;
+    for (int i = 0; i < N; ++i) {
+        state.updTime() = i*dt;
+        coord.setValue(state, i*dt*SimTK::Pi / 3);
+        states.append(state);
+    }
+
+    double err = 0.05;
+    SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
+    // bias m0
+    biases[0] += SimTK::Vec3(0, err, 0);
+    cout << "biases: " << biases << endl;
+
+    auto markerTable = generateMarkerDataFromModelAndStates(*pendulum,
+                        states,
+                        biases,
+                        0.0,
+                        true);
+
+    SimTK::Vector_<SimTK::Vec3> unusedCol(N, SimTK::Vec3(0.987654321));
+
+    auto usedMarkerNames = markerTable.getColumnLabels();
+
+    // add an unused marker to the marker data
+    markerTable.appendColumn("unused", unusedCol);
+
+    cout << "Before:\n" << markerTable << endl;
+    
+    // re-order "observed" marker data
+    SimTK::Matrix_<SimTK::Vec3> dataGutsCopy = markerTable.getMatrix();
+    int last = dataGutsCopy.ncol() - 1;
+    // swap first and last columns 
+    markerTable.updMatrix()(0) = dataGutsCopy(last);
+    markerTable.updMatrix()(last) = dataGutsCopy(0);
+    auto columnNames = markerTable.getColumnLabels();
+    markerTable.setColumnLabel(0, columnNames[last]);
+    markerTable.setColumnLabel(last, columnNames[0]);
+    columnNames = markerTable.getColumnLabels();
+
+    // Inject NaN in "observations" of "mR" marker data
+    for (int i = 4; i < 7; ++i) {
+        markerTable.updMatrix()(i, 1) = SimTK::NaN;
+    }
+
+    cout << "After reorder and NaN injections:\n" << markerTable << endl;
+
+    MarkersReference markersRef(markerTable);
+    int nmr = markersRef.getNumRefs();
+    auto& markerNames = markersRef.getNames();
+    cout << markerNames << endl;
+
+    SimTK::Array_<CoordinateReference> coordRefs;
+    // Reset the initial coordinate value
+    coord.setValue(state, 0.0);
+    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    double tol = 1e-4;
+    ikSolver.setAccuracy(tol);
+    ikSolver.assemble(state);
+
+    int nm = ikSolver.getNumMarkersInUse();
+
+    SimTK::Array_<double> markerErrors(nm);
+    for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
+        state.updTime() = i*dt;
+        ikSolver.track(state);
+
+        //get the marker errors
+        ikSolver.computeCurrentMarkerErrors(markerErrors);
+
+        int nme = markerErrors.size();
+
+        SimTK_ASSERT_ALWAYS(nme == nm,
+            "InverseKinematicsSolver failed to account "
+            "for unused marker reference (observation).");
+
+        cout << "time: " << state.getTime() << " |";
+        auto namesIter = usedMarkerNames.begin();
+        for (int j = 0; j < nme; ++j) {
+            const auto& markerName = ikSolver.getMarkerNameForIndex(j);
+            cout << " " << markerName << " error = " << markerErrors[j];
+
+            SimTK_ASSERT_ALWAYS( *namesIter++ != "unused",
+                "InverseKinematicsSolver failed to ignore "
+                "unused marker reference (observation).");
+            
+            if (markerName == "m0") {//should see error on biased marker
+                SimTK_ASSERT_ALWAYS(abs(markerErrors[j]-err) <= tol,
+                    "InverseKinematicsSolver mangled marker order.");
+            }
+            else { // other markers should be minimally affected
+                SimTK_ASSERT_ALWAYS(markerErrors[j] <= tol,
+                    "InverseKinematicsSolver mangled marker order.");
+            }
+        }
+        cout << endl;
+    }
+}
+
+
 Model* constructPendulumWithMarkers()
 {
     Model* pendulum = new Model();
@@ -500,6 +632,7 @@ Model* constructPendulumWithMarkers()
 TimeSeriesTable_<SimTK::Vec3>
 generateMarkerDataFromModelAndStates(const Model& model,
                                      const StatesTrajectory& states,
+                                     const SimTK::RowVector_<SimTK::Vec3>& biases,
                                      double noiseRadius,
                                      bool constantOffset) {
     // use a fixed seed so that we can reproduce and debug failures.
@@ -510,8 +643,10 @@ generateMarkerDataFromModelAndStates(const Model& model,
     
     auto* markerReporter = new TableReporterVec3();
     
-    auto markers = m->getComponentList<Marker>();
-    for (const auto& marker : markers) {
+    auto markers = m->updComponentList<Marker>();
+    int cnt = 0;
+    for (auto& marker : markers) {
+        marker.set_location(marker.get_location() + biases[cnt++]);
         markerReporter->addToReport(
                 marker.getOutput("location"), marker.getName());
     }

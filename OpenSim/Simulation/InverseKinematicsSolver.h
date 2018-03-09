@@ -93,6 +93,13 @@ public:
         to track a desired trajectory of coordinate values. */
     //virtual void track(SimTK::State &s);
 
+    /** Return the number of markers used to solve for model coordinates.
+        It is a count of the number of markers in the intersection of 
+        the reference markers and model markers.
+        This number is guaranteed not to change after assemble() is called
+        (i.e. during subsequent calls to track()).*/
+    int getNumMarkersInUse() const;
+
     /** Change the weighting of a marker, given the marker's name. Takes effect
         when assemble() or track() is called next. */
     void updateMarkerWeight(const std::string &markerName, double value);

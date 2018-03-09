@@ -75,6 +75,22 @@ public:
     }
 };
 
+class InvalidComponentName : public Exception {
+public:
+    InvalidComponentName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& invalidChars,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " contains invalid characters of: '" +
+            invalidChars + "'.";
+        addMessage(msg);
+    }
+};
+
 class ComponentNotFoundOnSpecifiedPath : public Exception {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
@@ -2339,11 +2355,18 @@ protected:
 public:
 #ifndef SWIG // StateVariable is protected.
     /**
-     * Find a StateVariable of this Component (includes its subcomponents).
+     * Get a StateVariable anywhere in the Component tree, given a
+     * StateVariable path. The StateVariable doesn't need to be in a
+     * subcomponent of this compoonent; it could be located in a different
+     * branch of the Component tree (in such a case, the specified path might
+     * begin with "../").
+     * This returns nullptr if a StateVariable does not exist at the specified
+     * path or if the path is invalid.
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    const StateVariable* findStateVariable(const std::string& name) const;
+    const StateVariable* traverseToStateVariable(
+            const std::string& pathName) const;
 #endif
 
     /// @name Access to the owning component (advanced).

@@ -656,15 +656,15 @@ public:
                                             double fiberLength, 
                                             double fiberVelocity) const;
 ///@endcond
-    
+
+    /** Adjust the properties of the muscle after the model has been scaled. The
+        optimal fiber length and tendon slack length are each multiplied by the
+        ratio of the current path length and the path length before scaling. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
+
 protected:
 
-    /**Related to scaling, soon to be removed.
-    @param s the state of the model
-    @param aScaleSet the scale set
-    */
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) override;
-    
     /**
     @param s the state of the model
     @return the time derivative of activation

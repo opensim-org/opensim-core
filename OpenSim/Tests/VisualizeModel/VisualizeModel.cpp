@@ -30,7 +30,8 @@
 
 //==============================================================================
 //==============================================================================
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using namespace SimTK;

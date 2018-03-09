@@ -39,7 +39,7 @@ namespace OpenSim {
  * ToyReflexController is a concrete controller that excites muscles in response
  * to muscle lengthening to simulate a simple stretch reflex. This controller 
  * is meant to serve as an example how to implement a controller in
- * OpenSim. It is intended for demonstrative purposes only. 
+ * OpenSim. It is intended for demonstration purposes only. 
  *
  * @author  Ajay Seth
  */

@@ -236,28 +236,20 @@ protected:
         // property is a ComponentPath (or a ChannelPath?).
         for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
-            
-            if (connecteeName.find(" ") != std::string::npos) {
+            ComponentPath cp(connecteeName);
+            if (!cp.isLegalPathElement(cp.getComponentName()) ) {
                 std::string msg = "In Socket '" + getName() +
                         "', connectee name '" + connecteeName +
-                        "' contains spaces, but spaces are not allowed.";
+                        "' contains illegal characters such as spaces.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
                            "names for a single-value Socket?";
                 }
-                // TODO Would ideally throw an exception, but some models *do*
-                // use spaces in names, and the error for this should be
-                // handled elsewhere.
-                // OPENSIM_THROW(Exception, msg);
-                std::cout << "Warning: " << msg << std::endl;
+                OPENSIM_THROW(Exception, msg);
             }
             
-            // Use ComponentPath constructor to validate the connectee_name.
-            // We still need the check above for spaces, as ComponentPath
-            // currently treats spaces as valid.
-            ComponentPath compPath(connecteeName);
             // Use the cleaned-up connectee_name created by ComponentPath.
-            setConnecteeName(compPath.toString(), iname);
+            setConnecteeName(cp.toString(), iname);
             // TODO update the above for Inputs when ChannelPath exists.
             
             // TODO There might be a bug with empty connectee_name being
@@ -896,7 +888,7 @@ private:
     /** This socket was generated with the                               */ \
     /** #OpenSim_DECLARE_SOCKET macro;                                   */ \
     /** see AbstractSocket for more information.                         */ \
-    /** @socketmethods connectSocket_##cname##()                         */ \
+    /** @see connectSocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -970,7 +962,7 @@ private:
     /** In an XML file, you can set this socket's connectee name         */ \
     /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
     /** See AbstractSocket for more information.                         */ \
-    /** @socketmethods connectsocket_##cname##()                         */ \
+    /** @see connectsocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1059,7 +1051,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro;                                    */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
@@ -1120,7 +1112,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \

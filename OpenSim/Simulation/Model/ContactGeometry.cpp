@@ -133,6 +133,61 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
             XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
                     "frame", body_name);
         }
+
+        if (versionNumber < 30507) {
+            // display_preference and color were replaced with Appearance in PR
+            // #1122, at which point the latest XML version number was 30507;
+            // however, the corresponding updateFromXMLNode code below was
+            // added a while later.
+            // https://github.com/opensim-org/opensim-core/pull/1122
+            
+            SimTK::Xml::Element appearanceNode("Appearance");
+
+            // Move color inside Appearance.
+            SimTK::Xml::element_iterator colorIter =
+                        node.element_begin("color");
+            bool addAppearanceNode = false;
+            if (colorIter != node.element_end()) {
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        node.removeNode(colorIter));
+                addAppearanceNode = true;
+            } else {
+                // If the user didn't set a color but set one of the other
+                // Appearance properties, then we must set color explicitly so
+                // that the Appearance's default of white is not used.
+                SimTK::Xml::Element color("color");
+                color.setValue("0 1 1"); // SimTK::Cyan
+                appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                        color);
+            }
+
+            // Move <display_preference> to
+            // <Appearance><SurfaceProperties><representation>
+            SimTK::Xml::element_iterator reprIter =
+                    node.element_begin("display_preference");
+            if (reprIter != node.element_end()) {
+                if (reprIter->getValue() == "0") {
+                    SimTK::Xml::Element visible("visible");
+                    visible.setValue("false");
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            visible);
+                } else {
+                    reprIter->setElementTag("representation");
+                    if (reprIter->getValue() == "4") {
+                        // Enum changed to go 0-3 instead of 0-4
+                        reprIter->setValue("3");
+                    }
+                    SimTK::Xml::Element surfProp("SurfaceProperties");
+                    surfProp.insertNodeAfter(surfProp.element_end(),
+                            node.removeNode(reprIter));
+                    appearanceNode.insertNodeAfter(appearanceNode.element_end(),
+                            surfProp);
+                }
+                addAppearanceNode = true;
+            }
+            if (addAppearanceNode) 
+                node.insertNodeAfter(node.element_end(), appearanceNode);
+        }
     }
     Super::updateFromXMLNode(node, versionNumber);
 }

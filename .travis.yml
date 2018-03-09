@@ -5,6 +5,12 @@ language: cpp
 
 # Use container-based infrastructure to allow caching (for ccache).
 sudo: false
+
+# For thread_local support on macOS, we require xcode8 or greater.
+# Before 2018, xcode7 was the default. Now that xcode8.3 is the default,
+# we no longer need to specify an osx_image.
+# https://docs.travis-ci.com/user/reference/osx/#OS-X-Version
+# osx_image: xcode8
     
 matrix:
   include:
@@ -101,7 +107,7 @@ before_install:
   ## Avoid bug on OSX (https://github.com/travis-ci/travis-ci/issues/6307)
   # This prevents the build from failing with:
   # `/Users/travis/build.sh: line 109: shell_session_update: command not found`
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rvm get head; fi
   
   # Avoid "Homebrew must be run under Ruby 2.3!"
   # https://github.com/PowerShell/PowerShell/issues/5062
@@ -199,6 +205,10 @@ install:
   ## Store CMake arguments in bash array.
   # https://stackoverflow.com/questions/1951506/add-a-new-element-to-an-array-without-specifying-the-index-in-bash
   - OSIM_CMAKE_ARGS=($TRAVIS_BUILD_DIR -DCMAKE_INSTALL_PREFIX=$OPENSIM_HOME -DCMAKE_BUILD_TYPE=$BTYPE -DCMAKE_CXX_FLAGS="$CXX_FLAGS")
+
+  # The deployed binaries are used by the GUI, which requires the non-FHS
+  # layout.
+  - OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
   
   # Dependencies.
   - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
@@ -210,7 +220,7 @@ install:
   
   # Doxygen.
   - OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off -DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simtk.org/api_docs/simbody/latest/")
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then OSIM_CMAKE_ARGS+=(-DDOXYGEN_EXECUTABLE=$HOME/doxygen/doxygen-1.8.10/bin/doxygen); fi
   
   - printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
   - cmake "${OSIM_CMAKE_ARGS[@]}"
@@ -247,7 +257,7 @@ script:
   # macOS.
   - rm -r ~/simbody
   # Go to the python wrapping package directory.
-  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/lib/python2.7/site-packages; fi
+  - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/Python; fi
   # Run the python tests, verbosely.
   - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
   - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
@@ -266,7 +276,7 @@ script:
   ## Upload doxygen to server for viewing.
   # View resulting doxygen at myosin.sourceforge.net/<pull-request-number>
   # https://sourceforge.net/p/forge/documentation/Project%20Web%20Services/
-  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/share/doc/OpenSim/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
+  - if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then rsync -az $OPENSIM_HOME/sdk/doc/html_developer/ opensim-bot@web.sourceforge.net:/home/project-web/myosin/htdocs/$TRAVIS_PULL_REQUEST; fi; fi
   # If we're uploading doxygen, we also want to delete old
   # doxygen files from the server so they don't build up indefinitely.
   # However, ssh'ing into the server takes a while, so we only do this
@@ -311,7 +321,7 @@ deploy:
   skip_cleanup: true
   script: rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-core/
   on:
-    branch: master 
+    branch: master
     # Upload for both linux (once) and OSX. Might need to modify the condition
     # if we change the build matrix.
     condition: "$DEPLOY = yes"

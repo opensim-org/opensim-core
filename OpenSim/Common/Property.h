@@ -1227,7 +1227,7 @@ A data member is also created but is intended for internal use only:
     /** This property was generated with                                 */ \
     /** the #OpenSim_DECLARE_PROPERTY macro;                             */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##()           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
@@ -1265,7 +1265,7 @@ initialized with an object of type T.
     /** This property was generated with the                             */ \
     /** #OpenSim_DECLARE_UNNAMED_PROPERTY macro;                         */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##T##(), upd_##T##(), set_##T##()               */ \
+    /** @see get_##T##(), upd_##T##(), set_##T##()                       */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, T)                                        \
     /** @}                                                               */ \
@@ -1274,7 +1274,7 @@ initialized with an object of type T.
     /** Get the value of the <b> %##T </b> property.                     */ \
     const T& get_##T() const                                                \
     {   return this->getProperty_##T().getValue(); }                        \
-    /** Get a writable reference to the <b> %##T </b> property.         */ \
+    /** Get a writable reference to the <b> %##T </b> property.          */ \
     T& upd_##T()                                                            \
     {   return this->updProperty_##T().updValue(); }                        \
     /** %Set the value of the <b> %##T </b> property.                    */ \
@@ -1307,7 +1307,7 @@ value of type T.
     /** This property was generated with                                 */ \
     /** the #OpenSim_DECLARE_OPTIONAL_PROPERTY macro;                    */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##()           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
@@ -1316,7 +1316,7 @@ value of type T.
     /** Get the value of the <b> pname </b> property.                    */ \
     const T& get_##pname() const                                            \
     {   return this->getProperty_##pname().getValue(); }                    \
-    /** Get a writable reference to the <b> pname </b> property.        */ \
+    /** Get a writable reference to the <b> pname </b> property.         */ \
     T& upd_##pname()                                                        \
     {   return this->updProperty_##pname().updValue(); }                    \
     /** %Set the value of the <b> pname </b> property.                   */ \
@@ -1343,7 +1343,7 @@ supports a %size() method and operator[] element selection.
     /** This property holds a \a list of objects, and was generated with */ \
     /** the #OpenSim_DECLARE_LIST_PROPERTY macro;                        */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##(),          */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
@@ -1376,7 +1376,7 @@ method and operator[] element selection.
     /** and was generated with                                           */ \
     /** the #OpenSim_DECLARE_LIST_PROPERTY_SIZE macro;                   */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##()   */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##()           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
     /** @}                                                               */ \
@@ -1403,7 +1403,7 @@ selection.
     /** and was generated with                                           */ \
     /** the #OpenSim_DECLARE_LIST_PROPERTY_ATLEAST macro;                */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##(),          */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
@@ -1431,7 +1431,7 @@ method and operator[] element selection.
     /** and was generated with                                           */ \
     /** the #OpenSim_DECLARE_LIST_PROPERTY_ATMOST macro;                 */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##(),          */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \
@@ -1465,7 +1465,7 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
     /** and was generated with                                           */ \
     /** the #OpenSim_DECLARE_LIST_PROPERTY_RANGE macro;                  */ \
     /** see Property to learn about the property system.                 */ \
-    /** @propmethods get_##pname##(), upd_##pname##(), set_##pname##(),  */ \
+    /** @see get_##pname##(), upd_##pname##(), set_##pname##(),          */ \
     /**     append_##pname##()                                           */ \
     /* This macro below is explained above.                              */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, pname)                                    \

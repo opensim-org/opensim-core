@@ -92,8 +92,9 @@ public:
     // Convenience method to add PathPoints
      /** Note that this function does not maintain the State and so should be used only
         before a valid State is created */
-    void addNewPathPoint(const std::string& proposedName, PhysicalFrame& aBody,
-                           const SimTK::Vec3& aPositionOnBody);
+    void addNewPathPoint(const std::string& proposedName,
+                         const PhysicalFrame& aBody,
+                         const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
     // APPLICATION
@@ -107,13 +108,6 @@ public:
     //--------------------------------------------------------------------------
     double computeActuation( const SimTK::State& s) const override;
     virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
-
-    //--------------------------------------------------------------------------
-    // SCALING
-    //--------------------------------------------------------------------------
-    virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 protected:
     /** Override this method if you would like to calculate a color for use when

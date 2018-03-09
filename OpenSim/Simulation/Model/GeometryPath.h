@@ -106,9 +106,9 @@ public:
     // UTILITY
     //--------------------------------------------------------------------------
     AbstractPathPoint* addPathPoint(const SimTK::State& s, int index,
-        PhysicalFrame& frame);
+        const PhysicalFrame& frame);
     AbstractPathPoint* appendNewPathPoint(const std::string& proposedName, 
-        PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
+        const PhysicalFrame& frame, const SimTK::Vec3& locationOnFrame);
     bool canDeletePathPoint( int index);
     bool deletePathPoint(const SimTK::State& s, int index);
     
@@ -184,9 +184,15 @@ public:
     //--------------------------------------------------------------------------
     // SCALING
     //--------------------------------------------------------------------------
-    void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-    void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+    /** Calculate the path length in the current body position and store it for
+        use after the Model has been scaled. */
+    void extendPreScale(const SimTK::State& s,
+                        const ScaleSet& scaleSet) override;
+
+    /** Recalculate the path after the Model has been scaled. */
+    void extendPostScale(const SimTK::State& s,
+                         const ScaleSet& scaleSet) override;
 
     //--------------------------------------------------------------------------
     // Visualization Support

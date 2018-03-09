@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Carmichael Ong                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -24,19 +24,37 @@
 /*=============================================================================
 
 Manager Tests:
-1. Calculate the location, velocity, and acceleration of a Station with the same
-Manager many times. Previously, this would fail as repeated callls of 
-TimeStepper::initialize() would trigger cache validation improperly.
+1. testStationCalcWithManager: Calculate the location, velocity, and
+   acceleration of a Station with the same Manager many times. Previously, this
+   would fail as repeated calls of TimeStepper::initialize() would trigger cache
+   validation improperly.
+2. testStateChangesBetweenIntegration: Change the initial value and speed of a
+   falling ball between integrating using the same State. This ensures that
+   integrating with the same State with different Managers triggers the cache
+   updates correctly.
+3. testExcitationUpdatesWithManager: Update the excitation of a muscle in the
+   arm26 model between subsequent integrations.
+4. testConstructors: Ensure different constructors work as intended.
+5. testSimulate: Ensure the simulate() method works as intended.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
 void testStationCalcWithManager();
+void testStateChangesBetweenIntegration();
+void testExcitationUpdatesWithManager();
+void testConstructors();
+void testSimulate();
 
 int main()
 {
@@ -46,6 +64,30 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testStationCalcWithManager");
+    }
+
+    try { testStateChangesBetweenIntegration(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testStateChangesBetweenIntegration");
+    }
+
+    try { testExcitationUpdatesWithManager(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testExcitationUpdatesWithManager");
+    }
+
+    try { testConstructors(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testConstructors");
+    }
+
+    try { testSimulate(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testSimulate");
     }
 
     if (!failures.empty()) {
@@ -106,16 +148,17 @@ void testStationCalcWithManager()
 
     // Hold the computed kinematics from OpenSim and Simbody
     SimTK::Vec3 lo, vo, ao, l, v, a;
-
+    
     Manager manager(pendulum, integrator);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
     state.setTime(0.0);
+    manager.initialize(state);
 
     for (int i = 1; i <= n; ++i) {
         // Reuse the same Manager to integrate a state forward repeatedly.
         // This would previously cause issues with cache validation.
-        manager.integrate(state, i*dt);
+        state = manager.integrate(i*dt);
 
         // realize to acceleration to access acceleration stage cache
         pendulum.realizeAcceleration(state);
@@ -134,5 +177,246 @@ void testStationCalcWithManager()
         SimTK_TEST_EQ(l, lo);
         SimTK_TEST_EQ(v, vo);
         SimTK_TEST_EQ(a, ao);
+    }
+}
+
+void testStateChangesBetweenIntegration()
+{
+    cout << "Running testStateChangesBetweenIntegration" << endl;
+
+    using SimTK::Vec3;
+
+    Model model;
+    model.setName("ball");
+
+    auto ball = new Body("ball", 0.7, Vec3(0.1),
+        SimTK::Inertia::sphere(0.5));
+    model.addBody(ball);
+
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
+        *ball, Vec3(0), Vec3(0));
+    model.addJoint(freeJoint);
+
+    double g = 9.81;
+    model.setGravity(Vec3(0, -g, 0));
+
+    Station* myStation = new Station();
+    const SimTK::Vec3 point(0);
+    myStation->set_location(point);
+    myStation->setParentFrame(*ball);
+    model.addModelComponent(myStation);
+
+    SimTK::State& state = model.initSystem();
+
+    const Coordinate& sliderCoord = 
+        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+
+    std::vector<double> integInitTimes = {0.0, 1.0, 3.0};
+    std::vector<double> integFinalTimes = {1.0, 3.0, 6.0};
+    std::vector<double> initHeights = {0.0, 13.3, 6.5};
+    std::vector<double> initSpeeds = {0.0, 0.5, -0.5};
+    state.setTime(integInitTimes[0]);
+    size_t n = integFinalTimes.size();
+
+    for (size_t i = 0; i < n; ++i) {
+        // Set initial state for integration and check that it's correct
+        sliderCoord.setValue(state, initHeights[i]);
+        sliderCoord.setSpeedValue(state, initSpeeds[i]);
+
+        Manager manager(model);
+        manager.initialize(state);
+        const SimTK::State& initState = manager.getState();
+
+        SimTK_TEST_EQ(initState.getTime(), integInitTimes[i]);
+        SimTK_TEST_EQ(sliderCoord.getValue(initState), initHeights[i]);
+        SimTK_TEST_EQ(sliderCoord.getSpeedValue(initState), initSpeeds[i]);
+
+        // Use Station to get the location, velocity & acceleration in ground.
+        double stationHeight = myStation->getLocationInGround(initState)[1];
+        double stationSpeed = myStation->getVelocityInGround(initState)[1];
+
+        SimTK_TEST_EQ(stationHeight, initHeights[i]);
+        SimTK_TEST_EQ(stationSpeed, initSpeeds[i]);
+
+        state = manager.integrate(integFinalTimes[i]);
+
+        model.realizeVelocity(state);
+
+        double duration = integFinalTimes[i] - integInitTimes[i];
+        double finalHeight = 
+            initHeights[i] + initSpeeds[i]*duration - 0.5*g*duration*duration;
+        double finalSpeed = initSpeeds[i] - g*duration;
+        double sliderHeight = sliderCoord.getValue(state);
+        double sliderSpeed = sliderCoord.getSpeedValue(state);
+        cout << "Slider: t = " << state.getTime() << ", h = " << sliderHeight
+            << ", v = " << sliderSpeed << " | Eq: t = " << integFinalTimes[i]
+            << ", h = " << finalHeight << ", v = " << finalSpeed;
+
+        SimTK_TEST_EQ(state.getTime(), integFinalTimes[i]);
+        SimTK_TEST_EQ(sliderHeight, finalHeight);
+        SimTK_TEST_EQ(sliderSpeed, finalSpeed);
+
+        // Use Station to get the location, velocity & acceleration in ground.
+        stationHeight = myStation->getLocationInGround(state)[1];
+        stationSpeed = myStation->getVelocityInGround(state)[1];
+
+        cout << " | Station: t = " << state.getTime() << ", h = " 
+            << stationHeight << ", v = " << stationSpeed << endl;
+
+        // Compare Station values with equation values
+        SimTK_TEST_EQ(stationHeight, finalHeight);
+        SimTK_TEST_EQ(stationSpeed, finalSpeed);
+    }
+
+}
+
+void testExcitationUpdatesWithManager()
+{
+    cout << "Running testExcitationUpdatesWithManager" << endl;
+    LoadOpenSimLibrary("osimActuators");
+    Model arm("arm26.osim");
+
+    const Set<Muscle> &muscleSet = arm.getMuscles();
+    PrescribedController* controller = new PrescribedController();
+    controller->addActuator(muscleSet.get(0));
+    Constant* fn = new Constant(0);
+    controller->prescribeControlForActuator(0, fn);
+    arm.addController(controller);
+
+    SimTK::State& state = arm.initSystem();
+    state.setTime(0);
+    double stepsize = 0.01;
+    
+    for (int i = 0; i < 3; ++i)
+    {
+        double initAct = 0.2 + i*0.2; // 0.2, 0.4, 0.6
+        double excitation = initAct + 0.1; // 0.3, 0.5, 0.7
+        
+        muscleSet.get(0).setActivation(state, initAct);
+        FunctionSet& fnset = controller->upd_ControlFunctions();
+        Constant* fn = dynamic_cast<Constant*>(&fnset[0]);
+        fn->setValue(excitation);
+
+        Manager manager(arm);
+        manager.initialize(state);
+
+        // Make sure we set activation correctly
+        arm.realizeDynamics(state);
+        SimTK_TEST_EQ(initAct, muscleSet.get(0).getActivation(state));
+
+        state = manager.integrate(stepsize*(i + 1));
+        arm.realizeDynamics(state);
+        double finalAct = muscleSet.get(0).getActivation(state);
+        double finalExcitation = muscleSet.get(0).getExcitation(state);
+        cout << state.getTime() << " " << initAct << " " << excitation;
+        cout << " " << finalAct << endl;
+        // Check if excitation is correct
+        SimTK_TEST_EQ(excitation, finalExcitation);
+        // Also check if the final activation is between the initial
+        // activation and excitation
+        SimTK_TEST(finalAct > initAct);
+        SimTK_TEST(finalAct < excitation);
+    }
+}
+
+void testConstructors()
+{
+    cout << "Running testConstructors" << endl;
+
+    using SimTK::Vec3;
+
+    Model model;
+    model.setName("ball");
+
+    auto ball = new Body("ball", 0.7, Vec3(0.1),
+        SimTK::Inertia::sphere(0.5));
+    model.addBody(ball);
+
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), Vec3(0), Vec3(0),
+        *ball, Vec3(0), Vec3(0));
+    model.addJoint(freeJoint);
+
+    double g = 9.81;
+    model.setGravity(Vec3(0, -g, 0));
+
+    const Coordinate& sliderCoord =
+        freeJoint->getCoordinate(FreeJoint::Coord::TranslationY);
+
+    double initHeight = -0.5;
+    double initSpeed = 0.3;
+    SimTK::State initState = model.initSystem();
+    sliderCoord.setValue(initState, initHeight);
+    sliderCoord.setSpeedValue(initState, initSpeed);
+    initState.setTime(0.0);
+
+    double duration = 0.7;
+    double finalHeight = 
+        initHeight + initSpeed*duration - 0.5*g*duration*duration;
+    double finalSpeed = initSpeed - g*duration;
+
+    Manager manager1(model);
+    manager1.initialize(initState);
+    SimTK::State outState1 = manager1.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
+
+    SimTK::RungeKuttaMersonIntegrator integ2(model.getMultibodySystem());
+    Manager manager2(model, integ2);
+    manager2.initialize(initState);
+    SimTK::State outState2 = manager2.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState2), finalSpeed);
+
+    Manager manager3(model, initState);
+    SimTK::State outState3 = manager3.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState3), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState3), finalSpeed);
+
+    SimTK::RungeKuttaMersonIntegrator integ4(model.getMultibodySystem());
+    Manager manager4(model, initState, integ4);
+    SimTK::State outState4 = manager4.integrate(duration);
+    SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
+    SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);
+}
+
+void testSimulate()
+{
+    cout << "Running testSimulate" << endl;
+
+    using SimTK::Vec3;
+    const double gravity = 9.81;
+
+    // Create a simple model consisting of an unconstrained ball.
+    Model model;
+    model.setGravity(Vec3(0, -gravity, 0));
+    auto ball = new Body("ball", 1., Vec3(0), SimTK::Inertia::sphere(1.));
+    model.addBody(ball);
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
+    model.addJoint(freeJoint);
+
+    // Simulate from time t0 to t1. The ball should end up at -1/2*g*duration^2.
+    auto testSim = [&](double t0, double t1) -> void {
+        cout << "- simulating from t = " << t0 << " to " << t1 << "..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double y1expected = -0.5 * gravity * (t1-t0) * (t1-t0);
+        s.setTime(t0);
+        s = simulate(model, s, t1);
+
+        SimTK_TEST_EQ(s.getTime(), t1);
+        model.realizePosition(s);
+        const Vec3 pos1 = model.getBodySet().get("ball").getPositionInGround(s);
+        SimTK_TEST_EQ(pos1[SimTK::YAxis], y1expected);
+    };
+    testSim(0., 10.);
+    testSim(5., 15.);
+
+    // No simulation should occur if t1 <= t0.
+    {
+        cout << "- ensuring simulation aborts if t1 <= t0..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double t0 = 2.;
+        s.setTime(t0);
+        s = simulate(model, s, t0-1.);
+        SimTK_TEST_EQ(s.getTime(), t0);
     }
 }
