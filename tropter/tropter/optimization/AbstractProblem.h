@@ -46,6 +46,17 @@ public:
     get_constraint_lower_bounds() const { return m_constraint_lower_bounds; }
     const Eigen::VectorXd&
     get_constraint_upper_bounds() const { return m_constraint_upper_bounds; }
+
+    /// Get a vector of names of all variables in the optimization problem,
+    /// in the correct order.
+    /// If unimplemented, this returns an empty vector.
+    virtual std::vector<std::string> get_variable_names() const { return {}; }
+
+    /// Get a vector of names of the constraints in the optimization problem, in
+    /// the correct order.
+    /// If unimplemented, this returns an empty vector.
+    virtual std::vector<std::string> get_constraint_names() const { return {}; }
+
     /// This method throws an exception if the following are not true:
     /// - the number of variable bounds matches the number of variables,
     /// - the number of constraint bounds matches the number of constraints.

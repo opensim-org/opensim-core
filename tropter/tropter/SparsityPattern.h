@@ -174,11 +174,15 @@ calc_gradient_sparsity_with_perturbation(const Eigen::VectorXd& x0,
 
 /// Detect the sparsity pattern of a Jacobian matrix by perturbing x and
 /// examining how the constraint values are affected.
+/// A warning is given if NaNs are encountered, in which case row_names and
+/// col_names, if provided, are used to make the warning more informative.
 template <typename T>
 SparsityPattern
 calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         int num_outputs,
-        std::function<void(const VectorX<T>&, VectorX<T>&)> function) {
+        std::function<void(const VectorX<T>&, VectorX<T>&)> function,
+        const std::vector<std::string>& row_names = {},
+        const std::vector<std::string>& col_names = {}) {
     using std::isnan;
     using tropter::isnan;
     SparsityPattern sparsity(num_outputs, (int)x0.size());
@@ -197,8 +201,13 @@ calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
         for (int i = 0; i < (int)num_outputs; ++i) {
             if (std::isnan(diff[i])) {
                 std::cout << "[tropter] Warning: NaN encountered when "
-                        "detecting sparsity of Jacobian; entry ("
-                        << i << ", " << j << ")." << std::endl;
+                        "detecting sparsity of Jacobian; entry (";
+                if (col_names.empty() || row_names.empty())
+                    std::cout << i << ", " << j;
+                else
+                    std::cout << row_names[i] << ", "
+                              << col_names[j];
+                std::cout << ")." << std::endl;
             }
             if (diff[i] != 0) sparsity.set_nonzero(i, j);
         }
