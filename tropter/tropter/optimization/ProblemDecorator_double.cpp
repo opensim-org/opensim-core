@@ -92,9 +92,11 @@ calc_sparsity(const Eigen::VectorXd& variables,
             [this](const VectorXd& vars, VectorXd& constr) {
                 m_problem.calc_constraints(vars, constr);
             };
+    const auto var_names = m_problem.get_variable_names();
+    const auto constr_names = m_problem.get_constraint_names();
     SparsityPattern jacobian_sparsity =
             calc_jacobian_sparsity_with_perturbation(variables,
-                    num_jac_rows, calc_constraints);
+                    num_jac_rows, calc_constraints, constr_names, var_names);
 
     m_jacobian_coloring.reset(new JacobianColoring(jacobian_sparsity));
     m_jacobian_coloring->get_coordinate_format(jacobian_sparsity_coordinates);

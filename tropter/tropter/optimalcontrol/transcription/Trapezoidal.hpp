@@ -55,7 +55,69 @@ void Trapezoidal<T>::set_ocproblem(
             num_path_traj_constraints;
     this->set_num_constraints(num_constraints);
 
+    // Variable and constraint names.
+    // ------------------------------
+    m_variable_names.clear();
+    m_variable_names.emplace_back("initial_time");
+    m_variable_names.emplace_back("final_time");
+
+    const auto param_names = m_ocproblem->get_parameter_names();
+    for (const auto& param_name : param_names)
+        m_variable_names.push_back(param_name);
+
+    // For padding, count the number of digits in num_mesh_points.
+    int num_digits_max_mesh_index = 0;
+    {
+        // The printed index goes up to m_num_mesh_points - 1.
+        int max_index = m_num_mesh_points - 1;
+        while (max_index != 0) {
+            max_index /= 10;
+            num_digits_max_mesh_index++;
+        }
+    }
+    const auto state_names = m_ocproblem->get_state_names();
+    const auto control_names = m_ocproblem->get_control_names();
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+            for (const auto& state_name : state_names) {
+            std::stringstream ss;
+            ss << state_name << "_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+            m_variable_names.push_back(ss.str());
+        }
+        for (const auto& control_name : control_names) {
+            std::stringstream ss;
+            ss << control_name << "_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+            m_variable_names.push_back(ss.str());
+        }
+    }
+
+    m_constraint_names.clear();
+    // Start at index 1 (counting mesh intervals; not mesh points).
+    for (int i_mesh = 1; i_mesh < m_num_mesh_points; ++i_mesh) {
+        for (const auto& state_name : state_names) {
+            std::stringstream ss;
+            ss << state_name << "_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+            m_constraint_names.push_back(ss.str());
+        }
+    }
+    const auto path_constraint_names = m_ocproblem->get_path_constraint_names();
+    for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
+        for (const auto& path_constraint_name : path_constraint_names) {
+            std::stringstream ss;
+            ss << path_constraint_name << "_"
+                    << std::setfill('0') << std::setw(num_digits_max_mesh_index)
+                    << i_mesh;
+            m_constraint_names.push_back(ss.str());
+        }
+    }
+
     // Bounds.
+    // -------
     double initial_time_lower;
     double initial_time_upper;
     double final_time_lower;
@@ -162,6 +224,10 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     auto controls = make_controls_trajectory_view(x);
     auto parameters = make_parameters_view(x);
 
+    // Initialize on iterate.
+    // ----------------------
+    m_ocproblem->initialize_on_iterate(parameters);
+
     // Endpoint cost.
     // --------------
     // TODO does this cause the final_states to get copied?
@@ -202,6 +268,10 @@ void Trapezoidal<T>::calc_constraints(const VectorX<T>& x,
     auto states = make_states_trajectory_view(x);
     auto controls = make_controls_trajectory_view(x);
     auto parameters = make_parameters_view(x);
+
+    // Initialize on iterate.
+    // ======================
+    m_ocproblem->initialize_on_iterate(parameters);
 
     // Organize the constrants vector.
     ConstraintsView constr_view = make_constraints_view(constraints);
@@ -384,6 +454,16 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
 
     // TODO most objectives do *NOT* depend on time; should time actually
     // affect hesobj for most problems?
+}
+
+template<typename T>
+std::vector<std::string> Trapezoidal<T>::get_variable_names() const {
+    return m_variable_names;
+}
+
+template<typename T>
+std::vector<std::string> Trapezoidal<T>::get_constraint_names() const {
+    return m_constraint_names;
 }
 
 template<typename T>
