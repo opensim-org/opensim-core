@@ -215,7 +215,7 @@ void AbstractTool::setupProperties()
     _replaceForceSetProp.setName("replace_force_set");
     _propertySet.append( &_replaceForceSetProp );
 
-    comment = "List of xml files used to construct an force set for the model.";
+    comment = "List of xml files used to construct a force set for the model.";
     _forceSetFilesProp.setComment(comment);
     _forceSetFilesProp.setValue(Array<string>(""));
     _forceSetFilesProp.setName("force_set_files");

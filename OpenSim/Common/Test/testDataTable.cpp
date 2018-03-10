@@ -58,7 +58,7 @@ int main() {
 
         table.setColumnLabel(0, "zero");
         table.setColumnLabel(2, "two");
-        
+
         ASSERT(table.getColumnLabel(0) == "zero");
         ASSERT(table.getColumnLabel(2) == "two");
 
@@ -66,7 +66,7 @@ int main() {
         table.setColumnLabel(2, "2");
 
         const auto& labels = table.getColumnLabels();
-        for(size_t i = 0; i < labels.size(); ++i) 
+        for(size_t i = 0; i < labels.size(); ++i)
             if(labels.at(i) != std::to_string(i))
                 throw Exception{"Test failed: labels.at(i) != "
                                 "std::to_string(i)"};
@@ -78,10 +78,6 @@ int main() {
     }
 
     // Test exceptions (table should be empty here).
-    SimTK_TEST_MUST_THROW_EXC(table.getRowAtIndex(0),
-                              OpenSim::EmptyTable);
-    SimTK_TEST_MUST_THROW_EXC(table.updRowAtIndex(0),
-                              OpenSim::EmptyTable);
     SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
                               OpenSim::EmptyTable);
     SimTK_TEST_MUST_THROW_EXC(table.updDependentColumnAtIndex(0),
@@ -134,7 +130,7 @@ int main() {
     table.updMatrixBlock(0, 0, table.getNumRows(), table.getNumColumns()) -= 2;
 
     table.updTableMetaData().setValueForKey("DataRate", 600);
-    table.updTableMetaData().setValueForKey("Filename", 
+    table.updTableMetaData().setValueForKey("Filename",
                                             std::string{"/path/to/file"});
 
     ASSERT(table.hasColumn(0));
@@ -168,7 +164,7 @@ int main() {
                     " != std::to_string(i + 1)"};
     }
 
-    const auto& col_index_ref 
+    const auto& col_index_ref
         = dep_metadata_ref.getValueArrayForKey("column-index");
     for(unsigned i = 0; i < 5; ++i)
         if(col_index_ref[i].getValue<unsigned>() != i + 1)
@@ -176,8 +172,8 @@ int main() {
                     " != i + 1"};
 
     const auto& ind_metadata_ref = table.getIndependentMetaData();
-    
-    if(ind_metadata_ref.getValueForKey("labels").getValue<std::string>() 
+
+    if(ind_metadata_ref.getValueForKey("labels").getValue<std::string>()
        != std::string{"0"})
         throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
                 "(\"labels\").getValue<std::string>() != std::string{\"0\"}"};
@@ -216,7 +212,7 @@ int main() {
     // ASSERT(table.getNumRows() == 5 && table.getNumColumns() == 7);
 
     const auto& tab_metadata_ref = table.getTableMetaData();
-    if(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() 
+    if(tab_metadata_ref.getValueForKey("DataRate").getValue<int>()
        != 600)
         throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
                 "(\"DataRate\").getValue<int>() != 600"};
@@ -312,7 +308,7 @@ int main() {
             }
         }
         }
-        
+
         std::cout << "Test DataTable flatten() for Vec3." << std::endl;
         auto tableFlat = tableVec3.flatten({"_x", "_y", "_z"});
         expLabels = {"col0_x", "col0_y", "col0_z",
@@ -337,7 +333,7 @@ int main() {
 
         std::cout << "Test DataTable flattening constructor for Quaternion."
                   << std::endl;
-        DataTable_<double, Quaternion> tableQuat{}; 
+        DataTable_<double, Quaternion> tableQuat{};
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
         tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
         tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
@@ -412,7 +408,7 @@ int main() {
             ASSERT(nearRowVec3[0][i] == 2);
 
         std::cout << tableVec3 << std::endl;
-        
+
         TimeSeriesTable_<double> tableDouble{tableVec3};
         std::vector<std::string> expLabels{"col0_1", "col0_2", "col0_3",
                                            "col1_1", "col1_2", "col1_3",
@@ -458,7 +454,7 @@ int main() {
 
         std::cout << "Test TimeSeriesTable flattening constructor for "
                      "Quaternion" << std::endl;
-        TimeSeriesTable_<Quaternion> tableQuat{}; 
+        TimeSeriesTable_<Quaternion> tableQuat{};
         tableQuat.setColumnLabels({"col0", "col1", "col2"});
         tableQuat.appendRow(0.1, {{1, 1, 1, 1}, {2, 2, 2, 2}, {3, 3, 3, 3}});
         tableQuat.appendRow(0.2, {{3, 3, 3, 3}, {1, 1, 1, 1}, {2, 2, 2, 2}});
@@ -539,7 +535,7 @@ int main() {
         ASSERT(tableDouble.getColumnLabels().size() == 18);
         ASSERT(tableDouble.getNumRows()             == 3);
         ASSERT(tableDouble.getNumColumns()          == 18);
-        
+
         std::cout << tableDouble << std::endl;
     }
     {
@@ -571,7 +567,7 @@ int main() {
         ASSERT(tableVec3_1.getTableMetaData<std::string>("string") == "string");
         ASSERT(tableVec3_1.getTableMetaData<int>("int")            == 10);
         std::cout << tableVec3_1 << std::endl;
-            
+
         std::cout << "Test DataTable packing for Vec3 with suffix unspecified."
                   << std::endl;
         auto tableVec3_2 = tableDouble.pack<SimTK::Vec3>();
@@ -649,7 +645,7 @@ int main() {
         ASSERT(tableVec3_1.getTableMetaData<std::string>("string") == "string");
         ASSERT(tableVec3_1.getTableMetaData<int>("int")            == 10);
         std::cout << tableVec3_1 << std::endl;
-            
+
         std::cout << "Test TimeSeriesTable packing for Vec3 with suffix"
                      " unspecified."
                   << std::endl;
@@ -699,6 +695,61 @@ int main() {
         ASSERT(tableSVec.getTableMetaData<std::string>("string") == "string");
         ASSERT(tableSVec.getTableMetaData<int>("int")            == 10);
         std::cout << tableSVec << std::endl;
+    }
+
+    {
+        TimeSeriesTable table(std::vector<double>{1.5, 2.5, 3.5});
+        std::vector<std::string> expLabels = {};
+        ASSERT(table.getColumnLabels() == expLabels);
+        ASSERT(table.getNumRows()      == 3);
+        ASSERT(table.getNumColumns()   == 0);
+
+        // Can append an empty row.
+        table.appendRow(4.5, {});
+        ASSERT(table.getNumRows()      == 4);
+        ASSERT(table.getNumColumns()   == 0);
+
+        table.removeRowAtIndex(3);
+        ASSERT(table.getNumRows()      == 3);
+        ASSERT(table.getNumColumns()   == 0);
+
+        table.appendRow(4.5, {});
+        ASSERT(table.getNumRows()      == 4);
+        ASSERT(table.getNumColumns()   == 0);
+
+        // Cannot append a non-empty row.
+        SimTK_TEST_MUST_THROW_EXC(table.appendRow(5.5, {6.1}),
+                                  IncorrectNumColumns);
+
+        // Can append a column to a table that has no columns yet.
+        table.appendColumn("col1", {5.4, 5.3, 5.6, 5.8});
+        ASSERT(table.getNumRows()      == 4);
+        ASSERT(table.getNumColumns()   == 1);
+
+        // Appending a column with an incorrect number of rows.
+        SimTK_TEST_MUST_THROW_EXC(table.appendColumn("col2", {5.4, 5.3, 5.6}),
+                                  IncorrectNumRows);
+
+        // Can appendRow after appendColumn.
+        table.appendRow(5.5, {1.3});
+        ASSERT(table.getNumRows()      == 5);
+        ASSERT(table.getNumColumns()   == 1);
+
+        // Can create an empty table by providing an empty indVec.
+        TimeSeriesTable emptyTable(std::vector<double>{});
+        // Bu we can't append columns to an empty table.
+        SimTK_TEST_MUST_THROW_EXC(emptyTable.appendColumn("col0", {}),
+                                  InvalidCall);
+
+        // Ensure that we are validating the time stamps are increasing
+        SimTK_TEST_MUST_THROW_EXC(
+                TimeSeriesTable(std::vector<double>{1.5, 1.6, 1.6}),
+                TimestampGreaterThanEqualToNext);
+        SimTK_TEST_MUST_THROW_EXC(
+                TimeSeriesTable(std::vector<double>{1.5, 1.6, 1.4}),
+                TimestampGreaterThanEqualToNext);
+        SimTK_TEST_MUST_THROW_EXC(table.appendRow(-0.3, {0.6}),
+                TimestampLessThanEqualToPrevious);
     }
 
     return 0;

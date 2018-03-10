@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): OpenSim Team                                                    *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -29,7 +29,7 @@
 
 namespace OpenSim {
 
-/// @name General purpose simulation driver for OpenSim models
+/// @name General-purpose simulation driver for OpenSim models
 /// @{
 /** Simulate a model from an initial state and return the final state.
     If the model's useVisualizer flag is true, the user is repeatedly prompted
@@ -47,6 +47,14 @@ inline SimTK::State simulate(Model& model,
     SimTK::Visualizer::InputSilo* silo;
 
     bool simulateOnce = true;
+
+    // Ensure the final time is in the future.
+    const double initialTime = initialState.getTime();
+    if (finalTime <= initialTime) {
+        std::cout << "The final time must be in the future (current time is "
+                  << initialTime << "); simulation aborted." << std::endl;
+        return state;
+    }
 
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
@@ -83,9 +91,9 @@ inline SimTK::State simulate(Model& model,
         // Set up manager and simulate.
         SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
         Manager manager(model, integrator);
-        state.setTime(0.0);
+        state.setTime(initialTime);
         manager.initialize(state);
-        manager.integrate(finalTime);
+        state = manager.integrate(finalTime);
 
         // Save the states to a storage file (if requested).
         if (saveStatesFile) {

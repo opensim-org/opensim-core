@@ -35,7 +35,7 @@ k*a, where 'k' is the gain property and 'a' is the activation input (note,
 however, that the control signal is 0 for a < 0.31). This Controller is
 intended to simulate a proportional myoelectric controller [1], and can control
 any ScalarActuator (set using the "actuator" socket). This class intended for
-demonstrative purposes only.
+demonstration purposes only.
 [1] https://en.wikipedia.org/wiki/Proportional_myoelectric_control */
 class OSIMEXAMPLECOMPONENTS_API ToyPropMyoController : public Controller {
     OpenSim_DECLARE_CONCRETE_OBJECT(ToyPropMyoController, Controller);

@@ -172,24 +172,54 @@ SimTK::Quaternion createObject<SimTK::Quaternion>() {
 template<typename T>
 void testReadingWriting() {
     using namespace OpenSim;
-  
+
     std::string fileA{"testSTOFileAdapter_A.sto"};
     std::string fileB{"testSTOFileAdapter_B.sto"};
-    TimeSeriesTable_<T> table{};
-    table.setColumnLabels({"c0", "c1", "c2"});
-    for(auto t = 0; t < 10; ++t) {
-        auto elem = createObject<T>();
-        table.appendRow(t, {elem, elem, elem});
+    {
+        TimeSeriesTable_<T> table{};
+        table.setColumnLabels({"c0", "c1", "c2"});
+        for (auto t = 0; t < 10; ++t) {
+            auto elem = createObject<T>();
+            table.appendRow(t, {elem, elem, elem});
+        }
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
     }
-    STOFileAdapter_<T>::write(table, fileA);
-    auto table_copy = STOFileAdapter_<T>::read(fileA);
-    auto table_ptr = FileAdapter::readFile(fileA).at("table");
-    DataAdapter::InputTables inputTables{};
-    inputTables.emplace(std::string{"table"}, table_ptr.get());
-    FileAdapter::writeFile(inputTables, fileB);
-    compareFiles(fileA, fileB);
-    std::remove(fileA.c_str());
-    std::remove(fileB.c_str());
+
+    {
+        // Empty table.
+        TimeSeriesTable_<T> table{};
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
+    }
+
+    {
+        // No columns.
+        TimeSeriesTable_<T> table{std::vector<double>{0, 0.1, 0.2}};
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
+    }
 }
 
 int main() {
