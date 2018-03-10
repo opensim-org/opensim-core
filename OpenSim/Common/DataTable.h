@@ -1192,8 +1192,8 @@ protected:
         _depData = depData;
     }
 
-    /** Construct a table with only the independent column and no data (0
-    columns). This constructor is useful when populating the table by
+    /** Construct a table with only the independent column and 0
+    dependent columns. This constructor is useful when populating the table by
     appending columns rather than by appending rows.                          */
     DataTable_(const std::vector<ETX>& indVec) {
         setColumnLabels({});

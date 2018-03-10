@@ -168,9 +168,9 @@ public:
         }
     }
 
-    /** Construct a table with only the independent (time) column and no data (0
-    columns). This constructor is useful if you want to populate the table by
-    appending columns rather than by appending rows.                          */
+    /** Construct a table with only the independent (time) column and 0
+    dependent columns. This constructor is useful if you want to populate the
+    table by appending columns rather than by appending rows.                 */
     TimeSeriesTable_(const std::vector<double>& indVec) :
             DataTable_<double, ETY>(indVec) {
         try {
