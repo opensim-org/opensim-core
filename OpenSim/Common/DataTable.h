@@ -1198,7 +1198,7 @@ protected:
     DataTable_(const std::vector<ETX>& indVec) {
         setColumnLabels({});
         _indData = indVec;
-        _depData.resize(indVec.size(), 0);
+        _depData.resize((int)indVec.size(), 0);
     }
 
     // Implement toString.
