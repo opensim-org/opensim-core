@@ -191,8 +191,6 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
     SimTK::Real initHeight = 0.15;
     SimTK::Real finalHeight = 0.14;
 
-    MucoTool muco;
-    MucoProblem& mp = muco.updProblem();
     Model model = createHangingMuscleModel(ignoreTendonCompliance);
 
     // Passive forward simulation.
@@ -246,65 +244,67 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 
     // Minimum time trajectory optimization.
     // -------------------------------------
-    mp.setModel(model);
-    mp.setTimeBounds(0, {0.05, 1.0});
-    // TODO this might have been the culprit when using the Millard muscle:
-    // TODO TODO TODO
-    mp.setStateInfo("joint/height/value", {0.10, 0.20},
-            initHeight, finalHeight);
-    mp.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
-    // TODO initial fiber length?
-    // TODO how to enforce initial equilibrium with explicit dynamics?
-    if (!ignoreTendonCompliance) {
-        if (usingDGF) {
-            // We would prefer to use a range of [0.2, 1.8] but then IPOPT
-            // tries very small fiber lengths that cause tendon stretch to be
-            // HUGE, causing insanely high tendon forces.
-            mp.setStateInfo("actuator/norm_fiber_length", {0.8, 1.8},
-                    model.getStateVariableValue(state, "actuator/norm_fiber_length"));
-        } else {
-            mp.setStateInfo("actuator/fiber_length", {0.0, 0.3},
-                    model.getStateVariableValue(state, "actuator/fiber_length"));
+    MucoSolution solutionTrajOpt;
+    {
+        MucoTool muco;
+        MucoProblem& problem = muco.updProblem();
+        problem.setModel(model);
+        problem.setTimeBounds(0, {0.05, 1.0});
+        // TODO this might have been the culprit when using the Millard muscle:
+        // TODO TODO TODO
+        problem.setStateInfo("joint/height/value", {0.10, 0.20},
+                initHeight, finalHeight);
+        problem.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
+        // TODO initial fiber length?
+        // TODO how to enforce initial equilibrium with explicit dynamics?
+        if (!ignoreTendonCompliance) {
+            if (usingDGF) {
+                // We would prefer to use a range of [0.2, 1.8] but then IPOPT
+                // tries very small fiber lengths that cause tendon stretch to be
+                // HUGE, causing insanely high tendon forces.
+                problem.setStateInfo("actuator/norm_fiber_length", {0.8, 1.8},
+                        model.getStateVariableValue(state, "actuator/norm_fiber_length"));
+            } else {
+                problem.setStateInfo("actuator/fiber_length", {0.0, 0.3},
+                        model.getStateVariableValue(state, "actuator/fiber_length"));
+            }
         }
+        // OpenSim might not allow activations of 0.
+        problem.setStateInfo("actuator/activation", {0.01, 1}, initActivation);
+        problem.setControlInfo("actuator", {0.01, 1});
+
+        problem.addCost(MucoFinalTimeCost());
+
+        MucoTropterSolver& solver = muco.initSolver();
+        solver.set_optim_sparsity_detection("initial-guess");
+        // TODO for this to work, we want to enable solving for equilibrium fiber
+        // length.
+        MucoIterate guessForwardSim = solver.createGuess("time-stepping");
+        solver.setGuess(guessForwardSim);
+        guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
+        std::cout << "Guess from forward sim: "
+                << guessForwardSim.getStatesTrajectory() << std::endl;
+        muco.visualize(guessForwardSim);
+
+        solutionTrajOpt = muco.solve();
+        std::string solutionFilename = "sandboxMuscle_solution";
+        if (ignoreTendonCompliance)
+            solutionFilename += "_rigidtendon";
+        solutionFilename += ".sto";
+        solutionTrajOpt.write(solutionFilename);
+        std::cout << "Solution joint/height/value trajectory: "
+                << solutionTrajOpt.getState("joint/height/value") << std::endl;
+        std::cout << "Solution joint/height/speed trajectory: "
+                << solutionTrajOpt.getState("joint/height/speed") << std::endl;
     }
-    // OpenSim might not allow activations of 0.
-    mp.setStateInfo("actuator/activation", {0.01, 1}, initActivation);
-    mp.setControlInfo("actuator", {0.01, 1});
-
-    mp.addCost(MucoFinalTimeCost());
-
-    MucoTropterSolver& solver = muco.initSolver();
-    solver.set_optim_sparsity_detection("initial-guess");
-    // TODO for this to work, we want to enable solving for equilibrium fiber
-    // length.
-    MucoIterate guessForwardSim = solver.createGuess("time-stepping");
-    solver.setGuess(guessForwardSim);
-    guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
-    std::cout << "Guess from forward sim: "
-            << guessForwardSim.getStatesTrajectory() << std::endl;
-    muco.visualize(guessForwardSim);
-
-    solver.setGuess(guessForwardSim);
-
-    MucoSolution solution = muco.solve();
-    std::string solutionFilename = "sandboxMuscle_solution";
-    if (ignoreTendonCompliance)
-        solutionFilename += "_rigidtendon";
-    solutionFilename += ".sto";
-    solution.write(solutionFilename);
-    std::cout << "Solution joint/height/value trajectory: "
-            << solution.getState("joint/height/value") << std::endl;
-    std::cout << "Solution joint/height/speed trajectory: "
-            << solution.getState("joint/height/speed") << std::endl;
 
     // Perform time stepping forward simulation using optimized controls.
     // ------------------------------------------------------------------
     // See if we end up at the correct final state.
     {
-
         // Add a controller to the model.
-        const SimTK::Vector& time = solution.getTime();
-        const auto control = solution.getControl("actuator");
+        const SimTK::Vector& time = solutionTrajOpt.getTime();
+        const auto control = solutionTrajOpt.getControl("actuator");
         auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0],
                 &control[0]);
         auto* controller = new PrescribedController();
@@ -329,6 +329,68 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
                 finalHeight, 1e-4);
         manager.getStateStorage().print("sandboxMuscle_timestepping.sto");
     }
+
+    // Track the kinematics from the trajectory optimization.
+    // ------------------------------------------------------
+    // We will try to recover muscle activity.
+    {
+        std::cout << "Tracking the trajectory optimization coordinate solution."
+                << std::endl;
+        MucoTool muco;
+        MucoProblem& problem = muco.updProblem();
+        problem.setModel(model);
+        // TODO set time bounds!
+        const double finalTime =
+                solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
+        problem.setTimeBounds(0, finalTime);
+        problem.setStateInfo("joint/height/value", {0.10, 0.20},
+                initHeight, finalHeight);
+        problem.setStateInfo("joint/height/speed", {-10, 10}, 0, 0);
+        if (!ignoreTendonCompliance) {
+            if (usingDGF) {
+                // We would prefer to use a range of [0.2, 1.8] but then IPOPT
+                // tries very small fiber lengths that cause tendon stretch to be
+                // HUGE, causing insanely high tendon forces.
+                problem.setStateInfo("actuator/norm_fiber_length", {0.8, 1.8},
+                        model.getStateVariableValue(state, "actuator/norm_fiber_length"));
+            } else {
+                problem.setStateInfo("actuator/fiber_length", {0.0, 0.3},
+                        model.getStateVariableValue(state, "actuator/fiber_length"));
+            }
+        }
+        // OpenSim might not allow activations of 0.
+        problem.setStateInfo("actuator/activation", {0.01, 1}, initActivation);
+        problem.setControlInfo("actuator", {0.01, 1});
+
+        MucoStateTrackingCost tracking;
+
+        auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
+        TimeSeriesTable ref(states.getIndependentColumn());
+        ref.appendColumn("joint/height/value",
+                states.getDependentColumn("joint/height/value"));
+        // TODO try tracking all DOFs, for fun.
+        tracking.setReference(ref);
+        tracking.setAllowUnusedReferences(true);
+        problem.addCost(tracking);
+
+        MucoTropterSolver& solver = muco.initSolver();
+        solver.set_optim_sparsity_detection("initial-guess");
+        solver.setGuess("time-stepping");
+        // TODO add noise to guess.
+        // TODO solver.setGuess(solutionTrajOpt);
+
+        MucoSolution solutionTrack = muco.solve();
+        std::string solutionFilename = "sandboxMuscle_track_solution";
+        if (ignoreTendonCompliance)
+            solutionFilename += "_rigidtendon";
+        solutionFilename += ".sto";
+        solutionTrack.write(solutionFilename);
+        double error = solutionTrack.compareStatesControlsRMS(solutionTrajOpt);
+        std::cout << "RMS error for states and controls: " << error
+                << std::endl;
+    }
+
+    // TODO perform the tracking with INDYGO.
 
     // TODO support constraining initial fiber lengths to their equilibrium
     // lengths in Tropter!!!!!!!!!!!!!! (in explicit mode).
