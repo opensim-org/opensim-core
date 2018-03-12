@@ -35,6 +35,7 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
+
 class Foo;
 class Bar;
 
@@ -767,7 +768,7 @@ void testMisc() {
         theWorld.getComponent<CompoundFoo>("BigFoo") );
 
     // With path to the component it should work
-    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
+    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World3/BigFoo");
     // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
@@ -1125,6 +1126,16 @@ void testTraversePathToComponent() {
     SimTK_TEST(top.traversePathToComponent<A>({"../../"}) == nullptr);
     SimTK_TEST(a1->traversePathToComponent<A>({"../../"}) == nullptr);
     SimTK_TEST(b2->traversePathToComponent<A>({"../../../"}) == nullptr);
+
+    // Repeated name bug.
+    // ------------------
+    // There used to be a bug where calling traversePathToComponent({"tx/tx"})
+    // would return the component at "tx" rather than the one at "tx/tx".
+    A* atx = new A("tx");
+    top.addComponent(atx);
+    B* btx = new B("tx");
+    atx->addComponent(btx);
+    SimTK_TEST(top.traversePathToComponent<Component>({"tx/tx"}) == btx);
 }
 
 void testGetStateVariableValue() {

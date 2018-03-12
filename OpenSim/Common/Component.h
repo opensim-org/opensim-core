@@ -3128,13 +3128,29 @@ void Input<T>::findAndConnect(const Component& root) {
         }
 
         else { // relative path string
+            const Component* comp = nullptr;
             if (compPathStr.empty()) {
-                output = &getOwner().getOutput(outputName);
+                comp = &getOwner();
             }
             else {
-                output = &getOwner().getComponent(compPathStr).getOutput(outputName);
+                try {
+                    comp = &getOwner().getComponent(compPathStr);
+                } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+                    // If we cannot find the component at the specified path,
+                    // look for the component anywhere in the model.
+                    if (Object::getDebugLevel() > 0) {
+                        // TODO once we fix how connections are established
+                        // when building models programmatically, we should
+                        // show this warning even for debug level 0.
+                        std::cout << ex.getMessage() << std::endl;
+                    }
+                    comp = root.findComponent(compPath);
+                }
             }
-            
+            // comp should never be null at this point.
+            OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
+                             "could not find component '" + compPathStr + ".");
+            output = &comp->getOutput(outputName);
         }
         const auto& channel = output->getChannel(channelName);
         connect(channel, alias);
