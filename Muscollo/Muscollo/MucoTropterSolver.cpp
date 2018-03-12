@@ -492,7 +492,6 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         }
     }
 
-    // TODO create formal option for this.
     checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
             {"random", "initial-guess"});
     optsolver.set_sparsity_detection(get_optim_sparsity_detection());

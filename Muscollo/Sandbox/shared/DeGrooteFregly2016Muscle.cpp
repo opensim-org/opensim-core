@@ -24,6 +24,16 @@ const std::string DeGrooteFregly2016Muscle::ACTIVATION("activation");
 const std::string DeGrooteFregly2016Muscle::
         NORM_FIBER_LENGTH("norm_fiber_length");
 
+void DeGrooteFregly2016Muscle::constructProperties() {
+    constructProperty_default_norm_fiber_length(1.0);
+    constructProperty_activation_time_constant(0.015);
+    constructProperty_deactivation_time_constant(0.060);
+    constructProperty_default_activation(0.5);
+
+    constructProperty_tendon_strain_at_one_norm_force(0.049);
+    constructProperty_fiber_damping(0.01);
+}
+
 void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
     OPENSIM_THROW_IF_FRMOBJ(
@@ -86,7 +96,8 @@ computeStateVariableDerivatives(const SimTK::State& s) const {
     const auto& activation = getActivation(s);
 
     // On a simple hanging muscle minimum time problem, I got quicker
-    // convergence using the nonlinear activation dynamics from the paper.
+    // convergence using the nonlinear activation dynamics from the paper, so
+    // I'm using that (below) instead of these linear dynamics.
     // const auto& tau = get_activation_time_constant();
     // const SimTK::Real activationDot = (excitation - activation) / tau;
     {
@@ -144,15 +155,11 @@ computeStateVariableDerivatives(const SimTK::State& s) const {
                     + get_fiber_damping() * normFiberVelocity
                     + constant;
         };
-        /*
-        std::cout << "DEBUG excitation " << excitation << std::endl;
-         */
         // In explicit dynamics mode and during trial integration steps,
         // the equilibrium solution for normFiberVelocity is not within
         // [-1, 1].
         const double velocityBound = 200000;
 
-        // TODO bounds of -1 and 1?
         SimTK::Real equilNormFiberVelocity;
         try {
             equilNormFiberVelocity =
@@ -179,11 +186,6 @@ computeStateVariableDerivatives(const SimTK::State& s) const {
                     << std::endl;
             throw;
         }
-
-        /*
-        std::cout << format("DEBUG derivatives t: %f normFiberVelocity: %f",
-                s.getTime(), equilNormFiberVelocity) << std::endl;
-                */
 
         // norm_fiber_length/second = norm_fiber_length/second * unitless
         const SimTK::Real normFiberLengthDot =
@@ -240,23 +242,23 @@ SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
     OPENSIM_THROW_IF_FRMOBJ(maxIterations < 0, Exception,
             format("Expected maxIterations to be positive, but got %i.",
                     maxIterations));
-    if (calcResidual(left) * calcResidual(right) >= 0) {
-        std::cout << "DEBUG solveBisection() SAME SIGN" << std::endl;
-        const auto x = createVectorLinspace(1000, left, right);
-        TimeSeriesTable table;
-        table.setColumnLabels({"residual"});
-        SimTK::RowVector row(1);
-        for (int i = 0; i < x.nrow(); ++i) {
-            row[0] = calcResidual(x[i]);
-            table.appendRow(x[i], row);
-        }
-        STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
-    }
-    OPENSIM_THROW_IF_FRMOBJ(calcResidual(left) * calcResidual(right) >= 0,
+    const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
+    // if (sameSign) {
+    //     std::cout << " solveBisection() SAME SIGN" << std::endl;
+    //     const auto x = createVectorLinspace(1000, left, right);
+    //     TimeSeriesTable table;
+    //     table.setColumnLabels({"residual"});
+    //     SimTK::RowVector row(1);
+    //     for (int i = 0; i < x.nrow(); ++i) {
+    //         row[0] = calcResidual(x[i]);
+    //         table.appendRow(x[i], row);
+    //     }
+    //     STOFileAdapter::write(table, "DEBUG_solveBisection_residual.sto");
+    // }
+    OPENSIM_THROW_IF_FRMOBJ(sameSign,
             Exception, format(
             "Function has same sign at bounds of %f and %f.", left, right));
 
-    // TODO use error in residual as tolerance?
     SimTK::Real residualMidpoint;
     SimTK::Real residualLeft = calcResidual(left);
     int iterCount = 0;
@@ -278,10 +280,6 @@ SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
         printMessage("Warning: bisection reached max iterations "
                         "at x = %g (%s %s).\n", midpoint,
                 getConcreteClassName(), getName());
-    /*
-    std::cout << "DEBUG solveBisection iterCount "
-            << iterCount << std::endl;
-            */
     return midpoint;
 }
 
@@ -316,4 +314,87 @@ SimTK::Real DeGrooteFregly2016Muscle::calcFiberEquilibriumResidual(
             << std::endl;
             */
     return normFiberForce - normTendonForce;
+}
+
+DataTable DeGrooteFregly2016Muscle::exportFiberLengthCurvesToTable(
+        const SimTK::Vector& normFiberLengths) const {
+    SimTK::Vector def;
+    const SimTK::Vector* x = nullptr;
+    if (normFiberLengths.nrow()) {
+        x = &normFiberLengths;
+    } else {
+        def = createVectorLinspace(200, m_minNormFiberLength,
+                m_maxNormFiberLength);
+        x = &def;
+    }
+
+    DataTable table;
+    table.setColumnLabels(
+            {"active_force_length_multiplier", "passive_force_multiplier"});
+    SimTK::RowVector row(2);
+    for (int irow = 0; irow < x->nrow(); ++irow) {
+        const auto& normFiberLength = x->get(irow);
+        row[0] = calcActiveForceLengthMultiplier(normFiberLength);
+        row[1] = calcPassiveForceMultiplier(normFiberLength);
+        table.appendRow(normFiberLength, row);
+    }
+    return table;
+}
+
+DataTable DeGrooteFregly2016Muscle::exportTendonForceMultiplierToTable(
+        const SimTK::Vector& normTendonLengths) const {
+    SimTK::Vector def;
+    const SimTK::Vector* x = nullptr;
+    if (normTendonLengths.nrow()) {
+        x = &normTendonLengths;
+    } else {
+        // Evaluate the inverse of the tendon curve at y = 1.
+        def = createVectorLinspace(200, 0.95,
+                1.0 + get_tendon_strain_at_one_norm_force());
+        x = &def;
+    }
+
+    DataTable table;
+    table.setColumnLabels({"tendon_force_multiplier"});
+    SimTK::RowVector row(1);
+    for (int irow = 0; irow < x->nrow(); ++irow) {
+        const auto& normTendonLength = x->get(irow);
+        row[0] = calcTendonForceMultiplier(normTendonLength);
+        table.appendRow(normTendonLength, row);
+    }
+    return table;
+}
+
+DataTable DeGrooteFregly2016Muscle::exportFiberVelocityMultiplierToTable(
+        const SimTK::Vector& normFiberVelocities) const {
+    SimTK::Vector def;
+    const SimTK::Vector* x = nullptr;
+    if (normFiberVelocities.nrow()) {
+        x = &normFiberVelocities;
+    } else {
+        def = createVectorLinspace(200, -1.1, 1.1);
+        x = &def;
+    }
+
+    DataTable table;
+    table.setColumnLabels({"force_velocity_multiplier"});
+    SimTK::RowVector row(1);
+    for (int irow = 0; irow < x->nrow(); ++irow) {
+        const auto& normFiberVelocity = x->get(irow);
+        row[0] = calcForceVelocityMultiplier(normFiberVelocity);
+        table.appendRow(normFiberVelocity, row);
+    }
+    return table;
+}
+
+void DeGrooteFregly2016Muscle::
+printCurvesToSTOFiles(const std::string& directory) const {
+    std::string prefix = directory + SimTK::Pathname::getPathSeparator() +
+            getName();
+    STOFileAdapter::write(exportFiberLengthCurvesToTable(),
+            prefix + "_fiber_length_curves.sto");
+    STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
+            prefix + "_fiber_velocity_multiplier.sto");
+    STOFileAdapter::write(exportTendonForceMultiplierToTable(),
+            prefix + "_tendon_force_multiplier.sto");
 }
