@@ -167,8 +167,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
     # Don't want to put source files in share/java.
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
-    set(OPENSIM_INSTALL_CPPEXDIR "${CMAKE_INSTALL_DOCDIR}/APIExamples")
-    set(OPENSIM_INSTALL_SCRIPTSDIR "${CMAKE_INSTALL_DOCDIR}/Scripts")
+    set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/CodeExamples")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
 
 else()
@@ -185,17 +184,17 @@ else()
 
     set(OPENSIM_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
     set(OPENSIM_INSTALL_CMAKEDIR cmake)
-    set(OPENSIM_INSTALL_PYTHONDIR sdk/python)
+    set(OPENSIM_INSTALL_PYTHONDIR sdk/Python)
     set(OPENSIM_INSTALL_JAVAJARDIR sdk/Java)
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
-    set(OPENSIM_INSTALL_CPPEXDIR sdk/APIExamples)
-    set(OPENSIM_INSTALL_SCRIPTSDIR sdk/Scripts)
+    set(OPENSIM_INSTALL_APIEXDIR Resources/CodeExamples)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
 
 endif()
 
-set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Matlab")
-set(OPENSIM_INSTALL_PYTHONEXDIR "${OPENSIM_INSTALL_SCRIPTSDIR}/Python")
+set(OPENSIM_INSTALL_CPPEXDIR "${OPENSIM_INSTALL_APIEXDIR}/C++")
+set(OPENSIM_INSTALL_MATLABEXDIR "${OPENSIM_INSTALL_APIEXDIR}/Matlab")
+set(OPENSIM_INSTALL_PYTHONEXDIR "${OPENSIM_INSTALL_APIEXDIR}/Python")
 
 # Cross-platform location of shared libraries. Used in configureOpenSim.m.
 if(WIN32)
@@ -523,7 +522,7 @@ endif()
 
 ## RPATH 
 # If it is necessary to not put RPATHs in the installed binaries, set
-# CMAKE_SKIP_INSTALL_RPATH to OFF.
+# CMAKE_SKIP_INSTALL_RPATH to ON.
 set(OPENSIM_USE_INSTALL_RPATH FALSE)
 if(UNIX) # Linux and macOS
     # CMake 2.8.12 introduced the ability to set RPATH for shared libraries
