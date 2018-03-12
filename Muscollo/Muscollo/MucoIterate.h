@@ -38,29 +38,30 @@ public:
     }
 };
 
-/// The values of the variables in an optimal control problem.
-/// This can be used for specifying an initial guess, or holding the solution
-/// returned by a solver. 
-///
-/// The file format for reading and writing a MucoIterate is comprised of a 
-/// file header followed by a row of column names and the stored data. The file
-/// header contains the number of states, controls, and parameters (order does
-/// not matter). Order does matter for the column names and corresponding data 
-/// columns. The columns *must* follow this order: time, states, controls, 
-/// parameters. For parameter columns, the value of the parameter is stored in 
-/// the first row of the column, while the rest of the rows are filled with 
-/// NaNs.
-/// @samplefile
-/// num_controls=<number-of-control-variables>
-/// num_parameters=<number-of-parameter-variables>
-/// num_states=<number-of-state-variables>
-/// time,<state-0-name>,...,<control-0-name>,...,<parameter-0-name>,...
-/// <#>,<#>,...,<#>,...,<#>,...
-/// <#>,<#>,...,<#>,...,<NaN>,...
-///  : , : ,..., : ,...,  :  ,...
-/// <#>,<#>,...,<#>,...,<NaN>,...
-/// @endsamplefile
-/// (If stored in a STO file, the delimiters are tabs, not commas.)
+/** The values of the variables in an optimal control problem.
+This can be used for specifying an initial guess, or holding the solution
+returned by a solver.
+
+The file format for reading and writing a MucoIterate is comprised of a
+file header followed by a row of column names and the stored data. The file
+header contains the number of states, controls, and parameters (order does
+not matter). Order does matter for the column names and corresponding data
+columns. The columns *must* follow this order: time, states, controls,
+parameters. For parameter columns, the value of the parameter is stored in
+the first row of the column, while the rest of the rows are filled with
+NaNs.
+@samplefile
+num_controls=<number-of-control-variables>
+num_parameters=<number-of-parameter-variables>
+num_states=<number-of-state-variables>
+time,<state-0-name>,...,<control-0-name>,...,<parameter-0-name>,...
+<#>,<#>,...,<#>,...,<#>,...
+<#>,<#>,...,<#>,...,<NaN>,...
+ : , : ,..., : ,...,  :  ,...
+<#>,<#>,...,<#>,...,<NaN>,...
+@endsamplefile
+(If stored in a STO file, the delimiters are tabs, not commas.) */
+// Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMUSCOLLO_API MucoIterate {
 public:
     MucoIterate() = default;

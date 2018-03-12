@@ -16,6 +16,14 @@ function(MuscolloAddSandboxExecutable)
     file(COPY ${MUCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
+
+MuscolloAddSandboxExecutable(NAME sandboxTendonForceState
+        LIB_DEPENDS osimMuscollo tropter)
+MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
+        LIB_DEPENDS osimMuscollo tropter)
+
+
+# MucoTool-related.
 MuscolloAddSandboxExecutable(NAME sandboxSlidingMass
         LIB_DEPENDS osimMuscollo tropter)
 MuscolloAddSandboxExecutable(NAME sandboxContact
@@ -24,10 +32,12 @@ MuscolloAddSandboxExecutable(NAME sandboxTestContact
         LIB_DEPENDS osimMuscollo osimAnalyses)
 MuscolloAddSandboxExecutable(NAME sandboxDoublePendulumSwingup
         LIB_DEPENDS osimMuscollo tropter)
-MuscolloAddSandboxExecutable(NAME sandboxTendonForceState
-        LIB_DEPENDS osimMuscollo tropter)
-MuscolloAddSandboxExecutable(NAME sandboxImplicitActivationDynamics
-        LIB_DEPENDS osimMuscollo tropter)
-		
+MuscolloAddSandboxExecutable(NAME sandboxMuscle
+        SOURCE_FILES
+            shared/DeGrooteFregly2016Muscle.h
+            shared/DeGrooteFregly2016Muscle.cpp
+        LIB_DEPENDS osimMuscollo)
+
+
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)

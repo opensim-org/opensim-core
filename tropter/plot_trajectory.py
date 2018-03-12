@@ -32,7 +32,7 @@ else:
     include_zero = True
 
 
-data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=2)
+data = np.genfromtxt(data_filepath, names=True, delimiter=',', skip_header=3)
 
 names = data.dtype.names[1:]
 

@@ -33,7 +33,6 @@ DirectCollocationSolver<T>::DirectCollocationSolver(
         const unsigned& num_mesh_points)
         : m_ocproblem(ocproblem)
 {
-    std::locale loc;
     std::string transcrip_lower = transcrip;
     std::transform(transcrip_lower.begin(), transcrip_lower.end(),
             transcrip_lower.begin(), ::tolower);

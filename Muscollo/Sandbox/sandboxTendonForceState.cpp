@@ -19,7 +19,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <tropter/tropter.h>
 #include <Muscollo/InverseMuscleSolver/INDYGO.h>
-#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016Muscle.h>
+#include <Muscollo/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 
 using namespace OpenSim;
 using tropter::VectorX;
@@ -51,7 +51,7 @@ public:
         this->add_control("excitation", {0, 1});
         this->add_control("tendon_force_control", {-50, 50}/*, 0*/);
         this->add_path_constraint("fiber_equilibrium", 0);
-        m_muscle = DeGrooteFregly2016Muscle<T>(
+        m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
@@ -97,7 +97,7 @@ public:
         cost = final_time;
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle;
 };
 
 std::pair<TimeSeriesTable, TimeSeriesTable>
@@ -151,7 +151,7 @@ solveForTrajectoryINDYGO() {
     // ------------------------------------------------------
     // TimeSeriesTable actualInvDyn;
     // actualInvDyn.setColumnLabels({"inverse_dynamics"});
-    // DeGrooteFregly2016Muscle<double> muscle(ocp->max_isometric_force,
+    // DeGrooteFregly2016MuscleStandalone<double> muscle(ocp->max_isometric_force,
     //                                   ocp->optimal_fiber_length,
     //                                   ocp->tendon_slack_length,
     //                                   ocp->pennation_angle_at_optimal,
@@ -192,7 +192,7 @@ public:
         this->add_control("tendon_force_control", {-50, 50}/*, 0*/);
         this->add_path_constraint("net_generalized_force", 0);
         this->add_path_constraint("fiber_equilibrium", 0);
-        m_muscle = DeGrooteFregly2016Muscle<T>(
+        m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
@@ -241,7 +241,7 @@ public:
         integrand = controls[0] * controls[0];
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle;
 };
 
 class SimpleInverseFiberLengthState
@@ -266,7 +266,7 @@ public:
         this->add_control("norm_fiber_velocity", {-1, 1}/*, 0*/);
         this->add_path_constraint("net_generalized_force", 0);
         this->add_path_constraint("fiber_equilibrium", 0);
-        m_muscle = DeGrooteFregly2016Muscle<T>(
+        m_muscle = DeGrooteFregly2016MuscleStandalone<T>(
                 max_isometric_force, optimal_fiber_length, tendon_slack_length,
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
@@ -310,7 +310,7 @@ public:
         integrand = controls[0] * controls[0];
     }
 private:
-    DeGrooteFregly2016Muscle<T> m_muscle;
+    DeGrooteFregly2016MuscleStandalone<T> m_muscle;
 };
 
 int main() {

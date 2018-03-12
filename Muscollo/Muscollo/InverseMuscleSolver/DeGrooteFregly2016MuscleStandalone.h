@@ -1,7 +1,7 @@
-#ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
-#define MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
+#ifndef MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#define MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: DeGrooteFregly2016Muscle.h                               *
+ * OpenSim Muscollo: DeGrooteFregly2016MuscleStandalone.h                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -42,10 +42,10 @@
 // INDYGO to increase duration from 9 seconds to 13 seconds
 // (in Debug).
 template <typename T>
-class DeGrooteFregly2016Muscle {
+class DeGrooteFregly2016MuscleStandalone {
 public:
-    DeGrooteFregly2016Muscle() = default;
-    DeGrooteFregly2016Muscle(const double& max_isometric_force,
+    DeGrooteFregly2016MuscleStandalone() = default;
+    DeGrooteFregly2016MuscleStandalone(const double& max_isometric_force,
                        const double& optimal_fiber_length,
                        const double& tendon_slack_length,
                        const double& pennation_angle_at_optimal,
@@ -58,8 +58,8 @@ public:
         _norm_fiber_width = sin(pennation_angle_at_optimal);
         _fiber_width = optimal_fiber_length * _norm_fiber_width;
     }
-    DeGrooteFregly2016Muscle<double> convert_scalartype_double() const {
-        return DeGrooteFregly2016Muscle<double>(_max_isometric_force,
+    DeGrooteFregly2016MuscleStandalone<double> convert_scalartype_double() const {
+        return DeGrooteFregly2016MuscleStandalone<double>(_max_isometric_force,
                 _optimal_fiber_length, _tendon_slack_length,
                 _pennation_angle_at_optimal, _max_contraction_velocity);
     }
@@ -348,4 +348,4 @@ private:
     double _fiber_width = NaN;
 };
 
-#endif // MUSCOLLO_DEGROOTEFREGLY2016MUSCLE_H_
+#endif // MUSCOLLO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_

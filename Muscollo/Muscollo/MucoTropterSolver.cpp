@@ -148,6 +148,13 @@ public:
               m_mucoProb(solver.getProblem()),
               m_phase0(m_mucoProb.getPhase(0)) {
         m_model = m_phase0.getModel();
+        // Disable all controllers.
+        // TODO temporary; don't want to actually do this.
+        m_model.finalizeFromProperties();
+        auto controllers = m_model.updComponentList<Controller>();
+        for (auto& controller : controllers) {
+            controller.set_enabled(false);
+        }
         m_state = m_model.initSystem();
 
         this->set_time(convert(m_phase0.getTimeInitialBounds()),
@@ -180,7 +187,6 @@ public:
         // If they exist, apply parameter values to the model.
         this->applyParametersToModel(parameters);
     }
-    // TODO rename argument "states" to "state".
     void calc_differential_algebraic_equations(
             const tropter::DAEInput<T>& in,
             tropter::DAEOutput<T> out) const override {
@@ -202,7 +208,6 @@ public:
             auto& osimControls = m_model.updControls(m_state);
             std::copy(controls.data(), controls.data() + controls.size(),
                     &osimControls[0]);
-
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
@@ -279,6 +284,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_convergence_tolerance(-1);
     constructProperty_optim_constraint_tolerance(-1);
     constructProperty_optim_hessian_approximation("limited-memory");
+    constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
 
     constructProperty_guess_file("");
@@ -344,6 +350,7 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
         "final_time.lower: " + std::to_string(finalTime) + "; " +
         "initial_time.upper: " + std::to_string(initialTime) + ".");
     Model model(phase.getModel());
+
     // Disable all controllers?
     SimTK::State state = model.initSystem();
 
@@ -363,6 +370,8 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
             model.setStateVariableValue(state, svName, valueToUse);
         }
     }
+
+    // TODO Equilibrate fiber length?
 
     state.setTime(initialTime);
     Manager manager(model, state);
@@ -482,7 +491,9 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         }
     }
 
-    optsolver.set_sparsity_detection("random");
+    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+            {"random", "initial-guess"});
+    optsolver.set_sparsity_detection(get_optim_sparsity_detection());
 
     // Set advanced settings.
     //for (int i = 0; i < getProperty_optim_solver_options(); ++i) {

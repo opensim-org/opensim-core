@@ -228,9 +228,9 @@ TAB_SIZE               = 4
 # "Side Effects:". You can put \n's in the value part of an alias to insert
 # newlines.
 
-ALIASES                = "precondition=@par Precondition(s):\n" \
-                         "postcondition=@par Postcondition(s):\n" \
-                         "samplefile=@verbatim Sample file:\n" \
+ALIASES                = "precondition=@par Precondition(s):^^" \
+                         "postcondition=@par Postcondition(s):^^" \
+                         "samplefile=^^Sample file:^^@verbatim^^" \
                          "endsamplefile=@endverbatim"
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
