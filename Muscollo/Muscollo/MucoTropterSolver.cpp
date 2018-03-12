@@ -187,7 +187,6 @@ public:
         // If they exist, apply parameter values to the model.
         this->applyParametersToModel(parameters);
     }
-    // TODO rename argument "states" to "state".
     void calc_differential_algebraic_equations(
             const tropter::DAEInput<T>& in,
             tropter::DAEOutput<T> out) const override {

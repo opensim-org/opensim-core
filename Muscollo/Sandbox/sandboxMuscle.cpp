@@ -277,8 +277,6 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
 
         MucoTropterSolver& solver = muco.initSolver();
         solver.set_optim_sparsity_detection("initial-guess");
-        // TODO for this to work, we want to enable solving for equilibrium fiber
-        // length.
         MucoIterate guessForwardSim = solver.createGuess("time-stepping");
         solver.setGuess(guessForwardSim);
         guessForwardSim.write("sandboxMuscle_guess_forward_sim.sto");
@@ -369,7 +367,9 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         TimeSeriesTable ref(states.getIndependentColumn());
         ref.appendColumn("joint/height/value",
                 states.getDependentColumn("joint/height/value"));
-        // TODO try tracking all DOFs, for fun.
+        // Tracking joint/height/speed slightly increases the iterations to
+        // converge, and tracking activation cuts the iterations in half.
+        // TODO try tracking all states, for fun.
         tracking.setReference(ref);
         tracking.setAllowUnusedReferences(true);
         problem.addCost(tracking);
