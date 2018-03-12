@@ -144,57 +144,78 @@ void InverseKinematicsTool::setNull()
  */
 void InverseKinematicsTool::setupProperties()
 {
-    _modelFileNameProp.setComment("Name of the .osim file used to construct a model.");
+    _modelFileNameProp.setComment(
+        "Name of the model file (.osim) to use for inverse kinematics.");
     _modelFileNameProp.setName("model_file");
     _propertySet.append( &_modelFileNameProp );
 
-    _constraintWeightProp.setComment("A positive scalar that is used to weight the importance of satisfying constraints."
-        "A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced.");
+    _constraintWeightProp.setComment(
+        "A positive scalar that weights the relative importance of satisfying "
+        "constraints. A weighting of 'Infinity' (the default) results in the "
+        "constraints being strictly enforced. Otherwise, the weighted-squared "
+        "constraint errors are appended to the cost function.");
     _constraintWeightProp.setName("constraint_weight");
     _constraintWeightProp.setValue(std::numeric_limits<SimTK::Real>::infinity());
     _propertySet.append( &_constraintWeightProp );
 
-    _accuracyProp.setComment("The accuracy of the solution in absolute terms. I.e. the number of significant"
-        "digits to which the solution can be trusted.");
+    _accuracyProp.setComment(
+        "The accuracy of the solution in absolute terms. Default is 1e-5. "
+        "It determines the number of significant digits to which the solution "
+        "can be trusted.");
     _accuracyProp.setName("accuracy");
     _accuracyProp.setValue(1e-5);
     _propertySet.append( &_accuracyProp );
 
-    _ikTaskSetProp.setComment("Markers and coordinates to be considered (tasks) and their weightings.");
+    _ikTaskSetProp.setComment(
+        "Markers and coordinates to be considered (tasks) and their weightings. "
+        "The sum of weighted-squared task errors composes the cost function.");
     _ikTaskSetProp.setName("IKTaskSet");
     _propertySet.append(&_ikTaskSetProp);
 
-    _markerFileNameProp.setComment("TRC file (.trc) containing the time history of observations of marker positions.");
+    _markerFileNameProp.setComment(
+        "TRC file (.trc) containing the time history of observations of marker "
+        "positions obtained during a motion capture experiment. Markers in this "
+        "file that have a corresponding task and model marker are included.");
     _markerFileNameProp.setName("marker_file");
     _propertySet.append(&_markerFileNameProp);
 
-    _coordinateFileNameProp.setComment("The name of the storage (.sto or .mot) file containing coordinate observations."
-        "Coordinate values from this file are included if there is a corresponding coordinate task. ");
+    _coordinateFileNameProp.setComment(
+        "The name of the storage (.sto or .mot) file containing the time history"
+        " of coordinate observations. Coordinate values from this file are "
+        "included if there is a corresponding model coordinate and task. ");
     _coordinateFileNameProp.setName("coordinate_file");
     _propertySet.append(&_coordinateFileNameProp);
 
-    const double defaultTimeRange[] = {-std::numeric_limits<SimTK::Real>::infinity(), std::numeric_limits<SimTK::Real>::infinity()};
-    _timeRangeProp.setComment("Time range over which the inverse kinematics problem is solved.");
+    const double defaultTimeRange[] =
+        {-std::numeric_limits<SimTK::Real>::infinity(),
+          std::numeric_limits<SimTK::Real>::infinity()};
+    _timeRangeProp.setComment(
+        "The desired time range over which inverse kinematics is solved. "
+        "The closest start and final times from the provided observations "
+        "are used to specify the actual time range to be processed.");
     _timeRangeProp.setName("time_range");
     _timeRangeProp.setValue(2, defaultTimeRange);
     _timeRangeProp.setAllowableListSize(2);
     _propertySet.append(&_timeRangeProp);
 
-    _reportErrorsProp.setComment("Flag (true or false) indicating whether or not to report marker "
+    _reportErrorsProp.setComment(
+        "Flag (true or false) indicating whether or not to report marker "
         "errors from the inverse kinematics solution.");
     _reportErrorsProp.setName("report_errors");
     _reportErrorsProp.setValue(true);
     _propertySet.append(&_reportErrorsProp);
 
-    _outputMotionFileNameProp.setComment("Name of the motion file (.mot) to which the results should be written.");
+    _outputMotionFileNameProp.setComment(
+        "Name of the resulting inverse kinematics motion (.mot) file.");
     _outputMotionFileNameProp.setName("output_motion_file");
     _propertySet.append(&_outputMotionFileNameProp);
 
-    _reportMarkerLocationsProp.setComment("Flag indicating whether or not to report model marker locations in ground.");
+    _reportMarkerLocationsProp.setComment(
+        "Flag indicating whether or not to report model marker locations. "
+        "Note, model marker locations are expressed in Ground.");
     _reportMarkerLocationsProp.setName("report_marker_locations");
     _reportMarkerLocationsProp.setValue(false);
     _propertySet.append(&_reportMarkerLocationsProp);
-
 }
 
 //_____________________________________________________________________________
@@ -302,17 +323,26 @@ bool InverseKinematicsTool::run()
         double final_time = (markersValidTimRange[1] < _timeRange[1]) ?
             markersValidTimRange[1] : _timeRange[1];
 
+        SimTK_ASSERT2_ALWAYS(final_time >= start_time,
+            "InverseKinematicsTool final time (%f) is before start time (%f).",
+            final_time, start_time);
+
+        const auto& markersTable = markersReference.getMarkerTable();
+        const int start_ix = int(
+            markersTable.getNearestRowIndexForTime(start_time) );
+        const int final_ix = int(
+            markersTable.getNearestRowIndexForTime(final_time) );
+        const int Nframes = final_ix - start_ix + 1;
+        const auto& times = markersTable.getIndependentColumn();
+
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, markersReference,
             coordinateReferences, _constraintWeight);
         ikSolver.setAccuracy(_accuracy);
-        s.updTime() = start_time;
+        s.updTime() = times[start_ix];
         ikSolver.assemble(s);
         kinematicsReporter.begin(s);
 
-        const clock_t start = clock();
-        double dt = 1.0/markersReference.getSamplingFrequency();
-        int Nframes = int((final_time-start_time)/dt)+1;
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         analysisSet.begin(s);
         // Get the actual number of markers the Solver is using, which
@@ -327,8 +357,10 @@ bool InverseKinematicsTool::run()
         Storage *modelMarkerErrors = _reportErrors ? 
             new Storage(Nframes, "ModelMarkerErrors") : nullptr;
 
-        for (int i = 0; i < Nframes; i++) {
-            s.updTime() = start_time + i*dt;
+        const clock_t start = clock();
+
+        for (int i = start_ix; i <= final_ix; ++i) {
+            s.updTime() = times[i];
             ikSolver.track(s);
             
             if(_reportErrors){
@@ -426,7 +458,7 @@ bool InverseKinematicsTool::run()
 
         success = true;
 
-        cout << "InverseKinematicsTool completed " << Nframes-1 << " frames in "
+        cout << "InverseKinematicsTool completed " << Nframes << " frames in "
             <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
     }
     catch (const std::exception& ex) {

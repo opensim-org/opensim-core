@@ -408,7 +408,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
@@ -1168,7 +1169,6 @@ void testGetStateVariableValue() {
     SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
     SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
 
-    top.getStateVariableValue(s, "a/b/subState");
     SimTK_TEST_MUST_THROW_EXC(
             top.getStateVariableValue(s, "typo/b/subState"),
             OpenSim::Exception);
