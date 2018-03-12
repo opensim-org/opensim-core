@@ -42,6 +42,56 @@ void testDeGrooteFregly2016Muscle() {
     model.addComponent(musclePtr);
     auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
 
+    // Property value bounds
+    // ---------------------
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_optimal_force(1.5);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(), Exception);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_default_norm_fiber_length(0.1999);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_default_norm_fiber_length(1.800001);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_activation_time_constant(0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_deactivation_time_constant(0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_default_activation(-0.0001);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_fiber_damping(-0.0001);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+    {
+        DeGrooteFregly2016Muscle musc = muscle;
+        musc.set_tendon_strain_at_one_norm_force(0);
+        SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
+                SimTK::Exception::ErrorCheck);
+    }
+
     // printCurvesToSTOFiles()
     // -----------------------
     muscle.printCurvesToSTOFiles();
