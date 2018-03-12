@@ -339,7 +339,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         MucoTool muco;
         MucoProblem& problem = muco.updProblem();
         problem.setModel(model);
-        // TODO set time bounds!
+        // Using an equality constraint for the time bounds was essential for
+        // recovering the correct excitation.
         const double finalTime =
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
         problem.setTimeBounds(0, finalTime);
@@ -376,7 +377,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
         MucoTropterSolver& solver = muco.initSolver();
         solver.set_optim_sparsity_detection("initial-guess");
         solver.setGuess("time-stepping");
-        // TODO add noise to guess.
+        // Don't need to use the TrajOpt solution as the initial guess; kinda
+        // neat. Although, using TrajOpt for the guess improves convergence.
         // TODO solver.setGuess(solutionTrajOpt);
 
         MucoSolution solutionTrack = muco.solve();
