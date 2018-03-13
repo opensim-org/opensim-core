@@ -1049,13 +1049,19 @@ void testComponentPathNames()
 }
 
 void testTraversePathToComponent() {
-    class A : public Component {
-        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    class Base : public Component {
+        OpenSim_DECLARE_ABSTRACT_OBJECT(Base, Component);
+    public:
+        // Allow use of this protected function for testing purposes:
+        using Component::traversePathToComponent;
+    };
+    class A : public Base {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Base);
     public:
         A(const std::string& name) { setName(name); }
     };
-    class B : public Component {
-        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    class B : public Base {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Base);
     public:
         B(const std::string& name) { setName(name); }
     };
