@@ -139,20 +139,33 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 
     // OPEN FILE
     std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
-    if(fp==NULL) throw Exception("Storage: ERROR- failed to open file " + aFileName, __FILE__,__LINE__);
+    OPENSIM_THROW_IF(fp == nullptr, Exception,
+            "Storage: Failed to open file " + aFileName);
 
     int nr=0,nc=0;
-    if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
-    cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
-    // Motion files from SIMM are in degrees
-    if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
-    if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
+    if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
+        // Version 2 Storage files do not need nColumns and nRows in the
+        // header.
+        OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
+                + aFileName);
+    }
     if(_fileVersion > 1) {
         OPENSIM_THROW_IF(readHeadersOnly, Exception, 
                 "Cannot read headers only if STO version is greater than 1.");
         TimeSeriesTable table = STOFileAdapter::read(aFileName);
         convertTableToStorage(table, *this);
         return;
+    }
+    cout << "Storage: file=" << aFileName
+        << " (nr=" << nr << " nc=" << nc << ")" << endl;
+    // Motion files from SIMM are in degrees
+    if (_fileVersion < 1 &&
+            (0 == aFileName.compare(aFileName.length() - 4, 4, ".mot"))) {
+        _inDegrees = true;
+    }
+    if (_fileVersion < 1) {
+        cout << ".. assuming rotations in "
+            << (_inDegrees?"Degrees.":"Radians.") << endl;
     }
 
     // IGNORE blank lines after header -- treat \r and \n as end of line chars
@@ -3132,7 +3145,6 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
         firstLine=false;
     }
     if(rNumColumns==0 || rNumRows==0) {
-        cout << "Storage: ERROR- failed to parse header of storage file." << endl;
         return false;
     }
     if (_fileVersion < LatestVersion) {

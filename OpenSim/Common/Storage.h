@@ -103,7 +103,7 @@ protected:
     std::string _description;
 
     /** Storage file version as written to the file */
-    int _fileVersion;
+    int _fileVersion = -1;
     static const int LatestVersion;
 //=============================================================================
 // METHODS
