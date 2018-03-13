@@ -2182,6 +2182,8 @@ protected:
 #endif
     template<class C>
     friend void Socket<C>::findAndConnect(const Component& root);
+    template<class T>
+    friend void Input<T>::findAndConnect(const Component& root);
 #if defined(__clang__)
     #pragma clang diagnostic pop
 #endif
