@@ -141,6 +141,9 @@ public:
         Model::assemble(state) once all Coordinate values have been set.
         Alternatively, use Model::setStateVariableValues() to set all coordinate
         values and their speeds at once followed by Model::assemble(state).
+      
+        The provided value will be clamped to the coordinate's range if
+        the coordinate is clamped and enforceConstraints is true.
         */
     void setValue(SimTK::State& s, double aValue, bool enforceContraints=true) const;
 
