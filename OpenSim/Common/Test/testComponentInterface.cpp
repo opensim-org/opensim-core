@@ -1049,19 +1049,13 @@ void testComponentPathNames()
 }
 
 void testTraversePathToComponent() {
-    class Base : public Component {
-        OpenSim_DECLARE_ABSTRACT_OBJECT(Base, Component);
-    public:
-        // Allow use of this protected function for testing purposes:
-        using Component::traversePathToComponent;
-    };
-    class A : public Base {
-        OpenSim_DECLARE_CONCRETE_OBJECT(A, Base);
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
     public:
         A(const std::string& name) { setName(name); }
     };
-    class B : public Base {
-        OpenSim_DECLARE_CONCRETE_OBJECT(B, Base);
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
     public:
         B(const std::string& name) { setName(name); }
     };
@@ -1095,44 +1089,44 @@ void testTraversePathToComponent() {
     // top.printSubcomponentInfo();
 
     // Self.
-    SimTK_TEST(top.traversePathToComponent<A>({""}) == &top);
-    SimTK_TEST(top.traversePathToComponent<A>({"."}) == &top);
-    SimTK_TEST(a1->traversePathToComponent<A>({""}) == a1);
-    SimTK_TEST(b2->traversePathToComponent<B>({""}) == b2);
+    SimTK_TEST(&top.getComponent<A>("") == &top);
+    SimTK_TEST(&top.getComponent<A>(".") == &top);
+    SimTK_TEST(&a1->getComponent<A>("") == a1);
+    SimTK_TEST(&b2->getComponent<B>("") == b2);
 
-    SimTK_TEST(top.traversePathToComponent<A>({"a1"}) == a1);
-    SimTK_TEST(top.traversePathToComponent<A>({"a1/"}) == a1);
-    SimTK_TEST(top.traversePathToComponent<B>({"b1"}) == b1);
-    SimTK_TEST(top.traversePathToComponent<A>({"a1/a2"}) == a2);
-    SimTK_TEST(top.traversePathToComponent<B>({"a1/b2"}) == b2);
+    SimTK_TEST(&top.getComponent<A>("a1") == a1);
+    SimTK_TEST(&top.getComponent<A>("a1/") == a1);
+    SimTK_TEST(&top.getComponent<B>("b1") == b1);
+    SimTK_TEST(&top.getComponent<A>("a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<B>("a1/b2") == b2);
     // Going up.
-    SimTK_TEST(a1->traversePathToComponent<A>({".."}) == &top);
-    SimTK_TEST(a2->traversePathToComponent<A>({"../../"}) == &top);
-    SimTK_TEST(b2->traversePathToComponent<A>({"../../"}) == &top);
-    SimTK_TEST(a2->traversePathToComponent<A>({".."}) == a1);
-    SimTK_TEST(b2->traversePathToComponent<A>({".."}) == a1);
+    SimTK_TEST(&a1->getComponent<A>("..") == &top);
+    SimTK_TEST(&a2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&b2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&a2->getComponent<A>("..") == a1);
+    SimTK_TEST(&b2->getComponent<A>("..") == a1);
     // Going up and then back down.
-    SimTK_TEST(a1->traversePathToComponent<A>({"../a1"}) == a1);
-    SimTK_TEST(a1->traversePathToComponent<B>({"../b1"}) == b1);
-    SimTK_TEST(a1->traversePathToComponent<B>({"../a1/b2"}) == b2);
+    SimTK_TEST(&a1->getComponent<A>("../a1") == a1);
+    SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
+    SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
     // Absolute paths.
-    SimTK_TEST(top.traversePathToComponent<A>({"/top/a1"}) == a1);
-    SimTK_TEST(b1->traversePathToComponent<B>({"/top/a1/b2"}) == b2);
-    SimTK_TEST(b2->traversePathToComponent<A>({"/top/a1/a2"}) == a2);
+    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
 
     // No component.
     // -------------
     // Incorrect path.
-    SimTK_TEST(top.traversePathToComponent<A>({"oops/a2"}) == nullptr);
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("oops/a2"));
     // Wrong type.
-    SimTK_TEST(top.traversePathToComponent<B>({"a1/a2"}) == nullptr);
+    SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
     // Going too high up.
-    SimTK_TEST(top.traversePathToComponent<A>({".."}) == nullptr);
-    SimTK_TEST(top.traversePathToComponent<A>({"../"}) == nullptr);
-    SimTK_TEST(top.traversePathToComponent<A>({"../.."}) == nullptr);
-    SimTK_TEST(top.traversePathToComponent<A>({"../../"}) == nullptr);
-    SimTK_TEST(a1->traversePathToComponent<A>({"../../"}) == nullptr);
-    SimTK_TEST(b2->traversePathToComponent<A>({"../../../"}) == nullptr);
+    SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(a1->getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(b2->getComponent<A>("../../../"));
 
     // Repeated name bug.
     // ------------------
@@ -1142,7 +1136,7 @@ void testTraversePathToComponent() {
     top.addComponent(atx);
     B* btx = new B("tx");
     atx->addComponent(btx);
-    SimTK_TEST(top.traversePathToComponent<Component>({"tx/tx"}) == btx);
+    SimTK_TEST(&top.getComponent<Component>("tx/tx") == btx);
 }
 
 void testGetStateVariableValue() {
