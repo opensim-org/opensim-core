@@ -74,10 +74,25 @@ int main() {
         // Loading version 2 storage file with Storage class.
         auto table = st->exportToTable();
         STOFileAdapter::write(table, "testStorage_version2.sto");
-        // Now read using Storage() constructor.
-        Storage stVersion2("testStorage_version2.sto");
-        // Compare with st.
-        SimTK_TEST_EQ(table.getMatrix(), stVersion2.exportToTable().getMatrix());
+        {
+            // Now read using Storage() constructor.
+            Storage stVersion2("testStorage_version2.sto");
+            // Compare with st.
+            SimTK_TEST_EQ(table.getMatrix(),
+                    stVersion2.exportToTable().getMatrix());
+        }
+
+        // The version 2 storage file does not require nRows and nColumns
+        // metadata (Issue #2120).
+        {
+            table.removeTableMetaDataKey("nRows");
+            table.removeTableMetaDataKey("nColumns");
+            STOFileAdapter::write(table,
+                    "testStorage_version2_short_header.sto");
+            Storage stVersion2("testStorage_version2_short_header.sto");
+            SimTK_TEST_EQ(table.getMatrix(),
+                    stVersion2.exportToTable().getMatrix());
+        }
     }
     catch (const Exception& e) {
         e.print(cerr);
