@@ -102,7 +102,9 @@ public:
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". **/
     // TODO: replace this with something more reasonable
-    virtual std::string toString(const int precision=6) const = 0;
+    virtual std::string toString() const = 0;
+    virtual std::string toStringForDisplay(const int precision=6) const
+    {   return toString(); }
 
     /** This returns a string representation of this property's value type 
     which will be the same as T::getClassName() for Object-derived types T, and

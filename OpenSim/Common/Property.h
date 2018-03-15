@@ -33,6 +33,8 @@
 #include "SimTKcommon/internal/Array.h"
 #include "SimTKcommon/internal/ClonePtr.h"
 
+#include <iomanip>
+
 namespace OpenSim {
 
 template <class T> class SimpleProperty;
@@ -727,7 +729,15 @@ public:
         }
     }
    
-    std::string toString(const int precision=6) const override final {
+    std::string toString() const override final {
+        std::stringstream out;
+        if (!this->isOneValueProperty()) out << "(";
+        writeSimplePropertyToStream(out);
+        if (!this->isOneValueProperty()) out << ")";
+        return out.str();
+    }
+
+    std::string toStringForDisplay(const int precision) const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";
         writeSimplePropertyToStreamForDisplay(out, precision);
@@ -882,7 +892,7 @@ private:
     void writeSimplePropertyToStreamForDisplay(std::ostream& o, 
                                                const int precision) const
     {
-        SimTK::writeUnformatted(o, values);
+        writeSimplePropertyToStream(o);
     }
 
     // This is like an std::vector<T> although with an int index rather
@@ -1016,7 +1026,7 @@ writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) cons
     }
 
     o << std::setprecision(precision);
-    for (int i = 0; i < rotTrans.size(); ++i) {
+    for (unsigned int i = 0; i < rotTrans.size(); ++i) {
         if (i != 0) o << " ";
         o << "(" << rotTrans[i][0] << " ";
         o << rotTrans[i][1] << " ";
