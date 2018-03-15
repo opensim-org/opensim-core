@@ -730,11 +730,7 @@ public:
     }
    
     std::string toString() const override final {
-        std::stringstream out;
-        if (!this->isOneValueProperty()) out << "(";
-        writeSimplePropertyToStream(out);
-        if (!this->isOneValueProperty()) out << ")";
-        return out.str();
+        return toStringForDisplay();
     }
 
     std::string toStringForDisplay(const int precision) const override final {
@@ -886,12 +882,11 @@ private:
         SimTK::writeUnformatted(o, values);
     }
 
-    // This is the default implementation; specialization is required if
-    // the Simbody default behavior is different than OpenSim's; e.g. for
-    // Transform serialization.
+    // This is the default implementation. Specializations for types that
+    // contain floats (e.g., double, Vec3, Vec6, Vector, Transform) are
+    // provided below to control the number of digits shown.
     void writeSimplePropertyToStreamForDisplay(std::ostream& o, 
-                                               const int precision) const
-    {
+                                               const int precision) const {
         writeSimplePropertyToStream(o);
     }
 
@@ -958,7 +953,10 @@ readSimplePropertyFromStream(std::istream& in)
 }
 
 // We provide specializations for all types that contain floats to manage
-// the number of digits displayed.
+// the number of digits displayed. We rely on the default setting of how
+// `stringstream`s handle floats, where `precision` is the number of digits
+// printed, and the `stream` automatically determines whether float or
+// exponential notation is used.
 template <> inline void SimpleProperty<double>::
 writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
 {
