@@ -109,7 +109,7 @@ public:
     return something like "(Object)". This differs from `toString()` as it has
     an optional argument, `precision`, for controlling the number of digits
     printed to string. **/
-    virtual std::string toStringForDisplay(const int precision=6) const
+    virtual std::string toStringForDisplay(const int precision) const
     {   return toString(); }
 
     /** This returns a string representation of this property's value type 

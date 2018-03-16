@@ -733,7 +733,7 @@ public:
         return toStringForDisplay();
     }
 
-    std::string toStringForDisplay(const int precision) const override final {
+    std::string toStringForDisplay(const int precision=6) const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";
         writeSimplePropertyToStreamForDisplay(out, precision);
