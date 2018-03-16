@@ -2297,9 +2297,7 @@ protected:
     const C* traversePathToComponent(ComponentPath path) const
     {
         // Get rid of all the ".."'s that are not at the front of the path.
-        path.cleanPath();
-
-        //if (path.getNumPathLevels() == 0) return nullptr;
+        path.trimDotAndDotDotElements();
 
         // Move up either to the root component or just enough to resolve all
         // the ".."'s.
