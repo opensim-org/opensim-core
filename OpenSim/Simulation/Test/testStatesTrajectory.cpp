@@ -222,7 +222,7 @@ void testFromStatesStorageGivesCorrectStates() {
                 std::string stateVarName = muscleName + "/activation";
                 SimTK_TEST_EQ(
                         getStorageEntry(sto, itime, stateVarName),
-                        muscle.getStateVariableValue(state, stateVarName));
+                        muscle.getStateVariableValue(state, "activation"));
             }
 
             // Fiber length.
@@ -230,7 +230,7 @@ void testFromStatesStorageGivesCorrectStates() {
                 std::string stateVarName = muscleName + "/fiber_length";
                 SimTK_TEST_EQ(
                         getStorageEntry(sto, itime, stateVarName), 
-                        muscle.getStateVariableValue(state, stateVarName));
+                        muscle.getStateVariableValue(state, "fiber_length"));
             }
 
         }

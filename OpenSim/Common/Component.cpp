@@ -747,7 +747,7 @@ const Component::StateVariable* Component::
             return it->second.stateVariable.get();
         }
     } else if (svPath.getNumPathLevels() > 1) {
-        const auto& compPath = svPath.getParentPathString();
+        const auto& compPath = svPath.getParentPath();
         const Component* comp = traversePathToComponent<Component>(compPath);
         if (comp) {
             // This is the leaf of the path:
