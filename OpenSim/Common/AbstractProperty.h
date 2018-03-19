@@ -108,8 +108,10 @@ public:
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". This differs from `toString()` as it has
     an optional argument, `precision`, for controlling the number of digits
-    printed to string. **/
-    virtual std::string toStringForDisplay(const int precision) const
+    printed to string. If this function is not overridden in a derived class,
+    this function uses `toString()` and the default `precision` argument is
+    ignored. **/
+    virtual std::string toStringForDisplay(const int precision=6) const
     {   return toString(); }
 
     /** This returns a string representation of this property's value type 
