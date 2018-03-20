@@ -42,20 +42,59 @@
 using namespace OpenSim;
 using namespace std;
 
-void convertTableToStorage(const TimeSeriesTable& table, Storage& sto) {
+void convertTableToStorage(const AbstractDataTable* table, Storage& sto)
+{
     sto.purge();
-    OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
+    OpenSim::Array<std::string> labels("", (int)table->getNumColumns() + 1);
     labels[0] = "time";
-    for (int i = 0; i < (int)table.getNumColumns(); ++i) {
-        labels[i + 1] = table.getColumnLabel(i);
+    for (int i = 0; i < (int)table->getNumColumns(); ++i) {
+        labels[i + 1] = table->getColumnLabel(i);
     }
     sto.setColumnLabels(labels);
-    const auto& times = table.getIndependentColumn();
-    for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        auto rowView = table.getRowAtIndex(i_time);
-        sto.append(times[i_time], SimTK::Vector(rowView.transpose()));
+
+    TimeSeriesTable out;
+
+    if (auto td = dynamic_cast<const TimeSeriesTable*>(table))
+        // Table is already flattened, so clone for further processing
+        out = TimeSeriesTable{ *td };
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec2>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec3>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec4>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec5>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec6>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec7>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec8>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec9>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec<10>>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec<11>>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec<12>>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::UnitVec3>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Quaternion>*>(table))
+        out = tst->flatten();
+    else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::SpatialVec>*>(table))
+        out = tst->flatten();
+    else {
+        OPENSIM_THROW( STODataTypeNotSupported, typeid(table).name());
     }
-}            
+
+    const auto& times = out.getIndependentColumn();
+    for (unsigned i_time = 0; i_time < out.getNumRows(); ++i_time) {
+        auto rowView = out.getRowAtIndex(i_time);
+        sto.append(times[i_time], rowView.getAsVector());
+    }
+}
 
 
 //============================================================================
@@ -123,44 +162,50 @@ Storage::Storage(int aCapacity,const string &aName) :
     setName(aName);
 }
 //_____________________________________________________________________________
-/**
+/*
  * Construct an Storage instance from file.
- * This constructor is far from bullet proof.
  *
- * @param aFileName Name of the file from which the Storage is to be
+ * @param fileName Name of the file from which the Storage is to be
  * constructed.
  */
-Storage::Storage(const string &aFileName, bool readHeadersOnly) :
-    StorageInterface(aFileName),
+Storage::Storage(const string &fileName, bool readHeadersOnly) :
+    StorageInterface(fileName),
     _storage(StateVector())
 {
     // SET NULL STATES
     setNull();
 
     // OPEN FILE
-    std::unique_ptr<ifstream> fp{IO::OpenInputFile(aFileName)};
+    std::unique_ptr<ifstream> fp{IO::OpenInputFile(fileName)};
     OPENSIM_THROW_IF(fp == nullptr, Exception,
-            "Storage: Failed to open file " + aFileName);
+            "Storage: Failed to open file " + fileName);
 
     int nr=0,nc=0;
     if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
         // Version 2 Storage files do not need nColumns and nRows in the
         // header.
         OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
-                + aFileName);
+                + fileName);
     }
     if(_fileVersion > 1) {
         OPENSIM_THROW_IF(readHeadersOnly, Exception, 
-                "Cannot read headers only if STO version is greater than 1.");
-        TimeSeriesTable table = STOFileAdapter::read(aFileName);
-        convertTableToStorage(table, *this);
+                "Cannot read headers only if not an STO file or its "
+                "version is greater than 1.");
+        FileAdapter::OutputTables tables = FileAdapter::readFile(fileName);
+        if (tables.size() > 1) {
+            cout << "Storage: cannot read data files with multiple tables. "
+                << "Only the first table '" << tables.begin()->first << "' will "
+                << "loaded as Storage." << endl;
+        }
+        convertTableToStorage(tables.begin()->second.get(), *this);
         return;
     }
-    cout << "Storage: file=" << aFileName
+    
+    cout << "Storage: read data file =" << fileName
         << " (nr=" << nr << " nc=" << nc << ")" << endl;
     // Motion files from SIMM are in degrees
     if (_fileVersion < 1 &&
-            (0 == aFileName.compare(aFileName.length() - 4, 4, ".mot"))) {
+            (0 == fileName.compare(fileName.length() - 4, 4, ".mot"))) {
         _inDegrees = true;
     }
     if (_fileVersion < 1) {
@@ -183,7 +228,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 
     if (_columnLabels.getSize()!= nc){
         std::cout << "Storage: Warning- inconsistent headers in file " << 
-            aFileName << ". nColumns=" << nc << " but "
+            fileName << ". nColumns=" << nc << " but "
             << _columnLabels.getSize() << " were found" << std::endl;
     }
     // CAPACITY
@@ -230,7 +275,7 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
     // to account for different assumptions between SIMM.mot OpenSim.sto
 
     //MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
-    size_t found = aFileName.find(".mot");
+    size_t found = fileName.find(".mot");
     if(indexTime == -1 && found!=string::npos){
         postProcessSIMMMotion();
     }
