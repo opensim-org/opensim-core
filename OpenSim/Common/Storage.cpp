@@ -179,7 +179,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     // OPEN FILE
     std::unique_ptr<ifstream> fp{IO::OpenInputFile(fileName)};
     OPENSIM_THROW_IF(fp == nullptr, Exception,
-            "Storage: Failed to open file `" + fileName + 
+            "Storage: Failed to open file '" + fileName + 
             "'. Verify that the file exists at the specified location." );
 /**
     int nr=0,nc=0;
