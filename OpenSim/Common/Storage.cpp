@@ -210,7 +210,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
             if (tables.size() > 1) {
                 cout << "Storage: cannot read data files with multiple tables. "
                     << "Only the first table '" << tables.begin()->first << "' will "
-                    << "loaded as Storage." << endl;
+                    << "be loaded as Storage." << endl;
             }
             convertTableToStorage(tables.begin()->second.get(), *this);
             return;
