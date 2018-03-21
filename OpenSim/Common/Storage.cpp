@@ -45,13 +45,6 @@ using namespace std;
 void convertTableToStorage(const AbstractDataTable* table, Storage& sto)
 {
     sto.purge();
-    OpenSim::Array<std::string> labels("", (int)table->getNumColumns() + 1);
-    labels[0] = "time";
-    for (int i = 0; i < (int)table->getNumColumns(); ++i) {
-        labels[i + 1] = table->getColumnLabel(i);
-    }
-    sto.setColumnLabels(labels);
-
     TimeSeriesTable out;
 
     if (auto td = dynamic_cast<const TimeSeriesTable*>(table))
@@ -60,7 +53,7 @@ void convertTableToStorage(const AbstractDataTable* table, Storage& sto)
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec2>*>(table))
         out = tst->flatten();
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec3>*>(table))
-        out = tst->flatten();
+        out = tst->flatten({ "_x", "_y", "_z" });
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec4>*>(table))
         out = tst->flatten();
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec5>*>(table))
@@ -80,19 +73,27 @@ void convertTableToStorage(const AbstractDataTable* table, Storage& sto)
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Vec<12>>*>(table))
         out = tst->flatten();
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::UnitVec3>*>(table))
-        out = tst->flatten();
+        out = tst->flatten({ "_x", "_y", "_z" });
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::Quaternion>*>(table))
         out = tst->flatten();
     else if (auto tst = dynamic_cast<const TimeSeriesTable_<SimTK::SpatialVec>*>(table))
-        out = tst->flatten();
+        out = tst->flatten({ "_rx", "_ry", "_rz", "_tx", "_ty", "_tz" });
     else {
         OPENSIM_THROW( STODataTypeNotSupported, typeid(table).name());
     }
 
+    OpenSim::Array<std::string> labels("", (int)out.getNumColumns() + 1);
+    labels[0] = "time";
+    for (int i = 0; i < (int)out.getNumColumns(); ++i) {
+        labels[i + 1] = out.getColumnLabel(i);
+    }
+    sto.setColumnLabels(labels);
+
     const auto& times = out.getIndependentColumn();
     for (unsigned i_time = 0; i_time < out.getNumRows(); ++i_time) {
-        auto rowView = out.getRowAtIndex(i_time);
-        sto.append(times[i_time], rowView.getAsVector());
+        const SimTK::Vector rowVector =
+            out.getRowAtIndex(i_time).transpose().getAsVector();
+        sto.append(times[i_time], rowVector);
     }
 }
 
@@ -178,8 +179,9 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     // OPEN FILE
     std::unique_ptr<ifstream> fp{IO::OpenInputFile(fileName)};
     OPENSIM_THROW_IF(fp == nullptr, Exception,
-            "Storage: Failed to open file " + fileName);
-
+            "Storage: Failed to open file `" + fileName + 
+            "'. Verify that the file exists at the specified location." );
+/**
     int nr=0,nc=0;
     if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
         // Version 2 Storage files do not need nColumns and nRows in the
@@ -188,6 +190,9 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
                 + fileName);
     }
     if(_fileVersion > 1) {
+    */
+    try {
+        // Try using FileAdpater to read all file types
         OPENSIM_THROW_IF(readHeadersOnly, Exception, 
                 "Cannot read headers only if not an STO file or its "
                 "version is greater than 1.");
@@ -200,7 +205,20 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
         convertTableToStorage(tables.begin()->second.get(), *this);
         return;
     }
+    catch (const std::exception& x) {
+        cout << "Storage: FileAdpater failed to read data file.\n"
+            << x.what() << endl;
+        cout << "Reverting to use conventional Storage reader." << endl;
+    }
     
+    int nr = 0, nc = 0;
+    if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
+        // Version 2 Storage files do not need nColumns and nRows in the
+        // header.
+        OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
+            + fileName);
+    }
+
     cout << "Storage: read data file =" << fileName
         << " (nr=" << nr << " nc=" << nc << ")" << endl;
     // Motion files from SIMM are in degrees
