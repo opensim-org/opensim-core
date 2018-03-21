@@ -113,9 +113,9 @@ int main() {
         // Verify the loading of marker data (14) from .trc into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "TRCFileWithNANs.trc", 43);
 
-        // Verify the loading of forces from .c3d into a Storage. Includes 3
+        // Verify the loading of forces from .c3d into a Storage. Includes 2
         // force-plates with force, point, moment vectors (Vec3 flattened)
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "TestGRFData.c3d", 3*9+1);
+        SimTK_SUBTEST2(testStorageLoadingFromFile, "walking2.c3d", 3*6+1);
 
         SimTK_SUBTEST(testStorageLegacy);
     SimTK_END_TEST();
