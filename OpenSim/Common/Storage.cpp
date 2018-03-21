@@ -189,15 +189,15 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     int nr = 0, nc = 0;
 
     if (isMotFile || isStoFile) {
-        if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
-            // Version 2 Storage files do not need nColumns and nRows in the
-            // header.
-            OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
+        parseHeaders(*fp, nr, nc);
+        if (_fileVersion <= 1) { // If an old .sto or .mot format
+            // Must have valid number of rows and columns
+            OPENSIM_THROW_IF(nr < 1 && nc < 1, Exception,
+                "Storage: Failed to parse headers of file "
                 + fileName);
-        } 
-        else {
+            // Checks out as a valid old format, so use legacy code to process
             useFileAdpater = false;
-        }
+        } 
     }
 
     if (useFileAdpater) { // For new .sto files and others that are not .mot
