@@ -191,24 +191,27 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     }
     if(_fileVersion > 1) {
     */
-    try {
-        // Try using FileAdpater to read all file types
-        OPENSIM_THROW_IF(readHeadersOnly, Exception, 
+    size_t found = fileName.find(".mot");
+    if (found == string::npos) { // Not a .mot file
+        try {
+            // Try using FileAdpater to read all file types
+            OPENSIM_THROW_IF(readHeadersOnly, Exception,
                 "Cannot read headers only if not an STO file or its "
                 "version is greater than 1.");
-        FileAdapter::OutputTables tables = FileAdapter::readFile(fileName);
-        if (tables.size() > 1) {
-            cout << "Storage: cannot read data files with multiple tables. "
-                << "Only the first table '" << tables.begin()->first << "' will "
-                << "loaded as Storage." << endl;
+            FileAdapter::OutputTables tables = FileAdapter::readFile(fileName);
+            if (tables.size() > 1) {
+                cout << "Storage: cannot read data files with multiple tables. "
+                    << "Only the first table '" << tables.begin()->first << "' will "
+                    << "loaded as Storage." << endl;
+            }
+            convertTableToStorage(tables.begin()->second.get(), *this);
+            return;
         }
-        convertTableToStorage(tables.begin()->second.get(), *this);
-        return;
-    }
-    catch (const std::exception& x) {
-        cout << "Storage: FileAdpater failed to read data file.\n"
-            << x.what() << endl;
-        cout << "Reverting to use conventional Storage reader." << endl;
+        catch (const std::exception& x) {
+            cout << "Storage: FileAdpater failed to read data file.\n"
+                << x.what() << endl;
+            cout << "Reverting to use conventional Storage reader." << endl;
+        }
     }
     
     int nr = 0, nc = 0;
@@ -293,8 +296,7 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     // to account for different assumptions between SIMM.mot OpenSim.sto
 
     //MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
-    size_t found = fileName.find(".mot");
-    if(indexTime == -1 && found!=string::npos){
+    if(indexTime == -1){
         postProcessSIMMMotion();
     }
 }
