@@ -181,22 +181,30 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
     OPENSIM_THROW_IF(fp == nullptr, Exception,
             "Storage: Failed to open file '" + fileName + 
             "'. Verify that the file exists at the specified location." );
-/**
-    int nr=0,nc=0;
-    if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
-        // Version 2 Storage files do not need nColumns and nRows in the
-        // header.
-        OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
+
+    bool isMotFile = SimTK::String::toLower(fileName).rfind(".mot") != string::npos;
+    bool isStoFile = SimTK::String::toLower(fileName).rfind(".sto") != string::npos;
+    bool useFileAdpater = true;
+
+    int nr = 0, nc = 0;
+
+    if (isMotFile || isStoFile) {
+        if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
+            // Version 2 Storage files do not need nColumns and nRows in the
+            // header.
+            OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
                 + fileName);
+        } 
+        else {
+            useFileAdpater = false;
+        }
     }
-    if(_fileVersion > 1) {
-    */
-    size_t found = fileName.find(".mot");
-    if (found == string::npos) { // Not a .mot file
+
+    if (useFileAdpater) { // For new .sto files and others that are not .mot
         try {
             // Try using FileAdpater to read all file types
             OPENSIM_THROW_IF(readHeadersOnly, Exception,
-                "Cannot read headers only if not an STO file or its "
+                "Cannot read headers only if not a STO file or its "
                 "version is greater than 1.");
             FileAdapter::OutputTables tables = FileAdapter::readFile(fileName);
             if (tables.size() > 1) {
@@ -210,23 +218,19 @@ Storage::Storage(const string &fileName, bool readHeadersOnly) :
         catch (const std::exception& x) {
             cout << "Storage: FileAdpater failed to read data file.\n"
                 << x.what() << endl;
-            cout << "Reverting to use conventional Storage reader." << endl;
+            if (isStoFile) 
+                cout << "Reverting to use conventional Storage reader." << endl;
+            else 
+                throw x;
         }
     }
-    
-    int nr = 0, nc = 0;
-    if (!parseHeaders(*fp, nr, nc) && _fileVersion <= 1) {
-        // Version 2 Storage files do not need nColumns and nRows in the
-        // header.
-        OPENSIM_THROW(Exception, "Storage: Failed to parse headers of file "
-            + fileName);
-    }
+
+    // Process file as if it were a .mot file
 
     cout << "Storage: read data file =" << fileName
         << " (nr=" << nr << " nc=" << nc << ")" << endl;
     // Motion files from SIMM are in degrees
-    if (_fileVersion < 1 &&
-            (0 == fileName.compare(fileName.length() - 4, 4, ".mot"))) {
+    if (_fileVersion < 1 && isMotFile) {
         _inDegrees = true;
     }
     if (_fileVersion < 1) {
@@ -3209,14 +3213,15 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
         }
         firstLine=false;
     }
+
+    if (_fileVersion < 1) {
+        cout << "Old version storage/motion file encountered" << endl;
+    }
+
     if(rNumColumns==0 || rNumRows==0) {
         return false;
     }
-    if (_fileVersion < LatestVersion) {
-        if (_fileVersion < 1){
-            cout << "Old version storage/motion file encountered" << endl;
-        }
-    }
+
     return true;
 }
 //_____________________________________________________________________________
