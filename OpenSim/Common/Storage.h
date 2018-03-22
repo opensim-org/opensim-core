@@ -112,10 +112,21 @@ public:
     // make this constructor explicit so you don't get implicit casting of int to Storage
     explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
         const std::string &aName="UNKNOWN");
-    /** Load a STO file.
-    <b>Version 2 STO files</b>: This constructor can read version 1 and version 2
-    STO files. However, most metadata from a version 2 STO file will not be
-    preserved. Use STOFileAdapter and TimeSeriesTable instead, if possible. */
+    /** Load a data file into a Storage. 
+    <b>Version 2 STO files</b>: This constructor can read MOT, unversioned, 
+    version 1 and 2 STO files, and any data file format supported by FileAdapter,
+    which includes C3D and TRC files. Several of these formats support tables of
+    different element types (e.g. Vec3, Quaternion, SpatialVec), in which case these
+    elements are flattened to scalar values with more columns.
+    @see DataTable_::faltten()
+    Note, this capability was introduced to support plotting OutputReporter results
+    in the GUI and is not recommended for API users. In addition to only supporting
+    scalar elements, Storage does not preserve the metadata that can be contained by
+    version 2 STO files and read in from C3D and TRC files via their respective
+    FileAdapters. In the case of data files with multiple tables (like C3D files)
+    only the first table read is converted into a Storage.
+    Please use FileAdapter (STOFileAdpater, C3DFileAdapter, ...) and TimeSeriesTable
+    instead, whenever possible. */
     Storage(const std::string &aFileName, bool readHeadersOnly=false) SWIG_DECLARE_EXCEPTION;
     Storage(const Storage &aStorage,bool aCopyData=true);
     Storage(const Storage &aStorage,int aStateIndex,int aN,

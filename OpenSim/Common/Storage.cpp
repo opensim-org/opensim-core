@@ -166,8 +166,6 @@ Storage::Storage(int aCapacity,const string &aName) :
 /*
  * Construct an Storage instance from file.
  *
- * @param fileName Name of the file from which the Storage is to be
- * constructed.
  */
 Storage::Storage(const string &fileName, bool readHeadersOnly) :
     StorageInterface(fileName),
