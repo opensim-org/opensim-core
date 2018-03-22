@@ -440,7 +440,7 @@ void testUpdateFile() {
                        RE_ANY));
     testCommand("update-file x.sto y", EXIT_FAILURE, 
             std::regex("(Loading input file 'x.sto')" + RE_ANY +
-                       "(Storage: Failed to open file x.sto)" + RE_ANY));
+                       "(Storage: Failed to open file 'x.sto')" + RE_ANY));
 
     // Successful input.
     // =================
