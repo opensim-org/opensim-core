@@ -101,16 +101,16 @@ void testStorageLegacy() {
 int main() {
     SimTK_START_TEST("testStorage");
 
-        // Verify the loading scalar Outputs (2) from ..sto into a Storage
+        // Verify loading of scalar Outputs (there are 2) from .sto into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputs.sto", 2+1);
 
-        // Verify the loading Vec3 Outputs (2) from .sto into a Storage
+        // Verify loading of Vec3 Outputs (2) from .sto into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputsVec3.sto", 2*3+1);
 
-        // Verify the loading SpatialVec Outputs (2) from .sto into a Storage
+        // Verify loading of SpatialVec Outputs (2) from .sto into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputsSpatialVec.sto", 2*6+1);
 
-        // Verify the loading of marker data (14) from .trc into a Storage
+        // Verify the loading of marker data (14 markers) from .trc into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "TRCFileWithNANs.trc", 43);
 
         // Verify the loading of forces from .c3d into a Storage. Includes 2
