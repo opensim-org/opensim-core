@@ -371,7 +371,7 @@ loadStatesFromFile(SimTK::State& s)
         cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
         Storage temp(_statesFileName);
         _statesStore = new Storage();
-        _statesStore->setName("standardized_"+temp.getName()); // Name appears in GUI
+        _statesStore->setName("states"); // Name appears in GUI
         _model->formStateStorage(temp, *_statesStore, true);
     } else {
         if(!_coordinatesFileNameProp.isValidFileName()) 
