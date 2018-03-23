@@ -101,7 +101,7 @@ public:
     /** For relatively simple types, return the current value of this property 
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". For `Property`s, this calls the function
-    below, toStringForDisplay(), with a precision of 6.**/
+    below, toStringForDisplay(), with a precision of 6 for floats.**/
     // TODO: replace this with something more reasonable
     virtual std::string toString() const = 0;
 
@@ -109,8 +109,9 @@ public:
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". This differs from `toString()` as it has
     an argument, `precision`, for controlling the number of digits printed to
-    string. If this function is not overridden in a derived class, this 
-    function uses `toString()` and the `precision` argument is ignored. **/
+    string for floats. If this function is not overridden in a derived class, 
+    this function uses `toString()` and the `precision` argument is 
+    ignored. **/
     virtual std::string toStringForDisplay(const int precision) const
     {   return toString(); }
 

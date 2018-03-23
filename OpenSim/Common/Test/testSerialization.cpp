@@ -115,7 +115,7 @@ static void testPropertyOutputHelper(const int val)
 
 template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val)
 {
-    cout << "(Vec" << M << ")" << val << ":  ";
+    cout << "(Vec" << M << ")" << val << ":\n";
     stringstream ss;
 
     Property<SimTK::Vec<M>>* propertyVec =
@@ -125,7 +125,7 @@ template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val)
     Vec<M> valOut = propertyVec->getValue();
 
     writeUnformatted(ss, valOut);
-    cout << ss.str() << " ";
+    cout << ss.str() << "\n";
     cout << propertyVec->toString() << endl;
 }
 
@@ -141,7 +141,7 @@ static void testPropertyOutputHelper(const SimTK::Transform val)
     SimTK::Transform valOut = propertyTransform->getValue();
 
     writeUnformatted(ss, valOut);
-    cout << ss.str() << ":\n";
+    cout << ss.str() << "\n";
     cout << propertyTransform->toString() << endl;
 }
 
@@ -205,6 +205,17 @@ int main()
     SimTK::Rotation R = SimTK::Rotation(SimTK::Pi, SimTK::ZAxis);
     testPropertyOutputHelper(SimTK::Transform(R, p));
 
+    Property<double>* propertyDouble =
+        Property<double>::TypeHelper::create("double", true);
+
+    // Test precision argument with toStringForDisplay()
+    propertyDouble->setValue((double)0.123456789012345);
+    for (int i = 0; i < 15; ++i) {
+        std::string valStr = propertyDouble->toStringForDisplay(i);
+        cout << valStr << " ";
+    }
+    cout << endl;
+    
 
     try {
         // TYPE REGISTRATION

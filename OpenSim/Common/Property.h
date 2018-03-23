@@ -705,7 +705,7 @@ Property<T>::getTypeName() const {
 // free functions)
 #ifndef SWIG
 inline void convertTransformToVec6(SimTK::Array_<SimTK::Vec6>& rotTrans,
-    const SimTK::Transform transform)
+    const SimTK::Transform& transform)
 {
     SimTK::Vec6 X6;
     SimTK::Vec3& angles = X6.updSubVec<3>(0);
@@ -765,8 +765,16 @@ writeSimplePropertyToStreamForDisplay(std::ostream& o,
     // Convert array of Transform objects to an array of Vec6 objects.
     SimTK::Array_<SimTK::Vec6> rotTrans;
     convertTransformToVec6(rotTrans, v);
+    SimTK::Vec6 rotTransVec = rotTrans[0];
 
-    writeSimplePropertyToStreamForDisplay(o, rotTrans[0], precision);
+    o << std::setprecision(precision);
+
+    o << "(";
+    for (int i = 0; i < 6; ++i) {
+        if (i != 0) o << " ";
+        o << rotTransVec[i];
+    }
+    o << ")";
 }
 
 template <class T, class X> inline void
@@ -965,15 +973,6 @@ private:
     void writeSimplePropertyToStream(std::ostream& o) const {
         SimTK::writeUnformatted(o, values);
     }
-
-    //// This is the default implementation. Specializations for types that
-    //// contain floats (e.g., double, Vec3, Vec6, Vector, Transform) are
-    //// provided below to control the number of digits shown using the 
-    //// precision parameter. By default, the precision is ignored.
-    //void writeSimplePropertyToStreamForDisplay(std::ostream& o, T values,
-    //                                           const int precision) const {
-    //    writeSimplePropertyToStream(o);
-    //}
 
     // This is like an std::vector<T> although with an int index rather
     // than unsigned.
