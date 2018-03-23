@@ -696,6 +696,90 @@ Property<T>::getTypeName() const {
 // Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
 // to know about these.
 /** @cond **/
+
+//==============================================================================
+//                  HELPERS FOR WRITING PROPERTY VALUES 
+//==============================================================================
+// This section is hidden from SWIG because of compiling issues (i.e., SWIG
+// thought these functions were part of Property in some cases, rather than
+// free functions)
+#ifndef SWIG
+inline void convertTransformToVec6(SimTK::Array_<SimTK::Vec6>& rotTrans,
+    const SimTK::Transform transform)
+{
+    SimTK::Vec6 X6;
+    SimTK::Vec3& angles = X6.updSubVec<3>(0);
+    SimTK::Vec3& pos = X6.updSubVec<3>(3);
+    angles = transform.R().convertRotationToBodyFixedXYZ();
+    pos = transform.p();
+    rotTrans.push_back(X6);
+}
+
+template <class T> inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    T& v, const int precision)
+{
+    SimTK::writeUnformatted(o, v);
+}
+
+inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    const double v, const int precision)
+{
+    o << std::setprecision(precision);
+    o << v;
+}
+
+template <int M> inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    const SimTK::Vec<M>& v, const int precision)
+{
+    o << std::setprecision(precision);
+
+    o << "(";
+    for (int i = 0; i < M; ++i) {
+        if (i != 0) o << " ";
+        o << v[i];
+    }
+    o << ")";
+}
+
+inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    const SimTK::Vector& v, const int precision)
+{
+    o << std::setprecision(precision);
+
+    o << "(";
+    for (int i = 0; i < v.size(); ++i) {
+        if (i != 0) o << " ";
+        o << v[i];
+    }
+    o << ")";
+}
+
+inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    const SimTK::Transform& v, const int precision)
+{
+    // Convert array of Transform objects to an array of Vec6 objects.
+    SimTK::Array_<SimTK::Vec6> rotTrans;
+    convertTransformToVec6(rotTrans, v);
+
+    writeSimplePropertyToStreamForDisplay(o, rotTrans[0], precision);
+}
+
+template <class T, class X> inline void
+writeSimplePropertyToStreamForDisplay(std::ostream& o,
+    const SimTK::Array_<T, X>& v, const int precision)
+{
+    for (X i(0); i < v.size(); ++i) {
+        if (i != 0) o << " ";
+        writeSimplePropertyToStreamForDisplay(o, v[i], precision);
+    }
+}
+#endif
+
 //==============================================================================
 //                             SIMPLE PROPERTY
 //==============================================================================
@@ -730,13 +814,13 @@ public:
     }
    
     std::string toString() const override final {
-        return AbstractProperty::toStringForDisplay();
+        return toStringForDisplay(6);
     }
 
     std::string toStringForDisplay(const int precision) const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";
-        writeSimplePropertyToStreamForDisplay(out, precision);
+        writeSimplePropertyToStreamForDisplay(out, values, precision);
         if (!this->isOneValueProperty()) out << ")";
         return out.str();
     }
@@ -882,14 +966,14 @@ private:
         SimTK::writeUnformatted(o, values);
     }
 
-    // This is the default implementation. Specializations for types that
-    // contain floats (e.g., double, Vec3, Vec6, Vector, Transform) are
-    // provided below to control the number of digits shown using the 
-    // precision parameter. By default, the precision is ignored.
-    void writeSimplePropertyToStreamForDisplay(std::ostream& o, 
-                                               const int precision) const {
-        writeSimplePropertyToStream(o);
-    }
+    //// This is the default implementation. Specializations for types that
+    //// contain floats (e.g., double, Vec3, Vec6, Vector, Transform) are
+    //// provided below to control the number of digits shown using the 
+    //// precision parameter. By default, the precision is ignored.
+    //void writeSimplePropertyToStreamForDisplay(std::ostream& o, T values,
+    //                                           const int precision) const {
+    //    writeSimplePropertyToStream(o);
+    //}
 
     // This is like an std::vector<T> although with an int index rather
     // than unsigned.
@@ -925,7 +1009,9 @@ writeSimplePropertyToStream(std::ostream& o) const
 {   
     // Convert array of Transform objects to an array of Vec6 objects.
     SimTK::Array_<SimTK::Vec6> rotTrans;
-    convertTransformToVec6(rotTrans, values);
+    for (int i = 0; i < values.size(); ++i) {
+        convertTransformToVec6(rotTrans, values[i]);
+    }
 
     // Now write out the Vec6 objects.
     SimTK::writeUnformatted(o, rotTrans);
@@ -945,109 +1031,6 @@ readSimplePropertyFromStream(std::istream& in)
    }
    else
        return SimTK::readUnformatted(in, values);
-}
-
-// We provide specializations for all types that contain floats to manage
-// the number of digits displayed. We rely on the default setting of how
-// `stringstream`s handle floats, where `precision` is the number of digits
-// printed, and the `stream` automatically determines whether float or
-// exponential notation is used.
-template <> inline void SimpleProperty<double>::
-writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-{
-    o << std::setprecision(precision);
-    for (int i = 0; i < values.size(); ++i) {
-        if (i != 0) o << " ";
-        o << values[i];
-    }
-}
-
-template <int M> inline void SimpleProperty<SimTK::Vec<M>>::
-writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-{
-    o << std::setprecision(precision);
-    for (int i = 0; i < values.size(); ++i) {
-        if (i != 0) o << " ";
-        
-        for (int j = 0; j < M; ++j) {
-            if (j != 0) 0 << " ";
-            o << values[i][j];
-        }
-    }
-}
-
-//template <> inline void SimpleProperty<SimTK::Vec3>::
-//writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-//{
-//    o << std::setprecision(precision);
-//    for (int i = 0; i < values.size(); ++i) {
-//        if (i != 0) o << " ";
-//        o << "(" << values[i][0] << " ";
-//        o << values[i][1] << " ";
-//        o << values[i][2] << ")";
-//    }
-//}
-//
-//template <> inline void SimpleProperty<SimTK::Vec6>::
-//writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-//{
-//    o << std::setprecision(precision);
-//    for (int i = 0; i < values.size(); ++i) {
-//        if (i != 0) o << " ";
-//        o << "(" << values[i][0] << " ";
-//        o << values[i][1] << " ";
-//        o << values[i][2] << " ";
-//        o << values[i][3] << " ";
-//        o << values[i][4] << " ";
-//        o << values[i][5] << ")";
-//    }
-//}
-
-template <> inline void SimpleProperty<SimTK::Vector>::
-writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-{
-    o << std::setprecision(precision);
-    for (int i = 0; i < values.size(); ++i) {
-        if (i != 0) o << " ";
-        o << "(";
-        for (int j = 0; j < values[i].size(); ++i) {
-            if (j != 0) o << " ";
-            o << values[i][j];
-        }
-        o << ")";
-    }
-}
-
-template <> inline void SimpleProperty<SimTK::Transform>::
-writeSimplePropertyToStreamForDisplay(std::ostream& o, const int precision) const
-{
-    // Convert array of Transform objects to an array of Vec6 objects.
-    SimTK::Array_<SimTK::Vec6> rotTrans;
-    convertTransformToVec6(rotTrans, values);
-
-    o << std::setprecision(precision);
-    for (unsigned int i = 0; i < rotTrans.size(); ++i) {
-        if (i != 0) o << " ";
-        o << "(" << rotTrans[i][0] << " ";
-        o << rotTrans[i][1] << " ";
-        o << rotTrans[i][2] << " ";
-        o << rotTrans[i][3] << " ";
-        o << rotTrans[i][4] << " ";
-        o << rotTrans[i][5] << ")";
-    }
-}
-
-void convertTransformToVec6(SimTK::Array_<SimTK::Vec6>& rotTrans, 
-    const SimTK::Array_<SimTK::Transform, int> values)
-{
-    for (int i = 0; i < values.size(); ++i) {
-        SimTK::Vec6 X6;
-        SimTK::Vec3& angles = X6.updSubVec<3>(0);
-        SimTK::Vec3& pos = X6.updSubVec<3>(3);
-        angles = values[i].R().convertRotationToBodyFixedXYZ();
-        pos = values[i].p();
-        rotTrans.push_back(X6);
-    }
 }
 
 //==============================================================================
