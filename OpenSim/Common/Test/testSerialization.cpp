@@ -81,7 +81,7 @@ static void dumpObj(const Object& obj, int nSpaces) {
     }
 }
 
-static void testPropertyOutputHelper(const double val)
+static void testPropertyOutputHelper(const double val, const std::string ans)
 {
     cout << "(double)" << val << ":  ";
     stringstream ss;
@@ -95,9 +95,11 @@ static void testPropertyOutputHelper(const double val)
     writeUnformatted(ss, valOut);
     cout << std::to_string(valOut) << " " << ss.str() << " ";
     cout << propertyDouble->toString() << endl;
+
+    ASSERT(propertyDouble->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const int val)
+static void testPropertyOutputHelper(const int val, const std::string ans)
 {
     cout << "(int)" << val << ":  ";
     stringstream ss;
@@ -111,9 +113,11 @@ static void testPropertyOutputHelper(const int val)
     writeUnformatted(ss, valOut);
     cout << std::to_string(valOut) << " " << ss.str() << " ";
     cout << propertyInt->toString() << endl;
+
+    ASSERT(propertyInt->toString() == ans);
 }
 
-template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val)
+template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val, const std::string ans)
 {
     cout << "(Vec" << M << ")" << val << ":\n";
     stringstream ss;
@@ -127,9 +131,29 @@ template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val)
     writeUnformatted(ss, valOut);
     cout << ss.str() << "\n";
     cout << propertyVec->toString() << endl;
+
+    ASSERT(propertyVec->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const SimTK::Transform val)
+static void testPropertyOutputHelper(const SimTK::Vector val, const std::string ans)
+{
+    cout << "(Vector)" << val << ":\n";
+    stringstream ss;
+
+    Property<SimTK::Vector>* propertyVector =
+        Property<SimTK::Vector>::TypeHelper::create("Vector", true);
+
+    propertyVector->setValue(val);
+    Vector valOut = propertyVector->getValue();
+
+    writeUnformatted(ss, valOut);
+    cout << ss.str() << "\n";
+    cout << propertyVector->toString() << endl;
+
+    ASSERT(propertyVector->toString() == ans);
+}
+
+static void testPropertyOutputHelper(const SimTK::Transform val)//, const std::string ans)
 {
     cout << "(Transform)" << val << ":\n";
     stringstream ss;
@@ -179,40 +203,58 @@ int main()
     cout << "Testing toString() and toStringForDisplay()" << endl;
     cout << "Input:  std::to_string() SimTK::writeUnformatted() Property::toString()" << endl;
 
-    testPropertyOutputHelper((double)0.12345);
-    testPropertyOutputHelper((double)0.123456789012345);
-    testPropertyOutputHelper((double)0.1);
-    testPropertyOutputHelper((double)1.0000);
-    testPropertyOutputHelper((double)123456789);
-    testPropertyOutputHelper((double)0.000000000123456789);
-    testPropertyOutputHelper((double)9999999999999999);
-    testPropertyOutputHelper((double)1.234e-10);
-    testPropertyOutputHelper((double)1.234e10);
-    testPropertyOutputHelper((double)1.23456789e-10);
-    testPropertyOutputHelper((double)1.23456789e10);
-    testPropertyOutputHelper((double)0);
+    testPropertyOutputHelper((double)0.12345, "0.12345");
+    testPropertyOutputHelper((double)0.123456789012345, "0.123457");
+    testPropertyOutputHelper((double)0.1, "0.1");
+    testPropertyOutputHelper((double)1.0000, "1");
+    testPropertyOutputHelper((double)123456789, "1.23457e+08");
+    testPropertyOutputHelper((double)0.000000000123456789, "1.23457e-10");
+    testPropertyOutputHelper((double)9999999999999999, "1e+16");
+    testPropertyOutputHelper((double)1.234e-10, "1.234e-10");
+    testPropertyOutputHelper((double)1.234e10, "1.234e+10");
+    testPropertyOutputHelper((double)1.23456789e-10, "1.23457e-10");
+    testPropertyOutputHelper((double)1.23456789e10, "1.23457e+10");
+    testPropertyOutputHelper((double)0, "0");
 
-    testPropertyOutputHelper((int)2);
-    testPropertyOutputHelper((int)123456789);
-    testPropertyOutputHelper((int)0);
+    testPropertyOutputHelper((int)2, "2");
+    testPropertyOutputHelper((int)123456789, "123456789");
+    testPropertyOutputHelper((int)0, "0");
 
     // Don't test std::to_string for Vec, Vector, and Transforms
     cout << "Input:  SimTK::writeUnformatted() Property::toString()" << endl;
 
-    testPropertyOutputHelper(SimTK::Vec3(0, 0, 0));
-    testPropertyOutputHelper(SimTK::Vec6(0.123456789, 123456789, 1.23456789e-12, 1.23456, 0.00001234, 1234));
+    testPropertyOutputHelper(SimTK::Vec3(0, 0, 0), "(0 0 0)");
+    testPropertyOutputHelper(SimTK::Vec6(0.123456789, 123456789, 1.23456789e-12, 1.23456, 0.00001234, 1234),
+        "(0.123457 1.23457e+08 1.23457e-12 1.23456 1.234e-05 1234)");
+    testPropertyOutputHelper(SimTK::Vector(4, -1234567), 
+        "(-1.23457e+06 -1.23457e+06 -1.23457e+06 -1.23457e+06)");
+
     Vec3 p = Vec3(0.1, 0.2, 0.12345678);
-    SimTK::Rotation R = SimTK::Rotation(SimTK::Pi, SimTK::ZAxis);
+    SimTK::Rotation R = SimTK::Rotation(SimTK::Pi, SimTK::XAxis);
+    // this does not check against a string because random "-0"s show up in place of "0"s
     testPropertyOutputHelper(SimTK::Transform(R, p));
 
     Property<double>* propertyDouble =
         Property<double>::TypeHelper::create("double", true);
 
     // Test precision argument with toStringForDisplay()
-    propertyDouble->setValue((double)0.123456789012345);
-    for (int i = 0; i < 15; ++i) {
+    propertyDouble->setValue((double)0.123456789);
+    SimTK::Array_<std::string> ans;
+    ans.push_back("0.123457"); // precision of 0 will be default of 6
+    ans.push_back("0.1");
+    ans.push_back("0.12");
+    ans.push_back("0.123");
+    ans.push_back("0.1235");
+    ans.push_back("0.12346");
+    ans.push_back("0.123457");
+    ans.push_back("0.1234568");
+    ans.push_back("0.12345679");
+    ans.push_back("0.123456789");
+
+    for (int i = 0; i < 9; ++i) {
         std::string valStr = propertyDouble->toStringForDisplay(i);
         cout << valStr << " ";
+        ASSERT(valStr == ans[i]);
     }
     cout << endl;
     
