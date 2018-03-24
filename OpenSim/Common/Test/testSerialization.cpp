@@ -253,7 +253,7 @@ int main()
 
     for (int i = 0; i < 9; ++i) {
         std::string valStr = propertyDouble->toStringForDisplay(i);
-        cout << valStr << " ";
+        cout << valStr << " " << ans[i] << endl;
         ASSERT(valStr == ans[i]);
     }
     cout << endl;
