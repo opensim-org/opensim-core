@@ -781,6 +781,9 @@ template <class T, class X> inline void
 writeSimplePropertyToStreamForDisplay(std::ostream& o,
     const SimTK::Array_<T, X>& v, const int precision)
 {
+    OPENSIM_THROW_IF(precision <= 0, Exception,
+        "precision argument must be greater than 0.");
+
     for (X i(0); i < v.size(); ++i) {
         if (i != 0) o << " ";
         writeSimplePropertyToStreamForDisplay(o, v[i], precision);

@@ -240,7 +240,6 @@ int main()
     // Test precision argument with toStringForDisplay()
     propertyDouble->setValue((double)0.123456789);
     SimTK::Array_<std::string> ans;
-    ans.push_back("0.123457"); // precision of 0 will be default of 6
     ans.push_back("0.1");
     ans.push_back("0.12");
     ans.push_back("0.123");
@@ -251,10 +250,12 @@ int main()
     ans.push_back("0.12345679");
     ans.push_back("0.123456789");
 
-    for (int i = 0; i < 9; ++i) {
+    ASSERT_THROW(OpenSim::Exception, propertyDouble->toStringForDisplay(0));
+
+    for (int i = 1; i < 9; ++i) {
         std::string valStr = propertyDouble->toStringForDisplay(i);
-        cout << valStr << " " << ans[i] << endl;
-        ASSERT(valStr == ans[i]);
+        cout << valStr << " " << ans[i-1] << endl;
+        ASSERT(valStr == ans[i-1]);
     }
     cout << endl;
     
