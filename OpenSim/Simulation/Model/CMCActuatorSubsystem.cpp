@@ -155,19 +155,21 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
         coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], false);
         coords[i].setSpeedValue(mutableCompState, _uWork[i] + _uCorrections[i]);
     }
-    // projectQ is sufficient to satisfy constraints perturbed by _qCorrections
+    // project() to satisfy constraints perturbed by _q/_uCorrections
     _model->getMultibodySystem().projectQ(mutableCompState,
-        getModel()->get_assembly_accuracy()/10);
+        getModel()->get_assembly_accuracy() / 10);
+    _model->getMultibodySystem().projectU(mutableCompState,
+        getModel()->get_assembly_accuracy() / 10);
 
-     /* copy  muscle states computed from the actuator system to the muscle states
-        for the complete system  then compute forces*/
+    /* copy  muscle states computed from the actuator system to the muscle states
+       for the complete system  then compute forces*/
     mutableCompState.updZ() = s.getZ();
     mutableCompState.updTime() = t;
 
-     _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
+    _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
-     /* copy 1st derivatives of muscle states from complete system to actuator system */ 
-     s.updZDot() = _completeState.getZDot();
+    /* copy 1st derivatives of muscle states from complete system to actuator system */ 
+    s.updZDot() = _completeState.getZDot();
 
 /*
     cout << "_qWork=" << _qWork << endl;
