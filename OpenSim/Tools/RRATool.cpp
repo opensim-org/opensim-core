@@ -514,11 +514,9 @@ bool RRATool::run()
 
     if(desiredKinFlag) {
         _model->getMultibodySystem().realize(s, Stage::Time );
-        _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,qStore,uStore);
-        if(qStore->isInDegrees()){
-            _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-            _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
-        }
+        // qStore and uStore returned are in radians
+        _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,
+            qStore, uStore);
     }
 
     // Adjust COM to reduce residuals (formerly RRA pass 1) if requested

@@ -617,11 +617,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
+        aModel.getSimbodyEngine().formCompleteStorages(s, 
+            *loadKinematicsForPointTransformation,
+            qStore,
+            uStore);
         // qStore should be in radians
-        if (qStore->isInDegrees()){
-            aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-        }
         _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;
