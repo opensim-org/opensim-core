@@ -315,6 +315,6 @@ void testExternalLoadDefaultProperties() {
     xf->set_applied_to_body(pendBodyName);
 
     // If force_expressed_in_body can't be found, it's set to ground; no error.
-    xf->set_force_expressed_in_body("nonexistant");
+    xf->set_force_expressed_in_body("nonexistent");
     model.initSystem();
 }
