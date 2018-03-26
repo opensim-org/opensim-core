@@ -621,7 +621,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             *loadKinematicsForPointTransformation,
             qStore,
             uStore);
-        // qStore should be in radians
+       
         _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;
