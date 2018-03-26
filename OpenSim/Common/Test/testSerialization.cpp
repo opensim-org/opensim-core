@@ -252,10 +252,10 @@ int main()
 
     ASSERT_THROW(OpenSim::Exception, propertyDouble->toStringForDisplay(0));
 
-    for (int i = 1; i < ans.size()+1; ++i) {
-        std::string valStr = propertyDouble->toStringForDisplay(i);
-        cout << valStr << " " << ans[i-1] << endl;
-        ASSERT(valStr == ans[i-1]);
+    for (unsigned int i = 0; i < ans.size(); ++i) {
+        std::string valStr = propertyDouble->toStringForDisplay(i+1);
+        cout << valStr << " " << ans[i] << endl;
+        ASSERT(valStr == ans[i]);
     }
     cout << endl;
     
