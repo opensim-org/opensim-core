@@ -100,8 +100,7 @@ public:
 
     /** For relatively simple types, return the current value of this property 
     in a string suitable for displaying to a user in the GUI. Objects just
-    return something like "(Object)". For `Property`s, this calls the function
-    below, toStringForDisplay(), with a precision of 6 for floats.**/
+    return something like "(Object)". **/
     virtual std::string toString() const = 0;
 
     /** For relatively simple types, return the current value of this property
