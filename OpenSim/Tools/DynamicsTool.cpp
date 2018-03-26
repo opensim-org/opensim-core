@@ -281,11 +281,11 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
-        // qStore should be in radians
-        if (qStore->isInDegrees()){
-            aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-        }
+        // qStore and uStore returned are in radians
+        aModel.getSimbodyEngine().formCompleteStorages(s, 
+            *loadKinematicsForPointTransformation,
+            qStore, uStore);
+
         _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
         delete qStore;
         delete uStore;

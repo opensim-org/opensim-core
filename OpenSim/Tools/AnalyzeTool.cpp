@@ -391,16 +391,15 @@ loadStatesFromFile(SimTK::State& s)
 
         Storage *qStore=NULL, *uStore=NULL;
 
-        _model->getSimbodyEngine().formCompleteStorages( s, coordinatesStore,qStore,uStore);
+        // qStore and uStore returned are in radians
+        _model->getSimbodyEngine().formCompleteStorages( s, coordinatesStore,
+            qStore, uStore);
 
         if(_speedsFileName!="") {
             delete uStore;
             cout<<"\nLoading speeds from file "<<_speedsFileName<<"."<<endl;
             uStore = new Storage(_speedsFileName);
         }
-
-        _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-        _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
         // used to use createStatesStorageFromCoordinatesAndSpeeds(*_model, *qStore, *uStore);
         double ti = qStore->getFirstTime();
@@ -438,10 +437,8 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
     }
 
     Storage *qStore=NULL, *uStore=NULL;
+    // qStore and uStore returned are in radians
     _model->getSimbodyEngine().formCompleteStorages(s,motionCopy,qStore,uStore);
-
-    _model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-    _model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 
     double ti = qStore->getFirstTime();
     double tf = qStore->getLastTime();

@@ -120,8 +120,26 @@ public:
     //--------------------------------------------------------------------------
     // CONSTRAINTS
     //--------------------------------------------------------------------------
-    virtual void formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
-       OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete) const;
+    /**
+    * From a potentially partial specification of the generalized coordinates,
+    * form a complete storage of the generalized coordinates (q's) and
+    * generalized speeds (u's) in radians and radians/s respectively.
+    *
+    * @param aQIn Storage containing the q's or a subset of the q's.
+    * @param rQComplete Storage containing all the q's.  If q's were not
+    * in aQIn, the values are set to 0.0.  When a q is constrained, its value
+    * is altered to be consistent with the constraint.  The caller is responsible
+    * for deleting the memory associated with this storage. Units are radians.
+    * @param rUComplete Storage containing all the u's.  The generalized speeds
+    * are obtained by spline fitting the q's and differentiating the splines.
+    * When a u is constrained, its value is altered to be consistent with the
+    * constraint.  The caller is responsible for deleting the memory
+    * associated with this storage. Units are radians/s.
+    */
+    void formCompleteStorages( const SimTK::State& s, 
+        const OpenSim::Storage &aQIn,
+        OpenSim::Storage *&rQComplete,
+        OpenSim::Storage *&rUComplete) const;
 
     //--------------------------------------------------------------------------
     // EQUATIONS OF MOTION
