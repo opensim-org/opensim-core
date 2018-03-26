@@ -693,10 +693,6 @@ Property<T>::getTypeName() const {
     return TypeHelper::getTypeName();
 }
 
-// Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
-// to know about these.
-/** @cond **/
-
 //==============================================================================
 //                  HELPERS FOR WRITING PROPERTY VALUES 
 //==============================================================================
@@ -704,6 +700,9 @@ Property<T>::getTypeName() const {
 // thought these functions were part of Property in some cases, rather than
 // free functions)
 #ifndef SWIG
+
+/** Take the `transform` argument, convert to a Vec6, and then append
+the Vec6 to the end of the `rotTrans` Array. **/
 inline void convertTransformToVec6(SimTK::Array_<SimTK::Vec6>& rotTrans,
     const SimTK::Transform& transform)
 {
@@ -789,7 +788,11 @@ writeSimplePropertyToStreamForDisplay(std::ostream& o,
         writeSimplePropertyToStreamForDisplay(o, v[i], precision);
     }
 }
-#endif
+#endif // SWIG
+
+// Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
+// to know about these.
+/** @cond **/
 
 //==============================================================================
 //                             SIMPLE PROPERTY
@@ -823,11 +826,21 @@ public:
                           " | Received: " + that.getTypeName());
         }
     }
-   
+    
+    // Write the value of this property suitable for displaying to a user
+    // (i.e., this number may be rounded and not an exact representation of
+    // the actual value being used). This function calls `toStringForDisplay()`
+    // with `precision = 6`.
     std::string toString() const override final {
         return toStringForDisplay(6);
     }
 
+    // Write the value of this property suitable for displaying to a user
+    // (i.e., this number may be rounded and not an exact representation of
+    // the actual value being used). In general, this means that floats will
+    // be represented with the number of significant digits denoted by the
+    // `precision` argument, and the default formatting of `stringstream`
+    // determines whether or not exponential notation is used.
     std::string toStringForDisplay(const int precision) const override final {
         std::stringstream out;
         if (!this->isOneValueProperty()) out << "(";

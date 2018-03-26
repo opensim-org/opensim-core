@@ -117,7 +117,7 @@ static void testPropertyOutputHelper(const int val, const std::string ans)
     ASSERT(propertyInt->toString() == ans);
 }
 
-template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val, const std::string ans)
+template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M>& val, const std::string ans)
 {
     cout << "(Vec" << M << ")" << val << ":\n";
     stringstream ss;
@@ -135,7 +135,7 @@ template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M> val, c
     ASSERT(propertyVec->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const SimTK::Vector val, const std::string ans)
+static void testPropertyOutputHelper(const SimTK::Vector& val, const std::string ans)
 {
     cout << "(Vector)" << val << ":\n";
     stringstream ss;
@@ -153,7 +153,7 @@ static void testPropertyOutputHelper(const SimTK::Vector val, const std::string 
     ASSERT(propertyVector->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const SimTK::Transform val)//, const std::string ans)
+static void testPropertyOutputHelper(const SimTK::Transform& val)
 {
     cout << "(Transform)" << val << ":\n";
     stringstream ss;
@@ -252,7 +252,7 @@ int main()
 
     ASSERT_THROW(OpenSim::Exception, propertyDouble->toStringForDisplay(0));
 
-    for (int i = 1; i < 9; ++i) {
+    for (int i = 1; i < ans.size()+1; ++i) {
         std::string valStr = propertyDouble->toStringForDisplay(i);
         cout << valStr << " " << ans[i-1] << endl;
         ASSERT(valStr == ans[i-1]);
