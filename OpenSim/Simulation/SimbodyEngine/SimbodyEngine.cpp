@@ -897,8 +897,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     
     delete qStore;
     
-    // Compute storage object for simulation
-    // Need to set column labels before converting rad->deg
+    // Set column labels before returning
     rQComplete->setColumnLabels(columnLabels);
     rUComplete->setColumnLabels(speedLabels);
 }
