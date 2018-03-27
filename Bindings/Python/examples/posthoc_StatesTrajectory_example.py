@@ -43,10 +43,10 @@ model.addComponent(joint)
 
 # This reporter will collect states throughout the simulation at intervals of
 # 0.05 seconds.
-rep = osim.StatesTrajectoryReporter()
-rep.setName('reporter')
-rep.set_report_time_interval(0.05)
-model.addComponent(rep)
+reporter = osim.StatesTrajectoryReporter()
+reporter.setName('reporter')
+reporter.set_report_time_interval(0.05)
+model.addComponent(reporter)
 
 # Simulate.
 # ---------
@@ -64,7 +64,7 @@ manager.integrate(1.0)
 # Retrieve the StatesTrajectory from the reporter. Alternately, we could load a
 # StatesTrajectory from a STO file using
 # StatesTrajectory.createFromStatesStorage().
-statesTraj = rep.getStates()
+statesTraj = reporter.getStates()
 
 for itime in range(statesTraj.getSize()):
     state = statesTraj[itime]
@@ -79,3 +79,8 @@ for itime in range(statesTraj.getSize()):
     force_mag = math.sqrt(force[0]**2 + force[1]**2 + force[2]**2)
     print('time: %f s.  q: %f rad.  reaction force magnitude: %f N.' % (
         time, q, force_mag))
+
+    # The reaction could also be accessed as an output:
+    # abstractOutput = joint.getOutput('reaction_on_parent')
+    # output = osim.OutputSpatialVec.safeDownCast(abstractOutput)
+    # outputValue = output.getValue(s)
