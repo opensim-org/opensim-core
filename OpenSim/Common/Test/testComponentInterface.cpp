@@ -1114,13 +1114,16 @@ void testTraversePathToComponent() {
     SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
     SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
 
+
     // No component.
     // -------------
     // Incorrect path.
     SimTK_TEST_MUST_THROW(top.getComponent<A>("oops/a2"));
     // Wrong type.
     SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
+    SimTK_TEST_MUST_THROW(b1->getComponent("/nonexistent"));
     // Going too high up.
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
