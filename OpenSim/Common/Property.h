@@ -693,6 +693,10 @@ Property<T>::getTypeName() const {
     return TypeHelper::getTypeName();
 }
 
+// Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
+// to know about these.
+/** @cond **/
+
 //==============================================================================
 //                  HELPERS FOR WRITING PROPERTY VALUES 
 //==============================================================================
@@ -789,10 +793,6 @@ writeSimplePropertyToStreamForDisplay(std::ostream& o,
     }
 }
 #endif // SWIG
-
-// Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
-// to know about these.
-/** @cond **/
 
 //==============================================================================
 //                             SIMPLE PROPERTY
