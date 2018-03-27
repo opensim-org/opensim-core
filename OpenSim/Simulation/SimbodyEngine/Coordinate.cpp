@@ -317,8 +317,8 @@ double Coordinate::getValue(const SimTK::State& s) const
  */
 void Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstraints) const
 {
-    // If the coordinate is clamped, pull aValue into range.
-    if (getClamped(s)) {
+    // If enforceConstraints is true and coordinate is clamped, clamp aValue into range
+    if (enforceConstraints && getClamped(s)) {
         if (aValue < get_range(0))
             aValue = get_range(0);
         else if (aValue > get_range(1))
