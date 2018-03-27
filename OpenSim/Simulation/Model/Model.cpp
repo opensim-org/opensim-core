@@ -1876,7 +1876,7 @@ void Model::formStateStorage(const Storage& originalStorage,
     Array<string> rStateNames = getStateVariableNames();
     int numStates = getNumStateVariables();
     // make sure same size, otherwise warn
-    if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize()){
+    if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize() && warnUnspecifiedStates){
         cout << "Number of columns does not match in formStateStorage. Found "
             << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
     }
