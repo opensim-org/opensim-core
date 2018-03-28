@@ -2301,7 +2301,7 @@ protected:
 
         // Move up either to the root component or just enough to resolve all
         // the ".."'s.
-        int iPathEltStart = 0;
+        size_t iPathEltStart = 0u;
         const Component* current = this;
         if (path.isAbsolute()) {
             while (current->hasOwner()) current = &current->getOwner();
@@ -2309,7 +2309,7 @@ protected:
                     current->getName() != path.getSubcomponentNameAtLevel(0))
                 return nullptr;
             // Skip over the root name.
-            iPathEltStart = 1;
+            iPathEltStart = 1u;
         } else {
             while (iPathEltStart < path.getNumPathLevels() &&
                     path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
@@ -2323,7 +2323,7 @@ protected:
         using RefComp = SimTK::ReferencePtr<const Component>;
 
         // Skip over the root component name.
-        for (int i = iPathEltStart; i < path.getNumPathLevels(); ++i) {
+        for (size_t i = iPathEltStart; i < path.getNumPathLevels(); ++i) {
             // At this depth in the tree, is there a component whose name
             // matches the corresponding path element?
             const auto& currentPathElement =
