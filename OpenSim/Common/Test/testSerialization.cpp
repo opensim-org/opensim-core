@@ -81,7 +81,7 @@ static void dumpObj(const Object& obj, int nSpaces) {
     }
 }
 
-static void testPropertyOutputHelper(const double val, const std::string ans)
+static void testPropertyOutputHelper(const double& val, const std::string& ans)
 {
     cout << "(double)" << val << ":  ";
     stringstream ss;
@@ -99,7 +99,7 @@ static void testPropertyOutputHelper(const double val, const std::string ans)
     ASSERT(propertyDouble->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const int val, const std::string ans)
+static void testPropertyOutputHelper(const int& val, const std::string& ans)
 {
     cout << "(int)" << val << ":  ";
     stringstream ss;
@@ -117,7 +117,7 @@ static void testPropertyOutputHelper(const int val, const std::string ans)
     ASSERT(propertyInt->toString() == ans);
 }
 
-template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M>& val, const std::string ans)
+template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M>& val, const std::string& ans)
 {
     cout << "(Vec" << M << ")" << val << ":\n";
     stringstream ss;
@@ -135,7 +135,7 @@ template <int M> static void testPropertyOutputHelper(const SimTK::Vec<M>& val, 
     ASSERT(propertyVec->toString() == ans);
 }
 
-static void testPropertyOutputHelper(const SimTK::Vector& val, const std::string ans)
+static void testPropertyOutputHelper(const SimTK::Vector& val, const std::string& ans)
 {
     cout << "(Vector)" << val << ":\n";
     stringstream ss;
