@@ -32,7 +32,7 @@ matrix:
     - if: type != cron
       os: osx
       compiler: clang
-      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes
+      env: BTYPE=Release WRAP=on  DOXY=on  NPROC=2 DEPLOY=yes OSX_TARGET=10.10
       
 branches:
   except:
@@ -189,7 +189,11 @@ before_install:
   # Run superbuild to download, configure, build and install dependencies.
   - mkdir $OPENSIM_DEPENDENCIES_BUILD_DIR
   - cd $OPENSIM_DEPENDENCIES_BUILD_DIR
-  - cmake $TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF
+  - DEP_CMAKE_ARGS=($TRAVIS_BUILD_DIR/dependencies -DCMAKE_INSTALL_PREFIX=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DCMAKE_BUILD_TYPE=$BTYPE -DSUPERBUILD_simbody=OFF)
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
+
+  - printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+  - cmake "${DEP_CMAKE_ARGS[@]}"
   - make -j8
   
   # Force some cleanup of homebrew cache so we do not exceed availabe disk space
@@ -209,6 +213,9 @@ install:
   # The deployed binaries are used by the GUI, which requires the non-FHS
   # layout.
   - OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+
+  # The minimum macOS/OSX version we support.
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=$OSX_TARGET); fi
   
   # Dependencies.
   - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
