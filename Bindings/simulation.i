@@ -212,6 +212,8 @@
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
+%include <OpenSim/Simulation/SimulationUtilities.h>
+
 // Iterators.
 %template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
 %template(FrameIterator) OpenSim::ComponentListIterator<const OpenSim::Frame>;

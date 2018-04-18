@@ -37,72 +37,10 @@ namespace OpenSim {
     the final state is returned at the end of the simulation, when finalTime is
     reached. %Set saveStatesFile=true to save the states to a storage file as:
     "<model_name>_states.sto". */
-inline SimTK::State simulate(Model& model,
+SimTK::State simulate(Model& model,
     const SimTK::State& initialState,
     double finalTime,
-    bool saveStatesFile = false)
-{
-    // Returned state begins as a copy of the initial state
-    SimTK::State state = initialState;
-    SimTK::Visualizer::InputSilo* silo;
-
-    bool simulateOnce = true;
-
-    // Ensure the final time is in the future.
-    const double initialTime = initialState.getTime();
-    if (finalTime <= initialTime) {
-        std::cout << "The final time must be in the future (current time is "
-                  << initialTime << "); simulation aborted." << std::endl;
-        return state;
-    }
-
-    // Configure the visualizer.
-    if (model.getUseVisualizer()) {
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses.
-        silo = &model.updVisualizer().updInputSilo();
-
-        SimTK::DecorativeText help("Press any key to start a new simulation; "
-            "ESC to quit.");
-        help.setIsScreenText(true);
-        viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
-
-        viz.setShowSimTime(true);
-        viz.drawFrameNow(state);
-        std::cout << "A visualizer window has opened." << std::endl;
-
-        // if visualizing enable replay
-        simulateOnce = false;
-    }
-
-    // Simulate until the user presses ESC (or enters 'q' if visualization has
-    // been disabled).
-    do {
-        if (model.getUseVisualizer()) {
-            // Get a key press.
-            silo->clear(); // Ignore any previous key presses.
-            unsigned key, modifiers;
-            silo->waitForKeyHit(key, modifiers);
-            if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
-        }
-
-        // reset the state to the initial state
-        state = initialState;
-        // Set up manager and simulate.
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        Manager manager(model, integrator);
-        state.setTime(initialTime);
-        manager.initialize(state);
-        state = manager.integrate(finalTime);
-
-        // Save the states to a storage file (if requested).
-        if (saveStatesFile) {
-            manager.getStateStorage().print(model.getName() + "_states.sto");
-        }
-    } while (!simulateOnce);
-
-    return state;
-}
+    bool saveStatesFile = false);
 
 /// @}
 
