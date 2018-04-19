@@ -120,7 +120,7 @@ void PistonActuator::computeForce(const SimTK::State& s,
 
     SimTK::Vec3 pointA = get_pointA();
     SimTK::Vec3 pointB = get_pointB();
-    Ground ground = getModel().getGround();
+    const Ground& ground = getModel().getGround();
     if (get_points_are_global())
     {
         pointA_inGround = pointA;

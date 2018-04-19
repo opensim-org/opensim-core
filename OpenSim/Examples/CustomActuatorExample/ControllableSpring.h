@@ -102,7 +102,7 @@ public:
 
         SimTK::Vec3 pointA = get_pointA();
         SimTK::Vec3 pointB = get_pointB();
-        Ground ground = getModel().getGround();
+        const Ground& ground = getModel().getGround();
         if (get_points_are_global())
         {
             pointA_inGround = pointA;
@@ -122,7 +122,7 @@ public:
         double length = r.norm();
 
         /* find the stiffness.  computeActuation is defined in PistonActuator and
-         * just returns the product of the actuator's control and it's
+         * just returns the product of the actuator's control and its
          * _optimalForce.  We're using this to mean stiffness. */
         double stiffness = computeActuation(s);
 
