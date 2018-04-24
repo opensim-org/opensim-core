@@ -26,6 +26,7 @@
 #include "Model/Model.h"
 #include "Manager/Manager.h"
 #include <simbody/internal/Visualizer_InputListener.h>
+#include "osimSimulationDLL.h"
 
 namespace OpenSim {
 
@@ -37,6 +38,7 @@ namespace OpenSim {
     the final state is returned at the end of the simulation, when finalTime is
     reached. %Set saveStatesFile=true to save the states to a storage file as:
     "<model_name>_states.sto". */
+OSIMSIMULATION_API
 SimTK::State simulate(Model& model,
     const SimTK::State& initialState,
     double finalTime,
