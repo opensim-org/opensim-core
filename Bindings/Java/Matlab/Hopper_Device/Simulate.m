@@ -90,7 +90,7 @@ while true
     end
 
     % Clear the table for all TableReporters. Note: this does not handle
-    % TableReporters for Vec3s, etc.
+    % TableReporters for class Vector, etc.
     compList = model.getComponentsList();
     compIter = compList.begin();
     while ~compIter.equals(compList.end())
