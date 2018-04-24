@@ -23,6 +23,10 @@
 
 #include "SimulationUtilities.h"
 
+#include "Model/Model.h"
+#include "Manager/Manager.h"
+#include <simbody/internal/Visualizer_InputListener.h>
+
 using namespace OpenSim;
 
 SimTK::State OpenSim::simulate(Model& model,
