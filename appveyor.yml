@@ -56,7 +56,7 @@ init:
   - SET JAVA_HOME=%JAVA_DIR%
   - SET PATH=%JAVA_HOME%\bin;%PATH%
   # Detect if we are on the master branch; if so, we will deploy binaries.
-  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  - IF %APPVEYOR_REPO_BRANCH% EQU dynamicwalking2018 IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
 
 cache:
   ## Cache swig, which we install via AppVeyor.
@@ -103,14 +103,14 @@ build_script:
   - cd %OPENSIM_BUILD_DIR%
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Set the CXXFLAGS environment variable to turn warnings into errors.
-  - cmake -E env CXXFLAGS="/WX" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON
+  - cmake -E env CXXFLAGS="/WX" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=OFF -DWITH_BTK:BOOL=ON
 
   # Build.
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
   
 test_script:
   ## Run tests.
-  - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
+  # TODO - ctest --parallel 4 --build-config Release --output-on-failure #--exclude-regex "%OPENSIM_TESTS_TO_EXCLUDE%"
 
   ## Build doxygen (now that tests pass).
   # http://help.appveyor.com/discussions/problems/863-doxygen-installed-via-chocolatey-not-found
@@ -122,18 +122,18 @@ test_script:
   - cmake --build . --target install --config Release -- /maxcpucount:4 /verbosity:quiet
   
   ## Test python wrapping.
-  - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
-  # Move to the installed location of the python package.
-  - cd %OPENSIM_INSTALL_DIR%\sdk\python
-  # Run python tests.
-  - "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
+  # TODO - set PATH=%OPENSIM_INSTALL_DIR%\bin;%PATH%
+  # TODO # Move to the installed location of the python package.
+  # TODO - cd %OPENSIM_INSTALL_DIR%\sdk\python
+  # TODO # Run python tests.
+  # TODO - "%PYTHON_DIR%\\Scripts\\nosetests -v" #--exclude=%PYTHON_TESTS_TO_EXCLUDE%"
 
 after_test:
   - cd %APPVEYOR_BUILD_FOLDER% 
   - ## On master branch, create NuGet package for OpenSim.
   - # Create and upload NuGet package.
-  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%" -BasePath %OPENSIM_INSTALL_DIR%
-  - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%.0.0.0.nupkg
+  - IF DEFINED DISTR nuget pack .opensim-core.nuspec -Properties "packageIdSuffix=%NUGET_PACKAGE_ID_SUFFIX%_dw2018" -BasePath %OPENSIM_INSTALL_DIR%
+  - IF DEFINED DISTR appveyor PushArtifact opensim-core%NUGET_PACKAGE_ID_SUFFIX%_dw2018.0.0.0.nupkg
 
 # The following, if uncommented, should allow you to remote-desktop into
 # the Appveyor build machine.
