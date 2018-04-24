@@ -1,13 +1,16 @@
-function osimSimulate(model, state, finalTime, visualize)
+function osimSimulate(model, state, finalTime)
 % Simulate an OpenSim model from an initial state. The provided state is
-% updated to be the state at the end of the simulation.
+% updated to be the state at the end of the simulation. If you have called
+% model.setUseVisualizer(true), then the simulation will be visualized using
+% the simbody-visualizer, and you will be able run the simulation multiple
+% times. Otherwise, the simulation is run once without visualization.
 %
 % Parameters
 % ----------
-% model: The OpenSim Model to simulate.
+% model: The OpenSim Model to simulate. You must have called initSystem() on
+%        this model.
 % state: The SimTK State to use as the initial state for the simulation.
 % finalTime: The final time for the simulation.
-% visualize (bool): Use the simbody-visualizer to visualize the simulation?
 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -36,26 +39,9 @@ import org.opensim.modeling.*;
 
 % Save this so that we can restart simulation from the given state.
 % We use the copy constructor to perform a deep copy.
-% This copy must occur before initSystem(), because if the user has called
-% initSystem() before calling this function, the state they passed in is likely
-% a reference to the model's working state, and the call to initSystem() below
-% would overwrite the working state with the default state and the user's
-% changes to the state would be lost.
 initState = State(state);
-% TODO putting this above initSystem() causes issues when setUseVisualizer() is
-% inconsistent between states!
 
-% This env. var. is used to turn off the visualizer during automated tests.
-if getenv('OPENSIM_USE_VISUALIZER') == '1'
-    visualize = true;
-elseif getenv('OPENSIM_USE_VISUALIZER') == '0'
-    visualize = false;
-end
-
-if visualize
-    model.setUseVisualizer(true);
-end
-model.initSystem();
+visualize = model.getUseVisualizer();
 
 if visualize
     sviz = model.updVisualizer().updSimbodyVisualizer();
