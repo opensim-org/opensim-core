@@ -35,7 +35,7 @@ lb = zeros(numVariables, 1);
 ub = ones(numVariables, 1);
 
 % Initial guess
-x0 = 0.5*ub;
+x0 = 0.25*ub;
 
 % Optimize!
 opts.TolFun = 0.01;
@@ -72,7 +72,8 @@ excitation = [0.0 x(3) x(3)+0.01 5.0;
               0.0 0.0  1.0       1.0];
           
 % Build the hopper. This is the same function called after a solution is
-% is created in the InteractiveHopper GUI.
+% is created in the InteractiveHopper GUI. The default muscle is "The
+% Average Joe".
 hopper = BuildInteractiveHopperSolution(...
             'muscleExcitation', excitation, ...
             'addPassiveDevice', true, ...
