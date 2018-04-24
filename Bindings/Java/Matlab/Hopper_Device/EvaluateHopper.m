@@ -45,9 +45,8 @@ heightRep.setName('height_reporter');
 % this function by about 1.5%.
 heightRep.set_report_time_interval(0.05);
 heightRep.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
+    hopper.getComponent('slider/yCoord').getOutput('value'), 'height'); 
 hopperCopy.addComponent(heightRep);
-
 
 % Simulate.
 % ---------

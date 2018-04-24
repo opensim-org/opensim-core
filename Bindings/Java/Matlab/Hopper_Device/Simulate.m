@@ -90,7 +90,7 @@ while true
     end
 
     % Clear the table for all TableReporters. Note: this does not handle
-    % TableReporters for Vec3s, etc.
+    % TableReporters for class Vector, etc.
     compList = model.getComponentsList();
     compIter = compList.begin();
     while ~compIter.equals(compList.end())
@@ -99,6 +99,11 @@ while true
             comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
+        elseif ~isempty(strfind(compIter.getConcreteClassName(), ...
+                   'TableReporter__Vec3_'))
+            comp = model.getComponent(compIter.getAbsolutePathString());
+            reporterVec3 = TableReporterVec3.safeDownCast(comp);
+            reporterVec3.clearTable();  
         end
         compIter.next();
     end
