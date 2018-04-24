@@ -1,7 +1,7 @@
 function [x, f] = OptimizeHopper()
 % OPTIMIZEHOPPER
-%   This function uses CMA-ES to optimize the model for hop height.
-%
+%   This function uses fmincon to optimize the model for hop height.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -62,14 +62,16 @@ import org.opensim.modeling.*;
 passiveParameter = 100*x(1);
 activeParameter = 100*x(2);
 
-% Construct controls from the last optimization optimization variable. This
-% variable determines the timing of turning off the active (which releases 
-% the loaded spring) and the turning on of the vastus muscle to coordinate 
-% a hop.
+% Construct controls from the last optimization variable, x(3). This
+% variable is the time when the active device is turned off (which 
+% releases the loaded spring) and the vastus muscle is turned to 
+% coordinate a hop.
+% For deviceControl and excitation, the first row contains time nodes
+% and the second row contains control values.
 deviceControl = [0.0 0.01 x(3) x(3)+0.01 5.0;
                  0.0 1.0  1.0  0.0       0.0];
-excitation = [0.0 x(3) x(3)+0.01 5.0;
-              0.0 0.0  1.0       1.0];
+excitation =    [0.0      x(3) x(3)+0.01 5.0;
+                 0.0      0.0  1.0       1.0];
           
 % Build the hopper. This is the same function called after a solution is
 % is created in the InteractiveHopper GUI. The default muscle is "The
