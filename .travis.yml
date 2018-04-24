@@ -237,7 +237,7 @@ install:
   #############################################################################
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   # On OSX, building the bindings separately slows down the build too much.
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI; fi # TODO PythonBindings
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
