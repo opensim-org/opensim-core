@@ -99,6 +99,11 @@ while true
             comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
+        elseif ~isempty(strfind(compIter.getConcreteClassName(), ...
+                   'TableReporter__Vec3_'))
+            comp = model.getComponent(compIter.getAbsolutePathString());
+            reporterVec3 = TableReporterVec3.safeDownCast(comp);
+            reporterVec3.clearTable();  
         end
         compIter.next();
     end
