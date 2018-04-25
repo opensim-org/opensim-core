@@ -405,7 +405,7 @@ void OpenSimContext::cacheModelAndState()
 
 void OpenSimContext::restoreStateFromCachedModel() 
 {
-    _model->initSystem();
+    SimTK::State& modelStateRef = _model->initSystem();
     clonedModel->initSystem();
 
     Array<std::string> modelVariableNames = _model->getStateVariableNames();
@@ -417,10 +417,10 @@ void OpenSimContext::restoreStateFromCachedModel()
         if(clonedModelVariableNames.findIndex(name) >= 0)
         {
             double value = clonedModel->getStateVariableValue(clonedState, name);
-            _model->setStateVariableValue(_model->updWorkingState(), name, value);
+            _model->setStateVariableValue(modelStateRef, name, value);
         }
     }
-    this->setState(&(_model->updWorkingState()));
+    this->setState(&modelStateRef);
     this->realizePosition();
     delete clonedModel;
 }
