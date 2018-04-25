@@ -92,7 +92,7 @@ public:
     void setModel( Model* m) { _model = m; }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
-    const SimTK::State& getCurrentStateRef() const { return (*_configState); };
+    SimTK::State& getCurrentStateRef() const { return (*_configState); };
     /** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
     SimTK::State getCurrentStateCopy() const { return SimTK::State(*_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
