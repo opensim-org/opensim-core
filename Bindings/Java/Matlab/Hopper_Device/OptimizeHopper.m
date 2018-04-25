@@ -38,6 +38,10 @@ ub = ones(numVariables, 1);
 % Initial guess
 x0 = 0.25*ub;
 
+% Visualize initial guess
+hopper = buildHopperFromSolution(x0);
+EvaluateHopper(hopper, true, true);
+
 % Optimize!
 opts.TolFun = 0.01;
 [x, f] = fmincon(@objective,x0,[],[],[],[],lb,ub,[],opts);
