@@ -1,6 +1,7 @@
 function [x, f] = OptimizeHopper()
 % OPTIMIZEHOPPER
 %   This function uses fmincon to optimize the model for hop height.
+%   Requires the Optimization Toolbox.
 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -85,7 +86,8 @@ hopper = BuildInteractiveHopperSolution(...
             'activePatellaWrap', false, ...
             'activeParameter', activeParameter, ...
             'deviceControl', deviceControl, ...
-            'isActivePropMyo', false);
+            'isActivePropMyo', false, ...
+            'printModelInfo', false);
 end
 
 function f = objective(x)
