@@ -72,7 +72,7 @@ vastus.updGeometryPath().addPathWrap(patella);
 %% Part 9: Add an open-loop controller for the muscle.
 brain = PrescribedController();
 brain.addActuator(vastus);
-% Between 0.5 and 0.55 seconds, excitation transitions from 0.05 to 1.
+% Between 0.5 and 0.55 seconds, excitation transitions from 0.05 to 0.5.
 brain.prescribeControlForActuator('vastus', ...
     StepFunction(0.5, 0.55, 0.05, 0.5));
 model.addController(brain);
