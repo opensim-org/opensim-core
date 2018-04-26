@@ -71,13 +71,13 @@ if any(muscleExcitation(2,:) < 0) || any(muscleExcitation(2,:) > 1)
    error('Muscle excitation nodes must have values within the interval [0,1].')
 end
 if (muscleExcitation(1,1) ~= 0) && (muscleExcitation(2,1) ~= 0)
-    fprintf('First muscle excitation node must lie at (0,0). Adding node...');
+    fprintf('First muscle excitation node must lie at (0,0). Adding node...\n');
     muscleExcitation = [0 muscleExcitation(1,:);
                         0 muscleExcitation(2,:)];
 end
 if muscleExcitation(1,end) ~= 5
     fprintf(['Zero-order hold being applied to final muscle excitation ' ...
-             'node to end of 5 second hop cycle (value: %f)'], ...
+             'node to end of 5 second hop cycle (value: %f)\n'], ...
              muscleExcitation(2,end));
     muscleExcitation = [muscleExcitation(1,:) 5;
                         muscleExcitation(2,:) muscleExcitation(2,end)];
@@ -99,13 +99,13 @@ if addActiveDevice && ~isActivePropMyo
         error('Device control nodes must have values within the interval [0,1].')
     end
     if deviceControl(1,1) ~= 0
-        fprintf('First device control node must lie at (0,0). Adding node...');
+        fprintf('First device control node must lie at (0,0). Adding node...\n');
         deviceControl = [0 deviceControl(1,:);
                          0 deviceControl(2,:)];
     end
     if deviceControl(1,end) ~= 5
         fprintf(['Zero-order hold being applied to final device control ' ...
-                 'node to end of 5 second hop cycle (value: %f)'], ...
+                 'node to end of 5 second hop cycle (value: %f)\n'], ...
                   deviceControl(2,end));
         deviceControl = [deviceControl(1,:) 5;
                          deviceControl(2,:) deviceControl(2,end)];
