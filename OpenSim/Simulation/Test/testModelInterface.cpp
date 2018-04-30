@@ -29,6 +29,7 @@
 using namespace OpenSim;
 using namespace std;
 
+void testModelTopologyErrors();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
@@ -133,9 +134,66 @@ int main() {
         return 1;
     }
 
+    try {
+        testModelTopologyErrors();
+    }
+    catch (const std::exception& ex) {
+        std::cout << ex.what() << std::endl;
+        return 1;
+    }
+
     cout << "Done" << endl;
 
     return 0;
+}
+
+void testModelTopologyErrors()
+{
+    Model model("arm26.osim");
+    model.initSystem();
+
+    // connect the shoulder joint from torso to ground instead of r_humerus
+    // this is an invalid tree since the underlying PhysicalFrame in both
+    // cases is ground.
+    Joint& shoulder = model.updComponent<Joint>("r_shoulder");
+    const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
+    shoulder.connectSocket_child_frame(model.getGround());
+
+    ASSERT_THROW( JointCannotJoinTheSamePhysicalFrame,
+                  model.initSystem() );
+
+    // restore the previous frame connected to the shoulder
+    shoulder.connectSocket_child_frame(shoulderOnHumerus);
+    model.initSystem();
+
+    // now do the same but connect the elbow from humerus to humerus
+    auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
+        model.getComponent<Body>("r_humerus"),
+        SimTK::Transform(SimTK::Vec3(0, -0.33, 0.0)));
+
+    model.addComponent(elbowInHumerus);
+    // update the elbow Joint and connect its socket to the new frame
+    Joint& elbow = model.updComponent<Joint>("r_elbow");
+    const PhysicalFrame& elbowOnUlna = elbow.getChildFrame();
+    elbow.connectSocket_child_frame(*elbowInHumerus);
+
+    ASSERT_THROW(JointCannotJoinTheSamePhysicalFrame,
+        model.initSystem());
+
+    // restore the ulna frame connected to the elbow
+    elbow.connectSocket_child_frame(elbowOnUlna);
+    model.initSystem();
+
+    // now chain two offsets to simulate user error in defining the elbow
+    // on the ulna
+    auto elbowOnUlnaMistake = new PhysicalOffsetFrame("elbow_in_ulna",
+        *elbowInHumerus,
+        SimTK::Transform(SimTK::Vec3(0.1, -0.22, 0.03)) );
+    model.addComponent(elbowOnUlnaMistake);
+    elbow.connectSocket_child_frame(*elbowOnUlnaMistake);
+
+    ASSERT_THROW(JointCannotJoinTheSamePhysicalFrame,
+        model.initSystem());
 }
 
 
