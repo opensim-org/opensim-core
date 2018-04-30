@@ -33,6 +33,24 @@ namespace OpenSim {
 
 class Model;
 
+class JointCannotJoinTheSamePhysicalFrame : public Exception {
+public:
+    JointCannotJoinTheSamePhysicalFrame(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& parentName,
+        const std::string& childName,
+        const std::string& baseName) :
+        Exception(file, line, func) {
+        std::string msg = "Joint '" + thisName + "' attempting to connect '" +
+            parentName + "' to '" + childName +
+            "' on the same base PhyscialFrame '" + baseName + "'.";
+        addMessage(msg);
+    }
+};
+
+
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
 together and specifies their relative permissible motion as described in
@@ -308,6 +326,7 @@ protected:
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
