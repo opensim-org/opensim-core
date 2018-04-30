@@ -694,18 +694,6 @@ void Model::createMultibodyTree()
         // to determine their underlying base (physical) frames.
         joint->finalizeConnections(*this);
 
-        // hack to make sure underlying Frame is also connected so it can 
-        // traverse to the base frame and get its name. This allows the
-        // (offset) frames to satisfy the sockets of Joint to be added
-        // to a Body, for example, and not just joint itself.
-        // TODO: try to create the multibody tree later when components
-        // can already be expected to be connected then traverse those
-        // relationships to create the multibody tree. -aseth
-        const_cast<PhysicalFrame&>(joint->getParentFrame()).
-            finalizeConnections(*this);
-        const_cast<PhysicalFrame&>(joint->getChildFrame()).
-            finalizeConnections(*this);
-
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
             joint->getConcreteClassName(),
@@ -794,7 +782,7 @@ void Model::extendConnectToModel(Model &model)
             Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
             cout << "Body '" << child->getName() << "' not connected by a Joint.\n"
                 << "A FreeJoint will be added to connect it to ground." << endl;
-            Body* ground = static_cast<Body*>(mob.getInboardBodyRef());
+            Ground* ground = static_cast<Ground*>(mob.getInboardBodyRef());
 
             // Verify that this is an orphan and it was assigned to ground
             assert(*ground == getGround());
