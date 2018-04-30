@@ -229,7 +229,7 @@ private:
     // The OpenSim::model 
     SimTK::ReferencePtr<Model> _model;
 
-    SimTK::ReferencePtr<Model> clonedModel;
+    SimTK::ResetOnCopy<std::unique_ptr<Model> > clonedModel;
     SimTK::State clonedState;
 }; // class OpenSimContext
 
