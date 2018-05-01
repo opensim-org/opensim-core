@@ -327,6 +327,7 @@ protected:
 private:
     void setNull();
     void constructProperties();
+    void setDefaultProperties();
 
     double m_parallelogramHeight;
     double m_maximumSinPennation;
@@ -337,7 +338,8 @@ private:
     // singularity as the fiber length approaches zero.
     double clampFiberLength(double fiberLength) const;
 
-    // These classes are friends because they call clampFiberLength().
+    // These classes are friends because they call clampFiberLength() and
+    // setDefaultProperties().
     friend class Thelen2003Muscle;
     friend class Millard2012EquilibriumMuscle;
     friend class Millard2012AccelerationMuscle;

@@ -156,6 +156,12 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     penMdl.set_optimal_fiber_length(getOptimalFiberLength());
     penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
+    try {
+        penMdl.finalizeFromProperties();
+    } catch (const SimTK::Exception::Base& ex) {
+        penMdl.setDefaultProperties(); //avoid throwing again
+        OPENSIM_THROW(Exception, ex.getMessage());
+    }
 
     // Set properties of activation dynamics model subcomponent. Values of
     // activation_time_constant, deactivation_time_constant, and
@@ -167,14 +173,18 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         actMdl.set_activation_time_constant(get_activation_time_constant());
         actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
         actMdl.set_minimum_activation(get_minimum_activation());
+        try {
+            actMdl.finalizeFromProperties();
+        } catch (const SimTK::Exception::Base& ex) {
+            actMdl.setDefaultProperties(); //avoid throwing again
+            OPENSIM_THROW(Exception, ex.getMessage());
+        }
     }
 
     // Compute and store values that are used for clamping the fiber length.
     const double minActiveFiberLength = falCurve.getMinActiveFiberLength()
                                         * getOptimalFiberLength();
-    // Must update the pennation model's internal data members before requesting
-    // the minimum fiber length.
-    penMdl.finalizeFromProperties();
+    // The pennation model's internal data members are updated above.
     const double minPennatedFiberLength = penMdl.getMinimumFiberLength();
     m_minimumFiberLength = max(SimTK::SignificantReal,
         max(minActiveFiberLength, minPennatedFiberLength));

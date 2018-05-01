@@ -65,6 +65,13 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
     constructProperty_minimum_activation(0.01);
 }
 
+void MuscleFirstOrderActivationDynamicModel::setDefaultProperties()
+{
+    set_activation_time_constant(0.010);
+    set_deactivation_time_constant(0.040);
+    set_minimum_activation(0.01);
+}
+
 //==============================================================================
 // SERVICES
 //==============================================================================
