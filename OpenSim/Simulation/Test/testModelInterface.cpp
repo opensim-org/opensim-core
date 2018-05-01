@@ -106,7 +106,7 @@ int main() {
 
         auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
             model.getComponent<Body>("r_humerus"),
-            SimTK::Transform(SimTK::Vec3(0, -0.33, 0.0)) );
+            SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
 
         model.addComponent(elbowInHumerus);
 
@@ -169,7 +169,7 @@ void testModelTopologyErrors()
     // now do the same but connect the elbow from humerus to humerus
     auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
         model.getComponent<Body>("r_humerus"),
-        SimTK::Transform(SimTK::Vec3(0, -0.33, 0.0)));
+        SimTK::Transform(SimTK::Vec3(0, -0.33, 0)));
 
     model.addComponent(elbowInHumerus);
     // update the elbow Joint and connect its socket to the new frame
