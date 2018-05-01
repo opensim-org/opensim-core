@@ -784,9 +784,6 @@ void Model::extendConnectToModel(Model &model)
                 << "A FreeJoint will be added to connect it to ground." << endl;
             Ground* ground = static_cast<Ground*>(mob.getInboardBodyRef());
 
-            // Verify that this is an orphan and it was assigned to ground
-            assert(*ground == getGround());
-
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
             Joint* free = new FreeJoint(jname, *ground, *child);
