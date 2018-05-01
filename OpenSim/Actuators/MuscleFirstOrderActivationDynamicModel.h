@@ -118,6 +118,11 @@ protected:
 private:
     void setNull();
     void constructProperties();
+    void setDefaultProperties();
+
+    // These classes are friends because they call setDefaultProperties().
+    friend class Thelen2003Muscle;
+    friend class Millard2012EquilibriumMuscle;
 
 };
 

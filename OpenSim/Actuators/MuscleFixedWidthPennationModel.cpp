@@ -42,6 +42,13 @@ void MuscleFixedWidthPennationModel::constructProperties()
     constructProperty_maximum_pennation_angle(acos(0.1));
 }
 
+void MuscleFixedWidthPennationModel::setDefaultProperties()
+{
+    set_optimal_fiber_length(1.0);
+    set_pennation_angle_at_optimal(0.0);
+    set_maximum_pennation_angle(acos(0.1));
+}
+
 MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel()
 {
     setNull();

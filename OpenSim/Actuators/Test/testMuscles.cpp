@@ -785,6 +785,52 @@ void testThelen2003Muscle()
         ASSERT_THROW( MuscleCannotEquilibrate,
                       muscle->computeInitialFiberEquilibrium(state) );
     }
+
+    // Test exception handling when invalid properties are propagated to
+    // MuscleFixedWidthPennationModel and MuscleFirstOrderActivationDynamicModel
+    // subcomponents.
+    {
+        Model model;
+        auto muscle = new Thelen2003Muscle("muscle", 1., 0.5, 0.5, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the pennation model outside
+        // its valid range.
+        muscle->setOptimalFiberLength(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setOptimalFiberLength(0.5);
+        model.finalizeFromProperties();
+
+        muscle->setPennationAngleAtOptimalFiberLength(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setPennationAngleAtOptimalFiberLength(0.);
+        model.finalizeFromProperties();
+
+        muscle->setMaximumPennationAngle(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setMaximumPennationAngle(0.);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the activation dynamics model
+        // outside its valid range.
+        muscle->setActivationTimeConstant(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setActivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setDeactivationTimeConstant(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setDeactivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setMinimumActivation(-0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setMinimumActivation(0.01);
+        model.finalizeFromProperties();
+    }
 }
 
 
@@ -849,6 +895,51 @@ void testMillard2012EquilibriumMuscle()
         muscle->computeInitialFiberEquilibrium(state);
     }
 
+    // Test exception handling when invalid properties are propagated to
+    // MuscleFixedWidthPennationModel and MuscleFirstOrderActivationDynamicModel
+    // subcomponents.
+    {
+        Model model;
+        auto muscle = new Millard2012EquilibriumMuscle("mcl", 1., 0.5, 0.5, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the pennation model outside
+        // its valid range.
+        muscle->setOptimalFiberLength(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setOptimalFiberLength(0.5);
+        model.finalizeFromProperties();
+
+        muscle->setPennationAngleAtOptimalFiberLength(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setPennationAngleAtOptimalFiberLength(0.);
+        model.finalizeFromProperties();
+
+        muscle->set_maximum_pennation_angle(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->set_maximum_pennation_angle(0.);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the activation dynamics model
+        // outside its valid range.
+        muscle->setActivationTimeConstant(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setActivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setDeactivationTimeConstant(0.);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setDeactivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setMinimumActivation(-0.1);
+        ASSERT_THROW(Exception, model.finalizeFromProperties());
+        muscle->setMinimumActivation(0.01);
+        model.finalizeFromProperties();
+    }
 }
 
 void testMillard2012AccelerationMuscle()

@@ -107,19 +107,32 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
         InvalidPropertyValue, getProperty_min_control().getName());
 
-    // Set properties of subcomponents.
+    // Set properties of pennation model.
     auto& pennMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
     pennMdl.set_optimal_fiber_length(getOptimalFiberLength());
     pennMdl.set_pennation_angle_at_optimal(
         getPennationAngleAtOptimalFiberLength());
     pennMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
+    try {
+        pennMdl.finalizeFromProperties();
+    } catch (const SimTK::Exception::Base& ex) {
+        pennMdl.setDefaultProperties(); //avoid throwing again
+        OPENSIM_THROW(Exception, ex.getMessage());
+    }
 
+    // Set properties of activation dynamics model.
     auto& actMdl =
         updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
     actMdl.set_activation_time_constant(get_activation_time_constant());
     actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
     actMdl.set_minimum_activation(get_minimum_activation());
+    try {
+        actMdl.finalizeFromProperties();
+    } catch (const SimTK::Exception::Base& ex) {
+        actMdl.setDefaultProperties(); //avoid throwing again
+        OPENSIM_THROW(Exception, ex.getMessage());
+    }
 }
 
 //====================================================================
