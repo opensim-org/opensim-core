@@ -226,13 +226,15 @@ int main()
     context->cacheModelAndState();
     Joint& shoulder = model->updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
-    socket.setConnecteeName("ground"); // This create a loop and throws excption at initSystem
+    const std::string& originalConnecteeName = socket.getConnecteeName();
+    // Create a loop f length 0 that should throw an Exception during initSystem
     try {
+    socket.setConnecteeName("ground"); 
         context->restoreStateFromCachedModel();
     }
     catch (...) {
         // undo the change
-        socket.setConnecteeName("../r_humerus");
+        socket.setConnecteeName(originalConnecteeName);
         context->restoreStateFromCachedModel();
     }
     return status;
