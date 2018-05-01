@@ -43,9 +43,10 @@ public:
         const std::string& childName,
         const std::string& baseName) :
         Exception(file, line, func) {
-        std::string msg = "Joint '" + thisName + "' attempting to connect '" +
+        std::string msg = "Joint '" + thisName + "' cannot connect '" +
             parentName + "' to '" + childName +
-            "' on the same base PhyscialFrame '" + baseName + "'.";
+            "' because they have the same base PhysicalFrame '" + 
+            baseName + "'.";
         addMessage(msg);
     }
 };
