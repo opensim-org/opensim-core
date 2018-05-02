@@ -33,20 +33,16 @@ namespace OpenSim {
 
 class Model;
 
-class JointCannotJoinTheSamePhysicalFrame : public Exception {
+class JointFramesAreTheSame : public Exception {
 public:
-    JointCannotJoinTheSamePhysicalFrame(const std::string& file,
+    JointFramesAreTheSame(const std::string& file,
         size_t line,
         const std::string& func,
         const std::string& thisName,
-        const std::string& parentName,
-        const std::string& childName,
-        const std::string& baseName) :
+        const std::string& sameName) :
         Exception(file, line, func) {
-        std::string msg = "Joint '" + thisName + "' cannot connect '" +
-            parentName + "' to '" + childName +
-            "' because they have the same base PhysicalFrame '" + 
-            baseName + "'.";
+        std::string msg = "Joint '" + thisName + "' cannot connect frame '" +
+            sameName + "' to itself.";
         addMessage(msg);
     }
 };

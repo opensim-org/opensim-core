@@ -277,16 +277,9 @@ void Joint::extendConnectToModel(Model& model)
     auto& parent = updSocket<PhysicalFrame>("parent_frame").getConnectee();
     auto& child = updSocket<PhysicalFrame>("child_frame").getConnectee();
 
-    // make sure that parent and child frames are connected to the Model
-    // so we can traverse to base frame
-    const_cast<PhysicalFrame&>(parent).finalizeConnections(model);
-    const_cast<PhysicalFrame&>(child).finalizeConnections(model);
-
-    OPENSIM_THROW_IF(&parent.findBaseFrame() == &child.findBaseFrame(),
-        JointCannotJoinTheSamePhysicalFrame, getName(), 
-        parent.getName(), child.getName(), child.findBaseFrame().getName());
+    OPENSIM_THROW_IF(&parent == &child, JointFramesAreTheSame,
+        getName(), parent.getName());
 }
-
 
 void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
