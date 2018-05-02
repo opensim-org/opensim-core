@@ -36,15 +36,6 @@ int main() {
     LoadOpenSimLibrary("osimActuators");
 
     try {
-        testModelTopologyErrors();
-    }
-    catch (const std::exception& ex) {
-        std::cout << ex.what() << std::endl;
-        return 1;
-    }
-
-
-    try {
         Model model("arm26.osim");
 
         // all subcomponents are accounted for since Model constructor invokes
@@ -144,7 +135,13 @@ int main() {
         return 1;
     }
 
-
+    try {
+        testModelTopologyErrors();
+    }
+    catch (const std::exception& ex) {
+        std::cout << ex.what() << std::endl;
+        return 1;
+    }
 
     cout << "Done" << endl;
 
@@ -208,6 +205,20 @@ void testModelTopologyErrors()
     auto joint1 = new PinJoint();
     joint1->setName("joint1");
     joint1->connectSocket_parent_frame(*frame1);
+    // intentional mistake to connect to the same frame
+    joint1->connectSocket_child_frame(*frame1);
+
+    frame1->addComponent(joint1);
+
+    ASSERT_THROW(JointFramesAreTheSame, 
+        joint1->finalizeConnections(degenerate));
+
+    // Joint should also throw JointFramesAreTheSame before
+    // Model throws JointFramesHaveSameBaseFrame
+    ASSERT_THROW(JointFramesAreTheSame,
+        joint1->finalizeConnections(degenerate));
+
+    // now test with child as frame2 (offset) that shares the same base
     joint1->connectSocket_child_frame(*frame2);
 
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
