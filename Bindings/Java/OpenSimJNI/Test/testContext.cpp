@@ -228,9 +228,9 @@ int main()
     Joint& shoulder = model->updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
     const std::string originalConnecteeName = socket.getConnecteeName();
-    // Create a loop f length 0 that should throw an Exception during initSystem
     try {
-    socket.setConnecteeName("ground"); 
+        // create an invalid model where joint connects two frames on ground
+        socket.setConnecteeName("ground"); 
         context->restoreStateFromCachedModel();
     }
     catch (...) {
