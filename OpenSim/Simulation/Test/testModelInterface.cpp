@@ -23,6 +23,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
@@ -33,6 +34,15 @@ void testModelTopologyErrors();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
+
+    try {
+        testModelTopologyErrors();
+    }
+    catch (const std::exception& ex) {
+        std::cout << ex.what() << std::endl;
+        return 1;
+    }
+
 
     try {
         Model model("arm26.osim");
@@ -134,13 +144,7 @@ int main() {
         return 1;
     }
 
-    try {
-        testModelTopologyErrors();
-    }
-    catch (const std::exception& ex) {
-        std::cout << ex.what() << std::endl;
-        return 1;
-    }
+
 
     cout << "Done" << endl;
 
@@ -159,8 +163,7 @@ void testModelTopologyErrors()
     const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
     shoulder.connectSocket_child_frame(model.getGround());
 
-    ASSERT_THROW( JointCannotJoinTheSamePhysicalFrame,
-                  model.initSystem() );
+    ASSERT_THROW( JointFramesHaveSameBaseFrame,  model.initSystem() );
 
     // restore the previous frame connected to the shoulder
     shoulder.connectSocket_child_frame(shoulderOnHumerus);
@@ -177,8 +180,7 @@ void testModelTopologyErrors()
     const PhysicalFrame& elbowOnUlna = elbow.getChildFrame();
     elbow.connectSocket_child_frame(*elbowInHumerus);
 
-    ASSERT_THROW(JointCannotJoinTheSamePhysicalFrame,
-        model.initSystem());
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, model.initSystem());
 
     // restore the ulna frame connected to the elbow
     elbow.connectSocket_child_frame(elbowOnUlna);
@@ -192,8 +194,23 @@ void testModelTopologyErrors()
     model.addComponent(elbowOnUlnaMistake);
     elbow.connectSocket_child_frame(*elbowOnUlnaMistake);
 
-    ASSERT_THROW(JointCannotJoinTheSamePhysicalFrame,
-        model.initSystem());
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, model.initSystem());
+
+    Model degenerate;
+    auto frame1 = new PhysicalOffsetFrame("frame1", model.getGround(),
+        SimTK::Transform(SimTK::Vec3(0, -0.1, 0)));
+    auto frame2 = new PhysicalOffsetFrame("frame2", model.getGround(),
+        SimTK::Transform(SimTK::Vec3(0, 0.2, 0)));
+
+    degenerate.addComponent(frame1);
+    degenerate.addComponent(frame2);
+
+    auto joint1 = new PinJoint();
+    joint1->setName("joint1");
+    joint1->connectSocket_parent_frame(*frame1);
+    joint1->connectSocket_child_frame(*frame2);
+
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
 
 
