@@ -683,8 +683,8 @@ void Model::createMultibodyTree()
         joints.push_back(SimTK::ReferencePtr<Joint>(&joint));
     }
 
-    // Complete multibody tree description by indicating how "bodies" are
-    // connected by joints.
+    // Complete multibody tree description by indicating how (mobilized) 
+    // "bodies" are connected by joints.
     for (auto& joint : joints) {
         std::string name = joint->getAbsolutePathString();
         IO::TrimWhitespace(name);
@@ -694,13 +694,26 @@ void Model::createMultibodyTree()
         // to determine their underlying base (physical) frames.
         joint->finalizeConnections(*this);
 
+        // Verify that the underlying frames are also connected so we can 
+        // traverse to the base frame and get its name. This allows the
+        // (offset) frames to satisfy the sockets of Joint to be added
+        // to a Body, for example, and not just joint itself.
+        const PhysicalFrame& parent = joint->getParentFrame();
+        const PhysicalFrame& child = joint->getChildFrame();
+        const_cast<PhysicalFrame&>(parent).finalizeConnections(*this);
+        const_cast<PhysicalFrame&>(child).finalizeConnections(*this);
+
+        OPENSIM_THROW_IF(&parent.findBaseFrame() == &child.findBaseFrame(),
+            JointFramesHaveSameBaseFrame, getName(),
+            parent.getName(), child.getName(), child.findBaseFrame().getName());
+
         // Use joints to define the underlying multibody tree
         _multibodyTree.addJoint(name,
             joint->getConcreteClassName(),
             // Multibody tree builder only cares about bodies not intermediate
             // frames that joints actually connect to.
-            joint->getParentFrame().findBaseFrame().getAbsolutePathString(),
-            joint->getChildFrame().findBaseFrame().getAbsolutePathString(),
+            parent.findBaseFrame().getAbsolutePathString(),
+            child.findBaseFrame().getAbsolutePathString(),
             false,
             joint.get());
     }
