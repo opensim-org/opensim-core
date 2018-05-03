@@ -125,9 +125,9 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             InvalidPropertyValue, getProperty_minimum_activation().getName(),
             "Minimum activation cannot be less than zero");
 
-        OPENSIM_THROW_IF_FRMOBJ(getMinControl() < 0.0,
+        OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
             InvalidPropertyValue, getProperty_min_control().getName(),
-            "Minimum control cannot be less than zero");
+            "Minimum control cannot be less than minimum activation");
 
         set_minimum_activation(clamp(0, get_minimum_activation(), 1));
         falCurve.setMinValue(0.0);
