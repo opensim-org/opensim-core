@@ -266,8 +266,8 @@ script:
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/Python; fi
   # Run the python tests, verbosely.
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose2; fi
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose2 -v; fi
   - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then nosetests -v; fi
     
   ## Set up ssh for sourceforge.
