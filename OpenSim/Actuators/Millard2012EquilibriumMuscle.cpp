@@ -164,7 +164,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
     try {
         penMdl.finalizeFromProperties();
-    } catch (const InvalidPropertyValue& ex) {
+    } catch (const InvalidPropertyValue&) {
         penMdl = *penMdlCopy;
         throw;
     }
@@ -180,7 +180,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         actMdl.set_minimum_activation(get_minimum_activation());
         try {
             actMdl.finalizeFromProperties();
-        } catch (const InvalidPropertyValue& ex) {
+        } catch (const InvalidPropertyValue&) {
             actMdl = *actMdlCopy;
             throw;
         }

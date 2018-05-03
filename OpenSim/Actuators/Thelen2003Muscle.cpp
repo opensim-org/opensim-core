@@ -123,7 +123,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     pennMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
     try {
         pennMdl.finalizeFromProperties();
-    } catch (const InvalidPropertyValue& ex) {
+    } catch (const InvalidPropertyValue&) {
         pennMdl = *pennMdlCopy;
         throw;
     }
@@ -138,7 +138,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     actMdl.set_minimum_activation(get_minimum_activation());
     try {
         actMdl.finalizeFromProperties();
-    } catch (const InvalidPropertyValue& ex) {
+    } catch (const InvalidPropertyValue&) {
         actMdl = *actMdlCopy;
         throw;
     }
