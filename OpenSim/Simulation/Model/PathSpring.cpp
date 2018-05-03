@@ -111,13 +111,16 @@ void PathSpring::extendFinalizeFromProperties()
 
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
-        InvalidPropertyValue, getProperty_resting_length().getName());
+        InvalidPropertyValue, getProperty_resting_length().getName(),
+        "Resting length cannot be less than zero");
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_stiffness()) || get_stiffness() < 0),
-        InvalidPropertyValue, getProperty_stiffness().getName());
+        InvalidPropertyValue, getProperty_stiffness().getName(),
+        "Stiffness cannot be less than zero");
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_dissipation()) || get_dissipation() < 0),
-        InvalidPropertyValue, getProperty_dissipation().getName());
+        InvalidPropertyValue, getProperty_dissipation().getName(),
+        "Dissipation cannot be less than zero");
 }
 
 

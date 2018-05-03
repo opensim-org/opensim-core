@@ -100,14 +100,17 @@ void MuscleFirstOrderActivationDynamicModel::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(
         get_activation_time_constant() < SimTK::SignificantReal,
         InvalidPropertyValue,
-        getProperty_activation_time_constant().getName());
+        getProperty_activation_time_constant().getName(),
+        "Activation time constant must be greater than zero");
     OPENSIM_THROW_IF_FRMOBJ(
         get_deactivation_time_constant() < SimTK::SignificantReal,
         InvalidPropertyValue,
-        getProperty_deactivation_time_constant().getName());
+        getProperty_deactivation_time_constant().getName(),
+        "Deactivation time constant must be greater than zero");
     OPENSIM_THROW_IF_FRMOBJ(
         get_minimum_activation() < 0 ||
         get_minimum_activation() > 1.0-SimTK::SignificantReal,
         InvalidPropertyValue,
-        getProperty_minimum_activation().getName());
+        getProperty_minimum_activation().getName(),
+        "Minimum activation must be in the range [0, 1)");
 }

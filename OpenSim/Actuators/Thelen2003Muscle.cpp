@@ -102,10 +102,12 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
 
 
     OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
-        InvalidPropertyValue, getProperty_minimum_activation().getName());
+        InvalidPropertyValue, getProperty_minimum_activation().getName(),
+        "Minimum activation cannot be less than 0.01");
 
     OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
-        InvalidPropertyValue, getProperty_min_control().getName());
+        InvalidPropertyValue, getProperty_min_control().getName(),
+        "Minimum control cannot be less than minimum activation");
 
     // Propagate properties down to pennation model subcomponent. If any of the
     // new property values are invalid, restore the subcomponent's current

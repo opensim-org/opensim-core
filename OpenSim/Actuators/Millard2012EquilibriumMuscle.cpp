@@ -107,10 +107,12 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
         // Compliant tendon with no damping.
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
-            InvalidPropertyValue, getProperty_minimum_activation().getName());
+            InvalidPropertyValue, getProperty_minimum_activation().getName(),
+            "Minimum activation cannot be less than 0.01");
 
         OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
-            InvalidPropertyValue, getProperty_min_control().getName());
+            InvalidPropertyValue, getProperty_min_control().getName(),
+            "Minimum control cannot be less than minimum activation");
 
         if (falCurve.getMinValue() < 0.1)
             falCurve.setMinValue(0.1);
@@ -120,10 +122,12 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 
     } else { //singularity-free model still cannot have excitations below 0
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.0,
-            InvalidPropertyValue, getProperty_minimum_activation().getName());
+            InvalidPropertyValue, getProperty_minimum_activation().getName(),
+            "Minimum activation cannot be less than zero");
 
         OPENSIM_THROW_IF_FRMOBJ(getMinControl() < 0.0,
-            InvalidPropertyValue, getProperty_min_control().getName());
+            InvalidPropertyValue, getProperty_min_control().getName(),
+            "Minimum control cannot be less than zero");
 
         set_minimum_activation(clamp(0, get_minimum_activation(), 1));
         falCurve.setMinValue(0.0);

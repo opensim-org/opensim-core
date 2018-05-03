@@ -88,17 +88,20 @@ void MuscleFixedWidthPennationModel::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(
         get_optimal_fiber_length() <= 0,
         InvalidPropertyValue,
-        getProperty_optimal_fiber_length().getName());
+        getProperty_optimal_fiber_length().getName(),
+        "Optimal fiber length must be greater than zero");
     OPENSIM_THROW_IF_FRMOBJ(
         get_pennation_angle_at_optimal() < 0 ||
         get_pennation_angle_at_optimal() > SimTK::Pi/2.0-SimTK::SignificantReal,
         InvalidPropertyValue,
-        getProperty_pennation_angle_at_optimal().getName());
+        getProperty_pennation_angle_at_optimal().getName(),
+        "Pennation angle at optimal fiber length must be in the range [0, Pi/2)");
     OPENSIM_THROW_IF_FRMOBJ(
         get_maximum_pennation_angle() < 0 ||
         get_maximum_pennation_angle() > SimTK::Pi/2.0,
         InvalidPropertyValue,
-        getProperty_maximum_pennation_angle().getName());
+        getProperty_maximum_pennation_angle().getName(),
+        "Maximum pennation angle must be in the range [0, Pi/2]");
 
     // Compute quantities that are used often.
     m_parallelogramHeight = get_optimal_fiber_length()
