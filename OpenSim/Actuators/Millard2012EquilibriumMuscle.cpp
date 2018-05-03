@@ -162,7 +162,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         penMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue& ex) {
         penMdl = *penMdlCopy;
-        throw(ex);
+        throw;
     }
 
     // Propagate properties down to activation dynamics model subcomponent.
@@ -178,7 +178,7 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             actMdl.finalizeFromProperties();
         } catch (const InvalidPropertyValue& ex) {
             actMdl = *actMdlCopy;
-            throw(ex);
+            throw;
         }
     }
 

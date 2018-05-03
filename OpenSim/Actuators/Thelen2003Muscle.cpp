@@ -123,7 +123,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         pennMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue& ex) {
         pennMdl = *pennMdlCopy;
-        throw(ex);
+        throw;
     }
 
     // Propagate properties down to activation dynamics model subcomponent.
@@ -138,7 +138,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
         actMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue& ex) {
         actMdl = *actMdlCopy;
-        throw(ex);
+        throw;
     }
 }
 
