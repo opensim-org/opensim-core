@@ -23,17 +23,28 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace std;
 
+void testModelFinalizePropertiesAndConnections();
+void testModelTopologyErrors();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
 
-    try {
+    SimTK_START_TEST("testModelInterface");
+        SimTK_SUBTEST(testModelFinalizePropertiesAndConnections);
+        SimTK_SUBTEST(testModelTopologyErrors);
+    SimTK_END_TEST();
+}
+
+
+void testModelFinalizePropertiesAndConnections() 
+{
         Model model("arm26.osim");
 
         // all subcomponents are accounted for since Model constructor invokes
@@ -105,7 +116,7 @@ int main() {
 
         auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
             model.getComponent<Body>("r_humerus"),
-            SimTK::Transform(SimTK::Vec3(0, -0.33, 0.0)) );
+            SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
 
         model.addComponent(elbowInHumerus);
 
@@ -127,15 +138,92 @@ int main() {
         // verify the new connection was made
         ASSERT(model.getComponent<Joint>("r_elbow").getParentFrame().getName()
                 == "elbow_in_humerus");
-    }
-    catch (const std::exception& ex) {
-        std::cout << ex.what() << std::endl;
-        return 1;
-    }
+}
 
-    cout << "Done" << endl;
+void testModelTopologyErrors()
+{
+    Model model("arm26.osim");
+    model.initSystem();
 
-    return 0;
+    // connect the shoulder joint from torso to ground instead of r_humerus
+    // this is an invalid tree since the underlying PhysicalFrame in both
+    // cases is ground.
+    Joint& shoulder = model.updComponent<Joint>("r_shoulder");
+    const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
+    shoulder.connectSocket_child_frame(model.getGround());
+
+    // both shoulder joint frames have Ground as the base frame
+    ASSERT_THROW( JointFramesHaveSameBaseFrame,  model.initSystem() );
+
+    // restore the previous frame connected to the shoulder
+    shoulder.connectSocket_child_frame(shoulderOnHumerus);
+    model.initSystem();
+
+    // create and offset for the elbow joint in the humerus
+    auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
+        model.getComponent<Body>("r_humerus"),
+        SimTK::Transform(SimTK::Vec3(0, -0.33, 0)));
+
+    model.addComponent(elbowInHumerus);
+
+    // update the elbow to connect to the elbow in the humerus frame
+    Joint& elbow = model.updComponent<Joint>("r_elbow");
+    const PhysicalFrame& elbowOnUlna = elbow.getChildFrame();
+    elbow.connectSocket_child_frame(*elbowInHumerus);
+
+    // both elbow joint frames have the humerus Body as the base frame
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, model.initSystem());
+
+    // restore the ulna frame connected to the elbow
+    elbow.connectSocket_child_frame(elbowOnUlna);
+    model.initSystem();
+
+    // introduce two offsets to simulate user error in defining the elbow
+    // in the ulna by accidentally offsetting the wrong frame.
+    auto elbowOnUlnaMistake = new PhysicalOffsetFrame("elbow_in_ulna",
+        *elbowInHumerus,
+        SimTK::Transform(SimTK::Vec3(0.1, -0.22, 0.03)) );
+    model.addComponent(elbowOnUlnaMistake);
+    elbow.connectSocket_child_frame(*elbowOnUlnaMistake);
+
+    // both elbow joint frames still have the humerus Body as the base frame
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, model.initSystem());
+
+
+    Model degenerate;
+    auto frame1 = new PhysicalOffsetFrame("frame1", model.getGround(),
+        SimTK::Transform(SimTK::Vec3(0, -0.1, 0)));
+    auto frame2 = new PhysicalOffsetFrame("frame2", model.getGround(),
+        SimTK::Transform(SimTK::Vec3(0, 0.2, 0)));
+
+    degenerate.addComponent(frame1);
+    degenerate.addComponent(frame2);
+
+    auto joint1 = new PinJoint();
+    joint1->setName("joint1");
+    joint1->connectSocket_parent_frame(*frame1);
+    // intentional mistake to connect to the same frame
+    joint1->connectSocket_child_frame(*frame1);
+
+    // Expose infinite recursion in the case that Joint explicitly invokes
+    // finalizeConnections on its parent and child frames AND the Joint itself
+    // is a subcomponent of either the parent or child frame. This test is why
+    //  the Joint cannot resolve whether two frames have the same base  frame.
+    frame1->addComponent(joint1);
+    
+    // Parent and child frames of a Joint cannot be the same frame
+    ASSERT_THROW(JointFramesAreTheSame, 
+        joint1->finalizeConnections(degenerate));
+
+    // Joint should also throw JointFramesAreTheSame before
+    // Model throws JointFramesHaveSameBaseFrame
+    ASSERT_THROW(JointFramesAreTheSame,
+        joint1->finalizeConnections(degenerate));
+
+    // now test with child as frame2 (offset) that shares the same base
+    joint1->connectSocket_child_frame(*frame2);
+
+    ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
 
 
