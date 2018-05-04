@@ -223,29 +223,27 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     
     SimTK::Vector actControls(1, 0.0);
 
-    for(int i=0; i< getActuatorSet().getSize(); i++){
-        auto act = 
-            dynamic_cast<const CoordinateActuator*>(&getActuatorSet().get(i));
-        SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
-
-        Coordinate *aCoord = act->getCoordinate();
-        if( aCoord->isConstrained(s) ) {
+    int i = 0;
+    auto coordinateActuators = getComponentList<CoordinateActuator>();
+    for(auto& act : coordinateActuators) {
+        const Coordinate* coord = act.getCoordinate();
+        if(coord->isConstrained(s) ) {
             actControls =  0.0;
         } 
-        else
-        {
-            double qval = aCoord->getValue(s);
-            double uval = aCoord->getSpeedValue(s);
+        else {
+            double qval = coord->getValue(s);
+            double uval = coord->getSpeedValue(s);
 
             // COMPUTE EXCITATIONS
-            double oneOverFmax = 1.0 / act->getOptimalForce();
+            double oneOverFmax = 1.0 / act.getOptimalForce();
             double pErr = qval - yDesired[2*i];
             double vErr = uval - yDesired[2*i+1];
             double pErrTerm = _kp*oneOverFmax*pErr;
             double vErrTerm = _kv*oneOverFmax*vErr;
             actControls = -vErrTerm - pErrTerm;
         }
-        getActuatorSet()[i].addInControls(actControls, controls);
+        act.addInControls(actControls, controls);
+        ++i;
     }
 }
 
