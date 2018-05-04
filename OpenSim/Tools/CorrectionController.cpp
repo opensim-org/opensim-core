@@ -259,7 +259,7 @@ void CorrectionController::extendConnectToModel(Model& model)
 
     for(int i=0; i<cs.getSize(); i++) {
         const Coordinate& coord = cs[i];
-        std::string name = coord.getName() + "_corrector";
+        const std::string name = coord.getName() + "_corrector";
 
         CoordinateActuator* actuator = nullptr;
 
@@ -271,10 +271,7 @@ void CorrectionController::extendConnectToModel(Model& model)
         }
 
         if(!actuator) {
-            std::cout << " CorrectionController::extendConnectToModel(): "
-                << coord.getName() + "_corrector" << "  added "
-                << std::endl;
-            
+            // create the corrector actuator if it doe not already exist
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
@@ -283,11 +280,15 @@ void CorrectionController::extendConnectToModel(Model& model)
             // the controller is removed, so are all the actuators it added.
             adoptSubcomponent(actuator);
             setNextSubcomponentInSystem(*actuator);
+            
+            std::cout << " CorrectionController::extendConnectToModel(): "
+                << name << " added " << std::endl;
 
             actuator->setOptimalForce(1.0);
-            // Add to the Controller's list of Actuators (no ownership).
-            addActuator(*actuator);
         }
+        
+        // Add to the Controller's list of Actuators (no ownership).
+        addActuator(*actuator);
    }
 
     setNumControls(getActuatorSet().getSize());
