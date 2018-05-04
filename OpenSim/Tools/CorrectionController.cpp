@@ -257,16 +257,26 @@ void CorrectionController::extendConnectToModel(Model& model)
     // create an actuator for each generalized coordinate in the model 
     // add these actuators to the model and set their indexes 
     const CoordinateSet& cs = _model->getCoordinateSet();
+    auto actuators = model.updComponentList<CoordinateActuator>();
+
     for(int i=0; i<cs.getSize(); i++) {
-        std::cout << " CorrectionController::extendConnectToModel(): " 
-                  <<  cs.get(i).getName()+"_corrector" << "  added " 
-                  << std::endl;
-        std::string name = cs.get(i).getName()+"_corrector";
-        CoordinateActuator *actuator = NULL;
-        if(_model->getForceSet().contains(name)){
-            actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
+        const Coordinate& coord = cs[i];
+        std::string name = coord.getName() + "_corrector";
+
+        CoordinateActuator* actuator = nullptr;
+
+        for (auto& ca : actuators) {
+            if (ca.getName() == name) {
+                actuator = &ca;
+                break;
+            }
         }
-        else{
+
+        if(!actuator) {
+            std::cout << " CorrectionController::extendConnectToModel(): "
+                << coord.getName() + "_corrector" << "  added "
+                << std::endl;
+            
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
@@ -275,16 +285,18 @@ void CorrectionController::extendConnectToModel(Model& model)
             // the controller is removed, so are all the actuators it added.
             adoptSubcomponent(actuator);
             setNextSubcomponentInSystem(*actuator);
+
+            actuator->setOptimalForce(1.0);
+            // Add to the Controller's list of Actuators (no ownership).
+            addActuator(*actuator);
         }
-            
-        actuator->setOptimalForce(1.0);
-        
-        updActuators().adoptAndAppend(actuator);
    }
+
     setNumControls(getActuatorSet().getSize());
 
-    printf(" CorrectionController::extendConnectToModel()  num Actuators= %d kv=%f kp=%f \n",
-        _model->getForceSet().getSize(), _kv, _kp );
+    printf(" CorrectionController::extendConnectToModel() " 
+        "num Actuators= %d kv=%f kp=%f \n",
+        getNumControls(), _kv, _kp );
 }
 
 // for any initialization requiring a state or the complete system 
