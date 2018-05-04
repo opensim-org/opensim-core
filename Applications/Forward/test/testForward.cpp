@@ -33,69 +33,34 @@
 using namespace OpenSim;
 using namespace std;
 
-void testPendulum();    // test manager/integration process
-void testPendulumExternalLoad(); // test application of external loads point in pendulum
-void testPendulumExternalLoadWithPointInGround(); // test application of external loads point in ground
-void testArm26();       // now add computation of controls and generation of muscle forces
-void testGait2354();    // controlled muscles and ground reactions forces 
-void testGait2354WithController(); // included additional controller
-void testGait2354WithControllerGUI(); // implements steps GUI takes to provide a model
+void testPendulum();
+void testPendulumExternalLoad();
+void testPendulumExternalLoadWithPointInGround(); 
+void testArm26();
+void testGait2354();
+void testGait2354WithController();
+void testGait2354WithControllerGUI();
+
+
 int main() {
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-    SimTK::Array_<std::string> failures;
-
-    // test manager/integration process
-    try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }  
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulum"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoad(); 
-        cout << "\nPendulum with external load test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoadWithPointInGround(); 
-        cout << "\nPendulum with external load and point in ground PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoadWithPointInGround"); }
-    
-    // now add computation of controls and generation of muscle forces
-    try { testArm26(); 
-        cout << "\narm26 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testArm26"); }
-        
-    // include applied ground reactions forces 
-    try { testGait2354(); 
-        cout << "\ngait2354 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354"); }
-
-    // finally include a controller
-    try { testGait2354WithController(); 
-        cout << "\ngait2354 with correction controller test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }  
-
-    try {
-        testGait2354WithControllerGUI();
-        cout << "\nGUI run gait2354 with correction controller test PASSED " << endl;
-    }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testGait2354WithControllerGUI");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-    return 0;
+    SimTK_START_TEST("testForward");
+        // test manager/integration process
+        SimTK_SUBTEST(testPendulum);
+        // test application of external loads point in pendulum
+        SimTK_SUBTEST(testPendulumExternalLoad);
+        // test application of external loads with point moving in ground
+        SimTK_SUBTEST(testPendulumExternalLoadWithPointInGround);
+        // now add computation of controls and generation of muscle forces
+        SimTK_SUBTEST(testArm26);
+        // controlled muscles and ground reactions forces
+        SimTK_SUBTEST(testGait2354);
+        // included additional controller
+        SimTK_SUBTEST(testGait2354WithController);
+        // implements steps GUI takes to provide a model
+        SimTK_SUBTEST(testGait2354WithControllerGUI);
+    SimTK_END_TEST();
 }
 
 void testPendulum() {
