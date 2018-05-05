@@ -116,7 +116,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     // re-throw the exception thrown by the subcomponent.
     auto& pennMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
-    MuscleFixedWidthPennationModel* pennMdlCopy = pennMdl.clone();
+    MuscleFixedWidthPennationModel pennMdlCopy(pennMdl);
     pennMdl.set_optimal_fiber_length(getOptimalFiberLength());
     pennMdl.set_pennation_angle_at_optimal(
         getPennationAngleAtOptimalFiberLength());
@@ -124,7 +124,7 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     try {
         pennMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue&) {
-        pennMdl = *pennMdlCopy;
+        pennMdl = pennMdlCopy;
         throw;
     }
 
@@ -132,14 +132,14 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
     // Handle invalid properties as above for pennation model.
     auto& actMdl =
         updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
-    MuscleFirstOrderActivationDynamicModel* actMdlCopy = actMdl.clone();
+    MuscleFirstOrderActivationDynamicModel actMdlCopy(actMdl);
     actMdl.set_activation_time_constant(get_activation_time_constant());
     actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
     actMdl.set_minimum_activation(get_minimum_activation());
     try {
         actMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue&) {
-        actMdl = *actMdlCopy;
+        actMdl = actMdlCopy;
         throw;
     }
 }

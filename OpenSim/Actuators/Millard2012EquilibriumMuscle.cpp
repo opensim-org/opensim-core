@@ -158,14 +158,14 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     // re-throw the exception thrown by the subcomponent.
     auto& penMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(penMdlIdx);
-    MuscleFixedWidthPennationModel* penMdlCopy = penMdl.clone();
+    MuscleFixedWidthPennationModel penMdlCopy(penMdl);
     penMdl.set_optimal_fiber_length(getOptimalFiberLength());
     penMdl.set_pennation_angle_at_optimal(getPennationAngleAtOptimalFiberLength());
     penMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
     try {
         penMdl.finalizeFromProperties();
     } catch (const InvalidPropertyValue&) {
-        penMdl = *penMdlCopy;
+        penMdl = penMdlCopy;
         throw;
     }
 
@@ -174,14 +174,14 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     if (!get_ignore_activation_dynamics()) {
         auto& actMdl =
             updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
-        MuscleFirstOrderActivationDynamicModel* actMdlCopy = actMdl.clone();
+        MuscleFirstOrderActivationDynamicModel actMdlCopy(actMdl);
         actMdl.set_activation_time_constant(get_activation_time_constant());
         actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
         actMdl.set_minimum_activation(get_minimum_activation());
         try {
             actMdl.finalizeFromProperties();
         } catch (const InvalidPropertyValue&) {
-            actMdl = *actMdlCopy;
+            actMdl = actMdlCopy;
             throw;
         }
     }
