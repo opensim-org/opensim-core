@@ -144,7 +144,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/opensim-org/BTKCore.git
-              TAG        cc9dda12a5e7906c513e66ebc97c7e55c36cc165
+              TAG        b656896027af95f0d33ef04bd9239a7a256b151f
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
