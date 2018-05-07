@@ -144,9 +144,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/opensim-org/BTKCore.git
-              # Include klshrinidhi's fix to stdint.h header with MSVC, and
-              # avoiding tr1 with Visual Studio 2017.
-              TAG        d41af323e579038feff861170cdc75886ff5937f
+              TAG        cc9dda12a5e7906c513e66ebc97c7e55c36cc165
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
