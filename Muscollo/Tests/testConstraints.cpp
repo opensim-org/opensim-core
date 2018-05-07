@@ -28,24 +28,25 @@
 #include <simbody\internal\Constraint.h>
 #include <simbody\internal\Constraint_Ball.h>
 
-const int NUM_BODIES = 10;
-const double BOND_LENGTH = 0.5;
-
-// Keep constraints satisfied to this tolerance during testing.
-static const double ConstraintTol = 1e-10;
-
-// Compare two quantities that should have been calculated to machine tolerance
-// given the problem size, which we'll characterize by the number of mobilities
-// (borrowed from Simbody's testConstraints.cpp).
-#define MACHINE_TEST(a,b) SimTK_TEST_EQ_SIZE(a,b, 10*state.getNU())
-
 using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::UnitVec3;
 using SimTK::Vector;
 using SimTK::State;
 
-// Create a model consisting of a chain of bodies.
+const int NUM_BODIES = 10;
+const double BOND_LENGTH = 0.5;
+
+/// Keep constraints satisfied to this tolerance during testing.
+static const double ConstraintTol = 1e-10;
+
+/// Compare two quantities that should have been calculated to machine tolerance
+/// given the problem size, which we'll characterize by the number of mobilities
+/// (borrowed from Simbody's 'testConstraints.cpp').
+#define MACHINE_TEST(a,b) SimTK_TEST_EQ_SIZE(a,b, 10*state.getNU())
+
+/// Create a model consisting of a chain of bodies. This model is nearly 
+/// identical to the model implemented in Simbody's 'testConstraints.cpp'.
 Model createModel() {
     Model model;
     const SimTK::Real mass = 1.23;
@@ -88,7 +89,8 @@ Model createModel() {
     return model;
 }
 
-// Create a random state for the model.
+/// Create a random state for the model. This implementation mimics the random
+/// state creation in Simbody's 'testConstraints.cpp'.
 void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
     state = model.initSystem();
     SimTK::Random::Uniform random; 
@@ -102,8 +104,42 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
     model.realizeAcceleration(state);
 }
 
-// Get model accelerations given the constraint multipliers.
-void getAccelerationsFromMultipliers(const Model& model, const State& state, 
+/// Get model accelerations given the constraint multipliers. This calculation
+/// is necessary for computing constraint defects associated with the system
+/// dynamics, represented by the equations 
+///
+///     M udot + G^T lambda + f_inertial(q,u) = f_applied
+///
+/// If using an explicit representation of the system dynamics, the derivatives
+/// of the generalized speeds for the system need to be compuated in order to 
+/// construct the defects. Rearranging the equations above (and noting that 
+/// Simbody does not actually invert the mass matrix, but rather uses an order-N
+/// approach), we obtain
+///
+///     udot = M_inv (f_applied - f_inertial(q,u) - G^T lambda) 
+///          = f(q, u, lambda)
+/// 
+/// where,
+///              q | generalized coordinates
+///              u | generalized speeds
+///         lambda | Lagrange multipliers
+///
+/// Since the three quantities required to compute the system accelerations 
+/// will eventually becomes NLP variables in a direct collocation problem, 
+/// it is not sufficient to use the internally calculated Lagrange 
+/// multipliers in Simbody. An intermediate calculation must be made:
+///
+///     f_constraint(lambda) = G^T lambda
+///
+/// Therefore, this method computes the generalized speed derivatives via the
+/// equation
+///
+///     udot = M_inv (f_applied - f_inertial(q,u) - f_constraint(lambda))
+///
+/// Finally, note that in order for f_constraint to be used like an applied 
+/// force (i.e. appear on the RHS), the multipliers are negated in the call to
+/// obtain Simbody constraint forces.
+void calcAccelerationsFromMultipliers(const Model& model, const State& state, 
         const Vector& multipliers, Vector& udot) {
 
     const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
@@ -126,6 +162,17 @@ void getAccelerationsFromMultipliers(const Model& model, const State& state,
         appliedBodyForces + constraintBodyForces, udot, A_GB);
 }
 
+/// The following tests add a constraint to a model and check that the method
+/// calcAccelerationsFromMultipliers() is implemented correctly. Each test 
+/// follows a similar structure:
+///     1) Create a model and add a constraint between two bodies
+///     2) Create a random state and realize the model to Stage::Acceleration
+///     3) Check that state contains at least one Lagrange multiplier
+///     4) Compute the model accelerations from Simbody
+///     5) Retrieve the Lagrange multiplier values for the current state
+///     6) Compute the accelerations from calcAccelerationsFromMultipliers()
+///     7) Ensure that the accelerations from step 4 and 6 match
+
 void testWeldConstraint() {
 
     State state;
@@ -137,13 +184,16 @@ void testWeldConstraint() {
         lastBodyName);
     model.addConstraint(constraint);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers = 
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
@@ -159,13 +209,16 @@ void testPointConstraint() {
         lastBody, Vec3(0));
     model.addConstraint(constraint);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
     
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
@@ -181,13 +234,16 @@ void testPointOnLineConstraint() {
         Vec3(1,0,0), Vec3(0), lastBody, Vec3(0));
     model.addConstraint(constraint);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
@@ -201,16 +257,18 @@ void testConstantDistanceConstraint() {
         model.getBodySet().get(NUM_BODIES - 1);
     ConstantDistanceConstraint* constraint = new ConstantDistanceConstraint(
         firstBody, Vec3(0), lastBody, Vec3(0), 4.56);
-    
     model.addConstraint(constraint);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
@@ -219,17 +277,19 @@ void testLockedCoordinate() {
 
     State state;
     Model model = createModel();
-
     CoordinateSet& coordSet = model.updCoordinateSet();
     coordSet.getLast()->set_locked(true);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
@@ -238,18 +298,21 @@ void testPrescribedMotion() {
 
     State state;
     Model model = createModel();
-
     CoordinateSet& coordSet = model.updCoordinateSet();
     LinearFunction func(1.0, 0.0);
     coordSet.getLast()->setPrescribedFunction(func);
+    coordSet.getLast()->setDefaultIsPrescribed(true);
     createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
 
     const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    getAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
-
+    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
 
 }
