@@ -117,9 +117,9 @@ public:
         Exception(file, line, func) {
         std::string msg = "Joint '" + thisName + 
             "' cannot connect parent frame '" +
-            parentName + "' to child frame '" + childName + "'.\n"
-            "'Parent and child frames have the same base frame.'"
-            +  baseName + "'.";
+            parentName + "' to child frame '" + childName + "'.\n" +
+            "Parent and child frames have the same base frame '" +
+            baseName + "'.";
         addMessage(msg);
     }
 };
