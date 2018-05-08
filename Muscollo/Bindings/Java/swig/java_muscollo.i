@@ -1,6 +1,6 @@
 %module(directors="1") opensimMuscollo
 
-%include java_exception.i
+%include java_preliminaries.i
 
 %{
 #include <Bindings/OpenSimHeaders_common.h>
