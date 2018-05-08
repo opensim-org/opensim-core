@@ -138,6 +138,7 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
 /// @name Filling in a string with variables.
 /// @{
 
+#ifndef SWIG
 /// Return type for make_printable()
 template<typename T> struct make_printable_return { typedef T type; };
 /// Convert to types that can be printed with sprintf() (vsnprintf()).
@@ -172,6 +173,8 @@ void printMessage(const std::string& formatString, Types... args) {
     std::cout << format(formatString, args...);
     std::cout.flush();
 }
+
+#endif // SWIG
 
 /// @}
 
