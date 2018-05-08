@@ -698,6 +698,8 @@ int main() {
     }
 
     {
+        std::cout << "Test that TimeSeriesTable can have 0 columns."
+                  << std::endl;
         TimeSeriesTable table(std::vector<double>{1.5, 2.5, 3.5});
         std::vector<std::string> expLabels = {};
         ASSERT(table.getColumnLabels() == expLabels);
