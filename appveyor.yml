@@ -80,7 +80,7 @@ install:
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 # TODO /verbosity:quiet
   - dir C:\projects\
   - IF EXIST C:\projects\muscollo_deps_install dir C:\projects\muscollo_deps_install
 
