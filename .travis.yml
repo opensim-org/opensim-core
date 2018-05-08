@@ -82,8 +82,6 @@ addons:
       - valgrind
       # To build doxygen documentation.
       # TOO OLD; see below. - doxygen
-      # To run the python tests.
-      - python-nose
   # To avoid being prompted when ssh'ing into sourceforge.
   ssh_known_hosts:
       # For uploading doxygen.
@@ -266,9 +264,7 @@ script:
   # Go to the python wrapping package directory.
   - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/Python; fi
   # Run the python tests, verbosely.
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then nosetests -v; fi
+  - if [ "$WRAP" = "on" ]; then /usr/bin/python -m unittest discover --start-directory opensim/tests --verbose; fi
     
   ## Set up ssh for sourceforge.
   - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
