@@ -646,7 +646,7 @@ public:
     void appendRow(const ETX& indRow, const RowVectorView& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
-        try {
+        if (_dependentsMetaData.hasKey("labels")) {
             auto& labels =
                     _dependentsMetaData.getValueArrayForKey("labels");
             OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) !=
@@ -654,8 +654,6 @@ public:
                              IncorrectNumColumns,
                              labels.size(),
                              static_cast<size_t>(depRow.ncol()));
-        } catch(KeyNotFound&) {
-            // No "labels". So no operation.
         }
 
         _indData.push_back(indRow);
