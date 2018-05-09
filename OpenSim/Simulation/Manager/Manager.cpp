@@ -539,6 +539,12 @@ setIntegrator(SimTK::Integrator& integrator)
     _defaultInteg.reset();
 }
 
+void Manager::setIntegratorAccuracy(const double& accuracy) const
+{
+    OPENSIM_THROW_IF(!_integ, Exception, "Integrator has not been set.");
+    _integ->setAccuracy(accuracy);
+}
+
 
 //=============================================================================
 // EXECUTION

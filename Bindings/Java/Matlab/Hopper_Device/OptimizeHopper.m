@@ -1,8 +1,9 @@
 function [x, f] = OptimizeHopper()
 % OPTIMIZEHOPPER
 %   This function implements two different optimization approaches to 
-%   maximize the jump height of the hopper.
-%
+%   maximize the jump height of the hopper. Requires either the
+%   Optimization Toolbox or the Global Optimization Toolbox.
+
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
 % simulation. See http://opensim.stanford.edu and the NOTICE file       %
@@ -36,7 +37,7 @@ switch problem
     % Toolbox. 
     case 'one_hop'
         lb = 0;
-        ub = 1;
+        ub = 1;         
         options = optimset('TolFun', 1e-2, ...
                            'MaxIter', 10000, ...
                            'Display', 'iter'); 
@@ -60,7 +61,11 @@ switch problem
                                    lb,ub,[],options);                 
 end
 
-% ANALYZE SOLUTION
+% Visualize a naive initial guess
+hopper = buildHopperFromSolution((lb+ub)/2, problem);
+EvaluateHopper(hopper, true, true);
+
+% ANALYZE OPTIMIZED SOLUTION
 % Construct the actuator controls from solution 'x' and interpolate. See 
 % CONSTRUCTCONTROLS below for details.
 [deviceControl, muscleExcitation] = constructControls(x, problem);
@@ -132,7 +137,8 @@ hopper = BuildInteractiveHopperSolution(...
             'activePatellaWrap', false, ...
             'activeParameter', 100, ...
             'deviceControl', deviceControl, ...
-            'isActivePropMyo', false);
+            'isActivePropMyo', false, ...
+            'printModelInfo', false);
 end
 
 function [deviceControl, muscleExcitation] = constructControls(x, problem)
