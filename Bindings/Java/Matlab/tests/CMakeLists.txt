@@ -63,6 +63,9 @@ add_custom_target(RunMatlabTests
     COMMAND ${CMAKE_CTEST_COMMAND} --tests-regex Matlab
                                    ${OPENSIM_TEST_BUILD_CONFIG}
                                    --extra-verbose
+                                   )
+
+set_target_properties(RunMatlabTests PROPERTIES
     PROJECT_LABEL "Matlab - run tests"
     FOLDER "Bindings"
     )
