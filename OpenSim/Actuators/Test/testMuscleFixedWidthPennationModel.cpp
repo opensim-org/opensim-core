@@ -801,32 +801,32 @@ int main(int argc, char* argv[])
             MuscleFixedWidthPennationModel mfwpm;
             mfwpm.set_optimal_fiber_length(0.0);
             SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
-                SimTK::Exception::ErrorCheck);
+                InvalidPropertyValue);
         }
         {
             MuscleFixedWidthPennationModel mfwpm;
             mfwpm.set_pennation_angle_at_optimal(-SimTK::SignificantReal);
             SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
-                SimTK::Exception::ValueOutOfRange);
+                InvalidPropertyValue);
         }
         {
             MuscleFixedWidthPennationModel mfwpm;
             mfwpm.set_pennation_angle_at_optimal(SimTK::Pi/2.0);
             SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
-                SimTK::Exception::ValueOutOfRange);
+                InvalidPropertyValue);
         }
         {
             MuscleFixedWidthPennationModel mfwpm;
             mfwpm.set_maximum_pennation_angle(-SimTK::SignificantReal);
             SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
-                SimTK::Exception::ValueOutOfRange);
+                InvalidPropertyValue);
         }
         {
             MuscleFixedWidthPennationModel mfwpm;
             mfwpm.set_maximum_pennation_angle(SimTK::Pi/2.0
                                               + SimTK::SignificantReal);
             SimTK_TEST_MUST_THROW_EXC(mfwpm.finalizeFromProperties(),
-                SimTK::Exception::ValueOutOfRange);
+                InvalidPropertyValue);
         }
 
         //Unset properties

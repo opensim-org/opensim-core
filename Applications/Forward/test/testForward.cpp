@@ -33,60 +33,34 @@
 using namespace OpenSim;
 using namespace std;
 
-void testPendulum();    // test manager/integration process
-void testPendulumExternalLoad(); // test application of external loads point in pendulum
-void testPendulumExternalLoadWithPointInGround(); // test application of external loads point in ground
-void testArm26();       // now add computation of controls and generation of muscle forces
-void testGait2354();    // controlled muscles and ground reactions forces 
-void testGait2354WithController(); // included additional controller
+void testPendulum();
+void testPendulumExternalLoad();
+void testPendulumExternalLoadWithPointInGround(); 
+void testArm26();
+void testGait2354();
+void testGait2354WithController();
+void testGait2354WithControllerGUI();
+
 
 int main() {
     Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 
-    SimTK::Array_<std::string> failures;
-
-    // test manager/integration process
-    try { testPendulum(); cout << "\nPendulum test PASSED " << endl; }  
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulum"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoad(); 
-        cout << "\nPendulum with external load test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoad"); }
-    
-    // test application of external loads
-    try { testPendulumExternalLoadWithPointInGround(); 
-        cout << "\nPendulum with external load and point in ground PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testPendulumExternalLoadWithPointInGround"); }
-    
-    // now add computation of controls and generation of muscle forces
-    try { testArm26(); 
-        cout << "\narm26 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testArm26"); }
-        
-    // include applied ground reactions forces 
-    try { testGait2354(); 
-        cout << "\ngait2354 test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354"); }
-
-    // finally include a controller
-    try { testGait2354WithController(); 
-        cout << "\ngait2354 with correction controller test PASSED " << endl; }
-    catch (const std::exception& e)
-        { cout << e.what() <<endl; failures.push_back("testGait2354WithController"); }  
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-    return 0;
+    SimTK_START_TEST("testForward");
+        // test manager/integration process
+        SimTK_SUBTEST(testPendulum);
+        // test application of external loads point in pendulum
+        SimTK_SUBTEST(testPendulumExternalLoad);
+        // test application of external loads with point moving in ground
+        SimTK_SUBTEST(testPendulumExternalLoadWithPointInGround);
+        // now add computation of controls and generation of muscle forces
+        SimTK_SUBTEST(testArm26);
+        // controlled muscles and ground reactions forces
+        SimTK_SUBTEST(testGait2354);
+        // included additional controller
+        SimTK_SUBTEST(testGait2354WithController);
+        // implements steps GUI takes to provide a model
+        SimTK_SUBTEST(testGait2354WithControllerGUI);
+    SimTK_END_TEST();
 }
 
 void testPendulum() {
@@ -248,4 +222,40 @@ void testGait2354WithController() {
     
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
         __FILE__, __LINE__, "testGait2354WithController failed");
+}
+
+void testGait2354WithControllerGUI() {
+
+    // The following lines are the steps from ForwardToolModel.java that
+    // associates the a previous (orgiModel) model with the ForwardTool
+    // instead of the Tool loading the model specified in the setup
+    ForwardTool forward("subject01_Setup_Forward_Controller.xml");
+    Model origModel(forward.getModelFilename());
+
+    Model* model = new Model(origModel);
+    model->initSystem();
+    
+    const std::string resultsDir{ "ResultsCorrectionControllerGUI" };
+
+    forward.setResultsDir(resultsDir);
+    forward.updateModelForces(*model, "");
+    forward.setModel(*model);
+
+    model->initSystem();
+
+    forward.run();
+
+    // For good measure we'll make sure we still get the identical results
+    Storage results(resultsDir+"/subject01_states.sto");
+    //Storage standard("std_subject01_walk1_states.sto");
+    Storage standard("ResultsCorrectionController/subject01_states.sto");
+
+    int nstates = forward.getModel().getNumStateVariables();
+    int nq = forward.getModel().getNumCoordinates();
+    std::vector<double> rms_tols(2 * nstates, SimTK::SqrtEps);
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols,
+        __FILE__, __LINE__, "testGait2354WithControllerGUI failed");
+    
+    delete model;
 }

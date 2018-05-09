@@ -223,29 +223,27 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
     
     SimTK::Vector actControls(1, 0.0);
 
-    for(int i=0; i< getActuatorSet().getSize(); i++){
-        auto act = 
-            dynamic_cast<const CoordinateActuator*>(&getActuatorSet().get(i));
-        SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
-
-        Coordinate *aCoord = act->getCoordinate();
-        if( aCoord->isConstrained(s) ) {
+    int i = 0;
+    auto coordinateActuators = getComponentList<CoordinateActuator>();
+    for(auto& act : coordinateActuators) {
+        const Coordinate* coord = act.getCoordinate();
+        if(coord->isConstrained(s) ) {
             actControls =  0.0;
         } 
-        else
-        {
-            double qval = aCoord->getValue(s);
-            double uval = aCoord->getSpeedValue(s);
+        else {
+            double qval = coord->getValue(s);
+            double uval = coord->getSpeedValue(s);
 
             // COMPUTE EXCITATIONS
-            double oneOverFmax = 1.0 / act->getOptimalForce();
+            double oneOverFmax = 1.0 / act.getOptimalForce();
             double pErr = qval - yDesired[2*i];
             double vErr = uval - yDesired[2*i+1];
             double pErrTerm = _kp*oneOverFmax*pErr;
             double vErrTerm = _kv*oneOverFmax*vErr;
             actControls = -vErrTerm - pErrTerm;
         }
-        getActuatorSet()[i].addInControls(actControls, controls);
+        act.addInControls(actControls, controls);
+        ++i;
     }
 }
 
@@ -257,16 +255,23 @@ void CorrectionController::extendConnectToModel(Model& model)
     // create an actuator for each generalized coordinate in the model 
     // add these actuators to the model and set their indexes 
     const CoordinateSet& cs = _model->getCoordinateSet();
+    auto actuators = model.updComponentList<CoordinateActuator>();
+
     for(int i=0; i<cs.getSize(); i++) {
-        std::cout << " CorrectionController::extendConnectToModel(): " 
-                  <<  cs.get(i).getName()+"_corrector" << "  added " 
-                  << std::endl;
-        std::string name = cs.get(i).getName()+"_corrector";
-        CoordinateActuator *actuator = NULL;
-        if(_model->getForceSet().contains(name)){
-            actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
+        const Coordinate& coord = cs[i];
+        const std::string name = coord.getName() + "_corrector";
+
+        CoordinateActuator* actuator = nullptr;
+
+        for (auto& ca : actuators) {
+            if (ca.getName() == name) {
+                actuator = &ca;
+                break;
+            }
         }
-        else{
+
+        if(!actuator) {
+            // create the corrector actuator if it doe not already exist
             actuator = new CoordinateActuator();
             actuator->setCoordinate(&cs.get(i));
             actuator->setName(name);
@@ -275,16 +280,22 @@ void CorrectionController::extendConnectToModel(Model& model)
             // the controller is removed, so are all the actuators it added.
             adoptSubcomponent(actuator);
             setNextSubcomponentInSystem(*actuator);
-        }
             
-        actuator->setOptimalForce(1.0);
+            std::cout << " CorrectionController::extendConnectToModel(): "
+                << name << " added " << std::endl;
+
+            actuator->setOptimalForce(1.0);
+        }
         
-        updActuators().adoptAndAppend(actuator);
+        // Add to the Controller's list of Actuators (no ownership).
+        addActuator(*actuator);
    }
+
     setNumControls(getActuatorSet().getSize());
 
-    printf(" CorrectionController::extendConnectToModel()  num Actuators= %d kv=%f kp=%f \n",
-        _model->getForceSet().getSize(), _kv, _kp );
+    printf(" CorrectionController::extendConnectToModel() " 
+        "num Actuators= %d kv=%f kp=%f \n",
+        getNumControls(), _kv, _kp );
 }
 
 // for any initialization requiring a state or the complete system 

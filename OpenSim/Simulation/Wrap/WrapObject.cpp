@@ -133,8 +133,10 @@ void WrapObject::extendFinalizeFromProperties()
         upd_quadrant() = "all";
         _wrapSign = 0;
     } else {
-        // quadrant was specified incorrectly in wrap object definition; 
-        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, getProperty_quadrant().getName());
+        OPENSIM_THROW_FRMOBJ(
+            InvalidPropertyValue,
+            getProperty_quadrant().getName(),
+            "Quadrant was specified incorrectly in definition of wrap object");
     }
 }
 
