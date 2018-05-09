@@ -102,24 +102,46 @@ void Thelen2003Muscle::extendFinalizeFromProperties()
 
 
     OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
-        InvalidPropertyValue, getProperty_minimum_activation().getName());
+        InvalidPropertyValue, getProperty_minimum_activation().getName(),
+        "Minimum activation cannot be less than 0.01");
 
     OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
-        InvalidPropertyValue, getProperty_min_control().getName());
+        InvalidPropertyValue, getProperty_min_control().getName(),
+        "Minimum control cannot be less than minimum activation");
 
-    // Set properties of subcomponents.
+    // Propagate properties down to pennation model subcomponent. If any of the
+    // new property values are invalid, restore the subcomponent's current
+    // property values (to avoid throwing again when the subcomponent's
+    // extendFinalizeFromProperties() method is called directly) and then
+    // re-throw the exception thrown by the subcomponent.
     auto& pennMdl =
         updMemberSubcomponent<MuscleFixedWidthPennationModel>(pennMdlIdx);
+    MuscleFixedWidthPennationModel pennMdlCopy(pennMdl);
     pennMdl.set_optimal_fiber_length(getOptimalFiberLength());
     pennMdl.set_pennation_angle_at_optimal(
         getPennationAngleAtOptimalFiberLength());
     pennMdl.set_maximum_pennation_angle(get_maximum_pennation_angle());
+    try {
+        pennMdl.finalizeFromProperties();
+    } catch (const InvalidPropertyValue&) {
+        pennMdl = pennMdlCopy;
+        throw;
+    }
 
+    // Propagate properties down to activation dynamics model subcomponent.
+    // Handle invalid properties as above for pennation model.
     auto& actMdl =
         updMemberSubcomponent<MuscleFirstOrderActivationDynamicModel>(actMdlIdx);
+    MuscleFirstOrderActivationDynamicModel actMdlCopy(actMdl);
     actMdl.set_activation_time_constant(get_activation_time_constant());
     actMdl.set_deactivation_time_constant(get_deactivation_time_constant());
     actMdl.set_minimum_activation(get_minimum_activation());
+    try {
+        actMdl.finalizeFromProperties();
+    } catch (const InvalidPropertyValue&) {
+        actMdl = actMdlCopy;
+        throw;
+    }
 }
 
 //====================================================================

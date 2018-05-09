@@ -732,52 +732,29 @@ std::string Component::getRelativePathName(const Component& wrt) const
 }
 
 const Component::StateVariable* Component::
-    findStateVariable(const std::string& name) const
+    traverseToStateVariable(const std::string& pathName) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    // Split the prefix from the varName (part of string past the last "/")
-    // In the case where no "/" is found, prefix = name.
-    std::string::size_type back = name.rfind("/");
-    std::string prefix = name.substr(0, back);
-
-    // In the case where no "/" is found, this assigns varName = name.
-    // When "/" is not found, back = UINT_MAX. Then, back + 1 = 0.
-    // Subtracting by UINT_MAX is effectively adding by 1, so the next line
-    // should work in all cases except if name.length() = UINT_MAX.
-    std::string varName = name.substr(back + 1, name.length() - back);
-
-    // first assume that the state variable named belongs to this
-    // top level component
-    std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(varName);
-
-    if (it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable.get();
-    }
+    ComponentPath svPath(pathName);
 
     const StateVariable* found = nullptr;
-    const Component* comp = traversePathToComponent<Component>(prefix);
-
-    if (comp) {
-        found = comp->findStateVariable(varName);
-    }
-
-    // Path not given or could not find it along given path name
-    // Now try complete search.
-    if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
-            comp = _propertySubcomponents[i]->findComponent(prefix, &found);
-            if (found) {
-                return found;
-            }
-            if (comp) {
-                return comp->findStateVariable(varName);
-            }
+    if (svPath.getNumPathLevels() == 1) {
+        // There was no slash. The state variable should be in this component.
+        auto it = _namedStateVariableInfo.find(pathName);
+        if (it != _namedStateVariableInfo.end()) {
+            return it->second.stateVariable.get();
+        }
+    } else if (svPath.getNumPathLevels() > 1) {
+        const auto& compPath = svPath.getParentPath();
+        const Component* comp = traversePathToComponent<Component>(compPath);
+        if (comp) {
+            // This is the leaf of the path:
+            const auto& varName = svPath.getComponentName();
+            found = comp->traverseToStateVariable(varName);
         }
     }
-
     return found;
 }
 
@@ -860,7 +837,7 @@ double Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable with this component or its subcomponents
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
     if (rsv) {
         return rsv->getValue(s);
     }
@@ -891,7 +868,7 @@ double Component::
     } 
     else{
         // otherwise find the component that variable belongs to
-        const StateVariable* rsv = findStateVariable(name);
+        const StateVariable* rsv = traverseToStateVariable(name);
         if (rsv) {
             return rsv->getDerivative(state);
         }
@@ -915,7 +892,7 @@ void Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
 
     if(rsv){ // find required rummaging through the state variable names
             return rsv->setValue(s, value);
@@ -972,7 +949,7 @@ SimTK::Vector Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     Vector stateVariableValues(nsv, SimTK::NaN);
@@ -1005,7 +982,7 @@ void Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     for(int i=0; i<nsv; ++i){

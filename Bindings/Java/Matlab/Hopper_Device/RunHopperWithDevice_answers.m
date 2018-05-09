@@ -36,11 +36,18 @@ device = BuildDevice();
 %% Connect the device to the hopper.
 % ----------------------------------
 
+% TODO: Add the device to the hopper model.
+% [Step 2, Task A]
+% ANSWER{
+hopper.addComponent(device);
+% }
+% Note: After this step, simulating will not work until after completing Task F.
+
 % TODO: Print the names of the device's subcomponents, and locate the
 %       subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
 %       the hopper's subcomponents, and locate the two subcomponents named
 %       'deviceAttach'.
-% [Step 2, Task A]
+% [Step 2, Task B]
 % ANSWER{
 device.printSubcomponentInfo();
 hopper.printSubcomponentInfo();
@@ -49,7 +56,7 @@ hopper.printSubcomponentInfo();
 % TODO: Get the 'anchor' joints in the device, and downcast them to the
 %       WeldJoint class. Get the 'deviceAttach' frames in the hopper
 %       model, and downcast them to the PhysicalFrame class.
-% [Step 2, Task B]
+% [Step 2, Task C]
 % ANSWER{
 anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
 anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
@@ -62,18 +69,11 @@ shankAttach = PhysicalFrame.safeDownCast(...
 % TODO: Connect the parent frame sockets of the device's anchor joints to the
 %       attachment frames on the hopper; attach anchorA to the thigh, and
 %       anchorB to the shank.
-% [Step 2, Task C]
+% [Step 2, Task D]
 % ANSWER{
 anchorA.connectSocket_parent_frame(thighAttach);
 anchorB.connectSocket_parent_frame(shankAttach);
 % }
-
-% TODO: Add the device to the hopper model.
-% [Step 2, Task D]
-% ANSWER{
-hopper.addComponent(device);
-% }
-% Note: After this step, simulating will not work until after completing Task F.
 
 % (Done for you) Configure the device to wrap over the patella.
 if hopper.hasComponent('device_active') || hopper.hasComponent('device_passive') 

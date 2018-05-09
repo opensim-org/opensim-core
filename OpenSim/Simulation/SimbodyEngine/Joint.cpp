@@ -270,6 +270,17 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
 }
 
 
+void Joint::extendConnectToModel(Model& model) 
+{
+    Super::extendConnectToModel(model);
+
+    auto& parent = updSocket<PhysicalFrame>("parent_frame").getConnectee();
+    auto& child = updSocket<PhysicalFrame>("child_frame").getConnectee();
+
+    OPENSIM_THROW_IF(&parent == &child, JointFramesAreTheSame,
+        getName(), parent.getName());
+}
+
 void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);

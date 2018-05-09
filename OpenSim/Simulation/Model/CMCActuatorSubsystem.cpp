@@ -148,21 +148,28 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     // controls
     const CoordinateSet& coords = _model->getCoordinateSet();
     for (int i = 0; i < nq; ++i) {
-        // the last argument to setValue is a bool to enforce kinematic constraints
-        // or not. It is being set to true when we set the last coordinate value.
-        coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], i==(nq-1));
+        // the last argument to setValue, a bool to enforce constraints,
+        // is false since values come from a _qSet of splined desired
+        // kinematics formed from formCompleteStorages, which enforces
+        // model constraints.
+        coords[i].setValue(mutableCompState, _qWork[i] + _qCorrections[i], false);
         coords[i].setSpeedValue(mutableCompState, _uWork[i] + _uCorrections[i]);
     }
+    // project() to satisfy constraints perturbed by _q/_uCorrections
+    _model->getMultibodySystem().projectQ(mutableCompState,
+        getModel()->get_assembly_accuracy() / 10);
+    _model->getMultibodySystem().projectU(mutableCompState,
+        getModel()->get_assembly_accuracy() / 10);
 
-     /* copy  muscle states computed from the actuator system to the muscle states
-        for the complete system  then compute forces*/
+    /* copy  muscle states computed from the actuator system to the muscle states
+       for the complete system  then compute forces*/
     mutableCompState.updZ() = s.getZ();
     mutableCompState.updTime() = t;
 
-     _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
+    _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
-     /* copy 1st derivatives of muscle states from complete system to actuator system */ 
-     s.updZDot() = _completeState.getZDot();
+    /* copy 1st derivatives of muscle states from complete system to actuator system */ 
+    s.updZDot() = _completeState.getZDot();
 
 /*
     cout << "_qWork=" << _qWork << endl;

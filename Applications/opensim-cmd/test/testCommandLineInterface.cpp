@@ -293,7 +293,7 @@ void testRunTool() {
     testCommand("run-tool", EXIT_FAILURE,
             StartsWith("Arguments did not match expected patterns"));
     testCommand("run-tool putes.xml", EXIT_FAILURE,
-            StartsWith("SimTK Exception thrown at Xml.cpp"));
+            StartsWith("SimTK Exception thrown at"));
     // We use print-xml to create a setup file that we can try to run.
     // (We are not really trying to test print-xml right now.)
     testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
@@ -440,7 +440,7 @@ void testUpdateFile() {
                        RE_ANY));
     testCommand("update-file x.sto y", EXIT_FAILURE, 
             std::regex("(Loading input file 'x.sto')" + RE_ANY +
-                       "(Storage: ERROR- failed to open file x.sto)" + RE_ANY));
+                       "(Storage: Failed to open file 'x.sto')" + RE_ANY));
 
     // Successful input.
     // =================
