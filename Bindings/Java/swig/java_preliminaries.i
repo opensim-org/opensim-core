@@ -17,6 +17,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
               if (!depfile.exists() || depfile.isDirectory()) {
                   throw new Exception("OpenSim could not read " + depfile.toString() + ".");
               }
+              // readAllLines() requires Java 1.7.
               List<String> libraries = Files.readAllLines(depfilePath, Charset.defaultCharset());
               for (String lib : libraries) {
                   String libToLoad = Paths.get(jardir.toString(), lib).normalize().toString();

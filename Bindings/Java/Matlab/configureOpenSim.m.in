@@ -7,10 +7,6 @@ function configureOpenSim()
 %
 %    This script also adds some OpenSim MATLAB utility functions to your MATLAB
 %    path (e.g., for converting OpenSim data tables to MATLAB structs).
-%    
-%    Windows users must ensure OpenSim's bin directory is on the operating
-%    system's PATH (search for "environment" in the Windows start menu). 
-%    OpenSim's installer usually does this for you.
 %
 %    Linux users must ensure OpenSim's lib directory on the library path
 %    (LD_LIBRRAY_PATH), and may need to replace MATLAB's libstdc++ 
@@ -36,6 +32,18 @@ function configureOpenSim()
 %    This function tries detect any OpenSim installations you may have
 %    previously configured with MATLAB, and removes them from the Java class
 %    path, Java library path, and MATLAB path (all 3 items above).
+%
+% MATLAB versions older than 2013b on Windows:
+%    If your MATLAB version is older than 2013b and you are on Windows,
+%    you must ensure OpenSim's bin directory is on the operating
+%    system's PATH (search for "environment" in the Windows start menu). 
+%    OpenSim's installer may do this for you. If you have multiple
+%    installations of OpenSim, make sure the installation you are using
+%    in MATLAB appears on your PATH before all other OpenSim installations.
+%    Note that your System PATH is *prepended* to your User PATH.
+%    (The non-PATH mechanism for finding OpenSim DLLs depends on Java >= 1.7.
+%    MATLAB 2013b is the first version to use Java 1.7; 
+%    https://www.mathworks.com/support/sysreq/previous_releases.html).
 %  
 % MATLAB versions older than 2012b:
 %    If your MATLAB version is older than 2012b, we must use an older mechanism
