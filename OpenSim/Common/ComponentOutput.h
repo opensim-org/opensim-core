@@ -175,6 +175,8 @@ public:
     
     //default construct output function pointer and result container
     Output() {}
+
+#ifndef SWIG
     /** Convenience constructor
     Create a Component::Output bound to a specific method of the Component and 
     valid at a given realization Stage.
@@ -196,6 +198,7 @@ public:
         }
     
     }
+#endif
     
     /** Custom copy constructor is for setting the Channel's pointer
      * back to this Output. */
@@ -256,6 +259,7 @@ public:
         }
     }
     
+#ifndef SWIG
     /** Use this to iterate through this Output's channels
      (even for single-value Channels).
      
@@ -266,6 +270,7 @@ public:
      @endcode
      */
     const ChannelMap& getChannels() const { return _channels; }
+#endif
 
     //--------------------------------------------------------------------------
     // OUTPUT VALUE

@@ -30,6 +30,10 @@ namespace SimTK {
 
 // Vector and Matrix
 //%include <Bindings/std.i>
+namespace SimTK {
+    %ignore RowVectorBase::begin; // Creates SWIGTYPE_p_...
+    %ignore RowVectorBase::end; // Creates SWIGTYPE_p_...
+}
 %include <SWIGSimTK/BigMatrix.h>
 %template(StdVectorVec3) std::vector<SimTK::Vec3>;
 
@@ -249,6 +253,10 @@ namespace SimTK {
 %include <SWIGSimTK/SimbodyMatterSubsystem.h>
 
 %rename(SimTKVisualizer) SimTK::Visualizer;
+namespace SimTK {
+    %ignore Visualizer::getFrameControllers; // Creates SWIGTYPE_p_...
+    %ignore Visualizer::getInputListeners; // Creates SWIGTYPE_p_...
+}
 %include <simbody/internal/Visualizer.h>
 
 // Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
