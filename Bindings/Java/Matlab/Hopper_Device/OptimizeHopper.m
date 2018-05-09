@@ -61,10 +61,6 @@ switch problem
                                    lb,ub,[],options);                 
 end
 
-% Visualize a naive initial guess
-hopper = buildHopperFromSolution((lb+ub)/2, problem);
-EvaluateHopper(hopper, true, true);
-
 % ANALYZE OPTIMIZED SOLUTION
 % Construct the actuator controls from solution 'x' and interpolate. See 
 % CONSTRUCTCONTROLS below for details.
