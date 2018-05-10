@@ -33,6 +33,7 @@ class Marker;
 /// experimental data location is provided, and integrated over the phase.
 /// The reference can be provided as a file name to a TRC file, or 
 /// programmatically as a TimeSeriesTable.
+/// @ingroup mucocost
 class OSIMMUSCOLLO_API MucoMarkerTrackingCost : public MucoCost {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerTrackingCost, MucoCost);
 public:

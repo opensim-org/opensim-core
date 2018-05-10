@@ -29,6 +29,7 @@
 #include "MucoWeightSet.h"
 #include "MucoStateTrackingCost.h"
 #include "MucoMarkerTrackingCost.h"
+#include "MucoMarkerEndpointCost.h"
 #include "MucoControlCost.h"
 #include "MucoParameter.h"
 
@@ -46,6 +47,7 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoWeightSet());
         Object::registerType(MucoStateTrackingCost());
         Object::registerType(MucoMarkerTrackingCost());
+        Object::registerType(MucoMarkerEndpointCost());
         Object::registerType(MucoControlCost());
         Object::registerType(MucoPhase());
         Object::registerType(MucoVariableInfo());
