@@ -197,9 +197,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         int ind{0};
         for (std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3) {
             if (!row.at(c).empty())
-                row_vector[ind++] = SimTK::Vec3{ std::stod(row.at(c)),
+                row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
                                                 std::stod(row.at(c + 1)),
                                                 std::stod(row.at(c + 2)) };
+            ++ind;
         }
 
         // Column 1 is time.
