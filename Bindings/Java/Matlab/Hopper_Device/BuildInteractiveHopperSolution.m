@@ -42,7 +42,7 @@ defaultIsActivePropMyo = false;
 defaultActiveParameter = 50;
 defaultDeviceControl = [0.0 2.5 5.0;
                         0.0 0.75 0.0];
-defaultPrintModelInfo = true;
+defaultPrintSubcomponentAndOutputInfo = true;
 
 % Create optional values for input parser                   
 addOptional(p,'muscle',defaultMuscle)
@@ -55,7 +55,7 @@ addOptional(p,'activePatellaWrap',defaultActivePatellaWrap)
 addOptional(p,'isActivePropMyo',defaultIsActivePropMyo)
 addOptional(p,'activeParameter',defaultActiveParameter)
 addOptional(p,'deviceControl',defaultDeviceControl)
-addOptional(p,'printModelInfo',defaultPrintModelInfo)
+addOptional(p,'printSubcomponentAndOutputInfo',defaultPrintSubcomponentAndOutputInfo)
 
 % Parse inputs
 parse(p,varargin{:});
@@ -63,25 +63,6 @@ parse(p,varargin{:});
 % Retrieve inputs and/or default values
 muscle = p.Results.muscle;
 muscleExcitation = p.Results.muscleExcitation;
-% Check that muscle excitation nodes lie within proper bounds
-if any(muscleExcitation(1,:) < 0) || any(muscleExcitation(1,:) > 5)
-   error('Muscle excitation nodes must lie within the time interval [0,5].')
-end
-if any(muscleExcitation(2,:) < 0) || any(muscleExcitation(2,:) > 1)
-   error('Muscle excitation nodes must have values within the interval [0,1].')
-end
-if (muscleExcitation(1,1) ~= 0) && (muscleExcitation(2,1) ~= 0)
-    fprintf('First muscle excitation node must lie at (0,0). Adding node...');
-    muscleExcitation = [0 muscleExcitation(1,:);
-                        0 muscleExcitation(2,:)];
-end
-if muscleExcitation(1,end) ~= 5
-    fprintf(['Zero-order hold being applied to final muscle excitation ' ...
-             'node to end of 5 second hop cycle (value: %f)'], ...
-             muscleExcitation(2,end));
-    muscleExcitation = [muscleExcitation(1,:) 5;
-                        muscleExcitation(2,:) muscleExcitation(2,end)];
-end
 addPassiveDevice = p.Results.addPassiveDevice;
 passivePatellaWrap = p.Results.passivePatellaWrap;
 passiveParameter = p.Results.passiveParameter;
@@ -90,28 +71,7 @@ activePatellaWrap = p.Results.activePatellaWrap;
 isActivePropMyo = p.Results.isActivePropMyo;
 activeParameter = p.Results.activeParameter;
 deviceControl = p.Results.deviceControl;
-% Check that device control nodes lie within proper bounds
-if addActiveDevice && ~isActivePropMyo
-    if any(deviceControl(1,:) < 0) || any(deviceControl(1,:) > 5)
-        error('Device control nodes must lie within the time interval [0,5].')
-    end
-    if any(deviceControl(2,:) < 0) || any(deviceControl(2,:) > 1)
-        error('Device control nodes must have values within the interval [0,1].')
-    end
-    if deviceControl(1,1) ~= 0
-        fprintf('First device control node must lie at (0,0). Adding node...');
-        deviceControl = [0 deviceControl(1,:);
-                         0 deviceControl(2,:)];
-    end
-    if deviceControl(1,end) ~= 5
-        fprintf(['Zero-order hold being applied to final device control ' ...
-                 'node to end of 5 second hop cycle (value: %f)'], ...
-                  deviceControl(2,end));
-        deviceControl = [deviceControl(1,:) 5;
-                         deviceControl(2,:) deviceControl(2,end)];
-    end
-end
-printModelInfo = p.Results.printModelInfo;
+printSubcomponentAndOutputInfo = p.Results.printSubcomponentAndOutputInfo;
 
 import org.opensim.modeling.*;
 
@@ -156,7 +116,7 @@ hopper = BuildHopper('excitation',muscleExcitation, ...
                      'maxIsometricForce', maxIsometricForce, ...
                      'optimalFiberLength', optimalFiberLength, ...
                      'tendonSlackLength', tendonSlackLength);
-if printModelInfo
+if printSubcomponentAndOutputInfo
     hopper.printSubcomponentInfo();
 end
 
@@ -200,7 +160,7 @@ for d = 1:length(devices)
     % the hopper's subcomponents, and locate the two subcomponents named
     % 'deviceAttach'.
     device = devices{d};
-    if printModelInfo
+    if printSubcomponentAndOutputInfo
         device.printSubcomponentInfo();
     end
     
@@ -239,7 +199,7 @@ for d = 1:length(devices)
     
     % Print the names of the outputs of the device's PathActuator and
     % ToyPropMyoController subcomponents.
-    if strcmp(deviceNames{d},'device_active') && printModelInfo
+    if strcmp(deviceNames{d},'device_active') && printSubcomponentAndOutputInfo
         device.getComponent('cableAtoBactive').printOutputInfo();
         device.getComponent('controller').printOutputInfo();
     end
