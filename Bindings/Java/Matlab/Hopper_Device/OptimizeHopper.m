@@ -1,7 +1,8 @@
 function [x, f] = OptimizeHopper()
 % OPTIMIZEHOPPER
-%   This function uses fmincon to optimize the model for hop height.
-%   Requires the Optimization Toolbox.
+%   This function implements two different optimization approaches to 
+%   maximize the jump height of the hopper. Requires either the
+%   Optimization Toolbox or the Global Optimization Toolbox.
 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -11,7 +12,7 @@ function [x, f] = OptimizeHopper()
 % R24 HD065690) and by DARPA through the Warrior Web program.           %
 %                                                                       %
 % Copyright (c) 2017 Stanford University and the Authors                %
-% Author(s): Carmichael Ong,  Nick Bianco                               %
+% Author(s): Nicholas Bianco, Carmichael Ong                            %
 %                                                                       %
 % Licensed under the Apache License, Version 2.0 (the "License");       %
 % you may not use this file except in compliance with the License.      %
@@ -25,81 +26,179 @@ function [x, f] = OptimizeHopper()
 % permissions and limitations under the License.                        %
 %-----------------------------------------------------------------------%
 
-% Three variables: 1) passive stiffness 
-%                  2) active max torque 
-%                  3) hop timing
-% See buildHopperFromSolution() for more details.
-numVariables = 3; 
+% CHOOSE PROBLEM: 'one_hop' or 'three_hops'
+problem = 'one_hop';
+switch problem
+    
+    % Optimize the height of one hop. The single optimization variable 
+    % determines when to simultaneously release a loaded passive device and 
+    % activate the hopper vastus muscle (see CONSTRUCTCONTROLS below). This
+    % simple univariate problem uses FMINBND from the MATLAB Optimization 
+    % Toolbox. 
+    case 'one_hop'
+        lowerBound = 0; % seconds
+        upperBound = 1; % seconds        
+        options = optimset('TolFun', 1e-2, ...
+                           'MaxIter', 10000, ...
+                           'Display', 'iter'); 
+        [x, f] = fminbnd(@(x) objective(x,problem),lowerBound,upperBound,...
+                         options);
+                     
+    % Optimize the height of a sequence of three hops. The optimization
+    % variables decide when to switch the actuators on and off to load and 
+    % release the passive device with the activated muscle (see 
+    % CONSTRUCTCONTROLS below). We use a global optimizer (genetic 
+    % algorithm from MATLAB's Global Optimization Toolbox) to avoid falling 
+    % into local minima (e.g., solutions with fewer than three hops).
+    case 'three_hops'
+        numVars = 3; 
+        lowerBound = 0.25*ones(numVars, 1); % seconds
+        upperBound = 0.75*ones(numVars, 1); % seconds
+        options = optimoptions('ga','FunctionTolerance', 1e-2, ...
+                                    'MaxGenerations', 10, ...
+                                    'Display', 'iter'); 
+        [x, f] = ga(@(x) objective(x,problem),numVars,[],[],[],[], ...
+                                   lowerBound,upperBound,[],options);                 
+end
 
-% Variable bounds
-lb = zeros(numVariables, 1);
-ub = ones(numVariables, 1);
+% ANALYZE OPTIMIZED SOLUTION
+% Construct the actuator controls from solution 'x'. See 
+% CONSTRUCTCONTROLS below for details.
+[deviceControl, muscleExcitation] = constructControls(x, problem);
+                             
+% Plot optimized controls.
+figure(1);
+plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
+hold on
+plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
+xlabel('time (s)')
+ylabel('control value')
 
-% Initial guess
-x0 = 0.25*ub;
+% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
+% below for details.
+hopper = constructHopper(x, problem);
+[~, heightStruct] = EvaluateHopper(hopper, true, true);
 
-% Visualize initial guess
-hopper = buildHopperFromSolution(x0);
-EvaluateHopper(hopper, true, true);
-
-% Optimize!
-opts.TolFun = 0.01;
-[x, f] = fmincon(@objective,x0,[],[],[],[],lb,ub,[],opts);
-
-% Evaluate optimized solution
-hopper = buildHopperFromSolution(x);
-EvaluateHopper(hopper, true, true);
+% Plot jump height.
+figure(2);
+plot(heightStruct.time, heightStruct.height, 'b-', 'linewidth', 2)
+xlabel('time (s)')
+ylabel('height')
 
 end
 
-function hopper = buildHopperFromSolution(x)
-% BUILDHOPPERFROMSOLUTION
-%   Build the hopper with the passive device wrapped and the active device
-%   unwrapped (behind the knee). The optimization variables 'x' determine 
-%   the device properties and the timing of the hop.
+function f = objective(x, problem)
+% OBJECTIVE
+%   Simulate the hopper with the current controls and report hop height.
 
-import org.opensim.modeling.*;
+% See CONSTRUCTHOPPER below for details.
+hopper = constructHopper(x, problem);
 
-% These parameters determine the stiffness in the passive device and the
-% maximum force in the active device, both on a 0-100 scale. The range of
-% values for each device correspond to the slider values in the GUI which
-% can be accessed by running InteractiveHopper.m.
-passiveParameter = 100*x(1);
-activeParameter = 100*x(2);
+% Pass the hopper model to create a forward simulation with the current 
+% guess for the actuator controls. This is the same function that the 
+% InteractiveHopper GUI calls when you click Simulate.
+[peakHeight, ~] = EvaluateHopper(hopper, false, true);
 
-% Construct controls from the last optimization variable, x(3). This
-% variable is the time when the active device is turned off (which 
-% releases the loaded spring) and the vastus muscle is turned to 
-% coordinate a hop.
-% For deviceControl and excitation, the first row contains time nodes
-% and the second row contains control values.
-deviceControl = [0.0 0.01 x(3) x(3)+0.01 5.0;
-                 0.0 1.0  1.0  0.0       0.0];
-excitation =    [0.0      x(3) x(3)+0.01 5.0;
-                 0.0      0.0  1.0       1.0];
+% Negate peak height for minimization.
+f = -peakHeight;
+
+end
+
+function hopper = constructHopper(x, problem)
+% CONSTRUCTHOPPER
+%   Build the hopper for the current iterate. The optimization variables 
+%   'x' determine timing of the hop(s).
+
+% Construct the actuator controls. See CONSTRUCTCONTROLS below for details.
+[deviceControl, muscleExcitation] = constructControls(x, problem);
           
-% Build the hopper. This is the same function called after a solution is
-% is created in the InteractiveHopper GUI. The default muscle is "The
-% Average Joe".
-hopper = BuildInteractiveHopperSolution(...
-            'muscleExcitation', excitation, ...
+% Build the hopper with the passive device wrapped and the active device
+% unwrapped (behind the knee). This is the same function called after a
+% solution is created in the InteractiveHopper GUI. Here we use 'The Katie 
+% Ledecky' muscle and set both the active device max force and passive 
+% device stiffness to their maximum values. 
+hopper = BuildCustomHopper(...
+            'muscle', 'katieLedecky', ...
+            'muscleExcitation', muscleExcitation, ...
             'addPassiveDevice', true, ...
             'passivePatellaWrap', true, ...
-            'passiveParameter', passiveParameter, ...
+            'passiveParameter', 100, ...
             'addActiveDevice', true, ...
             'activePatellaWrap', false, ...
-            'activeParameter', activeParameter, ...
+            'activeParameter', 100, ...
             'deviceControl', deviceControl, ...
             'isActivePropMyo', false, ...
             'printModelInfo', false);
 end
 
-function f = objective(x)
+function [deviceControl, muscleExcitation] = constructControls(x, problem)
+% CONSTRUCTCONTROLS
+%   Construct controls from the optimization variables. Each variable 
+%   relates to either:
+%       1) Turning OFF the active device (which releases the loaded spring)  
+%          and turning ON the vastus muscle.
+%       2) Turning ON the active device and turning OFF the vastus muscle
+%          (to reload the spring).
+%   
+%   Each control is described by a 2xN array where the first row contains
+%   time values, the second row contains control values, and N is the 
+%   number of time points:
+%
+%                  control = [t1 t2 ... tN;
+%                             u1 u2 ... uN];
+%
+%   As in the InteractiveHopper GUI, the jump cycle is limited to the time
+%   range t = [0 5] seconds. 
 
-hopper = buildHopperFromSolution(x);
-[peakHeight, ~] = EvaluateHopper(hopper, false, true);
+% Anonymous functions to conveniently construct 'bang-bang' control signals 
+% for both the active device and the muscle. 
+% 
+% Switch an actuator ON at time 't'. 
+on  =@(t) [t  t+0.01; 
+           0  1.0];
+% Switch an actuator OFF at time 't'.
+off =@(t) [t   t+0.01; 
+           1.0 0];
+       
+% Construct the actuator controls by concatenating a sequence of 'on(t_i)'
+% and 'off(t_i)' anonymous function calls at times t_i = [t1 t2 ... tN].
+% Both problems start with by turning off the muscle and turning on the 
+% active device at t = 0.
+switch problem
+    
+    % The single variable in this problem determines when to simultaneously 
+    % release a loaded passive device (turn OFF the active device) and 
+    % activate the hopper vastus muscle (turn ON the muscle excitation).
+    case 'one_hop'
+        t1 = x;
+        deviceControl    = [on(0)  off(t1)];
+        muscleExcitation = [off(0) on(t1)];
+        
+    % To coordinate the sequence of hops in this problem, the spring must
+    % be loaded and released (with the activated muscle) three times. The 
+    % x(1) value determines when to release the spring after the spring has 
+    % been loaded. The variables x(2) and x(3) are the wait times to start 
+    % loading the spring again for the 2nd and 3rd hops, respectively. The 
+    % muscle is turned off while the spring is loading, and turned on when
+    % the spring is released.
+    case 'three_hops'
+        t1 = x(1);    % Release loaded spring and activate muscle (hop #1) 
+        t2 = x(2)+t1; % Turn off muscle and load spring after hop #1
+        t3 = x(1)+t2; % Release loaded spring and activate muscle (hop #2)
+        t4 = x(3)+t3; % Turn off muscle and load spring after hop #2
+        t5 = x(1)+t4; % Release loaded spring and activate muscle (hop #3)
+        
+        deviceControl    = [on(0)  off(t1) on(t2)  off(t3) on(t4)  off(t5)];
+        muscleExcitation = [off(0) on(t1)  off(t2) on(t3)  off(t4) on(t5)];    
+end
 
-% Negate peak height for minimization
-f = -peakHeight;
+% For both muscle and device, impose a zero-order hold on the control value
+% to the end of the jump cycle.
+deviceControl    = [deviceControl(1,:) 5;
+                    deviceControl(2,:) deviceControl(2,end)];
+muscleExcitation = [muscleExcitation(1,:) 5;
+                    muscleExcitation(2,:) muscleExcitation(2,end)];
 
 end
+
+
