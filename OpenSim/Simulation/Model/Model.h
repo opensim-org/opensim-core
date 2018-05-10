@@ -105,6 +105,27 @@ public:
     }
 };
 
+class JointFramesHaveSameBaseFrame : public Exception {
+public:
+    JointFramesHaveSameBaseFrame(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& parentName,
+        const std::string& childName,
+        const std::string& baseName) :
+        Exception(file, line, func) {
+        std::string msg = "Joint '" + thisName + 
+            "' cannot connect parent frame '" +
+            parentName + "' to child frame '" + childName + "'.\n"
+            "'Parent and child frames have the same base frame.'"
+            +  baseName + "'.";
+        addMessage(msg);
+    }
+};
+
+
+
 //==============================================================================
 //                                  MODEL
 //==============================================================================
