@@ -7,7 +7,7 @@ namespace OpenSim {
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 // Get rid of the extra \r if parsing a file with CRLF line endings.
-const std::string TRCFileAdapter::_delimitersRead{" \t\r"};
+const std::string TRCFileAdapter::_delimitersRead{"\t\r"};
 const std::string TRCFileAdapter::_frameNumColumnLabel{"Frame#"};
 const std::string TRCFileAdapter::_timeColumnLabel{"Time"};
 const std::string TRCFileAdapter::_xLabel{"X"};
@@ -41,6 +41,18 @@ TRCFileAdapter::write(const TimeSeriesTableVec3& table,
 
 TRCFileAdapter::OutputTables
 TRCFileAdapter::extendRead(const std::string& fileName) const {
+
+    // Helper lambda to remove empty elements from token lists
+    auto eraseEmptyElements = [](std::vector<std::string>& list) {
+        std::vector<std::string>::iterator it = list.begin();
+        while (it != list.end()) {
+            if (it->empty())
+                it = list.erase(it);
+            else
+                ++it;
+        }
+    };
+
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
@@ -69,6 +81,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the line containing metadata keys.
     auto keys = nextLine();
+    // Keys cannot be empty strings, so delete empty keys due to
+    // excessive use of delimiters
+    eraseEmptyElements(keys);
+
     OPENSIM_THROW_IF(keys.size() != _metadataKeys.size(),
                      IncorrectNumMetaDataKeys,
                      fileName,
@@ -84,6 +100,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the line containing metadata values.
     auto values = nextLine();
+    eraseEmptyElements(values);
     OPENSIM_THROW_IF(keys.size() != values.size(),
                      MetaDataLengthMismatch,
                      fileName,
@@ -103,6 +120,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // Read the line containing column labels and fill up the column labels
     // container.
     auto column_labels = nextLine();
+    // for marker labels we do not need three columns per marker.
+    // remove the blank ones used in TRC due to tabbing
+    eraseEmptyElements(column_labels);
+
     OPENSIM_THROW_IF(column_labels.size() != num_markers_expected + 2,
                      IncorrectNumColumnLabels,
                      fileName,
@@ -133,6 +154,9 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // X1, Y1, Z1, X2, Y2, Z2, ... so on.
     // Check and ignore these labels.
     auto xyz_labels_found = nextLine();
+    // erase blank labels, e.g. due to Frame# and Time columns
+    eraseEmptyElements(xyz_labels_found);
+
     for(unsigned i = 1; i <= num_markers_expected; ++i) {
         unsigned j = 0;
         for(auto& letter : {_xLabel, _yLabel, _zLabel}) {
@@ -150,7 +174,13 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // the data container.
     std::size_t line_num{_dataStartsAtLine - 1};
     auto row = nextLine();
+
     while(!row.empty()) {
+        if (row.at(0).empty()) { //if no Frame# then ignore as empty elements
+            row = nextLine();
+            continue;
+        }
+
         ++line_num;
         size_t expected{column_labels.size() * 3 + 2};
         OPENSIM_THROW_IF(row.size() != expected,
@@ -162,12 +192,15 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
         // Columns 2 till the end are data.
         TimeSeriesTableVec3::RowVector 
-            row_vector{static_cast<int>(num_markers_expected)};
+            row_vector{static_cast<int>(num_markers_expected), 
+                       SimTK::Vec3(SimTK::NaN)};
         int ind{0};
-        for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
-            row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
-                                            std::stod(row.at(c+1)),
-                                            std::stod(row.at(c+2))};
+        for (std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3) {
+            if (!row.at(c).empty())
+                row_vector[ind++] = SimTK::Vec3{ std::stod(row.at(c)),
+                                                std::stod(row.at(c + 1)),
+                                                std::stod(row.at(c + 2)) };
+        }
 
         // Column 1 is time.
         table->appendRow(std::stod(row.at(1)), std::move(row_vector));
