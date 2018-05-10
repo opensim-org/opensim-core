@@ -97,6 +97,8 @@ int main() {
     filenames.push_back("constraintTest.trc");
     filenames.push_back("subject01_static.trc");
     filenames.push_back("gait10dof18musc_walk_CRLF_line_ending.trc");
+    filenames.push_back("walking5_mokka.trc");
+
     std::string tmpfile{"testtrcfileadapter.trc"};
 
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
