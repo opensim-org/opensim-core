@@ -21,30 +21,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/Adapters.h"
+#include <OpenSim/Common/IO.h>
 
 #include <fstream>
 #include <cstdio>
-
-std::string getNextToken(std::istream& stream, 
-                         const std::string& delims) {
-    using namespace OpenSim;
-
-    std::string token{};
-    char ch{};
-    while(stream.get(ch)) {
-        if(delims.find(ch) == std::string::npos) {
-            token.push_back(ch);
-            break;
-        }
-    }
-    while(stream.get(ch)) {
-        if(delims.find(ch) != std::string::npos)
-            break;
-        token.push_back(ch);
-    }
-
-    return token;
-}
 
 void testFailed(const std::string& filename,
                 const std::string& origtoken,
@@ -60,30 +40,58 @@ void testFailed(const std::string& filename,
 void compareFiles(const std::string& filenameA, 
                   const std::string& filenameB) {
     // Delimiters include carriage return and newline.
-    const std::string delims{" \t\r\n"};
+    const std::string delims{"\t\r\n"};
 
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
-    while(fileA && fileB) {
-        const auto tokenA = getNextToken(fileA, delims);
-        const auto tokenB = getNextToken(fileB, delims);
-        if(tokenA != tokenB) {
-            double d_tokenA{};
-            double d_tokenB{};
-            try {
-                d_tokenA = std::stod(tokenA);
-                d_tokenB = std::stod(tokenB);
-            } catch(std::invalid_argument&) {
-                testFailed(filenameA, tokenA, tokenB);
-            }
 
-            if(d_tokenA != d_tokenB && 
-               !(std::isnan(d_tokenA) && 
-                 std::isnan(d_tokenB))) {
-                testFailed(filenameA, tokenA, tokenB);
+    // Use a STOFileAdapter just to access the common
+    // FileAdapter utilities.
+    OpenSim::STOFileAdapter sfa;
+    int lcnt = 0;
+
+    while (fileA && fileB) {
+        auto tokensA = sfa.getNextLine(fileA, delims);
+        auto tokensB = sfa.getNextLine(fileB, delims);
+
+        ++lcnt;
+
+        std::string msg{ "Number of elements at line " +
+            std::to_string(lcnt) + "did not match." };
+
+        OPENSIM_THROW_IF(tokensA.size() != tokensB.size(),
+            OpenSim::Exception, msg);
+
+        for (size_t i = 0; i < tokensA.size(); ++i) {
+            if (tokensA[i] != tokensB[i]) {
+                std::string tokenA{ tokensA[i] };
+                std::string tokenB{ tokensB[i] };
+                OpenSim::IO::TrimWhitespace(tokenA);
+                OpenSim::IO::TrimWhitespace(tokenB);
+                // We interpreted blank as NaN now revert
+                // to compare to the original file with blanks
+                if (tokenB == "nan") {
+                    tokenB = "";
+                }
+                if (tokenA != tokenB) {
+                    double d_tokenA{};
+                    double d_tokenB{};
+                    try {
+                        d_tokenA = std::stod(tokenA);
+                        d_tokenB = std::stod(tokenB);
+                    }
+                    catch (std::invalid_argument&) {
+                        testFailed(filenameA, tokenA, tokenB);
+                    }
+                    if ((d_tokenA != d_tokenB) &&
+                        !(std::isnan(d_tokenA) &&
+                          std::isnan(d_tokenB))) {
+                        testFailed(filenameA, tokenA, tokenB);
+                    }
+                }
             }
-        }
-    }
+        } // end for
+    } // end while
 }
 
 int main() {
