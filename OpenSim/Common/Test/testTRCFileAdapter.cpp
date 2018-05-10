@@ -101,38 +101,60 @@ int main() {
 
     std::string tmpfile{"testtrcfileadapter.trc"};
 
+    bool failed = false;
+
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
               << std::endl;
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
-        auto table = trcfileadapter.read(filename);
-        trcfileadapter.write(table, tmpfile);
-        compareFiles(filename, tmpfile);
+        try {
+            auto table = trcfileadapter.read(filename);
+            trcfileadapter.write(table, tmpfile);
+            compareFiles(filename, tmpfile);
+        }
+        catch (std::exception& ex) {
+            std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
+            failed = true;
+        }
     }
 
     std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
               << std::endl;
     for(const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
-        auto table = FileAdapter::readFile(filename).at("markers");
-        DataAdapter::InputTables tables{};
-        tables.emplace(std::string{"markers"}, table.get());
-        FileAdapter::writeFile(tables, tmpfile);
-        compareFiles(filename, tmpfile);
+        try {
+            auto table = FileAdapter::readFile(filename).at("markers");
+            DataAdapter::InputTables tables{};
+            tables.emplace(std::string{ "markers" }, table.get());
+            FileAdapter::writeFile(tables, tmpfile);
+            compareFiles(filename, tmpfile);
+        }
+        catch (std::exception& ex) {
+            std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
+            failed = true;
+        }
     }
 
     std::cout << "Testing TimeSeriesTableVec3 and TRCFileAdapter::write()"
               << std::endl;
     for(const auto& filename : filenames) {
-        std::cout << "  " << filename << std::endl;
-        TimeSeriesTableVec3 table{filename};
-        TRCFileAdapter::write(table, tmpfile);
-        compareFiles(filename, tmpfile);
+        try {
+            std::cout << "  " << filename << std::endl;
+            TimeSeriesTableVec3 table{filename};
+            TRCFileAdapter::write(table, tmpfile);
+            compareFiles(filename, tmpfile);
+        }
+        catch (std::exception& ex) {
+            std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
+            failed = true;
+        }
     }
 
-    std::remove(tmpfile.c_str());
+    if (failed)
+        return 1;
 
+    std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
 
     return 0;
