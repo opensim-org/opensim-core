@@ -62,6 +62,10 @@ OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table,
 // TODO handle degrees.
 OSIMMUSCOLLO_API void visualize(Model, Storage);
 
+/// This function is the same as visualize(Model, Storage), except that
+/// the states are provided in a TimeSeriesTable.
+OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
+
 #ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
