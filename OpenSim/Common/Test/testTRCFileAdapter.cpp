@@ -98,14 +98,15 @@ int main() {
     using namespace OpenSim;
 
     std::vector<std::string> filenames{};
-    filenames.push_back("TRCFileWithNANs.trc");
-    filenames.push_back("testEformatParsing.trc");
-    filenames.push_back("testNaNsParsing.trc");
+    filenames.push_back("dataWithEformat.trc");
+    filenames.push_back("dataWithNaNsOfDifferentCases.trc");
+    filenames.push_back("dataWithNaNsWithSpaces.trc");
+    filenames.push_back("dataWithBlanksForMissingMarkers.trc");
+    // TRCs that are shared with other tests
     filenames.push_back("subject01_synthetic_marker_data.trc");
     filenames.push_back("constraintTest.trc");
     filenames.push_back("subject01_static.trc");
     filenames.push_back("gait10dof18musc_walk_CRLF_line_ending.trc");
-    filenames.push_back("walking5_mokka.trc");
 
     std::string tmpfile{"testtrcfileadapter.trc"};
 
