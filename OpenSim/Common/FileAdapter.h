@@ -201,6 +201,11 @@ public:
     static
     std::string findExtension(const std::string& filename);
 
+    /** Get the next line from the stream and tokenize/split the line using
+    the given delimiters.                                                     */
+    std::vector<std::string> getNextLine(std::istream& stream,
+        const std::string& delims) const;
+
 protected:    
     /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
@@ -208,11 +213,6 @@ protected:
     specifies that either a space or a tab can act as the delimiter.          */
     std::vector<std::string> tokenize(const std::string& str, 
                                       const std::string& delims) const;
-
-    /** Get the next line from the stream and tokenize/split the line using
-    the given delimiters.                                                     */
-    std::vector<std::string> getNextLine(std::istream& stream,
-                                         const std::string& delims) const;
 };
 
 } // OpenSim namespace
