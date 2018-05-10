@@ -47,11 +47,10 @@ public:
         const std::string& func,
         const Object& obj,
         const std::string& propertyName,
-        const std::string& errorMsg = "") :
+        const std::string& errorMsg) :
         Exception(file, line, func, obj) {
         std::string msg = "Property '" + propertyName;
-        msg += "' has an invalid value.";
-        msg += (errorMsg.empty()) ? "\n" : ("\n(details: " + errorMsg + ").");
+        msg += "' has an invalid value.\n(details: " + errorMsg + ").\n";
         addMessage(msg);
     }
 };

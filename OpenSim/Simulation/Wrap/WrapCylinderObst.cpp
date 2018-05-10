@@ -138,13 +138,12 @@ void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody
     Super::connectToModelAndBody(aModel, aBody);
 
     // maybe set a parent pointer, _body = aBody;
-    if (_radius < 0.0)
-    {
-        string errorMessage = _radiusProp.getName() +
-            " was either not specified, or is negative.";
-        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, _radiusProp.getName(),
-                             errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        _radius < 0,
+        InvalidPropertyValue,
+        _radiusProp.getName(),
+        "Radius must be specified and cannot be less than zero");
+
 /*
     Cylinder* cyl = new Cylinder(_radius, _length);
     setGeometryQuadrants(cyl);
