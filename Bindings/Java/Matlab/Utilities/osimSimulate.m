@@ -1,12 +1,16 @@
-function Simulate(model, state, visualize)
+function osimSimulate(model, state, finalTime)
 % Simulate an OpenSim model from an initial state. The provided state is
-% updated to be the state at the end of the simulation.
+% updated to be the state at the end of the simulation. If you have called
+% model.setUseVisualizer(true), then the simulation will be visualized using
+% the simbody-visualizer, and you will be able run the simulation multiple
+% times. Otherwise, the simulation is run once without visualization.
 %
 % Parameters
 % ----------
-% model: The OpenSim Model to simulate.
+% model: The OpenSim Model to simulate. You must have called initSystem() on
+%        this model.
 % state: The SimTK State to use as the initial state for the simulation.
-% visualize (bool): Use the simbody-visualizer to visualize the simulation?
+% finalTime: The final time for the simulation.
 
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -33,21 +37,11 @@ function Simulate(model, state, visualize)
 
 import org.opensim.modeling.*;
 
-% This env. var. is used to turn off the visualizer during automated tests.
-if getenv('OPENSIM_USE_VISUALIZER') == '1'
-    visualize = true;
-elseif getenv('OPENSIM_USE_VISUALIZER') == '0'
-    visualize = false;
-end
-
-if visualize
-    model.setUseVisualizer(true);
-end
-model.initSystem();
-
 % Save this so that we can restart simulation from the given state.
 % We use the copy constructor to perform a deep copy.
 initState = State(state);
+
+visualize = model.getUseVisualizer();
 
 if visualize
     sviz = model.updVisualizer().updSimbodyVisualizer();
@@ -90,7 +84,7 @@ while true
     end
 
     % Clear the table for all TableReporters. Note: this does not handle
-    % TableReporters for class Vector, etc.
+    % TableReporters for Vec3s, etc.
     compList = model.getComponentsList();
     compIter = compList.begin();
     while ~compIter.equals(compList.end())
@@ -99,20 +93,16 @@ while true
             comp = model.getComponent(compIter.getAbsolutePathString());
             reporter = TableReporter.safeDownCast(comp);
             reporter.clearTable();
-        elseif ~isempty(strfind(compIter.getConcreteClassName(), ...
-                   'TableReporter__Vec3_'))
-            comp = model.getComponent(compIter.getAbsolutePathString());
-            reporterVec3 = TableReporterVec3.safeDownCast(comp);
-            reporterVec3.clearTable();  
         end
         compIter.next();
     end
 
     % Simulate.
-    state = State(initState);
+    thisState = State(initState);
     manager = Manager(model);
-    manager.initialize(state);
-    state = manager.integrate(5.0);
+    manager.setIntegratorAccuracy(1e-4);
+    manager.initialize(thisState);
+    state = manager.integrate(finalTime);
     simulatedAtLeastOnce = true;
 
     % If there is no visualizer, only simulate once.

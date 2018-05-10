@@ -82,9 +82,10 @@ for iLabel = 0 : nLabels - 1
     % letters, digits, and underscores.
     % Remove an initial slash.
     col_label = regexprep(col_label, '^/', '');
-    % Replace '/' and '|' if they are present.
+    % Replace '/', '|', and '.' if they are present.
     col_label = strrep(col_label,'/', '_');
     col_label = strrep(col_label,'|', '_');
+    col_label = strrep(col_label,'.', '_');
     % Add the label and data to the data struct
     structdata.(col_label) = dataArray;
 end
