@@ -36,52 +36,47 @@ switch problem
     % simple univariate problem uses FMINBND from the MATLAB Optimization 
     % Toolbox. 
     case 'one_hop'
-        lb = 0;
-        ub = 1;         
+        lowerBound = 0; % seconds
+        upperBound = 1; % seconds        
         options = optimset('TolFun', 1e-2, ...
                            'MaxIter', 10000, ...
                            'Display', 'iter'); 
-        [x, f] = fminbnd(@(x) objective(x,problem),lb,ub,options);
+        [x, f] = fminbnd(@(x) objective(x,problem),lowerBound,upperBound,...
+                         options);
                      
     % Optimize the height of a sequence of three hops. The optimization
-    % variables decide to switch the actuators on and off to load and 
+    % variables decide when to switch the actuators on and off to load and 
     % release the passive device with the activated muscle (see 
-    % CONSTRUCTCONTROLS below). This problem is subject to falling into
-    % undesired local minima (e.g. solutions with less than three hops) and
-    % requires an optimizer from the MATLAB Global Optimization Toolbox.
-    % Here we use the genetic algorithm optimizer, GA.
+    % CONSTRUCTCONTROLS below). We use a global optimizer (genetic 
+    % algorithm from MATLAB's Global Optimization Toolbox) to avoid falling 
+    % into local minima (e.g., solutions with fewer than three hops).
     case 'three_hops'
         numVars = 3; 
-        lb = 0.25*ones(numVars, 1);
-        ub = 0.75*ones(numVars, 1);
+        lowerBound = 0.25*ones(numVars, 1); % seconds
+        upperBound = 0.75*ones(numVars, 1); % seconds
         options = optimoptions('ga','FunctionTolerance', 1e-2, ...
                                     'MaxGenerations', 10, ...
                                     'Display', 'iter'); 
         [x, f] = ga(@(x) objective(x,problem),numVars,[],[],[],[], ...
-                                   lb,ub,[],options);                 
+                                   lowerBound,upperBound,[],options);                 
 end
 
 % ANALYZE OPTIMIZED SOLUTION
-% Construct the actuator controls from solution 'x' and interpolate. See 
+% Construct the actuator controls from solution 'x'. See 
 % CONSTRUCTCONTROLS below for details.
 [deviceControl, muscleExcitation] = constructControls(x, problem);
-time = 0:0.01:5;
-deviceControlInterp    = interp1(deviceControl(1,:), ... 
-                                 deviceControl(2,:), time);
-muscleExcitationInterp = interp1(muscleExcitation(1,:), ... 
-                                 muscleExcitation(2,:), time);
                              
 % Plot optimized controls.
 figure(1);
-plot(time, deviceControlInterp, 'b-', 'linewidth', 2)
+plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
 hold on
-plot(time, muscleExcitationInterp, 'r-', 'linewidth', 2)
+plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
 xlabel('time (s)')
 ylabel('control value')
 
-% Evaluate optimized solution. See BUILDHOPPERFROMSOLUTION and OBJECTIVE 
+% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
 % below for details.
-hopper = buildHopperFromSolution(x, problem);
+hopper = constructHopper(x, problem);
 [~, heightStruct] = EvaluateHopper(hopper, true, true);
 
 % Plot jump height.
@@ -96,13 +91,12 @@ function f = objective(x, problem)
 % OBJECTIVE
 %   Simulate the hopper with the current controls and report hop height.
 
-% See BUILDHOPPERFROMSOLUTION below for details.
-hopper = buildHopperFromSolution(x, problem);
+% See CONSTRUCTHOPPER below for details.
+hopper = constructHopper(x, problem);
 
 % Pass the hopper model to create a forward simulation with the current 
-% guess for the actuator controls. This is the same function called after a
-% hopper model is generated with BuildInteractiveHopperSolution from a 
-% solution created in the InteractiveHopper GUI.
+% guess for the actuator controls. This is the same function that the 
+% InteractiveHopper GUI calls when you click Simulate.
 [peakHeight, ~] = EvaluateHopper(hopper, false, true);
 
 % Negate peak height for minimization.
@@ -110,8 +104,8 @@ f = -peakHeight;
 
 end
 
-function hopper = buildHopperFromSolution(x, problem)
-% BUILDHOPPERFROMSOLUTION
+function hopper = constructHopper(x, problem)
+% CONSTRUCTHOPPER
 %   Build the hopper for the current iterate. The optimization variables 
 %   'x' determine timing of the hop(s).
 
@@ -122,8 +116,8 @@ function hopper = buildHopperFromSolution(x, problem)
 % unwrapped (behind the knee). This is the same function called after a
 % solution is created in the InteractiveHopper GUI. Here we use 'The Katie 
 % Ledecky' muscle and set both the active device max force and passive 
-% device stiffness to their maximum. 
-hopper = BuildInteractiveHopperSolution(...
+% device stiffness to their maximum values. 
+hopper = BuildCustomHopper(...
             'muscle', 'katieLedecky', ...
             'muscleExcitation', muscleExcitation, ...
             'addPassiveDevice', true, ...
@@ -139,8 +133,8 @@ end
 
 function [deviceControl, muscleExcitation] = constructControls(x, problem)
 % CONSTRUCTCONTROLS
-%   Construct controls from the optimization optimization variables. Each
-%   variable relates to either:
+%   Construct controls from the optimization variables. Each variable 
+%   relates to either:
 %       1) Turning OFF the active device (which releases the loaded spring)  
 %          and turning ON the vastus muscle.
 %       2) Turning ON the active device and turning OFF the vastus muscle
@@ -152,7 +146,9 @@ function [deviceControl, muscleExcitation] = constructControls(x, problem)
 %
 %                  control = [t1 t2 ... tN;
 %                             u1 u2 ... uN];
-
+%
+%   As in the InteractiveHopper GUI, the jump cycle is limited to the time
+%   range t = [0 5] seconds. 
 
 % Anonymous functions to conveniently construct 'bang-bang' control signals 
 % for both the active device and the muscle. 
@@ -179,18 +175,17 @@ switch problem
         muscleExcitation = [off(0) on(t1)];
         
     % To coordinate the sequence of hops in this problem, the spring must
-    % be loaded and released (with the activated muscle) three times. The
-    % first variable, x(1), is the wait time between when the spring is 
-    % loaded and released for each hop. The x(1) value can be used for all 
-    % three hops since we also optimize the wait time between each hop with 
-    % the other two variables, x(2) and x(3). The active device is turned 
-    % on at t = 0, so no variable is required to load the spring for the 
-    % first hop.
+    % be loaded and released (with the activated muscle) three times. The 
+    % x(1) value determines when to release the spring after the spring has 
+    % been loaded. The variables x(2) and x(3) are the wait times to start 
+    % loading the spring again for the 2nd and 3rd hops, respectively. The 
+    % muscle is turned off while the spring is loading, and turned on when
+    % the spring is released.
     case 'three_hops'
         t1 = x(1);    % Release loaded spring and activate muscle (hop #1) 
-        t2 = x(2)+t1; % Load spring after hop #1
+        t2 = x(2)+t1; % Turn off muscle and load spring after hop #1
         t3 = x(1)+t2; % Release loaded spring and activate muscle (hop #2)
-        t4 = x(3)+t3; % Load spring after hop #2
+        t4 = x(3)+t3; % Turn off muscle and load spring after hop #2
         t5 = x(1)+t4; % Release loaded spring and activate muscle (hop #3)
         
         deviceControl    = [on(0)  off(t1) on(t2)  off(t3) on(t4)  off(t5)];
