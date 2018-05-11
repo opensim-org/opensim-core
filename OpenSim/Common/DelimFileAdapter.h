@@ -313,6 +313,17 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
     auto table = std::make_shared<TimeSeriesTable_<T>>();
 
+    // Helper lambda to remove empty elements from token lists
+    auto eraseEmptyElements = [](std::vector<std::string>& list) {
+        std::vector<std::string>::iterator it = list.begin();
+        while (it != list.end()) {
+            if (it->empty())
+                it = list.erase(it);
+            else
+                ++it;
+        }
+    };
+
     size_t line_num{};
     // All the lines until "endheader" is header.
     std::regex endheader{R"([ \t]*)" + _endHeaderString + R"([ \t]*)"};
@@ -370,10 +381,17 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
     // Read the line containing column labels and fill up the column labels
     // container.
-    auto column_labels = nextLine();
+    std::vector<std::string> column_labels{};
+    while (column_labels.size() == 0) { // keep going down rows to find labels
+        column_labels = nextLine();
+        // for labels we never expect empty elements, so remove them
+        eraseEmptyElements(column_labels);
+        ++line_num;
+    }
+
     OPENSIM_THROW_IF(column_labels.size() == 0, Exception,
                      "No column labels detected in file '" + fileName + "'.");
-    ++line_num;
+    
     // Column 0 is the time column. Check and get rid of it. The data in this
     // column is maintained separately from rest of the data.
     OPENSIM_THROW_IF(column_labels[0] != _timeColumnLabel,
