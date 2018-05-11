@@ -1,4 +1,5 @@
 #include "FileAdapter.h"
+#include <OpenSim/Common/IO.h>
 
 namespace OpenSim {
 
@@ -52,11 +53,14 @@ FileAdapter::tokenize(const std::string& str,
     using size_type = std::string::size_type;
 
     std::vector<std::string> tokens{};
+    std::string token;
 
     size_type token_start{0}, token_end{ std::string::npos };
     while((token_end = str.find_first_of(delims, token_start)) != std::string::npos) {
         if (token_end >= token_start) {
-            tokens.push_back(str.substr(token_start, token_end - token_start));
+            token = str.substr(token_start, token_end - token_start);
+            OpenSim::IO::TrimWhitespace(token);
+            tokens.push_back(token);
             token_start = token_end;
         }
         ++token_start;
@@ -64,8 +68,11 @@ FileAdapter::tokenize(const std::string& str,
     // end has reach std::string::npos, so now peg it at end of the string
     token_end = str.size();
     //capture from last delimiter to the end of string that is not empty
-    if(token_end > token_start)
-        tokens.push_back(str.substr(token_start, token_end - token_start));
+    if (token_end > token_start) {
+        token = str.substr(token_start, token_end - token_start);
+        OpenSim::IO::TrimWhitespace(token);
+        tokens.push_back(token);
+    }
     return tokens;
 }
 
