@@ -16,7 +16,7 @@
 # limitations under the License.                                             #
 # -------------------------------------------------------------------------- #
 
-
+import os
 import math
 import opensim as osim
 
@@ -29,6 +29,10 @@ double pendulum model:
     3. track the marker trajectories from the optimal trajectory.
 
 """
+
+visualize = True
+if os.getenv('OPENSIM_USE_VISUALIZER') == '0':
+    visualize = False
 
 # Create a model of a double pendulum.
 # ------------------------------------
@@ -157,7 +161,8 @@ def solvePrediction():
     solution = muco.solve();
     solution.write("examplePredictAndTrack_predict_solution.sto");
 
-    muco.visualize(solution);
+    if visualize:
+        muco.visualize(solution);
     return solution
     
 
@@ -240,7 +245,8 @@ def solveStateTracking(stateRef):
 
     solution.write("examplePredictAndTrack_track_states_solution.sto")
 
-    muco.visualize(solution)
+    if visualize:
+        muco.visualize(solution)
     return solution
 
     
@@ -294,7 +300,8 @@ def solveMarkerTracking(markersRef, guess):
 
     solution.write("examplePredictAndTrack_track_markers_solution.sto")
 
-    muco.visualize(solution)
+    if visualize:
+        muco.visualize(solution)
     return solution
     
 
