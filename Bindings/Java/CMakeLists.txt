@@ -117,7 +117,66 @@ set_target_properties(JavaBindings PROPERTIES
 # --------
 install(FILES "${SWIG_JAVA_JAR_BUILD_OUTPUT_PATH}"
     DESTINATION ${OPENSIM_INSTALL_JAVAJARDIR})
+    
+if(WIN32)
+    # Previously, to configure Matlab with OpenSim, users would
+    # need to add OpenSim's bin folder to the Windows PATH, which was
+    # somewhat painful.
+    # Matlab finds osimJavaJNI via the java.library.path, but
+    # osimJavaJNI relies on Windows' dynamic library search
+    # behavior (not java.library.path) to find its dependencies:
+    # Windows searches the current directory, then the PATH variable.
+    # We can avoid having to edit PATH by having Java pre-load the
+    # dependencies. The org-opensim-modeling.jar will load the libraries
+    # below before trying to load osimJavaJNI. If this pre-loading doesn't
+    # work, users can still get Matlab to load OpenSim by editing PATH.
+    file(RELATIVE_PATH jar_dir_to_root
+        "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_JAVAJARDIR}"
+        "${CMAKE_INSTALL_PREFIX}")
+    set(jar_dir_to_bin_dir "${jar_dir_to_root}${CMAKE_INSTALL_BINDIR}")
 
+    set(JNI_DEP_FILE
+        "${CMAKE_CURRENT_BINARY_DIR}/osimJavaJNI_dependencies.txt")
+    file(WRITE "${JNI_DEP_FILE}" "")
+    # These libraries are in dependency order.
+    set(JNI_DEP_LIBS)
+    # Handle Visual C++ runtime libraries (msvcp, vcruntime, concrt).
+    # CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS is defined by
+    # InstallRequiredSystemLibraries in the root CMakeLists.txt.
+    # This isn't necessary for all users, as some users
+    # will already have these libraries in C:/Windows/System32.
+    foreach(runtime_libpath ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
+        get_filename_component(runtime_libname ${runtime_libpath} NAME_WE)
+        list(APPEND JNI_DEP_LIBS ${runtime_libname})
+    endforeach()
+    if(WITH_BTK)
+        list(APPEND JNI_DEP_LIBS BTKCommon BTKIO BTKBasicFilters)
+    endif()
+    list(APPEND JNI_DEP_LIBS
+        glut32
+        libgcc_s_sjlj-1
+        libquadmath-0
+        libgfortran-3
+        libblas
+        liblapack
+        SimTKcommon
+        SimTKmath
+        SimTKsimbody
+        osimLepton
+        osimCommon
+        osimSimulation
+        osimActuators
+        osimAnalyses
+        osimTools
+        osimSimmFileWriter
+        osimExampleComponents
+        )
+
+    foreach(dep ${JNI_DEP_LIBS})
+        file(APPEND "${JNI_DEP_FILE}" "${jar_dir_to_bin_dir}/${dep}.dll\n")
+    endforeach()
+    install(FILES "${JNI_DEP_FILE}" DESTINATION "${OPENSIM_INSTALL_JAVAJARDIR}")
+endif()
 
 # Java tests.
 # -----------

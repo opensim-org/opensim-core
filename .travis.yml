@@ -82,8 +82,6 @@ addons:
       - valgrind
       # To build doxygen documentation.
       # TOO OLD; see below. - doxygen
-      # To run the python tests.
-      - python-nose
   # To avoid being prompted when ssh'ing into sourceforge.
   ssh_known_hosts:
       # For uploading doxygen.
@@ -258,17 +256,15 @@ script:
   - make -j8 install > /dev/null
 
   ## Test python wrapping.
-  # TODO # Since we use OPENSIM_COPY_DEPENDENCIES=ON, ensure the Python bindings are
-  # TODO # not relying on the original Simbody/BTK libraries but rather the copied
-  # TODO # ones. This should make sure we have the correct RPATH for Simbody/BTK on
-  # TODO # macOS.
+  # Since we use OPENSIM_COPY_DEPENDENCIES=ON, ensure the Python bindings are
+  # not relying on the original Simbody/BTK libraries but rather the copied
+  # ones. This should make sure we have the correct RPATH for Simbody/BTK on
+  # macOS.
   # TODO - rm -r ~/simbody
   # TODO # Go to the python wrapping package directory.
   # TODO - if [ "$WRAP" = "on" ]; then cd $OPENSIM_HOME/sdk/Python; fi
   # TODO # Run the python tests, verbosely.
-  # TODO - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then sudo /usr/bin/easy_install nose; fi
-  # TODO - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then /usr/bin/python -m nose -v; fi
-  # TODO - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then nosetests -v; fi
+  # TODO - if [ "$WRAP" = "on" ]; then /usr/bin/python -m unittest discover --start-directory opensim/tests --verbose; fi
     
   ## Set up ssh for sourceforge.
   - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi

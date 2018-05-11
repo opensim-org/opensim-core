@@ -1,4 +1,4 @@
-function [hopper] = BuildInteractiveHopperSolution(varargin)
+function [hopper] = BuildCustomHopper(varargin)
 % This function is used to build an InteractiveHopper GUI solution; see
 % BuildHopper and BuildDevice to build the hopper model on your own.
 
