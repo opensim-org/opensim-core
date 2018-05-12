@@ -70,6 +70,19 @@ public:
     }
 };
 
+class UnableToCreateDirectory : public IOError {
+public:
+    UnableToCreateDirectory(const std::string& file,
+                            size_t line,
+                            const std::string& func,
+                            const std::string& directory) :
+        IOError(file, line, func) {
+        std::string msg = "Unable to create directory '" + directory + "'.";
+
+        addMessage(msg);
+    }
+};
+
 class FileExtensionNotFound : public InvalidArgument {
 public:
     FileExtensionNotFound(const std::string& file,

@@ -548,7 +548,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     cout<<"Printing results of investigation "<<getName()<<" to "<<aDir<<"."<<endl;
-    IO::makeDir(aDir);
+    if (!aDir.empty()) {
+        IO::makeDir(aDir);
+        OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory, aDir);
+    }
     _model->updAnalysisSet().printResults(aBaseName,aDir,aDT,aExtension);
 }
 

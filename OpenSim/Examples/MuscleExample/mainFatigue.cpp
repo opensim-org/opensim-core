@@ -240,8 +240,10 @@ int main()
                                       "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results
-        IO::makeDir("MuscleAnalysisResults");
-        muscAnalysis->printResults("fatigue", "MuscleAnalysisResults");
+        const std::string dirName = "MuscleAnalysisResults";
+        IO::makeDir(dirName);
+        OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory, dirName);
+        muscAnalysis->printResults("fatigue", dirName);
 
         // Save the OpenSim model to a file
         osimModel.print("tugOfWar_fatigue_model.osim");

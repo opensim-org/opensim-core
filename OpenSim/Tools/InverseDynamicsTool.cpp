@@ -406,7 +406,12 @@ bool InverseDynamicsTool::run()
         genForceResults.setColumnLabels(labels);
         genForceResults.setName("Inverse Dynamics Generalized Forces");
 
-        IO::makeDir(getResultsDir());
+        if (!getResultsDir().empty()) {
+            IO::makeDir(getResultsDir());
+            OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory,
+                             getResultsDir());
+        }
+
         Storage::printResult(&genForceResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
         IO::chDir(saveWorkingDirectory);
 
@@ -415,7 +420,12 @@ bool InverseDynamicsTool::run()
             bodyForcesResults.setColumnLabels(body_force_labels);
             bodyForcesResults.setName("Inverse Dynamics Body Forces at Specified Joints");
 
-            IO::makeDir(getResultsDir());
+            if (!getResultsDir().empty()) {
+                IO::makeDir(getResultsDir());
+                OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory,
+                                 getResultsDir());
+            }
+
             Storage::printResult(&bodyForcesResults, _outputBodyForcesAtJointsFileName, getResultsDir(), -1, ".sto");
             IO::chDir(saveWorkingDirectory);
         }
