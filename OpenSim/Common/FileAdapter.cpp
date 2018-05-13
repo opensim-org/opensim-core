@@ -80,7 +80,7 @@ std::vector<std::string>
 FileAdapter::getNextLine(std::istream& stream,
                          const std::string& delims) const {
     std::string line{};
-    while(std::getline(stream, line)) {
+    if(std::getline(stream, line)) {
         // Get rid of the extra \r if parsing a file with CRLF line endings.
         if (!line.empty() && line.back() == '\r') 
             line.pop_back();
