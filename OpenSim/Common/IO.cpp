@@ -645,3 +645,14 @@ Uppercase(const std::string &aStr)
     for(unsigned int i=0; i<aStr.size(); i++) result[i] = toupper(result[i]);
     return result;
 }
+
+void IO::eraseEmptyElements(std::vector<std::string>& list)
+{
+    std::vector<std::string>::iterator it = list.begin();
+    while (it != list.end()) {
+        if (it->empty())
+            it = list.erase(it);
+        else
+            ++it;
+    }
+}

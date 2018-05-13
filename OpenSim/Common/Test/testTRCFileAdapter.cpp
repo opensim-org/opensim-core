@@ -42,16 +42,6 @@ void compareFiles(const std::string& filenameA,
     // Delimiters include carriage return and newline.
     const std::string delims{"\t\r\n"};
 
-    auto eraseEmptyElements = [](std::vector<std::string>& list) {
-        std::vector<std::string>::iterator it = list.begin();
-        while (it != list.end()) {
-            if (it->empty())
-                it = list.erase(it);
-            else
-                ++it;
-        }
-    };
-
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
 
@@ -69,8 +59,8 @@ void compareFiles(const std::string& filenameA,
         if (tokensA.size() != tokensB.size()) {
             // original could have any number of tabs and spaces
             // that are no longer allowed. So ignore them.
-            eraseEmptyElements(tokensA);
-            eraseEmptyElements(tokensB);
+            OpenSim::IO::eraseEmptyElements(tokensA);
+            OpenSim::IO::eraseEmptyElements(tokensB);
         }
 
         if (tokensA.size() != tokensB.size()) {

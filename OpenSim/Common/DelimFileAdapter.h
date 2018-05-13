@@ -26,6 +26,7 @@
 
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
+#include <OpenSim/Common/IO.h>
 
 #include <string>
 #include <fstream>
@@ -313,17 +314,6 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
     auto table = std::make_shared<TimeSeriesTable_<T>>();
 
-    // Helper lambda to remove empty elements from token lists
-    auto eraseEmptyElements = [](std::vector<std::string>& list) {
-        std::vector<std::string>::iterator it = list.begin();
-        while (it != list.end()) {
-            if (it->empty())
-                it = list.erase(it);
-            else
-                ++it;
-        }
-    };
-
     size_t line_num{};
     // All the lines until "endheader" is header.
     std::regex endheader{R"([ \t]*)" + _endHeaderString + R"([ \t]*)"};
@@ -385,7 +375,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     while (column_labels.size() == 0) { // keep going down rows to find labels
         column_labels = nextLine();
         // for labels we never expect empty elements, so remove them
-        eraseEmptyElements(column_labels);
+        IO::eraseEmptyElements(column_labels);
         ++line_num;
     }
 

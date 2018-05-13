@@ -1,4 +1,5 @@
 #include "TRCFileAdapter.h"
+#include <OpenSim/Common/IO.h>
 #include <fstream>
 #include <iomanip>
 
@@ -43,17 +44,6 @@ TRCFileAdapter::write(const TimeSeriesTableVec3& table,
 TRCFileAdapter::OutputTables
 TRCFileAdapter::extendRead(const std::string& fileName) const {
 
-    // Helper lambda to remove empty elements from token lists
-    auto eraseEmptyElements = [](std::vector<std::string>& list) {
-        std::vector<std::string>::iterator it = list.begin();
-        while (it != list.end()) {
-            if (it->empty())
-                it = list.erase(it);
-            else
-                ++it;
-        }
-    };
-
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
@@ -84,7 +74,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     auto keys = nextLine();
     // Keys cannot be empty strings, so delete empty keys due to
     // excessive use of delimiters
-    eraseEmptyElements(keys);
+    IO::eraseEmptyElements(keys);
 
     OPENSIM_THROW_IF(keys.size() != _metadataKeys.size(),
                      IncorrectNumMetaDataKeys,
@@ -101,7 +91,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the line containing metadata values.
     auto values = nextLine();
-    eraseEmptyElements(values);
+    IO::eraseEmptyElements(values);
     OPENSIM_THROW_IF(keys.size() != values.size(),
                      MetaDataLengthMismatch,
                      fileName,
@@ -123,7 +113,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     auto column_labels = nextLine();
     // for marker labels we do not need three columns per marker.
     // remove the blank ones used in TRC due to tabbing
-    eraseEmptyElements(column_labels);
+    IO::eraseEmptyElements(column_labels);
 
     OPENSIM_THROW_IF(column_labels.size() != num_markers_expected + 2,
                      IncorrectNumColumnLabels,
@@ -156,7 +146,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // Check and ignore these labels.
     auto xyz_labels_found = nextLine();
     // erase blank labels, e.g. due to Frame# and Time columns
-    eraseEmptyElements(xyz_labels_found);
+    IO::eraseEmptyElements(xyz_labels_found);
 
     for(unsigned i = 1; i <= num_markers_expected; ++i) {
         unsigned j = 0;

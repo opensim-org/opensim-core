@@ -31,6 +31,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <fstream>
+#include <vector>
 
 // DEFINES
 const int IO_STRLEN = 2048;
@@ -118,6 +119,7 @@ public:
     static void TrimWhitespace(std::string &rStr) { TrimLeadingWhitespace(rStr); TrimTrailingWhitespace(rStr); }
     static std::string Lowercase(const std::string &aStr);
     static std::string Uppercase(const std::string &aStr);
+    static void eraseEmptyElements(std::vector<std::string>& list);
 //=============================================================================
 };  // END CLASS IO
 
