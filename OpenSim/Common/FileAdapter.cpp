@@ -49,7 +49,7 @@ FileAdapter::findExtension(const std::string& filename) {
 
 std::vector<std::string> 
 FileAdapter::tokenize(const std::string& str, 
-                      const std::string& delims) const {
+                      const std::string& delims) {
     using size_type = std::string::size_type;
 
     std::vector<std::string> tokens{};
@@ -78,7 +78,7 @@ FileAdapter::tokenize(const std::string& str,
 
 std::vector<std::string>
 FileAdapter::getNextLine(std::istream& stream,
-                         const std::string& delims) const {
+                         const std::string& delims) {
     std::string line{};
     if(std::getline(stream, line)) {
         // Get rid of the extra \r if parsing a file with CRLF line endings.
