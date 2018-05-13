@@ -45,14 +45,11 @@ void compareFiles(const std::string& filenameA,
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
 
-    // Use a STOFileAdapter just to access the common
-    // FileAdapter utilities.
-    OpenSim::STOFileAdapter sfa;
     int lcnt = 0;
 
     while (fileA && fileB) {
-        auto tokensA = sfa.getNextLine(fileA, delims);
-        auto tokensB = sfa.getNextLine(fileB, delims);
+        auto tokensA = OpenSim::FileAdapter::getNextLine(fileA, delims);
+        auto tokensB = OpenSim::FileAdapter::getNextLine(fileB, delims);
 
         ++lcnt;
 
@@ -66,11 +63,11 @@ void compareFiles(const std::string& filenameA,
         if (tokensA.size() != tokensB.size()) {
             //if a blank row, skip it
             if (tokensA.empty()) {
-                tokensA = sfa.getNextLine(fileA, delims);
+                tokensA = OpenSim::FileAdapter::getNextLine(fileA, delims);
                 ++lcnt;
             }
             else if (tokensB.empty()) {
-                tokensB = sfa.getNextLine(fileB, delims);
+                tokensB = OpenSim::FileAdapter::getNextLine(fileB, delims);
                 ++lcnt;
             }
         }
