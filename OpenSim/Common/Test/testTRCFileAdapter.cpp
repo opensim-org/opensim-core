@@ -42,6 +42,16 @@ void compareFiles(const std::string& filenameA,
     // Delimiters include carriage return and newline.
     const std::string delims{"\t\r\n"};
 
+    auto eraseEmptyElements = [](std::vector<std::string>& list) {
+        std::vector<std::string>::iterator it = list.begin();
+        while (it != list.end()) {
+            if (it->empty())
+                it = list.erase(it);
+            else
+                ++it;
+        }
+    };
+
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
 
@@ -56,6 +66,25 @@ void compareFiles(const std::string& filenameA,
 
         ++lcnt;
 
+        if (tokensA.size() != tokensB.size()) {
+            // original could have any number of tabs and spaces
+            // that are no longer allowed. So ignore them.
+            eraseEmptyElements(tokensA);
+            eraseEmptyElements(tokensB);
+        }
+
+        if (tokensA.size() != tokensB.size()) {
+            //if a blank row, skip it
+            if (tokensA.empty()) {
+                tokensA = sfa.getNextLine(fileA, delims);
+                ++lcnt;
+            }
+            else if (tokensB.empty()) {
+                tokensB = sfa.getNextLine(fileB, delims);
+                ++lcnt;
+            }
+        }
+
         std::string msg{ "Number of elements at line " +
             std::to_string(lcnt) + "did not match." };
 
@@ -63,32 +92,42 @@ void compareFiles(const std::string& filenameA,
             OpenSim::Exception, msg);
 
         for (size_t i = 0; i < tokensA.size(); ++i) {
-            if (tokensA[i] != tokensB[i]) {
-                std::string tokenA{ tokensA[i] };
-                std::string tokenB{ tokensB[i] };
-                OpenSim::IO::TrimWhitespace(tokenA);
-                OpenSim::IO::TrimWhitespace(tokenB);
-                // We interpreted blank as NaN now revert
-                // to compare to the original file with blanks
-                if (tokenB == "nan") {
-                    tokenB = "";
-                }
-                if (tokenA != tokenB) {
-                    double d_tokenA{};
-                    double d_tokenB{};
-                    try {
-                        d_tokenA = std::stod(tokenA);
-                        d_tokenB = std::stod(tokenB);
-                    }
-                    catch (std::invalid_argument&) {
-                        testFailed(filenameA, tokenA, tokenB);
-                    }
-                    if ((d_tokenA != d_tokenB) &&
-                        !(std::isnan(d_tokenA) &&
-                          std::isnan(d_tokenB))) {
-                        testFailed(filenameA, tokenA, tokenB);
-                    }
-                }
+            if (tokensA[i] == tokensB[i]) {
+                continue;
+            }
+            std::string tokenA{ tokensA[i] };
+            std::string tokenB{ tokensB[i] };
+            OpenSim::IO::TrimWhitespace(tokenA);
+            OpenSim::IO::TrimWhitespace(tokenB);
+            tokenA = OpenSim::IO::Lowercase(tokenA);
+            tokenB = OpenSim::IO::Lowercase(tokenB);
+            if (tokenA == tokenB) {
+                continue;
+            }
+            // We interpreted blank as NaN now revert
+            // to compare to the original file with blanks
+            if (tokenB == "nan") {
+                tokenB = "";
+            }
+            else if (tokenA == "nan") {
+                tokenA = "";
+            }
+            if (tokenA == tokenB) {
+                continue;
+            }
+            double d_tokenA{};
+            double d_tokenB{};
+            try {
+                d_tokenA = std::stod(tokenA);
+                d_tokenB = std::stod(tokenB);
+            }
+            catch (std::invalid_argument&) {
+                testFailed(filenameA, tokenA, tokenB);
+            }
+            if ((d_tokenA != d_tokenB) &&
+                !(std::isnan(d_tokenA) &&
+                    std::isnan(d_tokenB))) {
+                testFailed(filenameA, tokenA, tokenB);
             }
         } // end for
     } // end while
