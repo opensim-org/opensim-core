@@ -4,6 +4,7 @@
 
 namespace OpenSim {
 
+const std::string _headerDelimiters{ " \t\r" };
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 // Get rid of the extra \r if parsing a file with CRLF line endings.
@@ -71,7 +72,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // First line of the stream is considered the header.
     std::string header{};
     std::getline(in_stream, header);
-    auto header_tokens = tokenize(header, _delimitersRead);
+    auto header_tokens = tokenize(header, _headerDelimiters);
     OPENSIM_THROW_IF(header_tokens.empty(),
                      FileIsEmpty,
                      fileName);        
@@ -173,16 +174,17 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // Read the rows one at a time and fill up the time column container and
     // the data container.
     std::size_t line_num{_dataStartsAtLine - 1};
-    auto row = nextLine();
-
-    while(!row.empty()) {
-        if (row.at(0).empty()) { //if no Frame# then ignore as empty elements
-            row = nextLine();
-            continue;
-        }
-
+    std::vector<std::string> row = nextLine();
+    // skip immediate blank lines between header and data.
+    while(row.empty() || row.at(0).empty()) {
+        row = nextLine();
         ++line_num;
-        size_t expected{column_labels.size() * 3 + 2};
+    }
+    
+    const size_t expected{ column_labels.size() * 3 + 2 };
+
+    // An empty line during data parsing denotes end of data
+    while(!row.empty()) {
         OPENSIM_THROW_IF(row.size() != expected,
                          RowLengthMismatch,
                          fileName,
@@ -207,6 +209,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         table->appendRow(std::stod(row.at(1)), std::move(row_vector));
 
         row = nextLine();
+        ++line_num;
     }
 
     // Set the column labels of the table.
