@@ -53,7 +53,7 @@ void compareFiles(const std::string& filenameA,
 
         ++lcnt;
 
-        if (tokensA.size() != tokensB.size()) {
+        if (tokensA.size() != tokensB.size() && lcnt < 6) {
             // original could have any number of tabs and spaces
             // that are no longer allowed. So ignore them.
             OpenSim::IO::eraseEmptyElements(tokensA);
@@ -62,18 +62,18 @@ void compareFiles(const std::string& filenameA,
 
         if (tokensA.size() != tokensB.size()) {
             //if a blank row, skip it
-            if (tokensA.empty()) {
+            if (tokensA.empty() || tokensA.at(0).empty()) {
                 tokensA = OpenSim::FileAdapter::getNextLine(fileA, delims);
                 ++lcnt;
             }
-            else if (tokensB.empty()) {
+            if (tokensB.empty() || tokensB.at(0).empty()) {
                 tokensB = OpenSim::FileAdapter::getNextLine(fileB, delims);
                 ++lcnt;
             }
         }
 
         std::string msg{ "Number of elements at line " +
-            std::to_string(lcnt) + "did not match." };
+            std::to_string(lcnt) + " did not match." };
 
         OPENSIM_THROW_IF(tokensA.size() != tokensB.size(),
             OpenSim::Exception, msg);
@@ -128,6 +128,7 @@ int main() {
     filenames.push_back("dataWithNaNsOfDifferentCases.trc");
     filenames.push_back("dataWithNaNsWithSpaces.trc");
     filenames.push_back("dataWithBlanksForMissingMarkers.trc");
+    filenames.push_back("exampleFormat.trc");
     // TRCs that are shared with other tests
     filenames.push_back("subject01_synthetic_marker_data.trc");
     filenames.push_back("constraintTest.trc");
