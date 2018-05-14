@@ -43,7 +43,7 @@ knee = PinJoint('knee', ...
     shank, Vec3(0, linkLength/2, 0), Vec3(0));
 model.addJoint(knee);
 
-%% Part 8B: Lock the knee coordinate.
+%% Part 8B: Set the default value of the knee coordinate.
 knee.getCoordinate().setDefaultValue(-0.5*pi);
 
 %% Part 6A: Add a vastus muscle (actuator).

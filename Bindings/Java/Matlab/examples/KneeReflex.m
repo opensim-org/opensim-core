@@ -17,7 +17,7 @@
 % - The location of the joint in the parent body is (0, -linkLength/2, 0).
 % - The location of the joint in the child body is (0, +linkLength/2, 0).
 
-%% Part 8B: Lock the knee coordinate.
+%% Part 8B: Set the default value of the knee coordinate.
 
 %% Part 6A: Add a vastus muscle (actuator).
 
