@@ -111,8 +111,11 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // Read the line containing column labels and fill up the column labels
     // container.
     auto column_labels = nextLine();
-    // for marker labels we do not need three columns per marker.
-    // remove the blank ones used in TRC due to tabbing
+    // For marker labels we do not need three columns per marker, and
+    // remove the blank elements in TRC due to uniform tabbing. For example,
+    // TRC files often have the following structure:
+    //Frame#<tab>Time<tab>marker1<tab><tab><tab>marker2<tab><tab><tab>
+    //<tab><tab>X1<tab>Y1<tab>Z1<tab>X2<tab>Y2<tab>Z2<tab>X3<tab>Y3<tab>Z3
     IO::eraseEmptyElements(column_labels);
 
     OPENSIM_THROW_IF(column_labels.size() != num_markers_expected + 2,
