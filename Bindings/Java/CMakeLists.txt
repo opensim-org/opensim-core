@@ -140,15 +140,28 @@ if(WIN32)
     file(WRITE "${JNI_DEP_FILE}" "")
     # These libraries are in dependency order.
     set(JNI_DEP_LIBS)
-    # Handle Visual C++ runtime libraries (msvcp, vcruntime, concrt).
+    # Handle Visual C++ runtime libraries:
+    #   vcruntime (compiler support, proces startup, exception handling)
+    #   msvcp (Visual C++ standard library)
+    #   concrt (concurrency runtime)
     # CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS is defined by
     # InstallRequiredSystemLibraries in the root CMakeLists.txt.
     # This isn't necessary for all users, as some users
     # will already have these libraries in C:/Windows/System32.
+    set(VC_RUNTIME_LIBS)
     foreach(runtime_libpath ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
         get_filename_component(runtime_libname ${runtime_libpath} NAME_WE)
+        list(APPEND VC_RUNTIME_LIBS ${runtime_libname})
         list(APPEND JNI_DEP_LIBS ${runtime_libname})
     endforeach()
+    # msvcp depends on vcruntime, so make sure vcruntime appears first.
+    foreach(lib ${VC_RUNTIME_LIBS})
+        if(${lib} MATCHES "vcruntime")
+            list(REMOVE_ITEM JNI_DEP_LIBS ${lib})
+            list(INSERT JNI_DEP_LIBS 0 ${lib})
+        endif()
+    endforeach()
+
     if(WITH_BTK)
         list(APPEND JNI_DEP_LIBS BTKCommon BTKIO BTKBasicFilters)
     endif()
