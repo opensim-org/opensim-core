@@ -3,24 +3,27 @@
 /* Load the required libraries when this module is loaded.                    */
 %pragma(java) jniclassclassmodifiers="public class"
 SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;import java.io.File;import java.nio.file.Path;import java.nio.file.Files;import java.nio.file.Paths;import java.nio.charset.Charset;import java.util.List;"
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;import java.io.File;import java.nio.file.Path;import java.nio.file.Files;import java.util.List;"
 %pragma(java) jniclasscode=%{
   static {
       String OS = System.getProperty("os.name").toLowerCase();
       try {
           // Try to load osimJavaJNI's dependencies so we don't rely on the
           // PATH environment variable.
-          if (OS.indexOf("win") >= 0) {
+          // https://stackoverflow.com/questions/2591083/getting-java-version-at-runtime
+          double javaVersion = Double.parseDouble(System.getProperty("java.specification.version"));
+          if (OS.indexOf("win") >= 0 && javaVersion >= 1.7) {
               File jardir = new File(OpenSimObject.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile();
-              Path depfilePath = Paths.get(jardir.toString(), "osimJavaJNI_dependencies.txt").normalize();
+              // java.nio.file.Paths requires Java 1.7.
+              Path depfilePath = java.nio.file.Paths.get(jardir.toString(), "osimJavaJNI_dependencies.txt").normalize();
               File depfile = depfilePath.toFile();
               if (!depfile.exists() || depfile.isDirectory()) {
                   throw new Exception("OpenSim could not read " + depfile.toString() + ".");
               }
               // readAllLines() requires Java 1.7.
-              List<String> libraries = Files.readAllLines(depfilePath, Charset.defaultCharset());
+              List<String> libraries = Files.readAllLines(depfilePath, java.nio.charset.Charset.defaultCharset());
               for (String lib : libraries) {
-                  String libToLoad = Paths.get(jardir.toString(), lib).normalize().toString();
+                  String libToLoad = java.nio.file.Paths.get(jardir.toString(), lib).normalize().toString();
                   try {
                       System.load(libToLoad);
                   } catch (UnsatisfiedLinkError e) {
