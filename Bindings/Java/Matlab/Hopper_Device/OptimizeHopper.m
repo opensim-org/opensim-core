@@ -54,6 +54,7 @@ switch problem
         numVars = 3; 
         lowerBound = 0.25*ones(numVars, 1); % seconds
         upperBound = 0.75*ones(numVars, 1); % seconds
+        rng(1, 'twister'); % Reset the random number generator.
         options = optimoptions('ga','FunctionTolerance', 1e-2, ...
                                     'MaxGenerations', 1, ...
                                     'Display', 'iter'); 
@@ -187,6 +188,11 @@ function plotSolution(x, problem)
 % Construct the actuator controls from solution 'x'. See 
 % CONSTRUCTCONTROLS above for details.
 [deviceControl, muscleExcitation, t] = constructControls(x, problem);
+
+% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
+% above for details.
+hopper = constructHopper(x, problem);
+[~, heightStruct] = EvaluateHopper(hopper, true, true);
                              
 % Plot optimized controls.
 figure;
@@ -195,7 +201,7 @@ subplot(2,1,1);
 plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
 hold on
 plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
-ylim([-0.10 1.10]); xlim([0 5]); xticks(0:1:5);
+ylim([-0.10 1.10]); xlim([0 5]); xticks(0:1:5); legend('device', 'muscle');
 switch problem
     case 'one_hop'
         text_x = [x/2 t];
@@ -214,11 +220,6 @@ text(text_x, text_y, labels, 'HorizontalAlignment', 'center', ...
     'FontWeight', 'bold')
 xlabel('time (s)', 'FontWeight', 'bold')
 ylabel('control value', 'FontWeight', 'bold')
-
-% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
-% above for details.
-hopper = constructHopper(x, problem);
-[~, heightStruct] = EvaluateHopper(hopper, false, true);
 
 % Plot jump height.
 subplot(2,1,2);
