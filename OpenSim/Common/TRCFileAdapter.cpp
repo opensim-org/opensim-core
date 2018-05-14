@@ -163,7 +163,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the rows one at a time and fill up the time column container and
     // the data container.
-    std::size_t line_num{_dataStartsAtLine - 1};
+    std::size_t line_num{_dataStartsAtLine};
     std::vector<std::string> row = nextLine();
     // skip immediate blank lines between header and data.
     while(row.empty() || row.at(0).empty()) {
