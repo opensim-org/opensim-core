@@ -54,36 +54,17 @@ switch problem
         numVars = 3; 
         lowerBound = 0.25*ones(numVars, 1); % seconds
         upperBound = 0.75*ones(numVars, 1); % seconds
+        rng(1, 'twister'); % Reset the random number generator.
         options = optimoptions('ga','FunctionTolerance', 1e-2, ...
-                                    'MaxGenerations', 10, ...
+                                    'MaxGenerations', 1, ...
                                     'Display', 'iter'); 
         [x, f] = ga(@(x) objective(x,problem),numVars,[],[],[],[], ...
                                    lowerBound,upperBound,[],options);                 
 end
 
-% ANALYZE OPTIMIZED SOLUTION
-% Construct the actuator controls from solution 'x'. See 
-% CONSTRUCTCONTROLS below for details.
-[deviceControl, muscleExcitation] = constructControls(x, problem);
-                             
-% Plot optimized controls.
-figure(1);
-plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
-hold on
-plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
-xlabel('time (s)')
-ylabel('control value')
 
-% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
-% below for details.
-hopper = constructHopper(x, problem);
-[~, heightStruct] = EvaluateHopper(hopper, true, true);
-
-% Plot jump height.
-figure(2);
-plot(heightStruct.time, heightStruct.height, 'b-', 'linewidth', 2)
-xlabel('time (s)')
-ylabel('height')
+% PLOT OPTIMIZED SOLUTION
+plotSolution(x, problem);
 
 end
 
@@ -131,7 +112,7 @@ hopper = BuildCustomHopper(...
             'printModelInfo', false);
 end
 
-function [deviceControl, muscleExcitation] = constructControls(x, problem)
+function [deviceControl, muscleExcitation, t] = constructControls(x, problem)
 % CONSTRUCTCONTROLS
 %   Construct controls from the optimization variables. Each variable 
 %   relates to either:
@@ -173,6 +154,7 @@ switch problem
         t1 = x;
         deviceControl    = [on(0)  off(t1)];
         muscleExcitation = [off(0) on(t1)];
+        t = t1;
         
     % To coordinate the sequence of hops in this problem, the spring must
     % be loaded and released (with the activated muscle) three times. The 
@@ -187,9 +169,9 @@ switch problem
         t3 = x(1)+t2; % Release loaded spring and activate muscle (hop #2)
         t4 = x(3)+t3; % Turn off muscle and load spring after hop #2
         t5 = x(1)+t4; % Release loaded spring and activate muscle (hop #3)
-        
         deviceControl    = [on(0)  off(t1) on(t2)  off(t3) on(t4)  off(t5)];
-        muscleExcitation = [off(0) on(t1)  off(t2) on(t3)  off(t4) on(t5)];    
+        muscleExcitation = [off(0) on(t1)  off(t2) on(t3)  off(t4) on(t5)];
+        t = [t1 t2 t3 t4 t5];
 end
 
 % For both muscle and device, impose a zero-order hold on the control value
@@ -198,6 +180,59 @@ deviceControl    = [deviceControl(1,:) 5;
                     deviceControl(2,:) deviceControl(2,end)];
 muscleExcitation = [muscleExcitation(1,:) 5;
                     muscleExcitation(2,:) muscleExcitation(2,end)];
+
+end
+
+function plotSolution(x, problem)
+
+% Construct the actuator controls from solution 'x'. See 
+% CONSTRUCTCONTROLS above for details.
+[deviceControl, muscleExcitation, t] = constructControls(x, problem);
+
+% Evaluate optimized solution. See CONSTRUCTHOPPER and OBJECTIVE 
+% above for details.
+hopper = constructHopper(x, problem);
+[~, heightStruct] = EvaluateHopper(hopper, true, true);
+                             
+% Plot optimized controls.
+figure;
+set(gcf, 'units', 'normalized', 'Position', [0.1 0.1 0.8 0.8])
+subplot(2,1,1);
+plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
+hold on
+plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
+ylim([-0.10 1.10]); xlim([0 5]); xticks(0:1:5); legend('device', 'muscle');
+switch problem
+    case 'one_hop'
+        text_x = [x/2 t];
+        text_y = [1.05 -0.05];
+        labels = {'<--x(1)-->', 't1'};
+    case 'three_hops'
+        text_x = [(x([1 2 1 3 1])/2 + [0 t([1 2 3 4])]) t];
+        text_y = [1.05*ones(1,5) -0.05*ones(1,5)];
+        x_labels = arrayfun(@(x) sprintf('<--x(%i)-->', x), [1 2 1 3 1], ...
+            'UniformOutput', false);
+        t_labels = arrayfun(@(t) sprintf('t%i', t), 1:5, 'UniformOutput', ... 
+            false);
+        labels = [x_labels t_labels];
+end
+text(text_x, text_y, labels, 'HorizontalAlignment', 'center', ... 
+    'FontWeight', 'bold')
+xlabel('time (s)', 'FontWeight', 'bold')
+ylabel('control value', 'FontWeight', 'bold')
+
+% Plot jump height.
+subplot(2,1,2);
+plot(heightStruct.time, heightStruct.height, 'b-', 'linewidth', 2)
+hold on
+[peakHeight, idx] = max(heightStruct.height(:, 1));
+plot(heightStruct.time(idx), peakHeight, 'Marker', 'p', 'MarkerSize', 12, ...
+    'MarkerFaceColor', 'red')
+xlim([0 5]); ylim([0 2]); xticks(0:1:5);
+text(heightStruct.time(idx)+0.05, peakHeight+0.05, ... 
+    sprintf('%0.3f', peakHeight))
+xlabel('time (s)', 'FontWeight', 'bold')
+ylabel('height', 'FontWeight', 'bold')
 
 end
 
