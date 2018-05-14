@@ -188,10 +188,13 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
                        SimTK::Vec3(SimTK::NaN)};
         int ind{0};
         for (std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3) {
-            if (!row.at(c).empty())
+            //if any component is blank, treat the location as unspecified
+            if ( !(row.at(c).empty() && row.at(c + 1).empty() 
+                                     && row.at(c + 2).empty()) ) {
                 row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
-                                                std::stod(row.at(c + 1)),
-                                                std::stod(row.at(c + 2)) };
+                                               std::stod(row.at(c + 1)),
+                                               std::stod(row.at(c + 2)) };
+            }
             ++ind;
         }
 
