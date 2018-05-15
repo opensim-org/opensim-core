@@ -274,10 +274,10 @@ bool InverseKinematicsTool::run()
         IO::chDir(directoryOfSetupFile);
 
         // Define reporter for output
-        Kinematics kinematicsReporter;
-        kinematicsReporter.setRecordAccelerations(false);
-        kinematicsReporter.setInDegrees(true);
-        _model->addAnalysis(&kinematicsReporter);
+        Kinematics* kinematicsReporter = new Kinematics();
+        kinematicsReporter->setRecordAccelerations(false);
+        kinematicsReporter->setInDegrees(true);
+        _model->addAnalysis(kinematicsReporter);
 
         cout<<"Running tool "<<getName()<<".\n";
 
@@ -304,7 +304,7 @@ bool InverseKinematicsTool::run()
         ikSolver.setAccuracy(_accuracy);
         s.updTime() = start_time;
         ikSolver.assemble(s);
-        kinematicsReporter.begin(s);
+        kinematicsReporter->begin(s);
 
         const clock_t start = clock();
         double dt = 1.0/markersReference.getSamplingFrequency();
@@ -362,17 +362,17 @@ bool InverseKinematicsTool::run()
 
             }
 
-            kinematicsReporter.step(s, i);
+            kinematicsReporter->step(s, i);
             analysisSet.step(s, i);
         }
 
         // Do the maneuver to change then restore working directory 
         // so that output files are saved to same folder as setup file.
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
-            kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
+            kinematicsReporter->getPositionStorage()->print(_outputMotionFileName);
         }
         // Once done, remove the analysis we added
-        _model->removeAnalysis(&kinematicsReporter);
+        _model->removeAnalysis(kinematicsReporter);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);

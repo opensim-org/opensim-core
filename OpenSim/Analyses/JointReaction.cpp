@@ -512,16 +512,15 @@ record(const SimTK::State& s)
 
     _model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
     if(_useForceStorage){
-
-        const Set<Actuator> *actuatorSet = &_model->getActuators();
-        int nA = actuatorSet->getSize();
+        const auto& actuatorSet = _model->getActuators();
+        int nA = actuatorSet.getSize();
         Array<double> forces(0,nA);
         _storeActuation->getDataAtTime(s.getTime(),nA,forces);
         int storageIndex = -1;
         for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
         {
             //Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
-            std::string actuatorName = actuatorSet->get(actuatorIndex).getName();
+            std::string actuatorName = actuatorSet.get(actuatorIndex).getName();
             storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
             if(storageIndex == -1){
                 cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
