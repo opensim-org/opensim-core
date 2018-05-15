@@ -17,8 +17,12 @@ model.addBody(thigh);
 
 %% Part 3: Create the hip joint.
 hip = PinJoint('hip', ...
-    model.getGround(), Vec3(0, hipHeight, 0), Vec3(0), ...
-    thigh, Vec3(0, linkLength/2, 0), Vec3(0));
+    model.getGround(), ...        % parent body
+    Vec3(0, hipHeight, 0), ...    % location in parent
+    Vec3(0), ...                  % location in child
+    thigh, ...                    % child body
+    Vec3(0, linkLength/2, 0), ... % location in child
+    Vec3(0));                     % orientation in child 
 model.addJoint(hip);
 
 %% Part 4: Set the default value of the hip coordinate to +90 degrees.
@@ -53,7 +57,7 @@ vastus.setMaxIsometricForce(500);
 vastus.setOptimalFiberLength(0.19);
 vastus.setTendonSlackLength(0.19);
 
-vastus.addNewPathPoint('origin', thigh, Vec3(linkLength/10, 0.0, 0));
+vastus.addNewPathPoint('origin', thigh, Vec3(linkLength/10, 0, 0));
 insertion = Vec3(0.75 * linkLength/10, 0.7 * linkLength/2, 0);
 vastus.addNewPathPoint('insertion', shank, insertion);
 
@@ -72,9 +76,9 @@ vastus.updGeometryPath().addPathWrap(patella);
 %% Part 9: Add an open-loop controller for the muscle.
 brain = PrescribedController();
 brain.addActuator(vastus);
-% Between 0.5 and 0.55 seconds, excitation transitions from 0.05 to 0.5.
+% Between 0.3 and 0.35 seconds, excitation transitions from 0.05 to 0.5.
 brain.prescribeControlForActuator('vastus', ...
-    StepFunction(0.5, 0.55, 0.05, 0.5));
+    StepFunction(0.3, 0.35, 0.05, 0.5));
 model.addController(brain);
 
 %% Part 10A: Add reflex control (and disable the open-loop control).
@@ -97,6 +101,7 @@ model.addComponent(reporter);
 state = model.initSystem();
 
 %% Part 10B: Set the initial speed of the knee coordinate.
+% Units: radians per second.
 knee.getCoordinate().setSpeedValue(state, -3.0);
 
 %% Part 6B: Initialize the muscle fiber length state.
