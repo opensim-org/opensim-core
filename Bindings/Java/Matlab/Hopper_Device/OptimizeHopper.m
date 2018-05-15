@@ -201,7 +201,8 @@ subplot(2,1,1);
 plot(deviceControl(1,:), deviceControl(2,:), 'b-', 'linewidth', 2)
 hold on
 plot(muscleExcitation(1,:), muscleExcitation(2,:), 'r-', 'linewidth', 2)
-ylim([-0.10 1.10]); xlim([0 5]); xticks(0:1:5); legend('device', 'muscle');
+ylim([-0.10 1.10]); xlim([0 5]); set(gca, 'XTick', 0:1:5);
+legend('device', 'muscle');
 switch problem
     case 'one_hop'
         text_x = [x/2 t];
@@ -228,7 +229,7 @@ hold on
 [peakHeight, idx] = max(heightStruct.height(:, 1));
 plot(heightStruct.time(idx), peakHeight, 'Marker', 'p', 'MarkerSize', 12, ...
     'MarkerFaceColor', 'red')
-xlim([0 5]); ylim([0 2]); xticks(0:1:5);
+xlim([0 5]); ylim([0 2]); set(gca, 'XTick', 0:1:5);
 text(heightStruct.time(idx)+0.05, peakHeight+0.05, ... 
     sprintf('%0.3f', peakHeight))
 xlabel('time (s)', 'FontWeight', 'bold')
