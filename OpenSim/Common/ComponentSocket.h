@@ -796,6 +796,7 @@ public:
         return v;
     }
     
+#ifndef SWIG
     /** Get const access to the channels connected to this input.
         You can use this to iterate through the channels.
         @code{.cpp}
@@ -807,6 +808,7 @@ public:
     const ChannelList& getChannels() const {
         return _connectees;
     }
+#endif
     
     /** Return the typename of the Output value, T, that satisfies
         this Input<T>. No reason to return Output<T> since it is a
