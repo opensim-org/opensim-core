@@ -37,6 +37,12 @@ public:
     typedef std::vector<Event>                         EventTable; 
     typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
+    enum class ForceLocation : unsigned {
+        Origin = 0u, /// the origin of the forceplate
+        COP = 1u,    /// the center of pressure
+        PWA = 2u     /// the point of wrench application (Shimba 1984)
+    };
+
     C3DFileAdapter()                                 = default;
     C3DFileAdapter(const C3DFileAdapter&)            = default;
     C3DFileAdapter(C3DFileAdapter&&)                 = default;
@@ -45,6 +51,14 @@ public:
     ~C3DFileAdapter()                                = default;
 
     C3DFileAdapter* clone() const override;
+
+    void setLocationForForceExpression(const ForceLocation location) {
+        _location = location;
+    }
+
+    const ForceLocation getLocationForForceExpression() const {
+        return _location;
+    }
     
     /** Read in a C3D file into separate markers and forces tables of type
         TimeSeriesTableVec3. The markers table has each column labeled by its
@@ -52,7 +66,8 @@ public:
         by sensor (force-plate #) in force, point and moment order, with the
         respective *f#*, *p#* and *m#* column labels. */
     static
-    Tables read(const std::string& fileName);
+    Tables read(const std::string& fileName, 
+                ForceLocation wrt = ForceLocation::Origin);
 
     static
     void write(const Tables& markerTable, const std::string& fileName);
@@ -68,6 +83,8 @@ protected:
 
 private:
     static const std::unordered_map<std::string, std::size_t> _unit_index;
+
+    ForceLocation _location{ ForceLocation::Origin };
 
 };
 

@@ -44,7 +44,11 @@ C3DFileAdapter::clone() const {
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName) {
+C3DFileAdapter::read(const std::string& fileName, ForceLocation wrt)
+{
+    C3DFileAdapter c3dreader{};
+    c3dreader.setLocationForForceExpression(wrt);
+
     auto abstables = C3DFileAdapter{}.extendRead(fileName);
     auto marker_table = 
         std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
@@ -169,6 +173,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         // Get ground reaction wrenches for the force platform.
         auto ground_reaction_wrench_filter = 
             btk::GroundReactionWrenchFilter::New();
+        ground_reaction_wrench_filter->setLocation(
+            btk::GroundReactionWrenchFilter::Location(getLocationForForceExpression()));
         ground_reaction_wrench_filter->SetInput(*platform);
         auto wrench_collection = ground_reaction_wrench_filter->GetOutput();
         ground_reaction_wrench_filter->Update();
