@@ -41,19 +41,26 @@ void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
         OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
                          Exception,
                          "Column labels are not the same for tables.");
-        OPENSIM_THROW_IF(table1.getIndependentColumn() != 
-                         table2.getIndependentColumn(),
-                         Exception,
-                         "Independent columns are not the same for tables.");
+
+        ASSERT_EQUAL( table1.getIndependentColumn(), 
+                      table2.getIndependentColumn(), tolerance,
+                       __FILE__, __LINE__,
+                         "Independent columns are not equivalent.");
     } catch (const OpenSim::KeyNotFound&) {}
 
     const auto& matrix1 = table1.getMatrix();
     const auto& matrix2 = table2.getMatrix();
+
     for(int r = 0; r < matrix1.nrow(); ++r)
         for(int c = 0; c < matrix1.ncol(); ++c) {
             auto elt1 = matrix1.getElt(r, c); 
             auto elt2 = matrix2.getElt(r, c);
-            ASSERT_EQUAL(elt1, elt2, tolerance);
+            if (elt1.isNaN() && elt2.isNaN())
+                continue;
+            ASSERT_EQUAL(elt1, elt2, tolerance, __FILE__, __LINE__,
+                "Elements at row, " + std::to_string(r) + " col, " +
+                std::to_string(c) + " failed to match value of " +
+                elt1.toString());
         }
 }
 
@@ -62,7 +69,8 @@ void test(const std::string filename) {
     using namespace OpenSim;
     
     std::clock_t startTime = std::clock();
-    auto tables = C3DFileAdapter::read(filename);
+    auto tables = C3DFileAdapter::read(filename,
+        C3DFileAdapter::ForceLocation::Origin);
 
     std::cout << "\nC3DFileAdapter '" << filename << "' read time = " 
         << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC 
@@ -71,34 +79,36 @@ void test(const std::string filename) {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
 
-    //std::cout << marker_table->toString({6, 7, 8, 9, 10}) << std::endl;
-    //std::cout <<  force_table->toString({6, 7, 8, 9, 10}) << std::endl;
-    
-    {
-        using namespace OpenSim;
-        using MT = TimeSeriesTableVec3;
-        using FT = TimeSeriesTableVec3;
+    size_t ext = filename.rfind(".");
+    std::string base = filename.substr(0, ext);
 
-        MT marker_table1{filename, "markers"};
-        FT  force_table1{filename, "forces"};
+    const std::string marker_file = base + "_markers.trc";
+    const std::string forces_file = base + "_grfs.sto";
 
-        compare_tables(*marker_table, marker_table1);
-        compare_tables( *force_table,  force_table1);
-    }
+    ASSERT(marker_table->getNumRows() > 0, __FILE__, __LINE__,
+        "Failed to read marker data from " + filename);
 
-    if(marker_table->getNumRows() != 0) {
-        marker_table->updTableMetaData().setValueForKey("Units", 
-                                                        std::string{"mm"});
-        TRCFileAdapter trc_adapter{};
-        trc_adapter.write(*marker_table, filename + ".markers.trc");
-    }
+    marker_table->updTableMetaData().setValueForKey("Units", 
+                                                    std::string{"mm"});
+    TRCFileAdapter trc_adapter{};
+    trc_adapter.write(*marker_table, marker_file);
 
-    if(force_table->getNumRows() != 0) {
-        force_table->updTableMetaData().setValueForKey("Units", 
-                                                       std::string{"mm"});
-        TRCFileAdapter trc_adapter{};
-        trc_adapter.write(*force_table, filename + ".forces.trc");
-    }
+    ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
+        "Failed to read forces data from " + filename);
+
+    force_table->updTableMetaData().setValueForKey("Units", 
+                                                    std::string{"mm"});
+    STOFileAdapter sto_adapter{};
+    sto_adapter.write((force_table->flatten()), forces_file);
+
+    // Verify that marker data was written out and can be read in
+    auto markers = trc_adapter.read(marker_file);
+    auto std_markers = trc_adapter.read("std_" + marker_file);
+    // Compare C3DFileAdapter read-in and written marker data
+    compare_tables(markers, *marker_table);
+    // Compare C3DFileAdapter written marker data to standard
+    // Note std exported from Mokka with only 5 decimal places 
+    compare_tables(markers, std_markers, 1e-4);
 }
 
 int main() {
@@ -108,7 +118,13 @@ int main() {
 
     for(const auto& filename : filenames) {
         std::cout << "Test reading '" + filename + "'." << std::endl;
-        test(filename);
+        try {
+            test(filename);
+        }
+        catch (const std::exception& ex) {
+            std::cout << "testC3DFileAdapter FAILED: " << ex.what() << std::endl;
+            return 1;
+        }
     }
 
     std::cout << "\nAll testC3DFileAdapter cases passed." << std::endl;
