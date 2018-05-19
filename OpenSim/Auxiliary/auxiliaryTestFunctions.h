@@ -70,6 +70,25 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
     }
 }
 
+template<typename T>
+void ASSERT_EQUAL( const std::vector<T>& vecA,
+                   const std::vector<T>& vecB,
+                    T tolerance,
+                    std::string file = "",
+                    int line = -1,
+                    std::string message = "") {
+
+    if (vecA.size() != vecB.size()) {
+        throw OpenSim::Exception(message, file, line);
+    }
+    else {
+        for (size_t i = 0; i < vecA.size(); ++i) {
+            if (vecA[i] < vecB[i] - tolerance || vecA[i] > vecB[i] + tolerance) {
+                throw OpenSim::Exception(message, file, line);
+            }
+        }
+    }
+}
 
 inline void ASSERT(bool cond, 
                    std::string file="", 
