@@ -37,10 +37,10 @@ public:
     typedef std::vector<Event>                         EventTable; 
     typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
-    enum class ForceLocation : unsigned {
-        Origin = 0u, /// the origin of the forceplate
-        COP = 1u,    /// the center of pressure
-        PWA = 2u     /// the point of wrench application (Shimba 1984)
+    enum class ForceLocation {
+        Origin = 0, /// the origin of the forceplate
+        COP = 1,    /// the center of pressure
+        PWA = 2     /// the point of wrench application (Shimba 1984)
     };
 
     C3DFileAdapter()                                 = default;
