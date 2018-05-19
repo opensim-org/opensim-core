@@ -49,7 +49,7 @@ C3DFileAdapter::read(const std::string& fileName, ForceLocation wrt)
     C3DFileAdapter c3dreader{};
     c3dreader.setLocationForForceExpression(wrt);
 
-    auto abstables = C3DFileAdapter{}.extendRead(fileName);
+    auto abstables = c3dreader.extendRead(fileName);
     auto marker_table = 
         std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
     auto force_table = 
@@ -112,13 +112,18 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         double time_step{1.0 / acquisition->GetPointFrequency()};
         for(int f = 0; f < marker_nrow; ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
+            SimTK::RowVector_<SimTK::Vec3> row{ marker_pts->GetItemNumber(), 
+                                                SimTK::Vec3(SimTK::NaN) };
             int m{0};
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
                 auto pt = *it;
-                row[m++] = SimTK::Vec3{pt->GetValues().coeff(f, 0),
-                                       pt->GetValues().coeff(f, 1),
-                                       pt->GetValues().coeff(f, 2)};
+                if (!( pt->GetValues().row(f).isZero() ||  //not precisely zero
+                    (pt->GetResiduals().coeff(f) == -1))) {//nor is residual -1
+                    row[m] = SimTK::Vec3{ pt->GetValues().coeff(f, 0),
+                                           pt->GetValues().coeff(f, 1),
+                                           pt->GetValues().coeff(f, 2) };
+                }
+                ++m;
             }
 
             marker_matrix.updRow(f) = row;
