@@ -170,8 +170,6 @@ MATLAB interface
 - The configureOpenSim.m function should no longer require administrator
   privileges for most users, and gives more verbose output to assist with
   troubleshooting.
-- On Windows, using the Matlab interface no longer requires that the
-  Windows PATH contains the OpenSim bin directory.
 
 Python interface
 ----------------
