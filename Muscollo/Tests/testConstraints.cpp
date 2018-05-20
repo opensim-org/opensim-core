@@ -111,7 +111,7 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 ///     M udot + G^T lambda + f_inertial(q,u) = f_applied
 ///
 /// If using an explicit representation of the system dynamics, the derivatives
-/// of the generalized speeds for the system need to be compuated in order to 
+/// of the generalized speeds for the system need to be computed in order to 
 /// construct the defects. Rearranging the equations above (and noting that 
 /// Simbody does not actually invert the mass matrix, but rather uses an order-N
 /// approach), we obtain
@@ -125,9 +125,9 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 ///         lambda | Lagrange multipliers
 ///
 /// Since the three quantities required to compute the system accelerations 
-/// will eventually becomes NLP variables in a direct collocation problem, 
-/// it is not sufficient to use the internally calculated Lagrange 
-/// multipliers in Simbody. An intermediate calculation must be made:
+/// will eventually become NLP variables in a direct collocation problem, it is 
+/// not sufficient to use the internally calculated Lagrange multipliers in 
+/// Simbody. An intermediate calculation must be made:
 ///
 ///     f_constraint(lambda) = G^T lambda
 ///
