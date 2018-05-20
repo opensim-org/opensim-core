@@ -167,6 +167,8 @@ protected:
                      const std::string& filename) const override;
     
 private:
+    /** Delimiter used for parsing the header of TRC file.                    */
+    static const std::string              _headerDelimiters;
     /** Delimiter used for writing.                                           */
     static const std::string              _delimiterWrite;
     /** Delimiters used for reading.                                          */

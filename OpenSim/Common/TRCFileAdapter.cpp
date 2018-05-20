@@ -5,7 +5,7 @@
 
 namespace OpenSim {
 
-const std::string _headerDelimiters{ " \t\r" };
+const std::string TRCFileAdapter::_headerDelimiters{ " \t\r" };
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 // Get rid of the extra \r if parsing a file with CRLF line endings.
