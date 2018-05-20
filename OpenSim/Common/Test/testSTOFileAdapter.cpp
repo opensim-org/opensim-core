@@ -269,6 +269,24 @@ int main() {
 
     std::remove(tmpfile.c_str());
 
+    // test detection of invalid column labels
+    TimeSeriesTable table{};
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "c2", "", "c4" }),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "  ", "c3", "\t" }),
+        InvalidColumnLabel);
+    table.setColumnLabels({ "c1", "c2", "c3", "c4" });
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(3, " \n hi"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(2, "hel\rlo"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(1, "ABC\tDEF"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(0, "   ABC DEF   "),
+        InvalidColumnLabel);
+    // space within the label should be OK
+    table.setColumnLabel(1, "ABC DEF");
+
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec2>"
               << std::endl;
     testReadingWriting<SimTK::Vec2>();
