@@ -45,7 +45,9 @@ void compareFiles(const std::string& filenameA,
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
 
-    int lcnt = 0;
+    const size_t numOfTRCHeaderLines = 6;
+
+    size_t lcnt = 0;
 
     while (fileA && fileB) {
         auto tokensA = OpenSim::FileAdapter::getNextLine(fileA, delims);
@@ -53,7 +55,7 @@ void compareFiles(const std::string& filenameA,
 
         ++lcnt;
 
-        if (tokensA.size() != tokensB.size() && lcnt < 6) {
+        if (tokensA.size() != tokensB.size() && lcnt < numOfTRCHeaderLines) {
             // original could have any number of tabs and spaces
             // that are no longer allowed. So ignore them.
             OpenSim::IO::eraseEmptyElements(tokensA);
