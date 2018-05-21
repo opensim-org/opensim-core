@@ -23,7 +23,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "InverseKinematicsTool.h"
+#include "InverseREsTool.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
@@ -410,7 +410,7 @@ bool InverseKinematicsTool::run()
         // Do the maneuver to change then restore working directory 
         // so that output files are saved to same folder as setup file.
         if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
-            kinematicsReporter->getPositionStorage()->print(_outputMotionFileName);
+            kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
         }
 
         // Remove the analysis we added, don't delete as it was allocated on stack
