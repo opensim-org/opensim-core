@@ -1481,7 +1481,10 @@ protected:
                             have length equal to the number of columns in the
                             table. (2) If not all entries in the metadata for
                             dependent columns have the correct length (equal to
-                            number of columns).                               */
+                            number of columns).                               
+    \throws InvalidColumnLabel (1) if label is an empty string, (2) if label
+                               contains tab or newline characters, or (3) if
+                               label has leading or trailing spaces.*/
     void validateDependentsMetaData() const override {
         size_t numCols{};
 
