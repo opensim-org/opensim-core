@@ -23,7 +23,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "InverseREsTool.h"
+#include "InverseKinematicsTool.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
