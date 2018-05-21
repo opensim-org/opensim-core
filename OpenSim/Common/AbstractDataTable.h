@@ -397,7 +397,7 @@ public:
         try {
             validateDependentsMetaData();
         }
-        catch (const InvalidColumnLabel& ex) {
+        catch (const InvalidColumnLabel&) {
             // undo any partial column label changes
             // and restore to previous column labels if there were any
             if (oldLabels) {
