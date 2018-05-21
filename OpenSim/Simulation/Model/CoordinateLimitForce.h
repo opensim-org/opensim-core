@@ -100,8 +100,8 @@ public:
     like smoother (i.e. larger transition regions).
     @param[in]  coordName   Coordinate whose range is to be limited.
     @param[in]  q_upper     Coordinate's upper limit value.
-    @param[in]  q_lower     Coordinate's lower limit value.
     @param[in]  K_upper     Upper limit stiffness when coordinate > q_upper
+    @param[in]  q_lower     Coordinate's lower limit value.
     @param[in]  K_lower     Lower limit stiffness when coordinate < q_lower
     @param[in]  damping     Damping factor when coordinate is beyond the limits
     @param[in]  dq          Transition region (displacement) for force to be

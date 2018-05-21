@@ -60,8 +60,8 @@
 					    indicates the controller will controll all the acuators in the model-->
 					<actuator_list> </actuator_list>
 					<!--Flag (true or false) indicating whether or not the controller is
-					    enabled (ON) should-->
-					<enable_controller> true </enable_controller>
+					    disabled.-->
+					<isDisabled> false </isDisabled>
 					<!--XML file containing the controls for the controlSet.-->
 					<controls_file> subject01_walk1_controls.xml </controls_file>
 				</ControlSetController>
@@ -70,12 +70,12 @@
 					    indicates the controller will controll all the acuators in the model-->
 					<actuator_list> </actuator_list>
 					<!--Flag (true or false) indicating whether or not the controller is
-					    enabled (ON) should-->
-					<enable_controller> true </enable_controller>
+					    disabled.-->
+					<isDisabled> false </isDisabled>
 					<!--Gain for position errors-->
-					<kp>     25.00000000 </kp>
+					<kp>    16.00000000 </kp>
 					<!--Gain for velocity errors-->
-					<kv>      10.00000000 </kv>
+					<kv>     8.00000000 </kv>
 				</CorrectionController>
 			</objects>
 			<groups/>

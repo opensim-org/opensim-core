@@ -138,6 +138,7 @@ public:
         @see extendPostScale() */
     void postScale(const SimTK::State& s, const ScaleSet& scaleSet);
 
+protected:
     /** Get the scale factors corresponding to the base OpenSim::Body of the
         specified Frame. Returns ModelComponent::InvalidScaleFactors if the
         ScaleSet does not contain scale factors for the base Body. */
@@ -148,7 +149,6 @@ public:
         factors for the base Body associated with the specified Frame. */
     static const SimTK::Vec3 InvalidScaleFactors;
 
-protected:
     /** Perform any computations that must occur before ModelComponent::scale()
         is invoked on all ModelComponents in the Model. For example, a
         GeometryPath must calculate and store its path length in the original

@@ -7,6 +7,7 @@
 %                                                                         
 % Copyright (c) 2005-2017 Stanford University and the Authors             
 % Author(s): Daniel A. Jacobs                                             
+% Contributor(s): Hannah O'Day, Chris Dembia
 %                                                                         
 % Licensed under the Apache License, Version 2.0 (the "License");         
 % you may not use this file except in compliance with the License.        
@@ -26,7 +27,7 @@
 % -----------------------------------------------------------------------
 
 % User Section - Adjust these parameters at will
-outputPath = '..\Model\';
+outputPath = '../Model/';
 outputModelName = 'WalkerModel';
 
 % Model Body Parameters
@@ -40,11 +41,11 @@ PelvisIYY       = 1/12*PelvisMass*PelvisWidth^2;
 PelvisIZZ       = 1/12*PelvisMass*PelvisWidth^2;
 
 ThighMass       = 0.05;
-ThighLength     = 0.5;
+ThighLength     = 0.40;
 ThighIZZ        = 1/12*ThighMass*ThighLength^2;
 
 ShankMass       = 0.05;
-ShankLength     = 0.5;
+ShankLength     = 0.435;
 ShankIZZ        = 1/12*ShankMass*ShankLength^2;
 
 smallInertia    = 1E-4; 
@@ -65,14 +66,14 @@ import org.opensim.modeling.*
 
 % Open Model
 osimModel = Model();
-if(addObstacles)
+if addObstacles
     outputModelName = [outputModelName, 'Terrain'];
 end
 osimModel.setName(outputModelName);
 osimModel.setAuthors('Daniel A. Jacobs, Ajay Seth');
 
 % Get a Handle to Ground Body
-ground = osimModel.getGroundBody();
+ground = osimModel.getGround();
 
 % -----------------------------------------------------------------------
 % Platform
@@ -86,66 +87,54 @@ locationInParent    = Vec3(0,0,0);
 orientationInParent = Vec3(0,0,deg2rad(-10));
 locationInChild     = Vec3(0,0,0);
 orientationInChild  = Vec3(0,0,0);
-platformToGround    = WeldJoint('PlatformToGround', ground, locationInParent, ...
-    orientationInParent, platform, locationInChild, orientationInChild, false);
+platformToGround    = WeldJoint('PlatformToGround', ...
+    ground, locationInParent, orientationInParent, ...
+    platform, locationInChild, orientationInChild);
 
-% Add Visible Object for GUI
-platform.addDisplayGeometry('box.vtp');
-platform.updDisplayer().setScaleFactors([PlatformLength, PlatformWidth, 1]);
-platform.updDisplayer().translate(Vec3(PlatformLength/2-PlatformOffset,0,0));
+% Add geometry to display in the GUI
+platformGeomOffset = PhysicalOffsetFrame(platform, ...
+    Transform(Vec3(PlatformLength/2 - PlatformOffset, 0, 0)));
+platformGeomOffset.attachGeometry(...
+    Brick(Vec3(PlatformLength, PlatformWidth, 1)));
+platform.addComponent(platformGeomOffset);
 
 % Add Body to Model
 osimModel.addBody(platform);
+osimModel.addJoint(platformToGround);
 % -----------------------------------------------------------------------
-% Create a massless body for one DOF of the Pelvis
-pelvisMassless      = Body();
-pelvisMassless.setName('Pelvis_massless');
-pelvisMassless.setMass(0);
-pelvisMassless.setInertia(Inertia(0,0,0,0,0,0));
-
-% Create Slider Joint
-locationInParent    = Vec3(0,PlatformWidth/2,0);
-orientationInParent = Vec3(0,0,0);
-locationInChild     = Vec3(0,0,0);
-orientationInChild  = Vec3(0,0,0);
-pelvisMasslessToPlatform    = SliderJoint('PelvisMasslessToPlatform', platform, ...
-    locationInParent, orientationInParent, pelvisMassless, locationInChild, orientationInChild, false);
-
-% Update the coordinates of the new joint
-jointCoordinateSet  = pelvisMasslessToPlatform.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([0, 100]);
-jointCoordinateSet.get(0).setName('Pelvis_tx');
-jointCoordinateSet.get(0).setDefaultValue(0);
-
-% Add Body to Model
-osimModel.addBody(pelvisMassless);
-% -----------------------------------------------------------------------
-% Create a massive body for the last DOF of the pelvis
+% Create a massive body for the 6 DOF of the pelvis
 pelvis              = Body();
 pelvis.setName('Pelvis');
 pelvis.setMass(PelvisMass);
 pelvis.setInertia(Inertia(smallInertia,PelvisIYY,smallInertia,0,0,0));
 
-% Create a Slider Joint
-locationInParent    = Vec3(0,0,0);
-orientationInParent = Vec3(0,0,pi/2);
-locationInChild     = Vec3(0,0,0);
-orientationInChild  = Vec3(0,0,pi/2);
-pelvisToPelvisMassless    = SliderJoint('PelvisToPelvisMassless', pelvisMassless, ...
-    locationInParent, orientationInParent, pelvis, locationInChild, orientationInChild, false);
+% Create Planar Joint
+pelvisToPlatform    = PlanarJoint('PelvisToPlatform', platform, pelvis);
 
 % Update the coordinates of the new joint
-jointCoordinateSet  = pelvisToPelvisMassless.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([0, 5]);
-jointCoordinateSet.get(0).setName('Pelvis_ty');
-jointCoordinateSet.get(0).setDefaultValue(1.0);
+Pelvis_rz = pelvisToPlatform.upd_coordinates(0);
+Pelvis_rz.setRange([-pi, pi]);
+Pelvis_rz.setName('Pelvis_rz');
+Pelvis_rz.setDefaultValue(0);
 
-% Add Visible Object for GUI
-pelvis.addDisplayGeometry('sphere.vtp');
-pelvis.getDisplayer().setScaleFactors([PelvisWidth/5, PelvisWidth/5, PelvisWidth]);
+Pelvis_tx = pelvisToPlatform.upd_coordinates(1);
+Pelvis_tx.setRange([-10, 10]);
+Pelvis_tx.setName('Pelvis_tx');
+Pelvis_tx.setDefaultValue(0);
+
+Pelvis_ty = pelvisToPlatform.upd_coordinates(2);
+Pelvis_ty.setRange([-1, 2]);
+Pelvis_ty.setName('Pelvis_ty');
+Pelvis_ty.setDefaultValue(1.0);
 
 % Add Body to Model
 osimModel.addBody(pelvis);
+osimModel.addJoint(pelvisToPlatform);
+
+% Add geometry to display in the GUI
+pelvis.attachGeometry(...
+    Ellipsoid(PelvisWidth/4.0, PelvisWidth/4.0, PelvisWidth/2.0));
+
 % -----------------------------------------------------------------------
 % Create the Left Thigh
 leftThigh = Body();
@@ -159,20 +148,21 @@ orientationInParent = Vec3(0,0,0);
 locationInChild     = Vec3(0,ThighLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 LThighToPelvis = PinJoint('LThighToPelvis', pelvis, locationInParent, ...
-    orientationInParent, leftThigh, locationInChild, orientationInChild, false);
+    orientationInParent, leftThigh, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = LThighToPelvis.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
-jointCoordinateSet.get(0).setName('LHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(deg2rad(60));
+LHip_rz = LThighToPelvis.updCoordinate();
+LHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
+LHip_rz.setName('LHip_rz');
+LHip_rz.setDefaultValue(deg2rad(-10));
 
-% Add Visible Object for GUI
-leftThigh.addDisplayGeometry('sphere.vtp');
-leftThigh.getDisplayer().setScaleFactors([ThighLength/10, ThighLength, ThighLength/10]);
+% Add geometry to display in the GUI
+leftThigh.attachGeometry(...
+    Ellipsoid(ThighLength/20, ThighLength/2, ThighLength/20));
 
 % Add Body to Model
 osimModel.addBody(leftThigh);
+osimModel.addJoint(LThighToPelvis);
 % -----------------------------------------------------------------------
 % Create the Right Thigh
 rightThigh = Body();
@@ -186,20 +176,21 @@ orientationInParent = Vec3(0,0,0);
 locationInChild     = Vec3(0,ThighLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 RThighToPelvis = PinJoint('RThighToPelvis', pelvis, locationInParent, ...
-    orientationInParent, rightThigh, locationInChild, orientationInChild, false);
+    orientationInParent, rightThigh, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = RThighToPelvis.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([deg2rad(-100), deg2rad(100)]);
-jointCoordinateSet.get(0).setName('RHip_rz');
-jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
+RHip_rz = RThighToPelvis.updCoordinate();
+RHip_rz.setRange([deg2rad(-100), deg2rad(100)]);
+RHip_rz.setName('RHip_rz');
+RHip_rz.setDefaultValue(deg2rad(30));
 
-% Add Visible Object for GUI
-rightThigh.addDisplayGeometry('sphere.vtp');
-rightThigh.getDisplayer().setScaleFactors([ThighLength/10, ThighLength, ThighLength/10]);
+% Add geometry to display in the GUI
+rightThigh.attachGeometry(...
+    Ellipsoid(ThighLength/20, ThighLength/2, ThighLength/20));
 
 % Add Body to Model
 osimModel.addBody(rightThigh);
+osimModel.addJoint(RThighToPelvis);
 % -----------------------------------------------------------------------
 % Create the Left Shank
 leftShank = Body();
@@ -213,20 +204,21 @@ orientationInParent = Vec3(0,0,0);
 locationInChild     = Vec3(0,ShankLength/2,0);
 orientationInChild  = Vec3(0,0,0);
 LShankToThigh = PinJoint('LShankToLThigh', leftThigh, locationInParent,  ...
-    orientationInParent, leftShank, locationInChild, orientationInChild, false);
+    orientationInParent, leftShank, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = LShankToThigh.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([deg2rad(-140), 0]);
-jointCoordinateSet.get(0).setName('LKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
+LKnee_rz = LShankToThigh.updCoordinate();
+LKnee_rz.setRange([deg2rad(-100), 0]);
+LKnee_rz.setName('LKnee_rz');
+LKnee_rz.setDefaultValue(deg2rad(-30));
 
-% Add Visible Object for GUI
-leftShank.addDisplayGeometry('sphere.vtp');
-leftShank.getDisplayer().setScaleFactors([ShankLength/10, ShankLength, ShankLength/10]);
+% Add geometry to display in the GUI
+leftShank.attachGeometry(...
+    Ellipsoid(ShankLength/20, ShankLength/2, ShankLength/20));
 
 % Add Body to Model
 osimModel.addBody(leftShank);
+osimModel.addJoint(LShankToThigh);
 % -----------------------------------------------------------------------
 % Create the Right Shank
 rightShank = Body();
@@ -234,64 +226,67 @@ rightShank.setName('RightShank');
 rightShank.setMass(ShankMass);
 rightShank.setInertia(Inertia(smallInertia,smallInertia,ShankIZZ,0,0,0));
 
-% Rod Visuals
-rightShank.addDisplayGeometry('sphere.vtp');
-rightShank.getDisplayer().setScaleFactors([ShankLength/10, ShankLength, ShankLength/10]);
+% Add geometry to display in the GUI
+rightShank.attachGeometry(...
+    Ellipsoid(ShankLength/20, ShankLength/2, ShankLength/20));
 
 % Create a Pin joint
 locationInParent    = Vec3(0,-ThighLength/2,0);
 orientationInParent = Vec3(0,0,0);
 locationInChild     = Vec3(0,ShankLength/2,0);
 orientationInChild  = Vec3(0,0,0);
-RShankToThigh = PinJoint('RShankToRThigh', rightThigh, locationInParent, orientationInParent, rightShank, locationInChild, orientationInChild, false);
+RShankToThigh = PinJoint('RShankToRThigh', ...
+    rightThigh, locationInParent, orientationInParent, ...
+    rightShank, locationInChild, orientationInChild);
 
 % Update the coordinates of the new joint
-jointCoordinateSet = RShankToThigh.upd_CoordinateSet();
-jointCoordinateSet.get(0).setRange([deg2rad(-140, 0]);
-jointCoordinateSet.get(0).setName('RKnee_rz');
-jointCoordinateSet.get(0).setDefaultValue(deg2rad(0));
+RKnee_rz = RShankToThigh.updCoordinate();
+RKnee_rz.setRange([deg2rad(-100), 0]);
+RKnee_rz.setName('RKnee_rz');
+RKnee_rz.setDefaultValue(deg2rad(-30));
 
 % Add Body to Model
 osimModel.addBody(rightShank);
+osimModel.addJoint(RShankToThigh);
 % -----------------------------------------------------------------------
 % Add Contact Elements to the Shank and Pelvis
 footSphereRadius    = 0.05;
 
-LeftFootContactSphere = ContactSphere(footSphereRadius, Vec3(0,-ShankLength/2+footSphereRadius,0), leftShank);
+LeftFootContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,-ShankLength/2+footSphereRadius,0), leftShank);
 LeftFootContactSphere.setName('LFootContact');
-LeftFootContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(LeftFootContactSphere);
 
-RightFootContactSphere = ContactSphere(footSphereRadius, Vec3(0,-ShankLength/2+footSphereRadius,0), rightShank);
+RightFootContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,-ShankLength/2+footSphereRadius,0), rightShank);
 RightFootContactSphere.setName('RFootContact');
-RightFootContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(RightFootContactSphere);
 
-LeftKneeContactSphere = ContactSphere(footSphereRadius, Vec3(0,ShankLength/2,0), leftShank);
+LeftKneeContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,ShankLength/2,0), leftShank);
 LeftKneeContactSphere.setName('LKneeContact');
-LeftKneeContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(LeftKneeContactSphere);
 
-RightKneeContactSphere = ContactSphere(footSphereRadius, Vec3(0,ShankLength/2,0), rightShank);
+RightKneeContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,ShankLength/2,0), rightShank);
 RightKneeContactSphere.setName('RKneeContact');
-RightKneeContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(RightKneeContactSphere);
 
-LeftPelvisContactSphere = ContactSphere(footSphereRadius, Vec3(0,0,-PelvisWidth/2), pelvis);
+LeftPelvisContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,0,-PelvisWidth/2), pelvis);
 LeftPelvisContactSphere.setName('LHipContact');
-LeftPelvisContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(LeftPelvisContactSphere);
 
-RightPelvisContactSphere = ContactSphere(footSphereRadius, Vec3(0,0,PelvisWidth/2), pelvis);
+RightPelvisContactSphere = ContactSphere(footSphereRadius, ...
+    Vec3(0,0,PelvisWidth/2), pelvis);
 RightPelvisContactSphere.setName('RHipContact');
-RightPelvisContactSphere.setDisplayPreference(4);
 osimModel.addContactGeometry(RightPelvisContactSphere);
 
 groundContactLoc = Vec3(0,PlatformWidth/2,0);
 groundContactOri = Vec3(0,0,-pi/2);
-groundContactSpace = ContactHalfSpace (groundContactLoc, groundContactOri, platform);
+groundContactSpace = ...
+    ContactHalfSpace(groundContactLoc, groundContactOri, platform);
 groundContactSpace.setName('PlatformContact');
-groundContactSpace.setDisplayPreference(4);
 osimModel.addContactGeometry(groundContactSpace);
 % -----------------------------------------------------------------------
 % Add Hunt Crossley Forces
@@ -416,24 +411,28 @@ kneeLowerLimit = -140;
 hipUpperLimit = 100;
 hipLowerLimit = -100;
 
-LKneeLimitTorque = CoordinateLimitForce('LKnee_rz', kneeUpperLimit, upperStiffness, kneeLowerLimit, lowerStiffness, damping, transition);
+LKneeLimitTorque = CoordinateLimitForce('LKnee_rz', kneeUpperLimit, ...
+    upperStiffness, kneeLowerLimit, lowerStiffness, damping, transition);
 LKneeLimitTorque.setName('LKneeLimitTorque');
 osimModel.addForce(LKneeLimitTorque);
 
-RKneeLimitTorque = CoordinateLimitForce('RKnee_rz', kneeUpperLimit, upperStiffness, kneeLowerLimit, lowerStiffness, damping, transition);
+RKneeLimitTorque = CoordinateLimitForce('RKnee_rz', kneeUpperLimit, ...
+    upperStiffness, kneeLowerLimit, lowerStiffness, damping, transition);
 RKneeLimitTorque.setName('RKneeLimitTorque');
 osimModel.addForce(RKneeLimitTorque);
 
-LHipLimitTorque = CoordinateLimitForce('LHip_rz', hipUpperLimit, upperStiffness, hipLowerLimit, lowerStiffness, damping, transition);
+LHipLimitTorque = CoordinateLimitForce('LHip_rz', hipUpperLimit, ...
+    upperStiffness, hipLowerLimit, lowerStiffness, damping, transition);
 LHipLimitTorque.setName('LHipLimitTorque');
 osimModel.addForce(LHipLimitTorque);
 
-RHipLimitTorque = CoordinateLimitForce('RHip_rz', hipUpperLimit, upperStiffness, hipLowerLimit, lowerStiffness, damping, transition);
+RHipLimitTorque = CoordinateLimitForce('RHip_rz', hipUpperLimit, ...
+    upperStiffness, hipLowerLimit, lowerStiffness, damping, transition);
 RHipLimitTorque.setName('RHipLimitTorque');
 osimModel.addForce(RHipLimitTorque);
 % -----------------------------------------------------------------------
 % Create Hunt Crossley Obstacle Forces
-if(addObstacles)
+if addObstacles
     ObstacleForces = HuntCrossleyForce();
     ObstacleForces.setName('ObstacleForces');
     ObstacleForces.setStiffness(stiffness);
@@ -448,7 +447,7 @@ if(addObstacles)
     % Add Spheres
     % This way of setting the seed was added in Matlab2011a as an error fix.
     % Do not use the older versions to set the seed and state in rand or randn.
-    if(exist('rng', 'file'))
+    if exist('rng', 'file')
         rng(0, 'twister');
     else
        warning('CreateWalkingModelAndEnvironment:RNG', ...
@@ -475,5 +474,7 @@ if(addObstacles)
 
 end
 % -----------------------------------------------------------------------
+% Ensure there are no errors with how the model was built.
+osimModel.initSystem();
 osimModel.print([outputPath, outputModelName, '.osim']);
-display(['Model ' outputModelName ',printed']);
+display(['Model ' outputModelName ', printed!']);

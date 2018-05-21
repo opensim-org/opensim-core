@@ -1,5 +1,142 @@
 include(CMakeParseArguments)
 
+# Add a relative path to the run-path of a shared library. The run-path allows
+# a library to find the libraries it depends on without the need to set the
+# (DY)LD_LIBRARY_PATH environment variable. This function nnly affects UNIX
+# systems. Here are the arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the OpenSim installation root) of the
+#   executable/library that is loading a dependent library.
+# TO: The path (relative to the OpenSim installation root) where the dependent
+#   library is located.
+function(OpenSimAddInstallRPATH)
+    set(options EXECUTABLE LOADER)
+    set(oneValueArgs TARGET FROM TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(OSIMRP_EXECUTABLE EQUAL OSIMRP_LOADER) 
+        message(AUTHOR_WARNING "Cannot specify both EXECUTABLE and LOADER.")
+    endif()
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    if(APPLE)
+        if(OSIMRP_EXECUTABLE)
+            set(rpath_macro "\@executable_path")
+        elseif(OSIMRP_LOADER)
+            set(rpath_macro "\@loader_path")
+        endif()
+    elseif(UNIX)
+        set(rpath_macro "\$ORIGIN")
+    endif()
+
+    file(RELATIVE_PATH to_root "${CMAKE_INSTALL_PREFIX}/${OSIMRP_FROM}"
+        "${CMAKE_INSTALL_PREFIX}")
+    set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+        "${rpath_macro}/${to_root}${OSIMRP_TO}")
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH except the run-path is the same directory
+# loader (e.g., "@loader_path/"). Arguments:
+#
+# TARGET: The CMake target to which the run-path should be added.
+function(OpenSimAddInstallRPATHSelf)
+    set(options)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    # By specifing "" and "" for FROM and TO, the resulting RPATH will simply
+    # be "${rpath_macro}/".
+    OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} LOADER FROM "" TO "")
+
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH, but specifically for adding a run-path to
+# the Simbody libraries copied into the OpenSim installation. If Simbody is not
+# copied into the OpenSim installation (OPENSIM_COPY_DEPENDENCIES=OFF) or the
+# copied Simbody libraries are installed to the same folder as the OpenSim
+# libraries (OPENSIM_INSTALL_UNIX_FHS=ON), then this function does nothing.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# ABSOLUTE: Add an absolute run-path to the Simbody libraries in the OpenSim
+#   installation. If you specify this argument, then you should not specify
+#   EXECTUABLE, LOADER, or FROM.
+# EXECUTABLE, LOADER: Specify one of these flags to indicate whether the
+#   run-path is relative to the executable's location or relative to the loader
+#   (the library/executable that attempts to load the dependent library). Only
+#   affects Mac.
+# FROM: The path (relative to the OpenSim installation root) of the
+#   executable/library that is loading a dependent Simbody library.
+function(OpenSimAddInstallRPATHSimbody)
+    set(options EXECUTABLE LOADER ABSOLUTE)
+    set(oneValueArgs TARGET FROM)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(OSIMRP_ABSOLUTE AND (OSIMRP_FROM OR OSIMRP_EXECUTABLE OR OSIMRP_LOADER))
+        message(AUTHOR_WARNING
+            "Cannot specify both ABSOLUTE and FROM, EXECUTABLE, or LOADER.")
+    endif()
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH OR NOT OPENSIM_COPY_DEPENDENCIES
+            OR OPENSIM_INSTALL_UNIX_FHS)
+        return()
+    endif()
+
+    file(RELATIVE_PATH simbody_root_to_simbody_lib_dir 
+        "${Simbody_ROOT_DIR}" "${Simbody_LIB_DIR}")
+    set(root_to_simbody_lib_dir
+        "${OPENSIM_INSTALL_SIMBODYDIR}/${simbody_root_to_simbody_lib_dir}")
+
+    if(OSIMRP_ABSOLUTE)
+        set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+            "${CMAKE_INSTALL_PREFIX}/${root_to_simbody_lib_dir}")
+    else()
+        if(OSIMRP_EXECUTABLE)
+            OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} EXECUTABLE
+                FROM ${OSIMRP_FROM} TO ${root_to_simbody_lib_dir})
+        elseif(OSIMRP_LOADER)
+            OpenSimAddInstallRPATH(TARGET ${OSIMRP_TARGET} LOADER
+                FROM ${OSIMRP_FROM} TO ${root_to_simbody_lib_dir})
+        endif()
+    endif()
+endfunction()
+
+# Similar to OpenSimAddInstallRPATH, but specifically for adding an absolute
+# run-path.
+#
+# TARGET: The CMake target to which the run-path should be added.
+# TO: The path (relative to the OpenSim installation root) where the dependent
+#   library is located.
+function(OpenSimAddInstallRPATHAbsolute)
+    set(options)
+    set(oneValueArgs TARGET TO)
+    set(multiValueArgs)
+    cmake_parse_arguments(
+        OSIMRP "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT OPENSIM_USE_INSTALL_RPATH)
+        return()
+    endif()
+
+    set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
+        "${CMAKE_INSTALL_PREFIX}/${OSIMRP_TO}")
+endfunction()
+
 # Create an OpenSim API library. Here are the arguments:
 # VENDORLIB: If this is a vendor library, specify "VENDORLIB" as the first
 #   argument. Otherwise, omit.
@@ -151,16 +288,9 @@ function(OpenSimAddLibrary)
 
     # RPATH (so that libraries find library dependencies)
     # ---------------------------------------------------
-    if(${OPENSIM_USE_INSTALL_RPATH})
-        if(APPLE)
-            set(install_rpath "\@loader_path/")
-        elseif(UNIX)
-            set(install_rpath "\$ORIGIN/")
-        endif()
-        set_property(TARGET ${OSIMADDLIB_LIBRARY_NAME} APPEND PROPERTY
-            INSTALL_RPATH "${install_rpath}"
-            )
-    endif()
+    OpenSimAddInstallRPATHSelf(TARGET ${OSIMADDLIB_LIBRARY_NAME} LOADER)
+    OpenSimAddInstallRPATHSimbody(TARGET ${OSIMADDLIB_LIBRARY_NAME} LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}")
 
     # Testing.
     # --------
@@ -289,22 +419,10 @@ function(OpenSimAddApplication)
     install(TARGETS ${OSIMADDAPP_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     # RPATH (so that the executable finds libraries without using env. vars).
-    if(${OPENSIM_USE_INSTALL_RPATH})
-        if(APPLE)
-            set(rpath_macro "\@executable_path")
-        elseif(UNIX)
-            set(rpath_macro "\$ORIGIN")
-        endif()
-
-        # bin_dir_to_install_dir is most likely "../"
-        file(RELATIVE_PATH bin_dir_to_install_dir
-            "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}"
-            "${CMAKE_INSTALL_PREFIX}")
-        set(bin_dir_to_lib_dir
-            "${bin_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
-        set_property(TARGET ${OSIMADDAPP_NAME} APPEND PROPERTY
-            INSTALL_RPATH "${rpath_macro}/${bin_dir_to_lib_dir}")
-    endif()
+    OpenSimAddInstallRPATH(TARGET ${OSIMADDAPP_NAME} EXECUTABLE
+        FROM "${CMAKE_INSTALL_BINDIR}" TO "${CMAKE_INSTALL_LIBDIR}")
+    OpenSimAddInstallRPATHSimbody(TARGET ${OSIMADDAPP_NAME} EXECUTABLE
+        FROM "${CMAKE_INSTALL_BINDIR}")
 
 endfunction()
 

@@ -116,6 +116,8 @@ function(AddDependency)
              -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
         list(APPEND CMAKE_ARGS
              -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
 
         ExternalProject_Add(${DEP_NAME}
             TMP_DIR          ${BINARY_DIR}/tmp
@@ -142,8 +144,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/opensim-org/BTKCore.git
-              # Include klshrinidhi's fix to stdint.h header with MSVC.
-              TAG        99fe9bc671940f5a3173d117ff6b249d35a18187
+              TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody

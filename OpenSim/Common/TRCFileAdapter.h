@@ -29,7 +29,9 @@ namespace OpenSim {
 
 class MissingHeader : public IOError {
 public:
+#ifndef SWIG
     using IOError::IOError;
+#endif
 };
 
 class IncorrectNumMetaDataKeys : public IOError {

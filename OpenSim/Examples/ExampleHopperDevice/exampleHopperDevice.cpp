@@ -81,6 +81,9 @@ Device* buildDevice();  //defined in buildDevice.cpp
 void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
+    // Add the device to the model.
+    model.addComponent(&device);
+    
     //TODO: Get writable references to the "anchor" joints in the device.
 
     //TODO: Recall that the child frame of each anchor (WeldJoint) was attached
@@ -89,9 +92,6 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     //      the two specified PhysicalFrames in model (i.e., modelFrameAname and
     //      modelFrameBname), then connect them to the parent frames of each
     //      anchor. (2 lines of code for each anchor.)
-
-    // Add the device to the model.
-    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).

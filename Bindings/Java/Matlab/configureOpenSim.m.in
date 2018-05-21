@@ -19,8 +19,10 @@ function configureOpenSim()
 %    Depending on your operating system, this function may require
 %    administrator (or sudo) privileges to succeed.
 %
-%    For this function to work, it must be located in its original place 
-%    in the OpenSim installation: @OPENSIM_INSTALL_MATLABEXDIR@
+%    If this file is not located within the OpenSim installation at 
+%    @OPENSIM_INSTALL_MATLABEXDIR@, then you will be asked to provide the
+%    location of an OpenSim installation (either of the OpenSim GUI or of
+%    opensim-core on its own).
 %
 % What this function does:
 %    This function adds (a) the location of org-opensim-modeling.jar 
@@ -64,6 +66,41 @@ function configureOpenSim()
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
+function [openSimFolder] = uiGetOpenSimFolder()
+    % Prompt user for OpenSim folder.
+    startPath = '';
+    if strcmp(getenv('OPENSIM_HOME'), '')
+        if ispc
+            startPath = 'C:/';
+        elseif ismac
+            startPath = '/Applications/';
+        end
+    else
+        startPath = getenv('OPENSIM_HOME');
+    end
+    prompt = 'Select the OpenSim installation folder.';
+    if ismac
+        % The Mac file dialog does not show the prompt in the file dialog.
+        showMessage(['Select the OpenSim installation folder ' ...
+                'in the upcoming file dialog.'], '', false);
+    end
+    openSimFolder = uigetdir(startPath, prompt);
+    if ~openSimFolder
+        showMessage('You did not select a folder.', 'Error', true);
+    end
+    if ismac
+        [~, name, ext] = fileparts(openSimFolder);
+        % If openSimFolder is '/Applications/OpenSim 4.0.1' then we'll get:
+        %   name: 'OpenSim 4.0'
+        %   ext:  '.1'
+        % So we want to combine name and ext.
+        appDir = fullfile(openSimFolder, [name ext '.app']);
+        if exist(appDir, 'dir')
+            openSimFolder = fullfile(appDir, 'Contents', 'Resources', 'OpenSim');
+        end
+    end
+end
+
 try
 %% Determine the OpenSim install location.
     thisFolder = fileparts(mfilename('fullpath'));
@@ -79,9 +116,21 @@ try
     buildInfoFile = fullfile(openSimFolder, '@CMAKE_INSTALL_SYSCONFDIR@', ...
                 'OpenSim_buildinfo.txt');
     if ~exist(buildInfoFile)
-        showMessage(['Cannot find the OpenSim installation. Did you move ' ...
-                    'configureOpenSim.m to a different location?'], ...
-                    'Error', true);
+        % The script is not located in the expected location within the OpenSim
+        % installation; ask the user to choose an install directory.
+        correctFolder = false;
+        while ~correctFolder
+            openSimFolder = uiGetOpenSimFolder();
+            % Check if the user selected a valid folder.
+            buildInfoFile = fullfile(openSimFolder, ...
+                    '@CMAKE_INSTALL_SYSCONFDIR@', 'OpenSim_buildinfo.txt');
+            if exist(buildInfoFile)
+                correctFolder = true;
+            else
+                showMessage(['The folder you selected is not an OpenSim ' ...
+                    'installation.'], 'Error', false);
+            end
+        end
     end
 
 %% Check if Matlab and OpenSim are compatible (64 vs 32 bit)
@@ -90,7 +139,6 @@ try
 %% Edit the Java class path (need full path for print)
     toolboxLocal = fullfile(matlabroot, 'toolbox', 'local');
     % Create the string names used
-    % TODO GUI distribution might put this file elsewhere.
     OpenSimJarPath =  fullfile(openSimFolder, ...
             '@OPENSIM_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
     classFileTool = fullfile(toolboxLocal, 'classpath.txt');
@@ -130,19 +178,26 @@ try
 %% Edit MATLAB path
     cleanMatlabSearchPath();
     utilitiesPath = fullfile(thisFolder, 'Utilities');
-    addpath(utilitiesPath);
-    fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
-    status = savepath;
-    if status ~= 0 % Status is 0 for success (see doc savepath). 
-        fprintf(['-- Could not save changes to the MATLAB path. ' ...
-                 'Therefore, you will not have access to OpenSim-related '...
-                 'MATLAB utilities like osimTableToStruct(). ' ...
-                 'Restart MATLAB as administrator (or with sudo, on UNIX) '...
-                 'and re-run configureOpenSim.m.'])
+    if exist(utilitiesPath, 'dir')
+        addpath(utilitiesPath);
+        fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
+        status = savepath;
+        if status ~= 0 % Status is 0 for success (see doc savepath). 
+            fprintf(['-- Could not save changes to the MATLAB path. ' ...
+            'Therefore, you will not have access to OpenSim-related '...
+            'MATLAB utilities like osimTableToStruct(). ' ...
+            'Restart MATLAB as administrator (or with sudo, on UNIX) '...
+            'and re-run configureOpenSim.m.'])
+        end
+    else
+        fprintf(['-- Could not find Utilities folder; ' ...
+                'not adding to MATLAB path.\n\n']);
     end
 
 %% Display final message.
-    msg = ['Paths have been successfully updated for the copy of OpenSim '...
+    % We say 'API' because for Mac, the openSimFolder is an internal folder
+    % inside the .app.
+    msg = ['Paths have been successfully updated for the OpenSim API '...
             'installed at ' openSimFolder '.'];
     if rmPrev(1) && rmPrev(2) 
         % We detected previous OpenSim entries and couldn't remove them.

@@ -215,7 +215,7 @@ void AbstractTool::setupProperties()
     _replaceForceSetProp.setName("replace_force_set");
     _propertySet.append( &_replaceForceSetProp );
 
-    comment = "List of xml files used to construct an force set for the model.";
+    comment = "List of xml files used to construct a force set for the model.";
     _forceSetFilesProp.setComment(comment);
     _forceSetFilesProp.setValue(Array<string>(""));
     _forceSetFilesProp.setName("force_set_files");
@@ -617,11 +617,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
-        // qStore should be in radians
-        if (qStore->isInDegrees()){
-            aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-        }
+        aModel.getSimbodyEngine().formCompleteStorages(s, 
+            *loadKinematicsForPointTransformation,
+            qStore,
+            uStore);
+       
         _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;

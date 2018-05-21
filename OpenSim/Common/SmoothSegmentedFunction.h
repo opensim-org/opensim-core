@@ -122,6 +122,7 @@ namespace OpenSim {
        */
        double calcDerivative(double x, int order) const;       
 
+#ifndef SWIG
        /// Allow the more general calcDerivative from the base class to be used.
        // This helps avoid the -Woverloaded-virtual warning with Clang.
        // We could have also put this `using` line in ActiveForceLengthCurve,
@@ -129,6 +130,7 @@ namespace OpenSim {
        // SmoothSegmentedFunction is used (e.g., calcValue() delegates to the
        // internal `m_value`).
        using Function_<double>::calcDerivative;
+#endif
 
 
        /**This will return the value of the integral of this objects curve 

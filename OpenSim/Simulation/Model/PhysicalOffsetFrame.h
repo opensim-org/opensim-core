@@ -56,7 +56,9 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     /** Constructors are defined by the OffsetFrame base class */
+#ifndef SWIG    
     using OffsetFrame<PhysicalFrame>::OffsetFrame;
+#endif
 
     ~PhysicalOffsetFrame() final {}
 

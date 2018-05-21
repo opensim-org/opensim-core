@@ -82,7 +82,7 @@ namespace OpenSim {
 %template(OutputVec3) OpenSim::Output<SimTK::Vec3>;
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
-
+%template(OutputSpatialVec) OpenSim::Output<SimTK::SpatialVec>;
 
 namespace OpenSim {
     %ignore Input::downcast(AbstractInput&); // suppress warning 509.
@@ -395,6 +395,7 @@ namespace OpenSim {
 %template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
 %template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
 %template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterSpatialVec) OpenSim::TableReporter_<SimTK::SpatialVec>;
 %template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
 %template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;

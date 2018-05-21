@@ -2501,69 +2501,112 @@ void testUniversalJointAccessors()
 
 void testMotionTypesForCustomJointCoordinates()
 {
-    Model osimModel;
+    {
+        Model osimModel;
 
-    //OpenSim bodies
-    const Ground& ground = osimModel.getGround();
-    //OpenSim thigh
-    auto osim_thigh = new OpenSim::Body ("thigh", femurMass.getMass(),
-        femurMass.getMassCenter(), femurMass.getInertia());
+        //OpenSim bodies
+        const Ground& ground = osimModel.getGround();
+        //OpenSim thigh
+        auto osim_thigh = new OpenSim::Body ("thigh", femurMass.getMass(),
+                femurMass.getMassCenter(), femurMass.getInertia());
 
-    // Define hip coordinates and axes for custom joint
-    SpatialTransform hipTransform;
-    OpenSim::Array<std::string> coordNames;
-    coordNames.append("hip_qx");
-    coordNames.append("hip_qy");
-    hipTransform[2].setCoordinateNames(coordNames);
-    hipTransform[2].setFunction(new MultidimensionalFunction());
-    hipTransform[3].setCoordinateNames(OpenSim::Array<std::string>(coordNames[0], 1, 1));
-    hipTransform[3].setFunction(new LinearFunction());
-    hipTransform[4].setCoordinateNames(OpenSim::Array<std::string>(coordNames[1], 1, 1));
-    hipTransform[4].setFunction(new LinearFunction(2.0, -0.5));
-    // define a pure translational dof
-    coordNames.append("hip_tz");
-    hipTransform[5].setCoordinateNames(OpenSim::Array<std::string>(coordNames[2], 1, 1));
-    hipTransform[5].setFunction(new LinearFunction());
+        // Define hip coordinates and axes for custom joint
+        SpatialTransform hipTransform;
+        OpenSim::Array<std::string> coordNames;
+        coordNames.append("hip_qx");
+        coordNames.append("hip_qy");
+        hipTransform[2].setCoordinateNames(coordNames);
+        hipTransform[2].setFunction(new MultidimensionalFunction());
+        hipTransform[3].setCoordinateNames(OpenSim::Array<std::string>(coordNames[0], 1, 1));
+        hipTransform[3].setFunction(new LinearFunction());
+        hipTransform[4].setCoordinateNames(OpenSim::Array<std::string>(coordNames[1], 1, 1));
+        hipTransform[4].setFunction(new LinearFunction(2.0, -0.5));
+        // define a pure translational dof
+        coordNames.append("hip_tz");
+        hipTransform[5].setCoordinateNames(OpenSim::Array<std::string>(coordNames[2], 1, 1));
+        hipTransform[5].setFunction(new LinearFunction());
 
-    // define a pure rotational dof
-    coordNames.append("hip_rx");
-    hipTransform[0].setCoordinateNames(OpenSim::Array<std::string>(coordNames[3], 1, 1));
-    hipTransform[0].setFunction(new LinearFunction());
+        // define a pure rotational dof
+        coordNames.append("hip_rx");
+        hipTransform[0].setCoordinateNames(OpenSim::Array<std::string>(coordNames[3], 1, 1));
+        hipTransform[0].setFunction(new LinearFunction());
 
-    // create custom hip joint
-    auto hip = new CustomJoint("hip", ground, hipInPelvis, SimTK::Vec3(0),
-        *osim_thigh, hipInFemur, SimTK::Vec3(0), hipTransform);
+        // create custom hip joint
+        auto hip = new CustomJoint("hip", ground, hipInPelvis, SimTK::Vec3(0),
+                *osim_thigh, hipInFemur, SimTK::Vec3(0), hipTransform);
 
-    // Add the thigh body which now also contains the hip joint to the model
-    osimModel.addBody(osim_thigh);
-    osimModel.addJoint(hip);
+        // Add the thigh body which now also contains the hip joint to the model
+        osimModel.addBody(osim_thigh);
+        osimModel.addJoint(hip);
 
-    // hip_rx is the first coordinate and pure rotational about X
-    auto coordName = hip->getCoordinate(0).getName();
-    auto mt = hip->getCoordinate(0).getMotionType();
-    ASSERT( mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
-        "Coordinate `" + coordName + "' failed to register as MotionType::Rotational");
+        // hip_rx is the first coordinate and pure rotational about X
+        auto coordName = hip->getCoordinate(0).getName();
+        auto mt = hip->getCoordinate(0).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
+                "Coordinate `" + coordName + "' failed to register as MotionType::Rotational");
 
-    // hip_qx is the second coordinate that influences Z rotation but is pure
-    // translational along X
-    coordName = hip->getCoordinate(1).getName();
-     mt = hip->getCoordinate(1).getMotionType();
-    ASSERT( mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
-        "Coordinate `" + coordName + "' failed to register as MotionType::Translational");
+        // hip_qx is the second coordinate that influences Z rotation but is pure
+        // translational along X
+        coordName = hip->getCoordinate(1).getName();
+        mt = hip->getCoordinate(1).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
+                "Coordinate `" + coordName + "' failed to register as MotionType::Translational");
 
-    // hip_qy is the third coordinate that also influences Z rotation but is scaled
-    // to translate along Y and therefore NOT a pure translational coordinate either
-    coordName = hip->getCoordinate(2).getName();
-    mt = hip->getCoordinate(2).getMotionType();
-    ASSERT( mt == Coordinate::MotionType::Coupled, __FILE__, __LINE__,
-        "Coordinate `" + coordName + "' failed to register as MotionType::Coupled");
+        // hip_qy is the third coordinate that also influences Z rotation but is scaled
+        // to translate along Y and therefore NOT a pure translational coordinate either
+        coordName = hip->getCoordinate(2).getName();
+        mt = hip->getCoordinate(2).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Coupled, __FILE__, __LINE__,
+                "Coordinate `" + coordName + "' failed to register as MotionType::Coupled");
 
-    // hip_tz is the fourth coordinate, which is pure translational along Z
-    coordName = hip->getCoordinate(3).getName();
-    mt = hip->getCoordinate(3).getMotionType();
-    ASSERT( mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
-        "Coordinate `" + coordName + 
-        "' failed to register as MotionType::Translational");
+        // hip_tz is the fourth coordinate, which is pure translational along Z
+        coordName = hip->getCoordinate(3).getName();
+        mt = hip->getCoordinate(3).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Translational, __FILE__, __LINE__,
+                "Coordinate `" + coordName + 
+                "' failed to register as MotionType::Translational");
+    }
+    {
+        // Specifying a linear function with slope of -1 should still yield a
+        // rotational coordinate.
+        // This checks that Issue 2062 is fixed.
+        // https://github.com/opensim-org/opensim-core/issues/2062.
+        Model osimModel;
+
+        //OpenSim bodies
+        const Ground& ground = osimModel.getGround();
+        //OpenSim thigh
+        auto osim_thigh = new OpenSim::Body ("thigh", femurMass.getMass(),
+                femurMass.getMassCenter(), femurMass.getInertia());
+
+        SpatialTransform hipTransform;
+        std::string coordNameRX = "hip_rx";
+        hipTransform[0].setCoordinateNames(OpenSim::Array<std::string>(coordNameRX, 1, 1));
+        hipTransform[0].setFunction(new LinearFunction(-1.0, 0.0));
+
+        std::string coordNameRY = "hip_ry";
+        hipTransform[1].setCoordinateNames(OpenSim::Array<std::string>(coordNameRY, 1, 1));
+        // A non-zero intercept does not prevent the coordinate from being
+        // rotational.
+        hipTransform[1].setFunction(new LinearFunction(-1.0, 8.313));
+
+        // create custom hip joint
+        auto hip = new CustomJoint("hip", ground, hipInPelvis, SimTK::Vec3(0),
+                *osim_thigh, hipInFemur, SimTK::Vec3(0), hipTransform);
+
+        // Add the thigh body which now also contains the hip joint to the model
+        osimModel.addBody(osim_thigh);
+        osimModel.addJoint(hip);
+
+        // hip_rx is the first coordinate and pure rotational about X
+        auto mt = hip->getCoordinate(0).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
+                "Coordinate `" + coordNameRX + "' failed to register as MotionType::Rotational");
+        // hip_ry is the second coordinate and pure rotational about Y
+        mt = hip->getCoordinate(1).getMotionType();
+        ASSERT( mt == Coordinate::MotionType::Rotational, __FILE__, __LINE__,
+                "Coordinate `" + coordNameRY + "' failed to register as MotionType::Rotational");
+    }
 }
 
 void testNonzeroInterceptCustomJointVsPin()

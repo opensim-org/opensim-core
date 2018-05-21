@@ -35,6 +35,7 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
+
 class Foo;
 class Bar;
 
@@ -407,7 +408,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
@@ -767,7 +769,7 @@ void testMisc() {
         theWorld.getComponent<CompoundFoo>("BigFoo") );
 
     // With path to the component it should work
-    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
+    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World3/BigFoo");
     // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
@@ -1044,6 +1046,135 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
     top.connect();
+}
+
+void testTraversePathToComponent() {
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        A(const std::string& name) { setName(name); }
+    };
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        B(const std::string& name) { setName(name); }
+    };
+
+    // Add lots of subcomponents to check the performance of
+    // traversePathToSubcomponent().
+    auto addLotsOfSubcomponents = [](Component& c) {
+        for (int i = 0; i < 100; ++i) {
+            c.addComponent(new A("unuseda" + std::to_string(i)));
+            c.addComponent(new B("unusedb" + std::to_string(i)));
+        }
+    };
+
+    A top("top");
+    addLotsOfSubcomponents(top);
+
+    A* a1 = new A("a1");
+    addLotsOfSubcomponents(*a1);
+    top.addComponent(a1);
+    B* b1 = new B("b1");
+    addLotsOfSubcomponents(*b1);
+    top.addComponent(b1);
+
+    A* a2 = new A("a2");
+    addLotsOfSubcomponents(*a2);
+    a1->addComponent(a2);
+    B* b2 = new B("b2");
+    addLotsOfSubcomponents(*b2);
+    a1->addComponent(b2);
+
+    // top.printSubcomponentInfo();
+
+    // Self.
+    SimTK_TEST(&top.getComponent<A>("") == &top);
+    SimTK_TEST(&top.getComponent<A>(".") == &top);
+    SimTK_TEST(&a1->getComponent<A>("") == a1);
+    SimTK_TEST(&b2->getComponent<B>("") == b2);
+
+    SimTK_TEST(&top.getComponent<A>("a1") == a1);
+    SimTK_TEST(&top.getComponent<A>("a1/") == a1);
+    SimTK_TEST(&top.getComponent<B>("b1") == b1);
+    SimTK_TEST(&top.getComponent<A>("a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<B>("a1/b2") == b2);
+    // Going up.
+    SimTK_TEST(&a1->getComponent<A>("..") == &top);
+    SimTK_TEST(&a2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&b2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&a2->getComponent<A>("..") == a1);
+    SimTK_TEST(&b2->getComponent<A>("..") == a1);
+    // Going up and then back down.
+    SimTK_TEST(&a1->getComponent<A>("../a1") == a1);
+    SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
+    SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
+    // Absolute paths.
+    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
+
+
+    // No component.
+    // -------------
+    // Incorrect path.
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("oops/a2"));
+    SimTK_TEST_MUST_THROW(b1->getComponent("/nonexistent"));
+    // Wrong type.
+    SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
+    // Going too high up.
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(a1->getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(b2->getComponent<A>("../../../"));
+
+    // Repeated name bug.
+    // ------------------
+    // There used to be a bug where calling traversePathToComponent({"tx/tx"})
+    // would return the component at "tx" rather than the one at "tx/tx".
+    A* atx = new A("tx");
+    top.addComponent(atx);
+    B* btx = new B("tx");
+    atx->addComponent(btx);
+    SimTK_TEST(&top.getComponent<Component>("tx/tx") == btx);
+}
+
+void testGetStateVariableValue() {
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    SimTK_TEST(s.getNY() == 3);
+    s.updY()[0] = 10; // "top/internalSub/subState"
+    s.updY()[1] = 20; // "top/a/subState"
+    s.updY()[2] = 30; // "top/a/b/subState"
+
+    SimTK_TEST(top.getStateVariableValue(s, "internalSub/subState") == 10);
+    SimTK_TEST(top.getStateVariableValue(s, "a/subState") == 20);
+    SimTK_TEST(top.getStateVariableValue(s, "a/b/subState") == 30);
+    SimTK_TEST(a->getStateVariableValue(s, "subState") == 20);
+    SimTK_TEST(a->getStateVariableValue(s, "b/subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
+    SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            top.getStateVariableValue(s, "typo/b/subState"),
+            OpenSim::Exception);
 }
 
 void testInputOutputConnections()
@@ -2069,6 +2200,8 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testTraversePathToComponent);
+        SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);

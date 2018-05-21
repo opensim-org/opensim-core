@@ -150,6 +150,7 @@ New Classes
 - The WeldConstraint and BushingForces (BushingForce, CoupledBushingForce, FunctionBasedBushingForce, and ExpressionBasedBushingForce) were similarly unified (like Joints) to handle the two Frames that these classes require to operate. A LinkTwoFrames intermediate class was introduced to house the common operations. Convenience constructors for WeldConstraint and BushingFrames were affected and now require the name of the Component as the first argument. (PR #649)
 - The new StatesTrajectory class allows users to load an exact representation of previously-computed states from a file. (PR #730)
 - Added Point as a new base class for all points, which include: Station, Marker, and PathPoints
+
 - Added OutputReporter as an Analysis so that users can use the existing AnalyzeTool and ForwardTool to extract Output values of interest, without modifications to the GUI. (PR #1991)
 
 Removed Classes
@@ -208,6 +209,8 @@ programmatically in MATLAB or python.
 - Any class derived from ModelComponent can now add its own implementation of
   `extendPreScale()`, `extendScale()`, and/or `extendPostScale()` to control how
   its properties are updated during scaling. (PR #1994)
+- The source code for the "From the Ground Up: Building a Passive Dynamic
+  Walker Example" was added to this repository.
 
 Documentation
 --------------

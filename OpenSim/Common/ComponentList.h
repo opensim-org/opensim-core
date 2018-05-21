@@ -155,6 +155,7 @@ public:
     iterator begin() {
         return iterator(&_root, _filter.getRef());
     }
+#ifndef SWIG
     /** Same as cbegin(). */
     const_iterator begin() const {
         return const_iterator(&_root, _filter.getRef());
@@ -165,12 +166,14 @@ public:
     const_iterator cbegin() const {
         return const_iterator(&_root, _filter.getRef());
     }
+#endif
     /** Use this method to check if you have reached the end of the list.
     This points past the end of the list, *not* to the last item in the
     list. */
     iterator end() {
         return iterator(nullptr, _filter.getRef());
     }
+#ifndef SWIG
     /** Same as cend(). */
     const_iterator end() const { return cend(); }
     /** Use this method to check if you have reached the end of the list.
@@ -179,6 +182,7 @@ public:
     const_iterator cend() const {
         return const_iterator(nullptr, _filter.getRef());
     }
+#endif
     /** Allow users to specify a custom ComponentFilter. This object makes a
     clone of the passed in filter. */
     void setFilter(const ComponentFilter& filter) {

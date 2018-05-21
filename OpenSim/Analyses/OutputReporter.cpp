@@ -45,8 +45,11 @@ int OutputReporter::begin(const SimTK::State& s)
     _pvtModel.reset(_model->clone());
 
     _tableReporterDouble = new TableReporter_<double>();
+    _tableReporterDouble->setName("ReporterDouble");
     _tableReporterVec3 = new TableReporter_<SimTK::Vec3>();
+    _tableReporterVec3->setName("ReporterVec3");
     _tableReporterSpatialVec = new TableReporter_<SimTK::SpatialVec>();
+    _tableReporterSpatialVec->setName("ReporterSpatialVec");
 
     _pvtModel->addComponent(_tableReporterDouble.get());
     _pvtModel->addComponent(_tableReporterVec3.get());

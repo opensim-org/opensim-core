@@ -88,8 +88,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 public:
     OpenSimContext(SimTK::State* s, Model* model);
 
-    void setState( SimTK::State* s) { _configState = s; }
-    void setModel( Model* m) { _model = m; }
+    void setState( SimTK::State* s) { _configState.reset(s); }
+    void setModel( Model* m) { _model.reset(m); }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
@@ -225,11 +225,11 @@ public:
 
 private:
     // SimTK::State supporting the OpenSim::Model 
-    SimTK::State* _configState;
+    SimTK::ReferencePtr<SimTK::State> _configState;
     // The OpenSim::model 
-    Model* _model;
+    SimTK::ReferencePtr<Model> _model;
 
-    Model* clonedModel;
+    SimTK::ResetOnCopy<std::unique_ptr<Model> > clonedModel;
     SimTK::State clonedState;
 }; // class OpenSimContext
 

@@ -30,19 +30,23 @@ namespace SimTK {
 
 // Vector and Matrix
 //%include <Bindings/std.i>
+namespace SimTK {
+    %ignore RowVectorBase::begin; // Creates SWIGTYPE_p_...
+    %ignore RowVectorBase::end; // Creates SWIGTYPE_p_...
+}
 %include <SWIGSimTK/BigMatrix.h>
 %template(StdVectorVec3) std::vector<SimTK::Vec3>;
 
 namespace SimTK {
 %extend RowVectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -61,14 +65,14 @@ namespace SimTK {
      }
  }
 %extend VectorBase<double> {
-     double __getitem__(size_t i) {
+     double __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, double value) {
+     void __setitem__(int i, double value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -96,14 +100,14 @@ namespace SimTK {
 %template(RowVector)           SimTK::RowVector_<double>;
 
 %extend RowVectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(0, i);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -119,20 +123,20 @@ namespace SimTK {
 
      Vector_<Vec3> transpose() {
          Vector_<Vec3> colVec{static_cast<int>($self->nelt())};
-         for(unsigned i = 0; i < colVec.nelt(); ++i)
+         for(int i = 0; i < colVec.nelt(); ++i)
              colVec[i] = $self->operator[](i);
          return colVec;
      }
  }
 %extend VectorBase<Vec3> {
-     Vec3 __getitem__(size_t i) {
+     Vec3 __getitem__(int i) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
          return $self->getElt(i, 0);
      }
 
-     void __setitem__(size_t i, Vec3 value) {
+     void __setitem__(int i, Vec3 value) {
          if(i >= $self->nelt())
              throw std::out_of_range{"Index out of Range."};
 
@@ -147,7 +151,7 @@ namespace SimTK {
 
      RowVector_<Vec3> transpose() {
          RowVector_<Vec3> rowVec{static_cast<int>($self->nelt())};
-         for(unsigned i = 0; i < rowVec.nelt(); ++i)
+         for(int i = 0; i < rowVec.nelt(); ++i)
              rowVec[i] = $self->operator[](i);
          return rowVec;
      }
@@ -249,6 +253,10 @@ namespace SimTK {
 %include <SWIGSimTK/SimbodyMatterSubsystem.h>
 
 %rename(SimTKVisualizer) SimTK::Visualizer;
+namespace SimTK {
+    %ignore Visualizer::getFrameControllers; // Creates SWIGTYPE_p_...
+    %ignore Visualizer::getInputListeners; // Creates SWIGTYPE_p_...
+}
 %include <simbody/internal/Visualizer.h>
 
 // Wrap SimTK::Visualizer and InputSilo to put geometry in Visualizer and
