@@ -19,7 +19,7 @@ model.addBody(thigh);
 hip = PinJoint('hip', ...
     model.getGround(), ...        % parent body
     Vec3(0, hipHeight, 0), ...    % location in parent
-    Vec3(0), ...                  % location in child
+    Vec3(0), ...                  % orientation in child
     thigh, ...                    % child body
     Vec3(0, linkLength/2, 0), ... % location in child
     Vec3(0));                     % orientation in child 
