@@ -5,7 +5,7 @@
 
 namespace OpenSim {
 
-const std::string _headerDelimiters{ " \t\r" };
+const std::string TRCFileAdapter::_headerDelimiters{ " \t\r" };
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 // Get rid of the extra \r if parsing a file with CRLF line endings.
@@ -191,13 +191,13 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
                        SimTK::Vec3(SimTK::NaN)};
         int ind{0};
         for (std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3) {
-            //if any component is blank, treat the location as unspecified
-            if ( !(row.at(c).empty() && row.at(c + 1).empty() 
-                                     && row.at(c + 2).empty()) ) {
+            //only if each component is specified read process as a Vec3
+            if ( !(row.at(c).empty() || row.at(c + 1).empty() 
+                                     || row.at(c + 2).empty()) ) {
                 row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
                                                std::stod(row.at(c + 1)),
                                                std::stod(row.at(c + 2)) };
-            }
+            } // otherwise the value will remain NaN (default)
             ++ind;
         }
 

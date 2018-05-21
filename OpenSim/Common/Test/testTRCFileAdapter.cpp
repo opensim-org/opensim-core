@@ -45,7 +45,9 @@ void compareFiles(const std::string& filenameA,
     std::ifstream fileA{filenameA};
     std::ifstream fileB{filenameB};
 
-    int lcnt = 0;
+    const size_t numOfTRCHeaderLines = 6;
+
+    size_t lcnt = 0;
 
     while (fileA && fileB) {
         auto tokensA = OpenSim::FileAdapter::getNextLine(fileA, delims);
@@ -53,7 +55,7 @@ void compareFiles(const std::string& filenameA,
 
         ++lcnt;
 
-        if (tokensA.size() != tokensB.size() && lcnt < 6) {
+        if (tokensA.size() != tokensB.size() && lcnt < numOfTRCHeaderLines) {
             // original could have any number of tabs and spaces
             // that are no longer allowed. So ignore them.
             OpenSim::IO::eraseEmptyElements(tokensA);
@@ -86,22 +88,20 @@ void compareFiles(const std::string& filenameA,
             std::string tokenB{ tokensB[i] };
             OpenSim::IO::TrimWhitespace(tokenA);
             OpenSim::IO::TrimWhitespace(tokenB);
+            if (tokenA == tokenB) {
+                continue;
+            }
             tokenA = OpenSim::IO::Lowercase(tokenA);
             tokenB = OpenSim::IO::Lowercase(tokenB);
-            if (tokenA == tokenB) {
-                continue;
+            // We interpreted blank as NaN now make sure
+            // to compare to interpret original file with blanks
+            if (tokenB == "") {
+                tokenB = "nan";
             }
-            // We interpreted blank as NaN now revert
-            // to compare to the original file with blanks
-            if (tokenB == "nan") {
-                tokenB = "";
+            else if (tokenA == "") {
+                tokenA = "nan";
             }
-            else if (tokenA == "nan") {
-                tokenA = "";
-            }
-            if (tokenA == tokenB) {
-                continue;
-            }
+
             double d_tokenA{};
             double d_tokenB{};
             try {

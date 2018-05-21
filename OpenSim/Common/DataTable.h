@@ -31,6 +31,7 @@ in-memory container for data access and manipulation.                         */
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
+#include <OpenSim/Common/IO.h>
 
 #include <iomanip>
 #include <numeric>
@@ -1480,14 +1481,36 @@ protected:
                             have length equal to the number of columns in the
                             table. (2) If not all entries in the metadata for
                             dependent columns have the correct length (equal to
-                            number of columns).                               */
+                            number of columns).                               
+    \throws InvalidColumnLabel (1) if label is an empty string, (2) if label
+                               contains tab or newline characters, or (3) if
+                               label has leading or trailing spaces.*/
     void validateDependentsMetaData() const override {
         size_t numCols{};
-        try {
-            numCols = (unsigned)_dependentsMetaData
-                                        .getValueArrayForKey("labels").size();
-        } catch (KeyNotFound&) {
+
+        if (!_dependentsMetaData.hasKey("labels")) {
             OPENSIM_THROW(MissingMetaData, "labels");
+        }
+
+        const auto labels = getColumnLabels();
+        numCols = labels.size();
+
+        // validate each label individually
+        for (const auto& label : labels) {
+            OPENSIM_THROW_IF(label.size() < 1,
+                InvalidColumnLabel,
+                "Empty column labels are not permitted.");
+
+            OPENSIM_THROW_IF(
+                label.find_first_of("\t\r\n") != std::string::npos,
+                InvalidColumnLabel, 
+                "Tabs and newlines are not permitted in column labels.");
+
+            auto front = label.find_first_not_of(" ");
+            auto back = label.find_last_not_of(" ");
+            OPENSIM_THROW_IF((front != 0 || back != label.size()-1),
+                InvalidColumnLabel,
+                "Leading/trailing spaces are not permitted in column labels.");
         }
 
         OPENSIM_THROW_IF(_depData.ncol() != 0 && 
