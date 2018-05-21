@@ -88,22 +88,20 @@ void compareFiles(const std::string& filenameA,
             std::string tokenB{ tokensB[i] };
             OpenSim::IO::TrimWhitespace(tokenA);
             OpenSim::IO::TrimWhitespace(tokenB);
+            if (tokenA == tokenB) {
+                continue;
+            }
             tokenA = OpenSim::IO::Lowercase(tokenA);
             tokenB = OpenSim::IO::Lowercase(tokenB);
-            if (tokenA == tokenB) {
-                continue;
+            // We interpreted blank as NaN now make sure
+            // to compare to interpret original file with blanks
+            if (tokenB == "") {
+                tokenB = "nan";
             }
-            // We interpreted blank as NaN now revert
-            // to compare to the original file with blanks
-            if (tokenB == "nan") {
-                tokenB = "";
+            else if (tokenA == "") {
+                tokenA = "nan";
             }
-            else if (tokenA == "nan") {
-                tokenA = "";
-            }
-            if (tokenA == tokenB) {
-                continue;
-            }
+
             double d_tokenA{};
             double d_tokenB{};
             try {
