@@ -219,7 +219,7 @@ install:
   - OSIM_CMAKE_ARGS+=(-DSIMBODY_HOME=~/simbody -DOPENSIM_DEPENDENCIES_DIR=$OPENSIM_DEPENDENCIES_INSTALL_DIR -DWITH_BTK:BOOL=ON)
   
   # Bindings.
-  - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=OFF -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+  - OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=$WRAP -DBUILD_JAVA_WRAPPING=$WRAP -DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
   # On Mac, use system python instead of Homebrew python.
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then OSIM_CMAKE_ARGS+=(-DPYTHON_EXECUTABLE=/usr/bin/python); fi
   
@@ -235,7 +235,7 @@ install:
   #############################################################################
   # Build java and python C++ wrapper separately to avoid going over the memory limit.
   # On OSX, building the bindings separately slows down the build too much.
-  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI; fi # TODO PythonBindings
+  - if [[ "$WRAP" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then make -j$NPROC osimTools osimJavaJNI PythonBindings; fi
   # Build whatever remains (at least _opensim, tests and examples).
   - make -j$NPROC;
 
