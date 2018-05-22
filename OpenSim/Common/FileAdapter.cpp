@@ -56,16 +56,15 @@ FileAdapter::tokenize(const std::string& str,
     std::string token;
 
     size_type token_start{0}, token_end{ std::string::npos };
-    while((token_end = str.find_first_of(delims, token_start)) != std::string::npos) {
-        if (token_end >= token_start) {
-            token = str.substr(token_start, token_end - token_start);
-            OpenSim::IO::TrimWhitespace(token);
-            tokens.push_back(token);
-            token_start = token_end;
-        }
+    while((token_end = str.find_first_of(delims, token_start)) 
+                    != std::string::npos) {
+        token = str.substr(token_start, token_end - token_start);
+        OpenSim::IO::TrimWhitespace(token);
+        tokens.push_back(token);
+        token_start = token_end;
         ++token_start;
     }
-    // end has reach std::string::npos, so now peg it at end of the string
+    // reached std::string::npos, now set token_end to be the end of the string
     token_end = str.size();
     //capture from last delimiter to the end of string that is not empty
     if (token_end > token_start) {
