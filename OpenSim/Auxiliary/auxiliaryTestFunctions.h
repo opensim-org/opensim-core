@@ -43,6 +43,8 @@ void ASSERT_EQUAL(T expected,
                   std::string message = "") {
     if (found < expected - tolerance || found > expected + tolerance)
         throw OpenSim::Exception(message, file, line);
+    else if( std::isnan(found) != std::isnan(expected))
+        throw OpenSim::Exception(message, file, line);
 }
 template<int M, typename ELT, int STRIDE>
 void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
@@ -51,6 +53,8 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        if (vecA.isNaN() && vecB.isNaN())
+            return;
         SimTK_TEST_EQ(vecA, vecB);
     } catch(const SimTK::Exception::Assert&) {
         throw OpenSim::Exception(message, file, line);
@@ -64,6 +68,8 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        if (vecA.isNaN() && vecB.isNaN())
+            return;
         SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
     } catch(const SimTK::Exception::Assert&) {
         throw OpenSim::Exception(message, file, line);
