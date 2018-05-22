@@ -31,10 +31,9 @@
 #include <thread>
 #include <cmath>
 
-template<typename> class shrik;
-
-void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
-                    const OpenSim::TimeSeriesTableVec3& table2,
+template<typename ETY = SimTK::Real>
+void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
+                    const OpenSim::TimeSeriesTable_<ETY>& table2,
                     const double tolerance = SimTK::SignificantReal) {
     using namespace OpenSim;
     try {
@@ -55,12 +54,10 @@ void compare_tables(const OpenSim::TimeSeriesTableVec3& table1,
         for(int c = 0; c < matrix1.ncol(); ++c) {
             auto elt1 = matrix1.getElt(r, c); 
             auto elt2 = matrix2.getElt(r, c);
-            if (elt1.isNaN() && elt2.isNaN())
-                continue;
+
             ASSERT_EQUAL(elt1, elt2, tolerance, __FILE__, __LINE__,
                 "Elements at row, " + std::to_string(r) + " col, " +
-                std::to_string(c) + " failed to match value of " +
-                elt1.toString());
+                std::to_string(c) + " failed to have matching value.");
         }
 }
 
@@ -105,10 +102,25 @@ void test(const std::string filename) {
     auto markers = trc_adapter.read(marker_file);
     auto std_markers = trc_adapter.read("std_" + marker_file);
     // Compare C3DFileAdapter read-in and written marker data
-    compare_tables(markers, *marker_table);
+    compare_tables<SimTK::Vec3>(markers, *marker_table);
     // Compare C3DFileAdapter written marker data to standard
     // Note std exported from Mokka with only 5 decimal places 
-    compare_tables(markers, std_markers, 1e-4);
+    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4);
+
+    std::cout << marker_file << " equivalent to std_"
+        << marker_file << std::endl;
+
+    // Verify that grfs data was written out and can be read in
+    auto forces = sto_adapter.read(forces_file);
+    auto std_forces = sto_adapter.read("std_" + forces_file);
+    // Compare C3DFileAdapter read-in and written forces data
+    compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), *force_table);
+    // Compare C3DFileAdapter written forces data to standard
+    // Note std generated using MATLAB C3D processing scripts 
+    compare_tables(forces, std_forces, SimTK::SqrtEps);
+
+    std::cout << forces_file << " equivalent to std_"
+        << forces_file << std::endl;
 }
 
 int main() {
