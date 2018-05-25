@@ -1643,7 +1643,7 @@ void testTableSource() {
         TheWorld model{};
         auto tablesource = new TableSourceVec3{};
         tablesource->setName("tablesource");
-        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_filename("dataWithEformat.trc");
         tablesource->set_tablename("markers");
         model.addComponent(tablesource);
 

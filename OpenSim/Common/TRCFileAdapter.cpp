@@ -1,13 +1,15 @@
 #include "TRCFileAdapter.h"
+#include <OpenSim/Common/IO.h>
 #include <fstream>
 #include <iomanip>
 
 namespace OpenSim {
 
+const std::string TRCFileAdapter::_headerDelimiters{ " \t\r" };
 const std::string TRCFileAdapter::_markers{"markers"};
 const std::string TRCFileAdapter::_delimiterWrite{"\t"};
 // Get rid of the extra \r if parsing a file with CRLF line endings.
-const std::string TRCFileAdapter::_delimitersRead{" \t\r"};
+const std::string TRCFileAdapter::_delimitersRead{"\t\r"};
 const std::string TRCFileAdapter::_frameNumColumnLabel{"Frame#"};
 const std::string TRCFileAdapter::_timeColumnLabel{"Time"};
 const std::string TRCFileAdapter::_xLabel{"X"};
@@ -41,6 +43,7 @@ TRCFileAdapter::write(const TimeSeriesTableVec3& table,
 
 TRCFileAdapter::OutputTables
 TRCFileAdapter::extendRead(const std::string& fileName) const {
+
     OPENSIM_THROW_IF(fileName.empty(),
                      EmptyFileName);
 
@@ -59,7 +62,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // First line of the stream is considered the header.
     std::string header{};
     std::getline(in_stream, header);
-    auto header_tokens = tokenize(header, _delimitersRead);
+    auto header_tokens = tokenize(header, _headerDelimiters);
     OPENSIM_THROW_IF(header_tokens.empty(),
                      FileIsEmpty,
                      fileName);        
@@ -69,6 +72,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the line containing metadata keys.
     auto keys = nextLine();
+    // Keys cannot be empty strings, so delete empty keys due to
+    // excessive use of delimiters
+    IO::eraseEmptyElements(keys);
+
     OPENSIM_THROW_IF(keys.size() != _metadataKeys.size(),
                      IncorrectNumMetaDataKeys,
                      fileName,
@@ -84,6 +91,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the line containing metadata values.
     auto values = nextLine();
+    IO::eraseEmptyElements(values);
     OPENSIM_THROW_IF(keys.size() != values.size(),
                      MetaDataLengthMismatch,
                      fileName,
@@ -103,6 +111,13 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // Read the line containing column labels and fill up the column labels
     // container.
     auto column_labels = nextLine();
+    // For marker labels we do not need three columns per marker, and
+    // remove the blank elements in TRC due to uniform tabbing. For example,
+    // TRC files often have the following structure:
+    //Frame#<tab>Time<tab>marker1<tab><tab><tab>marker2<tab><tab><tab>
+    //<tab><tab>X1<tab>Y1<tab>Z1<tab>X2<tab>Y2<tab>Z2<tab>X3<tab>Y3<tab>Z3
+    IO::eraseEmptyElements(column_labels);
+
     OPENSIM_THROW_IF(column_labels.size() != num_markers_expected + 2,
                      IncorrectNumColumnLabels,
                      fileName,
@@ -133,6 +148,9 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     // X1, Y1, Z1, X2, Y2, Z2, ... so on.
     // Check and ignore these labels.
     auto xyz_labels_found = nextLine();
+    // erase blank labels, e.g. due to Frame# and Time columns
+    IO::eraseEmptyElements(xyz_labels_found);
+
     for(unsigned i = 1; i <= num_markers_expected; ++i) {
         unsigned j = 0;
         for(auto& letter : {_xLabel, _yLabel, _zLabel}) {
@@ -148,11 +166,18 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
     // Read the rows one at a time and fill up the time column container and
     // the data container.
-    std::size_t line_num{_dataStartsAtLine - 1};
-    auto row = nextLine();
-    while(!row.empty()) {
+    std::size_t line_num{_dataStartsAtLine};
+    std::vector<std::string> row = nextLine();
+    // skip immediate blank lines between header and data.
+    while(row.empty() || row.at(0).empty()) {
+        row = nextLine();
         ++line_num;
-        size_t expected{column_labels.size() * 3 + 2};
+    }
+    
+    const size_t expected{ column_labels.size() * 3 + 2 };
+
+    // An empty line during data parsing denotes end of data
+    while(!row.empty()) {
         OPENSIM_THROW_IF(row.size() != expected,
                          RowLengthMismatch,
                          fileName,
@@ -162,17 +187,25 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
 
         // Columns 2 till the end are data.
         TimeSeriesTableVec3::RowVector 
-            row_vector{static_cast<int>(num_markers_expected)};
+            row_vector{static_cast<int>(num_markers_expected), 
+                       SimTK::Vec3(SimTK::NaN)};
         int ind{0};
-        for(std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3)
-            row_vector[ind++] = SimTK::Vec3{std::stod(row.at(c)),
-                                            std::stod(row.at(c+1)),
-                                            std::stod(row.at(c+2))};
+        for (std::size_t c = 2; c < column_labels.size() * 3 + 2; c += 3) {
+            //only if each component is specified read process as a Vec3
+            if ( !(row.at(c).empty() || row.at(c + 1).empty() 
+                                     || row.at(c + 2).empty()) ) {
+                row_vector[ind] = SimTK::Vec3{ std::stod(row.at(c)),
+                                               std::stod(row.at(c + 1)),
+                                               std::stod(row.at(c + 2)) };
+            } // otherwise the value will remain NaN (default)
+            ++ind;
+        }
 
         // Column 1 is time.
         table->appendRow(std::stod(row.at(1)), std::move(row_vector));
 
         row = nextLine();
+        ++line_num;
     }
 
     // Set the column labels of the table.

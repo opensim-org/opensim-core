@@ -46,6 +46,12 @@ public:
     using Exception::Exception;
 };
 
+class InvalidColumnLabel : public Exception {
+public:
+    using Exception::Exception;
+};
+
+
 class IncorrectNumColumns : public InvalidRow {
 public:
     IncorrectNumColumns(const std::string& file,
@@ -376,14 +382,30 @@ public:
                                     columns in the table.                     */
     template<typename InputIt>
     void setColumnLabels(InputIt first, InputIt last) {
+        std::unique_ptr<AbstractValueArray> oldLabels;
+        if (_dependentsMetaData.hasKey("labels")) {
+            oldLabels.reset(
+                _dependentsMetaData.getValueArrayForKey("labels").clone());
+        }
 
         ValueArray<std::string> labels{};
         for(auto it = first; it != last; ++it)
             labels.upd().push_back(SimTK::Value<std::string>(*it));
+
         _dependentsMetaData.removeValueArrayForKey("labels");
         _dependentsMetaData.setValueArrayForKey("labels", labels);
-
-        validateDependentsMetaData();
+        try {
+            validateDependentsMetaData();
+        }
+        catch (const InvalidColumnLabel&) {
+            // undo any partial column label changes
+            // and restore to previous column labels if there were any
+            if (oldLabels) {
+                _dependentsMetaData.removeValueArrayForKey("labels");
+                _dependentsMetaData.setValueArrayForKey("labels", *oldLabels);
+            }
+            throw;
+        }
     }
 
     /** %Set column labels using a sequence container.

@@ -15,7 +15,7 @@ class TestDataAdapter(unittest.TestCase):
         assert table.getNumRows()    == 1202
         assert table.getNumColumns() == 2
 
-        table = adapter.read(os.path.join(test_dir, 'TRCFileWithNANs.trc'))
+        table = adapter.read(os.path.join(test_dir, 'dataWithNaNsOfDifferentCases.trc'))
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 

@@ -111,7 +111,7 @@ int main() {
         SimTK_SUBTEST2(testStorageLoadingFromFile, "sampleOutputsSpatialVec.sto", 2*6+1);
 
         // Verify the loading of marker data (14 markers) from .trc into a Storage
-        SimTK_SUBTEST2(testStorageLoadingFromFile, "TRCFileWithNANs.trc", 43);
+        SimTK_SUBTEST2(testStorageLoadingFromFile, "dataWithNaNsOfDifferentCases.trc", 43);
 
         #ifdef WITH_BTK
             // Verify the loading of forces from .c3d into a Storage. Includes 2
