@@ -1497,7 +1497,7 @@ protected:
 
         // validate each label individually
         for (const auto& label : labels) {
-            OPENSIM_THROW_IF(label.size() < 1,
+            OPENSIM_THROW_IF(label.empty(),
                 InvalidColumnLabel,
                 "Empty column labels are not permitted.");
 

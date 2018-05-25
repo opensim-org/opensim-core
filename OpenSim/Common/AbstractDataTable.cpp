@@ -129,15 +129,11 @@ AbstractDataTable::setColumnLabel(const size_t columnIndex,
     using namespace SimTK;
     using namespace std;
 
-    OPENSIM_THROW_IF(!hasColumnLabels(),
-                     NoColumnLabels);
+    OPENSIM_THROW_IF(!hasColumnLabels(), NoColumnLabels);
 
     auto labels = getColumnLabels();
 
-    if(columnIndex == labels.size()) {
-        labels.push_back(columnLabel);
-    }
-    else if(columnIndex < labels.size()) {
+    if(columnIndex < labels.size()) {
         labels.at(columnIndex) = columnLabel;
     }
     else {
