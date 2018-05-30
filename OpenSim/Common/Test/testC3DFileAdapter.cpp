@@ -34,7 +34,8 @@
 template<typename ETY = SimTK::Real>
 void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             const OpenSim::TimeSeriesTable_<ETY>& table2,
-            const double tolerance = SimTK::SignificantReal) {
+            const double tolerance = SimTK::SignificantReal,
+            const int nFramesToSkip = 1) {
     using namespace OpenSim;
     try {
         OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
@@ -50,7 +51,9 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
     const auto& matrix1 = table1.getMatrix();
     const auto& matrix2 = table2.getMatrix();
 
-    for(int r = 0; r < matrix1.nrow(); ++r)
+    assert(nFramesToSkip > 0);
+
+    for(int r = 0; r < matrix1.nrow(); r=r+ nFramesToSkip)
         for(int c = 0; c < matrix1.ncol(); ++c) {
             auto elt1 = matrix1.getElt(r, c); 
             auto elt2 = matrix2.getElt(r, c);
@@ -64,14 +67,14 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
 
 void test(const std::string filename) {
     using namespace OpenSim;
+    using namespace std;
     
     std::clock_t startTime = std::clock();
     auto tables = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::Origin);
 
-    std::cout << "\nC3DFileAdapter '" << filename << "' read time = " 
-        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC 
-        << "ms\n" << std::endl;
+    cout << "\tC3DFileAdapter '" << filename << "' read time = " 
+        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms" << endl;
 
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
@@ -88,7 +91,10 @@ void test(const std::string filename) {
     marker_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
     TRCFileAdapter trc_adapter{};
+    std::clock_t t0 = std::clock();
     trc_adapter.write(*marker_table, marker_file);
+    cout << "\tWrote'" << marker_file << "' in "
+        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
     ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
         "Failed to read forces data from " + filename);
@@ -96,35 +102,47 @@ void test(const std::string filename) {
     force_table->updTableMetaData().setValueForKey("Units", 
                                                     std::string{"mm"});
     STOFileAdapter sto_adapter{};
+    t0 = std::clock();
     sto_adapter.write((force_table->flatten()), forces_file);
+    cout << "\tWrote'" << forces_file << "' in "
+        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
     // Verify that marker data was written out and can be read in
+    t0 = std::clock();
     auto markers = trc_adapter.read(marker_file);
     auto std_markers = trc_adapter.read("std_" + marker_file);
+    cout << "\tRead'" << marker_file << "' and its standard in "
+        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
+
+
     // Compare C3DFileAdapter read-in and written marker data
     compare_tables<SimTK::Vec3>(markers, *marker_table);
     // Compare C3DFileAdapter written marker data to standard
     // Note std exported from Mokka with only 5 decimal places 
-    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4);
+    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4, 10);
 
-    std::cout << marker_file << " equivalent to std_"
-        << marker_file << std::endl;
+    cout << "\tMarkers " << marker_file << " equivalent to standard" << endl;
 
     // Verify that grfs data was written out and can be read in
     auto forces = sto_adapter.read(forces_file);
     auto std_forces = sto_adapter.read("std_" + forces_file);
     // Compare C3DFileAdapter read-in and written forces data
-    compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), *force_table);
+    compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
+                                *force_table,
+                                SimTK::SqrtEps, 100);
     // Compare C3DFileAdapter written forces data to standard
     // Note std generated using MATLAB C3D processing scripts 
-    compare_tables(forces, std_forces, SimTK::SqrtEps);
+    compare_tables(forces, std_forces, SimTK::SqrtEps, 100);
 
-    std::cout << forces_file << " equivalent to std_"
-        << forces_file << std::endl;
+    cout << forces_file << " equivalent to std_" << forces_file << endl;
 
+    // Reread in C3D file with forces resolved to the COP 
+    t0 = std::clock();
     auto tables2 = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::COP);
     auto& force_table_cop = tables2.at("forces");
+    cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
+        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
 
@@ -133,14 +151,12 @@ void test(const std::string filename) {
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables<SimTK::Vec3>(*force_table_cop, 
                                 std_forces_cop.pack<SimTK::Vec3>(),
-                                SimTK::SqrtEps);
+                                SimTK::SqrtEps, 100);
 
-    std::cout << forces_file << " converted to COP is equivalent to std_cop_"
-        << forces_file << std::endl;
+    cout << "\tcop_" << forces_file << " is equivalent to its standard."<< endl;
 
-    std::cout << "\ntestC3DFileAdapter '" << filename << "' completed in "
-        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC
-        << "ms\n" << std::endl;
+    cout << "\ttestC3DFileAdapter '" << filename << "' completed in "
+        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC  << "ms" << endl;
 }
 
 int main() {
@@ -149,7 +165,7 @@ int main() {
     filenames.push_back("walking5.c3d");
 
     for(const auto& filename : filenames) {
-        std::cout << "Test reading '" + filename + "'." << std::endl;
+        std::cout << "\nTest reading '" + filename + "'." << std::endl;
         try {
             test(filename);
         }
