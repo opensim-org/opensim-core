@@ -34,6 +34,7 @@
 #include <string>
 #include <regex>
 #include <cmath>
+#include <cfloat>
 
 template <typename T>
 void ASSERT_EQUAL(T expected, 
