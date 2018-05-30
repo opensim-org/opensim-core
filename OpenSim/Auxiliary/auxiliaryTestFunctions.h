@@ -33,6 +33,7 @@
 #include <fstream>
 #include <string>
 #include <regex>
+#include <cmath>
 
 template <typename T>
 void ASSERT_EQUAL(T expected, 
