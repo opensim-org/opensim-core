@@ -33,8 +33,6 @@
 #include <fstream>
 #include <string>
 #include <regex>
-#include <cmath>
-#include <cfloat>
 
 template <typename T>
 void ASSERT_EQUAL(T expected, 
@@ -45,7 +43,8 @@ void ASSERT_EQUAL(T expected,
                   std::string message = "") {
     if (found < expected - tolerance || found > expected + tolerance)
         throw OpenSim::Exception(message, file, line);
-    else if( std::isnan(found) != std::isnan(expected))
+    // A variable is not equivalent to itself only if it is NaN
+    else if( (found != found)  && (expected != expected) )
         throw OpenSim::Exception(message, file, line);
 }
 template<int M, typename ELT, int STRIDE>
