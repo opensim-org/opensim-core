@@ -33,8 +33,8 @@
 
 template<typename ETY = SimTK::Real>
 void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
-                    const OpenSim::TimeSeriesTable_<ETY>& table2,
-                    const double tolerance = SimTK::SignificantReal) {
+            const OpenSim::TimeSeriesTable_<ETY>& table2,
+            const double tolerance = SimTK::SignificantReal) {
     using namespace OpenSim;
     try {
         OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
@@ -121,6 +121,26 @@ void test(const std::string filename) {
 
     std::cout << forces_file << " equivalent to std_"
         << forces_file << std::endl;
+
+    auto tables2 = C3DFileAdapter::read(filename,
+        C3DFileAdapter::ForceLocation::COP);
+    auto& force_table_cop = tables2.at("forces");
+
+    sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
+
+    auto std_forces_cop = sto_adapter.read("std_cop_" + forces_file);
+    // Compare C3DFileAdapter written forces data to standard
+    // Note std generated using MATLAB C3D processing scripts 
+    compare_tables<SimTK::Vec3>(*force_table_cop, 
+                                std_forces_cop.pack<SimTK::Vec3>(),
+                                SimTK::SqrtEps);
+
+    std::cout << forces_file << " converted to COP is equivalent to std_cop_"
+        << forces_file << std::endl;
+
+    std::cout << "\ntestC3DFileAdapter '" << filename << "' completed in "
+        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC
+        << "ms\n" << std::endl;
 }
 
 int main() {
