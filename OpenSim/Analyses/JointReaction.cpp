@@ -265,20 +265,15 @@ void JointReaction::setupReactionList()
     *  set the values so that all reactions will be reported on the child body, expressed  
     *  in the ground frame.*/
     if (_onBody.getSize() == 1);
-    else if (_onBody.getSize() != numJointNames) {
-        cout << "\n WARNING: apply_on_bodies list is not the same length as joint_names."
-            <<"\n All reaction loads will be reported on the child bodies.\n";
-        _onBody.setSize(1);
-        _onBody[0]= "child";}
+    else if (_onBody.getSize() != numJointNames)
+        OPENSIM_THROW(InvalidArgument,
+            "apply_on_bodies list is not of length 1 nor the same length as joint_names.");
 
     if (_inFrame.getSize() == 1);
-    else if (_inFrame.getSize() != numJointNames) {
-        cout << "\n WARNING: express_in_frame list is not the same length as joint_names."
-            <<"\n All reaction loads will be reported in the ground frame.\n";
-        _inFrame.setSize(1);
-        _inFrame[0] = "ground";}
+    else if (_inFrame.getSize() != numJointNames)
+        OPENSIM_THROW(InvalidArgument,
+            "express_in_frame list is not of length 1 nor the same length as joint_names.");
     
-
     /* setup the JointReactionKey and, for valid joint names, determine and set the 
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
     _reactionList.setSize(0);
