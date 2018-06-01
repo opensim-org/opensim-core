@@ -188,24 +188,32 @@ setupProperties()
     _forcesFileNameProp.setName("forces_file");
     _forcesFileNameProp.setComment("The name of a file containing forces storage."
         "If a file name is provided, the applied forces for all actuators will be constructed "
-        "from the forces_file instead of from the states.  This option should be used "
+        "from the forces_file instead of from the states. This option should be used "
         "to calculated joint loads from static optimization results.");
     _propertySet.append(&_forcesFileNameProp);
 
     _jointNamesProp.setName("joint_names");
-    _jointNamesProp.setComment("Names of the joints on which to perform the analysis."
-        "The key word 'All' indicates that the analysis should be performed for all bodies.");
+    _jointNamesProp.setComment("Names of the joints on which to perform the analysis. "
+        "The key word 'All' indicates that the analysis should be performed for all joints.");
     _propertySet.append(&_jointNamesProp);
 
     _onBodyProp.setName("apply_on_bodies");
-    _onBodyProp.setComment("Choice of body (parent or child) for which the reaction "
-        "loads are calculated.  Child body is default.  If the array has one entry only, "
-        "that selection is applied to all chosen joints.");
+    _onBodyProp.setComment("Choice of body ('parent' or 'child') for which the "
+        "reaction loads are calculated. Child body is default. The array must "
+        "either have one entry or the same number of entries as joints "
+        "specified above. If the array has one entry only, that selection "
+        "is applied to all chosen joints.");
     _propertySet.append(&_onBodyProp);
 
     _inFrameProp.setName("express_in_frame");
     _inFrameProp.setComment("Names of frames in which the calculated "
-        "reactions are expressed.  ground body is default.  If the array has one entry only, "
+        "reactions are expressed, or the keyword 'child' or 'parent' to "
+        "indicate the joint's 'child' or 'parent' Frame. "
+        "ground body is default. If a Frame named 'child' or "
+        "'parent' exists and the keyword 'child' or 'parent' is used, "
+        "the analysis will use that Frame. The array must "
+        "either have one entry or the same number of entries as joints "
+        "specified above. If the array has one entry only, "
         "that selection is applied to all chosen joints.");
     _propertySet.append(&_inFrameProp);
 }
@@ -293,6 +301,9 @@ void JointReaction::setupReactionList()
             std::transform(appliedOnName.begin(), appliedOnName.end(),
                 appliedOnName.begin(), ::tolower);
             // determine if user wants reaction on child or parent
+            OPENSIM_THROW_IF(appliedOnName != "child" && appliedOnName != "parent",
+                             InvalidArgument,
+                             "'apply_on_bodies' must be either 'child' or 'parent'");
             currentKey.isAppliedOnChild = (appliedOnName == "child");
             currentKey.appliedOnBody = currentKey.isAppliedOnChild ?
                 &joint.getChildFrame().findBaseFrame() : &joint.getParentFrame().findBaseFrame();
@@ -302,8 +313,21 @@ void JointReaction::setupReactionList()
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
-            currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
-
+            if (_model->hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
+            else {
+                std::transform(expressedIn.begin(), expressedIn.end(), expressedIn.begin(), ::tolower);
+                if (expressedIn == "child")
+                    currentKey.expressedInFrame = &joint.getChildFrame().findBaseFrame();
+                else if (expressedIn == "parent")
+                    currentKey.expressedInFrame = &joint.getParentFrame().findBaseFrame();
+                else {
+                    OPENSIM_THROW(InvalidArgument,
+                                  "'express_in_frame' must either be a Frame "
+                                  "name or the keyword 'child' or 'parent'.")
+                }
+            }
+            
             _reactionList.append(currentKey);
         }
         else {

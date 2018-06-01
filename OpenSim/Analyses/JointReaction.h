@@ -1,5 +1,5 @@
-#ifndef _JointReaction_h_
-#define _JointReaction_h_
+#ifndef OPENSIM_JOINT_REACTION_H_
+#define OPENSIM_JOINT_REACTION_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  JointReaction.h                          *
  * -------------------------------------------------------------------------- *
@@ -215,4 +215,4 @@ protected:
 //=============================================================================
 //=============================================================================
 
-#endif // #ifndef __JointReaction_h__
+#endif // #ifndef OPENSIM_JOINT_REACTION_H_
