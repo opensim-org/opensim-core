@@ -267,12 +267,12 @@ void JointReaction::setupReactionList()
     if (_onBody.getSize() == 1);
     else if (_onBody.getSize() != numJointNames)
         OPENSIM_THROW(InvalidArgument,
-            "apply_on_bodies list is not of length 1 nor the same length as joint_names.");
+            "apply_on_bodies list is neither of length 1 nor the same length as indicated by joint_names.");
 
     if (_inFrame.getSize() == 1);
     else if (_inFrame.getSize() != numJointNames)
         OPENSIM_THROW(InvalidArgument,
-            "express_in_frame list is not of length 1 nor the same length as joint_names.");
+            "express_in_frame list is neither of length 1 nor the same length as indicated by joint_names.");
     
     /* setup the JointReactionKey and, for valid joint names, determine and set the 
     *  reactionIndex, onBodyIndex, and inFrameIndex of each JointReactionKey */
