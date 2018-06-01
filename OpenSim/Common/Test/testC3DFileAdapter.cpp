@@ -68,13 +68,25 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
 void test(const std::string filename) {
     using namespace OpenSim;
     using namespace std;
+
+    // The walking C3D files included in this test should not take more
+    // than 40ms on most hardware. We make the max time 80ms to account for
+    // potentially slower CI machines.
+    const double MaximumLoadTimeInMS = 80;
     
     std::clock_t startTime = std::clock();
     auto tables = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::Origin);
 
-    cout << "\tC3DFileAdapter '" << filename << "' read time = " 
-        << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms" << endl;
+    double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+
+    cout << "\tC3DFileAdapter '" << filename << "' loaded in " 
+        << loadTime << "ms" << endl;
+
+    #ifdef NDEBUG
+        ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+            "Failed to read marker data from " + filename); 
+    #endif
 
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
@@ -93,7 +105,7 @@ void test(const std::string filename) {
     TRCFileAdapter trc_adapter{};
     std::clock_t t0 = std::clock();
     trc_adapter.write(*marker_table, marker_file);
-    cout << "\tWrote'" << marker_file << "' in "
+    cout << "\tWrote '" << marker_file << "' in "
         << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
     ASSERT(force_table->getNumRows() > 0, __FILE__, __LINE__,
