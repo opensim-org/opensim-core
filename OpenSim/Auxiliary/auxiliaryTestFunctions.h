@@ -41,12 +41,15 @@ void ASSERT_EQUAL(T expected,
                   std::string file = "", 
                   int line = -1, 
                   std::string message = "") {
+    // if both values are NaN treat them as being equivalent for the
+    // sake of comparing experimental data and results where NaNs are
+    // possible
+    if (SimTK::isNaN(found) && SimTK::isNaN(expected))
+        return;
     if (found < expected - tolerance || found > expected + tolerance)
         throw OpenSim::Exception(message, file, line);
-    // A variable is not equivalent to itself only if it is NaN
-    else if( (found != found)  && (expected != expected) )
-        throw OpenSim::Exception(message, file, line);
 }
+
 template<int M, typename ELT, int STRIDE>
 void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   const SimTK::Vec<M, ELT, STRIDE>& vecB,
@@ -54,6 +57,7 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        // if both values are NaN treat them as being equivalent
         if (vecA.isNaN() && vecB.isNaN())
             return;
         SimTK_TEST_EQ(vecA, vecB);
@@ -69,6 +73,7 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        // if both values are NaN treat them as being equivalent
         if (vecA.isNaN() && vecB.isNaN())
             return;
         SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
@@ -90,6 +95,9 @@ void ASSERT_EQUAL( const std::vector<T>& vecA,
     }
     else {
         for (size_t i = 0; i < vecA.size(); ++i) {
+            // if both values are NaN treat them as being equivalent
+            if ( SimTK::isNaN(vecA[i]) && SimTK::isNaN(vecB[i]) )
+                continue;
             if (vecA[i] < vecB[i] - tolerance || vecA[i] > vecB[i] + tolerance) {
                 throw OpenSim::Exception(message, file, line);
             }
