@@ -34,8 +34,7 @@
 template<typename ETY = SimTK::Real>
 void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             const OpenSim::TimeSeriesTable_<ETY>& table2,
-            const double tolerance = SimTK::SignificantReal,
-            const int nFramesToSkip = 1) {
+            const double tolerance = SimTK::SignificantReal) {
     using namespace OpenSim;
     try {
         OPENSIM_THROW_IF(table1.getColumnLabels() != table2.getColumnLabels(),
@@ -51,9 +50,7 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
     const auto& matrix1 = table1.getMatrix();
     const auto& matrix2 = table2.getMatrix();
 
-    assert(nFramesToSkip > 0);
-
-    for(int r = 0; r < matrix1.nrow(); r=r+ nFramesToSkip)
+    for(int r = 0; r < matrix1.nrow(); ++r)
         for(int c = 0; c < matrix1.ncol(); ++c) {
             auto elt1 = matrix1.getElt(r, c); 
             auto elt2 = matrix2.getElt(r, c);
@@ -100,7 +97,6 @@ void test(const std::string filename) {
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
     downsample_table(*marker_table, 10);
-    cout << "Marker Table:\n" << *marker_table << endl;
     downsample_table(*force_table, 100);
 
     size_t ext = filename.rfind(".");
@@ -152,10 +148,10 @@ void test(const std::string filename) {
     // Compare C3DFileAdapter read-in and written forces data
     compare_tables<SimTK::Vec3>(forces.pack<SimTK::Vec3>(), 
                                 *force_table,
-                                SimTK::SqrtEps, 100);
+                                SimTK::SqrtEps);
     // Compare C3DFileAdapter written forces data to standard
     // Note std generated using MATLAB C3D processing scripts 
-    compare_tables(forces, std_forces, SimTK::SqrtEps, 100);
+    compare_tables(forces, std_forces, SimTK::SqrtEps);
 
     cout << forces_file << " equivalent to std_" << forces_file << endl;
 
@@ -184,7 +180,7 @@ void test(const std::string filename) {
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables<SimTK::Vec3>(*force_table_cop, 
                                 std_forces_cop.pack<SimTK::Vec3>(),
-                                SimTK::SqrtEps, 100);
+                                SimTK::SqrtEps);
 
     cout << "\tcop_" << forces_file << " is equivalent to its standard."<< endl;
 
@@ -193,20 +189,6 @@ void test(const std::string filename) {
 }
 
 int main() {
-
-    OpenSim::TimeSeriesTable_<double> table{};
-    table.setColumnLabels({ "c0", "c1", "c2", "c3" });
-    for (size_t i = 0; i < 15; ++i) {
-        SimTK::RowVector row{ 4, 0.1111111*i };
-        table.appendRow(0.001*i, row);
-    }
-
-    //std::cout << "Initial Table:\n" << table << std::endl;
-    
-    downsample_table(table, 5);
-    //std::cout << "Down-sampled Table:\n" << table << std::endl;
-
-
     std::vector<std::string> filenames{};
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
