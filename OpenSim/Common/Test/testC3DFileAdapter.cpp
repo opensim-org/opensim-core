@@ -140,7 +140,7 @@ void test(const std::string filename) {
     // Note std exported from Mokka with only 5 decimal places 
     compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4);
 
-    cout << "\tMarkers " << marker_file << " equivalent to standard" << endl;
+    cout << "\tMarkers " << marker_file << " equivalent to standard." << endl;
 
     // Verify that grfs data was written out and can be read in
     auto forces = sto_adapter.read(forces_file);
@@ -153,7 +153,7 @@ void test(const std::string filename) {
     // Note std generated using MATLAB C3D processing scripts 
     compare_tables(forces, std_forces, SimTK::SqrtEps);
 
-    cout << forces_file << " equivalent to std_" << forces_file << endl;
+    cout << "\tForces " << forces_file << " equivalent to standard." << endl;
 
     
     t0 = std::clock();
