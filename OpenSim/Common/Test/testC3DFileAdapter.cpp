@@ -64,6 +64,15 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
         }
 }
 
+template<typename ETY = SimTK::Real>
+void downsample_table(OpenSim::TimeSeriesTable_<ETY>& table,
+    const unsigned int increment) {
+    for (size_t r = table.getNumRows() - 2; r > 0; --r) {
+        if (r%increment)
+            table.removeRowAtIndex(r);
+    }
+}
+
 
 void test(const std::string filename) {
     using namespace OpenSim;
@@ -90,6 +99,9 @@ void test(const std::string filename) {
 
     auto& marker_table = tables.at("markers");
     auto&  force_table = tables.at("forces");
+    downsample_table(*marker_table, 10);
+    cout << "Marker Table:\n" << *marker_table << endl;
+    downsample_table(*force_table, 100);
 
     size_t ext = filename.rfind(".");
     std::string base = filename.substr(0, ext);
@@ -126,12 +138,11 @@ void test(const std::string filename) {
     cout << "\tRead'" << marker_file << "' and its standard in "
         << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
 
-
     // Compare C3DFileAdapter read-in and written marker data
     compare_tables<SimTK::Vec3>(markers, *marker_table);
     // Compare C3DFileAdapter written marker data to standard
     // Note std exported from Mokka with only 5 decimal places 
-    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4, 10);
+    compare_tables<SimTK::Vec3>(markers, std_markers, 1e-4);
 
     cout << "\tMarkers " << marker_file << " equivalent to standard" << endl;
 
@@ -148,13 +159,23 @@ void test(const std::string filename) {
 
     cout << forces_file << " equivalent to std_" << forces_file << endl;
 
-    // Reread in C3D file with forces resolved to the COP 
+    
     t0 = std::clock();
+    // Reread in C3D file with forces resolved to the COP 
     auto tables2 = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::COP);
-    auto& force_table_cop = tables2.at("forces");
+    
+    loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
-        << 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC << "ms" << endl;
+        << loadTime << "ms" << endl;
+
+    #ifdef NDEBUG
+        ASSERT(loadTime < MaximumLoadTimeInMS, __FILE__, __LINE__,
+            "Failed to read marker data from " + filename);
+    #endif
+
+    auto& force_table_cop = tables2.at("forces");
+    downsample_table(*force_table_cop, 100);
 
     sto_adapter.write(force_table_cop->flatten(), "cop_"+ forces_file);
 
@@ -172,6 +193,20 @@ void test(const std::string filename) {
 }
 
 int main() {
+
+    OpenSim::TimeSeriesTable_<double> table{};
+    table.setColumnLabels({ "c0", "c1", "c2", "c3" });
+    for (size_t i = 0; i < 15; ++i) {
+        SimTK::RowVector row{ 4, 0.1111111*i };
+        table.appendRow(0.001*i, row);
+    }
+
+    //std::cout << "Initial Table:\n" << table << std::endl;
+    
+    downsample_table(table, 5);
+    //std::cout << "Down-sampled Table:\n" << table << std::endl;
+
+
     std::vector<std::string> filenames{};
     filenames.push_back("walking2.c3d");
     filenames.push_back("walking5.c3d");
