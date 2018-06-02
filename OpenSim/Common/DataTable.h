@@ -782,7 +782,7 @@ public:
 
         if(index < getNumRows() - 1)
             for(size_t r = index; r < getNumRows() - 1; ++r)
-                _depData.updRow((int)index) = _depData.row((int)(index + 1));
+                _depData.updRow((int)r) = _depData.row((int)(r + 1));
         
         _depData.resizeKeep(_depData.nrow() - 1, _depData.ncol());
         _indData.erase(_indData.begin() + index);
