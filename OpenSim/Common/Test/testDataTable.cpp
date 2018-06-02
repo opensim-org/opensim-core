@@ -633,13 +633,14 @@ int main() {
 
         std::cout << tableDouble << std::endl;
 
-        RowVector row2 = tableDouble.getRowAtIndex(2);
-        tableDouble.removeRowAtIndex(1);
-        RowVector row1 = tableDouble.getRowAtIndex(1);
-        ASSERT((row1 - row2).norm() == 0);
-        tableDouble.removeRowAtIndex(0);
-        RowVector row0 = tableDouble.getRowAtIndex(0);
-        ASSERT((row0 - row2).norm() == 0);
+        auto tableDoubleCopy = tableDouble;
+        Vector row2{ tableDoubleCopy.getRowAtIndex(2).transpose() };
+        tableDoubleCopy.removeRowAtIndex(1);
+        Vector row1{ tableDoubleCopy.getRowAtIndex(1).transpose() };
+        ASSERT_EQUAL(row1, row2, 0.0);
+        tableDoubleCopy.removeRowAtIndex(0);
+        Vector row0{ tableDoubleCopy.getRowAtIndex(0).transpose() };
+        ASSERT_EQUAL(row0, row2, 0.0);
 
         std::cout << "Test TimeSeriesTable packing for Vec3 with suffix"
                      " specified."
