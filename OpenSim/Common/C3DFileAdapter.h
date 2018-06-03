@@ -37,10 +37,39 @@ public:
     typedef std::vector<Event>                         EventTable; 
     typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
+    /** Enumerated list of locations in which read in forces are expressed.
+        Measurement from force plates can be expressed by the C3DFileAdapter
+        either at the OriginOfForcePlate (the default), CenterOfPressure, or the 
+        PointOfWrenchApplication. It is an optional argument to C3DFileAdapter::read().
+
+        <b>C++ example</b>
+        \code{.cpp}
+        auto tables  =  C3DFileAdapter::read("myData.c3d", 
+                            C3DFileAdapter::ForceLocation::CenterOfPressure);
+        \endcode
+
+        <b>Python example</b>
+        \code{.py}
+        import opensim
+        tables = C3DFileAdapter.read("myData.c3d",
+                    opensim.C3DFileAdapter.ForceLocation_CenterOfPressure)
+        \endcode
+
+        <b>Java example</b>
+        \code{.java}
+        tables = C3DFileAdapter.read("myData.c3d",
+                    C3DFileAdapter.ForceLocation.CenterOfPressure);
+        \endcode
+
+        <b>MATLAB example</b>
+        \code{.m}
+        tables = C3DFileAdapter.read("myData.c3d", 1);
+        \endcode
+    */
     enum class ForceLocation {
-        OriginOfForcePlate = 0,          /// the origin of the force-plate
-        CenterOfPressure = 1,            /// the center of pressure
-        PointOfWrenchApplication = 2     /// PWA as defined by Shimba, 1984
+        OriginOfForcePlate       = 0,   ///< 0 : the origin of the force-plate
+        CenterOfPressure         = 1,   ///< 1 : the center of pressure
+        PointOfWrenchApplication = 2    ///< 2 : PWA as defined by Shimba, 1984
     };
 
     C3DFileAdapter()                                 = default;
@@ -64,7 +93,11 @@ public:
         TimeSeriesTableVec3. The markers table has each column labeled by its
         corresponding marker name. For the forces table, the data are grouped
         by sensor (force-plate #) in force, point and moment order, with the
-        respective *f#*, *p#* and *m#* column labels. */
+        respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
+        options for expressing the force-plate measurements either as the
+        net force and moments expressed at the ForcePlateOrigin, the 
+        CentereOfPressure, or the PointOfWrenceApplication (PWA) as defined by
+        Shimba 1984*/
     static
     Tables read(const std::string& fileName, 
                 ForceLocation wrt = ForceLocation::OriginOfForcePlate);
