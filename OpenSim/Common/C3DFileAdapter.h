@@ -38,9 +38,9 @@ public:
     typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
     enum class ForceLocation {
-        Origin = 0, /// the origin of the forceplate
-        COP = 1,    /// the center of pressure
-        PWA = 2     /// the point of wrench application (Shimba 1984)
+        OriginOfForcePlate = 0,          /// the origin of the force-plate
+        CenterOfPressure = 1,            /// the center of pressure
+        PointOfWrenchApplication = 2     /// PWA as defined by Shimba, 1984
     };
 
     C3DFileAdapter()                                 = default;
@@ -67,7 +67,7 @@ public:
         respective *f#*, *p#* and *m#* column labels. */
     static
     Tables read(const std::string& fileName, 
-                ForceLocation wrt = ForceLocation::Origin);
+                ForceLocation wrt = ForceLocation::OriginOfForcePlate);
 
     static
     void write(const Tables& markerTable, const std::string& fileName);
@@ -84,7 +84,7 @@ protected:
 private:
     static const std::unordered_map<std::string, std::size_t> _unit_index;
 
-    ForceLocation _location{ ForceLocation::Origin };
+    ForceLocation _location{ ForceLocation::OriginOfForcePlate };
 
 };
 

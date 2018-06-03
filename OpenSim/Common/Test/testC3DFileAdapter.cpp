@@ -82,7 +82,7 @@ void test(const std::string filename) {
     
     std::clock_t startTime = std::clock();
     auto tables = C3DFileAdapter::read(filename,
-        C3DFileAdapter::ForceLocation::Origin);
+        C3DFileAdapter::ForceLocation::OriginOfForcePlate);
 
     double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
 
@@ -159,7 +159,7 @@ void test(const std::string filename) {
     t0 = std::clock();
     // Reread in C3D file with forces resolved to the COP 
     auto tables2 = C3DFileAdapter::read(filename,
-        C3DFileAdapter::ForceLocation::COP);
+        C3DFileAdapter::ForceLocation::CenterOfPressure);
     
     loadTime = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
