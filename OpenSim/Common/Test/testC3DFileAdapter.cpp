@@ -56,7 +56,7 @@ void compare_tables(const OpenSim::TimeSeriesTable_<ETY>& table1,
             auto elt2 = matrix2.getElt(r, c);
 
             ASSERT_EQUAL(elt1, elt2, tolerance, __FILE__, __LINE__,
-                "Elements at row, " + std::to_string(r) + " col, " +
+                "Element at row, " + std::to_string(r) + " col, " +
                 std::to_string(c) + " failed to have matching value.");
         }
 }
