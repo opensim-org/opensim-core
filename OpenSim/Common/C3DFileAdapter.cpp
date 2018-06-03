@@ -117,8 +117,11 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             int m{0};
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
                 auto pt = *it;
-                if (!( pt->GetValues().row(f).isZero() ||  //not precisely zero
-                    (pt->GetResiduals().coeff(f) == -1))) {//nor is residual -1
+                // BTK reads empty values as zero, but sets a "residual" value
+                // to -1 and it is how it knows to export these values as 
+                // blank, instead of 0,  when exporting to .trc
+                if (!pt->GetValues().row(f).isZero() &&    //not precisely zero
+                    (pt->GetResiduals().coeff(f) != -1) ) {//residual is not -1
                     row[m] = SimTK::Vec3{ pt->GetValues().coeff(f, 0),
                                            pt->GetValues().coeff(f, 1),
                                            pt->GetValues().coeff(f, 2) };
