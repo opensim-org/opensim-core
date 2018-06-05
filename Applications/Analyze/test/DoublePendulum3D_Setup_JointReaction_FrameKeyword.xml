@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20300">
-	<AnalyzeTool name="SinglePin">
+	<AnalyzeTool name="DoublePendulum3D_FrameKeyword">
 		<!--Name of the .osim file used to construct a model.-->
-		<model_file> SinglePin.osim </model_file>
+		<model_file> DoublePendulum3D.osim </model_file>
 		<!--Replace the model's force set with sets specified in
 		    <force_set_files>? If false, the force set is appended to.-->
 		<replace_force_set> false </replace_force_set>
@@ -32,7 +32,7 @@
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 			<objects>
-					<JointReaction name="JointReaction">
+				<JointReaction name="JointReaction">
 					<!--Flag (true or false) specifying whether whether on. True by default.-->
 					<on> true </on>
 					<!--Start time.-->
@@ -55,15 +55,15 @@
 					<forces_file>  </forces_file>
 					<!--Names of the joints on which to perform the analysis.The key word
 					    'All' indicates that the analysis should be performed for all bodies.-->
-					<joint_names> pin1 pin1 pin1 </joint_names>
+					<joint_names> ALL </joint_names>
 					<!--Choice of body (parent or child) on which the calculated reactions are
 					    applied.  Child body is default.  If the array has one entry only,
 					    that selection is applied to all chosen joints.-->
-					<apply_on_bodies> child child child </apply_on_bodies>
+					<apply_on_bodies> child </apply_on_bodies>
 					<!--Names of frames in which the calculated reactions are expressed. 
 					    ground body is default.  If the array has one entry only, that
 					    selection is applied to all chosen joints.-->
-					<express_in_frame> rod1 pin1/rod1_offset ground </express_in_frame>
+					<express_in_frame> child </express_in_frame>
 				</JointReaction>
 			</objects>
 			<groups/>
@@ -86,11 +86,11 @@
 		    stamps in this file, inerpolation is NOT used because it is sometimes
 		    necessary to an exact set of states for analyses.  Instead, the
 		    closest earlier set of states is used.-->
-		<states_file> SinglePin_states.sto </states_file>
+		<states_file>  </states_file>
 		<!--Motion file (.mot) or storage file (.sto) containing the time history
 		    of the generalized coordinates for the model. These can be specified
 		    in place of the states file.-->
-		<coordinates_file>  </coordinates_file>
+		<coordinates_file> DoublePendulum3D_states_degrees.mot </coordinates_file>
 		<!--Storage file (.sto) containing the time history of the generalized
 		    speeds for the model. If coordinates_file is used in place of
 		    states_file, these can be optionally set as well to give the speeds.
