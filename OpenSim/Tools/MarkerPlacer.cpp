@@ -261,7 +261,7 @@ bool MarkerPlacer::processModel(Model* aModel,
                                                    _timeRange[1]);
     for(size_t r = staticPoseTable.getNumRows() - 1; r > 0; --r)
         staticPoseTable.removeRowAtIndex(r);
-    staticPoseTable.setRow(_timeRange[0], avgRow);
+    staticPoseTable.appendRow(_timeRange[0], avgRow);
     
     OPENSIM_THROW_IF(!staticPoseTable.hasTableMetaDataKey("Units"),
                      Exception,
