@@ -186,21 +186,23 @@ setupProperties()
 {
 
     _forcesFileNameProp.setName("forces_file");
-    _forcesFileNameProp.setComment("The name of a file containing forces storage."
-        "If a file name is provided, the applied forces for all actuators will be constructed "
-        "from the forces_file instead of from the states. This option should be used "
-        "to calculated joint loads from static optimization results.");
+    _forcesFileNameProp.setComment("The name of a file containing forces "
+        "storage. If a file name is provided, the forces for all actuators "
+        "will be applied according to values specified in the forces_file "
+        "instead of being computed from the states. This option should be "
+        "used to calculate joint reactions from static optimization results.");
     _propertySet.append(&_forcesFileNameProp);
 
     _jointNamesProp.setName("joint_names");
-    _jointNamesProp.setComment("Names of the joints on which to perform the analysis. "
-        "The key word 'All' indicates that the analysis should be performed for all joints.");
+    _jointNamesProp.setComment("Names of the joints on which to perform the "
+        "analysis. The key word 'All' indicates that the analysis should be "
+        "performed for all joints.");
     _propertySet.append(&_jointNamesProp);
 
     _onBodyProp.setName("apply_on_bodies");
-    _onBodyProp.setComment("Choice of body ('parent' or 'child') for which the "
-        "reaction loads are calculated. Child body is default. The array must "
-        "either have one entry or the same number of entries as joints "
+    _onBodyProp.setComment("Choice of body ('parent' or 'child') for which "
+        "the reaction loads are calculated. Child body is default. The array "
+        "must either have one entry or the same number of entries as joints "
         "specified above. If the array has one entry only, that selection "
         "is applied to all chosen joints.");
     _propertySet.append(&_onBodyProp);
@@ -209,7 +211,7 @@ setupProperties()
     _inFrameProp.setComment("Names of frames in which the calculated "
         "reactions are expressed, or the keyword 'child' or 'parent' to "
         "indicate the joint's 'child' or 'parent' Frame. "
-        "ground body is default. If a Frame named 'child' or "
+        "ground is default. If a Frame named 'child' or "
         "'parent' exists and the keyword 'child' or 'parent' is used, "
         "the analysis will use that Frame. The array must "
         "either have one entry or the same number of entries as joints "
