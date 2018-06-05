@@ -261,7 +261,7 @@ bool MarkerPlacer::processModel(Model* aModel,
                                                    _timeRange[1]);
     for(size_t r = staticPoseTable.getNumRows() - 1; r > 0; --r)
         staticPoseTable.removeRowAtIndex(r);
-    staticPoseTable.updRowAtIndex(0) = avgRow;
+    staticPoseTable.setRow(_timeRange[0], avgRow);
     
     OPENSIM_THROW_IF(!staticPoseTable.hasTableMetaDataKey("Units"),
                      Exception,
@@ -294,6 +294,7 @@ bool MarkerPlacer::processModel(Model* aModel,
 
     // Construct the system and get the working state when done changing the model
     SimTK::State& s = aModel->initSystem();
+    s.updTime() = _timeRange[0];
     
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
