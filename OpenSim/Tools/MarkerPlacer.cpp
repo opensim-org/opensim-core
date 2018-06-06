@@ -259,7 +259,7 @@ bool MarkerPlacer::processModel(Model* aModel,
 
     const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
                                                    _timeRange[1]);
-    for(size_t r = staticPoseTable.getNumRows() - 1; r >= 0; --r)
+    for(size_t r = staticPoseTable.getNumRows(); r-- > 0; )
         staticPoseTable.removeRowAtIndex(r);
     staticPoseTable.appendRow(_timeRange[0], avgRow);
     
