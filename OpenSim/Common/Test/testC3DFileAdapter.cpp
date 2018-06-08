@@ -76,7 +76,7 @@ void test(const std::string filename) {
     using namespace std;
 
     // The walking C3D files included in this test should not take more
-    // than 40ms on most hardware. We make the max time 1000ms to account
+    // than 40ms on most hardware. We make the max time 100ms to account
     // for potentially slower CI machines.
     const double MaximumLoadTimeInMS = 100;
     

@@ -96,7 +96,7 @@ public:
         respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
         options for expressing the force-plate measurements either as the
         net force and moments expressed at the ForcePlateOrigin, the 
-        CentereOfPressure, or the PointOfWrenceApplication (PWA) as defined by
+        CentereOfPressure, or the PointOfWrenchApplication (PWA) as defined by
         Shimba 1984. 
         Takeshi Shimba, An estimation of center of gravity from force platform
         data, Journal of Biomechanics, 17(1), pp53-60, 1984.
