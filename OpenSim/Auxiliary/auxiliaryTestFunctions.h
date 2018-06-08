@@ -35,6 +35,18 @@
 #include <regex>
 #include <type_traits>
 
+ /**
+ * ASSERT_EQUAL is a general utility for comparing two values and throwing
+ * an Exception with a caller defined message when values are not equivalent.
+ * Note, ASSERT_EQUAL is typically used to verify that some found value matches
+ * a given expected or standard value. If the expected value is NaN, 
+ * ASSERT_EQUAL will NOT throw if the found value is also NaN. This is
+ * particularly helpful for comparing motion capture data where missing data
+ * are denoted by NaN values. If NaNs are not acceptable for your test, then
+ * the expected value should not be NaN. In the case of floating point values
+ * (or containers of floating points) a tolerance of the same value type is
+ * required.
+ */
 template <typename T,
    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr >
 void ASSERT_EQUAL(T expected,
