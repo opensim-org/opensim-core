@@ -215,6 +215,8 @@ programmatically in MATLAB or python.
   its properties are updated during scaling. (PR #1994)
 - The source code for the "From the Ground Up: Building a Passive Dynamic
   Walker Example" was added to this repository.
+- OpenSim no longer looks for the simbody-visualizer using the environment
+  variable `OPENSIM_HOME`.
 
 Documentation
 --------------
