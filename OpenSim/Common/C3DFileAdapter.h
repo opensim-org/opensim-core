@@ -39,8 +39,19 @@ public:
 
     /** Enumerated list of locations in which read in forces are expressed.
         Measurement from force plates can be expressed by the C3DFileAdapter
-        either at the OriginOfForcePlate (the default), CenterOfPressure, or the 
-        PointOfWrenchApplication. It is an optional argument to C3DFileAdapter::read().
+        either at the OriginOfForcePlate (the default), CenterOfPressure, or
+        the PointOfWrenchApplication. It is an optional argument to 
+        C3DFileAdapter::read().
+
+        In the case of the CenterOfPressure (COP), the underlying assumptions
+        are that the ground plane (in which COP is defined) passes through the
+        lab origin (0,0,0) with the Z-axis as its normal vector.
+
+        The PointOfWrenchApplication (PWA) does not assume a plane of contact.
+        The PWA is an equivalent wrench in the lab frame and computed according
+        to Shimba 1984.
+        Takeshi Shimba, An estimation of center of gravity from force platform
+        data, Journal of Biomechanics, 17(1), pp53-60, 1984.
 
         <b>C++ example</b>
         \code{.cpp}
@@ -96,10 +107,7 @@ public:
         respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
         options for expressing the force-plate measurements either as the
         net force and moments expressed at the ForcePlateOrigin, the 
-        CentereOfPressure, or the PointOfWrenchApplication (PWA) as defined by
-        Shimba 1984. 
-        Takeshi Shimba, An estimation of center of gravity from force platform
-        data, Journal of Biomechanics, 17(1), pp53-60, 1984.
+        CentereOfPressure, or the PointOfWrenchApplication (see above).
         */
     static
     Tables read(const std::string& fileName, 
