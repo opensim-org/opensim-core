@@ -33,17 +33,63 @@
 #include <fstream>
 #include <string>
 #include <regex>
+#include <type_traits>
 
-template <typename T>
-void ASSERT_EQUAL(T expected, 
+ /**
+ * ASSERT_EQUAL is a general utility for comparing two values and throwing
+ * an Exception with a caller defined message when values are not equivalent.
+ * Note, ASSERT_EQUAL is typically used to verify that some found value matches
+ * a given expected or standard value. If the expected value is NaN, 
+ * ASSERT_EQUAL will NOT throw if the found value is also NaN. This is
+ * particularly helpful for comparing motion capture data where missing data
+ * are denoted by NaN values. If NaNs are not acceptable for your test, then
+ * the expected value should not be NaN. In the case of floating point values
+ * (or containers of floating points) a tolerance of the same value type is
+ * required.
+ */
+template <typename T,
+   typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr >
+void ASSERT_EQUAL(T expected,
                   T found, 
                   T tolerance, 
                   std::string file = "", 
                   int line = -1, 
                   std::string message = "") {
+    // if both values are NaN treat them as being equivalent for the
+    // sake of comparing experimental data and results where NaNs are
+    // possible
+    if(SimTK::isNaN(found) && SimTK::isNaN(expected))
+        return;
     if (found < expected - tolerance || found > expected + tolerance)
         throw OpenSim::Exception(message, file, line);
 }
+
+template <typename T,
+    typename std::enable_if<std::is_integral<T>::value>::type* = nullptr >
+    void ASSERT_EQUAL(T expected,
+                      T found,
+                      std::string file = "",
+                      int line = -1,
+                      std::string message = "") {
+    if (found != expected)
+        throw OpenSim::Exception(message, file, line);
+}
+
+template <typename T,
+    typename std::enable_if<!std::is_arithmetic<T>::value>::type* = nullptr >
+    void ASSERT_EQUAL(T expected,
+                      T found,
+                      T tolerance,
+                      std::string file = "",
+                      int line = -1,
+                      std::string message = "") {
+    // if both values are NaN treat them as equivalent 
+    if (found.isNaN() && expected.isNaN() )
+        return;
+    if (found < expected - tolerance || found > expected + tolerance)
+        throw OpenSim::Exception(message, file, line);
+}
+
 template<int M, typename ELT, int STRIDE>
 void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   const SimTK::Vec<M, ELT, STRIDE>& vecB,
@@ -51,6 +97,9 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        // if both values are NaN treat them as being equivalent
+        if (vecA.isNaN() && vecB.isNaN())
+            return;
         SimTK_TEST_EQ(vecA, vecB);
     } catch(const SimTK::Exception::Assert&) {
         throw OpenSim::Exception(message, file, line);
@@ -64,12 +113,37 @@ void ASSERT_EQUAL(const SimTK::Vec<M, ELT, STRIDE>& vecA,
                   int line = -1,
                   const std::string& message = "") {
     try {
+        // if both values are NaN treat them as being equivalent
+        if (vecA.isNaN() && vecB.isNaN())
+            return;
         SimTK_TEST_EQ_TOL(vecA, vecB, tolerance);
     } catch(const SimTK::Exception::Assert&) {
         throw OpenSim::Exception(message, file, line);
     }
 }
 
+template<typename Container, typename T>
+void ASSERT_EQUAL( const Container& vecA,
+                   const Container& vecB,
+                    T tolerance,
+                    std::string file = "",
+                    int line = -1,
+                    std::string message = "") {
+
+    if (vecA.size() != vecB.size()) {
+        throw OpenSim::Exception(message, file, line);
+    }
+    else {
+        for (auto i = 0; i < vecA.size(); ++i) {
+            // if both values are NaN treat them as being equivalent
+            if ( SimTK::isNaN(vecA[i]) && SimTK::isNaN(vecB[i]) )
+                continue;
+            if (vecA[i] < vecB[i] - tolerance || vecA[i] > vecB[i] + tolerance) {
+                throw OpenSim::Exception(message, file, line);
+            }
+        }
+    }
+}
 
 inline void ASSERT(bool cond, 
                    std::string file="", 
