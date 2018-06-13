@@ -120,6 +120,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 // BTK reads empty values as zero, but sets a "residual" value
                 // to -1 and it is how it knows to export these values as 
                 // blank, instead of 0,  when exporting to .trc
+                // See: BTKCore/Code/IO/btkTRCFileIO.cpp#L359-L360
                 // Read in value if it is not zero or residual is not -1
                 if (!pt->GetValues().row(f).isZero() ||    //not precisely zero
                     (pt->GetResiduals().coeff(f) != -1) ) {//residual is not -1
