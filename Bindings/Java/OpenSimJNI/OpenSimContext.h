@@ -88,20 +88,20 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 public:
     OpenSimContext(SimTK::State* s, Model* model);
 
-    void setState( SimTK::State* s) { _configState.reset(s); }
+    void setState( SimTK::State* s) { _configState = *s; }
     void setModel( Model* m) { _model.reset(m); }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
-    const SimTK::State& getCurrentStateRef() const { return (*_configState); };
+    const SimTK::State& getCurrentStateRef() const { return (_configState); };
     /** Return a "clone" of  the single instance of SimTK::State maintained by the Context object **/
-    SimTK::State getCurrentStateCopy() const { return SimTK::State(*_configState); };
+    SimTK::State getCurrentStateCopy() const { return SimTK::State(_configState); };
         void recreateSystemAfterSystemExistsKeepStage(); 
         void recreateSystemAfterSystemExists(); 
         void resetStateToDefault() {
-             SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+             SimTK::Stage stageBeforeRecreatingSystem = _configState.getSystemStage();
              SimTK::State* newState = &_model->initSystem();
              setState( newState );
-            _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
+            _model->getMultibodySystem().realize( _configState, stageBeforeRecreatingSystem );
         }
     // Transforms
     void transformPosition(const PhysicalFrame& body, double offset[], double gOffset[]);
@@ -118,19 +118,19 @@ public:
     bool isConstrained(const Coordinate& coord) const;
     // Constraints
     bool isEnforced(const Constraint& constraint) const {
-        return constraint.isEnforced(*_configState);
+        return constraint.isEnforced(_configState);
     }
     void setIsEnforced(Constraint& constraint, bool isEnforced) {
-        constraint.setIsEnforced(*_configState, isEnforced);
-        _model->assemble(*_configState);
+        constraint.setIsEnforced(_configState, isEnforced);
+        _model->assemble(_configState);
     }
     // Forces
     bool appliesForce(const Force& force) const {
-        return  force.appliesForce(*_configState);
+        return  force.appliesForce(_configState);
     }
-    void setAppliesForce(Force& force, bool applyForce) const {
-        force.setAppliesForce(*_configState, applyForce);
-        _model->getMultibodySystem().realize(*_configState,
+    void setAppliesForce(Force& force, bool applyForce) {
+        force.setAppliesForce(_configState, applyForce);
+        _model->getMultibodySystem().realize(_configState,
                                              SimTK::Stage::Position);
     }
     // Muscles
@@ -168,7 +168,7 @@ public:
     void updateMarkerSet(Model& model, MarkerSet& aMarkerSet);
 
     void getCenterOfMassInGround(double com[3]) const {
-        SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);
+        SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(_configState);
         for(int i=0; i<3; i++) com[i] = comV[i];
     }
     // Analyses
@@ -190,7 +190,7 @@ public:
 
     double getTime() { 
         assert(_configState); 
-        return (_configState->getTime()); 
+        return (_configState.getTime()); 
     }
     // Convert SimTK::Transform into a double[] array of 16 doubles
     static void getTransformAsDouble16(const SimTK::Transform& aTransform, double flattened[]){
@@ -200,18 +200,18 @@ public:
     // Sets the property values in the model from the current state if there
     // are state variables that correspond to properties.
     void setPropertiesFromState() { 
-        _model->setPropertiesFromState(*_configState);
+        _model->setPropertiesFromState(_configState);
     }
     /**
      * Create a new System under the model then realize it to the same stage it had
      */
     void recreateSystemKeepStage() {
-        SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
-        SimTK::Vector y1 = _configState->getY();
+        SimTK::Stage stageBeforeRecreatingSystem = _configState.getSystemStage();
+        SimTK::Vector y1 = _configState.getY();
         SimTK::State* newState = &_model->initSystem();
         newState->updY() = y1;
         setState( newState );
-        _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
+        _model->getMultibodySystem().realize( _configState, stageBeforeRecreatingSystem );
     }
     // Force re-realization
     void realizePosition();
@@ -225,7 +225,7 @@ public:
 
 private:
     // SimTK::State supporting the OpenSim::Model 
-    SimTK::ReferencePtr<SimTK::State> _configState;
+    SimTK::State _configState;
     // The OpenSim::model 
     SimTK::ReferencePtr<Model> _model;
 

@@ -47,41 +47,41 @@
 namespace OpenSim {
 
 OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) {
-    _configState.reset(s);
+    _configState = *s;
     _model.reset(model);
 }
 
 
 // Transforms
 void OpenSimContext::transformPosition(const PhysicalFrame& body, double* offset, double* gOffset) {
-    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    _model->getMultibodySystem().realize(_configState, SimTK::Stage::Position);
     SimTK::Vec3::updAs(gOffset) = 
-        body.findStationLocationInGround(*_configState, SimTK::Vec3(offset));
+        body.findStationLocationInGround(_configState, SimTK::Vec3(offset));
 }
 
 SimTK::Transform OpenSimContext::getTransform(const PhysicalFrame& body) { // Body Should be made const
-     _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-     return body.getTransformInGround(*_configState);
+     _model->getMultibodySystem().realize(_configState, SimTK::Stage::Position);
+     return body.getTransformInGround(_configState);
 }
 
 void OpenSimContext::transform(const PhysicalFrame& ground, double* d, PhysicalFrame& body, double* dragVectorBody) {
-    _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    _model->getMultibodySystem().realize(_configState, SimTK::Stage::Position);
     SimTK::Vec3::updAs(dragVectorBody) = 
-        ground.expressVectorInAnotherFrame(*_configState, SimTK::Vec3(d), body);
+        ground.expressVectorInAnotherFrame(_configState, SimTK::Vec3(d), body);
     return;
 }
 
 
 // Coordinates
 double OpenSimContext::getValue(const Coordinate& coord) {
-        return( coord.getValue( *_configState));
+        return( coord.getValue( _configState));
 }
 
 bool OpenSimContext::getLocked(const Coordinate& coord) {
-    return coord.getLocked(*_configState);
+    return coord.getLocked(_configState);
 }
 void OpenSimContext::setValue(const Coordinate& coord, double d, bool enforceConstraints) {
-  coord.setValue(*_configState, d, enforceConstraints);
+  coord.setValue(_configState, d, enforceConstraints);
     return;
 }
 
@@ -92,7 +92,7 @@ void OpenSimContext::setClamped(Coordinate&  coord, bool newValue) {
 }
 
 bool OpenSimContext::getClamped(const Coordinate& coord) {
-  return coord.getClamped(*_configState);
+  return coord.getClamped(_configState);
 }
 
 void OpenSimContext::setLocked(Coordinate& coord, bool newValue) {
@@ -103,32 +103,32 @@ void OpenSimContext::setLocked(Coordinate& coord, bool newValue) {
 }
 
 bool OpenSimContext::isPrescribed(const Coordinate& coord) const {
-  return (coord.isPrescribed(*_configState));
+  return (coord.isPrescribed(_configState));
 }
 
 bool OpenSimContext::isConstrained(const Coordinate& coord) const {
-  return (coord.isDependent(*_configState));
+  return (coord.isDependent(_configState));
 }
 
 // Muscles
 double OpenSimContext::getActivation(Muscle& m) {
   // realize to dynamics as required by new muscle models before asking for activation
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Dynamics);
-  return m.getActivation(*_configState);
+  _model->getMultibodySystem().realize(_configState, SimTK::Stage::Dynamics);
+  return m.getActivation(_configState);
 }
 
 double OpenSimContext::getMuscleLength(Muscle& m) {
-  return m.getLength(*_configState);
+  return m.getLength(_configState);
 }
 
 const Array<AbstractPathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
-  return m.getGeometryPath().getCurrentPath(*_configState);
+  return m.getGeometryPath().getCurrentPath(_configState);
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
   to = from;
   recreateSystemKeepStage();
-  to.updGeometryPath().updateGeometry(*_configState);
+  to.updGeometryPath().updateGeometry(_configState);
 }
 
 // Muscle Points
@@ -172,7 +172,7 @@ void OpenSimContext::setBody(AbstractPathPoint& pathPoint, PhysicalFrame&  newBo
 {
     PathPoint* spp = dynamic_cast<PathPoint*>(&pathPoint);
     if (spp) {
-        spp->changeBodyPreserveLocation(*_configState, newBody);
+        spp->changeBodyPreserveLocation(_configState, newBody);
         this->recreateSystemAfterSystemExists();
         realizeVelocity();
         return;
@@ -189,15 +189,15 @@ void OpenSimContext::setBody(AbstractPathPoint& pathPoint, PhysicalFrame&  newBo
 //-------------------------------------------------------------------
 void OpenSimContext::recreateSystemAfterSystemExistsKeepStage( )
 {
-   SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+   SimTK::Stage stageBeforeRecreatingSystem = _configState.getSystemStage();
    this->recreateSystemAfterSystemExists();
-  _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
+  _model->getMultibodySystem().realize( _configState, stageBeforeRecreatingSystem );
 }
 
 //-------------------------------------------------------------------
 void OpenSimContext::recreateSystemAfterSystemExists( )
 {
-  SimTK::Vector y1 = _configState->getY();
+  SimTK::Vector y1 = _configState.getY();
   SimTK::State* newState = &_model->initSystem();
   newState->updY() = y1;
   this->setState( newState );
@@ -223,42 +223,42 @@ void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
 }
 
 bool OpenSimContext::replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint) {
-   bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
+   bool ret= p.replacePathPoint(_configState, &mp, &newPoint );
    recreateSystemAfterSystemExists();
    realizeVelocity();
-   p.updateGeometry(*_configState);
+   p.updateGeometry(_configState);
    return ret;
 }
 
 void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
-    SimTK::Vec3 loc = mp.getLocation(*_configState);
+    SimTK::Vec3 loc = mp.getLocation(_configState);
     loc[i] = d;
     mp.setLocation(loc);
     recreateSystemKeepStage();
 }
 
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
-    mw.setEndPoint(*_configState, newEndPt );
+    mw.setEndPoint(_configState, newEndPt );
     recreateSystemKeepStage();
     return;
 }
 
 void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame&  body) {
-    p.addPathPoint(*_configState, menuChoice, body );
+    p.addPathPoint(_configState, menuChoice, body );
     recreateSystemKeepStage();
-    p.updateGeometry(*_configState);
+    p.updateGeometry(_configState);
     return;
 }
 
 bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
-    bool deletedSuccessfully = p.deletePathPoint(*_configState, menuChoice );
+    bool deletedSuccessfully = p.deletePathPoint(_configState, menuChoice );
     if (deletedSuccessfully) 
         recreateSystemKeepStage();
     return deletedSuccessfully;
 }
 
 bool OpenSimContext::isActivePathPoint(AbstractPathPoint& mp) {
-  return mp.isActive(*_configState);
+  return mp.isActive(_configState);
 };
 
 //_____________________________________________________________________________
@@ -286,7 +286,7 @@ void OpenSimContext::replacePropertyFunction(OpenSim::Object& obj, OpenSim::Func
 
 // Muscle Wrapping
 void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
-     mw.setStartPoint(*_configState, newStartPt );
+     mw.setStartPoint(_configState, newStartPt );
      return;
 }
 
@@ -296,30 +296,30 @@ void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
 }
 
 void OpenSimContext::moveUpPathWrap(GeometryPath& p, int num) {
-    p.moveUpPathWrap( *_configState, num );
+    p.moveUpPathWrap( _configState, num );
     recreateSystemKeepStage();
-    p.updateGeometry(*_configState);
+    p.updateGeometry(_configState);
     return;
 }
 
 void OpenSimContext::moveDownPathWrap(GeometryPath& p, int num) {
-    p.moveDownPathWrap( *_configState, num );
+    p.moveDownPathWrap( _configState, num );
     recreateSystemKeepStage();
-    p.updateGeometry(*_configState);
+    p.updateGeometry(_configState);
     return;
 }
 
 void OpenSimContext::deletePathWrap(GeometryPath& p, int num) {
-    p.deletePathWrap( *_configState, num );
+    p.deletePathWrap( _configState, num );
     recreateSystemKeepStage();
-    p.updateGeometry(*_configState);
+    p.updateGeometry(_configState);
     return;
 }
 
 // Markers
 void OpenSimContext::setBody(Marker& currentMarker, PhysicalFrame&  newBody, bool b) {
     if( b ) {
-         currentMarker.changeFramePreserveLocation( *_configState, newBody );
+         currentMarker.changeFramePreserveLocation( _configState, newBody );
     } else {
          currentMarker.changeFrame( newBody );
     }
@@ -334,7 +334,7 @@ void OpenSimContext::updateMarkerSet(Model& model, MarkerSet& aMarkerSet) {
 // Analyses
 int OpenSimContext::step(Analysis& analysis)
 {
-  return analysis.step( *_configState, 0);
+  return analysis.step( _configState, 0);
 }
 
 // Tools
@@ -348,11 +348,11 @@ bool OpenSimContext::solveInverseKinematics( InverseKinematicsTool& ikTool) {
 }
 
 void OpenSimContext::setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees) {
-  analyzeTool.setStatesFromMotion(*_configState, aMotion, aInDegrees);
+  analyzeTool.setStatesFromMotion(_configState, aMotion, aInDegrees);
 }
 
 void OpenSimContext::loadStatesFromFile(AnalyzeTool& analyzeTool) {
-  analyzeTool.loadStatesFromFile(*_configState);
+  analyzeTool.loadStatesFromFile(_configState);
 }
 
 bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
@@ -360,12 +360,12 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      const std::string& aPathToSubject,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
-    _configState.reset(&aModel->updWorkingState());
+    _configState = aModel->updWorkingState();
   bool retValue= modelScaler.processModel(aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
-    _configState.reset(&aModel->updWorkingState());
-  aModel->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+    _configState = aModel->updWorkingState();
+  aModel->getMultibodySystem().realize(_configState, SimTK::Stage::Position);
   return retValue;
 }
 
@@ -379,7 +379,7 @@ double OpenSimContext::computeMeasurementScaleFactor(ModelScaler& modelScaler,
                            const Model& aModel,
                            const MarkerData& aMarkerData,
                            const Measurement& aMeasurement) const {
-  return modelScaler.computeMeasurementScaleFactor(*_configState, aModel, aMarkerData, aMeasurement);
+  return modelScaler.computeMeasurementScaleFactor(_configState, aModel, aMarkerData, aMeasurement);
 }
 
 void OpenSimContext::replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::Function& aFunction) {
@@ -390,11 +390,11 @@ void OpenSimContext::replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::
 
 // Force re-realization
 void OpenSimContext::realizePosition() {
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+  _model->getMultibodySystem().realize(_configState, SimTK::Stage::Position);
 
 }
 void OpenSimContext::realizeVelocity() {
-  _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
+  _model->getMultibodySystem().realize(_configState, SimTK::Stage::Velocity);
 
 }
 
