@@ -1,30 +1,58 @@
 classdef osimC3D < matlab.mixin.SetGet
-% osimC3D C3D data into OpenSim Tables
-%   Utility  Class that uses OpenSim's C3DFileAdapter() class to produce
-%   OpenSim tables. Methods include Simbody rotation.
+% osimC3D(filepath, ForceLocation)
+%   C3D data to OpenSim Tables.
+%   OpenSim Utility Class
+%   Inputs:
+%   filepath           Full path to the location of the C3D file
+%   ForceLocation      Integer value for representation of force from plate
+%                      0 = forceplate orgin, 1 = surface, 2 = COP
     properties (Access = private)
         path
         markers
         forces
+        ForceLocation
     end
     methods
-        function obj = osimC3D(path2c3d)
-            % Class Constructor: input is an absolute path to a C3D file. 
-            
+        function obj = osimC3D(path2c3d, ForceLocation)
+            % Class Constructor: input is an absolute path to a C3D file.
+
+            % Verify the correct number of inputs
+            if nargin ~= 2
+                error('Number of inputs is incorrect. Class requires filepath (string) and ForceLocation (integer)')
+            end
             % verify the file path is correct
             if exist(path2c3d, 'file') == 0
                 error('File does not exist. Check path is correct')
             else
                 obj.path = path2c3d;
             end
+            % Verify the ForceLocation input is correct
+            if  ~isnumeric(ForceLocation) || ~ismember(ForceLocation,[0:2])
+                error('ForceLocation must be an integer of value 0, 1, or 2')
+            end
             % load java libs
             import org.opensim.modeling.*
             % Use a c3dAdapter to turn read a c3d file
-            tables = C3DFileAdapter().read(path2c3d);
-            % get the marker and force data into OpenSim tables
+            tables = C3DFileAdapter().read(path2c3d, ForceLocation);
+            % set the marker and force data into OpenSim tables
             obj.markers = tables.get('markers');
             obj.forces = tables.get('forces');
-        end            
+            % set the force location specifier incase someone wants to
+            % check.
+            switch(ForceLocation)
+                case 0
+                    location = 'OriginOfForcePlate';
+                case 1
+                    location = 'CenterOfPressure';
+                case 2
+                    location = 'PointOfWrenchApplication';
+            end
+            obj.ForceLocation = location;
+        end
+        function location = getForceLocation(obj)
+            % Get the Force Location
+            location = obj.ForceLocation();
+        end
         function rate = getRate_marker(obj)
             % Get the capture rate used for the Marker Data
             rate = str2double(obj.markers.getTableMetaDataAsString('DataRate'));
@@ -70,9 +98,9 @@ classdef osimC3D < matlab.mixin.SetGet
             disp('Maker and force data returned as Matlab Structs')
         end
         function rotateData(obj,axis,value)
-            % Method for rotating marker and force data stored in OpenSim 
+            % Method for rotating marker and force data stored in OpenSim
             % tables
-            if ~ischar(axis) 
+            if ~ischar(axis)
                error('Axis must be either x,y or z')
             end
             if ~isnumeric(value)
@@ -81,11 +109,11 @@ classdef osimC3D < matlab.mixin.SetGet
             % rotate the tables
             obj.rotateTable(obj.markers, axis, value);
             obj.rotateTable(obj.forces, axis, value);
-            
+
             disp('Marker and Force tables have been rotated')
         end
    end
-   
+
    methods (Access = private, Hidden = true)
         function setMarkers(obj, a)
             % Private Method for setting the internal Marker table
@@ -94,10 +122,10 @@ classdef osimC3D < matlab.mixin.SetGet
         function setForces(obj, a)
             % Private Method for setting the internal Force table
             obj.forces = a;
-        end 
-        function rotateTable(obj, table, axisString, value) 
+        end
+        function rotateTable(obj, table, axisString, value)
             % Private Method for doing the table rotation operations
-            
+
             import org.opensim.modeling.*
             % set up the transform
             if strcmp(axisString, 'x')
@@ -113,7 +141,7 @@ classdef osimC3D < matlab.mixin.SetGet
             % instantiate a transform object. Rotation() is a Simbody class
             R = Rotation( deg2rad(value) , axis ) ;
 
-            % Rotation() works on each row. 
+            % Rotation() works on each row.
             for iRow = 0 : table.getNumRows() - 1
                 % get a row from the table
                 rowVec = table.getRowAtIndex(iRow);
@@ -124,4 +152,4 @@ classdef osimC3D < matlab.mixin.SetGet
             end
         end
    end
-end 
+end
