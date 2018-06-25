@@ -563,13 +563,14 @@ protected:
     lost here. **/
     void setDocument(XMLDocument* doc) {_document=doc;}
 
-    /** Get a const pointer to the document (if any) associated with this
-    object. **/
-    const XMLDocument* getDocument() const {return _document;}
     /** Get a writable pointer to the document (if any) associated with this
     object. **/
     XMLDocument* updDocument() {return _document;}
 public:
+    /** Get a const pointer to the document (if any) associated with this
+    object. **/
+    const XMLDocument* getDocument() const { return _document; }
+
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
     std::string getDocumentFileName() const;
