@@ -112,6 +112,67 @@ classdef osimC3D < matlab.mixin.SetGet
 
             disp('Marker and Force tables have been rotated')
         end
+        function writeTRC(obj,varargin)
+         % Function for writing marker data to trc file.
+         % osimC3d.writeTRC()
+         % osimC3d.writeTRC('fullpath2file')
+
+          % Validate the output filename
+          if nargin > 2
+              error([ num2str(nargin - 1) ' inputs, expecting 1'])
+          elseif nargin == 1
+              [filepath, name, ext] = fileparts(obj.path);
+              OutputTRCName = fullfile(filepath, [name '.trc']);
+              % disp(['File path is ' OutputTRCName])
+          elseif nargin == 2 && ischar(varargin{1})
+              OutputTRCName = varargin{1};
+          end
+
+          import org.opensim.modeling.*
+          % Write to file
+          TRCFileAdapter().write( obj.getTable_markers, OutputTRCName)
+        end
+        function writeMOT(obj,varargin)
+         % Function for writing force data to trc file.
+         % osimC3d.writeTRC()
+         % osimC3d.writeTRC('fullpath2file')
+
+          % Validate the output filename
+          if nargin > 2
+              error([ num2str(nargin - 1) ' inputs, expecting 1'])
+          elseif nargin == 1
+              [filepath, name, ext] = fileparts(obj.path);
+              OutputMOTName = fullfile(filepath, [name '.mot']);
+              % disp(['File path is ' OutputTRCName])
+          elseif nargin == 2 && ischar(varargin{1})
+              OutputMOTName = varargin{1};
+          end
+
+          import org.opensim.modeling.*
+          % Flatten the Vec3 force table
+          forces = obj.getTable_forces();
+          postfix = StdVectorString();
+          postfix.add('_x');postfix.add('_y');postfix.add('_z');
+          forces_flat = forces.flatten(postfix);
+
+
+          % Change the header in the file to meet Storage conditions
+          if forces_flat.getTableMetaDataKeys().size() > 0
+              for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
+                  % get the metakey string at index zero. Since the array gets smaller on
+                  % each loop, we just need to keep taking the first one in the array.
+                  metakey = char(forces_flat.getTableMetaDataKeys().get(0));
+                  % remove the key from the meta data
+                  forces_flat.removeTableMetaDataKey(metakey)
+              end
+          end
+          % Add the column and row data to the meta key
+          forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
+          forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
+
+          % Write to file
+          STOFileAdapter().write(forces_flat, OutputMOTName)
+      end
    end
 
    methods (Access = private, Hidden = true)
