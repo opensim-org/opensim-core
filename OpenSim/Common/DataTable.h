@@ -31,6 +31,7 @@ in-memory container for data access and manipulation.                         */
 #include "AbstractDataTable.h"
 #include "FileAdapter.h"
 #include "SimTKcommon/internal/BigMatrix.h"
+#include <OpenSim/Common/IO.h>
 
 #include <iomanip>
 #include <numeric>
@@ -646,20 +647,19 @@ public:
     void appendRow(const ETX& indRow, const RowVectorView& depRow) {
         validateRow(_indData.size(), indRow, depRow);
 
+        if (_dependentsMetaData.hasKey("labels")) {
+            auto& labels =
+                    _dependentsMetaData.getValueArrayForKey("labels");
+            OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) !=
+                             labels.size(),
+                             IncorrectNumColumns,
+                             labels.size(),
+                             static_cast<size_t>(depRow.ncol()));
+        }
+
         _indData.push_back(indRow);
 
-        if(_depData.nrow() == 0 || _depData.ncol() == 0) {
-            try {
-                auto& labels = 
-                    _dependentsMetaData.getValueArrayForKey("labels");
-                OPENSIM_THROW_IF(static_cast<unsigned>(depRow.ncol()) != 
-                                 labels.size(),
-                                 IncorrectNumColumns, 
-                                 labels.size(), 
-                                 static_cast<size_t>(depRow.ncol()));
-            } catch(KeyNotFound&) {
-                // No "labels". So no operation.
-            }
+        if(_depData.nrow() == 0) {
             _depData.resize(1, depRow.size());
         }
         else 
@@ -670,10 +670,8 @@ public:
 
     /** Get row at index.                                                     
 
-    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If index is out of range.                      */
     const RowVectorView getRowAtIndex(size_t index) const {
-        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -699,10 +697,8 @@ public:
 
     /** Update row at index.                                                  
 
-    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     RowVectorView updRowAtIndex(size_t index) {
-        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
@@ -731,7 +727,6 @@ public:
     updRowAtIndex(index) = depRow;
     ```
 
-    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void setRowAtIndex(size_t index, const RowVectorView& depRow) {
         updRowAtIndex(index) = depRow;
@@ -742,7 +737,6 @@ public:
     updRowAtIndex(index) = depRow;
     ```
 
-    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void setRowAtIndex(size_t index, const RowVector& depRow) {
         updRowAtIndex(index) = depRow;
@@ -780,17 +774,15 @@ public:
 
     /** Remove row at index.
 
-    \throws EmptyTable If the table is empty.
     \throws RowIndexOutOfRange If the index is out of range.                  */
     void removeRowAtIndex(size_t index) {
-        OPENSIM_THROW_IF(isEmpty(), EmptyTable);
         OPENSIM_THROW_IF(isRowIndexOutOfRange(index),
                          RowIndexOutOfRange, 
                          index, 0, static_cast<unsigned>(_indData.size() - 1));
 
         if(index < getNumRows() - 1)
             for(size_t r = index; r < getNumRows() - 1; ++r)
-                _depData.updRow((int)index) = _depData.row((int)(index + 1));
+                _depData.updRow((int)r) = _depData.row((int)(r + 1));
         
         _depData.resizeKeep(_depData.nrow() - 1, _depData.ncol());
         _indData.erase(_indData.begin() + index);
@@ -1199,6 +1191,15 @@ protected:
         _depData = depData;
     }
 
+    /** Construct a table with only the independent column and 0
+    dependent columns. This constructor is useful when populating the table by
+    appending columns rather than by appending rows.                          */
+    DataTable_(const std::vector<ETX>& indVec) {
+        setColumnLabels({});
+        _indData = indVec;
+        _depData.resize((int)indVec.size(), 0);
+    }
+
     // Implement toString.
     std::string toString_impl(std::vector<int> rows         = {},
                               std::vector<int> cols         = {},
@@ -1476,24 +1477,41 @@ protected:
 
     \throws MissingMetaData If metadata for dependent columns does not 
                             contain a key named "labels". 
-    \throws MetaDataLengthZero If 'labels' metadata has length 0.
     \throws IncorrectMetaDataLength (1) If ValueArray for key "labels" does not
                             have length equal to the number of columns in the
                             table. (2) If not all entries in the metadata for
                             dependent columns have the correct length (equal to
-                            number of columns).                               */
+                            number of columns).                               
+    \throws InvalidColumnLabel (1) if label is an empty string, (2) if label
+                               contains tab or newline characters, or (3) if
+                               label has leading or trailing spaces.*/
     void validateDependentsMetaData() const override {
         size_t numCols{};
-        try {
-            numCols = (unsigned)_dependentsMetaData
-                                        .getValueArrayForKey("labels").size();
-        } catch (KeyNotFound&) {
+
+        if (!_dependentsMetaData.hasKey("labels")) {
             OPENSIM_THROW(MissingMetaData, "labels");
         }
 
-        OPENSIM_THROW_IF(numCols == 0,
-                         MetaDataLengthZero,
-                         "Length of 'labels' metadata is 0.");
+        const auto labels = getColumnLabels();
+        numCols = labels.size();
+
+        // validate each label individually
+        for (const auto& label : labels) {
+            OPENSIM_THROW_IF(label.empty(),
+                InvalidColumnLabel,
+                "Empty column labels are not permitted.");
+
+            OPENSIM_THROW_IF(
+                label.find_first_of("\t\r\n") != std::string::npos,
+                InvalidColumnLabel, 
+                "Tabs and newlines are not permitted in column labels.");
+
+            auto front = label.find_first_not_of(" ");
+            auto back = label.find_last_not_of(" ");
+            OPENSIM_THROW_IF((front != 0 || back != label.size()-1),
+                InvalidColumnLabel,
+                "Leading/trailing spaces are not permitted in column labels.");
+        }
 
         OPENSIM_THROW_IF(_depData.ncol() != 0 && 
                          numCols != static_cast<unsigned>(_depData.ncol()),
@@ -1513,7 +1531,7 @@ protected:
 
     \throws InvalidRow If the given row considered invalid by the derived
                        class.                                                 */
-    virtual void validateRow(size_t rowIndex, 
+    virtual void validateRow(size_t rowIndex,
                              const ETX&, 
                              const RowVector&) const {
         // No operation.

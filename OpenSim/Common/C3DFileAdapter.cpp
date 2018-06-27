@@ -44,8 +44,12 @@ C3DFileAdapter::clone() const {
 }
 
 C3DFileAdapter::Tables
-C3DFileAdapter::read(const std::string& fileName) {
-    auto abstables = C3DFileAdapter{}.extendRead(fileName);
+C3DFileAdapter::read(const std::string& fileName, ForceLocation wrt)
+{
+    C3DFileAdapter c3dreader{};
+    c3dreader.setLocationForForceExpression(wrt);
+
+    auto abstables = c3dreader.extendRead(fileName);
     auto marker_table = 
         std::static_pointer_cast<TimeSeriesTableVec3>(abstables.at(_markers));
     auto force_table = 
@@ -108,13 +112,23 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         double time_step{1.0 / acquisition->GetPointFrequency()};
         for(int f = 0; f < marker_nrow; ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{marker_pts->GetItemNumber()};
+            SimTK::RowVector_<SimTK::Vec3> row{ marker_pts->GetItemNumber(), 
+                                                SimTK::Vec3(SimTK::NaN) };
             int m{0};
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
                 auto pt = *it;
-                row[m++] = SimTK::Vec3{pt->GetValues().coeff(f, 0),
-                                       pt->GetValues().coeff(f, 1),
-                                       pt->GetValues().coeff(f, 2)};
+                // BTK reads empty values as zero, but sets a "residual" value
+                // to -1 and it is how it knows to export these values as 
+                // blank, instead of 0,  when exporting to .trc
+                // See: BTKCore/Code/IO/btkTRCFileIO.cpp#L359-L360
+                // Read in value if it is not zero or residual is not -1
+                if (!pt->GetValues().row(f).isZero() ||    //not precisely zero
+                    (pt->GetResiduals().coeff(f) != -1) ) {//residual is not -1
+                    row[m] = SimTK::Vec3{ pt->GetValues().coeff(f, 0),
+                                          pt->GetValues().coeff(f, 1),
+                                          pt->GetValues().coeff(f, 2) };
+                }
+                ++m;
             }
 
             marker_matrix.updRow(f) = row;
@@ -169,6 +183,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         // Get ground reaction wrenches for the force platform.
         auto ground_reaction_wrench_filter = 
             btk::GroundReactionWrenchFilter::New();
+        ground_reaction_wrench_filter->setLocation(
+            btk::GroundReactionWrenchFilter::Location(getLocationForForceExpression()));
         ground_reaction_wrench_filter->SetInput(*platform);
         auto wrench_collection = ground_reaction_wrench_filter->GetOutput();
         ground_reaction_wrench_filter->Update();

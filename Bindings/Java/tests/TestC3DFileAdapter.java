@@ -5,7 +5,8 @@ class TestC3DFileAdapter {
     public static void test_C3DFileAdapter() {
         C3DFileAdapter c3dAdapter = new C3DFileAdapter();
         StdMapStringTimeSeriesTableVec3 tables =
-            c3dAdapter.read("walking5.c3d");
+            c3dAdapter.read("walking5.c3d", 
+            C3DFileAdapter.ForceLocation.CenterOfPressure);
 
         // Marker data read from C3D.
         TimeSeriesTableVec3 markerTable = tables.get("markers");

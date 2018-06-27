@@ -2045,7 +2045,7 @@ void testAddedFreeJointForBodyWithoutJoint()
 
     model.initSystem();
 
-    ASSERT_EQUAL(6, model.getNumCoordinates(), 0);
+    ASSERT_EQUAL(6, model.getNumCoordinates());
     model.printBasicInfo();
 }
 
