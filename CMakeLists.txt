@@ -495,6 +495,8 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
+# This line defines the variable CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS,
+# which we use in Bindings/Java/CMakeLists.txt.
 include(InstallRequiredSystemLibraries)
 
 # C++11
