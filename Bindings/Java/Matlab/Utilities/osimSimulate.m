@@ -100,7 +100,6 @@ while true
     % Simulate.
     thisState = State(initState);
     manager = Manager(model);
-    manager.setIntegratorAccuracy(1e-4);
     manager.initialize(thisState);
     state = manager.integrate(finalTime);
     simulatedAtLeastOnce = true;
