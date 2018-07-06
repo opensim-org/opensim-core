@@ -127,9 +127,9 @@ reporter.addToReport(...
 hopper.addComponent(reporter);
 % }
 
-sHD = hopper.initSystem();
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHD, true);
+% The second argument determines if the simbody-visualizer should be used.
+% The third argument is the simulation duration.
+osimSimulate(hopper, true, 5.0);
 
 if exist('reporter') == 1
     % (Done for you) Display the TableReporter's data, and save it to a file.
