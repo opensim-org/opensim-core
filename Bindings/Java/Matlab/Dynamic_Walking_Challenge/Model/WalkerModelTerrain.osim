@@ -39,7 +39,7 @@
 									<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
 									<input_transform_connectee_name></input_transform_connectee_name>
 									<!--Half lengths in X, Y, Z respectively.-->
-									<half_lengths>10 0.050000000000000003 1</half_lengths>
+									<half_lengths>5 0.025000000000000001 0.5</half_lengths>
 								</Brick>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
