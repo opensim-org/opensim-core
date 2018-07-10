@@ -31,7 +31,7 @@ p = inputParser();
 
 % Default values if no input is specified
 defaultMuscle = 'averageJoe';
-defaultMuscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
+defaultMuscleExcitation = [0.0 1.99 2.0 3.89 3.9 5;
                           0.3 0.3  1.0 1.0  0.1 0.1];
 defaultAddPassiveDevice = false;
 defaultPassivePatellaWrap = false;

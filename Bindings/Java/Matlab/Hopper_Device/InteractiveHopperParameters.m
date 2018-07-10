@@ -65,7 +65,7 @@ end
 %   and plotting colors.
 function [muscleExcitation,muscleExcitationColor,deviceControl,deviceControlColor] = controls()
     
-muscleExcitation = [0.0 1.99 2.0 3.89 3.9 4.0;
+muscleExcitation = [0.0 1.99 2.0 3.89 3.9 5.0;
                     0.3 0.3  1.0 1.0  0.1 0.1];
 muscleExcitationColor = [0.64 0.08 0.18];
 deviceControl = [0.0 2.5 5.0;
