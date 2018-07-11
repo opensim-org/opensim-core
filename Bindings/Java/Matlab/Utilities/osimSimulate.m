@@ -11,13 +11,14 @@ function osimSimulate(model, stateOrVisualize, finalTime)
 %
 % Parameters
 % ----------
-% model: The OpenSim Model to simulate. You must have called initSystem() on
-%        this model.
+% model: The OpenSim Model to simulate.
 % stateOrVisualize:
 %    State mode: The second parameter is the SimTK State to use as the initial
 %        state for the simulation. In this case, you must have already called
-%        initSystem() on the model. The provided state is updated to be the
-%        state at the end of the simulation.
+%        initSystem() on the model. You can indicate if the visualizer should
+%        be used via model.setUseVisualizer() (before calling initSystem()).
+%        The provided state is updated to be the state at the end of the
+%        simulation.
 %    Visualize mode: The second parameter is a boolean indicating whether or
 %        not the visualizer should be used. In this case, you need not call
 %        initSystem() yourself. This function will call initSystem()
