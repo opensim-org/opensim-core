@@ -438,10 +438,10 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
     SimTK::Transform transform;
     transform.updR().setRotationFromAngleAboutZ(.5);
     stdPrimitives.push_back(
-        DecorativeBrick({ 0.005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeBrick({ 0.0005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
         .setIndexOnBody(-1).setOpacity(0.7).setScale(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
-        .setTransform(transform * Transform(Vec3(0.005, 0, 0))));
+        .setTransform(transform * Transform(Vec3(0.0005, 0, 0))));
 
 }
 
