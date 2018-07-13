@@ -77,7 +77,7 @@ void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& 
     const auto& X_BF = getFrame().findTransformInBaseFrame();
     const auto& X_FP = getTransform();
     const auto X_BP = X_BF * X_FP;
-    const double brickHalfThickness = 0.005;
+    const double brickHalfThickness = 0.0005;
     geometry.push_back(
         SimTK::DecorativeBrick(Vec3{brickHalfThickness, 0.5, 0.5})
         // The brick is centered on the origin. To ensure the decorative
