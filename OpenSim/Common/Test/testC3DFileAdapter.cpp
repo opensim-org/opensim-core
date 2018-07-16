@@ -75,16 +75,20 @@ void test(const std::string filename) {
     using namespace OpenSim;
     using namespace std;
 
-    // The walking C3D files included in this test should not take more
-    // than 40ms on most hardware. We make the max time 100ms to account
-    // for potentially slower CI machines.
-    const double MaximumLoadTimeInMS = 100;
-    
     std::clock_t startTime = std::clock();
+    Storage("test.sto");
+    double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+
+    // The walking C3D files included in this test should not take more
+    // than 20x the time to load the 'test.sto' Storage on most hardware.
+    // We make the max time 50x to account for other potential slowdowns
+    // on CI machines.
+    const double MaximumLoadTimeInMS = 50*loadTime;
+    
     auto tables = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::OriginOfForcePlate);
 
-    double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
 
     cout << "\tC3DFileAdapter '" << filename << "' loaded in " 
         << loadTime << "ms" << endl;
