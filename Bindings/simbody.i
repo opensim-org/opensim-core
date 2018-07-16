@@ -243,6 +243,13 @@ namespace SimTK {
 
 // State & Stage
 %include <SWIGSimTK/Stage.h>
+namespace SimTK {
+%extend Stage {
+    int toInt() {
+        return (int)(*$self);
+    }
+}
+}
 %include <SWIGSimTK/State.h>
 // Used for StatesTrajectory iterating.
 %template(StdVectorState) std::vector<SimTK::State>;
