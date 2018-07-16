@@ -1241,10 +1241,15 @@ updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent)
  *
  * @return Document's filename for this object.
  */
-string Object::
-getDocumentFileName() const
+string Object::getDocumentFileName() const
 {
     return _document ? _document->getFileName() : "";
+}
+
+
+int Object::getDocumentFileVersion() const
+{ 
+    return _document ? _document->getDocumentVersion() : -1;
 }
 
 
