@@ -49,6 +49,8 @@ namespace OpenSim {
 OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) {
     _configState = *s;
     _model.reset(model);
+     // realize to same Stage as passed in state as copying doesn't maintain realization stage
+    _model->getMultibodySystem().realize(_configState, s->getSystemStage());
 }
 
 

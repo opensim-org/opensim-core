@@ -88,7 +88,10 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 public:
     OpenSimContext(SimTK::State* s, Model* model);
 
-    void setState( SimTK::State* s) { _configState = *s; }
+    void setState( SimTK::State* s) {
+        _configState = *s;
+        _model->getMultibodySystem().realize(_configState, s->getSystemStage());
+    }
     void setModel( Model* m) { _model.reset(m); }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
