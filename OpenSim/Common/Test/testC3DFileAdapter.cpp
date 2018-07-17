@@ -76,15 +76,16 @@ void test(const std::string filename) {
     using namespace std;
 
     std::clock_t startTime = std::clock();
-    Storage("test.sto");
+    Storage("std_walking2_grfs.sto");
     double loadTime = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
 
     // The walking C3D files included in this test should not take more
-    // than 20x the time to load the 'test.sto' Storage on most hardware.
-    // We make the max time 50x to account for other potential slowdowns
-    // on CI machines.
+    // than 10x the time to load the 'std_walking2_grfs.sto' Storage on most
+    // hardware. We make the max time 50x to account for other potential
+    // slowdowns on CI machines.
     const double MaximumLoadTimeInMS = 50*loadTime;
     
+    startTime = std::clock();
     auto tables = C3DFileAdapter::read(filename,
         C3DFileAdapter::ForceLocation::OriginOfForcePlate);
 
