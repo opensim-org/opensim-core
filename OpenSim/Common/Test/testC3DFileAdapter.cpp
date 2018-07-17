@@ -198,16 +198,16 @@ int main() {
     using namespace std::chrono;
 
     steady_clock::time_point startTime = steady_clock::now();
-    Storage("test.sto");
+    Storage("std_walking2_grfs.sto");
     steady_clock::time_point t2 = steady_clock::now();
 
     double loadTime = duration_cast<duration<double>>(t2 - startTime).count();
 
     // The walking C3D files included in this test should not take more
-    // than 20x the time to load the 'test.sto' Storage on most
-    // hardware. We make the max time 40x to account for other potential
+    // than 10x the time to load the 'std_walking2_grfs.sto' Storage on most
+    // hardware. We make the max time 50x to account for other potential
     // slowdowns on CI machines.
-    MaximumLoadTimeInS = 20 * loadTime;
+    MaximumLoadTimeInS = 50 * loadTime;
 
     cout << "Platform specific Maximum load time is " 
         << MaximumLoadTimeInS << "s" << endl;
