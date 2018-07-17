@@ -201,15 +201,16 @@ int main() {
     Storage("test.sto");
     steady_clock::time_point t2 = steady_clock::now();
 
-    double loadTime = duration_cast<duration<double>>(t2 - startTime).count();
+    auto benchLoadTime = duration_cast<duration<double>>(t2 - startTime).count();
 
     // The walking C3D files included in this test are benchmarked against the
-    // load time of a standard 'test.sto' Storage that is 1KB in size. The C3D
-    // are ~1000x larger than the storage. We make the max time 1200x to account
-    // for other potential slowdowns on CI machines.
-    MaximumLoadTimeInS = 1000 * loadTime;
+    // load time for a standard 'test.sto' Storage that is 1KB in size. The load
+    // time is platform specific (e.g. CI machines). The C3D files are ~1000x
+    // larger than the benchmark file. Therefore, we make the maximum allowable
+    //  load time 1000x the load time of the benchmark file.
+    MaximumLoadTimeInS = 1000 * benchLoadTime;
 
-    cout << "Platform specific Maximum load time is " 
+    cout << "Platform-specific Maximum allowable load time is " 
         << MaximumLoadTimeInS << "s" << endl;
 
     std::vector<std::string> filenames{};
