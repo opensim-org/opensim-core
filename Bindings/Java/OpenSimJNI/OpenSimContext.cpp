@@ -292,6 +292,9 @@ void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
 
 void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
     p.addPathWrap( awo );
+    // Adding WrapObject to a GeometryPath requires initSystem similar to other Path edit operations
+    recreateSystemKeepStage();
+    p.updateGeometry(*_configState);
     return;
 }
 
