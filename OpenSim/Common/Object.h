@@ -573,6 +573,13 @@ public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
     std::string getDocumentFileName() const;
+
+    /** If there is a document associated with this object then return its
+        version number. For example this is 30000 for OpenSim 3.x documents 
+        and is 305xx for OpenSim 4.0 beta and above. If there is no document
+        associated with the object, the method returns -1.*/
+    int getDocumentFileVersion() const;
+
     void setAllPropertiesUseDefault(bool aUseDefault);
 
     /** Write this %Object into an XML file of the given name; conventionally

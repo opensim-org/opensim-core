@@ -32,6 +32,7 @@
 //==============================================================================
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -42,6 +43,7 @@ using namespace std;
  */
 int main(int argc, char **argv)
 {
+    LoadOpenSimLibrary("osimActuators");
     try {
         // Create an OpenSim model and set its name
         if (argc < 2) {

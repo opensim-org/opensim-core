@@ -78,6 +78,7 @@
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
 #include "Model/ModelVisualPreferences.h"
+#include "Model/ExpressionBasedCoordinateForce.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -240,6 +241,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( BushingForce() );
     Object::registerType( FunctionBasedBushingForce() );
     Object::registerType( ExpressionBasedBushingForce() );
+    Object::registerType( ExpressionBasedCoordinateForce() );
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
