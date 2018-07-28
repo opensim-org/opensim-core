@@ -24,9 +24,12 @@
 #include <OpenSim\Simulation\SimbodyEngine\PointConstraint.h>
 #include <OpenSim\Simulation\SimbodyEngine\PointOnLineConstraint.h>
 #include <OpenSim\Simulation\SimbodyEngine\ConstantDistanceConstraint.h>
+#include <OpenSim\Simulation\SimbodyEngine\CoordinateCouplerConstraint.h>
 #include <OpenSim\Common\LinearFunction.h>
 #include <simbody\internal\Constraint.h>
 #include <simbody\internal\Constraint_Ball.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -141,7 +144,6 @@ void createState(Model& model, State& state, const Vector& qOverride=Vector()) {
 /// obtain Simbody constraint forces.
 void calcAccelerationsFromMultipliers(const Model& model, const State& state, 
         const Vector& multipliers, Vector& udot) {
-
     const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
     const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = 
         multibody.getRigidBodyForces(state, SimTK::Stage::Dynamics);
@@ -174,7 +176,6 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 ///     7) Ensure that the accelerations from step 4 and 6 match
 
 void testWeldConstraint() {
-
     State state;
     Model model = createModel();
     const std::string& firstBodyName = model.getBodySet().get(0).getName();
@@ -191,20 +192,18 @@ void testWeldConstraint() {
     const Vector& multipliers = 
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
-
 }
 
 void testPointConstraint() {
-
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
-    const Body& lastBody =
-        model.getBodySet().get(NUM_BODIES - 1);
+    const Body& lastBody = model.getBodySet().get(NUM_BODIES - 1);
     PointConstraint* constraint = new PointConstraint(firstBody, Vec3(0), 
         lastBody, Vec3(0));
     model.addConstraint(constraint);
@@ -216,20 +215,18 @@ void testPointConstraint() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
-
 }
 
 void testPointOnLineConstraint() {
-
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
-    const Body& lastBody =
-        model.getBodySet().get(NUM_BODIES - 1);
+    const Body& lastBody = model.getBodySet().get(NUM_BODIES - 1);
     PointOnLineConstraint* constraint = new PointOnLineConstraint(firstBody,
         Vec3(1,0,0), Vec3(0), lastBody, Vec3(0));
     model.addConstraint(constraint);
@@ -241,15 +238,14 @@ void testPointOnLineConstraint() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
-
 }
 
 void testConstantDistanceConstraint() {
-
     State state;
     Model model = createModel();
     const Body& firstBody = model.getBodySet().get(0);
@@ -266,15 +262,14 @@ void testConstantDistanceConstraint() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
-
 }
 
 void testLockedCoordinate() {
-
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -287,15 +282,41 @@ void testLockedCoordinate() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
+}
 
+void testCoordinateCouplerConstraint() {
+    State state;
+    Model model = createModel();
+    CoordinateSet& coordSet = model.updCoordinateSet();
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> names;
+    coordSet.getNames(names);
+    constraint->setIndependentCoordinateNames(names.get(0));
+    constraint->setDependentCoordinateName(names.getLast());
+    LinearFunction func(1.0, 0.0);
+    constraint->setFunction(func);
+    model.addConstraint(constraint);
+    createState(model, state);
+    // Check that constraint was added successfully.
+    SimTK_TEST(state.getNMultipliers() > 0);
+
+    const Vector& udotSimbody = model.getMatterSubsystem().getUDot(state);
+    const Vector& multipliers =
+        model.getMatterSubsystem().getConstraintMultipliers(state);
+    Vector udotMultipliers;
+    calcAccelerationsFromMultipliers(model, state, multipliers,
+        udotMultipliers);
+    // Check that accelerations calculated from Lagrange multipliers match
+    // Simbody's accelerations.
+    MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
 void testPrescribedMotion() {
-
     State state;
     Model model = createModel();
     CoordinateSet& coordSet = model.updCoordinateSet();
@@ -310,20 +331,192 @@ void testPrescribedMotion() {
     const Vector& multipliers =
         model.getMatterSubsystem().getConstraintMultipliers(state);
     Vector udotMultipliers;
-    calcAccelerationsFromMultipliers(model, state, multipliers, udotMultipliers);
+    calcAccelerationsFromMultipliers(model, state, multipliers, 
+        udotMultipliers);
     // Check that accelerations calculated from Lagrange multipliers match
     // Simbody's accelerations.
     MACHINE_TEST(udotSimbody, udotMultipliers);
+}
 
+/// Create a torque-actuated double pendulum model. Since constraints will be
+/// added to the model in subsequent tests, only a single torque actuator is 
+/// required to fully actuate the system.
+Model createDoublePendulumModel() {
+    Model model;
+    model.setName("double_pendulum");
+
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+
+    // Create two links, each with a mass of 1 kg, center of mass at the body's
+    // origin, and moments and products of inertia of zero.
+    auto* b0 = new OpenSim::Body("b0", 1, Vec3(0), Inertia(1));
+    model.addBody(b0);
+    auto* b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
+    model.addBody(b1);
+
+    // Add markers to body origin locations
+    auto* endeff = new Station(*b1, Vec3(0));
+    endeff->setName("endeff");
+    model.addComponent(endeff);
+
+    // Connect the bodies with pin joints. Assume each body is 1 m long.
+    auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
+        *b0, Vec3(-1, 0, 0), Vec3(0));
+    auto& q0 = j0->updCoordinate();
+    q0.setName("q0");
+    auto* j1 = new PinJoint("j1",
+        *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
+    auto& q1 = j1->updCoordinate();
+    q1.setName("q1");
+    model.addJoint(j0);
+    model.addJoint(j1);
+
+    auto* tau0 = new CoordinateActuator();
+    tau0->setCoordinate(&j0->updCoordinate());
+    tau0->setName("tau0");
+    tau0->setOptimalForce(1);
+    model.addComponent(tau0);
+
+    // Add display geometry.
+    // TODO: remove once tests pass and visualization not necessary
+    Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
+    SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    b0->addComponent(b0Center);
+    b0Center->attachGeometry(bodyGeometry.clone());
+    auto* b1Center = new PhysicalOffsetFrame("b1_center", "b1", transform);
+    b1->addComponent(b1Center);
+    b1Center->attachGeometry(bodyGeometry.clone());
+
+    return model;
+}
+
+void testDoublePendulumPointOnLine() {
+    MucoTool muco;
+    muco.setName("double_pendulum_point_on_line");
+    MucoProblem& mp = muco.updProblem();
+   
+    // Create double pendulum model and add the point-on-line constraint. The 
+    // constraint consists of a vertical line in the y-direction (defined in 
+    // ground) and the model end-effector point (the origin of body "b1").
+    Model model = createDoublePendulumModel();
+    const Body& b1 = model.getBodySet().get("b1");
+    const Station& endeff = model.getComponent<Station>("endeff");
+    PointOnLineConstraint* constraint = new PointOnLineConstraint(
+        model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
+    model.addConstraint(constraint);
+    mp.setModel(model);
+
+    mp.setTimeBounds(0, {0, 5});
+    // Coordinate value state boundary conditions are consistent with the 
+    // point-on-line constraint and should require the model to "unfold" itself.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50});
+    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
+    mp.setStateInfo("j1/q1/speed", {-50, 50});
+    mp.setControlInfo("tau0", {-40, 40});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_hessian_approximation("exact");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
+
+    // TODO: remove once tests pass and visualization not necessary
+    muco.visualize(solution);
+
+    model.initSystem();
+    StatesTrajectory states = solution.exportToStatesTrajectory(mp);
+    for (const auto& s : states) {
+        model.realizePosition(s);
+        const SimTK::Vec3& loc = endeff.getLocationInGround(s);
+
+        // The end-effector should not have moved in the x- or z-directions.
+        // TODO: may need to adjust these tolerances
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+    }   
+}
+
+void testDoublePendulumCoordinateCoupler() {
+    MucoTool muco;
+    muco.setName("double_pendulum_coordinate_coupler");
+    MucoProblem& mp = muco.updProblem();
+
+    // Create double pendulum model and add the coordinate coupler constraint. 
+    Model model = createDoublePendulumModel();
+    const Coordinate& q0 = model.getCoordinateSet().get("q0");
+    const Coordinate& q1 = model.getCoordinateSet().get("q1");
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    constraint->setIndependentCoordinateNames({"q0"});
+    constraint->setDependentCoordinateName("q1");
+    // Represented by the following equation,
+    //      q1 = -2*q0 + pi
+    // this linear function couples the two model coordinates such that given 
+    // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
+    // same boundary conditions for q1 should be achieved without imposing 
+    // bounds for this coordinate. Note that the full trajectory may differ, 
+    // since the point-on-line constraint is no longer in place.
+    LinearFunction linFunc = LinearFunction(-2, SimTK::Pi);
+    constraint->setFunction(linFunc);
+    model.addConstraint(constraint);
+    mp.setModel(model);
+
+    mp.setTimeBounds(0, {0, 5});
+    // Boundary conditions are only enforced for the first coordinate, so we can
+    // test that the second coordinate is coupled properly.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50});
+    mp.setStateInfo("j1/q1/value", {-10, 10});
+    mp.setStateInfo("j1/q1/speed", {-50, 50});
+    mp.setControlInfo("tau0", {-40, 40});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_hessian_approximation("exact");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
+
+    // TODO: remove once tests pass and visualization not necessary
+    muco.visualize(solution);
+
+    model.initSystem();
+    StatesTrajectory states = solution.exportToStatesTrajectory(mp);
+    for (const auto& s : states) {
+        model.realizePosition(s);
+
+        // The coordinates should be coupler according to the linear function
+        // described above.
+        // TODO: may need to adjust this tolerance
+        SimTK_TEST_EQ_TOL(q1.getValue(s), -2*q0.getValue(s) + SimTK::Pi, 1e-6);
+    }
 }
 
 int main() {
     SimTK_START_TEST("testConstraints");
+        // DAE calculation subtests.
         SimTK_SUBTEST(testWeldConstraint);
         SimTK_SUBTEST(testPointConstraint);
         SimTK_SUBTEST(testPointOnLineConstraint);
         SimTK_SUBTEST(testConstantDistanceConstraint);
         SimTK_SUBTEST(testLockedCoordinate);
+        SimTK_SUBTEST(testCoordinateCouplerConstraint);
         SimTK_SUBTEST(testPrescribedMotion);
+        // Direct collocation subtests.
+        SimTK_SUBTEST(testDoublePendulumPointOnLine);
+        SimTK_SUBTEST(testDoublePendulumCoordinateCoupler);
     SimTK_END_TEST();
 }
