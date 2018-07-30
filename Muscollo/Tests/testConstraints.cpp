@@ -355,7 +355,7 @@ Model createDoublePendulumModel() {
     auto* b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
     model.addBody(b1);
 
-    // Add markers to body origin locations
+    // Add station representing the model end-effector.
     auto* endeff = new Station(*b1, Vec3(0));
     endeff->setName("endeff");
     model.addComponent(endeff);
@@ -392,7 +392,11 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-void testDoublePendulumPointOnLine() {
+/// Solve an optimal control problem where a double inverted pendulum must reach
+/// a specified final configuration while subject to a constraint that its
+/// end-effector must lie on a vertical line through the origin and minimize
+/// control effort.
+MucoSolution testDoublePendulumPointOnLine() {
     MucoTool muco;
     muco.setName("double_pendulum_point_on_line");
     MucoProblem& mp = muco.updProblem();
@@ -442,10 +446,14 @@ void testDoublePendulumPointOnLine() {
         // TODO: may need to adjust these tolerances
         SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
         SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
-    }   
+    }
 }
 
-void testDoublePendulumCoordinateCoupler() {
+/// Solve an optimal control problem where a double inverted pendulum must reach
+/// a specified final configuration while subject to a constraint that couples
+/// its two coordinates together via a linear relationship and minimizing 
+/// control effort.
+void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     MucoTool muco;
     muco.setName("double_pendulum_coordinate_coupler");
     MucoProblem& mp = muco.updProblem();
@@ -458,20 +466,22 @@ void testDoublePendulumCoordinateCoupler() {
     constraint->setIndependentCoordinateNames({"q0"});
     constraint->setDependentCoordinateName("q1");
     // Represented by the following equation,
-    //      q1 = -2*q0 + pi
+    //      q1 = m*q0 + b
     // this linear function couples the two model coordinates such that given 
     // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
     // same boundary conditions for q1 should be achieved without imposing 
     // bounds for this coordinate. Note that the full trajectory may differ, 
     // since the point-on-line constraint is no longer in place.
-    LinearFunction linFunc = LinearFunction(-2, SimTK::Pi);
+    const SimTK::Real m = -2;
+    const SimTK::Real b = SimTK::Pi;
+    LinearFunction linFunc = LinearFunction(m, b);
     constraint->setFunction(linFunc);
     model.addConstraint(constraint);
     mp.setModel(model);
 
     mp.setTimeBounds(0, {0, 5});
     // Boundary conditions are only enforced for the first coordinate, so we can
-    // test that the second coordinate is coupled properly.
+    // test that the second coordinate is properly coupled.
     mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
     mp.setStateInfo("j0/q0/speed", {-50, 50});
     mp.setStateInfo("j1/q1/value", {-10, 10});
@@ -487,7 +497,7 @@ void testDoublePendulumCoordinateCoupler() {
     ms.set_optim_solver("ipopt");
     ms.set_optim_hessian_approximation("exact");
 
-    MucoSolution solution = muco.solve();
+    solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
 
     // TODO: remove once tests pass and visualization not necessary
@@ -501,8 +511,59 @@ void testDoublePendulumCoordinateCoupler() {
         // The coordinates should be coupler according to the linear function
         // described above.
         // TODO: may need to adjust this tolerance
-        SimTK_TEST_EQ_TOL(q1.getValue(s), -2*q0.getValue(s) + SimTK::Pi, 1e-6);
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
     }
+}
+
+/// Solve an optimal control problem where a double inverted pendulum must 
+/// follow a prescribed motion based on the previous test case (see
+/// testDoublePendulumCoordinateCoupler) and minimize control effort.
+void testDoublePendulumPrescribedMotion(MucoSolution& prevSolution) {
+    MucoTool muco;
+    muco.setName("double_pendulum_prescribed_motion");
+    MucoProblem& mp = muco.updProblem();
+
+    // Create double pendulum model. 
+    Model model = createDoublePendulumModel();
+    // Create a spline set for the model states from the previous solution.
+    GCVSplineSet statesSpline =
+        prevSolution.exportToStatesTrajectory(mp).exportToTable(model);
+    // Apply the prescribed motion constraints.
+    Coordinate& q0 = model.updCoordinateSet().get("q0");
+    q0.setPrescribedFunction(statesSpline.get("q0"));
+    q0.setDefaultIsPrescribed(true);
+    Coordinate& q1 = model.updCoordinateSet().get("q1");
+    q1.setPrescribedFunction(statesSpline.get("q1"));
+    q1.setDefaultIsPrescribed(true);
+    mp.setModel(model);
+
+    mp.setTimeBounds(0, {0, 5});
+    mp.setStateInfo("j0/q0/value", {-10, 10});
+    mp.setStateInfo("j0/q0/speed", {-50, 50});
+    mp.setStateInfo("j1/q1/value", {-10, 10});
+    mp.setStateInfo("j1/q1/speed", {-50, 50});
+    mp.setControlInfo("tau0", {-40, 40});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_hessian_approximation("exact");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
+
+    // TODO: remove once tests pass and visualization not necessary
+    muco.visualize(solution);
+
+    // Solution should be identical to solution passed in.
+    // TODO: make sure that control names associated with Lagrange multipliers 
+    // match.
+    // TODO: may need to adjust this tolerance
+    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(prevSolution), 0, 1e-6);
 }
 
 int main() {
@@ -517,6 +578,8 @@ int main() {
         SimTK_SUBTEST(testPrescribedMotion);
         // Direct collocation subtests.
         SimTK_SUBTEST(testDoublePendulumPointOnLine);
-        SimTK_SUBTEST(testDoublePendulumCoordinateCoupler);
+        MucoSolution prevSolution;
+        SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, prevSolution);
+        SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, prevSolution);
     SimTK_END_TEST();
 }
