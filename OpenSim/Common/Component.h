@@ -483,9 +483,11 @@ public:
 
     Please note, that the state passed to generateDecorations is only guaranteed
     to be realized to Stage::Position. If your component can visualize quantities
-    realized and Velocity, Dynamics or Acceleration stages, then you must check
-    that the required stage has been realized before using requesting realized
-    values.
+    realized at Velocity, Dynamics or Acceleration stages, then you must check
+    that the stage has been realized before using/requesting stage dependent
+    values. It is forbidden to realize the model to a higher stage within 
+    generateDecorations, because this can trigger costly side-effects such as
+    evaluating all model forces even when performing a purely kinematic study.
   
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
