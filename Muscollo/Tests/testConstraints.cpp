@@ -468,8 +468,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     // this linear function couples the two model coordinates such that given 
     // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
     // same boundary conditions for q1 should be achieved without imposing 
-    // bounds for this coordinate. Note that the full trajectory may differ, 
-    // since the point-on-line constraint is no longer in place.
+    // bounds for this coordinate.
     const SimTK::Real m = -2;
     const SimTK::Real b = SimTK::Pi;
     LinearFunction linFunc = LinearFunction(m, b);
