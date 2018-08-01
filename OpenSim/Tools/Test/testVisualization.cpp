@@ -169,6 +169,10 @@ void testVisModel(Model& model, const std::string standard_filename)
     if (visualDebug) 
         model.setUseVisualizer(true);
     SimTK::State& si = model.initSystem();
+
+    // Compute muscle dynamics to evaluate Muscle color
+    model.realizeDynamics(si);
+    
     if (visualDebug) 
         model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
