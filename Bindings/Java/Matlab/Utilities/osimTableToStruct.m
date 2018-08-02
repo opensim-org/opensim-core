@@ -84,8 +84,11 @@ for iLabel = 0 : nLabels - 1
     for i = 1 : length(illegalChars)
         if ~isempty(strfind(col_label, illegalChars{i}))
            col_label = strrep(col_label,illegalChars{i}, '_'); 
-           disp(['Illegal Column label. ' disp_label ' changed to ' col_label ]); 
         end
+    end
+    % If the label has changed, inform the User.
+    if ~strcmp(disp_label,col_label)
+        disp(['Illegal Column label. ' disp_label ' changed to ' col_label ]); 
     end
     % Add the label and data to the data struct
     structdata.(col_label) = dataArray;

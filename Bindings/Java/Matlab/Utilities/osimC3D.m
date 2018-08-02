@@ -5,7 +5,7 @@ classdef osimC3D < matlab.mixin.SetGet
 %   Inputs:
 %   filepath           Full path to the location of the C3D file
 %   ForceLocation      Integer value for representation of force from plate
-%                      0 = forceplate orgin, 1 = surface, 2 = COP
+%                      0 = forceplate orgin, 1 = Forceplate surface, 2 = COP
     properties (Access = private)
         path
         name
@@ -124,9 +124,9 @@ classdef osimC3D < matlab.mixin.SetGet
         end
         function writeTRC(obj,varargin)
             % Write marker data to trc file.
-            % osimC3d.writeTRC()                       Write to current dir using c3d name
-            % osimC3d.writeTRC('Walking.trc')          Write to current dir with input name
-            % osimC3d.writeTRC('C:\data\Walking.trc')  Write to input location from full input path
+            % osimC3d.writeTRC()                       Write to dir of input c3d.
+            % osimC3d.writeTRC('Walking.trc')          Write to dir of input c3d with defined file name.
+            % osimC3d.writeTRC('C:/data/Walking.trc')  Write to defined path input path.
 
             % Compute an output path to use for writing to file
             outputPath = generateOutputPath(obj,varargin,'.trc');
@@ -134,14 +134,14 @@ classdef osimC3D < matlab.mixin.SetGet
 
             import org.opensim.modeling.*
             % Write to file
-            TRCFileAdapter().write( obj.getTable_markers, outputPath)
+            TRCFileAdapter().write( obj.markers, outputPath)
             disp(['Marker file written to ' outputPath]);
         end
         function writeMOT(obj,varargin)
-         % Write forces data to mot file
-         % osimC3d.writeMOT()                       Write to current dir using c3d name
-         % osimC3d.writeMOT('Walking.mot')          Write to current dir with input name
-         % osimC3d.writeMOT('C:\data\Walking.mot')  Write to input location from full input path
+        % Write force data to trc file.
+        % osimC3d.writeMOT()                       Write to dir of input c3d.
+        % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
+        % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
 
          % Compute an output path to use for writing to file
          outputPath = generateOutputPath(obj,varargin,'.mot');
@@ -151,9 +151,12 @@ classdef osimC3D < matlab.mixin.SetGet
          forces = obj.getTable_forces();
          % Get the column labels
          labels = forces.getColumnLabels();
-         % make a copy
+         % Make a copy
          updlabels = labels; 
           
+         % Labels from C3DFileAdapter are f1, p1, m1, f2,...
+         % We edit them to be consistent with requirements of viewing 
+         % forces in the GUI (ground_force_vx, ground_force_px,...)
          for i = 0 : labels.size() - 1
             % Get the label as a string
             label = char(labels.get(i));
@@ -243,7 +246,8 @@ classdef osimC3D < matlab.mixin.SetGet
             
             % Validate the output filename
             if size(path,2) > 1
-                % More than 1 input to the method, only takes one (filepath)
+                % Path object should be of size == 1, any larger and user
+                % input multiple variables into function. 
                 error([ num2str(size(path,2)) ' inputs, expecting zero or one'])
             end
         
@@ -255,12 +259,10 @@ classdef osimC3D < matlab.mixin.SetGet
             else
             
                 if ~ischar(path{1})
-                   % Path must be a string  
                    error('Input must be a sting of characters')
                 end
 
                 if isempty(strfind(path{1}, ext))
-                   % Path must have an input path
                    error(['Input must be a path to a ' ext ' file']);
                 end
             
