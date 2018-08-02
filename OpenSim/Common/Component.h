@@ -481,7 +481,7 @@ public:
     once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
     as rubber band lines, force arrows, labels, or debugging aids.
 
-    Please note, that their is a precondition that the state passed in to
+    Please note that there is a precondition that the state passed in to
     generateDecorations be realized to Stage::Position. If your component can
     visualize quantities realized at Velocity, Dynamics or Acceleration stages,
     then you must check that the stage has been realized before using/requesting
