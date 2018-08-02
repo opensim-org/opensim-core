@@ -480,7 +480,16 @@ public:
     obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
     once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
     as rubber band lines, force arrows, labels, or debugging aids.
-  
+
+    Please note that there is a precondition that the state passed in to
+    generateDecorations be realized to Stage::Position. If your component can
+    visualize quantities realized at Velocity, Dynamics or Acceleration stages,
+    then you must check that the stage has been realized before using/requesting
+    stage dependent values. It is forbidden to realize the model to a higher
+    stage within generateDecorations, because this can trigger costly side-
+    effects such as evaluating all model forces even when performing a purely
+    kinematic study.
+
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
@@ -493,6 +502,14 @@ public:
         // invoke parent class method
         Super::generateDecorations(fixed,hints,state,appendToThis); 
         // ... your code goes here
+        // can render velocity dependent quanities if stage is Velocity or higher
+        if(state.getSystemStage() >= Stage::Velocity) {
+            // draw velocity vector for model COM
+        }
+        // can render computed forces if stage is Dynamics or higher
+        if(state.getSystemStage() >= Stage::Dynamics) {
+            // change the length of a force arrow based on the force in N
+        }
     }
     @endcode
 
