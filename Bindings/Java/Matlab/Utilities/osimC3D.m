@@ -5,7 +5,8 @@ classdef osimC3D < matlab.mixin.SetGet
 %   Inputs:
 %   filepath           Full path to the location of the C3D file
 %   ForceLocation      Integer value for representation of force from plate
-%                      0 = forceplate orgin, 1 = Forceplate surface, 2 = COP
+%                      0 = forceplate orgin, 1 = COP, 2 = Point Of Wrench
+%                      Application
     properties (Access = private)
         path
         name
