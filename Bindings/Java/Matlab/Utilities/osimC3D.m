@@ -8,6 +8,7 @@ classdef osimC3D < matlab.mixin.SetGet
 %                      0 = forceplate orgin, 1 = surface, 2 = COP
     properties (Access = private)
         path
+        name
         markers
         forces
         ForceLocation
@@ -24,7 +25,9 @@ classdef osimC3D < matlab.mixin.SetGet
             if exist(path2c3d, 'file') == 0
                 error('File does not exist. Check path is correct')
             else
-                obj.path = path2c3d;
+                [path, name, ext] = fileparts(path2c3d);
+                obj.path = path;
+                obj.name = name;
             end
             % Verify the ForceLocation input is correct
             if  ~isnumeric(ForceLocation) || ~ismember(ForceLocation,[0:2])
@@ -32,12 +35,12 @@ classdef osimC3D < matlab.mixin.SetGet
             end
             % load java libs
             import org.opensim.modeling.*
-            % Use a c3dAdapter to turn read a c3d file
+            % Use a c3dAdapter to read the c3d file
             tables = C3DFileAdapter().read(path2c3d, ForceLocation);
-            % set the marker and force data into OpenSim tables
+            % Set the marker and force data into OpenSim tables
             obj.markers = tables.get('markers');
             obj.forces = tables.get('forces');
-            % set the force location specifier incase someone wants to
+            % Set the force location specifier in case someone wants to
             % check.
             switch(ForceLocation)
                 case 0
@@ -48,6 +51,12 @@ classdef osimC3D < matlab.mixin.SetGet
                     location = 'PointOfWrenchApplication';
             end
             obj.ForceLocation = location;
+        end
+        function p = getPath(obj)
+            p = obj.path();
+        end
+        function n = getName(obj)
+            n = obj.name();
         end
         function location = getForceLocation(obj)
             % Get the Force Location
@@ -98,8 +107,10 @@ classdef osimC3D < matlab.mixin.SetGet
             disp('Maker and force data returned as Matlab Structs')
         end
         function rotateData(obj,axis,value)
-            % Method for rotating marker and force data stored in OpenSim
-            % tables
+            % Method for rotating marker and force data stored in osim
+            % tables.
+            % c3d.rotateData('x', 90)
+            
             if ~ischar(axis)
                error('Axis must be either x,y or z')
             end
@@ -109,60 +120,73 @@ classdef osimC3D < matlab.mixin.SetGet
             % rotate the tables
             obj.rotateTable(obj.markers, axis, value);
             obj.rotateTable(obj.forces, axis, value);
-
             disp('Marker and Force tables have been rotated')
         end
         function writeTRC(obj,varargin)
-         % Function for writing marker data to trc file.
-         % osimC3d.writeTRC()
-         % osimC3d.writeTRC('fullpath2file')
+            % Write marker data to trc file.
+            % osimC3d.writeTRC()                       Write to current dir using c3d name
+            % osimC3d.writeTRC('Walking.trc')          Write to current dir with input name
+            % osimC3d.writeTRC('C:\data\Walking.trc')  Write to input location from full input path
 
-          % Validate the output filename
-          if nargin > 2
-              error([ num2str(nargin - 1) ' inputs, expecting 1'])
-          elseif nargin == 1
-              [filepath, name, ext] = fileparts(obj.path);
-              OutputTRCName = fullfile(filepath, [name '.trc']);
-              % disp(['File path is ' OutputTRCName])
-          elseif nargin == 2 && ischar(varargin{1})
-              OutputTRCName = varargin{1};
-          end
+            % Compute an output path to use for writing to file
+            outputPath = generateOutputPath(obj,varargin,'.trc');
 
-          import org.opensim.modeling.*
-          % Write to file
-          TRCFileAdapter().write( obj.getTable_markers, OutputTRCName)
+
+            import org.opensim.modeling.*
+            % Write to file
+            TRCFileAdapter().write( obj.getTable_markers, outputPath)
+            disp(['Marker file written to ' outputPath]);
         end
         function writeMOT(obj,varargin)
-         % Function for writing force data to trc file.
-         % osimC3d.writeTRC()
-         % osimC3d.writeTRC('fullpath2file')
+         % Write forces data to mot file
+         % osimC3d.writeMOT()                       Write to current dir using c3d name
+         % osimC3d.writeMOT('Walking.mot')          Write to current dir with input name
+         % osimC3d.writeMOT('C:\data\Walking.mot')  Write to input location from full input path
 
-          % Validate the output filename
-          if nargin > 2
-              error([ num2str(nargin - 1) ' inputs, expecting 1'])
-          elseif nargin == 1
-              [filepath, name, ext] = fileparts(obj.path);
-              OutputMOTName = fullfile(filepath, [name '.mot']);
-              % disp(['File path is ' OutputTRCName])
-          elseif nargin == 2 && ischar(varargin{1})
-              OutputMOTName = varargin{1};
-          end
-
-          import org.opensim.modeling.*
-          % Flatten the Vec3 force table
-          forces = obj.getTable_forces();
-          postfix = StdVectorString();
-          postfix.add('_x');postfix.add('_y');postfix.add('_z');
-          forces_flat = forces.flatten(postfix);
-
-
-          % Change the header in the file to meet Storage conditions
+         % Compute an output path to use for writing to file
+         outputPath = generateOutputPath(obj,varargin,'.mot');
+         
+         import org.opensim.modeling.*
+         % Get the forces table
+         forces = obj.getTable_forces();
+         % Get the column labels
+         labels = forces.getColumnLabels();
+         % make a copy
+         updlabels = labels; 
+          
+         for i = 0 : labels.size() - 1
+            % Get the label as a string
+            label = char(labels.get(i));
+            % Transform the label depending on force, point, or moment
+            if ~isempty(strfind(label,'f'))
+                label = strrep(label,'f', 'ground_force_');
+                label = [label '_v'];
+            elseif ~isempty(strfind(label,'p'))
+                label = strrep(label,'p', 'ground_force_');
+                label = [label '_p'];
+            elseif ~isempty(strfind(label,'m'))
+                label = strrep(label,'m', 'ground_moment_');
+                label = [label '_m'];
+            end
+            % update the label name 
+            updlabels.set(i,label);
+         end
+         
+         % set the column labels
+         forces.setColumnLabels(updlabels)
+         
+         % Flatten the Vec3 force table
+         postfix = StdVectorString();
+         postfix.add('x');postfix.add('y');postfix.add('z');
+         forces_flat = forces.flatten(postfix);
+          
+         % Change the header in the file to meet Storage conditions
           if forces_flat.getTableMetaDataKeys().size() > 0
               for i = 0 : forces_flat.getTableMetaDataKeys().size() - 1
-                  % get the metakey string at index zero. Since the array gets smaller on
+                  % Get the metakey string at index zero. Since the array gets smaller on
                   % each loop, we just need to keep taking the first one in the array.
                   metakey = char(forces_flat.getTableMetaDataKeys().get(0));
-                  % remove the key from the meta data
+                  % Remove the key from the meta data
                   forces_flat.removeTableMetaDataKey(metakey)
               end
           end
@@ -171,7 +195,8 @@ classdef osimC3D < matlab.mixin.SetGet
           forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
           % Write to file
-          STOFileAdapter().write(forces_flat, OutputMOTName)
+          STOFileAdapter().write(forces_flat, outputPath)
+          disp(['Forces file written to ' outputPath]);
       end
    end
 
@@ -211,6 +236,44 @@ classdef osimC3D < matlab.mixin.SetGet
                 % overwrite row with rotated row
                 table.setRowAtIndex(iRow,rowVec_rotated)
             end
+        end
+        function outputPath = generateOutputPath(obj,path, ext)
+            % Function to generate an output path from no, partial, or fully
+            % defined user path. 
+            
+            % Validate the output filename
+            if size(path,2) > 1
+                % More than 1 input to the method, only takes one (filepath)
+                error([ num2str(size(path,2)) ' inputs, expecting zero or one'])
+            end
+        
+            if isempty(path)
+               % No file path has been input, so use the path and name from
+               % the c3d file. 
+               filepath = obj.getPath();
+               name = obj.getName();
+            else
+            
+                if ~ischar(path{1})
+                   % Path must be a string  
+                   error('Input must be a sting of characters')
+                end
+
+                if isempty(strfind(path{1}, ext))
+                   % Path must have an input path
+                   error(['Input must be a path to a ' ext ' file']);
+                end
+            
+                % User has included a path to write to
+                [filepath, name, e] = fileparts(path{1}); 
+                if isempty(filepath)
+                  % Only the file name is given
+                  filepath = obj.getPath();
+                end
+            end
+            % Generate the output path.
+            outputPath = fullfile(filepath, [name ext]);
+            
         end
    end
 end
