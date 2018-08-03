@@ -424,8 +424,12 @@ public:
      * the state value unspecified in originalStorage. The input originalStorage 
      * must be in meters or radians for Coordinate values and their speeds
      * (m/s, rad/s) otherwise an Exception is thrown.
+     *
+     * @returns true if originalStorage has columns for the all coordinate
+     * values (including dependent coordinates), even if columns for other
+     * states (speeds, auxiliary states) are absent.
      */
-    void formStateStorage(const Storage& originalStorage, 
+    bool formStateStorage(const Storage& originalStorage,
                           Storage& statesStorage,
                           bool warnUnspecifiedStates = true) const;
 

@@ -32,6 +32,7 @@ using namespace std;
 
 void testModelFinalizePropertiesAndConnections();
 void testModelTopologyErrors();
+void testFormStateStorage();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
@@ -39,6 +40,7 @@ int main() {
     SimTK_START_TEST("testModelInterface");
         SimTK_SUBTEST(testModelFinalizePropertiesAndConnections);
         SimTK_SUBTEST(testModelTopologyErrors);
+        SimTK_SUBTEST(testFormStateStorage);
     SimTK_END_TEST();
 }
 
@@ -225,6 +227,50 @@ void testModelTopologyErrors()
 
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
+
+// Test the return value of Model::formStateStorage().
+void testFormStateStorage() {
+
+    Model model("arm26.osim");
+    
+    // Create an "origStorage."
+    SimTK::State state = model.initSystem();
+    Manager manager(model, state);
+    manager.integrate(0.05);
+    Storage origStorage = manager.getStateStorage();
+    Array<std::string> origLabels = origStorage.getColumnLabels();
+    for (int i = 0; i < origLabels.size(); ++i)
+        std::cout << "DEBUG " << origLabels[i] << std::endl;
+    
+    Storage statesStorage;
+    
+    // Ensure that a complete states storage causes a return value of true.
+    SimTK_TEST(model.formStateStorage(origStorage, statesStorage));
+    
+    // "Removing" a state variable that is not a coordinate value: the return
+    // value should still be true.
+    origLabels[origLabels.findIndex("TRIlong/activation")] = "hide1";
+    origStorage.setColumnLabels(origLabels);
+    SimTK_TEST(model.formStateStorage(origStorage, statesStorage));
+    origLabels[origLabels.findIndex("r_elbow/r_elbow_flex/speed")]= "hide2";
+    origStorage.setColumnLabels(origLabels);
+        for (int i = 0; i < origLabels.size(); ++i)
+        std::cout << "DEBUG " << origLabels[i] << std::endl;
+    SimTK_TEST(model.formStateStorage(origStorage, statesStorage));
+
+    // "Removing" a coordinate state variable causes a return value of false.
+    origLabels[origLabels.findIndex("r_elbow/r_elbow_flex/value")] = "hide3";
+    origStorage.setColumnLabels(origLabels);
+    SimTK_TEST(!model.formStateStorage(origStorage, statesStorage));
+}
+
+
+
+
+
+
+
+
 
 
 

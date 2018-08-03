@@ -1867,7 +1867,7 @@ void Model::setAllControllersEnabled( bool enabled ) {
     _allControllersEnabled = enabled;
 }
 
-void Model::formStateStorage(const Storage& originalStorage,
+bool Model::formStateStorage(const Storage& originalStorage,
                              Storage& statesStorage,
                              bool warnUnspecifiedStates) const
 {
@@ -1951,6 +1951,25 @@ void Model::formStateStorage(const Storage& originalStorage,
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
+    
+    /*const auto coords = getCoordinatesInMultibodyTreeOrder();
+    for (const auto& coord : coords) {
+        if
+    }*/
+    
+    // https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+    auto string_ends_with =
+            [](const std::string& str, const std::string& ending) {
+                if (ending.size() > str.size()) return false;
+                return std::equal(ending.rbegin(), ending.rend(), str.rbegin());
+            };
+    for (int i = 0; i < mapColumns.size(); ++i) {
+        if (mapColumns[i] == -1 && string_ends_with(rStateNames[i], "/value")) {
+            std::cout << "DEBUG " << i << " " << mapColumns[i] << " " << rStateNames[i] << std::endl;
+            return false;
+        }
+    }
+    return true;
 }
 
 /**
