@@ -95,4 +95,4 @@ OpenSimAddMatlabTest(testOsimC3D testOsimC3D.m)
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
      DESTINATION "${matlab_output_dir}")
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/walking2.c3d"
-		      DESTINATION "${matlab_output_dir}")
+     DESTINATION "${matlab_output_dir}")
