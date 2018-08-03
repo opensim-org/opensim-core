@@ -237,6 +237,11 @@ void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
     recreateSystemKeepStage();
 }
 
+void OpenSimContext::setLocation(PathPoint& mp, const SimTK::Vec3& newLocation) {
+    mp.setLocation(newLocation);
+    recreateSystemKeepStage();
+}
+
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     mw.setEndPoint(*_configState, newEndPt );
     recreateSystemKeepStage();
