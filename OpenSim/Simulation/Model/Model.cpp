@@ -1952,18 +1952,28 @@ bool Model::formStateStorage(const Storage& originalStorage,
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
     
-    // https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
-    auto string_ends_with =
-            [](const std::string& str, const std::string& ending) {
-                if (ending.size() > str.size()) return false;
-                return std::equal(ending.rbegin(), ending.rend(), str.rbegin());
-            };
+    
+    // Determine the return value.
+    // ---------------------------
+    // Get coordinate state variable names.
+    const auto coords = getCoordinatesInMultibodyTreeOrder();
+    // Coordinate value names must be unique.
+    std::set<std::string> coordValueNames;
+    const auto modelPath = getAbsolutePath();
+    for (size_t i = 0; i < coords.size(); ++i) {
+        const auto& coord = coords[i];
+        const auto coordPath =
+                coord->getAbsolutePath().formRelativePath(modelPath).toString();
+        const auto& coordValueStateVarName = coordPath + "/value";
+        coordValueNames.insert(coordValueStateVarName);
+    }
+    
+    // Check if any of the unspecified states are coordinate values.
     for (int i = 0; i < mapColumns.size(); ++i) {
         // Must add 1 because, at this point, rStateNames includes "time".
-        if (mapColumns[i] == -1
-                && string_ends_with(rStateNames[i+1], "/value")) {
+        if (mapColumns[i] == -1 &&
+                coordValueNames.find(rStateNames[i+1]) != coordValueNames.end())
             return false;
-        }
     }
     return true;
 }

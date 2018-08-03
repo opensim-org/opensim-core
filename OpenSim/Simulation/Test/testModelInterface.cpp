@@ -239,8 +239,6 @@ void testFormStateStorage() {
     manager.integrate(0.05);
     Storage origStorage = manager.getStateStorage();
     Array<std::string> origLabels = origStorage.getColumnLabels();
-    for (int i = 0; i < origLabels.size(); ++i)
-        std::cout << "DEBUG " << origLabels[i] << std::endl;
     
     Storage statesStorage;
     
@@ -254,8 +252,6 @@ void testFormStateStorage() {
     SimTK_TEST(model.formStateStorage(origStorage, statesStorage));
     origLabels[origLabels.findIndex("r_elbow/r_elbow_flex/speed")]= "hide2";
     origStorage.setColumnLabels(origLabels);
-        for (int i = 0; i < origLabels.size(); ++i)
-        std::cout << "DEBUG " << origLabels[i] << std::endl;
     SimTK_TEST(model.formStateStorage(origStorage, statesStorage));
 
     // "Removing" a coordinate state variable causes a return value of false.
