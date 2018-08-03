@@ -11,7 +11,7 @@ c3d = osimC3D(c3dpath,1);
 %% Test TRC trc output
 c3d.writeTRC()
 % Determine the trc file name
-trcName = fullfile(filepath, [name '.trc']);
+trcName = fullfile(cd, 'walking2.trc');
 % Test if readable by TRCFileAdapter
 trcTable = TRCFileAdapter.read(trcName);
 % Test if readable by Storage
@@ -21,7 +21,7 @@ sto  = Storage(trcName);
 %% test mot output
 c3d.writeMOT()
 % Determine the mot file name
-motName = fullfile(filepath, [name '.mot']);
+motName = fullfile(cd, 'walking2.mot');
 % Test if readable by TRCFileAdapter
 motTable = STOFileAdapter.read(motName);
 % Test if readable by Storage
