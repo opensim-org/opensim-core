@@ -503,6 +503,12 @@ setModel(Model& model)
   */
 void Manager::setIntegrator(Integrator integMethod)
 {
+    if (_timeStepper) {
+        std::string msg = "Cannot set a new integrator on this Manager";
+        msg += "after Manager::integrate() has been called at least once.";
+        OPENSIM_THROW(Exception, msg);
+    }
+
     auto& sys = _model->getMultibodySystem();
     switch (integMethod) {
         case Integrator::CPodes:
@@ -540,8 +546,38 @@ void Manager::setIntegrator(Integrator integMethod)
         case Integrator::Verlet:
             _integ = new SimTK::VerletIntegrator(sys);
             break;
+
+        default:
+            std::string msg = "Integrator method not recognized.";
+            OPENSIM_THROW(Exception, msg);
     }
-    
+}
+
+void Manager::setIntegrator(const std::string& integMethod)
+{
+    if (integMethod == "CPodes")
+        setIntegrator(Integrator::CPodes);
+    else if (integMethod == "ExplicitEuler")
+        setIntegrator(Integrator::ExplicitEuler);
+    else if (integMethod == "RungeKutta2")
+        setIntegrator(Integrator::RungeKutta2);
+    else if (integMethod == "RungeKutta3")
+        setIntegrator(Integrator::RungeKutta3);
+    else if (integMethod == "RungeKuttaFeldberg")
+        setIntegrator(Integrator::RungeKuttaFeldberg);
+    else if (integMethod == "RungeKuttaMerson")
+        setIntegrator(Integrator::RungeKuttaMerson);
+    else if (integMethod == "SemiExplicitEuler2")
+        setIntegrator(Integrator::SemiExplcitEuler2);
+    else if (integMethod == "Verlet")
+        setIntegrator(Integrator::Verlet);
+    else
+    {
+        std::string msg = "Integrator method '";
+        msg += integMethod;
+        msg += "' not recognized";
+        OPENSIM_THROW(Exception, msg);
+    }
 }
 
 /**

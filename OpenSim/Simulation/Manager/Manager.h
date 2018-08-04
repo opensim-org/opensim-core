@@ -179,6 +179,7 @@ public:
         Verlet
     };
     void setIntegrator(Integrator integMethod);
+    void setIntegrator(const std::string& integMethod);
     SimTK::Integrator& getIntegrator() const;
     void setAccuracy(double accuracy);
     void setMinimumStepSize(double hmin);
