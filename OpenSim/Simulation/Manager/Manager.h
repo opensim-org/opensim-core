@@ -86,7 +86,7 @@ private:
 
     // The integrator that is used when using the model-only constructor.
     // This is allocated only if necessary.
-    std::unique_ptr<SimTK::Integrator> _defaultInteg;
+    //std::unique_ptr<SimTK::Integrator> _defaultInteg;
 
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
@@ -130,9 +130,6 @@ private:
 // METHODS
 //=============================================================================
 public:
-    /** This constructor cannot be used in MATLAB/Python, since the
-     * SimTK::Integrator%s are not exposed in those languages. */
-    Manager(Model& model, SimTK::Integrator& integ);
     /** Constructor that takes a model only and internally uses a
      * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
      * constraint tolerance, etc.). MATLAB/Python users must use this
@@ -140,9 +137,6 @@ public:
     Manager(Model& model);
     /** Convenience constructor for creating and initializing a Manager. */
     Manager(Model& model, const SimTK::State& state);
-    /** Convenience constructor for creating and initializing a Manager with
-      * a specified integrator. */
-    Manager(Model& model, const SimTK::State& state, SimTK::Integrator& integ);
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
@@ -173,11 +167,24 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
+    enum class Integrator {
+        CPodes,
+        ExplicitEuler,
+        RungeKutta2,
+        RungeKutta3,
+        RungeKuttaFeldberg,
+        RungeKuttaMerson,
+        //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
+        SemiExplcitEuler2,
+        Verlet
+    };
+    void setIntegrator(Integrator integMethod);
     SimTK::Integrator& getIntegrator() const;
-    /** %Set the integrator. The Manager does *not* take ownership of the
-     * passed-in integrator.
-     */
-    void setIntegrator(SimTK::Integrator&);
+    void setAccuracy(double accuracy);
+    void setMinimumStepSize(double hmin);
+    void setMaximumStepSize(double hmax);
+    void setInternalStepLimit(int nSteps);
+    //void setFixedStepSize(double stepSize);
 
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -299,7 +306,7 @@ private:
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(const SimTK::State& s);
-    void initializeTimeStepper(const SimTK::State& s);
+    //void initializeTimeStepper(const SimTK::State& s);
 
     // Helper to record state and analysis values at integration steps.
     // step = 0 is the beginning, step = -1 used to denote the end/final step

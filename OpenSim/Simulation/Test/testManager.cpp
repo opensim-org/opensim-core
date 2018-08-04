@@ -140,8 +140,6 @@ void testStationCalcWithManager()
     SimTK::MobilizedBody mb = frame.getMobilizedBody();
 
     // Do a simulation
-    SimTK::RungeKuttaMersonIntegrator integrator(pendulum.getSystem());
-
     double finalT = 1.0;
     double dt = 0.01;
     int n = int(round(finalT / dt));
@@ -149,7 +147,7 @@ void testStationCalcWithManager()
     // Hold the computed kinematics from OpenSim and Simbody
     SimTK::Vec3 lo, vo, ao, l, v, a;
     
-    Manager manager(pendulum, integrator);
+    Manager manager(pendulum);
     manager.setPerformAnalyses(false);
     manager.setWriteToStorage(false);
     state.setTime(0.0);
@@ -360,8 +358,7 @@ void testConstructors()
     SimTK_TEST_EQ(sliderCoord.getValue(outState1), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState1), finalSpeed);
 
-    SimTK::RungeKuttaMersonIntegrator integ2(model.getMultibodySystem());
-    Manager manager2(model, integ2);
+    Manager manager2(model);
     manager2.initialize(initState);
     SimTK::State outState2 = manager2.integrate(duration);
     SimTK_TEST_EQ(sliderCoord.getValue(outState2), finalHeight);
@@ -372,8 +369,7 @@ void testConstructors()
     SimTK_TEST_EQ(sliderCoord.getValue(outState3), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState3), finalSpeed);
 
-    SimTK::RungeKuttaMersonIntegrator integ4(model.getMultibodySystem());
-    Manager manager4(model, initState, integ4);
+    Manager manager4(model, initState);
     SimTK::State outState4 = manager4.integrate(duration);
     SimTK_TEST_EQ(sliderCoord.getValue(outState4), finalHeight);
     SimTK_TEST_EQ(sliderCoord.getSpeedValue(outState4), finalSpeed);

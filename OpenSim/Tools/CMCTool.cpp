@@ -736,11 +736,10 @@ bool CMCTool::run()
     // ---- SIMULATION ----
     //
     // Manager
-    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
-    integrator.setMaximumStepSize(_maxDT);
-    integrator.setMinimumStepSize(_minDT);
-    integrator.setAccuracy(_errorTolerance);
-    Manager manager(*_model, integrator);
+    Manager manager(*_model);
+    manager.setMaximumStepSize(_maxDT);
+    manager.setMinimumStepSize(_minDT);
+    manager.setAccuracy(_errorTolerance);
     
     _model->setAllControllersEnabled( true );
 

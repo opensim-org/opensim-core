@@ -143,9 +143,8 @@ void testMcKibbenActuator()
     double nsteps = 10;
     double dt = final_t / nsteps;
 
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(1e-7);
-    Manager manager(*model, integrator);
+    Manager manager(*model);
+    manager.setAccuracy(1e-7);
     si.setTime(0.0);
     manager.initialize(si);
 
@@ -305,9 +304,8 @@ void testTorqueActuator()
     // determine the initial kinetic energy of the system
     /*double iKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model,  integrator);
+    Manager manager(*model);
+    manager.setAccuracy(integ_accuracy);
 
     state.setTime(0.0);
     manager.initialize(state);
@@ -449,10 +447,8 @@ void testClutchedPathSpring()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model,  integrator);
+    Manager manager(*model);
+    manager.setAccuracy(integ_accuracy);
     manager.setWriteToStorage(true);
 
     state.setTime(0.0);
@@ -680,10 +676,9 @@ void testBodyActuator()
         ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], SimTK::Eps);
     }
 
-    // -------------- Setup integrator and manager -------------------
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model, integrator);
+    // -------------- Setup manager -------------------
+    Manager manager(*model);
+    manager.setAccuracy(integ_accuracy);
 
     state1.setTime(0.0);
     manager.initialize(state1);
@@ -907,10 +902,9 @@ void testActuatorsCombination()
         ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
     }
     
-    // ------------------------ Setup integrator and manager -----------------------
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model, integrator);
+    // ------------------------ Setup manager -----------------------
+    Manager manager(*model);
+    manager.setAccuracy(integ_accuracy);
 
     state2.setTime(0.0);
     manager.initialize(state2);

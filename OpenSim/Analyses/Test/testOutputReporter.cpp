@@ -224,12 +224,9 @@ void simulateMuscle(
     //==========================================================================
     // 4. SIMULATION Integration
     //==========================================================================
-    // Create the integrator
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-
     // Create the manager
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setAccuracy(integrationAccuracy);
 
     // Integrate from initial time to final time
     state.setTime(initialTime);

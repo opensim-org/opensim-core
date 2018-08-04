@@ -232,9 +232,8 @@ void testExpressionBasedCoordinateForce()
     double nsteps = 10;
     double dt = final_t/nsteps;
 
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-7);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-7);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -322,10 +321,8 @@ void testExpressionBasedPointToPointForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(model,  integrator);
+    Manager manager(model);
+    manager.setAccuracy(1e-6);
     state.setTime(0.0);
     manager.initialize(state);
 
@@ -438,9 +435,8 @@ void testPathSpring()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -531,9 +527,8 @@ void testSpringMass()
     //==========================================================================
     // Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-7);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-7);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -650,10 +645,8 @@ void testBushingForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -827,9 +820,8 @@ void testFunctionBasedBushingForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -946,9 +938,8 @@ void testExpressionBasedBushingForceTranslational()
     
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
     
@@ -1065,9 +1056,8 @@ void testExpressionBasedBushingForceRotational()
 
     //=========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1144,10 +1134,8 @@ void testElasticFoundation()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1222,10 +1210,8 @@ void testHuntCrossleyForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1365,9 +1351,8 @@ void testCoordinateLimitForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1508,10 +1493,8 @@ void testCoordinateLimitForceRotational()
 
     //==========================================================================
     // Perform a simulation an monitor energy conservation
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-8);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setAccuracy(1e-8);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1600,9 +1583,8 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s, 0.1);
 
     double accuracy = 1e-6;
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(model,  integrator);
+    Manager manager(model);
+    manager.setAccuracy(accuracy);
 
     // Specify the initial and final times of the simulation.
     double tf = 2.0;
@@ -1645,9 +1627,8 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s2, 0.3);
     model.setPropertiesFromState(s2);
 
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
-    integrator2.setAccuracy(accuracy);
-    Manager manager2(model, integrator2);
+    Manager manager2(model);
+    manager2.setAccuracy(accuracy);
     s2.setTime(0.0);
     manager2.initialize(s2);
     s2 = manager2.integrate(tf);
@@ -1683,9 +1664,8 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s3, 0.4); // yield -3Nm for force only
     model.setPropertiesFromState(s3);
 
-    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
-    integrator3.setAccuracy(accuracy);
-    Manager manager3(model, integrator3);
+    Manager manager3(model);
+    manager3.setAccuracy(accuracy);
     s3.setTime(0.0);
     manager3.initialize(s3);
     s3 = manager3.integrate(tf);
@@ -1735,7 +1715,8 @@ void testExternalForce()
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
     integrator4.setAccuracy(accuracy);
-    Manager manager4(model, integrator4);
+    Manager manager4(model);
+    manager4.setAccuracy(accuracy);
     s4.setTime(0.0);
     manager4.initialize(s4);
     s4 = manager4.integrate(tf);

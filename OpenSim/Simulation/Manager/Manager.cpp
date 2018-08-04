@@ -50,26 +50,11 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 Manager::Manager(Model& model) : Manager(model, true)
 {
-    _defaultInteg.reset(
-            new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
-    _integ = *_defaultInteg;
-}
-
-Manager::Manager(Model& model, SimTK::Integrator& integ)
-        : Manager(model, true) 
-{
-    setIntegrator(integ);
+    _integ = new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem());
 }
 
 Manager::Manager(Model& model, const SimTK::State& state)
         : Manager(model) 
-{
-    initialize(state);
-}
-
-Manager::Manager(Model& model, const SimTK::State& state, 
-    SimTK::Integrator& integ)
-    : Manager(model, integ) 
 {
     initialize(state);
 }
@@ -514,6 +499,52 @@ setModel(Model& model)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
+  * Set the integrator.
+  */
+void Manager::setIntegrator(Integrator integMethod)
+{
+    auto& sys = _model->getMultibodySystem();
+    switch (integMethod) {
+        case Integrator::CPodes:
+            _integ = new SimTK::CPodesIntegrator(sys);
+            break;
+
+        case Integrator::ExplicitEuler:
+            _integ = new SimTK::ExplicitEulerIntegrator(sys);
+            break;
+
+        case Integrator::RungeKutta2:
+            _integ = new SimTK::RungeKutta2Integrator(sys);
+            break;
+
+        case Integrator::RungeKutta3:
+            _integ = new SimTK::RungeKutta3Integrator(sys);
+            break;
+
+        case Integrator::RungeKuttaFeldberg:
+            _integ = new SimTK::RungeKuttaFeldbergIntegrator(sys);
+            break;
+
+        case Integrator::RungeKuttaMerson:
+            _integ = new SimTK::RungeKuttaMersonIntegrator(sys);
+            break;
+
+        //case Integrator::SemiExplicitEuler:
+        //    _integ = new SimTK::SemiExplicitEulerIntegrator(sys, stepSize);
+        //    break;
+
+        case Integrator::SemiExplcitEuler2:
+            _integ = new SimTK::SemiExplicitEuler2Integrator(sys);
+            break;
+
+        case Integrator::Verlet:
+            _integ = new SimTK::VerletIntegrator(sys);
+            break;
+    }
+    
+}
+
+/**
  * Get the integrator.
  */
 SimTK::Integrator& Manager::
@@ -521,24 +552,41 @@ getIntegrator() const
 {
     return *_integ;
 }
+
 /**
- * Set the integrator.
- */
-void Manager::
-setIntegrator(SimTK::Integrator& integrator) 
-{   
-    if (_integ.get() == &integrator) return;
-    if (_timeStepper) {
-        std::string msg = "Cannot set a new integrator on this Manager";
-        msg += "after Manager::integrate() has been called at least once.";
+  * Set the Integrator's accuracy. 
+  */
+void Manager::setAccuracy(double accuracy)
+{
+    if (!_integ->methodHasErrorControl()) {
+        std::string msg = "Integrator method ";
+        msg += _integ->getMethodName();
+        msg += " does not support error control.";
         OPENSIM_THROW(Exception, msg);
     }
 
-    _integ = &integrator;
-    // If we had been using the _defaultInteg, we no longer need it.
-    _defaultInteg.reset();
+    _integ->setAccuracy(accuracy);
 }
 
+void Manager::setMinimumStepSize(double hmin)
+{
+    _integ->setMinimumStepSize(hmin);
+}
+
+void Manager::setMaximumStepSize(double hmax)
+{
+    _integ->setMaximumStepSize(hmax);
+}
+
+//void Manager::setFixedStepSize(double stepSize)
+//{
+//    _integ->setFixedStepSize(stepSize);
+//}
+
+void Manager::setInternalStepLimit(int nSteps)
+{
+    _integ->setInternalStepLimit(nSteps);
+}
 
 //=============================================================================
 // EXECUTION

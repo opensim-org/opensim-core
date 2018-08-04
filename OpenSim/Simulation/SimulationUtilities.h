@@ -89,8 +89,7 @@ inline SimTK::State simulate(Model& model,
         // reset the state to the initial state
         state = initialState;
         // Set up manager and simulate.
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        Manager manager(model, integrator);
+        Manager manager(model);
         state.setTime(initialTime);
         manager.initialize(state);
         state = manager.integrate(finalTime);
