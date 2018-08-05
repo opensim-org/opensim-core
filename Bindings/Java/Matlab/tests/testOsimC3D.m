@@ -1,5 +1,6 @@
 %% clear working space
 clear all;close all;clc;
+c3dpath = fullfile(cd,'walking2.c3d');
 
 %% import opensim libraries
 import org.opensim.modeling.*
@@ -7,14 +8,13 @@ import org.opensim.modeling.*
 %% Get path to c3d file in tests. 
 c3dpath = fullfile(cd,'walking2.c3d');
 c3d = osimC3D(c3dpath,1);
-
 % Get tables directly from c3d file adapter
-data = C3DFileAdapter().read(c3dpath,1);
+c3dAdapter = C3DFileAdapter();
+data = c3dAdapter.read('walking2.c3d');
 markers = data.get('markers');
 forces = data.get('forces');
 
 %% Test getAsStructs
-
 [markerRef, forceRef] = c3d.getAsStructs;
 
 mlabels = fieldnames(markerRef);
@@ -40,16 +40,16 @@ for i = 1 : 4
     for u = 1 : nMlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(markerRef.(mlabels{u}) + markerRef180X.(mlabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
-        if round(p(2),8) ~= 0 | round(p(3),8) ~= 0
+        % Difference should be at or near zero. Round to 5 decimal places 
+        if round(p(2),5) ~= 0 | round(p(3),8) ~= 0
             error(['Error in rotateData(). Rotations about X are incorrect'])
         end
     end
     for u = 1 : nFlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(forceRef.(flabels{u}) + forceRef180X.(flabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
-        if round(p(2),8) ~= 0 | round(p(3),8) ~= 0
+        % Difference should be at or near zero. Round to 5 decimal places 
+        if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
             error(['Error in rotateData(). Rotations about X are incorrect'])
         end
     end
@@ -63,7 +63,7 @@ for i = 1 : 4
     for u = 1 : nMlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(markerRef180X.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
+        % Difference should be at or near zero. Round to 5 decimal places 
         if round(p(1),8) ~= 0 | round(p(3),8) ~= 0
             error(['Error in rotateData(). Rotations about Y are incorrect'])
         end
@@ -71,7 +71,7 @@ for i = 1 : 4
     for u = 1 : nFlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(forceRef180X.(flabels{u}) + forceRef180Y.(flabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
+        % Difference should be at or near zero. Round to 5 decimal places 
         if round(p(1),8) ~= 0 | round(p(3),8) ~= 0
             error(['Error in rotateData(). Rotations about Y are incorrect'])
         end
@@ -86,16 +86,16 @@ for i = 1 : 4
     for u = 1 : nMlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(markerRef180Z.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
-        if round(p(1),8) ~= 0 | round(p(2),8) ~= 0
+        % Difference should be at or near zero. Round to 5 decimal places 
+        if round(p(1),8) ~= 0 | round(p(2),5) ~= 0
             error(['Error in rotateData(). Rotations about Z are incorrect'])
         end
     end
     for u = 1 : nFlabels
         % Get the sum of the differences between original and rotated data
         p = nansum(forceRef180Z.(flabels{u}) + forceRef180Y.(flabels{u}));
-        % Difference should be at or near zero. Round to 8 decimal places 
-        if round(p(1),8) ~= 0 | round(p(2),8) ~= 0
+        % Difference should be at or near zero. Round to 5 decimal places 
+        if round(p(1),8) ~= 0 | round(p(2),5) ~= 0
             error(['Error in rotateData(). Rotations about Z are incorrect'])
         end
      end
