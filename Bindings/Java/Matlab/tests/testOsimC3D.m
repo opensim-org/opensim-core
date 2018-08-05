@@ -30,76 +30,75 @@ assert(forces.getNumColumns()  == nFlabels, 'Number or forces from osimC3D is no
 
 
 %% Test Rotations
-for i = 1 : 4     
-    % Rotate Data 180 degrees around X and check that Y and Z data are
-    % mirrored
-    c3d.rotateData('x',-90);c3d.rotateData('x',-90);
-    [markerRef180X, forceRef180X] = c3d.getAsStructs;
-    % For each marker, Y and Z data should be mirrored when rotating 180
-    % about x. 
-    for u = 1 : nMlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(markerRef.(mlabels{u}) + markerRef180X.(mlabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(2),5) ~= 0 | round(p(3),8) ~= 0
-            error(['Error in rotateData(). Rotations about X are incorrect'])
-        end
+% Rotate Data 180 degrees around X and check that Y and Z data are
+% mirrored
+c3d.rotateData('x',-90);c3d.rotateData('x',-90);
+[markerRef180X, forceRef180X] = c3d.getAsStructs;
+% For each marker, Y and Z data should be mirrored when rotating 180
+% about x. 
+for u = 1 : nMlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(markerRef.(mlabels{u}) + markerRef180X.(mlabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
+        error(['Error in rotateData(). Rotations about X are incorrect'])
     end
-    for u = 1 : nFlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(forceRef.(flabels{u}) + forceRef180X.(flabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
-            error(['Error in rotateData(). Rotations about X are incorrect'])
-        end
-    end
-    
-    % Rotate Data 180 degrees around Y and check that Z and X data are
-    % mirrored
-    c3d.rotateData('y',-90);c3d.rotateData('y',-90);
-    [markerRef180Y, forceRef180Y] = c3d.getAsStructs;
-    % For each marker, Y and Z data should be mirrored when rotating 180
-    % about x. 
-    for u = 1 : nMlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(markerRef180X.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(1),8) ~= 0 | round(p(3),8) ~= 0
-            error(['Error in rotateData(). Rotations about Y are incorrect'])
-        end
-    end
-    for u = 1 : nFlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(forceRef180X.(flabels{u}) + forceRef180Y.(flabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(1),8) ~= 0 | round(p(3),8) ~= 0
-            error(['Error in rotateData(). Rotations about Y are incorrect'])
-        end
-     end
-         
-    % Rotate Data 180 degrees around Z and check that X and Y data are
-    % mirrored
-    c3d.rotateData('z',-90);c3d.rotateData('z',-90);
-    [markerRef180Z, forceRef180Z] = c3d.getAsStructs;
-    % For each marker, Y and Z data should be mirrored when rotating 180
-    % about x. 
-    for u = 1 : nMlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(markerRef180Z.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(1),8) ~= 0 | round(p(2),5) ~= 0
-            error(['Error in rotateData(). Rotations about Z are incorrect'])
-        end
-    end
-    for u = 1 : nFlabels
-        % Get the sum of the differences between original and rotated data
-        p = nansum(forceRef180Z.(flabels{u}) + forceRef180Y.(flabels{u}));
-        % Difference should be at or near zero. Round to 5 decimal places 
-        if round(p(1),8) ~= 0 | round(p(2),5) ~= 0
-            error(['Error in rotateData(). Rotations about Z are incorrect'])
-        end
-     end
 end
+for u = 1 : nFlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(forceRef.(flabels{u}) + forceRef180X.(flabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
+        error(['Error in rotateData(). Rotations about X are incorrect'])
+    end
+end
+
+% Rotate Data 180 degrees around Y and check that Z and X data are
+% mirrored
+c3d.rotateData('y',-90);c3d.rotateData('y',-90);
+[markerRef180Y, forceRef180Y] = c3d.getAsStructs;
+% For each marker, Y and Z data should be mirrored when rotating 180
+% about x. 
+for u = 1 : nMlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(markerRef180X.(mlabels{u}) + markerRef180Y.(mlabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(1),5) ~= 0 | round(p(3),5) ~= 0
+        error(['Error in rotateData(). Rotations about Y are incorrect'])
+    end
+end
+for u = 1 : nFlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(forceRef180X.(flabels{u}) + forceRef180Y.(flabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(1),5) ~= 0 | round(p(3),5) ~= 0
+        error(['Error in rotateData(). Rotations about Y are incorrect'])
+    end
+ end
+
+% Rotate Data 180 degrees around Z and check that X and Y data are
+% mirrored
+c3d.rotateData('z',-90);c3d.rotateData('z',-90);
+[markerRef180Z, forceRef180Z] = c3d.getAsStructs;
+% For each marker, Y and Z data should be mirrored when rotating 180
+% about x. 
+for u = 1 : nMlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(markerRef180Z.(mlabels{u}) + markerRef180Y.(mlabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(1),5) ~= 0 | round(p(2),5) ~= 0
+        error(['Error in rotateData(). Rotations about Z are incorrect'])
+    end
+end
+for u = 1 : nFlabels
+    % Get the sum of the differences between original and rotated data
+    p = nansum(forceRef180Z.(flabels{u}) + forceRef180Y.(flabels{u}));
+    % Difference should be at or near zero. Round to 5 decimal places 
+    if round(p(1),5) ~= 0 | round(p(2),5) ~= 0
+        error(['Error in rotateData(). Rotations about Z are incorrect'])
+    end
+ end
+
 
 %% Test Writing Methods
 c3d.writeTRC()
