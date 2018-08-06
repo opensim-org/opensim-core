@@ -210,7 +210,7 @@ int main()
         osimModel.updAnalysisSet().adoptAndAppend(reporter);
         // Create the manager
         Manager manager(osimModel);
-        manager.setAccuracy(1.0e-6);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, std::cout);

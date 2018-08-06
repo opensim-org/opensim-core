@@ -737,9 +737,9 @@ bool CMCTool::run()
     //
     // Manager
     Manager manager(*_model);
-    manager.setMaximumStepSize(_maxDT);
-    manager.setMinimumStepSize(_minDT);
-    manager.setAccuracy(_errorTolerance);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
     
     _model->setAllControllersEnabled( true );
 

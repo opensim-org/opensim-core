@@ -363,7 +363,7 @@ int main()
 
         // Create the manager managing the forward integration and its outputs
         Manager manager(osimModel);
-        manager.setAccuracy(1.0e-6);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, cout);

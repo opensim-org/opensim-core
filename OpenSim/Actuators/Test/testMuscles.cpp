@@ -382,7 +382,7 @@ void simulateMuscle(
 
     // Create the manager
     Manager manager(model);
-    manager.setAccuracy(IntegrationAccuracy);
+    manager.setIntegratorAccuracy(IntegrationAccuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);

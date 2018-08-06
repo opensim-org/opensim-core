@@ -635,7 +635,7 @@ Storage simulateModel(Model& model, double t0, double t1)
     // Prepare manager.
     const double integrationAccuracy = 1.0e-8;
     Manager manager(model);
-    manager.setAccuracy(integrationAccuracy);
+    manager.setIntegratorAccuracy(integrationAccuracy);
     state.setTime(t0);
     manager.initialize(state);
 

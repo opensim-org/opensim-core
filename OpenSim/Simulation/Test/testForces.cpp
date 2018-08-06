@@ -233,7 +233,7 @@ void testExpressionBasedCoordinateForce()
     double dt = final_t/nsteps;
 
     Manager manager(osimModel);
-    manager.setAccuracy(1e-7);
+    manager.setIntegratorAccuracy(1e-7);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -322,7 +322,7 @@ void testExpressionBasedPointToPointForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(model);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     state.setTime(0.0);
     manager.initialize(state);
 
@@ -436,7 +436,7 @@ void testPathSpring()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -528,7 +528,7 @@ void testSpringMass()
     // Compute the force and torque at the specified times.
 
     Manager manager(osimModel);
-    manager.setAccuracy(1e-7);
+    manager.setIntegratorAccuracy(1e-7);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -646,7 +646,7 @@ void testBushingForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -821,7 +821,7 @@ void testFunctionBasedBushingForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -939,7 +939,7 @@ void testExpressionBasedBushingForceTranslational()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
     
@@ -1057,7 +1057,7 @@ void testExpressionBasedBushingForceRotational()
     //=========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1135,7 +1135,7 @@ void testElasticFoundation()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1211,7 +1211,7 @@ void testHuntCrossleyForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1352,7 +1352,7 @@ void testCoordinateLimitForce()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(*osimModel);
-    manager.setAccuracy(1e-6);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1494,7 +1494,7 @@ void testCoordinateLimitForceRotational()
     //==========================================================================
     // Perform a simulation an monitor energy conservation
     Manager manager(osimModel);
-    manager.setAccuracy(1e-8);
+    manager.setIntegratorAccuracy(1e-8);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -1584,7 +1584,7 @@ void testExternalForce()
 
     double accuracy = 1e-6;
     Manager manager(model);
-    manager.setAccuracy(accuracy);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Specify the initial and final times of the simulation.
     double tf = 2.0;
@@ -1628,7 +1628,7 @@ void testExternalForce()
     model.setPropertiesFromState(s2);
 
     Manager manager2(model);
-    manager2.setAccuracy(accuracy);
+    manager2.setIntegratorAccuracy(accuracy);
     s2.setTime(0.0);
     manager2.initialize(s2);
     s2 = manager2.integrate(tf);
@@ -1665,7 +1665,7 @@ void testExternalForce()
     model.setPropertiesFromState(s3);
 
     Manager manager3(model);
-    manager3.setAccuracy(accuracy);
+    manager3.setIntegratorAccuracy(accuracy);
     s3.setTime(0.0);
     manager3.initialize(s3);
     s3 = manager3.integrate(tf);
@@ -1716,7 +1716,7 @@ void testExternalForce()
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
     integrator4.setAccuracy(accuracy);
     Manager manager4(model);
-    manager4.setAccuracy(accuracy);
+    manager4.setIntegratorAccuracy(accuracy);
     s4.setTime(0.0);
     manager4.initialize(s4);
     s4 = manager4.integrate(tf);

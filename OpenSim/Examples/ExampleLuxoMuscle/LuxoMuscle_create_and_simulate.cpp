@@ -245,7 +245,7 @@ int main(int argc, char* argv[]) {
         //setup simulation
         // Create the manager managing the forward integration and its outputs
         Manager manager(luxo);
-        manager.setAccuracy(1.0e-6);
+        manager.setIntegratorAccuracy(1.0e-6);
         
         // Print out details of the model
         luxo.printDetailedInfo(state, std::cout);

@@ -208,7 +208,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
     osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
 
     Manager manager(*osimModel);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     manager.initialize(osim_state);
     osim_state = manager.integrate(duration);
@@ -537,9 +537,9 @@ void testCoordinateLocking()
  
     // Create the integrator and manager for the simulation.
     Manager manager(*osimModel);
-    manager.setMaximumStepSize(1.0e-3);
-    manager.setMinimumStepSize(1.0e-6);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorMaximumStepSize(1.0e-3);
+    manager.setIntegratorMinimumStepSize(1.0e-6);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     // Print out the initial position and velocity states
     si2.getQ().dump("Initial q's"); // pendulum positions

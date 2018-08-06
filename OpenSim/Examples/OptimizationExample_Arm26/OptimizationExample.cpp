@@ -67,7 +67,7 @@ public:
                 
         // Integrate from initial time to final time
         Manager manager(osimModel);
-        manager.setAccuracy(desired_accuracy);
+        manager.setIntegratorAccuracy(desired_accuracy);
         s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
@@ -195,7 +195,7 @@ int main()
 
         // Re-run simulation with optimal controls.
         Manager manager(osimModel);
-        manager.setAccuracy(desired_accuracy);
+        manager.setIntegratorAccuracy(desired_accuracy);
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.

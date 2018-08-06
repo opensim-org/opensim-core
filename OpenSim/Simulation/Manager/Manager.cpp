@@ -501,7 +501,7 @@ setModel(Model& model)
 /**
   * Set the integrator.
   */
-void Manager::setIntegrator(Integrator integMethod)
+void Manager::setIntegrator(IntegratorType integType)
 {
     if (_timeStepper) {
         std::string msg = "Cannot set a new integrator on this Manager";
@@ -510,28 +510,28 @@ void Manager::setIntegrator(Integrator integMethod)
     }
 
     auto& sys = _model->getMultibodySystem();
-    switch (integMethod) {
-        case Integrator::CPodes:
+    switch (integType) {
+        case IntegratorType::CPodes:
             _integ = new SimTK::CPodesIntegrator(sys);
             break;
 
-        case Integrator::ExplicitEuler:
+        case IntegratorType::ExplicitEuler:
             _integ = new SimTK::ExplicitEulerIntegrator(sys);
             break;
 
-        case Integrator::RungeKutta2:
+        case IntegratorType::RungeKutta2:
             _integ = new SimTK::RungeKutta2Integrator(sys);
             break;
 
-        case Integrator::RungeKutta3:
+        case IntegratorType::RungeKutta3:
             _integ = new SimTK::RungeKutta3Integrator(sys);
             break;
 
-        case Integrator::RungeKuttaFeldberg:
+        case IntegratorType::RungeKuttaFeldberg:
             _integ = new SimTK::RungeKuttaFeldbergIntegrator(sys);
             break;
 
-        case Integrator::RungeKuttaMerson:
+        case IntegratorType::RungeKuttaMerson:
             _integ = new SimTK::RungeKuttaMersonIntegrator(sys);
             break;
 
@@ -539,42 +539,42 @@ void Manager::setIntegrator(Integrator integMethod)
         //    _integ = new SimTK::SemiExplicitEulerIntegrator(sys, stepSize);
         //    break;
 
-        case Integrator::SemiExplcitEuler2:
+        case IntegratorType::SemiExplcitEuler2:
             _integ = new SimTK::SemiExplicitEuler2Integrator(sys);
             break;
 
-        case Integrator::Verlet:
+        case IntegratorType::Verlet:
             _integ = new SimTK::VerletIntegrator(sys);
             break;
 
         default:
-            std::string msg = "Integrator method not recognized.";
+            std::string msg = "Integrator type not recognized.";
             OPENSIM_THROW(Exception, msg);
     }
 }
 
-void Manager::setIntegrator(const std::string& integMethod)
+void Manager::setIntegrator(const std::string& integType)
 {
-    if (integMethod == "CPodes")
-        setIntegrator(Integrator::CPodes);
-    else if (integMethod == "ExplicitEuler")
-        setIntegrator(Integrator::ExplicitEuler);
-    else if (integMethod == "RungeKutta2")
-        setIntegrator(Integrator::RungeKutta2);
-    else if (integMethod == "RungeKutta3")
-        setIntegrator(Integrator::RungeKutta3);
-    else if (integMethod == "RungeKuttaFeldberg")
-        setIntegrator(Integrator::RungeKuttaFeldberg);
-    else if (integMethod == "RungeKuttaMerson")
-        setIntegrator(Integrator::RungeKuttaMerson);
-    else if (integMethod == "SemiExplicitEuler2")
-        setIntegrator(Integrator::SemiExplcitEuler2);
-    else if (integMethod == "Verlet")
-        setIntegrator(Integrator::Verlet);
+    if (integType == "CPodes")
+        setIntegrator(IntegratorType::CPodes);
+    else if (integType == "ExplicitEuler")
+        setIntegrator(IntegratorType::ExplicitEuler);
+    else if (integType == "RungeKutta2")
+        setIntegrator(IntegratorType::RungeKutta2);
+    else if (integType == "RungeKutta3")
+        setIntegrator(IntegratorType::RungeKutta3);
+    else if (integType == "RungeKuttaFeldberg")
+        setIntegrator(IntegratorType::RungeKuttaFeldberg);
+    else if (integType == "RungeKuttaMerson")
+        setIntegrator(IntegratorType::RungeKuttaMerson);
+    else if (integType == "SemiExplicitEuler2")
+        setIntegrator(IntegratorType::SemiExplcitEuler2);
+    else if (integType == "Verlet")
+        setIntegrator(IntegratorType::Verlet);
     else
     {
-        std::string msg = "Integrator method '";
-        msg += integMethod;
+        std::string msg = "Integrator type '";
+        msg += integType;
         msg += "' not recognized";
         OPENSIM_THROW(Exception, msg);
     }
@@ -592,10 +592,10 @@ getIntegrator() const
 /**
   * Set the Integrator's accuracy. 
   */
-void Manager::setAccuracy(double accuracy)
+void Manager::setIntegratorAccuracy(double accuracy)
 {
     if (!_integ->methodHasErrorControl()) {
-        std::string msg = "Integrator method ";
+        std::string msg = "Integrator type ";
         msg += _integ->getMethodName();
         msg += " does not support error control.";
         OPENSIM_THROW(Exception, msg);
@@ -604,22 +604,22 @@ void Manager::setAccuracy(double accuracy)
     _integ->setAccuracy(accuracy);
 }
 
-void Manager::setMinimumStepSize(double hmin)
+void Manager::setIntegratorMinimumStepSize(double hmin)
 {
     _integ->setMinimumStepSize(hmin);
 }
 
-void Manager::setMaximumStepSize(double hmax)
+void Manager::setIntegratorMaximumStepSize(double hmax)
 {
     _integ->setMaximumStepSize(hmax);
 }
 
-//void Manager::setFixedStepSize(double stepSize)
+//void Manager::setIntegratorFixedStepSize(double stepSize)
 //{
 //    _integ->setFixedStepSize(stepSize);
 //}
 
-void Manager::setInternalStepLimit(int nSteps)
+void Manager::setIntegratorInternalStepLimit(int nSteps)
 {
     _integ->setInternalStepLimit(nSteps);
 }

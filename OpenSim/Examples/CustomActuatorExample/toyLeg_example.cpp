@@ -212,7 +212,7 @@ int main()
         ForceReporter* forces = new ForceReporter(&osimModel);  
         osimModel.updAnalysisSet().adoptAndAppend(forces);
         Manager manager(osimModel);
-        manager.setAccuracy(1.0e-3);
+        manager.setIntegratorAccuracy(1.0e-3);
     
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);

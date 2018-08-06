@@ -188,7 +188,7 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     cout << "stateY=" << osim_state.getY() << std::endl;
 
     Manager manager(*osimModel);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -323,8 +323,8 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     cout << "stateY=" << osim_state.getY() << std::endl;
 
     Manager manager(*osimModel);
-    manager.setAccuracy(integ_accuracy);
-    manager.setMaximumStepSize(100*integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    manager.setIntegratorMaximumStepSize(100*integ_accuracy);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
     osim_state = manager.integrate(duration);
@@ -489,7 +489,7 @@ void testIntermediateFrames() {
 
         // Integrate.
         Manager manager(model);
-        manager.setAccuracy(integ_accuracy);
+        manager.setIntegratorAccuracy(integ_accuracy);
         state.setTime(0.0);
         manager.initialize(state);
         state = manager.integrate(1.0);

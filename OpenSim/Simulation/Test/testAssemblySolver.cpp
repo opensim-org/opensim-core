@@ -222,7 +222,7 @@ void testAssembleModelWithConstraints(string modelFile)
     // Integrate forward and init the state and update defaults to make sure
     // assembler is not affecting anything more than the pose.
     Manager manager(model);
-    manager.setAccuracy(accuracy);
+    manager.setIntegratorAccuracy(accuracy);
     state.setTime(0.0);
     manager.initialize(state);
 

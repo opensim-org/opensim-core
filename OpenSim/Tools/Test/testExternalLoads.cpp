@@ -109,7 +109,7 @@ void testExternalLoad()
     // Integrator and integration manager
     double integ_accuracy = 1e-6;
     Manager manager(model);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
     s.setTime(init_t);
     manager.initialize(s);
 
@@ -166,7 +166,7 @@ void testExternalLoad()
     model.updCoordinateSet()[0].setValue(s2, q_init);
 
     Manager manager2(model);
-    manager2.setAccuracy(integ_accuracy);
+    manager2.setIntegratorAccuracy(integ_accuracy);
     s2.setTime(init_t);
     manager2.initialize(s2);
 
@@ -239,7 +239,7 @@ void testExternalLoad()
     model.updCoordinateSet()[0].setValue(s3, q_init);
 
     Manager manager3(model);
-    manager3.setAccuracy(integ_accuracy);
+    manager3.setIntegratorAccuracy(integ_accuracy);
     s3.setTime(init_t);
     manager3.initialize(s3);
 

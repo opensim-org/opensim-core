@@ -870,7 +870,7 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     // Create the Manager for the simulation.
     const double accuracy = 1.0e-4;
     Manager manager(osimModel);
-    manager.setAccuracy(accuracy);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);

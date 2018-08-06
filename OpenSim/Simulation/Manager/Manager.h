@@ -132,11 +132,12 @@ private:
 public:
     /** Constructor that takes a model only and internally uses a
      * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
-     * constraint tolerance, etc.). MATLAB/Python users must use this
-     * constructor. */
+     * constraint tolerance, etc.). */
     Manager(Model& model);
+
     /** Convenience constructor for creating and initializing a Manager. */
     Manager(Model& model, const SimTK::State& state);
+
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
@@ -167,25 +168,64 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
-    enum class Integrator {
+    enum class IntegratorType {
+        /** For details, see SimTK::CPodesIntegrator. */
         CPodes,
+        
+        /** For details, see SimTK::ExplicitEulerIntegrator. */
         ExplicitEuler,
+        
+        /** For details, see SimTK::RungeKutta2Integrator. */
         RungeKutta2,
+        
+        /** For details, see SimTK::RungeKutta3Integrator. */
         RungeKutta3,
+        
+        /** For details, see SimTK::RungeKuttaFeldbergIntegrator. */
         RungeKuttaFeldberg,
+
+        /** For details, see SimTK::RungeKuttaMersonIntegrator. */
         RungeKuttaMerson,
+
         //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
+
+        /** For details, see SimTK::SemiExplcitEuler2Integrator. */
         SemiExplcitEuler2,
+
+        /** For details, see SimTK::VerletIntegrator. */
         Verlet
     };
-    void setIntegrator(Integrator integMethod);
-    void setIntegrator(const std::string& integMethod);
+
+    /** Sets the type of integrator used via IntegratorType enum. The 
+      * integrator will be set to its default options. For MATLAB/Python
+      * users, see `setIntegrator(const std::string&)` instead.*/
+    void setIntegrator(IntegratorType integType);
+    /** Sets the type of integrator used via a string. The integrator 
+      * will be set to its default options. For C++ users, see 
+      * `setIntegrator(IntegratorType)` instead. */
+    void setIntegrator(const std::string& integType);
+    
     SimTK::Integrator& getIntegrator() const;
-    void setAccuracy(double accuracy);
-    void setMinimumStepSize(double hmin);
-    void setMaximumStepSize(double hmax);
-    void setInternalStepLimit(int nSteps);
-    //void setFixedStepSize(double stepSize);
+
+    /** Sets the accuracy of the integrator. 
+      * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
+    void setIntegratorAccuracy(double accuracy);
+
+    /** Sets the minimum step size of the integrator.
+    * For more details, see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`. */
+    void setIntegratorMinimumStepSize(double hmin);
+
+    /** Sets the maximum step size of the integrator.
+    * For more details, see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`. */
+    void setIntegratorMaximumStepSize(double hmax);
+
+    /** Sets the limit of steps the integrator can take per call of `stepTo()`.
+      * Note that Manager::integrate() calls `stepTo()` for each interval when a fixed
+      * step size is used.
+      * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
+    void setIntegratorInternalStepLimit(int nSteps);
+
+    //void setIntegratorFixedStepSize(double stepSize);
 
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);

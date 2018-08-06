@@ -296,7 +296,7 @@ int main()
 
         // Create the manager for the simulation.
         Manager manager(osimModel);
-        manager.setAccuracy(1.0e-4);
+        manager.setIntegratorAccuracy(1.0e-4);
 
         // Examine the model.
         osimModel.printDetailedInfo( si, std::cout );

@@ -143,7 +143,7 @@ void testControlSetControllerOnBlock()
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
     Manager manager(osimModel);
-    manager.setAccuracy(accuracy);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
@@ -235,7 +235,7 @@ void testPrescribedControllerOnBlock(bool enabled)
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
     Manager manager(osimModel);
-    manager.setAccuracy(accuracy);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
@@ -304,7 +304,7 @@ void testCorrectionControllerOnBlock()
 
     // Create the manager for the simulation.
     Manager manager(osimModel);
-    manager.setAccuracy(1.0e-4);
+    manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
 }// end of testCorrectionControllerOnBlock()
@@ -342,7 +342,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // Create the manager for the simulation.
     Manager manager(osimModel);
-    manager.setAccuracy(1.0e-5);
+    manager.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
@@ -383,7 +383,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // Create the manager for the simulation.
     Manager manager2(osimModel);
-    manager2.setAccuracy(1.0e-5);
+    manager2.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
     s2.setTime(initialTime);

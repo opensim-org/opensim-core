@@ -269,10 +269,10 @@ bool ForwardTool::run()
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
-    manager.setInternalStepLimit(_maxSteps);
-    manager.setMaximumStepSize(_maxDT);
-    manager.setMinimumStepSize(_minDT);
-    manager.setAccuracy(_errorTolerance);
+    manager.setIntegratorInternalStepLimit(_maxSteps);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
 
 
     // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK

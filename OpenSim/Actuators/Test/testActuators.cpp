@@ -144,7 +144,7 @@ void testMcKibbenActuator()
     double dt = final_t / nsteps;
 
     Manager manager(*model);
-    manager.setAccuracy(1e-7);
+    manager.setIntegratorAccuracy(1e-7);
     si.setTime(0.0);
     manager.initialize(si);
 
@@ -305,7 +305,7 @@ void testTorqueActuator()
     /*double iKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
     Manager manager(*model);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state.setTime(0.0);
     manager.initialize(state);
@@ -448,7 +448,7 @@ void testClutchedPathSpring()
     //==========================================================================
     // Compute the force and torque at the specified times.
     Manager manager(*model);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
     manager.setWriteToStorage(true);
 
     state.setTime(0.0);
@@ -678,7 +678,7 @@ void testBodyActuator()
 
     // -------------- Setup manager -------------------
     Manager manager(*model);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state1.setTime(0.0);
     manager.initialize(state1);
@@ -904,7 +904,7 @@ void testActuatorsCombination()
     
     // ------------------------ Setup manager -----------------------
     Manager manager(*model);
-    manager.setAccuracy(integ_accuracy);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state2.setTime(0.0);
     manager.initialize(state2);
