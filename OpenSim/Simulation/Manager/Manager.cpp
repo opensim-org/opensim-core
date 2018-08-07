@@ -501,7 +501,7 @@ setModel(Model& model)
 /**
   * Set the integrator.
   */
-void Manager::setIntegrator(IntegratorMethod integMethod)
+void Manager::setIntegratorMethod(IntegratorMethod integMethod)
 {
     if (_timeStepper) {
         std::string msg = "Cannot set a new integrator on this Manager";
@@ -553,24 +553,24 @@ void Manager::setIntegrator(IntegratorMethod integMethod)
     }
 }
 
-void Manager::setIntegrator(const std::string& integMethod)
+void Manager::setIntegratorMethod(const std::string& integMethod)
 {
     if (integMethod == "CPodes")
-        setIntegrator(IntegratorMethod::CPodes);
+        setIntegratorMethod(IntegratorMethod::CPodes);
     else if (integMethod == "ExplicitEuler")
-        setIntegrator(IntegratorMethod::ExplicitEuler);
+        setIntegratorMethod(IntegratorMethod::ExplicitEuler);
     else if (integMethod == "RungeKutta2")
-        setIntegrator(IntegratorMethod::RungeKutta2);
+        setIntegratorMethod(IntegratorMethod::RungeKutta2);
     else if (integMethod == "RungeKutta3")
-        setIntegrator(IntegratorMethod::RungeKutta3);
+        setIntegratorMethod(IntegratorMethod::RungeKutta3);
     else if (integMethod == "RungeKuttaFeldberg")
-        setIntegrator(IntegratorMethod::RungeKuttaFeldberg);
+        setIntegratorMethod(IntegratorMethod::RungeKuttaFeldberg);
     else if (integMethod == "RungeKuttaMerson")
-        setIntegrator(IntegratorMethod::RungeKuttaMerson);
+        setIntegratorMethod(IntegratorMethod::RungeKuttaMerson);
     else if (integMethod == "SemiExplicitEuler2")
-        setIntegrator(IntegratorMethod::SemiExplcitEuler2);
+        setIntegratorMethod(IntegratorMethod::SemiExplcitEuler2);
     else if (integMethod == "Verlet")
-        setIntegrator(IntegratorMethod::Verlet);
+        setIntegratorMethod(IntegratorMethod::Verlet);
     else
     {
         std::string msg = "Integrator method '";

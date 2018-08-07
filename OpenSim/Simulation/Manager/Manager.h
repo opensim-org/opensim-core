@@ -196,14 +196,14 @@ public:
         Verlet
     };
 
-    /** Sets the type of integrator used via IntegratorMethod enum. The 
+    /** Sets the integrator method used via IntegratorMethod enum. The 
       * integrator will be set to its default options. For MATLAB/Python
       * users, see `setIntegrator(const std::string&)` instead.*/
-    void setIntegrator(IntegratorMethod integMethod);
-    /** Sets the type of integrator used via a string. The integrator 
+    void setIntegratorMethod(IntegratorMethod integMethod);
+    /** Sets the integrator method used via a string. The integrator 
       * will be set to its default options. For C++ users, see 
       * `setIntegrator(IntegratorMethod)` instead. */
-    void setIntegrator(const std::string& integMethod);
+    void setIntegratorMethod(const std::string& integMethod);
     
     SimTK::Integrator& getIntegrator() const;
 

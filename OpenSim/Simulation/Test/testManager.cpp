@@ -449,68 +449,68 @@ void testIntegratorInterface()
     SimTK_TEST(method == "RungeKuttaMerson");
     
     // Test setIntegrator() with enums
-    manager.setIntegrator(Manager::IntegratorMethod::CPodes);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "CPodesBDF");
 
-    manager.setIntegrator(Manager::IntegratorMethod::ExplicitEuler);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "ExplicitEuler");
 
-    manager.setIntegrator(Manager::IntegratorMethod::RungeKutta2);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKutta2);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKutta2");
 
-    manager.setIntegrator(Manager::IntegratorMethod::RungeKutta3);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKutta3);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKutta3");
 
-    manager.setIntegrator(Manager::IntegratorMethod::RungeKuttaFeldberg);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaFeldberg);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKuttaFeldberg");
 
-    manager.setIntegrator(Manager::IntegratorMethod::RungeKuttaMerson);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaMerson);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKuttaMerson");
 
-    manager.setIntegrator(Manager::IntegratorMethod::SemiExplcitEuler2);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplcitEuler2);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "SemiExplicitEuler2");
 
-    manager.setIntegrator(Manager::IntegratorMethod::Verlet);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::Verlet);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "Verlet");
 
     // Test setIntegrator() with strings
-    manager.setIntegrator("CPodes");
+    manager.setIntegratorMethod("CPodes");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "CPodesBDF");
 
-    manager.setIntegrator("ExplicitEuler");
+    manager.setIntegratorMethod("ExplicitEuler");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "ExplicitEuler");
 
-    manager.setIntegrator("RungeKutta2");
+    manager.setIntegratorMethod("RungeKutta2");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKutta2");
 
-    manager.setIntegrator("RungeKutta3");
+    manager.setIntegratorMethod("RungeKutta3");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKutta3");
 
-    manager.setIntegrator("RungeKuttaFeldberg");
+    manager.setIntegratorMethod("RungeKuttaFeldberg");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKuttaFeldberg");
 
-    manager.setIntegrator("RungeKuttaMerson");
+    manager.setIntegratorMethod("RungeKuttaMerson");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKuttaMerson");
 
-    manager.setIntegrator("SemiExplicitEuler2");
+    manager.setIntegratorMethod("SemiExplicitEuler2");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "SemiExplicitEuler2");
 
-    manager.setIntegrator("Verlet");
+    manager.setIntegratorMethod("Verlet");
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "Verlet");
 
