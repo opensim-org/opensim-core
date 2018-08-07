@@ -223,8 +223,11 @@ classdef osimC3D < matlab.mixin.SetGet
           forces_flat.addTableMetaDataString('nColumns',num2str(forces_flat.getNumColumns()+1))
           forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
+          % Convert mm to m
+          forces_flat_m  = obj.mm2m(forces_flat);
+          
           % Write to file
-          STOFileAdapter().write(forces_flat, outputPath)
+          STOFileAdapter().write(forces_flat_m, outputPath)
           disp(['Forces file written to ' outputPath]);
       end
    end
@@ -301,7 +304,24 @@ classdef osimC3D < matlab.mixin.SetGet
             end
             % Generate the output path.
             outputPath = fullfile(filepath, [name ext]);
+        end
+        function table_flat = mm2m(obj,table_flat)
             
+            nForces = table_flat.getNumColumns();
+            nRows  = table_flat.getNumRows();
+            labels = table_flat.getColumnLabels();
+            
+            for i = 0 : nForces - 1
+                if ~contains(char(labels.get(i)),'v')
+                    for u = 0 : nRows - 1
+                        % Get the table value
+                        c = table_flat.getDependentColumnAtIndex(i).get(u);
+                        % set the table value
+                        table_flat.getDependentColumnAtIndex(i).set(u,c/1000);
+                    end
+                end    
+            end
+            disp('P and M converted to M')
         end
    end
 end
