@@ -39,7 +39,7 @@ c3d.rotateData('x',-90);c3d.rotateData('x',-90);
 for u = 1 : nMlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(markerRef.(mlabels{u}) + markerRef180X.(mlabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
         error(['Error in rotateData(). Rotations about X are incorrect'])
     end
@@ -47,7 +47,7 @@ end
 for u = 1 : nFlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(forceRef.(flabels{u}) + forceRef180X.(flabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(2),5) ~= 0 | round(p(3),5) ~= 0
         error(['Error in rotateData(). Rotations about X are incorrect'])
     end
@@ -62,7 +62,7 @@ c3d.rotateData('y',-90);c3d.rotateData('y',-90);
 for u = 1 : nMlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(markerRef180X.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(1),5) ~= 0 | round(p(3),5) ~= 0
         error(['Error in rotateData(). Rotations about Y are incorrect'])
     end
@@ -70,7 +70,7 @@ end
 for u = 1 : nFlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(forceRef180X.(flabels{u}) + forceRef180Y.(flabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(1),5) ~= 0 | round(p(3),5) ~= 0
         error(['Error in rotateData(). Rotations about Y are incorrect'])
     end
@@ -85,7 +85,7 @@ c3d.rotateData('z',-90);c3d.rotateData('z',-90);
 for u = 1 : nMlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(markerRef180Z.(mlabels{u}) + markerRef180Y.(mlabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(1),5) ~= 0 | round(p(2),5) ~= 0
         error(['Error in rotateData(). Rotations about Z are incorrect'])
     end
@@ -93,12 +93,11 @@ end
 for u = 1 : nFlabels
     % Get the sum of the differences between original and rotated data
     p = nansum(forceRef180Z.(flabels{u}) + forceRef180Y.(flabels{u}));
-    % Difference should be at or near zero. Round to 5 decimal places 
+    % Sum should be at or near zero. Round to 5 decimal places 
     if round(p(1),5) ~= 0 | round(p(2),5) ~= 0
         error(['Error in rotateData(). Rotations about Z are incorrect'])
     end
- end
-
+end
 
 %% Test Writing Methods
 c3d.writeTRC()
