@@ -182,7 +182,6 @@ public:
     Find the transform that describes this frame (F) relative to another
     frame (A). It transforms quantities expressed in F to quantities expressed
     in A. This is mathematically stated as:
-    This is mathematically stated as:
         vec_A = X_AF*vec_F ,
     where X_AF is the transform returned by this method.
 
