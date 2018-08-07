@@ -36,6 +36,7 @@ Manager Tests:
    arm26 model between subsequent integrations.
 4. testConstructors: Ensure different constructors work as intended.
 5. testSimulate: Ensure the simulate() method works as intended.
+6. testIntegratorInterface: Ensure setting integrator options works as intended.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -55,6 +56,7 @@ void testStateChangesBetweenIntegration();
 void testExcitationUpdatesWithManager();
 void testConstructors();
 void testSimulate();
+void testIntegratorInterface();
 
 int main()
 {
@@ -88,6 +90,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testSimulate");
+    }
+
+    try { testIntegratorInterface(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testIntegratorInterface");
     }
 
     if (!failures.empty()) {
@@ -415,4 +423,105 @@ void testSimulate()
         s = simulate(model, s, t0-1.);
         SimTK_TEST_EQ(s.getTime(), t0);
     }
+}
+
+void testIntegratorInterface()
+{
+    cout << "Running testIntegratorInterface" << endl;
+
+    using SimTK::Vec3;
+    const double gravity = 9.81;
+
+    // Create a simple model consisting of an unconstrained ball.
+    Model model;
+    model.setGravity(Vec3(0, -gravity, 0));
+    auto ball = new Body("ball", 1., Vec3(0), SimTK::Inertia::sphere(1.));
+    model.addBody(ball);
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
+    model.addJoint(freeJoint);
+    auto state = model.initSystem();
+
+    Manager manager(model);
+
+    // getMethodName returns char* so convert to string first for tests
+    std::string method = manager.getIntegrator().getMethodName();
+    // Default is RungeKuttaMerson
+    SimTK_TEST(method == "RungeKuttaMerson");
+    
+    // Test setIntegrator() with enums
+    manager.setIntegrator(Manager::IntegratorMethod::CPodes);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "CPodesBDF");
+
+    manager.setIntegrator(Manager::IntegratorMethod::ExplicitEuler);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "ExplicitEuler");
+
+    manager.setIntegrator(Manager::IntegratorMethod::RungeKutta2);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta2");
+
+    manager.setIntegrator(Manager::IntegratorMethod::RungeKutta3);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta3");
+
+    manager.setIntegrator(Manager::IntegratorMethod::RungeKuttaFeldberg);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaFeldberg");
+
+    manager.setIntegrator(Manager::IntegratorMethod::RungeKuttaMerson);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaMerson");
+
+    manager.setIntegrator(Manager::IntegratorMethod::SemiExplcitEuler2);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "SemiExplicitEuler2");
+
+    manager.setIntegrator(Manager::IntegratorMethod::Verlet);
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "Verlet");
+
+    // Test setIntegrator() with strings
+    manager.setIntegrator("CPodes");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "CPodesBDF");
+
+    manager.setIntegrator("ExplicitEuler");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "ExplicitEuler");
+
+    manager.setIntegrator("RungeKutta2");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta2");
+
+    manager.setIntegrator("RungeKutta3");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKutta3");
+
+    manager.setIntegrator("RungeKuttaFeldberg");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaFeldberg");
+
+    manager.setIntegrator("RungeKuttaMerson");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "RungeKuttaMerson");
+
+    manager.setIntegrator("SemiExplicitEuler2");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "SemiExplicitEuler2");
+
+    manager.setIntegrator("Verlet");
+    method = manager.getIntegrator().getMethodName();
+    SimTK_TEST(method == "Verlet");
+
+    // Make some changes to the settings. We can't check to see if these 
+    // actually changed because IntegratorRep is not exposed.
+    double accuracy = 0.314;
+    double hmin = 0.11;
+    double hmax = 0.22;
+    double nSteps = 999;
+    manager.setIntegratorAccuracy(accuracy);
+    manager.setIntegratorMinimumStepSize(hmin);
+    manager.setIntegratorMaximumStepSize(hmax);
+    manager.setIntegratorInternalStepLimit(nSteps);
 }

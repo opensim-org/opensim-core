@@ -168,7 +168,7 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
-    enum class IntegratorType {
+    enum class IntegratorMethod {
         /** For details, see SimTK::CPodesIntegrator. */
         CPodes,
         
@@ -196,14 +196,14 @@ public:
         Verlet
     };
 
-    /** Sets the type of integrator used via IntegratorType enum. The 
+    /** Sets the type of integrator used via IntegratorMethod enum. The 
       * integrator will be set to its default options. For MATLAB/Python
       * users, see `setIntegrator(const std::string&)` instead.*/
-    void setIntegrator(IntegratorType integType);
+    void setIntegrator(IntegratorMethod integMethod);
     /** Sets the type of integrator used via a string. The integrator 
       * will be set to its default options. For C++ users, see 
-      * `setIntegrator(IntegratorType)` instead. */
-    void setIntegrator(const std::string& integType);
+      * `setIntegrator(IntegratorMethod)` instead. */
+    void setIntegrator(const std::string& integMethod);
     
     SimTK::Integrator& getIntegrator() const;
 
