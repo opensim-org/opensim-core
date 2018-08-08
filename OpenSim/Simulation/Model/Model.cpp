@@ -619,8 +619,21 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
 
 std::string Model::getWarningMesssageForMotionTypeInconsistency() const
 {
-    std::string prefix("Model '" + getName() + "':");
     std::string message;
+
+    auto enumToString = [](Coordinate::MotionType mt)->std::string {
+        switch (mt) {
+        case(Coordinate::MotionType::Rotational):
+            return "Rotational";
+        case(Coordinate::MotionType::Translational):
+            return "Translational";
+        case(Coordinate::MotionType::Coupled):
+            return "Coupled";
+        default:
+            return "Undefined";
+        }
+    };
+
     auto coordinates = getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType = 
@@ -630,10 +643,21 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
         if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
             (oldMotionType != motionType) ){
             message += " Coordinate '" + coord.getName() +
-                "' had incorrect MotionType '" + to_string(oldMotionType) +
-                "', now set to '" + to_string(motionType) + "',\n";
+                "' had incorrect MotionType '" + enumToString(oldMotionType) +
+                "', now set to '" + enumToString(motionType) + "'\n";
         }
     }
+
+    // We have a reason to provide a warning. Add more details about the model
+    // and how to resolve future issues.
+    if (message.size()) {
+        message = "Model '" + getName() + "' has inconsistencies:\n" + message;
+        message += "Please consider updating kinematics (.mot) files associated\n"
+            "with this model to ensure consistent unit conversion (from degrees)\n"
+            "when applying kinematics to the model. See this utility:\n"
+            " updateKinematicsForOldModels(model_file.osim, list_of_MOT_files) ";
+    }
+
     return message;
 }
 
