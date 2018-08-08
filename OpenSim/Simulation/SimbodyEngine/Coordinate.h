@@ -324,6 +324,9 @@ private:
     /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
 
+    /* User set MotionType from versions of OpenSim that predate 4.0 */
+    MotionType _oldUserSpecifiedMotionType;
+
     mutable bool _lockedWarningGiven;
 
     // PRIVATE METHODS implementing the Component interface
