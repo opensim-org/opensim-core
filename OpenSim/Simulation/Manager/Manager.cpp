@@ -511,9 +511,9 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
 
     auto& sys = _model->getMultibodySystem();
     switch (integMethod) {
-        case IntegratorMethod::CPodes:
-            _integ.reset(new SimTK::CPodesIntegrator(sys));
-            break;
+        //case IntegratorMethod::CPodes:
+        //    _integ.reset(new SimTK::CPodesIntegrator(sys));
+        //    break;
 
         case IntegratorMethod::ExplicitEuler:
             _integ.reset(new SimTK::ExplicitEulerIntegrator(sys));
@@ -555,9 +555,9 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
 
 void Manager::setIntegratorMethod(const std::string& integMethod)
 {
-    if (integMethod == "CPodes")
-        setIntegratorMethod(IntegratorMethod::CPodes);
-    else if (integMethod == "ExplicitEuler")
+    //if (integMethod == "CPodes")
+    //    setIntegratorMethod(IntegratorMethod::CPodes);
+    if (integMethod == "ExplicitEuler")
         setIntegratorMethod(IntegratorMethod::ExplicitEuler);
     else if (integMethod == "RungeKutta2")
         setIntegratorMethod(IntegratorMethod::RungeKutta2);

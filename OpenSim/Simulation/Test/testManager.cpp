@@ -449,9 +449,9 @@ void testIntegratorInterface()
     SimTK_TEST(method == "RungeKuttaMerson");
     
     // Test setIntegrator() with enums
-    manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "CPodesBDF");
+    //manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
+    //method = manager.getIntegrator().getMethodName();
+    //SimTK_TEST(method == "CPodesBDF");
 
     manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler);
     method = manager.getIntegrator().getMethodName();
@@ -482,9 +482,9 @@ void testIntegratorInterface()
     SimTK_TEST(method == "Verlet");
 
     // Test setIntegrator() with strings
-    manager.setIntegratorMethod("CPodes");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "CPodesBDF");
+    //manager.setIntegratorMethod("CPodes");
+    //method = manager.getIntegrator().getMethodName();
+    //SimTK_TEST(method == "CPodesBDF");
 
     manager.setIntegratorMethod("ExplicitEuler");
     method = manager.getIntegrator().getMethodName();
@@ -519,7 +519,7 @@ void testIntegratorInterface()
     double accuracy = 0.314;
     double hmin = 0.11;
     double hmax = 0.22;
-    double nSteps = 999;
+    int nSteps = 999;
     manager.setIntegratorAccuracy(accuracy);
     manager.setIntegratorMinimumStepSize(hmin);
     manager.setIntegratorMaximumStepSize(hmax);

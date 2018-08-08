@@ -162,8 +162,7 @@ public:
 
     // Integrator
     enum class IntegratorMethod {
-        /** For details, see SimTK::CPodesIntegrator. */
-        CPodes,
+        //CPodes, stochastic segfaults when destructed via unique_ptr::reset()
         
         /** For details, see SimTK::ExplicitEulerIntegrator. */
         ExplicitEuler,
