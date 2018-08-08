@@ -473,7 +473,7 @@ void testIntegratorInterface()
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "RungeKuttaMerson");
 
-    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplcitEuler2);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "SemiExplicitEuler2");
 

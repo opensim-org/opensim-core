@@ -79,14 +79,7 @@ private:
     SimTK::ReferencePtr<Model> _model;
 
     /** Integrator. */
-    // This is the actual integrator that is used when integrate() is called.
-    // Its memory is managed elsewhere; either by the user or by the
-    // _defaultInteg smart pointer.
-    SimTK::ReferencePtr<SimTK::Integrator> _integ;
-
-    // The integrator that is used when using the model-only constructor.
-    // This is allocated only if necessary.
-    //std::unique_ptr<SimTK::Integrator> _defaultInteg;
+    std::unique_ptr<SimTK::Integrator> _integ;
 
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
@@ -189,8 +182,8 @@ public:
 
         //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
 
-        /** For details, see SimTK::SemiExplcitEuler2Integrator. */
-        SemiExplcitEuler2,
+        /** For details, see SimTK::SemiExplicitEuler2Integrator. */
+        SemiExplicitEuler2,
 
         /** For details, see SimTK::VerletIntegrator. */
         Verlet
@@ -200,9 +193,17 @@ public:
       * integrator will be set to its default options. For MATLAB/Python
       * users, see `setIntegrator(const std::string&)` instead.*/
     void setIntegratorMethod(IntegratorMethod integMethod);
-    /** Sets the integrator method used via a string. The integrator 
-      * will be set to its default options. For C++ users, see 
-      * `setIntegrator(IntegratorMethod)` instead. */
+
+    /** Sets the integrator method used via a string that matches an enum name.
+      * The integrator will be set to its default options. For C++ users, see 
+      * `setIntegrator(IntegratorMethod)` instead. 
+      *
+      * Example:
+      * @code
+      * manager = Manager(model);
+      * manager.setIntegratorMethod('SemiExplicitEuler2');
+      * @endcode 
+      */
     void setIntegratorMethod(const std::string& integMethod);
     
     SimTK::Integrator& getIntegrator() const;
@@ -320,7 +321,7 @@ public:
     const SimTK::State& integrate(double finalTime);
 
     /** Get the current State from the Integrator associated with this 
-    Manager. */
+      * Manager. */
     const SimTK::State& getState() const;
     
     double getFixedStepSize(int tArrayStep) const;
@@ -347,7 +348,6 @@ private:
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(const SimTK::State& s);
-    //void initializeTimeStepper(const SimTK::State& s);
 
     // Helper to record state and analysis values at integration steps.
     // step = 0 is the beginning, step = -1 used to denote the end/final step

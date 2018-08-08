@@ -50,7 +50,7 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 Manager::Manager(Model& model) : Manager(model, true)
 {
-    _integ = new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem());
+    _integ = make_unique<SimTK::RungeKuttaMersonIntegrator>(_model->getMultibodySystem());
 }
 
 Manager::Manager(Model& model, const SimTK::State& state)
@@ -512,27 +512,27 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
     auto& sys = _model->getMultibodySystem();
     switch (integMethod) {
         case IntegratorMethod::CPodes:
-            _integ = new SimTK::CPodesIntegrator(sys);
+            _integ = make_unique<SimTK::CPodesIntegrator>(sys);
             break;
 
         case IntegratorMethod::ExplicitEuler:
-            _integ = new SimTK::ExplicitEulerIntegrator(sys);
+            _integ = make_unique<SimTK::ExplicitEulerIntegrator>(sys);
             break;
 
         case IntegratorMethod::RungeKutta2:
-            _integ = new SimTK::RungeKutta2Integrator(sys);
+            _integ = make_unique<SimTK::RungeKutta2Integrator>(sys);
             break;
 
         case IntegratorMethod::RungeKutta3:
-            _integ = new SimTK::RungeKutta3Integrator(sys);
+            _integ = make_unique<SimTK::RungeKutta3Integrator>(sys);
             break;
 
         case IntegratorMethod::RungeKuttaFeldberg:
-            _integ = new SimTK::RungeKuttaFeldbergIntegrator(sys);
+            _integ = make_unique<SimTK::RungeKuttaFeldbergIntegrator>(sys);
             break;
 
         case IntegratorMethod::RungeKuttaMerson:
-            _integ = new SimTK::RungeKuttaMersonIntegrator(sys);
+            _integ = make_unique<SimTK::RungeKuttaMersonIntegrator>(sys);
             break;
 
         //case Integrator::SemiExplicitEuler:
@@ -540,11 +540,11 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
         //    break;
 
         case IntegratorMethod::SemiExplcitEuler2:
-            _integ = new SimTK::SemiExplicitEuler2Integrator(sys);
+            _integ = make_unique<SimTK::SemiExplicitEuler2Integrator>(sys);
             break;
 
         case IntegratorMethod::Verlet:
-            _integ = new SimTK::VerletIntegrator(sys);
+            _integ = make_unique<SimTK::VerletIntegrator>(sys);
             break;
 
         default:
