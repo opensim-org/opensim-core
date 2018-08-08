@@ -264,9 +264,14 @@ void MucoPhase::initialize(Model& model) const {
     // TODO can only handle ScalarActuators?
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                "Control info provided for nonexistant actuator '"
-                        + name + "'.");
+        bool isNotLagrangeMultiplier = true;
+        if (name.find("lambda") != std::string::npos) {
+            isNotLagrangeMultiplier = false;
+        }
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1 && 
+                isNotLagrangeMultiplier, Exception,
+                "Control info provided for nonexistant actuator or Lagrange "
+                        "multiplier '" + name + "'.");
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {

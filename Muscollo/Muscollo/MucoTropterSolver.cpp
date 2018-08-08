@@ -20,6 +20,7 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <simbody/internal/Constraint.h>
 
 #include <tropter/tropter.h>
 
@@ -166,6 +167,24 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
+        // Add control variables representing Lagrange multipliers for any
+        // constraints that exist in the model.
+        const auto& matter = m_model.getMatterSubsystem();
+        const auto NC = matter.getNumConstraints();
+        //const auto NC = m_model.getConstraintSet().getSize();
+        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+            const SimTK::Constraint& constraint = matter.getConstraint(cid);
+            if (!constraint.isDisabled(m_state)) {
+                this->add_path_constraint(
+                    "model_constraint_" + std::to_string(cid), 0);
+                this->add_control("lambda_" + std::to_string(cid), 
+                    {-1000, 1000});
+                m_enabledCIDs.push_back(cid);
+                //m_mucoProb.setControlInfo("lambda_" + std::to_string(cid), 
+                //    {-1000, 1000});
+            }
+        }
+
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getName();
@@ -204,9 +223,17 @@ public:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
+        // Get number of constraints from the SimbodyMatterSubsystems.
+        const auto& matter = m_model.getMatterSubsystem();
+        //const auto NC = matter.getNumConstraints();
+
+        //const auto NC = m_model.getConstraintSet().getSize();
+        // Set the controls for actuators in the OpenSim model, excluding
+        // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
+            std::copy(controls.data() + m_enabledCIDs.size(), 
+                    controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
@@ -215,8 +242,57 @@ public:
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
         m_model.realizeAcceleration(m_state);
-        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-                out.dynamics.data());
+        //std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
+        //        out.dynamics.data());
+
+        if (m_enabledCIDs.size()) {
+            const SimTK::MultibodySystem& multibody = 
+                m_model.getMultibodySystem();
+            const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+                multibody.getRigidBodyForces(m_state, SimTK::Stage::Dynamics);
+            const SimTK::Vector& appliedMobilityForces = 
+                multibody.getMobilityForces(m_state, SimTK::Stage::Dynamics);
+
+            const SimTK::SimbodyMatterSubsystem& matter = 
+                m_model.getMatterSubsystem();
+            SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+            SimTK::Vector constraintMobilityForces;
+            // Multipliers are negated so constraint forces can be used like 
+            // applied forces.
+            SimTK::Vector multipliers((int)m_enabledCIDs.size(), 
+                controls.data());
+            matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
+                constraintBodyForces, constraintMobilityForces);
+            //std::cout << "multipliers" << multipliers << std::endl;
+
+            SimTK::Vector ydot;
+            SimTK::Vector_<SimTK::SpatialVec> A_GB;
+            matter.calcAccelerationIgnoringConstraints(m_state,
+                appliedMobilityForces + constraintMobilityForces,
+                appliedBodyForces + constraintBodyForces, ydot, A_GB);
+
+            std::copy(&ydot[0], &ydot[0] + ydot.size(), out.dynamics.data());
+
+            SimTK::Vector errorsNormSqr((int)m_enabledCIDs.size(), 0.0);
+            for (int i = 0; i < m_enabledCIDs.size(); ++i) {
+                const SimTK::Constraint& constraint = 
+                    matter.getConstraint(SimTK::ConstraintIndex(
+                        m_enabledCIDs[i]));
+                // SimTK::Vector errors(
+                //   constraint.getPositionErrorsAsVector(m_state));
+                //std::cout << "Constraint " << std::to_string(cid) << std::endl;
+                //std::cout << errors << std::endl;
+                errorsNormSqr.set(i, 
+                    constraint.getPositionErrorsAsVector(m_state).normSqr());
+                //std::cout << "Errors Norm Sqr" << errorsNormSqr << std::endl;
+            }
+            std::copy(&errorsNormSqr[0], &errorsNormSqr[0] + errorsNormSqr.size(),
+                    out.path.data());
+        } else {
+            std::copy(&m_state.getYDot()[0], 
+                     &m_state.getYDot()[0] + states.size(),
+                     out.dynamics.data());
+        }
 
     }
     void calc_integral_cost(const T& time,
@@ -228,16 +304,31 @@ public:
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
+
+        // Get number of constraints from the SimbodyMatterSubsystems.
+        const auto& matter = m_model.getMatterSubsystem();
+        //const auto NC = matter.getNumConstraints();
+        //const auto NC = m_model.getConstraintSet().getSize();
+        // Set the controls for actuators in the OpenSim model, excluding
+        // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
+            std::copy(controls.data() + m_enabledCIDs.size(), 
+                    controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizePosition(m_state);
             m_model.setControls(m_state, osimControls);
         } else {
             m_model.realizePosition(m_state);
         }
+
         integrand = m_phase0.calcIntegralCost(m_state);
+        // Add squared multiplers cost to integrand.
+        SimTK::Vector multipliers((int)m_enabledCIDs.size(), controls.data());
+        for (int i = 0; i < (int)m_enabledCIDs.size(); ++i) {
+            integrand += multipliers[i] * multipliers[i];
+        }
+        
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
             const VectorX<T>& parameters, T& cost) const override {
@@ -256,6 +347,7 @@ private:
     const MucoPhase& m_phase0;
     mutable Model m_model;
     mutable SimTK::State m_state;
+    std::vector<int> m_enabledCIDs;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

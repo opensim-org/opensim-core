@@ -157,6 +157,14 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     // Set options.
     auto ipoptions = app->Options();
     ipoptions->SetStringValue("print_user_options", "yes");
+    //ipoptions->SetIntegerValue("max_soft_resto_iters", 1000);
+    //ipoptions->SetNumericValue("resto_failure_feasibility_threshold", 1e-6);
+    //ipoptions->SetNumericValue("required_infeasibility_reduction", 0.5);
+    //ipoptions->SetStringValue("derivative_test", "second-order");
+    //ipoptions->SetNumericValue("resto.tol", 1e-6);
+    //ipoptions->SetStringValue("mu_strategy", "adaptive");
+    //ipoptions->SetIntegerValue("accept_after_max_steps", 15);
+
 
     if (get_verbosity() == 0) {
         ipoptions->SetIntegerValue("print_level", 0);
@@ -219,7 +227,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     //std::string all_options;
     //app->Options()->PrintList(all_options);
     //std::cout << all_options << std::endl;
-    // TODO app->Options()->SetStringValue("derivative_test", "second-order");
+    //app->Options()->SetStringValue("derivative_test", "second-order");
     //app->Options()->SetStringValue("linear_solver", "ma97");
     //app->Options()->SetNumericValue("tol", 1e-5);
     Ipopt::ApplicationReturnStatus status;

@@ -208,6 +208,8 @@ calc_jacobian_sparsity_with_perturbation(const Eigen::VectorXd& x0,
                     std::cout << row_names[i] << ", "
                               << col_names[j];
                 std::cout << ")." << std::endl;
+                std::cout << "output0: " << output0[i] << std::endl;
+                std::cout << "curr output: " << output[i] << std::endl;
             }
             if (diff[i] != 0) sparsity.set_nonzero(i, j);
         }
