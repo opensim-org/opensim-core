@@ -614,6 +614,14 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
     return coordinatesInTreeOrder;
 }
 
+std::string Model::getWarningMesssageForMotionTypeChanges() const
+{
+    std::string message;
+    auto coordinates = getComponentList<Coordinate>();
+
+    return message;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();

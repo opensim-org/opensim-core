@@ -221,10 +221,10 @@ public:
     SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
     /**@}**/
 
-    /* For internal consistency checking. Returns true if previous and
-       current values are the same or if no user-specifed value was
-       provided. */
-    bool isMotionTypeConsistentWithOldUserSpecifiedType() const;
+    /* For internal consistency checking. Returns the user-specified MotionType
+       serialized with older model files (prior to 4.) if one is provided, other-
+       wise returns Motion::Undefined. */
+    const MotionType& getOldUserSpecifiedMotionType() const;
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION

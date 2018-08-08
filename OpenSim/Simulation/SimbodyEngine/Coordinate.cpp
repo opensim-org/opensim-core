@@ -706,8 +706,7 @@ void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-bool Coordinate::isMotionTypeConsistentWithOldUserSpecifiedType() const
+const Coordinate::MotionType& Coordinate::getOldUserSpecifiedMotionType() const
 {
-    return ( (_oldUserSpecifiedMotionType == Undefined) ||
-             (getMotionType() == _oldUserSpecifiedMotionType) );
+    return _oldUserSpecifiedMotionType;
 }
