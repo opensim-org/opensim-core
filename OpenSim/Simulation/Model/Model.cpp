@@ -394,6 +394,9 @@ SimTK::State& Model::initializeState() {
     if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    cout << warn << endl;
+
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
     getMultibodySystem().realizeTopology();
@@ -614,11 +617,23 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
     return coordinatesInTreeOrder;
 }
 
-std::string Model::getWarningMesssageForMotionTypeChanges() const
+std::string Model::getWarningMesssageForMotionTypeInconsistency() const
 {
+    std::string prefix("Model '" + getName() + "':");
     std::string message;
     auto coordinates = getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType = 
+            coord.getOldUserSpecifiedMotionType();
+        const Coordinate::MotionType motionType = coord.getMotionType();
 
+        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
+            (oldMotionType != motionType) ){
+            message += " Coordinate '" + coord.getName() +
+                "' had incorrect MotionType '" + to_string(oldMotionType) +
+                "', now set to '" + to_string(motionType) + "',\n";
+        }
+    }
     return message;
 }
 

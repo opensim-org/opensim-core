@@ -886,7 +886,7 @@ public:
     /** Get a warning message if any Coordinates have a MotionType that is NOT
         consistent with its previous user-specified value that existed in 
         Model files prior to OpenSim 4.0 */
-    std::string getWarningMesssageForMotionTypeChanges() const;
+    std::string getWarningMesssageForMotionTypeInconsistency() const;
 
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
