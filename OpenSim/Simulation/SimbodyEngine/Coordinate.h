@@ -248,6 +248,11 @@ protected:
     // of Coordinate
     void setJoint(const Joint& aOwningJoint);
 
+    // Override to account for version updates in the XML format. */
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
+
 //=============================================================================
 // MODEL DATA
 //=============================================================================

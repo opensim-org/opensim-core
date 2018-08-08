@@ -677,3 +677,23 @@ void Coordinate::SpeedStateVariable::
     msg +=  "Generalized speed derivative (udot) can only be set by the Multibody system.";
     throw Exception(msg);
 }
+
+//=============================================================================
+// XML Deserialization
+//=============================================================================
+void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
+    int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30514) {
+            SimTK::Xml::element_iterator iter = aNode.element_begin("motion_type");
+            if (iter != aNode.element_end()) {
+                SimTK::Xml::Element motionTypeElm = 
+                    SimTK::Xml::Element::getAs(aNode.removeNode(iter));
+                std::string typeName = motionTypeElm.getValue();
+                cout << "Read in MotionType for Coordinate with value: " << typeName << endl;
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
