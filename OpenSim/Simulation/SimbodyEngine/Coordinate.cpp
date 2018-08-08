@@ -141,7 +141,7 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
@@ -691,9 +691,23 @@ void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 SimTK::Xml::Element motionTypeElm = 
                     SimTK::Xml::Element::getAs(aNode.removeNode(iter));
                 std::string typeName = motionTypeElm.getValue();
-                cout << "Read in MotionType for Coordinate with value: " << typeName << endl;
+
+                if ((IO::Lowercase(typeName) == "rotational"))
+                    _oldUserSpecifiedMotionType = Rotational;
+                else if (IO::Lowercase(typeName) == "translational")
+                    _oldUserSpecifiedMotionType = Translational;
+                else if (IO::Lowercase(typeName) == "coupled")
+                    _oldUserSpecifiedMotionType = Coupled;
+                else
+                    _oldUserSpecifiedMotionType = Undefined;
             }
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+bool Coordinate::isMotionTypeConsistentWithOldUserSpecifiedType() const
+{
+    return ( (_oldUserSpecifiedMotionType == Undefined) ||
+             (getMotionType() == _oldUserSpecifiedMotionType) );
 }
