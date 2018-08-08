@@ -539,7 +539,7 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
         //    _integ = new SimTK::SemiExplicitEulerIntegrator(sys, stepSize);
         //    break;
 
-        case IntegratorMethod::SemiExplcitEuler2:
+        case IntegratorMethod::SemiExplicitEuler2:
             _integ = make_unique<SimTK::SemiExplicitEuler2Integrator>(sys);
             break;
 
@@ -568,7 +568,7 @@ void Manager::setIntegratorMethod(const std::string& integMethod)
     else if (integMethod == "RungeKuttaMerson")
         setIntegratorMethod(IntegratorMethod::RungeKuttaMerson);
     else if (integMethod == "SemiExplicitEuler2")
-        setIntegratorMethod(IntegratorMethod::SemiExplcitEuler2);
+        setIntegratorMethod(IntegratorMethod::SemiExplicitEuler2);
     else if (integMethod == "Verlet")
         setIntegratorMethod(IntegratorMethod::Verlet);
     else

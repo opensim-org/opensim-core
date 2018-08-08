@@ -882,7 +882,7 @@ void simulate(Model& osimModel, State& si, double initialTime, double finalTime)
     cout << "simulation time = " << SimTK::realTime()-start
          << " seconds (wallclock time)\n" << endl;
 
-    auto integrator = manager.getIntegrator();
+    auto& integrator = manager.getIntegrator();
     cout << "integrator iterations = " << integrator.getNumStepsTaken() << endl;
 
     // Save the simulation results
