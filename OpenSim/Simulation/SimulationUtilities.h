@@ -128,7 +128,15 @@ inline SimTK::State simulate(Model& model,
 inline void updateKinematicsFilesForUpdatedModel(const Model& model, 
                 const std::vector<std::string>& filePaths, std::string suffix="")
 {
-    std::vector<Coordinate> problemCoords;
+    if (model.getDocumentFileVersion() >= 30415) {
+        throw Exception("updateKinematicsFilesForUpdatedModel has no updates "
+            "to make because the model '" + model.getName() + "'is up-to-date.\n"
+            "If input motion files were generated with this model version, there is "
+            "nothing further to be done. Otherwise, provide the original model "
+            "file used to generate the motion files and try again.");
+    }
+
+    std::vector<const Coordinate*> problemCoords;
     auto coordinates = model.getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
@@ -137,7 +145,7 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
 
         if ((oldMotionType != Coordinate::MotionType::Undefined) &&
             (oldMotionType != motionType)) {
-            problemCoords.push_back(coord);
+            problemCoords.push_back(&coord);
         }
     }
 
