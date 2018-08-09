@@ -224,7 +224,7 @@ classdef osimC3D < matlab.mixin.SetGet
           forces_flat.addTableMetaDataString('nRows',num2str(forces_flat.getNumRows()));
 
           % Convert mm to m
-          forces_flat_m  = obj.mm2m(forces_flat);
+          forces_flat_m  = obj.convertMillimeters2Meters(forces_flat);
           
           % Write to file
           STOFileAdapter().write(forces_flat_m, outputPath)
@@ -305,13 +305,19 @@ classdef osimC3D < matlab.mixin.SetGet
             % Generate the output path.
             outputPath = fullfile(filepath, [name ext]);
         end
-        function table_flat = mm2m(obj,table_flat)
+        function table_flat = convertMillimeters2Meters(obj,table_flat)
+            % Function to convert displacement forceplate measurements made
+            % in millimeters to meters. This will convert point data (mm)
+            % to m and Torque data (Nmm) to Nm.
             
             nForces = table_flat.getNumColumns();
             nRows  = table_flat.getNumRows();
             labels = table_flat.getColumnLabels();
             
             for i = 0 : nForces - 1
+                % Find all point and torque colomns. Force columns will
+                % have _v in the label, all columns that don't have this
+                % character will be point and torque columns
                 if ~contains(char(labels.get(i)),'v')
                     for u = 0 : nRows - 1
                         % Get the table value
@@ -321,7 +327,7 @@ classdef osimC3D < matlab.mixin.SetGet
                     end
                 end    
             end
-            disp('P and M converted to M')
+           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
    end
 end
