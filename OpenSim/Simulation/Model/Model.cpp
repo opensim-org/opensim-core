@@ -395,7 +395,8 @@ SimTK::State& Model::initializeState() {
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
     std::string warn = getWarningMesssageForMotionTypeInconsistency();
-    cout << warn << endl;
+    if (warn.size())
+        cout << warn << endl;
 
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
