@@ -105,19 +105,26 @@ inline SimTK::State simulate(Model& model,
 }
 /// @}
 
-/** Moving from OpenSim 3.3 (and earlier) to OpenSim 4.0, MotionTypes for
+/** This function can be used to upgrade MOT files generated with versions
+    3.3 and earlier in which some data columns are associated with coordinates
+    that were incorrectly marked as Rotational (rather than Coupled). Specific
+    instances of the issue are the patella coordinate in the Rajagopal 2015 and
+    leg6dof9musc models. In these cases, the patella will visualize incorrectly
+    in the GUI when replaying the kinematics from the MOT file, and static 
+    optimization results.
+    Moving from OpenSim 3.3 (and earlier) to OpenSim 4.0, MotionTypes for
     Coordinates are now determined strictly by the coordinates' owning Joint.
     In older models, the MotionType, particularly for CustomJoints, were user-
     specified. That entailed in some cases, incorrectly labeling a Coordinate
-    as being Rotational, for example, when it is in fact Coupled. Some models
-    that exhibit this issue are the Rajagopal 2015, le6dof9musc models, where
-    the patella Coordinate was user-specified to be Rotational, but the angle
-    of the patella about a Z-axis of the patella body, is a spline function
-    (e.g. coupled function) of the knee_patella Coordinate. Thus, knee_patella
-    no longer represents a Cartesian rotation and is no longer classified as
-    Rotational. Use this utility to remove any unit conversions from Coordinates
-    that were incorrectly labeled as Rotational in the past. For these Coordinates
-    it will undo the incorrect radians to degrees conversion. */
+    as being Rotational, for example, when it is in fact Coupled. For the above
+    models, for example, the patella Coordinate had been user-specified to be
+    Rotational, but the angle of the patella about the Z-axis of the patella
+    body, is a spline function (e.g. coupled function) of the knee_patella
+    Coordinate. Thus, knee_patella Coordinate does not represent a Cartesian
+    rotational coordinate and is not classified as Rotational. Use this utility
+    to remove any unit conversions from Coordinates that were incorrectly labeled
+    as Rotational in the past. For these Coordinates only, the utility will undo
+    the incorrect radians to degrees conversion. */
 inline void updateKinematicsFilesForUpdatedModel(const Model& model, 
                 const std::vector<std::string>& filePaths, std::string suffix="")
 {
@@ -125,7 +132,7 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
     auto coordinates = model.getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
-            coord.getOldUserSpecifiedMotionType();
+            coord.getUserSpecifiedMotionTypePriorTo40();
         const Coordinate::MotionType motionType = coord.getMotionType();
 
         if ((oldMotionType != Coordinate::MotionType::Undefined) &&
