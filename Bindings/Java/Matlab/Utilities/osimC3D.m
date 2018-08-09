@@ -168,6 +168,10 @@ classdef osimC3D < matlab.mixin.SetGet
         % osimC3d.writeMOT()                       Write to dir of input c3d.
         % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
         % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
+        % 
+        % This function assumes point and torque data are in mm and Nmm and
+        % converts them to m and Nm. If your C3D is already in M and Nm,
+        % comment out the internal function convertMillimeters2Meters()
 
          % Compute an output path to use for writing to file
          outputPath = generateOutputPath(obj,varargin,'.mot');
