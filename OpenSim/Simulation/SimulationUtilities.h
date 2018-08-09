@@ -103,8 +103,54 @@ inline SimTK::State simulate(Model& model,
 
     return state;
 }
-
 /// @}
+
+/** Moving from OpenSim 3.3 (and earlier) to OpenSim 4.0, MotionTypes for
+    Coordinates are now determined strictly by the coordinates' owning Joint.
+    In older models, the MotionType, particularly for CustomJoints, were user-
+    specified. That entailed in some cases, incorrectly labeling a Coordinate
+    as being Rotational, for example, when it is in fact Coupled. Some models
+    that exhibit this issue are the Rajagopal 2015, le6dof9musc models, where
+    the patella Coordinate was user-specified to be Rotational, but the angle
+    of the patella about a Z-axis of the patella body, is a spline function
+    (e.g. coupled function) of the knee_patella Coordinate. Thus, knee_patella
+    no longer represents a Cartesian rotation and is no longer classified as
+    Rotational. Use this utility to remove any unit conversions from Coordinates
+    that were incorrectly labeled as Rotational in the past. For these Coordinates
+    it will undo the incorrect radians to degrees conversion. */
+inline void updateKinematicsFilesForUpdatedModel(const Model& model, 
+                const std::vector<std::string>& filePaths, std::string suffix="")
+{
+    std::vector<Coordinate> problemCoords;
+    auto coordinates = model.getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType =
+            coord.getOldUserSpecifiedMotionType();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+
+        if ((oldMotionType != Coordinate::MotionType::Undefined) &&
+            (oldMotionType != motionType)) {
+            problemCoords.push_back(coord);
+        }
+    }
+
+    if (problemCoords.size() == 0)
+        return; 
+
+    // Cycle through the data files 
+    for (auto filePath : filePaths) {
+        Storage data(filePath);
+
+        // Cycle the inconsistent Coordinates
+        for (auto coord : problemCoords) {
+            // Get the corresponding column of data and if in degrees
+            // undo the radians to degrees conversion on that column.
+        }
+    }
+
+}
+
+
 
 } // end of namespace OpenSim
 

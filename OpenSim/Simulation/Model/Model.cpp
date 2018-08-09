@@ -655,7 +655,7 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
         message += "Please consider updating kinematics (.mot) files associated\n"
             "with this model to ensure consistent unit conversion (from degrees)\n"
             "when applying kinematics to the model. See this utility:\n"
-            " updateKinematicsForOldModels(model_file.osim, list_of_MOT_files) ";
+            "updateKinematicsFilesForUpdatedModel(model_file.osim, list_of_MOT_files)";
     }
 
     return message;
