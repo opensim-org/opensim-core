@@ -623,11 +623,11 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
 
     auto enumToString = [](Coordinate::MotionType mt)->std::string {
         switch (mt) {
-        case(Coordinate::MotionType::Rotational):
+        case Coordinate::MotionType::Rotational :
             return "Rotational";
-        case(Coordinate::MotionType::Translational):
+        case Coordinate::MotionType::Translational :
             return "Translational";
-        case(Coordinate::MotionType::Coupled):
+        case Coordinate::MotionType::Coupled :
             return "Coupled";
         default:
             return "Undefined";
@@ -637,7 +637,7 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
     auto coordinates = getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType = 
-            coord.getOldUserSpecifiedMotionType();
+            coord.getUserSpecifiedMotionTypePriorTo40();
         const Coordinate::MotionType motionType = coord.getMotionType();
 
         if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
@@ -655,7 +655,7 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
         message += "Please consider updating kinematics (.mot) files associated\n"
             "with this model to ensure consistent unit conversion (from degrees)\n"
             "when applying kinematics to the model. See this utility:\n"
-            "updateKinematicsFilesForUpdatedModel(model_file.osim, list_of_MOT_files)";
+            "updateKinematicsFilesForUpdatedModel(model_file, list_of_MOT_files)";
     }
 
     return message;

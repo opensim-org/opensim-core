@@ -222,9 +222,9 @@ public:
     /**@}**/
 
     /* For internal consistency checking. Returns the user-specified MotionType
-       serialized with older model files (prior to 4.) if one is provided, other-
-       wise returns Motion::Undefined. */
-    const MotionType& getOldUserSpecifiedMotionType() const;
+       serialized with older model files (prior to 4.0) if one is provided, other-
+       wise returns MotionType::Undefined. */
+    const MotionType& getUserSpecifiedMotionTypePriorTo40() const;
 
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -253,7 +253,7 @@ protected:
     // of Coordinate
     void setJoint(const Joint& aOwningJoint);
 
-    // Override to account for version updates in the XML format. */
+    // Override to account for version updates in the XML format.
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
 
@@ -330,7 +330,7 @@ private:
     SimTK::ReferencePtr<const Joint> _joint;
 
     /* User set MotionType from versions of OpenSim that predate 4.0 */
-    MotionType _oldUserSpecifiedMotionType;
+    MotionType _userSpecifiedMotionTypePriorTo40;
 
     mutable bool _lockedWarningGiven;
 

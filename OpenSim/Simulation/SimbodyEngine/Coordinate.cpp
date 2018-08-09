@@ -693,20 +693,20 @@ void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 std::string typeName = motionTypeElm.getValue();
 
                 if ((IO::Lowercase(typeName) == "rotational"))
-                    _oldUserSpecifiedMotionType = Rotational;
+                    _userSpecifiedMotionTypePriorTo40 = Rotational;
                 else if (IO::Lowercase(typeName) == "translational")
-                    _oldUserSpecifiedMotionType = Translational;
+                    _userSpecifiedMotionTypePriorTo40 = Translational;
                 else if (IO::Lowercase(typeName) == "coupled")
-                    _oldUserSpecifiedMotionType = Coupled;
+                    _userSpecifiedMotionTypePriorTo40 = Coupled;
                 else
-                    _oldUserSpecifiedMotionType = Undefined;
+                    _userSpecifiedMotionTypePriorTo40 = Undefined;
             }
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
-const Coordinate::MotionType& Coordinate::getOldUserSpecifiedMotionType() const
+const Coordinate::MotionType& Coordinate::getUserSpecifiedMotionTypePriorTo40() const
 {
-    return _oldUserSpecifiedMotionType;
+    return _userSpecifiedMotionTypePriorTo40;
 }
