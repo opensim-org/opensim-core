@@ -134,7 +134,7 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
         Storage* updatedMotion = 
             updateKinematicsStorageForUpdatedModel(model, motion);
 
-        if (updatedMotion) {
+        if (updatedMotion == nullptr) {
             continue; //no update was required, move on to next file
         }
 
