@@ -128,8 +128,37 @@ inline SimTK::State simulate(Model& model,
 inline void updateKinematicsFilesForUpdatedModel(const Model& model, 
                 const std::vector<std::string>& filePaths, std::string suffix="")
 {
+    // Cycle through the data files 
+    for (auto filePath : filePaths) {
+        Storage motion(filePath);
+        Storage* updatedMotion = 
+            updateKinematicsStorageForUpdatedModel(model, motion);
+
+        if (updatedMotion) {
+            continue; //no update was required, move on to next file
+        }
+
+        std::string outFilePath = filePath;
+        if (suffix.size()) {
+            auto back = filePath.rfind(".");
+            outFilePath = filePath.substr(0, back - 1) + suffix + 
+                            filePath.substr(back+1);
+        }
+        std::cout << "Writing converted motion '" << filePath << "' to '"
+            << outFilePath << "'." << std::endl;
+
+        updatedMotion->print(outFilePath);
+    }
+}
+
+inline Storage* updateKinematicsStorageForUpdatedModel(const Model& model,
+                                                      const Storage &kinematics)
+{
+    // There is no issue if the kinematics are in internal values (i.e. not 
+    // converted to degrees
+    if(!kinematics.isInDegrees())
     if (model.getDocumentFileVersion() >= 30415) {
-        throw Exception("updateKinematicsFilesForUpdatedModel has no updates "
+        throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
             "to make because the model '" + model.getName() + "'is up-to-date.\n"
             "If input motion files were generated with this model version, there is "
             "nothing further to be done. Otherwise, provide the original model "
@@ -150,22 +179,28 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
     }
 
     if (problemCoords.size() == 0)
-        return; 
+        return nullptr;
 
-    // Cycle through the data files 
-    for (auto filePath : filePaths) {
-        Storage data(filePath);
+    Storage* updatedKinematics = kinematics.clone();
+    // Cycle the inconsistent Coordinates
+    for (auto coord : problemCoords) {
+        // Get the corresponding column of data and if in degrees
+        // undo the radians to degrees conversion on that column.
+        int ix = updatedKinematics->getStateIndex(coord->getName());
 
-        // Cycle the inconsistent Coordinates
-        for (auto coord : problemCoords) {
-            // Get the corresponding column of data and if in degrees
-            // undo the radians to degrees conversion on that column.
+        if (ix < 0) {
+            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
+                << kinematics.getName() << "' does not contain inconsistent "
+                << "coordinate '" << coord->getName() << "'." << std::endl;
+        } 
+        else {
+            // convert this column back to internal values by undoing the
+            // 180/pi conversion to degrees
+            updatedKinematics->multiplyColumn(ix, SimTK_DTR);
         }
     }
 
 }
-
-
 
 } // end of namespace OpenSim
 
