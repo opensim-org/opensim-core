@@ -53,7 +53,7 @@ class ControllerSet;
  * A class that manages the execution of a simulation. This class uses a
  * SimTK::Integrator and SimTK::TimeStepper to perform the simulation. By
  * default, a Runge-Kutta-Merson integrator is used, but can be changed by
- * using setIntegrator().
+ * using setIntegratorMethod().
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
  * we only create a TimeStepper once, specifically when we call
@@ -161,6 +161,7 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
+    /** Supported integrator methods.*/
     enum class IntegratorMethod {
         //CPodes, stochastic segfaults when destructed via unique_ptr::reset()
         
@@ -189,22 +190,32 @@ public:
     };
 
     /** Sets the integrator method used via IntegratorMethod enum. The 
-      * integrator will be set to its default options. For MATLAB/Python
-      * users, see `setIntegrator(const std::string&)` instead.*/
+      * integrator will be set to its default options, even if the caller
+      * requests the same integrator method. Note that this function must
+      * be called before `Manager::initialize(const SimTK::State&)`.
+      
+      <b>C++ example</b>
+      \code{.cpp}
+      auto manager = Manager(model);
+      manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+      \endcode
+      
+      <b>Python example</b>
+      \code{.py}
+      import opensim
+      manager = opensim.Manager(model)
+      manager.setIntegratorMethod(opensim.Manager.IntegratorMethod_SemiExplicitEuler2)
+      \endcode
+
+      <b>MATLAB example</b>
+      \code{.m}
+      import org.opensim.modeling.*
+      manager = Manager(model);
+      manager.setIntegratorMethod(Manager.IntegratorMethod.SemiExplicitEuler2);
+      \endcode
+      */
     void setIntegratorMethod(IntegratorMethod integMethod);
 
-    /** Sets the integrator method used via a string that matches an enum name.
-      * The integrator will be set to its default options. For C++ users, see 
-      * `setIntegrator(IntegratorMethod)` instead. 
-      *
-      * Example:
-      * @code
-      * manager = Manager(model);
-      * manager.setIntegratorMethod('SemiExplicitEuler2');
-      * @endcode 
-      */
-    void setIntegratorMethod(const std::string& integMethod);
-    
     SimTK::Integrator& getIntegrator() const;
 
     /** Sets the accuracy of the integrator. 

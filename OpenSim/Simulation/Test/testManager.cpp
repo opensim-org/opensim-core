@@ -37,6 +37,7 @@ Manager Tests:
 4. testConstructors: Ensure different constructors work as intended.
 5. testSimulate: Ensure the simulate() method works as intended.
 6. testIntegratorInterface: Ensure setting integrator options works as intended.
+7. testExceptions: Test that misuse actually triggers exceptions.
 
 //=============================================================================*/
 #include <OpenSim/Simulation/Model/Model.h>
@@ -57,6 +58,7 @@ void testExcitationUpdatesWithManager();
 void testConstructors();
 void testSimulate();
 void testIntegratorInterface();
+void testExceptions();
 
 int main()
 {
@@ -96,6 +98,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testIntegratorInterface");
+    }
+
+    try { testExceptions(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testExceptions");
     }
 
     if (!failures.empty()) {
@@ -448,7 +456,7 @@ void testIntegratorInterface()
     // Default is RungeKuttaMerson
     SimTK_TEST(method == "RungeKuttaMerson");
     
-    // Test setIntegrator() with enums
+    // Test setIntegratorMethod()
     //manager.setIntegratorMethod(Manager::IntegratorMethod::CPodes);
     //method = manager.getIntegrator().getMethodName();
     //SimTK_TEST(method == "CPodesBDF");
@@ -481,39 +489,6 @@ void testIntegratorInterface()
     method = manager.getIntegrator().getMethodName();
     SimTK_TEST(method == "Verlet");
 
-    // Test setIntegrator() with strings
-    //manager.setIntegratorMethod("CPodes");
-    //method = manager.getIntegrator().getMethodName();
-    //SimTK_TEST(method == "CPodesBDF");
-
-    manager.setIntegratorMethod("ExplicitEuler");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "ExplicitEuler");
-
-    manager.setIntegratorMethod("RungeKutta2");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "RungeKutta2");
-
-    manager.setIntegratorMethod("RungeKutta3");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "RungeKutta3");
-
-    manager.setIntegratorMethod("RungeKuttaFeldberg");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "RungeKuttaFeldberg");
-
-    manager.setIntegratorMethod("RungeKuttaMerson");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "RungeKuttaMerson");
-
-    manager.setIntegratorMethod("SemiExplicitEuler2");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "SemiExplicitEuler2");
-
-    manager.setIntegratorMethod("Verlet");
-    method = manager.getIntegrator().getMethodName();
-    SimTK_TEST(method == "Verlet");
-
     // Make some changes to the settings. We can't check to see if these 
     // actually changed because IntegratorRep is not exposed.
     double accuracy = 0.314;
@@ -524,4 +499,33 @@ void testIntegratorInterface()
     manager.setIntegratorMinimumStepSize(hmin);
     manager.setIntegratorMaximumStepSize(hmax);
     manager.setIntegratorInternalStepLimit(nSteps);
+}
+
+void testExceptions()
+{
+    cout << "Running testExceptions" << endl;
+    LoadOpenSimLibrary("osimActuators");
+    Model arm1("arm26.osim");
+    Model arm2("arm26.osim");
+
+    // model must have initSystem() called first
+    ASSERT_THROW(Exception, Manager manager(arm1));
+    SimTK::State s1 = arm1.initSystem();
+    SimTK::State s2 = arm2.initSystem();
+    Manager manager(arm1);
+
+    // ok to switch models
+    manager.setModel(arm2);
+
+    // can't integrate if not initialized
+    ASSERT_THROW(Exception, manager.integrate(1.0));
+    manager.initialize(s2);
+
+    // can't change model or integrator method now
+    ASSERT_THROW(Exception, manager.setModel(arm1));
+    ASSERT_THROW(Exception, manager.setIntegratorMethod(Manager::IntegratorMethod::ExplicitEuler));
+
+    // but integrator options can change
+    manager.setIntegratorAccuracy(1e-4);
+    manager.setIntegratorMinimumStepSize(0.01);
 }

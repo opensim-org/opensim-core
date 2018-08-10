@@ -505,7 +505,7 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
 {
     if (_timeStepper) {
         std::string msg = "Cannot set a new integrator on this Manager";
-        msg += "after Manager::integrate() has been called at least once.";
+        msg += "after Manager::initialize() has been called.";
         OPENSIM_THROW(Exception, msg);
     }
 
@@ -550,33 +550,6 @@ void Manager::setIntegratorMethod(IntegratorMethod integMethod)
         default:
             std::string msg = "Integrator method not recognized.";
             OPENSIM_THROW(Exception, msg);
-    }
-}
-
-void Manager::setIntegratorMethod(const std::string& integMethod)
-{
-    //if (integMethod == "CPodes")
-    //    setIntegratorMethod(IntegratorMethod::CPodes);
-    if (integMethod == "ExplicitEuler")
-        setIntegratorMethod(IntegratorMethod::ExplicitEuler);
-    else if (integMethod == "RungeKutta2")
-        setIntegratorMethod(IntegratorMethod::RungeKutta2);
-    else if (integMethod == "RungeKutta3")
-        setIntegratorMethod(IntegratorMethod::RungeKutta3);
-    else if (integMethod == "RungeKuttaFeldberg")
-        setIntegratorMethod(IntegratorMethod::RungeKuttaFeldberg);
-    else if (integMethod == "RungeKuttaMerson")
-        setIntegratorMethod(IntegratorMethod::RungeKuttaMerson);
-    else if (integMethod == "SemiExplicitEuler2")
-        setIntegratorMethod(IntegratorMethod::SemiExplicitEuler2);
-    else if (integMethod == "Verlet")
-        setIntegratorMethod(IntegratorMethod::Verlet);
-    else
-    {
-        std::string msg = "Integrator method '";
-        msg += integMethod;
-        msg += "' not recognized";
-        OPENSIM_THROW(Exception, msg);
     }
 }
 
