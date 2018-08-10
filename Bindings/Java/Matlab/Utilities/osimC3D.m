@@ -164,7 +164,7 @@ classdef osimC3D < matlab.mixin.SetGet
             disp(['Marker file written to ' outputPath]);
         end
         function writeMOT(obj,varargin)
-        % Write force data to trc file.
+        % Write force data to mot file.
         % osimC3d.writeMOT()                       Write to dir of input c3d.
         % osimC3d.writeMOT('Walking.mot')          Write to dir of input c3d with defined file name.
         % osimC3d.writeMOT('C:/data/Walking.mot')  Write to defined path input path.
