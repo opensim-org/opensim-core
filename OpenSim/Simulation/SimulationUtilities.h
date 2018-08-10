@@ -105,6 +105,58 @@ inline SimTK::State simulate(Model& model,
 }
 /// @}
 
+inline std::unique_ptr<Storage>
+updateKinematicsStorageForUpdatedModel(const Model& model,                                                      const Storage &kinematics)
+{
+    // There is no issue if the kinematics are in internal values (i.e. not
+    // converted to degrees
+    if(!kinematics.isInDegrees())
+        if (model.getDocumentFileVersion() >= 30415) {
+            throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
+                "to make because the model '" + model.getName() + "'is up-to-date.\n"
+                "If input motion files were generated with this model version, there is "
+                "nothing further to be done. Otherwise, provide the original model "
+                "file used to generate the motion files and try again.");
+        }
+    
+    std::vector<const Coordinate*> problemCoords;
+    auto coordinates = model.getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType =
+        coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+        
+        if ((oldMotionType != Coordinate::MotionType::Undefined) &&
+            (oldMotionType != motionType)) {
+            problemCoords.push_back(&coord);
+        }
+    }
+    
+    if (problemCoords.size() == 0)
+        return nullptr;
+    
+    std::unique_ptr<Storage> updatedKinematics(kinematics.clone());
+    // Cycle the inconsistent Coordinates
+    for (auto coord : problemCoords) {
+        // Get the corresponding column of data and if in degrees
+        // undo the radians to degrees conversion on that column.
+        int ix = updatedKinematics->getStateIndex(coord->getName());
+        
+        if (ix < 0) {
+            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
+            << kinematics.getName() << "' does not contain inconsistent "
+            << "coordinate '" << coord->getName() << "'." << std::endl;
+        }
+        else {
+            // convert this column back to internal values by undoing the
+            // 180/pi conversion to degrees
+            updatedKinematics->multiplyColumn(ix, SimTK_DTR);
+        }
+    }
+    return updatedKinematics;
+}
+
+    
 /** This function can be used to upgrade MOT files generated with versions
     3.3 and earlier in which some data columns are associated with coordinates
     that were incorrectly marked as Rotational (rather than Coupled). Specific
@@ -131,7 +183,7 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
     // Cycle through the data files 
     for (auto filePath : filePaths) {
         Storage motion(filePath);
-        Storage* updatedMotion = 
+        auto updatedMotion =
             updateKinematicsStorageForUpdatedModel(model, motion);
 
         if (updatedMotion == nullptr) {
@@ -149,57 +201,6 @@ inline void updateKinematicsFilesForUpdatedModel(const Model& model,
 
         updatedMotion->print(outFilePath);
     }
-}
-
-inline Storage* updateKinematicsStorageForUpdatedModel(const Model& model,
-                                                      const Storage &kinematics)
-{
-    // There is no issue if the kinematics are in internal values (i.e. not 
-    // converted to degrees
-    if(!kinematics.isInDegrees())
-    if (model.getDocumentFileVersion() >= 30415) {
-        throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
-            "to make because the model '" + model.getName() + "'is up-to-date.\n"
-            "If input motion files were generated with this model version, there is "
-            "nothing further to be done. Otherwise, provide the original model "
-            "file used to generate the motion files and try again.");
-    }
-
-    std::vector<const Coordinate*> problemCoords;
-    auto coordinates = model.getComponentList<Coordinate>();
-    for (auto& coord : coordinates) {
-        const Coordinate::MotionType oldMotionType =
-            coord.getUserSpecifiedMotionTypePriorTo40();
-        const Coordinate::MotionType motionType = coord.getMotionType();
-
-        if ((oldMotionType != Coordinate::MotionType::Undefined) &&
-            (oldMotionType != motionType)) {
-            problemCoords.push_back(&coord);
-        }
-    }
-
-    if (problemCoords.size() == 0)
-        return nullptr;
-
-    Storage* updatedKinematics = kinematics.clone();
-    // Cycle the inconsistent Coordinates
-    for (auto coord : problemCoords) {
-        // Get the corresponding column of data and if in degrees
-        // undo the radians to degrees conversion on that column.
-        int ix = updatedKinematics->getStateIndex(coord->getName());
-
-        if (ix < 0) {
-            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
-                << kinematics.getName() << "' does not contain inconsistent "
-                << "coordinate '" << coord->getName() << "'." << std::endl;
-        } 
-        else {
-            // convert this column back to internal values by undoing the
-            // 180/pi conversion to degrees
-            updatedKinematics->multiplyColumn(ix, SimTK_DTR);
-        }
-    }
-
 }
 
 } // end of namespace OpenSim
