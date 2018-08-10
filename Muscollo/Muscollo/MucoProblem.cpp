@@ -261,6 +261,7 @@ void MucoPhase::initialize(Model& model) const {
         actuNames.append(
                 actu.getAbsolutePath().formRelativePath(modelPath).toString());
     }
+
     // TODO can only handle ScalarActuators?
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();

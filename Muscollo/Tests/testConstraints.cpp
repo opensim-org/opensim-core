@@ -387,12 +387,6 @@ Model createDoublePendulumModel() {
     tau0->setOptimalForce(1);
     model.addComponent(tau0);
 
-    auto* tau1 = new CoordinateActuator();
-    tau1->setCoordinate(&j1->updCoordinate());
-    tau1->setName("tau1");
-    tau1->setOptimalForce(1);
-    model.addComponent(tau1);
-
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
@@ -414,11 +408,17 @@ void testDoublePendulumPointOnLine() {
     MucoTool muco;
     muco.setName("double_pendulum_point_on_line");
     MucoProblem& mp = muco.updProblem();
-   
     // Create double pendulum model and add the point-on-line constraint. The 
     // constraint consists of a vertical line in the y-direction (defined in 
     // ground) and the model end-effector point (the origin of body "b1").
     Model model = createDoublePendulumModel();
+    // Need to add a second actuator to fully actuate this system.
+    auto* tau1 = new CoordinateActuator();
+    tau1->setCoordinate(&model.updJointSet().get("j1").updCoordinate());
+    tau1->setName("tau1");
+    tau1->setOptimalForce(1);
+    model.addComponent(tau1);
+
     const Body& b1 = model.getBodySet().get("b1");
     const Station& endeff = model.getComponent<Station>("endeff");
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
@@ -450,7 +450,8 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
     mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("lambda_2", {-1000, 1000});
+    mp.setControlInfo("lambda_0_0", {-1000, 1000});
+    mp.setControlInfo("lambda_0_1", {-1000, 1000});
     mp.setControlInfo("tau0", {-40, 40});
     mp.setControlInfo("tau1", {-40, 40});
 
@@ -522,6 +523,16 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     LinearFunction linFunc(m, b);
     constraint->setFunction(linFunc);
     model.addConstraint(constraint);
+    //model.setUseVisualizer(true);
+    //SimTK::State state = model.initSystem();
+    //state.updY()[0] = 0;
+    //state.updY()[1] = SimTK::Pi;
+    ////model.updCoordinateSet().get("q0").setValue(state, SimTK::Pi / 2);
+    ////model.updCoordinateSet().get("q1").setValue(state, 0);
+    //model.realizePosition(state);
+    //std::cout << "pos err: " << model.getMatterSubsystem().getConstraint(
+    //    SimTK::ConstraintIndex(2)).getPositionErrorsAsVector(state) << std::endl;
+    //model.getVisualizer().show(state);
 
     mp.setModel(model);
 
@@ -533,6 +544,8 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-50, 50});
+    //mp.setControlInfo("tau1", {-40, 40});
+    mp.setControlInfo("lambda_0_0", {-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -543,7 +556,10 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-2);
     ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_hessian_approximation("limited-memory");
+
+    MucoIterate guess = ms.createGuess("bounds");
+    ms.setGuess(guess);
 
     solution = muco.solve().unseal();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
@@ -621,9 +637,9 @@ int main() {
         SimTK_SUBTEST(testCoordinateCouplerConstraint);
         SimTK_SUBTEST(testPrescribedMotion);
         // Direct collocation subtests.
-        SimTK_SUBTEST(testDoublePendulumPointOnLine);
+        //SimTK_SUBTEST(testDoublePendulumPointOnLine);
         MucoSolution couplerSolution;
-        //SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
+        SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
         //SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
     SimTK_END_TEST();
 }

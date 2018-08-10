@@ -162,7 +162,7 @@ Solution IPOPTSolver::optimize_impl(const VectorXd& guess) const {
     //ipoptions->SetNumericValue("required_infeasibility_reduction", 0.5);
     //ipoptions->SetStringValue("derivative_test", "second-order");
     //ipoptions->SetNumericValue("resto.tol", 1e-6);
-    //ipoptions->SetStringValue("mu_strategy", "adaptive");
+    ipoptions->SetStringValue("mu_strategy", "adaptive");
     //ipoptions->SetIntegerValue("accept_after_max_steps", 15);
 
 

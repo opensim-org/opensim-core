@@ -172,16 +172,36 @@ public:
         const auto& matter = m_model.getMatterSubsystem();
         const auto NC = matter.getNumConstraints();
         //const auto NC = m_model.getConstraintSet().getSize();
+        int c = 0;
+        m_numScalarEqs = 0;
         for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
             const SimTK::Constraint& constraint = matter.getConstraint(cid);
             if (!constraint.isDisabled(m_state)) {
-                this->add_path_constraint(
-                    "model_constraint_" + std::to_string(cid), 0);
-                this->add_control("lambda_" + std::to_string(cid), 
-                    {-1000, 1000});
+                int mp;
+                int mv;
+                int ma;
+
+                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
+                std::cout << "num eq: " << mp << "," << mv << "," << ma << std::endl;
+
+                SimTK::MultiplierIndex px0;
+                SimTK::MultiplierIndex vx0;
+                SimTK::MultiplierIndex ax0;
+
+                constraint.getIndexOfMultipliersInUse(m_state, px0, vx0, ax0);
+                std::cout << "idx: " << px0 << "," << vx0 << "," << ax0 << std::endl;
+
+                // Only considering holonomic constraints for now. 
+                for (int i = 0; i < mp; ++i) {
+                    this->add_path_constraint(
+                        "model_constraint_" + std::to_string(c) + "_" + 
+                        std::to_string(i), 0);
+                    this->add_control("lambda_" + std::to_string(c) + "_" +
+                        std::to_string(i), {-1000, 1000});
+                }
                 m_enabledCIDs.push_back(cid);
-                //m_mucoProb.setControlInfo("lambda_" + std::to_string(cid), 
-                //    {-1000, 1000});
+                // Only considering holonomic constraints for now.
+                m_numScalarEqs += mp;
             }
         }
 
@@ -232,7 +252,7 @@ public:
         // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_enabledCIDs.size(), 
+            std::copy(controls.data() + m_numScalarEqs,
                     controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizeVelocity(m_state);
@@ -259,40 +279,54 @@ public:
             SimTK::Vector constraintMobilityForces;
             // Multipliers are negated so constraint forces can be used like 
             // applied forces.
-            SimTK::Vector multipliers((int)m_enabledCIDs.size(), 
-                controls.data());
+            SimTK::Vector multipliers(m_numScalarEqs, controls.data());
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
-            //std::cout << "multipliers" << multipliers << std::endl;
+            //std::cout << "multipliers: " << multipliers << std::endl;
 
-            SimTK::Vector ydot;
+            SimTK::Vector udot;
             SimTK::Vector_<SimTK::SpatialVec> A_GB;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
-                appliedBodyForces + constraintBodyForces, ydot, A_GB);
+                appliedBodyForces + constraintBodyForces, udot, A_GB);
 
-            std::copy(&ydot[0], &ydot[0] + ydot.size(), out.dynamics.data());
+            m_state.updUDot() = udot;
 
-            SimTK::Vector errorsNormSqr((int)m_enabledCIDs.size(), 0.0);
+            //std::copy(&ydot[0], &ydot[0] + ydot.size(), out.dynamics.data());
+            //std::cout << "ydot.size(): " << ydot.size() << std::endl;
+            //std::cout << "states.size(): " << states.size() << std::endl;
+           
+            //SimTK::Vector errors(m_numScalarEqs);
+            //std::cout << "m_enabled size: " << m_enabledCIDs.size() << std::endl;
             for (int i = 0; i < m_enabledCIDs.size(); ++i) {
                 const SimTK::Constraint& constraint = 
                     matter.getConstraint(SimTK::ConstraintIndex(
                         m_enabledCIDs[i]));
-                // SimTK::Vector errors(
-                //   constraint.getPositionErrorsAsVector(m_state));
-                //std::cout << "Constraint " << std::to_string(cid) << std::endl;
+
+                int mp;
+                int mv;
+                int ma;
+                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
+                //std::cout << "cid: " << m_enabledCIDs[i] << std::endl;
+
+                SimTK::Vector errors(
+                        constraint.getPositionErrorsAsVector(m_state));
+               
+                std::copy(&errors[0], &errors[0] + mp, out.path.data());
+                //std::cout << "Constraint " << std::to_string(i) << std::endl;
                 //std::cout << errors << std::endl;
-                errorsNormSqr.set(i, 
-                    constraint.getPositionErrorsAsVector(m_state).normSqr());
+
+                //errorsNormSqr.set(i, 
+                //    constraint.getPositionErrorsAsVector(m_state).normSqr());
                 //std::cout << "Errors Norm Sqr" << errorsNormSqr << std::endl;
             }
-            std::copy(&errorsNormSqr[0], &errorsNormSqr[0] + errorsNormSqr.size(),
-                    out.path.data());
-        } else {
-            std::copy(&m_state.getYDot()[0], 
-                     &m_state.getYDot()[0] + states.size(),
-                     out.dynamics.data());
+            //std::copy(&errorsNormSqr[0], &errorsNormSqr[0] + errorsNormSqr.size(),
+            //        out.path.data());
         }
+
+        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
+                  out.dynamics.data());
+        
 
     }
     void calc_integral_cost(const T& time,
@@ -313,7 +347,7 @@ public:
         // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_enabledCIDs.size(), 
+            std::copy(controls.data() + m_numScalarEqs, 
                     controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizePosition(m_state);
@@ -324,8 +358,8 @@ public:
 
         integrand = m_phase0.calcIntegralCost(m_state);
         // Add squared multiplers cost to integrand.
-        SimTK::Vector multipliers((int)m_enabledCIDs.size(), controls.data());
-        for (int i = 0; i < (int)m_enabledCIDs.size(); ++i) {
+        SimTK::Vector multipliers(m_numScalarEqs, controls.data());
+        for (int i = 0; i < m_numScalarEqs; ++i) {
             integrand += multipliers[i] * multipliers[i];
         }
         
@@ -348,6 +382,7 @@ private:
     mutable Model m_model;
     mutable SimTK::State m_state;
     std::vector<int> m_enabledCIDs;
+    int m_numScalarEqs;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {
