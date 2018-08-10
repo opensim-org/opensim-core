@@ -29,17 +29,17 @@
 using namespace OpenSim;
 using namespace std;
 
-void testUpdateKinematicsFilesForUpdatedModel();
+void testUpdatePre40KinematicsFor40MotionType();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
 
     SimTK_START_TEST("testSimulationUtilities");
-        SimTK_SUBTEST(testUpdateKinematicsFilesForUpdatedModel);
+        SimTK_SUBTEST(testUpdatePre40KinematicsFor40MotionType);
     SimTK_END_TEST();
 }
 
-void testUpdateKinematicsFilesForUpdatedModel() {
+void testUpdatePre40KinematicsFor40MotionType() {
     
     // The model and motion files for this test are from the opensim-models
     // repository. This PR is related to issues #2240 and #2088.
@@ -51,14 +51,18 @@ void testUpdateKinematicsFilesForUpdatedModel() {
     SimTK_TEST(!model.getWarningMesssageForMotionTypeInconsistency().empty());
     
     Storage origKinematics("testSimulationUtilities_leg69_IK_stance_pre4.mot");
-    auto updatedKinematics = updateKinematicsStorageForUpdatedModel(model,
+    auto updatedKinematics = updatePre40KinematicsStorageFor40MotionType(model,
             origKinematics);
+    
+    // Undo the only change that update...() should have made and
+    // ensure we get back the original data.
     updatedKinematics->multiplyColumn(
             updatedKinematics->getStateIndex("knee_angle_pat_r"),
             SimTK_RADIAN_TO_DEGREE);
     
     const int numColumns = origKinematics.getColumnLabels().getSize();
     CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
-                                   std::vector<double>(numColumns, 1e-14),
-                                   __FILE__, __LINE__, "TODO");
+            std::vector<double>(numColumns, 1e-14),
+            __FILE__, __LINE__,
+            "updatePre40KinematicsStorageFor40MotionType() altered columms incorrectly.");
 }
