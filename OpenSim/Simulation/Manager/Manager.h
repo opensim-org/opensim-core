@@ -161,32 +161,20 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
-    /** Supported integrator methods.*/
+    /** Supported integrator methods. For MATLAB, int's must be used rather
+        than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
     enum class IntegratorMethod {
+        ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
+        RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
+        RungeKutta3        = 2, ///< 2 : For details, see SimTK::RungeKutta3Integrator. 
+        RungeKuttaFeldberg = 3, ///< 3 : For details, see SimTK::RungeKuttaFeldbergIntegrator.
+        RungeKuttaMerson   = 4, ///< 4 : For details, see SimTK::RungeKuttaMersonIntegrator.
+        SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
+        Verlet             = 6  ///< 6 : For details, see SimTK::VerletIntegrator.
+
+        // Not included
         //CPodes, stochastic segfaults when destructed via unique_ptr::reset()
-        
-        /** For details, see SimTK::ExplicitEulerIntegrator. */
-        ExplicitEuler,
-        
-        /** For details, see SimTK::RungeKutta2Integrator. */
-        RungeKutta2,
-        
-        /** For details, see SimTK::RungeKutta3Integrator. */
-        RungeKutta3,
-        
-        /** For details, see SimTK::RungeKuttaFeldbergIntegrator. */
-        RungeKuttaFeldberg,
-
-        /** For details, see SimTK::RungeKuttaMersonIntegrator. */
-        RungeKuttaMerson,
-
         //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
-
-        /** For details, see SimTK::SemiExplicitEuler2Integrator. */
-        SemiExplicitEuler2,
-
-        /** For details, see SimTK::VerletIntegrator. */
-        Verlet
     };
 
     /** Sets the integrator method used via IntegratorMethod enum. The 
@@ -211,7 +199,7 @@ public:
       \code{.m}
       import org.opensim.modeling.*
       manager = Manager(model);
-      manager.setIntegratorMethod(Manager.IntegratorMethod.SemiExplicitEuler2);
+      manager.setIntegratorMethod(5);
       \endcode
       */
     void setIntegratorMethod(IntegratorMethod integMethod);
