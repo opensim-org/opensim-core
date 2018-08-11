@@ -115,8 +115,8 @@ updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,            
         if (pre40Model.getDocumentFileVersion() >= 30415) {
             throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
                 "to make because the model '" + pre40Model.getName() + "'is up-to-date.\n"
-                "If input motion files were generated with this model version, there is "
-                "nothing further to be done. Otherwise, provide the original model "
+                "If input motion files were generated with this model version, "
+                "nothing further must be done. Otherwise, provide the original model "
                 "file used to generate the motion files and try again.");
         }
     
@@ -191,7 +191,7 @@ updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,            
     the incorrect radians to degrees conversion. */
 inline void updatePre40KinematicsFilesFor40MotionType(const Model& model,
             const std::vector<std::string>& filePaths,
-            std::string suffix="fixed")
+            std::string suffix="_updated")
 {
     // Cycle through the data files 
     for (const auto& filePath : filePaths) {
@@ -206,7 +206,7 @@ inline void updatePre40KinematicsFilesFor40MotionType(const Model& model,
         std::string outFilePath = filePath;
         if (suffix.size()) {
             auto back = filePath.rfind(".");
-            outFilePath = filePath.substr(0, back - 1) + suffix + 
+            outFilePath = filePath.substr(0, back) + suffix +
                             filePath.substr(back);
         }
         std::cout << "Writing converted motion '" << filePath << "' to '"

@@ -50,19 +50,74 @@ void testUpdatePre40KinematicsFor40MotionType() {
     // (that it wasn't accidentally updated in the repository).
     SimTK_TEST(!model.getWarningMesssageForMotionTypeInconsistency().empty());
     
-    Storage origKinematics("testSimulationUtilities_leg69_IK_stance_pre4.mot");
-    auto updatedKinematics = updatePre40KinematicsStorageFor40MotionType(model,
-            origKinematics);
+    const std::string origKinematicsFile =
+            "testSimulationUtilities_leg69_IK_stance_pre4.mot";
+    Storage origKinematics(origKinematicsFile);
+    {
+        auto updatedKinematics =
+            updatePre40KinematicsStorageFor40MotionType(model, origKinematics);
+        
+        // Undo the only change that update...() should have made and
+        // ensure we get back the original data.
+        updatedKinematics->multiplyColumn(
+                updatedKinematics->getStateIndex("knee_angle_pat_r"),
+                SimTK_RADIAN_TO_DEGREE);
+        
+        const int numColumns = origKinematics.getColumnLabels().getSize();
+        CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
+                std::vector<double>(numColumns, 1e-14),
+                __FILE__, __LINE__,
+                "updatePre40KinematicsStorageFor40MotionType() altered columms incorrectly.");
+    }
     
-    // Undo the only change that update...() should have made and
-    // ensure we get back the original data.
-    updatedKinematics->multiplyColumn(
-            updatedKinematics->getStateIndex("knee_angle_pat_r"),
+    // Test updatePre40KinematicsFilesFor40MotionType().
+    const std::string updatedKinematicsFile =
+            "testSimulationUtilities_leg69_IK_stance_pre4_updated.mot";
+    if (IO::FileExists(updatedKinematicsFile)) {
+        std::remove(updatedKinematicsFile.c_str());
+    }
+    updatePre40KinematicsFilesFor40MotionType(model, {origKinematicsFile});
+    SimTK_TEST(IO::FileExists(updatedKinematicsFile));
+    
+    {
+        Storage updatedKinematics(updatedKinematicsFile);
+        updatedKinematics.multiplyColumn(
+            updatedKinematics.getStateIndex("knee_angle_pat_r"),
             SimTK_RADIAN_TO_DEGREE);
     
-    const int numColumns = origKinematics.getColumnLabels().getSize();
-    CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
-            std::vector<double>(numColumns, 1e-14),
-            __FILE__, __LINE__,
-            "updatePre40KinematicsStorageFor40MotionType() altered columms incorrectly.");
+        const int numColumns = origKinematics.getColumnLabels().getSize();
+        // We lose precision when through the file.
+        CHECK_STORAGE_AGAINST_STANDARD(updatedKinematics, origKinematics,
+                std::vector<double>(numColumns, 1e-6),
+                __FILE__, __LINE__,
+                "updatePre40KinematicsFilesFor40MotionType() altered columms incorrectly.");
+    }
+    
+    {
+        // TODO check if we can still update data with a copy of the model
+        // (because the XML document is gone).
+        Model modelCopy(model);
+        
+        // TODO check that we get the exception if a model has no document version.
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
