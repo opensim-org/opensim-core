@@ -354,8 +354,6 @@ Model createDoublePendulumModel() {
     model.addBody(b0);
     auto* b1 = new OpenSim::Body("b1", 1, Vec3(0), Inertia(1));
     model.addBody(b1);
-    //auto* b2 = new OpenSim::Body("b2", 1, Vec3(0), Inertia(1));
-    //model.addBody(b2);
 
     // Add station representing the model end-effector.
     auto* endeff = new Station(*b1, Vec3(0));
@@ -367,19 +365,14 @@ Model createDoublePendulumModel() {
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
-    //q0.setDefaultValue(0);
+    q0.setDefaultValue(0);
     auto* j1 = new PinJoint("j1",
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
     q1.setName("q1");
-    //q1.setDefaultValue(SimTK::Pi);
-    //auto* j2 = new PinJoint("j2",
-    //    *b1, Vec3(0), Vec3(0), *b2, Vec3(-1, 0, 0), Vec3(0));
-    //auto& q2 = j2->updCoordinate();
-    //q2.setName("q2");
+    q1.setDefaultValue(SimTK::Pi);
     model.addJoint(j0);
     model.addJoint(j1);
-    //model.addJoint(j2);
 
     auto* tau0 = new CoordinateActuator();
     tau0->setCoordinate(&j0->updCoordinate());
@@ -424,24 +417,7 @@ void testDoublePendulumPointOnLine() {
     PointOnLineConstraint* constraint = new PointOnLineConstraint(
         model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
     model.addConstraint(constraint);
-    //std::cout << "NUM_CONSTRAINTS: " << model.getConstraintSet().getSize() << std::endl;
-    //model.setUseVisualizer(true);
-    //SimTK::State state = model.initSystem();
-    //state.updY()[0] = SimTK::Pi / 4;
-    //state.updY()[1] = SimTK::Pi / 2;
-    ////model.updCoordinateSet().get("q0").setValue(state, SimTK::Pi / 2);
-    ////model.updCoordinateSet().get("q1").setValue(state, 0);
-    //model.realizePosition(state);
-    //std::cout << "endeff loc: " << endeff.findLocationInFrame(
-    //    state, model.getGround()) << std::endl;
-    //std::cout << "pos err: " << model.getMatterSubsystem().getConstraint(
-    //    SimTK::ConstraintIndex(2)).getPositionErrorsAsVector(state) << std::endl;
-    //model.getVisualizer().show(state);
-  
-
     mp.setModel(model);
-
-    
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
@@ -459,24 +435,17 @@ void testDoublePendulumPointOnLine() {
     mp.addCost(effort);
 
     MucoTropterSolver& ms = muco.initSolver();
-    // Settings tried:
-    //    - 25 mesh points, 1e-3 tol, exact Hessian (converged to infeas pt)
-    //    - 35 mesh points, 1e-3 tol, exact Hessian (resto failed)
-    //    - 45 mesh points, 1e-3 tol, exact Hessian (medium)
-    //    - 50 mesh points, 1e-3 tol, exact Hessian (medium)
-    //    - 100 mesh points, 1e-3 tol, exact Hessian (slow)
-    //    - 100 mesh points, 1e-3 tol, limited memory (resto abort issue)
-    ms.set_num_mesh_points(100);
+    ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_convergence_tolerance(1e-5);
     ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("exact");
+    ms.set_optim_hessian_approximation("limited-memory");
 
     MucoIterate guess = ms.createGuess("bounds");
     ms.setGuess(guess);
 
-    MucoSolution solution = muco.solve().unseal();
+    MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
 
     muco.visualize(solution);
@@ -489,8 +458,8 @@ void testDoublePendulumPointOnLine() {
 
         // The end-effector should not have moved in the x- or z-directions.
         // TODO: may need to adjust these tolerances
-        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-10);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-10);
     }
 }
 
@@ -523,16 +492,6 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     LinearFunction linFunc(m, b);
     constraint->setFunction(linFunc);
     model.addConstraint(constraint);
-    //model.setUseVisualizer(true);
-    //SimTK::State state = model.initSystem();
-    //state.updY()[0] = 0;
-    //state.updY()[1] = SimTK::Pi;
-    ////model.updCoordinateSet().get("q0").setValue(state, SimTK::Pi / 2);
-    ////model.updCoordinateSet().get("q1").setValue(state, 0);
-    //model.realizePosition(state);
-    //std::cout << "pos err: " << model.getMatterSubsystem().getConstraint(
-    //    SimTK::ConstraintIndex(2)).getPositionErrorsAsVector(state) << std::endl;
-    //model.getVisualizer().show(state);
 
     mp.setModel(model);
 
@@ -543,8 +502,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("tau0", {-50, 50});
-    //mp.setControlInfo("tau1", {-40, 40});
+    mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
 
     MucoControlCost effort;
@@ -554,14 +512,16 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-2);
+    // "Restoration failed" errors occur for convergence tolerances tighter than
+    // 1e-5.
+    ms.set_optim_convergence_tolerance(1e-5);
     ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
 
     MucoIterate guess = ms.createGuess("bounds");
     ms.setGuess(guess);
 
-    solution = muco.solve().unseal();
+    solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
 
     muco.visualize(solution);
@@ -573,8 +533,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 
         // The coordinates should be coupled according to the linear function
         // described above.
-        // TODO: may need to adjust this tolerance
-        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
+        SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-10);
     }
 }
 
@@ -588,32 +547,40 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     // Create double pendulum model. 
     Model model = createDoublePendulumModel();
+    mp.setModel(model);
+
     // Create a spline set for the model states from the previous solution.
+    model.initSystem();
+    model.printSubcomponentInfo();
     GCVSplineSet statesSpline(
         couplerSolution.exportToStatesTrajectory(mp).exportToTable(model));
+
     // Apply the prescribed motion constraints.
-    Coordinate& q0 = model.updCoordinateSet().get("q0");
-    q0.setPrescribedFunction(statesSpline.get("q0"));
+   
+    Coordinate& q0 = model.updJointSet().get("j0").updCoordinate();
+    q0.setPrescribedFunction(statesSpline.get("j0/q0/value"));
     q0.setDefaultIsPrescribed(true);
-    Coordinate& q1 = model.updCoordinateSet().get("q1");
-    q1.setPrescribedFunction(statesSpline.get("q1"));
+    Coordinate& q1 = model.updJointSet().get("j1").updCoordinate();
+    q1.setPrescribedFunction(statesSpline.get("j1/q1/value"));
     q1.setDefaultIsPrescribed(true);
     mp.setModel(model);
 
-    mp.setTimeBounds(0, {0, 5});
+    mp.setTimeBounds(0, 1);
     mp.setStateInfo("j0/q0/value", {-10, 10});
     mp.setStateInfo("j0/q0/speed", {-50, 50});
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50});
     mp.setControlInfo("tau0", {-40, 40});
+    mp.setControlInfo("lambda_0_0", {-1000, 1000});
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("exact");
 
-    MucoSolution solution = muco.solve();
+    MucoSolution solution = muco.solve().unseal();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
 
     muco.visualize(solution);
@@ -640,6 +607,6 @@ int main() {
         //SimTK_SUBTEST(testDoublePendulumPointOnLine);
         MucoSolution couplerSolution;
         SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
-        //SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
+        SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
     SimTK_END_TEST();
 }
