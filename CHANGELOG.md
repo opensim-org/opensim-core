@@ -78,14 +78,14 @@ Converting from v3.x to v4.0
     - Manager manager(model, state);
     - manager.integrate(1.0);
 - `Manager::setIntegrator(SimTK::Integrator)` has been removed and replaced by
-  `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and
-  `Manager::setIntegratorMethod(std::string)` which uses a string. The latter
-  is particularly convenient for MATLAB/Python users. Integrator settings
-  are now handled by the Manager through the following new functions:
+  `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and can
+  be used by the MATLAB/Python interface. See the method's documentation for
+  examples. Integrator settings are now handled by the Manager through the 
+  following new functions:
   - setIntegratorAccuracy(double)
   - setIntegratorMinimumStepSize(double)
   - setIntegratorMaximumStepSize(double)
-  - setIntegratorInternalStepLimit(nSteps)
+  - setIntegratorInternalStepLimit(int)
 - `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
 - `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
