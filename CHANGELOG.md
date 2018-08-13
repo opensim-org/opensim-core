@@ -57,7 +57,22 @@ Converting from v3.x to v4.0
   a parent->child sense even if the joint has been reversed. For backwards
   compatibility, a joint's parent and child PhysicalFrames are swapped when
   opening a Model if the `reverse` element is set to `true`.
-- The `MotionType` of a `Coordinate` is now fully determined by the Joint. The user cannot set the `MotionType` for a `Coordinate`. There are instances such as in the *leg6dof9musc* and *Rajagopal2015* models, where a `Coordinate` was assigned an incorrect type. Specifically, when a coordinate of a `CustomJoint` is not a measure of Cartesian angle. In 4.0 the coordinate is correctly marked as `Coupled` since a function couples the coordinate value to the angular displacement of the patella in Cartesian space. **NOTE**, this causes issues (e.g.  opensim-org/opensim-gui#617, #2088) when using kinematics files generated in 3.3 (or earlier) where `Rotational` coordinates have been converted to degrees. Because OpenSim 4.0 does not recognize the coordinate's `MotionType` to be `Rotational` it will not convert it back to radians internally. For motion files generated prior to 4.0 where the file has `inDegrees=yes`, please use the following conversion utility: `updateKinematicsFilesForUpdatedModel()`. When loading a pre-4.0 model, OpenSim will warn users if any changes in `MotionType` when updating an existing model to OpenSim 4.0.
+- The `MotionType` of a `Coordinate` is now fully determined by the Joint. The
+  user cannot set the `MotionType` for a `Coordinate`. There are instances such
+  as in the *leg6dof9musc* and *Rajagopal2015* models, where a `Coordinate` was
+  assigned an incorrect type (e.g. when a coordinate of a `CustomJoint` is not a
+  measure of a Cartesian angle). In 4.0, the coordinate is correctly marked as
+  `Coupled` since a function couples the coordinate value to the angular
+  displacement of the patella in Cartesian space. **NOTE**, this causes issues
+  (e.g.  opensim-org/opensim-gui#617, #2088) when using kinematics files
+  generated in 3.3 (or earlier) where `Rotational` coordinates have been
+  converted to degrees. Because OpenSim 4.0 does not recognize the coordinate's
+  `MotionType` to be `Rotational` it will not convert it back to radians
+  internally. For motion files generated prior to 4.0 where the file has
+  `inDegrees=yes`, please use the following conversion utility:
+  `updateKinematicsFilesForUpdatedModel()`. When loading a pre-4.0 model,
+  OpenSim will warn users of any changes in `MotionType` when updating an
+   existing model to OpenSim 4.0.
 - The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
   `Manager::integrate(double)`. You must also now call
   `Manager::initialize(SimTK::State&)` before integrating or pass the

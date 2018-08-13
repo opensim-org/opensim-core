@@ -222,8 +222,8 @@ public:
     /**@}**/
 
     /* For internal consistency checking. Returns the user-specified MotionType
-       serialized with older model files (prior to 4.0) if one is provided, other-
-       wise returns MotionType::Undefined. */
+       serialized with pre-4.0 model files if one is provided, otherwise
+        returns MotionType::Undefined. */
     const MotionType& getUserSpecifiedMotionTypePriorTo40() const;
 
     //--------------------------------------------------------------------------
