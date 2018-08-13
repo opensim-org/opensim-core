@@ -173,7 +173,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
     //const Vec3& p_BM = bTrans*get_location();
     appendToThis.push_back(
-        SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+        SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
         .setColor(color).setOpacity(1.0)
         .setTransform(get_location()));
     
