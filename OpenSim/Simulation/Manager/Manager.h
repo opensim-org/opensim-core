@@ -53,7 +53,7 @@ class ControllerSet;
  * A class that manages the execution of a simulation. This class uses a
  * SimTK::Integrator and SimTK::TimeStepper to perform the simulation. By
  * default, a Runge-Kutta-Merson integrator is used, but can be changed by
- * using setIntegrator().
+ * using setIntegratorMethod().
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
  * we only create a TimeStepper once, specifically when we call
@@ -79,14 +79,7 @@ private:
     SimTK::ReferencePtr<Model> _model;
 
     /** Integrator. */
-    // This is the actual integrator that is used when integrate() is called.
-    // Its memory is managed elsewhere; either by the user or by the
-    // _defaultInteg smart pointer.
-    SimTK::ReferencePtr<SimTK::Integrator> _integ;
-
-    // The integrator that is used when using the model-only constructor.
-    // This is allocated only if necessary.
-    std::unique_ptr<SimTK::Integrator> _defaultInteg;
+    std::unique_ptr<SimTK::Integrator> _integ;
 
     /** TimeStepper */
     std::unique_ptr<SimTK::TimeStepper> _timeStepper;
@@ -130,19 +123,14 @@ private:
 // METHODS
 //=============================================================================
 public:
-    /** This constructor cannot be used in MATLAB/Python, since the
-     * SimTK::Integrator%s are not exposed in those languages. */
-    Manager(Model& model, SimTK::Integrator& integ);
     /** Constructor that takes a model only and internally uses a
      * SimTK::RungeKuttaMersonIntegrator with default settings (accuracy,
-     * constraint tolerance, etc.). MATLAB/Python users must use this
-     * constructor. */
+     * constraint tolerance, etc.). */
     Manager(Model& model);
+
     /** Convenience constructor for creating and initializing a Manager. */
     Manager(Model& model, const SimTK::State& state);
-    /** Convenience constructor for creating and initializing a Manager with
-      * a specified integrator. */
-    Manager(Model& model, const SimTK::State& state, SimTK::Integrator& integ);
+
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
      * controllerSet. This constructor also does not set an integrator; you
      * must call setIntegrator() on your own. You should use one of the other
@@ -173,11 +161,70 @@ public:
     { _writeToStorage =  writeToStorage; }
 
     // Integrator
+    /** Supported integrator methods. For MATLAB, int's must be used rather
+        than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
+    enum class IntegratorMethod {
+        ExplicitEuler      = 0, ///< 0 : For details, see SimTK::ExplicitEulerIntegrator.
+        RungeKutta2        = 1, ///< 1 : For details, see SimTK::RungeKutta2Integrator.
+        RungeKutta3        = 2, ///< 2 : For details, see SimTK::RungeKutta3Integrator. 
+        RungeKuttaFeldberg = 3, ///< 3 : For details, see SimTK::RungeKuttaFeldbergIntegrator.
+        RungeKuttaMerson   = 4, ///< 4 : For details, see SimTK::RungeKuttaMersonIntegrator.
+        SemiExplicitEuler2 = 5, ///< 5 : For details, see SimTK::SemiExplicitEuler2Integrator.
+        Verlet             = 6  ///< 6 : For details, see SimTK::VerletIntegrator.
+
+        // Not included
+        //CPodes, stochastic segfaults when destructed via unique_ptr::reset()
+        //SemiExplicitEuler, no error ctrl, requires fixed stepSize arg on construction
+    };
+
+    /** Sets the integrator method used via IntegratorMethod enum. The 
+      * integrator will be set to its default options, even if the caller
+      * requests the same integrator method. Note that this function must
+      * be called before `Manager::initialize(const SimTK::State&)`.
+      
+      <b>C++ example</b>
+      \code{.cpp}
+      auto manager = Manager(model);
+      manager.setIntegratorMethod(Manager::IntegratorMethod::SemiExplicitEuler2);
+      \endcode
+      
+      <b>Python example</b>
+      \code{.py}
+      import opensim
+      manager = opensim.Manager(model)
+      manager.setIntegratorMethod(opensim.Manager.IntegratorMethod_SemiExplicitEuler2)
+      \endcode
+
+      <b>MATLAB example</b>
+      \code{.m}
+      import org.opensim.modeling.*
+      manager = Manager(model);
+      manager.setIntegratorMethod(5);
+      \endcode
+      */
+    void setIntegratorMethod(IntegratorMethod integMethod);
+
     SimTK::Integrator& getIntegrator() const;
-    /** %Set the integrator. The Manager does *not* take ownership of the
-     * passed-in integrator.
-     */
-    void setIntegrator(SimTK::Integrator&);
+
+    /** Sets the accuracy of the integrator. 
+      * For more details, see `SimTK::Integrator::setAccuracy(SimTK::Real)`. */
+    void setIntegratorAccuracy(double accuracy);
+
+    /** Sets the minimum step size of the integrator.
+    * For more details, see `SimTK::Integrator::setMinimumStepSize(SimTK::Real)`. */
+    void setIntegratorMinimumStepSize(double hmin);
+
+    /** Sets the maximum step size of the integrator.
+    * For more details, see `SimTK::Integrator::setMaximumStepSize(SimTK::Real)`. */
+    void setIntegratorMaximumStepSize(double hmax);
+
+    /** Sets the limit of steps the integrator can take per call of `stepTo()`.
+      * Note that Manager::integrate() calls `stepTo()` for each interval when a fixed
+      * step size is used.
+      * For more details, see SimTK::Integrator::setInternalStepLimit(int). */
+    void setIntegratorInternalStepLimit(int nSteps);
+
+    //void setIntegratorFixedStepSize(double stepSize);
 
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -272,7 +319,7 @@ public:
     const SimTK::State& integrate(double finalTime);
 
     /** Get the current State from the Integrator associated with this 
-    Manager. */
+      * Manager. */
     const SimTK::State& getState() const;
     
     double getFixedStepSize(int tArrayStep) const;
@@ -299,7 +346,6 @@ private:
 
     // Helper functions during initialization of integration
     void initializeStorageAndAnalyses(const SimTK::State& s);
-    void initializeTimeStepper(const SimTK::State& s);
 
     // Helper to record state and analysis values at integration steps.
     // step = 0 is the beginning, step = -1 used to denote the end/final step

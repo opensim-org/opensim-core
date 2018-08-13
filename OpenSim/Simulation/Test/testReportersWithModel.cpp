@@ -56,8 +56,7 @@ void testConsoleReporterLabels() {
 
     // Simulate.
     State& state = model.initSystem();
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
+    Manager manager(model);
     state.setTime(0.0);
     manager.initialize(state);
     manager.integrate(1.0);
@@ -104,8 +103,7 @@ void testTableReporterLabels() {
 
     // Simulate.
     State& state = model.initSystem();
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
+    Manager manager(model);
     state.setTime(0.0);
     manager.initialize(state);
     manager.integrate(1.0);

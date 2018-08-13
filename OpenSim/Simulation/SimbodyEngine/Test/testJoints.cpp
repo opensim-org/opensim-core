@@ -372,9 +372,9 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
     // SETUP OpenSim SIMULATION Manager
     osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaFeldbergIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorMethod(Manager::IntegratorMethod::RungeKuttaFeldberg);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     // Specify the initial and final times of the simulation.
     // In this case, the initial and final times are set based on

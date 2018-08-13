@@ -73,7 +73,7 @@ Converting from v3.x to v4.0
   `updateKinematicsFilesForUpdatedModel()`. When loading a pre-4.0 model,
   OpenSim will warn users of any changes in `MotionType` when updating an
    existing model to OpenSim 4.0.
-- The `Manager::integrate(SimTK::State&)` call is deprecated and replaced by
+- `Manager::integrate(SimTK::State&)` has been removed and replaced by
   `Manager::integrate(double)`. You must also now call
   `Manager::initialize(SimTK::State&)` before integrating or pass the
   initialization state into a convenience constructor. Here is a
@@ -93,6 +93,15 @@ Converting from v3.x to v4.0
     - state.setTime(0.0);
     - Manager manager(model, state);
     - manager.integrate(1.0);
+- `Manager::setIntegrator(SimTK::Integrator)` has been removed and replaced by
+  `Manager::setIntegratorMethod(IntegratorMethod)` which uses an enum and can
+  be used by the MATLAB/Python interface. See the method's documentation for
+  examples. Integrator settings are now handled by the Manager through the 
+  following new functions:
+  - setIntegratorAccuracy(double)
+  - setIntegratorMinimumStepSize(double)
+  - setIntegratorMaximumStepSize(double)
+  - setIntegratorInternalStepLimit(int)
 - `Muscle::equilibrate(SimTK::State&)` has been removed from the Muscle interface in order to reduce the number and variety of muscle equilibrium methods. `Actuator::computeEquilibrium(SimTK::State&)` is overridden by Muscle and invokes pure virtual `Muscle::computeInitialFiberEquilibrium(SimTK::State&)`.
 - `Millard2012EquilibriumMuscle::computeFiberEquilibriumAtZeroVelocity(SimTK::State&)` and `computeInitialFiberEquilibrium(SimTK::State&)` were combined into a single method:
 `Millard2012EquilibriumMuscle::computeFiberEquilibrium(SimTK::State&, bool useZeroVelocity)`
