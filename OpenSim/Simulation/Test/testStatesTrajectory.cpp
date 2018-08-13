@@ -164,8 +164,7 @@ void createStateStorageFile() {
     model.addController(controller);
 
     auto& initState = model.initSystem();
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-    Manager manager(model, integrator);
+    Manager manager(model);
     initState.setTime(0.0);
     manager.initialize(initState);
     manager.integrate(0.15);
