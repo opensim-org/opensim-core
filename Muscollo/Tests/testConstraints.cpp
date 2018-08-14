@@ -338,9 +338,8 @@ void testPrescribedMotion() {
     MACHINE_TEST(udotSimbody, udotMultipliers);
 }
 
-/// Create a torque-actuated double pendulum model. Since constraints will be
-/// added to the model in subsequent tests, only a single torque actuator is 
-/// required to fully actuate the system.
+/// Create a torque-actuated double pendulum model. Each subtest will add to the
+/// model the appropriate set of actuators and constraints.
 Model createDoublePendulumModel() {
     Model model;
     model.setName("double_pendulum");
@@ -399,7 +398,7 @@ void testDoublePendulumPointOnLine() {
     // constraint consists of a vertical line in the y-direction (defined in 
     // ground) and the model end-effector point (the origin of body "b1").
     Model model = createDoublePendulumModel();
-    // Need two actuators to fully actuate this system.
+    // Two actuators are needed to fully actuate this system.
     auto* tau0 = new CoordinateActuator();
     tau0->setCoordinate(&model.updJointSet().get("j0").updCoordinate());
     tau0->setName("tau0");
@@ -427,8 +426,8 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
     mp.setControlInfo("lambda_0_1", {-1000, 1000});
-    mp.setControlInfo("tau0", {-40, 40});
-    mp.setControlInfo("tau1", {-40, 40});
+    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau1", {-100, 100});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -478,6 +477,11 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     tau0->setName("tau0");
     tau0->setOptimalForce(1);
     model.addComponent(tau0);
+    auto* tau1 = new CoordinateActuator();
+    tau1->setCoordinate(&model.updJointSet().get("j1").updCoordinate());
+    tau1->setName("tau1");
+    tau1->setOptimalForce(1);
+    model.addComponent(tau1);
 
     const Coordinate& q0 = model.getCoordinateSet().get("q0");
     const Coordinate& q1 = model.getCoordinateSet().get("q1");
@@ -507,7 +511,8 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/value", {-10, 10});
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
+    mp.setControlInfo("tau1", {-100, 100});
+    mp.setControlInfo("lambda_0_0", {-0.1, 0.1});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -563,16 +568,31 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     Coordinate& q1 = model.updJointSet().get("j1").updCoordinate();
     q1.setPrescribedFunction(statesSpline.get("j1/q1/value"));
     q1.setDefaultIsPrescribed(true);
+    auto* tau0 = new CoordinateActuator();
+    tau0->setCoordinate(&model.updJointSet().get("j0").updCoordinate());
+    tau0->setName("tau0");
+    tau0->setOptimalForce(1);
+    model.addComponent(tau0);
+    auto* tau1 = new CoordinateActuator();
+    tau1->setCoordinate(&model.updJointSet().get("j1").updCoordinate());
+    tau1->setName("tau1");
+    tau1->setOptimalForce(1);
+    model.addComponent(tau1);
     // Set the model again after implementing the constraints.
     mp.setModel(model);
 
     mp.setTimeBounds(0, 1);
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0); //, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
     mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi); //, 0);
+    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-    mp.setControlInfo("lambda_1_0", {-1000, 1000});
+    mp.setControlInfo("lambda_0_0", {-0.1, 0.1});
+    mp.setControlInfo("lambda_1_0", {-0.1, 0.1});
+    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau1", {-100, 100});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
@@ -584,13 +604,14 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     MucoIterate guess = ms.createGuess("bounds");
     ms.setGuess(guess);
 
-    MucoSolution solution = muco.solve().unseal();
+    MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.csv");
     muco.visualize(solution);
 
     // Only compare the states, not the controls. Comparison tolerance was 
     // selected as tight as possible such that the test could pass.
+    std::cout << "states RMS: " << solution.compareStatesControlsRMS(couplerSolution, {}, {"none"}) << std::endl;
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, {}, 
         {"none"}), 0, 1e-1);
 }

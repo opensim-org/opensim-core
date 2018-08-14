@@ -317,7 +317,7 @@ public:
         // Add squared multiplers cost to integrand.
         SimTK::Vector multipliers(m_numConstraintEqs, controls.data());
         for (int i = 0; i < m_numConstraintEqs; ++i) {
-            integrand += multipliers[i] * multipliers[i];
+            integrand += 100 * multipliers[i] * multipliers[i];
         }
         
     }
