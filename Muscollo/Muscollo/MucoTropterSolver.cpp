@@ -249,8 +249,6 @@ public:
         // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
         // realizing to Velocity and computing forces manually.
         m_model.realizeAcceleration(m_state);
-        //std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-        //        out.dynamics.data());
 
         if (m_enabledConstraintIdxs.size()) {
             const SimTK::MultibodySystem& multibody = 
@@ -302,10 +300,6 @@ public:
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
 
-        // Get number of constraints from the SimbodyMatterSubsystem.
-        const auto& matter = m_model.getMatterSubsystem();
-        //const auto NC = matter.getNumConstraints();
-        //const auto NC = m_model.getConstraintSet().getSize();
         // Set the controls for actuators in the OpenSim model, excluding
         // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
