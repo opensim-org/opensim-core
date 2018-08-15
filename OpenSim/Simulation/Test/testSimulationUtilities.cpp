@@ -94,11 +94,39 @@ void testUpdatePre40KinematicsFor40MotionType() {
     }
     
     {
-        // TODO check if we can still update data with a copy of the model
-        // (because the XML document is gone).
+        // Check that we can still update data with a copy of the model
+        // (even though the XML document is gone).
         Model modelCopy(model);
+        SimTK_TEST(!model.getWarningMesssageForMotionTypeInconsistency().empty());
         
+        auto updatedKinematics =
+            updatePre40KinematicsStorageFor40MotionType(model, origKinematics);
+        
+        updatedKinematics->multiplyColumn(
+                updatedKinematics->getStateIndex("knee_angle_pat_r"),
+                SimTK_RADIAN_TO_DEGREE);
+        
+        const int numColumns = origKinematics.getColumnLabels().getSize();
+        CHECK_STORAGE_AGAINST_STANDARD(*updatedKinematics, origKinematics,
+                std::vector<double>(numColumns, 1e-14),
+                __FILE__, __LINE__,
+                "updatePre40KinematicsStorageFor40MotionType(), with a copied "
+                "model, altered columms incorrectly.");
+    }
+    const std::string updatedModelFile =
+            "testSimulationUtilities_leg6dof9musc_updated.osim";
+    if (IO::FileExists(updatedModelFile)) {
+        std::remove(updatedModelFile.c_str());
+    }
+    {
         // TODO check that we get the exception if a model has no document version.
+        model.print(updatedModelFile);
+        Model updatedModel(updatedModelFile);
+        SimTK_TEST(updatedModel.getWarningMesssageForMotionTypeInconsistency().empty());
+        
+        SimTK_TEST_MUST_THROW_EXC(
+            updatePre40KinematicsStorageFor40MotionType(updatedModel, origKinematics),
+            Exception);
     }
 }
 
