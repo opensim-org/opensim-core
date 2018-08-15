@@ -70,7 +70,7 @@ Converting from v3.x to v4.0
   `MotionType` to be `Rotational` it will not convert it back to radians
   internally. For motion files generated prior to 4.0 where the file has
   `inDegrees=yes`, please use the following conversion utility:
-  `updateKinematicsFilesForUpdatedModel()`. When loading a pre-4.0 model,
+  `updatePre40KinematicsFilesFor40MotionType()`. When loading a pre-4.0 model,
   OpenSim will warn users of any changes in `MotionType` when updating an
    existing model to OpenSim 4.0.
 - `Manager::integrate(SimTK::State&)` has been removed and replaced by
