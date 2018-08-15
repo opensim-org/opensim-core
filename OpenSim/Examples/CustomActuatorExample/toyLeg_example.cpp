@@ -208,14 +208,11 @@ int main()
         coordinates[0].setValue(si, q1_i, true);
         coordinates[1].setValue(si,q2_i, true);
 
-        // Setup integrator and manager
-        SimTK::RungeKuttaMersonIntegrator integrator(
-                osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-3);
-
+        // Setup ForceReporter and Manager
         ForceReporter* forces = new ForceReporter(&osimModel);  
         osimModel.updAnalysisSet().adoptAndAppend(forces);
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-3);
     
         //Examine the model
         osimModel.printDetailedInfo(si, std::cout);
