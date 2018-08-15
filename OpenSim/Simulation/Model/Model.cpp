@@ -394,6 +394,10 @@ SimTK::State& Model::initializeState() {
     if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
 
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    if (warn.size())
+        cout << warn << endl;
+
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
     getMultibodySystem().realizeTopology();
@@ -612,6 +616,50 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
         "Coordinates in the Model's CoordinateSet.");
 
     return coordinatesInTreeOrder;
+}
+
+std::string Model::getWarningMesssageForMotionTypeInconsistency() const
+{
+    std::string message;
+
+    auto enumToString = [](Coordinate::MotionType mt)->std::string {
+        switch (mt) {
+        case Coordinate::MotionType::Rotational :
+            return "Rotational";
+        case Coordinate::MotionType::Translational :
+            return "Translational";
+        case Coordinate::MotionType::Coupled :
+            return "Coupled";
+        default:
+            return "Undefined";
+        }
+    };
+
+    auto coordinates = getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType = 
+            coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+
+        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
+            (oldMotionType != motionType) ){
+            message += " Coordinate '" + coord.getName() +
+                "' had incorrect MotionType '" + enumToString(oldMotionType) +
+                "', now set to '" + enumToString(motionType) + "'\n";
+        }
+    }
+
+    // We have a reason to provide a warning. Add more details about the model
+    // and how to resolve future issues.
+    if (message.size()) {
+        message = "Model '" + getName() + "' has inconsistencies:\n" + message;
+        message += "Please consider updating kinematics (.mot) files associated\n"
+            "with this model to ensure consistent unit conversion (from degrees)\n"
+            "when applying kinematics to the model. See this utility:\n"
+            "updateKinematicsFilesForUpdatedModel(model_file, list_of_MOT_files)";
+    }
+
+    return message;
 }
 
 void Model::extendFinalizeFromProperties()
