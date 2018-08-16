@@ -293,51 +293,17 @@ private:
 
 
 /**
- * Utility class used to abstract analytic geometry. This will need to be 
- * revisited when wrapping is re-done to handle quadrants or analytic shapes
- * that were supported in earlier releases before 4.0. 
+ * Utility class used to abstract analytic geometry (surfaces of revolution)
  *
- * TODO: using start/end angle may be a better choice.
+ * TODO: using start/end angle to indicate partial surfaces.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {    
     OpenSim_DECLARE_ABSTRACT_OBJECT(AnalyticGeometry, Geometry);
-    // Amended with a quadrants array to support pieces of analytic geometry (for wrapping)
-    OpenSim_DECLARE_LIST_PROPERTY(quadrants, std::string,
-        "Quadrants to use: combination of +X -X +Y -Y +Z -Z space separated."); 
-private:
-    bool                    _bounds[6];     //-X, +X, -Y, +Y, -Z, +Z
-    bool                    _piece;
+
 public:
-    AnalyticGeometry():
-        _piece(false)
-    {
-        constructProperties();
-        for(int i=0; i<6; i++) _bounds[i]=true;
-    }
+    AnalyticGeometry() {}
     virtual ~AnalyticGeometry() {}
-    void setQuadrants(const bool quadrants[6])
-    {
-        _piece=false;
-        for(int i=0; i<6; i++){
-            _bounds[i]=quadrants[i];
-            _piece = _piece || (!quadrants[i]);
-        }
-    }
-    void getQuadrants(bool quadrants[6])
-    {
-        for(int i=0; i<6; i++){
-            quadrants[i]=_bounds[i];
-        }
-    }
-    const bool isPiece() const
-    {
-        return _piece;
-    }
-private:
-    void constructProperties() {
-        constructProperty_quadrants();
-    }
 };
 /**
  * A class to represent Sphere geometry. 
