@@ -367,6 +367,11 @@ void Model::constructProperties()
     constructProperty_ModelVisualPreferences(md);
 }
 
+// Append to the Model's validation log
+void Model::appendToValidationLog(const std::string& note) {
+    _validationLog.append(note);
+}
+
 //------------------------------------------------------------------------------
 //                                BUILD SYSTEM
 //------------------------------------------------------------------------------
@@ -393,10 +398,6 @@ void Model::buildSystem() {
 SimTK::State& Model::initializeState() {
     if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
-
-    std::string warn = getWarningMesssageForMotionTypeInconsistency();
-    if (warn.size())
-        cout << warn << endl;
 
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
@@ -679,6 +680,9 @@ void Model::extendFinalizeFromProperties()
         fs.updActuators();
         fs.updMuscles();
     }
+
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    appendToValidationLog(warn);
 
     if (getValidationLog().size() > 0) {
         cout << "The following Errors/Warnings were encountered ";
