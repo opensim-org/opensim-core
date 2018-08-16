@@ -644,20 +644,27 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
 
         if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
             (oldMotionType != motionType) ){
-            message += " Coordinate '" + coord.getName() +
+            message += "Coordinate '" + coord.getName() +
                 "' had incorrect MotionType '" + enumToString(oldMotionType) +
-                "', now set to '" + enumToString(motionType) + "'\n";
+                "' and is now set to '" + enumToString(motionType) + "'\n";
         }
     }
 
     // We have a reason to provide a warning. Add more details about the model
     // and how to resolve future issues.
     if (message.size()) {
-        message = "Model '" + getName() + "' has inconsistencies:\n" + message;
-        message += "Please consider updating kinematics (.mot) files associated\n"
-            "with this model to ensure consistent unit conversion (from degrees)\n"
-            "when applying kinematics to the model. See this utility:\n"
-            "updateKinematicsFilesForUpdatedModel(model_file, list_of_MOT_files)";
+        message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
+        message += 
+            "Consequently, Coordinate values for Coupled coordinates can be assigned\n"
+            "values that are in degrees if a coordinate was previously (pre-4.0) labeled\n"
+            "as Rotational. This will lead to incorrect motion of bodies governed by the\n"
+            "Coupled coordinate when playing back a pre-4.0 motion file (.mot or .sto in\n"
+            "degrees) and produces erroneous velocity and acceleration estimates that\n"
+            "yield incorrect inverse-dynamics and static-optimization results. You can\n"
+            "apply the utility:\n"
+            "\tupdateKinematicsFilesForUpdatedModel(model_file, list_of_MOT_files)\n"
+            "to update motion files generated prior to 4.0 and undo the conversion of\n"
+            "Coupled coordinates to degrees so that they are consistent with the 4.0 model.";
     }
 
     return message;
@@ -683,12 +690,6 @@ void Model::extendFinalizeFromProperties()
 
     std::string warn = getWarningMesssageForMotionTypeInconsistency();
     appendToValidationLog(warn);
-
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered ";
-        cout << "interpreting properties of the model. " <<
-            getValidationLog() << endl;
-    }
 
     updCoordinateSet().populate(*this);
 }
