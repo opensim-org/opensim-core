@@ -23,6 +23,7 @@
 
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
@@ -37,6 +38,48 @@ int main() {
     SimTK_START_TEST("testSimulationUtilities");
         SimTK_SUBTEST(testUpdatePre40KinematicsFor40MotionType);
     SimTK_END_TEST();
+}
+
+// Ensure the simulate() method works as intended.
+void testSimulate() {
+    cout << "Running testSimulate" << endl;
+
+    using SimTK::Vec3;
+    const double gravity = 9.81;
+
+    // Create a simple model consisting of an unconstrained ball.
+    Model model;
+    model.setGravity(Vec3(0, -gravity, 0));
+    auto ball = new Body("ball", 1., Vec3(0), SimTK::Inertia::sphere(1.));
+    model.addBody(ball);
+    auto freeJoint = new FreeJoint("freeJoint", model.getGround(), *ball);
+    model.addJoint(freeJoint);
+
+    // Simulate from time t0 to t1. The ball should end up at -1/2*g*duration^2.
+    auto testSim = [&](double t0, double t1) -> void {
+        cout << "- simulating from t = " << t0 << " to " << t1 << "..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double y1expected = -0.5 * gravity * (t1-t0) * (t1-t0);
+        s.setTime(t0);
+        s = simulate(model, s, t1);
+
+        SimTK_TEST_EQ(s.getTime(), t1);
+        model.realizePosition(s);
+        const Vec3 pos1 = model.getBodySet().get("ball").getPositionInGround(s);
+        SimTK_TEST_EQ(pos1[SimTK::YAxis], y1expected);
+    };
+    testSim(0., 10.);
+    testSim(5., 15.);
+
+    // No simulation should occur if t1 <= t0.
+    {
+        cout << "- ensuring simulation aborts if t1 <= t0..." << endl;
+        SimTK::State& s = model.initSystem();
+        const double t0 = 2.;
+        s.setTime(t0);
+        s = simulate(model, s, t0-1.);
+        SimTK_TEST_EQ(s.getTime(), t0);
+    }
 }
 
 void testUpdatePre40KinematicsFor40MotionType() {
@@ -119,7 +162,8 @@ void testUpdatePre40KinematicsFor40MotionType() {
         std::remove(updatedModelFile.c_str());
     }
     {
-        // TODO check that we get the exception if a model has no document version.
+        // Check that we get an exception if a model's document version is
+        // too recent to need updating.
         model.print(updatedModelFile);
         Model updatedModel(updatedModelFile);
         SimTK_TEST(updatedModel.getWarningMesssageForMotionTypeInconsistency().empty());
