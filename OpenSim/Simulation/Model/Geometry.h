@@ -294,8 +294,10 @@ private:
 
 /**
  * Utility class used to abstract analytic geometry (surfaces of revolution)
+ * This class is used as base for (Sphere, Cylinder, Cone, Ellisoid, Torus) which 
+ * need special treatment by OpenSim visualizer since they need to be recreated on 
+ * Edit (optimized on construction by threejs library)
  *
- * TODO: using start/end angle to indicate partial surfaces.
  */
 class OSIMSIMULATION_API AnalyticGeometry : public Geometry
 {    
