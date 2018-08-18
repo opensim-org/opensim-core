@@ -611,7 +611,12 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     // Only compare the states, not the controls. Comparison tolerance was 
     // selected as tight as possible such that the test could pass.
-    std::cout << "states RMS: " << solution.compareStatesControlsRMS(couplerSolution, {}, {"none"}) << std::endl;
+    std::cout << "position RMS: " << solution.compareStatesControlsRMS(
+        couplerSolution, {"j0/q0/value", "j1/q1/value"}, {"none"}) << std::endl;
+    std::cout << "speed RMS: " << solution.compareStatesControlsRMS(
+        couplerSolution, {"j0/q0/speed", "j1/q1/speed"}, {"none"}) << std::endl;
+    std::cout << "all states RMS: " << solution.compareStatesControlsRMS(
+        couplerSolution, {}, {"none"}) << std::endl;
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, {}, 
         {"none"}), 0, 1e-1);
 }
