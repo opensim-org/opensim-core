@@ -275,6 +275,12 @@ void MucoPhase::initialize(Model& model) const {
                         "multiplier '" + name + "'.");
     }
 
+    // Add Lagrange multipliers for each model constraint
+    //const auto& matter = model.getMatterSubsystem();
+    //const auto NC = matter.getNumConstraints();
+
+
+
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
         const_cast<MucoParameter&>(get_parameters(i)).initialize(model);
     }

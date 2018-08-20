@@ -172,19 +172,17 @@ public:
         const auto& matter = m_model.getMatterSubsystem();
         const auto NC = matter.getNumConstraints();
         int mp, mv, ma, c = 0;
-        SimTK::MultiplierIndex px0, vx0, ax0;
         for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
             const SimTK::Constraint& constraint = matter.getConstraint(cid);
             if (!constraint.isDisabled(m_state)) {
                 constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
-                //constraint.getIndexOfMultipliersInUse(m_state, px0, vx0, ax0);
                 // Only considering holonomic constraints for now. 
                 for (int i = 0; i < mp; ++i) {
                     this->add_path_constraint(
                         "model_constraint_" + std::to_string(c) + "_" + 
                         std::to_string(i), 0);
                     this->add_control("lambda_" + std::to_string(c) + "_" +
-                        std::to_string(i), {-1000, 1000});
+                        std::to_string(i), 0);
                 }
                 // Save constraint indices for enabled constraints only, so we 
                 // don't have to loop through disabled constraints later.
