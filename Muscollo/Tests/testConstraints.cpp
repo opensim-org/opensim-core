@@ -427,8 +427,8 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't matter right now, these control infos are set in order
-    // for the MucoIterate guess to be compatible with the MucoProblem.
+    // TODO bounds don't get used right now, these control infos are set in 
+    // order for the MucoIterate guess to be compatible with the MucoProblem.
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
     mp.setControlInfo("lambda_0_1", {-1000, 1000});
 
@@ -503,7 +503,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't matter right now, this control info is set in order
+    // TODO bounds don't get used right now, this control info is set in order
     // for the MucoIterate guess to be compatible with the MucoProblem.
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
 
@@ -571,8 +571,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't matter right now, these control infos are set in order
-    // for the MucoIterate guess to be compatible with the MucoProblem.
+    // TODO bounds get used matter right now, these control infos are set in 
+    // order for the MucoIterate guess to be compatible with the MucoProblem.
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
     mp.setControlInfo("lambda_1_0", {-1000, 1000});
 
