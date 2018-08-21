@@ -376,12 +376,12 @@ Model createDoublePendulumModel() {
 
     // Add coordinate actuators.
     auto* tau0 = new CoordinateActuator();
-    tau0->setCoordinate(&q0);
+    tau0->setCoordinate(&j0->updCoordinate());
     tau0->setName("tau0");
     tau0->setOptimalForce(1);
     model.addComponent(tau0);
     auto* tau1 = new CoordinateActuator();
-    tau1->setCoordinate(&q1);
+    tau1->setCoordinate(&j1->updCoordinate());
     tau1->setName("tau1");
     tau1->setOptimalForce(1);
     model.addComponent(tau1);
@@ -477,9 +477,9 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     const Coordinate& q0 = model.getCoordinateSet().get("q0");
     const Coordinate& q1 = model.getCoordinateSet().get("q1");
     CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
-    Array<std::string> indCoordNames;
-    indCoordNames.append("q0");
-    constraint->setIndependentCoordinateNames(indCoordNames);
+    Array<std::string> indepCoordNames;
+    indepCoordNames.append("q0");
+    constraint->setIndependentCoordinateNames(indepCoordNames);
     constraint->setDependentCoordinateName("q1");
     // Represented by the following equation,
     //      q1 = m*q0 + b

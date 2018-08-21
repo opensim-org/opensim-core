@@ -191,7 +191,7 @@ public:
                 // Save constraint indices for enabled constraints only, so we 
                 // don't have to loop through disabled constraints later.
                 m_enabledConstraintIdxs.push_back(cid);
-                m_numConstraintEqs += mp;
+                m_numScalarConstraintEqs += mp;
                 constraintNum++;
             }
         }
@@ -240,7 +240,7 @@ public:
         // controls created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_numConstraintEqs,
+            std::copy(controls.data() + m_numScalarConstraintEqs,
                     controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizeVelocity(m_state);
@@ -265,7 +265,8 @@ public:
             SimTK::Vector constraintMobilityForces;
             // Multipliers are negated so constraint forces can be used like 
             // applied forces.
-            SimTK::Vector multipliers(m_numConstraintEqs, controls.data());
+            SimTK::Vector multipliers(m_numScalarConstraintEqs, 
+                controls.data());
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
@@ -305,7 +306,7 @@ public:
         // constrols created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_numConstraintEqs, 
+            std::copy(controls.data() + m_numScalarConstraintEqs, 
                     controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizePosition(m_state);
@@ -316,8 +317,8 @@ public:
 
         integrand = m_phase0.calcIntegralCost(m_state);
         // Add squared multiplers cost to integrand.
-        SimTK::Vector multipliers(m_numConstraintEqs, controls.data());
-        for (int i = 0; i < m_numConstraintEqs; ++i) {
+        SimTK::Vector multipliers(m_numScalarConstraintEqs, controls.data());
+        for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
             // TODO let user specify muliplier weight? Relatively high weight
             // set for now so model actuators are preferred.
             integrand += 100 * multipliers[i] * multipliers[i];
@@ -342,7 +343,12 @@ private:
     mutable Model m_model;
     mutable SimTK::State m_state;
     std::vector<int> m_enabledConstraintIdxs;
-    int m_numConstraintEqs = 0;
+    // TODO find a better solution for this tracking number of scalar constraint
+    // equations (if needed). Need to count them now since the number of model
+    // constraints might not equal the number of Lagrange multipliers needed,
+    // since multiple scalar constraint equations can be associated with one
+    // model constraint.
+    int m_numScalarConstraintEqs = 0;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

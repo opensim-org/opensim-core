@@ -269,17 +269,16 @@ void MucoPhase::initialize(Model& model) const {
     // For now, don't throw error if control is a Lagrange multiplier. 
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
-        bool isNotLagrangeMultiplier = true;
+        bool isLagrangeMultiplier = false;
         if (name.find("lambda") != std::string::npos) {
-            isNotLagrangeMultiplier = false;
+            isLagrangeMultiplier = true;
         }
         OPENSIM_THROW_IF(actuNames.findIndex(name) == -1 && 
-                isNotLagrangeMultiplier, Exception,
+                !isLagrangeMultiplier, Exception,
                 "Control info provided for nonexistant actuator or Lagrange "
                         "multiplier '" + name + "'.");
     }
 
-    // Add Lagrange multipliers for each model constraint
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
         const_cast<MucoParameter&>(get_parameters(i)).initialize(model);
     }
