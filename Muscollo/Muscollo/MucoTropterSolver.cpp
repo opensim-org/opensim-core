@@ -171,25 +171,28 @@ public:
         // constraints that exist in the model.
         const auto& matter = m_model.getMatterSubsystem();
         const auto NC = matter.getNumConstraints();
-        int mp, mv, ma, c = 0;
+        int mp, mv, ma;
+        int constraintNum = 0;
         for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
             const SimTK::Constraint& constraint = matter.getConstraint(cid);
             if (!constraint.isDisabled(m_state)) {
                 constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
                 // Only considering holonomic constraints for now. 
+                // TODO add constraints/multiplier variables based on the
+                // MucoProblem
                 for (int i = 0; i < mp; ++i) {
                     this->add_path_constraint(
-                        "model_constraint_" + std::to_string(c) + "_" + 
-                        std::to_string(i), 0);
-                    this->add_control("lambda_" + std::to_string(c) + "_" +
-                        std::to_string(i), 0);
+                        "model_constraint_" + std::to_string(constraintNum) + 
+                        "_" + std::to_string(i), 0);
+                    // TODO how to specify multiplier bounds?
+                    this->add_control("lambda_" + std::to_string(constraintNum) 
+                        + "_" + std::to_string(i), {-1000, 1000});
                 }
                 // Save constraint indices for enabled constraints only, so we 
                 // don't have to loop through disabled constraints later.
                 m_enabledConstraintIdxs.push_back(cid);
-                // Only considering holonomic constraints for now.
                 m_numConstraintEqs += mp;
-                c++;
+                constraintNum++;
             }
         }
 
@@ -315,6 +318,8 @@ public:
         // Add squared multiplers cost to integrand.
         SimTK::Vector multipliers(m_numConstraintEqs, controls.data());
         for (int i = 0; i < m_numConstraintEqs; ++i) {
+            // TODO let user specify muliplier weight? Relatively high weight
+            // set for now so model actuators are preferred.
             integrand += 100 * multipliers[i] * multipliers[i];
         }
         

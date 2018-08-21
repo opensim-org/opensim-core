@@ -19,6 +19,8 @@
 #include "MucoProblem.h"
 #include "MuscolloUtilities.h"
 
+#include <simbody/internal/Constraint.h>
+
 using namespace OpenSim;
 
 
@@ -263,6 +265,8 @@ void MucoPhase::initialize(Model& model) const {
     }
 
     // TODO can only handle ScalarActuators?
+    // TODO automatically add control variable infos for model constraints. 
+    // For now, don't throw error if control is a Lagrange multiplier. 
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
         bool isNotLagrangeMultiplier = true;
@@ -276,11 +280,6 @@ void MucoPhase::initialize(Model& model) const {
     }
 
     // Add Lagrange multipliers for each model constraint
-    //const auto& matter = model.getMatterSubsystem();
-    //const auto NC = matter.getNumConstraints();
-
-
-
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
         const_cast<MucoParameter&>(get_parameters(i)).initialize(model);
     }
