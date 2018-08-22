@@ -79,18 +79,11 @@ private:
     void updateMuscles();
 
     //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-    ForceSet& operator=(const ForceSet &aSet);
-#endif
-    //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
 public:
     // Override ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     // FORCE
     bool remove(int aIndex) override;

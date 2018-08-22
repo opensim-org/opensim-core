@@ -69,62 +69,6 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
 }
 
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aControllerSet ControllerSet to be copied.
- */
-ControllerSet::ControllerSet(const ControllerSet& aControllerSet) :
-    ModelComponentSet<Controller>(aControllerSet)
-{
-
-    // Class Members
-    copyData(aControllerSet);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy the member variables of the ControllerSet.
- *
- * @param aControllerSet controller set to be copied
- */
-void ControllerSet::copyData(const ControllerSet& aControllerSet)
-{
-    _actuatorSet =  aControllerSet._actuatorSet;
-    const Storage* source = aControllerSet._controlStore.get();
-    if (source) {
-        _controlStore.reset(new Storage(*source, true));
-    } else {
-        _controlStore.reset();
-    }
-}
-
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-ControllerSet& ControllerSet::operator=(const ControllerSet &aControllerSet)
-{
-    // BASE CLASS
-    Set<Controller>::operator=(aControllerSet);
-
-    // Class Members
-    copyData(aControllerSet);
-
-    return(*this);
-}
-
 void ControllerSet::constructStorage() 
 {
     Array<string> columnLabels;

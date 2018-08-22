@@ -57,12 +57,6 @@ public:
      */
     void populate(Model& model);
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
-#endif
     void getSpeedNames(OpenSim::Array<std::string> &rNames) const;
 
 //=============================================================================

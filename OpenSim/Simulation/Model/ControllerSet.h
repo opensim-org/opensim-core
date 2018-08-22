@@ -57,19 +57,8 @@ public:
     //--------------------------------------------------------------------------
     ControllerSet() {}
     ControllerSet(Model& model);
-    ControllerSet(const ControllerSet &aControllerSet);
     ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
     ~ControllerSet() override = default;
-
-    void copyData(const ControllerSet &aAbsControllerSet);
-
-
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ControllerSet& operator=(const ControllerSet &aSet);
-#endif
 
     void constructStorage();
     void storeControls( const SimTK::State& s, int step );
@@ -86,7 +75,7 @@ public:
 
 private:
 
-    std::unique_ptr<Storage> _controlStore;
+    SimTK::ClonePtr<Storage> _controlStore;
 
     // Set of actuators controlled by the set of controllers.
     SimTK::ReferencePtr<Set<Actuator> > _actuatorSet;

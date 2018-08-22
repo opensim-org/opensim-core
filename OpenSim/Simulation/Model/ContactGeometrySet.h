@@ -53,13 +53,6 @@ public:
     ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet);
     ~ContactGeometrySet(void);
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ContactGeometrySet& operator=(const ContactGeometrySet &aContactGeometrySet);
-#endif
-
 //=============================================================================
 };  // END of class ContactGeometrySet
 //=============================================================================

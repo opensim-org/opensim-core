@@ -90,20 +90,3 @@ void CoordinateSet::getSpeedNames(OpenSim::Array<std::string> &rNames) const {
     }
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-CoordinateSet& CoordinateSet::operator=(const CoordinateSet &aCoordinateSet)
-{
-    Set<Coordinate>::operator=(aCoordinateSet);
-    return (*this);
-}
-#endif

@@ -118,30 +118,13 @@ void ForceSet::setupSerializedMembers()
 {
 }
 
-void ForceSet::invokeConnectToModel(Model& aModel)
+void ForceSet::extendConnectToModel(Model& aModel)
 {
     // BASE CLASS
-    Super::invokeConnectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     updateActuators();
     updateMuscles();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
-{
-    // BASE CLASS
-    Set<Force>::operator=(aAbsForceSet);
-
-    return(*this);
 }
 
 
@@ -161,7 +144,7 @@ ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
  */
 bool ForceSet::remove(int aIndex)
 {
-    bool success = Set<Force>::remove(aIndex);
+    bool success = Super::remove(aIndex);
 
     updateActuators();
     updateMuscles();
@@ -180,10 +163,9 @@ bool ForceSet::remove(int aIndex)
  * @param aActuator Pointer to the actuator to be appended.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::
-append(Force *aForce)
+bool ForceSet::append(Force *aForce)
 {
-    bool success = ModelComponentSet<Force>::adoptAndAppend(aForce);
+    bool success = Super::adoptAndAppend(aForce);
 
     if (success && hasModel()) {
         updateActuators();
@@ -206,7 +188,7 @@ append(Force *aForce)
 bool ForceSet::
 append(Force &aForce)
 {
-    bool success = ModelComponentSet<Force>::cloneAndAppend(aForce);
+    bool success = Super::cloneAndAppend(aForce);
 
 
     if (success && hasModel()) {
@@ -243,7 +225,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
             }
         }
         if(!nameExists) {
-            if(!ModelComponentSet<Force>::adoptAndAppend(&aForceSet.get(i))) 
+            if(!Super::adoptAndAppend(&aForceSet.get(i))) 
                 success = false;
         }
     }
@@ -270,8 +252,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
  */
 bool ForceSet::set(int aIndex,Force *aActuator, bool preserveGroups)
 {
-    bool success = ModelComponentSet<Force>::set(aIndex, aActuator,
-                                                 preserveGroups);
+    bool success = Super::set(aIndex, aActuator, preserveGroups);
 
     if(success) {
         updateActuators();
@@ -283,7 +264,7 @@ bool ForceSet::set(int aIndex,Force *aActuator, bool preserveGroups)
 
 bool ForceSet::insert(int aIndex, Force *aForce)
 {
-    bool success = ModelComponentSet<Force>::insert(aIndex, aForce);
+    bool success = Super::insert(aIndex, aForce);
 
     if(success) {
         updateActuators();

@@ -91,20 +91,3 @@ void ContactGeometrySet::setNull()
     setAuthors("Peter Eastman");
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-ContactGeometrySet& ContactGeometrySet::operator=(const ContactGeometrySet &aContactGeometrySet)
-{
-    Set<ContactGeometry>::operator=(aContactGeometrySet);
-    return (*this);
-}
-#endif

@@ -72,21 +72,3 @@ BodySet::BodySet(const BodySet& aAbsBodySet) : Super(aAbsBodySet)
 void BodySet::setNull()
 {
 }
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-BodySet& BodySet::operator=(const BodySet &aAbsBodySet)
-{
-    Set<Body>::operator=(aAbsBodySet);
-    return (*this);
-}
-#endif
