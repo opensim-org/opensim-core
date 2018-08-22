@@ -243,7 +243,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         throw(ex);
     }
     _externalLoads.setMemoryOwner(false);
-    _externalLoads.invokeConnectToModel(aModel);
 
     string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
     
