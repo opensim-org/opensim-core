@@ -43,22 +43,13 @@ class OSIMSIMULATION_API JointSet : public ModelComponentSet<Joint> {
 OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
 
 public:
-    JointSet();
-    JointSet(Model& model);
-    JointSet(const JointSet& aJointSet);
+    /** Use Super's constructors. @see ModelComponentSet */
+    using ModelComponentSet::ModelComponentSet;
+
     ~JointSet();
 
-    // Somehow the following function is not exported from base template
-    JointSet(Model& model, const std::string &aFileName, 
-             bool aUpdateFromXMLNode = true)
-    :   Super(model, aFileName, aUpdateFromXMLNode) {}
+    // default copy, and assignment operator
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    JointSet& operator=(const JointSet &aJointSet);
-#endif
 
 private:
     void setNull();

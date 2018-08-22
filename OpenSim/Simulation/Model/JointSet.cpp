@@ -23,7 +23,6 @@
 
 #include "JointSet.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ComponentSet.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -39,56 +38,3 @@ JointSet::~JointSet(void)
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Default constructor of a JointSet.
- */
-JointSet::JointSet()
-{
-    setNull();
-}
-
-JointSet::JointSet(Model& model) :
-    ModelComponentSet<Joint>(model)
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a JointSet.
- */
-JointSet::JointSet(const JointSet& aJointSet):
-    ModelComponentSet<Joint>(aJointSet)
-{
-    setNull();
-    *this = aJointSet;
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-/**
- * Set the data members of this JointSet to their null values.
- */
-void JointSet::setNull()
-{
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-JointSet& JointSet::operator=(const JointSet &aJointSet)
-{
-    Set<Joint>::operator=(aJointSet);
-    return (*this);
-}
-#endif
