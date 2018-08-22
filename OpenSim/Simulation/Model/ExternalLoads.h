@@ -106,7 +106,7 @@ public:
 
     // Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     const std::string& getDataFileName() const { return _dataFileName;};
     void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };

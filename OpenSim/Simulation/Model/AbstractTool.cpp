@@ -579,7 +579,6 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     }
     _externalLoads.setMemoryOwner(false);
     aModel.finalizeFromProperties();
-    _externalLoads.invokeConnectToModel(aModel);
 
     string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
     

@@ -178,7 +178,7 @@ void ExternalLoads::setupSerializedMembers()
 ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
 {
     // BASE CLASS
-    ModelComponentSet<ExternalForce>::operator=(otherExternalLoads);
+    Super::operator=(otherExternalLoads);
 
     // Class Members
     copyData(otherExternalLoads);
@@ -186,7 +186,7 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
     return(*this);
 }
 
-void ExternalLoads::invokeConnectToModel(Model& aModel)
+void ExternalLoads::extendConnectToModel(Model& aModel)
 {
     Storage *forceData = new Storage(_dataFileName);
 
@@ -194,7 +194,7 @@ void ExternalLoads::invokeConnectToModel(Model& aModel)
         get(i).setDataSource(*forceData);
 
     // BASE CLASS
-    Super::invokeConnectToModel(aModel);
+    Super::extendConnectToModel(aModel);
 
     // add loaded storage into list of storages for later garbage collection
     _storages.append(forceData);
@@ -433,8 +433,9 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             
             const Array<string> &labels = dataSource->getColumnLabels();
             // Populate data file and other things that haven't changed
-            // Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
-            ModelComponentSet<PrescribedForce> oldForces(updModel(), getDocument()->getFileName(), true);
+            // Create Set or Forces from this XML node, which we
+            // then reassign to an ExternalForce and add to ExternalLoads
+            Set<PrescribedForce> oldForces(getDocument()->getFileName(), true);
             for(int i=0; i< oldForces.getSize(); i++){
                 PrescribedForce& oldPrescribedForce = oldForces.get(i);
                 ExternalForce* newExternalForce = new ExternalForce();
