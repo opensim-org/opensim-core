@@ -51,8 +51,8 @@ class ModelDisplayHints;
  */
 
 template <class T=ModelComponent>
-class ModelComponentSet : public Set<T> {
-OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
+class ModelComponentSet : public Set<T, ModelComponent> {
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set);
 
 private:
     SimTK::ReferencePtr<Model> _model;
@@ -79,17 +79,10 @@ public:
      */
     ModelComponentSet(Model& model, const std::string& fileName, 
                       bool aUpdateFromXMLNode = true) 
-    :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
+    :   Super(fileName, aUpdateFromXMLNode), _model(&model)
     {
     }
-    /**
-     * Copy constructor.
-     *
-     * @param[in]   source      Set to be copied.
-     */
-    ModelComponentSet(const ModelComponentSet<T>& source) : Set<T>(source)
-    {
-    }
+
 
     /** Does this Set have a Model associated with it? */
     bool hasModel() const { return !_model.empty(); }
@@ -117,81 +110,20 @@ public:
 
     void setModel(Model& model) { _model = &model; }
 
-
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool insert(int aIndex, T* aObject) override
+    bool insert(int aIndex, T* object) override
     {
-        return Set<T>::insert(aIndex, aObject);
+        return Super::insert(aIndex, object);
     }
     /**
      * Adding an object to the set causes its Model field to be set.
      */
     bool set(int aIndex, T* aObject, bool preserveGroups = false) override
     {
-        return Set<T>::set(aIndex, aObject, preserveGroups);
+        return Super::set(aIndex, aObject, preserveGroups);
     }
-
-    // The following methods dispatch calls to the corresponding ModelComponent
-    // methods. We have to upcast each concrete ModelComponent of type T to
-    // ModelComponent so that we can invoke the methods, which are protected.
-    // ModelComponent however declares ModelComponentSet as a friend.
-    //
-    // These methods are virtual because some derived sets need to override
-    // them.
-
-    /**
-     * %Set the Model this object is part of and allow each contained
-     * ModelComponent to connect itself to the Model by invoking its 
-     * connectToModel() method.
-     * @see ModelComponent::connectToModel()
-     */
-    virtual void invokeConnectToModel(Model& model)
-    {
-        _model = &model;
-        for (int i = 0; i < Set<T>::getSize(); i++){
-            static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
-        }
-        Set<T>::setupGroups(); // make sure group members are populated
-    }
-
-    /**
-     * Invoke initStateFromProperties() on each element of the Set.
-     * @see ModelComponent::initStateFromProperties()
-     */
-    virtual void invokeInitStateFromProperties(SimTK::State& state) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).initStateFromProperties(state);
-    }
-
-    /**
-     * Invoke setPropertiesFromState() on each element of the Set.
-     * @see ModelComponent::setPropertiesFromState()
-     */
-    virtual void invokeSetPropertiesFromState(const SimTK::State& state)
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setPropertiesFromState(state);
-    }
-
-    /** 
-     * Invoke generateDecorations() on each of the contained 
-     * ModelComponent objects. 
-     * @see ModelComponent::generateDecorations()
-     */
-    virtual void invokeGenerateDecorations
-       (bool                                        fixed, 
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
-    {
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i))
-                    .generateDecorations(fixed,hints,state,appendToThis);
-    }
-
 
 //=============================================================================
 };  // END of class ModelComponentSet
