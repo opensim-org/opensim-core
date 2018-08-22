@@ -1,5 +1,5 @@
-#ifndef __MarkerSet_h__
-#define __MarkerSet_h__
+#ifndef OPENSIM_MARKER_SET_H_
+#define OPENSIM_MARKER_SET_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  MarkerSet.h                            *
  * -------------------------------------------------------------------------- *
@@ -51,20 +51,14 @@ class Body;
 class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
     OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
 
-private:
-    void setNull();
-public:
-    MarkerSet();
-    MarkerSet(Model& aModel, const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
-    MarkerSet(const MarkerSet& aMarkerSet);
-    ~MarkerSet(void);
 
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    MarkerSet& operator=(const MarkerSet &aMarkerSet);
-#endif
+public:
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::ModelComponentSet;
+
+    ~MarkerSet();
+
+    // default copy, and assignment operator
 
     //--------------------------------------------------------------------------
     // UTILITIES
@@ -79,4 +73,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __MarkerSet_h__
+#endif // OPENSIM_MARKER_SET_H_
