@@ -29,35 +29,6 @@
 using namespace std;
 using namespace OpenSim;
 
-//=============================================================================
-// DESTRUCTOR AND CONSTRUCTORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-CoordinateSet::~CoordinateSet(void)
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Default constructor of a CoordinateSet.
- */
-CoordinateSet::CoordinateSet() :
-    ModelComponentSet<Coordinate>()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a CoordinateSet.
- */
-CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
-    ModelComponentSet<Coordinate>(aCoordinateSet)
-{
-    *this = aCoordinateSet;
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -67,7 +38,6 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
  */
 void CoordinateSet::populate(Model& model)
 {
-    setModel(model);
     // Aggregate Coordinates owned by the Joint's into a single CoordinateSet
     setMemoryOwner(false);
     setSize(0);
