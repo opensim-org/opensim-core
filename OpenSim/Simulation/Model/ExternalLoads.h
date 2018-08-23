@@ -94,8 +94,11 @@ private:
     //--------------------------------------------------------------------------
 public:
     ExternalLoads();
-    ExternalLoads(Model& model);
-    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
+
+    /**  Construct an actuator set from file.
+    * @param fileName Name of the file. */
+    ExternalLoads(const std::string &fileName, bool aUpdateFromXMLNode);
+
     ExternalLoads(const ExternalLoads &aExternalLoads);
     virtual ~ExternalLoads();
 

@@ -57,30 +57,15 @@ _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematic
     setNull();
 }
 
-ExternalLoads::ExternalLoads(Model& model) : 
-    ModelComponentSet<ExternalForce>(model),
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Construct an actuator set from file.
- *
- * @param aFileName Name of the file.
- */
-ExternalLoads::ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-    ModelComponentSet<ExternalForce>(model, aFileName, false),
+ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode) :
+    Super(fileName, updateFromXMLNode),
     _dataFileName(_dataFileNameProp.getValueStr()),
     _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
 {
     setNull();
 
-    if(aUpdateFromXMLNode)
+    if(updateFromXMLNode)
         updateFromXMLDocument();
 }
 
