@@ -53,9 +53,11 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-const int expectedNumComponents = 180;
+// 2018-08-22 added 9 for ModelComponentSets: Bodies, Joints. Constraints, ...
+const int expectedNumComponents = 189; 
 const int expectedNumJointsWithStateVariables = 2;
-const int expectedNumModelComponentsWithStateVariables = 10;
+// 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
+const int expectedNumModelComponentsWithStateVariables = 12;
 // Below updated from 1 to 3 to account for offset frame and its geometry added
 // to the Joint
 const int expectedNumJntComponents = 3;
@@ -231,6 +233,9 @@ void testComponentListConst() {
             << comp.getAbsolutePathString() << endl;
         numModelComponentsWithStateVariables++;
     }
+
+    cout << "numModelComponentsWithStateVariables ="
+        << numModelComponentsWithStateVariables << endl;
 
     //Now test a std::iterator method
     ComponentList<const Frame> allFrames = model.getComponentList<Frame>();
@@ -492,6 +497,10 @@ void testComponentListNonConstWithNonConstIterator() {
     ASSERT(numBodiesPost == numBodies);
     ASSERT(numMuscles == model.getMuscles().getSize());
     ASSERT(numJointsWithStateVariables == expectedNumJointsWithStateVariables);
+
+    cout << "numModelComponentsWithStateVariables ="
+        << numModelComponentsWithStateVariables << endl;
+
     ASSERT(numModelComponentsWithStateVariables ==
            expectedNumModelComponentsWithStateVariables);
     ASSERT(numJntComponents == expectedNumJntComponents);
