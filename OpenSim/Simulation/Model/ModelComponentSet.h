@@ -38,7 +38,6 @@
 namespace OpenSim {
 
 class Model;
-class ModelDisplayHints;
 
 //=============================================================================
 //=============================================================================
@@ -54,76 +53,33 @@ template <class T=ModelComponent>
 class ModelComponentSet : public Set<T, ModelComponent> {
     OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set);
 
-private:
-    SimTK::ReferencePtr<Model> _model;
-
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    /** Default constructor creates an empty Set with no associated Model. **/
-    ModelComponentSet() : _model(nullptr)
-    {
+    using Set::Set;
+    /** Default constructor creates an empty Set with no associated Model. 
+    ModelComponentSet() : Super() {
     }
-    /** Create an empty set associated to the specified Model. **/
-    explicit ModelComponentSet(Model& model) : _model(&model)
-    {
+    */
+    /** Create an empty set associated to the specified Model. 
+    explicit ModelComponentSet(Model& model) : _model(&model) {
     }
-    /**
-     * Construct from file.
+    */
+    /** Construct from file.
      *
      * @param[in]   model       The Model to which this set is associated.
      * @param[in]   fileName    Name of the file.
      * @param[in]   aUpdateFromXMLNode  
      *                          (Advanced) Used to avoid duplicate XML parsing.
-     */
+
     ModelComponentSet(Model& model, const std::string& fileName, 
-                      bool aUpdateFromXMLNode = true) 
-    :   Super(fileName, aUpdateFromXMLNode), _model(&model)
-    {
+                      bool aUpdateFromXMLNode = true) : 
+        Super(fileName, aUpdateFromXMLNode), _model(&model) {
     }
-
-
-    /** Does this Set have a Model associated with it? */
-    bool hasModel() const { return !_model.empty(); }
-    /**
-     * Get this Model this set is part of.
-     */
-    const Model& getModel() const
-    {
-        if (hasModel()){
-            return _model.getRef();
-        }
-        else{
-            std::string msg = getClassName();
-            msg += "::getModel() - has no associated Model (nullptr)";
-            throw Exception(msg);
-        }
-    }
-    /**
-     * Get a modifiable reference to the Model this set is part of.
-     */
-    Model& updModel()
-    {
-        return *this->_model.get();
-    }
-
-    void setModel(Model& model) { _model = &model; }
-
-    /**
-     * Adding an object to the set causes its Model field to be set.
-     */
-    bool insert(int aIndex, T* object) override
-    {
-        return Super::insert(aIndex, object);
-    }
-    /**
-     * Adding an object to the set causes its Model field to be set.
-     */
-    bool set(int aIndex, T* aObject, bool preserveGroups = false) override
-    {
-        return Super::set(aIndex, aObject, preserveGroups);
-    }
+    */
+    /** Associate the model that owns this ModelComponentSet */
+//    void setModel(Model& model) { _model.reset(&model); }
 
 //=============================================================================
 };  // END of class ModelComponentSet
