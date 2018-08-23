@@ -172,27 +172,38 @@ public:
         const auto& matter = m_model.getMatterSubsystem();
         const auto NC = matter.getNumConstraints();
         int mp, mv, ma;
-        int constraintNum = 0;
+        int cix = 0;
         for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
             const SimTK::Constraint& constraint = matter.getConstraint(cid);
             if (!constraint.isDisabled(m_state)) {
                 constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
-                // Only considering holonomic constraints for now. 
+                // Only considering holonomic constraints for now.
+                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic " 
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " velocity-level " 
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
                 // TODO add constraints/multiplier variables based on the
                 // MucoProblem
                 for (int i = 0; i < mp; ++i) {
+                    std::string str_cix = std::to_string(cix);
+                    std::string str_i = std::to_string(i);
                     this->add_path_constraint(
-                        "model_constraint_" + std::to_string(constraintNum) + 
-                        "_" + std::to_string(i), 0);
+                        "model_constraint_" + str_cix + "_" + str_i, 0);
                     // TODO how to specify multiplier bounds?
-                    this->add_control("lambda_" + std::to_string(constraintNum) 
-                        + "_" + std::to_string(i), {-1000, 1000});
+                    this->add_control("lambda_" + str_cix + "_" + str_i, 
+                        {-1000, 1000});
                 }
                 // Save constraint indices for enabled constraints only, so we 
                 // don't have to loop through disabled constraints later.
                 m_enabledConstraintIdxs.push_back(cid);
                 m_numScalarConstraintEqs += mp;
-                constraintNum++;
+                cix++;
             }
         }
 
@@ -251,6 +262,9 @@ public:
         // realizing to Velocity and computing forces manually.
         m_model.realizeAcceleration(m_state);
 
+        // If enabled constraints exist in the model, compute accelerations
+        // based on Lagrange multipliers (which are currently represented using
+        // control variables).
         if (m_enabledConstraintIdxs.size()) {
             const SimTK::MultibodySystem& multibody = 
                 m_model.getMultibodySystem();
@@ -270,19 +284,21 @@ public:
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
-            SimTK::Vector udot;
+            SimTK::Vector& udot = m_state.updUDot();
             SimTK::Vector_<SimTK::SpatialVec> A_GB;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
-
-            m_state.updUDot() = udot;
            
+            // Constraint errors.
             int mp, mv, ma;
             for (int i = 0; i < m_enabledConstraintIdxs.size(); ++i) {
                 const auto& constraint = matter.getConstraint(
                     SimTK::ConstraintIndex(m_enabledConstraintIdxs[i]));
                 constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
+                // Pass errors from the scalar constraint equations to their 
+                // associated tropter path constraint output structures (only 
+                // holonomic constraints for now).
                 SimTK::Vector errors(
                     constraint.getPositionErrorsAsVector(m_state));
                 std::copy(&errors[0], &errors[0] + mp, out.path.data());
@@ -303,7 +319,7 @@ public:
                 &m_state.updY()[0]);
 
         // Set the controls for actuators in the OpenSim model, excluding
-        // constrols created for Lagrange multipliers. 
+        // controls created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
             std::copy(controls.data() + m_numScalarConstraintEqs, 
@@ -317,11 +333,9 @@ public:
 
         integrand = m_phase0.calcIntegralCost(m_state);
         // Add squared multiplers cost to integrand.
-        SimTK::Vector multipliers(m_numScalarConstraintEqs, controls.data());
+        //SimTK::Vector multipliers(m_numScalarConstraintEqs, controls.data());
         for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
-            // TODO let user specify muliplier weight? Relatively high weight
-            // set for now so model actuators are preferred.
-            integrand += 100 * multipliers[i] * multipliers[i];
+            integrand += MULTIPLIER_WEIGHT * controls[i] * controls[i];
         }
         
     }
@@ -349,6 +363,9 @@ private:
     // since multiple scalar constraint equations can be associated with one
     // model constraint.
     int m_numScalarConstraintEqs = 0;
+    // TODO create user specified option for the Lagrange multipler weight.
+    // Relatively high weight set for now so model actuators are preferred.
+    const double MULTIPLIER_WEIGHT = 100.0;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

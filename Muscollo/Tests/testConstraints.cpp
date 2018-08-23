@@ -370,7 +370,7 @@ Model createDoublePendulumModel() {
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
     q1.setName("q1");
-    //q1.setDefaultValue(SimTK::Pi);
+    //q1.setDefaultValue(SimTK::Pi/100);
     model.addJoint(j0);
     model.addJoint(j1);
 
@@ -442,9 +442,7 @@ void testDoublePendulumPointOnLine() {
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
-
-    MucoIterate guess = ms.createGuess("bounds");
-    ms.setGuess(guess);
+    ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
@@ -517,9 +515,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_ipopt_print_level(5);
     ms.set_optim_hessian_approximation("limited-memory");
-
-    MucoIterate guess = ms.createGuess("bounds");
-    ms.setGuess(guess);
+    ms.setGuess("bounds");
 
     solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
@@ -571,7 +567,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds get used matter right now, these control infos are set in 
+    // TODO bounds get used right now, these control infos are set in 
     // order for the MucoIterate guess to be compatible with the MucoProblem.
     mp.setControlInfo("lambda_0_0", {-1000, 1000});
     mp.setControlInfo("lambda_1_0", {-1000, 1000});
@@ -585,9 +581,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("limited-memory");
-
-    MucoIterate guess = ms.createGuess("bounds");
-    ms.setGuess(guess);
+    ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
