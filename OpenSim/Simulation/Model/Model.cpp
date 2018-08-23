@@ -655,10 +655,13 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
     if (message.size()) {
         message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
         message += 
-            "Consequently, Coordinate values for Coupled coordinates can be assigned\n"
-            "values that are in degrees if a coordinate was previously (pre-4.0) labeled\n"
-            "as Rotational. This will lead to incorrect motion of bodies governed by the\n"
-            "Coupled coordinate when playing back a pre-4.0 motion file (.mot or .sto in\n"
+            "You must update any motion files you generated in version 3.3 or earlier. You can:\n"
+            "  (1) Run the updateKinematicsFilesForUpdatedModel() utility (in the scripting shell) OR\n"
+            "  (2) Re-run the inverse kinematics tool with the updated model in 4.0\n"
+            "In versions 3.3 and earlier, we allowed some Coupled coordinates to be incorrectly\n"
+            "labeled as Rotational. Coordinate values for Coupled coordinates previously (pre-4.0)\n"
+            "labeled Rotational, can be assigned values that are in degrees if a coordinate. This\n"
+            "will lead to incorrect motion when playing back a pre-4.0 motion file (.mot or .sto in\n"
             "degrees) and produces erroneous velocity and acceleration estimates that\n"
             "yield incorrect inverse-dynamics and static-optimization results. You can\n"
             "apply the utility:\n"
