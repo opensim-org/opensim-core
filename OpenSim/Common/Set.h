@@ -37,10 +37,8 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A class for holding a set of pointers to objects.  It is derived from
- * class Object and is implemented as a wrapper around template
- * ArrayPtrs<T>.  It is implemented around an array of pointers, rather
- * than values, so that it can make use of any virtual methods associated
- * with class T.
+ * base class C and is implemented as a wrapper around template class
+ * ArrayPtrs<T>.  
  *
  * @see ArrayPtrs
  * @author Frank C. Anderson
