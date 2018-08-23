@@ -333,7 +333,6 @@ public:
 
         integrand = m_phase0.calcIntegralCost(m_state);
         // Add squared multiplers cost to integrand.
-        //SimTK::Vector multipliers(m_numScalarConstraintEqs, controls.data());
         for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
             integrand += MULTIPLIER_WEIGHT * controls[i] * controls[i];
         }
