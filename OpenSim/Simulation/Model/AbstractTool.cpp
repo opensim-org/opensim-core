@@ -429,7 +429,7 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
         // Load force set(s)
         for(int i=0;i<_forceSetFiles.getSize();i++) {
             cout<<"Adding force object set from "<<_forceSetFiles[i]<<endl;
-            ForceSet *forceSet=new ForceSet(model, _forceSetFiles[i]);
+            ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
             model.updForceSet().append(*forceSet);
         }
 
@@ -566,7 +566,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
     try {
-        _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        _externalLoads = ExternalLoads(aExternalLoadsFileName, true);
     }
      catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
