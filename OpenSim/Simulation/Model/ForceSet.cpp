@@ -30,98 +30,13 @@
 using namespace std;
 using namespace OpenSim;
 
-#ifndef SWIG
-namespace OpenSim {
-template class OSIMSIMULATION_API ModelComponentSet<Force>;
-}
-#endif
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ForceSet::~ForceSet()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-ForceSet::ForceSet()
-{
-    setNull();
-}
-
-ForceSet::ForceSet(Model& model) : 
-ModelComponentSet<Force>(model)
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Construct an actuator set from file.
- *
- * @param aFileName Name of the file.
- */
-ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-    ModelComponentSet<Force>(model, aFileName, false)
-{
-    setNull();
-
-    if(aUpdateFromXMLNode)
-        updateFromXMLDocument();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aForceSet ForceSet to be copied.
- */
-ForceSet::ForceSet(const ForceSet &aForceSet) :
-    ModelComponentSet<Force>(aForceSet)
-{
-    setNull();
-
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this ForceSet to their null values.
- */
-void ForceSet::setNull()
-{
-    setAuthors("Ajay Seth, Jack Middleton");
-
-    // PROPERTIES
-    setupSerializedMembers();
-
-    _actuators.setMemoryOwner(false);
-
-    _muscles.setMemoryOwner(false);
-}
-
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.
- */
-void ForceSet::setupSerializedMembers()
-{
-}
-
 void ForceSet::extendConnectToModel(Model& aModel)
 {
     // BASE CLASS
     Super::extendConnectToModel(aModel);
+
+    _actuators.setMemoryOwner(false);
+    _muscles.setMemoryOwner(false);
 
     updateActuators();
     updateMuscles();

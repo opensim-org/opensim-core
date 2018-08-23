@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Ayman Habib, Peter Loan                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -26,39 +26,22 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "Marker.h"
 
-#ifdef SWIG
-    #ifdef OSIMSIMULATION_API
-        #undef OSIMSIMULATION_API
-        #define OSIMSIMULATION_API
-    #endif
-#endif
-
 namespace OpenSim {
-
-class Model;
-class ScaleSet;
-class Body;
-
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding a set of markers for inverse kinematics.
+ * A class for holding a set of markers.
  *
  * @authors Ayman Habib, Peter Loan
- * @version 1.0
  */
-
 class OSIMSIMULATION_API MarkerSet : public ModelComponentSet<Marker> {
     OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, ModelComponentSet<Marker>);
-
 
 public:
     /** Use Super's constructors. @see ModelComponentSet */
     using Super::ModelComponentSet;
 
-    ~MarkerSet();
-
-    // default copy, and assignment operator
+    // default copy, assignment operator, and destructor
 
     //--------------------------------------------------------------------------
     // UTILITIES

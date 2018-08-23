@@ -66,15 +66,10 @@ protected:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    ForceSet();
-    ForceSet(Model& model);
-    ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
-    ForceSet(const ForceSet &aForceSet);
-    virtual ~ForceSet();
+    /** Use Super's constructors. @see ModelComponentSet */
+    using Super::ModelComponentSet;
 
 private:
-    void setNull();
-    void setupSerializedMembers();
     void updateActuators();
     void updateMuscles();
 
