@@ -493,10 +493,11 @@ addPathPoint(const SimTK::State& s, int aIndex, const PhysicalFrame& frame)
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
     Vec3 newLocation(0.0); 
-    // placeNewPathPoint takes a newLocation reference and changes it 
-	// based on the index in the path (interpolate or extend, in ground frame)
+    // Note: placeNewPathPoint() returns a location by reference.
+    // It computes a new location according to the index where the new path point 
+    // will be inserted along the path(among the other path points).
     placeNewPathPoint(s, newLocation, aIndex, frame);
-	// Now set computed new location into the newPoint
+    // Now set computed new location into the newPoint
     newPoint->setLocation(newLocation);
     upd_PathPointSet().insert(aIndex, newPoint);
 
