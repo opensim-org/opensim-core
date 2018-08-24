@@ -645,8 +645,8 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
         if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
             (oldMotionType != motionType) ){
             message += "Coordinate '" + coord.getName() +
-                "' had incorrect MotionType '" + enumToString(oldMotionType) +
-                "' and is now set to '" + enumToString(motionType) + "'\n";
+                "' was labeled as '" + enumToString(oldMotionType) +
+                "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
         }
     }
 
