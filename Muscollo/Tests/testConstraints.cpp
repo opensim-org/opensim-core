@@ -364,10 +364,12 @@ Model createDoublePendulumModel() {
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
+    q0.setDefaultValue(0);
     auto* j1 = new PinJoint("j1",
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
     q1.setName("q1");
+    q1.setDefaultValue(SimTK::Pi);
     model.addJoint(j0);
     model.addJoint(j1);
 
@@ -443,7 +445,7 @@ void testDoublePendulumPointOnLine() {
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
-    muco.visualize(solution);
+    //muco.visualize(solution);
 
     model.initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -517,7 +519,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 
     solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    muco.visualize(solution);
+    //muco.visualize(solution);
 
     model.initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -582,7 +584,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    muco.visualize(solution);
+    //muco.visualize(solution);
 
     // Only compare the states, not the controls. Comparison tolerance was 
     // selected as tight as possible such that the test could pass.
