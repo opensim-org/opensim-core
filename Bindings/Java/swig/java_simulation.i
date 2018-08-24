@@ -44,13 +44,6 @@ using namespace SimTK;
     }
 };
 
-
-%extend OpenSim::Manager {
-    void setIntegratorAccuracy(double accuracy){
-        self->getIntegrator().setAccuracy(accuracy);
-    }
-}
-
 %extend OpenSim::Object {
     static OpenSim::Array<std::string> getFunctionClassNames() {
         OpenSim::Array<std::string> availableClassNames;
