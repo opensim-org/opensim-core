@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,43 +31,9 @@
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
 #include "Actuator.h" 
-#include <OpenSim/Common/Set.h>
-#include "SimTKsimbody.h"
 
 using namespace std;
 using namespace OpenSim;
-
-#ifndef SWIG
-namespace OpenSim {
-template class OSIMSIMULATION_API ModelComponentSet<Controller>;
-}
-#endif
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-
-ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model)
-{
-}
-//_____________________________________________________________________________
-/**
- * Construct a controller set from file.
- *
- * @param aFileName Name of the file.
- */
-
-ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-     ModelComponentSet<Controller>(model, aFileName, false)
-{
-    if(aUpdateFromXMLNode) updateFromXMLDocument();
-}
-
 
 void ControllerSet::constructStorage() 
 {
