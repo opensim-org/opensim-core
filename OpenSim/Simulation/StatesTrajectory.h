@@ -439,7 +439,9 @@ public:
      *      variables in the Model. If true, such columns of the Storage are
      *      ignored.
      * @param enforceConstraints Modify state variable values to satisfy
-     *      kinematic constraints (by calling Model::assemble()).
+     *      kinematic constraints (by calling Model::assemble()). Be careful
+     *      with this option; enforcing constraints can drastically alter the
+     *      provided states if they do not already obey the constraints.
      *
      * #### Usage
      * Here is how you might use this function in python:
@@ -481,7 +483,7 @@ public:
             const Storage& sto,
             bool allowMissingColumns = false,
             bool allowExtraColumns = false,
-            bool enforceConstraints = true);
+            bool enforceConstraints = false);
 
     /** Convenience form of createFromStatesStorage() that takes the path to a
      * Storage file instead of a Storage object. This convenience form uses the
