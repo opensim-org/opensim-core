@@ -364,13 +364,10 @@ Model createDoublePendulumModel() {
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
     q0.setName("q0");
-    // TODO problem passes or fails depending on default coordinate values set
-    //q0.setDefaultValue(0);
     auto* j1 = new PinJoint("j1",
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
     q1.setName("q1");
-    //q1.setDefaultValue(SimTK::Pi/100);
     model.addJoint(j0);
     model.addJoint(j1);
 
@@ -458,6 +455,7 @@ void testDoublePendulumPointOnLine() {
         // TODO: may need to adjust these tolerances
         SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
         SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+
     }
 }
 
@@ -519,7 +517,6 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 
     solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    solution.write("testConstraints_testDoublePendulumCoordinateCoupler.csv");
     muco.visualize(solution);
 
     model.initSystem();
@@ -585,7 +582,6 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    solution.write("testConstraints_testDoublePendulumPrescribedMotion.csv");
     muco.visualize(solution);
 
     // Only compare the states, not the controls. Comparison tolerance was 
