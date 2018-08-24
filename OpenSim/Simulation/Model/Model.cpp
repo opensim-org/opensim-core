@@ -1067,10 +1067,10 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
 }
 
 // Add a controller to the Model
-void Model::addController(Controller *aController)
+void Model::addController(Controller *controller)
 {
-    if (aController) {
-        updControllerSet().adoptAndAppend(aController);
+    if (controller) {
+        updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
     }
 }
