@@ -1017,8 +1017,7 @@ updateDefaultObjectsFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Object::
-updateXMLNode(SimTK::Xml::Element& aParent) const
+void Object::updateXMLNode(SimTK::Xml::Element& aParent, const std::string& propName) const
 {
     // Handle non-inlined object
     if(!getInlined()) {
@@ -1053,8 +1052,15 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
     
     // GENERATE XML NODE for object
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
-    if (!getName().empty())
+    // Write out the name for this Object if it is not an unnamed property
+    // and it is not empty
+    if (getName().empty()) {
+        if (!propName.empty())
+            myObjectElement.setAttributeValue("name", propName);
+    }
+    else
         myObjectElement.setAttributeValue("name", getName());
+
     aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
 
     // DEFAULT OBJECTS

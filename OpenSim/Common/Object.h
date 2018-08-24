@@ -520,7 +520,7 @@ public:
         this object already has an XML node associated with it, no new nodes 
         are ever generated and the parent node is not used. 
     **/
-    virtual void updateXMLNode(SimTK::Xml::Element& parent) const;
+    void updateXMLNode(SimTK::Xml::Element& parent, const std::string& propName="") const;
 
     /** Inlined means an in-memory Object that is not associated with
     an XMLDocument. **/
