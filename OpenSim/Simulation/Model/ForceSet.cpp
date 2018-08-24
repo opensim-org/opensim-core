@@ -209,11 +209,11 @@ Set<Actuator>& ForceSet::updActuators()
  */
 void ForceSet::updateActuators()
 {
+    _actuators.setMemoryOwner(false);
     _actuators.setSize(0);
-    for (int i = 0; i < getSize(); ++i)
-    {
+    for (int i = 0; i < getSize(); ++i) {
         Actuator* act = dynamic_cast<Actuator*>(&get(i));
-        if (act != NULL)  _actuators.adoptAndAppend(act);
+        if (act)  _actuators.adoptAndAppend(act);
     }
 }
 
@@ -237,11 +237,11 @@ Set<Muscle>& ForceSet::updMuscles()
  */
 void ForceSet::updateMuscles()
 {
+    _muscles.setMemoryOwner(false);
     _muscles.setSize(0);
-    for (int i = 0; i < getSize(); ++i)
-    {
+    for (int i = 0; i < getSize(); ++i) {
         Muscle* m = dynamic_cast<Muscle*>(&get(i));
-        if (m != NULL)  _muscles.adoptAndAppend(m);
+        if (m)  _muscles.adoptAndAppend(m);
     }
 }
 
