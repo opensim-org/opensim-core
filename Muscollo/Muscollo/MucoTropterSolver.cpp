@@ -258,14 +258,14 @@ public:
             m_model.setControls(m_state, osimControls);
         }
 
-        // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-        // realizing to Velocity and computing forces manually.
-        m_model.realizeAcceleration(m_state);
-
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers (which are currently represented using
         // control variables).
         if (m_enabledConstraintIdxs.size()) {
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
+            // realizing to Velocity and computing forces manually.
+            m_model.realizeDynamics(m_state);
+
             const SimTK::MultibodySystem& multibody = 
                 m_model.getMultibodySystem();
             const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
@@ -292,6 +292,7 @@ public:
            
             // Constraint errors.
             int mp, mv, ma;
+            int mpSum = 0;
             for (int i = 0; i < m_enabledConstraintIdxs.size(); ++i) {
                 const auto& constraint = matter.getConstraint(
                     SimTK::ConstraintIndex(m_enabledConstraintIdxs[i]));
@@ -301,8 +302,13 @@ public:
                 // holonomic constraints for now).
                 SimTK::Vector errors(
                     constraint.getPositionErrorsAsVector(m_state));
-                std::copy(&errors[0], &errors[0] + mp, out.path.data());
+                std::copy(&errors[0], &errors[0] + mp, out.path.data() + mpSum);
+                mpSum += mp;
             }
+        } else {
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
+            // realizing to Velocity and computing forces manually.
+            m_model.realizeAcceleration(m_state);
         }
         std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
                   out.dynamics.data());
