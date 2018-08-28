@@ -438,9 +438,11 @@ public:
      *      columns in the Storage that do not correspond to continuous state
      *      variables in the Model. If true, such columns of the Storage are
      *      ignored.
-     * @param enforceConstraints Modify state variable values to satisfy
-     *      kinematic constraints (by calling Model::assemble()). Be careful
-     *      with this option; enforcing constraints can drastically alter the
+     * @param assemble Modify state variable values to satisfy
+     *      kinematic constraints (by calling Model::assemble()).
+     *      Use this option if the provided states are incomplete (for example,
+     *      the values for dependent coordinates are unspecified).
+     *      Caution: enforcing constraints can drastically alter the
      *      provided states if they do not already obey the constraints.
      *
      * #### Usage
@@ -483,7 +485,7 @@ public:
             const Storage& sto,
             bool allowMissingColumns = false,
             bool allowExtraColumns = false,
-            bool enforceConstraints = false);
+            bool assemble = false);
 
     /** Convenience form of createFromStatesStorage() that takes the path to a
      * Storage file instead of a Storage object. This convenience form uses the
