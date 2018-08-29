@@ -194,10 +194,16 @@ public:
                     std::string str_cix = std::to_string(cix);
                     std::string str_i = std::to_string(i);
                     this->add_path_constraint(
-                        "model_constraint_" + str_cix + "_" + str_i, 0);
+                        "model_constraint_" + str_cix + "_" + str_i + "_pos", 0);
                     // TODO how to specify multiplier bounds?
                     this->add_control("lambda_" + str_cix + "_" + str_i, 
                         {-1000, 1000});
+                }
+                for (int i = 0; i < mp; ++i) {
+                    std::string str_cix = std::to_string(cix);
+                    std::string str_i = std::to_string(i);
+                    this->add_path_constraint(
+                        "model_constraint_" + str_cix + "_" + str_i + "_vel", 0);
                 }
                 // Save constraint indices for enabled constraints only, so we 
                 // don't have to loop through disabled constraints later.
@@ -300,9 +306,12 @@ public:
                 // Pass errors from the scalar constraint equations to their 
                 // associated tropter path constraint output structures (only 
                 // holonomic constraints for now).
-                SimTK::Vector errors(
+                SimTK::Vector posErrors(
                     constraint.getPositionErrorsAsVector(m_state));
-                std::copy(&errors[0], &errors[0] + mp, out.path.data() + mpSum);
+                std::copy(&posErrors[0], &posErrors[0] + mp, out.path.data() + mpSum);
+                SimTK::Vector velErrors(
+                    constraint.getVelocityErrorsAsVector(m_state));
+                std::copy(&velErrors[0], &velErrors[0] + mp, out.path.data() + mpSum + mp);
                 mpSum += mp;
             }
         } else {

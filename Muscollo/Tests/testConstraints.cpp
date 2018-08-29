@@ -519,7 +519,7 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
 
     solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    //muco.visualize(solution);
+    muco.visualize(solution);
 
     model.initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -560,10 +560,12 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setModel(model);
 
     mp.setTimeBounds(0, 1);
-    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
-    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
+    // Bounds on final states should be removed if minimizing velocity-level
+    // errors to get the problem to converge.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0); //, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0); //, 0);
+    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi);
+    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0); //, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
     // TODO bounds get used right now, these control infos are set in 
@@ -575,24 +577,24 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.addCost(effort);
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(75);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_optim_hessian_approximation("limited-memory");
     ms.setGuess("bounds");
 
-    MucoSolution solution = muco.solve();
+    MucoSolution solution = muco.solve().unseal();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    //muco.visualize(solution);
+    muco.visualize(solution);
 
     // Create a TimeSeriesTable containing the splined state data from 
     // testDoublePendulumCoordinateCoupler. 
     auto statesTraj = solution.exportToStatesTrajectory(mp);
     // Initialize data structures to use in the TimeSeriesTable
     // convenience constructor.
-    std::vector<double> indVec(statesTraj.getSize());
-    SimTK::Matrix depData(statesTraj.getSize(), solution.getStateNames().size());
+    std::vector<double> indVec((int)statesTraj.getSize());
+    SimTK::Matrix depData((int)statesTraj.getSize(), (int)solution.getStateNames().size());
     Vector timeVec(1);
     for (int i = 0; i < statesTraj.getSize(); ++i) {
         const auto& s = statesTraj.get(i);
@@ -621,18 +623,25 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
         solution.getControlNames(), {}, splineStateValues.getMatrix(),
         splineStateValues.getMatrix(), SimTK::RowVector(0));
 
-    // Only compare the state position-level values. This should match very 
-    // closely since this is specifically what the PrescribedMotion constraint
-    // is enforcing.
+
+    std::cout << "pos RMS: " << solution.compareStatesControlsRMS(
+        mucoIterSpline, {"j0/q0/value", "j1/q1/value"}, {"none"}) << std::endl;
+    std::cout << "vel RMS: " << solution.compareStatesControlsRMS(
+        mucoIterSpline, {"j0/q0/speed", "j1/q1/speed"}, {"none"}) << std::endl;
+
+    // Only compare the state position-level values. 
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline, 
-        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-8);
+        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-6);
     // Only compare the state velocity-level values. This doesn't match as well,
     // 
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline,
         {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
 
+    std::cout << "coupler solution RMS: " << solution.compareStatesControlsRMS(
+        couplerSolution, {}, {"none"}) << std::endl;
+
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, {}, 
-        {"none"}), 0, 1e-1);
+        {"none"}), 0, 1e-5);
     // TODO get states and controls to match more more closely.
     // Results while forcing Lagrange multipliers to be zero:
     //     - position states:   ~0.026 RMS error
