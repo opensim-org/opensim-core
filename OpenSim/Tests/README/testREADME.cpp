@@ -42,6 +42,7 @@
 
 //#define VISUALIZE
 
+/// [README]
 #include <OpenSim/OpenSim.h>
 using namespace SimTK;
 using namespace OpenSim;
@@ -128,3 +129,4 @@ int main() {
 
     return 0;
 };
+/// [README]
