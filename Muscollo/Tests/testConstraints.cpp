@@ -586,8 +586,51 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
     //muco.visualize(solution);
 
-    // Only compare the states, not the controls. Comparison tolerance was 
-    // selected as tight as possible such that the test could pass.
+    // Create a TimeSeriesTable containing the splined state data from 
+    // testDoublePendulumCoordinateCoupler. 
+    auto statesTraj = solution.exportToStatesTrajectory(mp);
+    // Initialize data structures to use in the TimeSeriesTable
+    // convenience constructor.
+    std::vector<double> indVec(statesTraj.getSize());
+    SimTK::Matrix depData(statesTraj.getSize(), solution.getStateNames().size());
+    Vector timeVec(1);
+    for (int i = 0; i < statesTraj.getSize(); ++i) {
+        const auto& s = statesTraj.get(i);
+        const SimTK::Real& time = s.getTime();
+        indVec[i] = time;
+        timeVec.updElt(0,0) = time;
+        depData.set(i, 0, statesSpline.get("j0/q0/value").calcValue(timeVec));
+        depData.set(i, 1, statesSpline.get("j1/q1/value").calcValue(timeVec));
+        // The values for the speed states are created from the spline 
+        // derivative values.
+        depData.set(i, 2, statesSpline.get("j0/q0/value").calcDerivative({0}, 
+            timeVec));
+        depData.set(i, 3, statesSpline.get("j1/q1/value").calcDerivative({0}, 
+            timeVec));
+    }
+    TimeSeriesTable splineStateValues(indVec, depData, 
+        solution.getStateNames());
+
+    // Create a MucoIterate containing the splined state values. The splined
+    // state values are also set for the controls as dummy data to avoid 
+    // exceptions (this only works since there happens to be the same number of
+    // controls as states). 
+    const auto& statesTimes = splineStateValues.getIndependentColumn();
+    SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
+    auto mucoIterSpline = MucoIterate(time, splineStateValues.getColumnLabels(),
+        solution.getControlNames(), {}, splineStateValues.getMatrix(),
+        splineStateValues.getMatrix(), SimTK::RowVector(0));
+
+    // Only compare the state position-level values. This should match very 
+    // closely since this is specifically what the PrescribedMotion constraint
+    // is enforcing.
+    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline, 
+        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-8);
+    // Only compare the state velocity-level values. This doesn't match as well,
+    // 
+    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline,
+        {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
+
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, {}, 
         {"none"}), 0, 1e-1);
     // TODO get states and controls to match more more closely.
@@ -608,7 +651,7 @@ int main() {
         SimTK_SUBTEST(testCoordinateCouplerConstraint);
         SimTK_SUBTEST(testPrescribedMotion);
         // Direct collocation subtests.
-        SimTK_SUBTEST(testDoublePendulumPointOnLine);
+        //SimTK_SUBTEST(testDoublePendulumPointOnLine);
         MucoSolution couplerSolution;
         SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
         SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
