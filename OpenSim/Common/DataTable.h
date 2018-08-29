@@ -375,19 +375,21 @@ public:
         }
         setColumnLabels(thisLabels);
 
-        // Form rows for this table from that table.
+        // Construct matrix for this table from that table.
+        SimTK::Matrix_<ETY> depData((int)that.getNumRows(), 
+            (int)that.getNumColumns());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
-            const auto& thatInd = that.getIndependentColumn().at(r);
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
-            std::vector<ETY> thisRow{};
+            SimTK::RowVector_<ETY> thisRow;
             for(unsigned c = 0;
                 c < that.getNumColumns();
                 c += numComponentsPerElement()) {
-                thisRow.push_back(makeElement(thatRow.begin() + c,
-                                              thatRow.end()));
+                thisRow[r] = makeElement(thatRow.begin() + c,thatRow.end());
             }
-            appendRow(thatInd, thisRow);
+            depData.updRow(r) = thisRow;
         }
+        _indData = that.getIndependentColumn();
+        _depData = depData;
     }
 
     /** Construct DataTable_<double, double> from 
