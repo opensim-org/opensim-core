@@ -275,6 +275,8 @@ input.connect(tablesource.getOutput("column").getChannel("foot"), "toe");
 
 An Operator is used to describe a purely functional/mathematical Component. An Operator requires a set of one or more Inputs, it computes on them, and sends its results to a set of one or more Outputs. An Operator has no dependencies on other Components (i.e. Sockets) and does not require a Model to operate (just Inputs). Some examples are arithmetic operations (``+,-,*,/``), `max/min`, a `delay`, and `de/multiplexer`. They are useful for manipulating the Outputs of other Components, for example, to delay an Output or report its max or min value.  
 
+Note: OpenSim does not yet contain any built-in Operator components.
+
 ### Source {#source}
 
 A Source is a category of components that serves as a source of Outputs (signals) to satisfy model Inputs and that does not itself have any Inputs.
@@ -282,29 +284,44 @@ A Source is a category of components that serves as a source of Outputs (signals
 [TableSource](@ref OpenSim::TableSource) is one such Component which holds a `TimeSeriesTable` (see below) and exposes a List Output which contains a Channel for each column of the table.
 
 ### Reporter {#reporter}
-A [Reporter](@ref OpenSim::Reporter) collects the results of Model computations. It can take any Outputs from a Model (and its Components) as its Inputs. Whether it reports to the terminal, file, or a port is dependent on the concrete Reporter type. Reporters are templated on the datatype of the reported Output<T> type (i.e., a single Reporter can only output one type of data), but there is no limit to the number of Reporters a Model can have.
+
+A [Reporter](@ref OpenSim::Reporter) collects the results of Model computations. It can take any Outputs from a Model (and its Components) as its Inputs. Whether it reports to the terminal, file, or a port is dependent on the concrete Reporter type. Reporters are templated on the datatype of the reported Output<T> type (i.e., a single Reporter can only output one type of data, such as `double` or `Vec3`), but there is no limit to the number of Reporters a Model can have.
 
 <img src="./images/reporters.png" alt="Figure 5" height="336.5" width="644">
 
 ### ModelComponent {#modelcomponent}
 
-A [ModelComponent](@ref OpenSim::ModelComponent) is the base type for all components that can be used to compose a Model. These are typically PhysicalFrames, Joints, Constraints, Forces, and Controllers but can also be user-defined Actuators, Devices and Probes.
+A [ModelComponent](@ref OpenSim::ModelComponent) is the base type for all components that can be used to compose a Model. The most common types of ModelComponents are the following:
+
+- [PhysicalFrame](@ref OpenSim::PhysicalFrame),
+- [Joint](@ref OpenSim::Joint),
+- [Constraint](@ref OpenSim::Constraint),
+- [Force](@ref OpenSim::Force),
+- [Actuator](@ref OpenSim::Actuator),
+- [Controller](@ref OpenSim::Controller), and
+- [Probe](@ref OpenSim::Probe).
+
+OpenSim contains built-in model components for each type above, but users can
+also create their own model components.
 
 ## Principal ModelComponents {#modelcomponents}
 
 ### Frames {#frames}
-[Frame](@ref OpenSim::Frame) is an OpenSim representation of a reference frame in which the spatial location and orientation of other Frames can be described. Every Model has a [Ground](@ref OpenSim::Ground) frame in which all other Frames can be measured. A Frame consists of a right-handed set of three orthogonal axes and an origin point. Frames provide a convenient way to locate physical structures, such as joints and muscle attachments. Frames also provide a convenient basis for performing spatial calculations. For example, if your system includes contact, you might define a Frame that is aligned with the normal direction of a contact surface and whose origin is at the center-of-pressure.You can then easily report the contact forces normal to the contact surface and the location of the center-of-pressure, without repeatedly performing the transformations in your main or analysis code.
+
+[Frame](@ref OpenSim::Frame) is an OpenSim representation of a reference frame in which the spatial location and orientation of other Frames can be described. Every Model has a [Ground](@ref OpenSim::Ground) frame in which all other Frames can be measured. A Frame consists of a right-handed set of three orthogonal axes and an origin point. Frames provide a convenient way to locate physical structures, such as joints and muscle attachments. Frames also provide a convenient basis for performing spatial calculations. For example, if your system includes contact, you might define a Frame that is aligned with the normal direction of a contact surface and whose origin is at the center-of-pressure. You can then easily report the contact forces normal to the contact surface and the location of the center-of-pressure, without repeatedly performing the transformations in your main or analysis code.
 
 There are several types of Frames:
 
 1. [PhysicalFrame](@ref OpenSim::PhysicalFrame): supports physical connections (e.g., Joints, Constraints) and is the Frame type to which forces can be applied. A concrete example of a PhysicalFrame is a Body. PhysicalFrame is an abstract class.
 2. [Ground](@ref OpenSim::Ground): an inertial reference frame in which the motion of all Frames and Points may conveniently and efficiently be expressed. As a PhysicalFrame, Ground supports physical connections by joints, constraints and forces can be applied to it.
 3. [Body](@ref OpenSim::Ground): a PhysicalFrame with inertia. A Body is specified by its mass, a center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass.
-4. [PhysicalOffsetFrame](@ref OpenSim::PhysicalOffsetFrame): a type of Physical Frame whose transform is specified as a constant offset from another Physical Frame. For example, PhysicalOffsetFrames can be used to specify the location and orientation of a Joint or Constraint on a Body.
+4. [PhysicalOffsetFrame](@ref OpenSim::PhysicalOffsetFrame): a type of Physical Frame whose transform is specified as a constant offset from another PhysicalFrame. For example, PhysicalOffsetFrames can be used to specify the location and orientation of a Joint or Constraint on a Body.
 
 The following diagram illustrates how each type of PhysicalFrame might appear in a model.
 
 <img src="./images/physical_frames_figure.png" alt="Figure 6" height="800" width="1024">
+
+(Note: "ComputedFrame" does not yet exist in OpenSim, but you could create it yourself!)
 
 Every Frame is capable of providing its Transform (translation of the origin and the orientation of its axes) in the Ground frame as a function of the State and provides convenience methods for re-expressing vectors from one Frame to another.
 
@@ -318,7 +335,7 @@ It is perhaps less evident that Frames can be extremely useful for linking a mul
         J---joint axes
 ~~~~
 
-Given this tree, both the muscle attachment points (in M) and the joint axes, J, change when the anatomical frame, A, changes with respect to the base, B, without requiring muscle attachments and joint axes to be manually adjusted. Consequently, a useful concept is that of a Base frame, and a Frame can always provide a Base frame. If a Frame is not affixed to another frame, its Base frame is itself.
+Given this tree, both the muscle attachment points (in M) and the joint axes, J, change when the anatomical frame, A, changes with respect to the base, B, without requiring muscle attachments and joint axes to be manually adjusted. Consequently, a useful concept is that of a Base frame, and a Frame can always provide its Base frame. If a Frame is not affixed to another frame, its Base frame is itself.
 
 ### Points, Station and Marker {#points}
 
@@ -327,8 +344,8 @@ A [Point](@ref OpenSim::Point) is an OpenSim representation of any location in s
 A Point provides its location, velocity, and acceleration in the Ground frame as a function of the Model’s state, as long as the state has been realized to the appropriate stage (Position, Velocity, or Acceleration)
 
 1. [Point](@ref OpenSim::Point): an abstraction for any location in space
-2. [Station](@ref OpenSim::Station): a Point fixed to and located on a Physical Frame, which can be a Body, Ground, or any Physical Offset Frame.
-3. [Marker](@ref OpenSim::Marker): a Station with convenience methods for defining an analogous Mocap Marker on the Model.
+2. [Station](@ref OpenSim::Station): a Point fixed to a PhysicalFrame
+3. [Marker](@ref OpenSim::Marker): a Station that represents a motion capture marker from an experiment.
 
 OpenSim Stations are Points defined in Euclidian space. They are defined with a three element column vector (Vec3), relative to their parent Frame. Stations are thus analogous to PhysicalOffsetFrames in that constraints and forces can be attached and/or applied to them.
 
@@ -356,16 +373,16 @@ OpenSim Stations are Points defined in Euclidian space. They are defined with a 
 
 ## Data Handling Classes {#datahandling}
 ### Data Table
-[DataTable](@ref OpenSim::DataTable) is an in-memory storage container for data with support for holding metadata. DataTables provide a single, unified method for storing and accessing data, such as results generated by Components. They provide fast access to numerical elements and to complete rows and columns of data, by index and by column names. By providing in memory storage for Components (e.g., Reporters and Sources described above), DataTable separates the data itself from file formats and isolates file handling to Adapters (see below).
+[DataTable](@ref OpenSim::DataTable) is an in-memory storage container for data with support for holding metadata. DataTables provide a single, unified method for storing and accessing data, such as results generated by Components. Reporter and Source components may use DataTables internally. They provide fast access to numerical elements and to complete rows and columns of data, by index and by column names. DataTables are independent of any particular file format.
 
-DataTables contain an independent column and a set of dependent columns. The independent column can be any scalar data-type (e.g., int, float, double). The dependent columns can be of any data type ( double, Vec3, Mat33, SpatialVec, etc.). All of the dependent columns must be of the same data type. Each independent and dependent column, as well as the entire table, can contain metadata.
+DataTables contain a single "independent" column and a set of dependent columns. The independent column can be any scalar data type (e.g., `int`, `float`, `double`). The dependent columns can be of any data type (`double`, `Vec3`, `Mat33`, `SpatialVec`, etc.). All of the dependent columns must be of the same data type. Each independent and dependent column, as well as the entire table, can contain metadata.
 
 ### Data Adapter
 [DataAdapter](@ref OpenSim::DataAdapter) is an abstract class that defines an interface for reading and writing the contents of a DataTable.
 
-The DataAdapter separates use of a DataTable from the various sources of data , including streams, files, databases, and devices. A DataAdapter is how you read from or write to a DataTable to/from different sources of data. Concrete classes handle the particular interface and format of a given data source.
+The DataAdapter separates use of a DataTable from the various sources of data, including streams, files, databases, and devices. A DataAdapter is how you read from or write to different sources of data. Concrete classes handle the particular interface and format of a given data source.
 
-FileAdapter offers an interface to read and write files through the following methods.
+[FileAdapter](@ref OpenSim::FileAdapter) offers an interface to read and write files through the following methods.
 ~~~cpp
 FileAdapter::readFile(string fileName)
 FileAdapter::writeFile(string fileName)
@@ -373,16 +390,16 @@ FileAdapter::writeFile(string fileName)
 
 Based on the extension in filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
 
-1. TRCFileAdapter: reads and writes TRC files.
-2. STOFileAdapter: reads and writes STO files.
-3. CSVFileAdapter: reads and writes CSV files.
-4. C3DFileAdapter: reads C3D files.
+1. [TRCFileAdapter](@ref OpenSim::TRCFileAdapter): reads and writes TRC files.
+2. [STOFileAdapter](@ref OpenSim::STOFileAdapter): reads and writes STO files.
+3. [CSVFileAdapter](@ref OpenSim::CSVFileAdapter): reads and writes CSV files.
+4. [C3DFileAdapter](@ref OpenSim::C3DFileAdapter): reads C3D files.
 
 ## Solvers {#solvers}
 
 A Solver is an abstraction to capture an algorithm/process to compute System unknowns of a Model. For example, the [InverseKinematicsSolver](@ref OpenSim::InverseKinematicsSolver) operates on the System underlying a Model to determine the generalized coordinate (state variable) values that satisfy external measurements (Markers). The [MomentArmSolver](@ref OpenSim::MomentArmSolver) evaluates a muscle path to determine the effectiveness of a muscle to generate a generalized force about or along a coordinate.
 
-The Manager currently serves as a "ForwardDynamics" Solver which integrates the System dynamics forwards in time.  We intend to provide a ForwardDynamicsSolver that returns a StatesTrajectory. In the meantime, you can generate a StatesTrajectory by implementing your own simulation function, like this:
+The [Manager](@ref OpenSim::Manager) currently serves as a "ForwardDynamics" Solver which integrates the System dynamics forward in time.  We intend to provide a ForwardDynamicsSolver that returns a StatesTrajectory. In the meantime, you can generate a StatesTrajectory by implementing your own simulation function, like this:
 ~~~cpp
 StatesTrajectory simulate(const Model& model, const State&
  initState,     double finalTime) {
