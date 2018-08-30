@@ -231,7 +231,9 @@ public:
             std::vector<ETY> thisRow{};
             for(unsigned c = 0; c < that.getNumColumns(); ++c)           
                 splitElementAndPushBack(thisRow, thatRow[c]);
-            
+            // This loop could be replaced with
+            //      depData.updRow(r) = thisRow;
+            // if splitElementAndPushBack supported SimTK::RowVector_<ETY>
             for(unsigned comp = 0; 
                 comp < that.getNumColumns() * numComponentsPerElement();
                 ++comp) {
