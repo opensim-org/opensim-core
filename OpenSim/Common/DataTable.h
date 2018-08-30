@@ -223,14 +223,24 @@ public:
         // This calls validateDependentsMetadata, so no need for explicit call.
         setColumnLabels(thisLabels);
 
+        // Construct matrix for this table from that table.
+        SimTK::Matrix_<ETY> depData((int)that.getNumRows(),
+            (int)that.getNumColumns() * numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
-            const auto& thatInd = that.getIndependentColumn().at(r);
             const auto& thatRow = that.getRowAtIndex(r);
             std::vector<ETY> thisRow{};
-            for(unsigned c = 0; c < that.getNumColumns(); ++c)
+            for(unsigned c = 0; c < that.getNumColumns(); ++c)           
                 splitElementAndPushBack(thisRow, thatRow[c]);
-            appendRow(thatInd, thisRow);
+            // 
+            for(unsigned comp = 0; 
+                comp < that.getNumColumns() * numComponentsPerElement();
+                ++comp) {
+                depData.set(r, comp, thisRow.at(comp));
+            }
         }
+
+        _indData = that.getIndependentColumn();
+        _depData = depData;
     }
 
     /** Construct this DataTable from a DataTable_<double, double>. This is the
@@ -377,7 +387,7 @@ public:
 
         // Construct matrix for this table from that table.
         SimTK::Matrix_<ETY> depData((int)that.getNumRows(), 
-            (int)that.getNumColumns());
+            (int)that.getNumColumns() / numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
             SimTK::RowVector_<ETY> thisRow;
@@ -1360,7 +1370,7 @@ protected:
             row.push_back(elem[i]);
     }
     // Split element into constituent components and append the components to 
-    // the given vector. . For example Vec<2, Vec3> has 6 components.
+    // the given vector. For example Vec<2, Vec3> has 6 components.
     template<int M, int N>
     static
     void splitElementAndPushBack(std::vector<double>& row,
