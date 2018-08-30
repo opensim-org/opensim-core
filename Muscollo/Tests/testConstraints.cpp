@@ -17,19 +17,22 @@
  * -------------------------------------------------------------------------- */
 
 #include <Muscollo/osimMuscollo.h>
-#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+//#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+//#include <OpenSim/Simulation/Control/PrescribedController.h>
+//#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -398,6 +401,37 @@ Model createDoublePendulumModel() {
     return model;
 }
 
+void runForwardSimulation(Model& model, MucoSolution& solution, MucoProblem& mp) {
+
+    // Run forward simulation 
+    GCVSplineSet solSpline(
+        solution.exportToStatesTrajectory(mp).exportToTable(model));
+
+    Array<std::string> names;
+    model.getActuators().getNames(names);
+    for (int i = 0; i < names.size(); ++i) {
+        auto* controller = new PrescribedController();
+        controller->setName(names[i] + "_controller");
+        controller->prescribeControlForActuator(names[i],
+            &solSpline.get(names[i]));
+        model.addController(controller);
+    }
+
+    auto* statesRep = new StatesTrajectoryReporter();
+    statesRep->setName("states_reporter");
+    statesRep->set_report_time_interval(0.001);
+    model.addComponent(statesRep);
+
+    // Simulate!
+    SimTK::State state = model.initSystem();
+    Manager manager(model, state);
+    state = manager.integrate(1.0);
+
+    TimeSeriesTable states;
+    states = statesRep->getStates().exportToTable(model);
+
+}
+
 /// Solve an optimal control problem where a double pendulum must reach a 
 /// specified final configuration while subject to a constraint that its
 /// end-effector must lie on a vertical line through the origin and minimize
@@ -457,8 +491,8 @@ void testDoublePendulumPointOnLine() {
         // TODO: may need to adjust these tolerances
         SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
         SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
-
     }
+
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -648,6 +682,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // constraints are enforced in the current formulation.
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, 
         {"none"}, {"tau0", "tau1"}), 0, 1);
+
+    
 }
 
 int main() {
