@@ -224,25 +224,20 @@ public:
         setColumnLabels(thisLabels);
 
         // Construct matrix for this table from that table.
-        SimTK::Matrix_<ETY> depData((int)that.getNumRows(),
+        _depData.resize((int)that.getNumRows(),
             (int)that.getNumColumns() * numComponentsPerElement());
+        SimTK::RowVector_<ETY> 
+        thisRow((int)that.getNumColumns() * numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatRow = that.getRowAtIndex(r);
-            std::vector<ETY> thisRow{};
-            for(unsigned c = 0; c < that.getNumColumns(); ++c)           
-                splitElementAndPushBack(thisRow, thatRow[c]);
-            // This loop could be replaced with
-            //      depData.updRow(r) = thisRow;
-            // if splitElementAndPushBack supported SimTK::RowVector_<ETY>
-            for(unsigned comp = 0; 
-                comp < that.getNumColumns() * numComponentsPerElement();
-                ++comp) {
-                depData.set(r, comp, thisRow.at(comp));
-            }
+            for (unsigned c = 0; c < that.getNumColumns(); ++c)
+                splitElementAndAppend(
+                    _depData.updRow(r).begin() + c*numComponentsPerElement(), 
+                    _depData.updRow(r).end(),
+                    thatRow[c]);
         }
 
         _indData = that.getIndependentColumn();
-        _depData = depData;
     }
 
     /** Construct this DataTable from a DataTable_<double, double>. This is the
@@ -388,20 +383,18 @@ public:
         setColumnLabels(thisLabels);
 
         // Construct matrix for this table from that table.
-        SimTK::Matrix_<ETY> depData((int)that.getNumRows(), 
+        _depData.resize((int)that.getNumRows(), 
             (int)that.getNumColumns() / numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
-            SimTK::RowVector_<ETY> thisRow;
             for(unsigned c = 0;
-                c < that.getNumColumns();
-                c += numComponentsPerElement()) {
-                thisRow[r] = makeElement(thatRow.begin() + c,thatRow.end());
+                c < that.getNumColumns() / numComponentsPerElement(); ++c) {
+                _depData[r,c] = makeElement(
+                    thatRow.begin() + c*numComponentsPerElement(), 
+                    thatRow.end());
             }
-            depData.updRow(r) = thisRow;
         }
         _indData = that.getIndependentColumn();
-        _depData = depData;
     }
 
     /** Construct DataTable_<double, double> from 
@@ -1364,26 +1357,42 @@ protected:
 
     // Split element into constituent components and append the components to
     // the given vector. For example Vec3 has 3 components.
-    template<int N>
+    template<int N, typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>& row,
+    void splitElementAndAppend(Iter begin, Iter end, 
                                  const SimTK::Vec<N>& elem) {
-        for(unsigned i = 0; i < N; ++i)
-            row.push_back(elem[i]);
+        for(unsigned i = 0; i < N; ++i) {
+            OPENSIM_THROW_IF(begin == end,
+                InvalidArgument,
+                "Iterators do not produce enough elements."
+                "Expected: " + std::to_string(N) + " Received: " +
+                std::to_string(i));
+
+            *begin++ = elem[i];
+        }
     }
     // Split element into constituent components and append the components to 
     // the given vector. For example Vec<2, Vec3> has 6 components.
-    template<int M, int N>
+    template<int M, int N, typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>& row,
+    void splitElementAndAppend(Iter begin, Iter end, 
                                  const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
-        for(unsigned i = 0; i < M; ++i)
-            for(unsigned j = 0; j < N; ++j)
-                row.push_back(elem[i][j]);
+        for(unsigned i = 0; i < M; ++i) {
+            for(unsigned j = 0; j < N; ++j) {
+                OPENSIM_THROW_IF(begin == end,
+                    InvalidArgument,
+                    "Iterators do not produce enough elements."
+                    "Expected: " + std::to_string(M * N) +
+                    " Received: " + std::to_string((i + 1) * j));
+
+                *begin++ = elem[i][j];
+            }
+        }
     }
     // Unsupported type.
+    template<typename Iter>
     static
-    void splitElementAndPushBack(std::vector<double>&,
+    void splitElementAndAppend(Iter begin, Iter end,
                                  ...) {
         static_assert(!std::is_same<ETY, double>::value,
                       "This constructor cannot be used to construct from "
@@ -1392,14 +1401,14 @@ protected:
     }
     template<typename ELT>
     static
-    std::vector<double> splitElement(const ELT& elt) {
-        std::vector<double> result{};
-        splitElementAndPushBack(result, elt);
+    SimTK::RowVector_<double> splitElement(const ELT& elt) {
+        SimTK::RowVector_<double> result;
+        splitElementAndAppend(result.begin(), result.end(), elt);
         return result;
     }
     static
-    std::vector<double> splitElement(const double& elt) {
-        return {elt};
+    SimTK::RowVector_<double> splitElement(const double& elt) {
+        return SimTK::RowVector_<double>(1, elt);
     }
 
     template<typename Iter>
