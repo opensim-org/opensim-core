@@ -420,9 +420,9 @@ StatesTrajectory simulate(const Model& model, const State&
 
 
 # Writing your own Component {#writingcomponents}
-The main task for Components (as part of a Model) is to generate a System. When the underlying System is built all the variables in the system equations appear in the State. A Component, therefore, is responsible for adding state variables to the system and providing access to those variables. The system can (and typically does) obtain default values for state variables from the Component’s properties.
+The main task for Components (as part of a Model) is to generate a System. When the underlying System is built, all the variables in the system of equations appear in the State. A Component, therefore, is responsible for adding state variables to the system and providing access to those variables. The system can (and typically does) obtain default values for state variables from the Component’s properties.
 
-#### The responsibility of the Component builder is four fold:
+#### The responsibility of the Component builder is four-fold:
   1. Construct the structural attributes of the component: its properties (serializable attributes), sockets (structural dependencies), inputs (signals it needs) and outputs (signals/values, results) that it will produce.
   2. Finalize data members that are dependent on your properties and add relevant checks to ensure your component is connected properly. With a Component finalized and connected, it is time to translate your Component into equations of the System and its variables into the corresponding State. Once a system is built, changes to any Component properties and connections will invalidate the System and the System must be rebuilt.
   3. Add the necessary multibody elements to the system, and any other dynamics described as a system of first order ODEs. This involves allocating and adding state variables and specifying their time derivatives.
@@ -430,14 +430,14 @@ The main task for Components (as part of a Model) is to generate a System. When 
 
 ## I. Constructing your Component’s Attributes {#constructproperties}
   1. Derive your component from the base component type you want to extend. You may derive from that class or its parent. If your component is completely new, you can derive directly from Component or ModelComponent, but that is generally a bit more work, since the base classes for the different types do a lot of the hookups (that follow) for you.
-  2. Construct your component with the properties (attributes that appear in XML) you want, you must first define the properties you want to expose by calling one of the `OpenSim_DECLARE_PROPERTY` macros, which you use to specify  the name, type and description of the property. NOTE: your class automatically has `get/set_<property_name>()` methods when you apply the macro and the properties and corresponding methods are inherited from its parent class.
+  2. Construct your component with the properties (elements that appear in XML) you want. You must first define the properties you want to expose by calling one of the `OpenSim_DECLARE_PROPERTY` macros, which you use to specify the name, type and description of the property. NOTE: your class automatically has `get/set_<property_name>()` methods when you apply the macro, and the properties and corresponding methods are inherited from its parent class.
   ~~~cpp
   OpenSim_DECLARE_PROPERTY(gain, double, "Controller gain.");
   OpenSim_DECLARE_LIST_PROPERTY(functions, Function,
           "Functions are used to compute the force applied to bodies.");
   ~~~        
 
-  3. Invoke the individual `constructProperty_<property_name>()` methods  for each property you have declared and assign them default values in each constructor. If you have multiple properties and constructors it is convenient to implement void `constructProperties()` as a private method that can be called from each constructor.
+  3. Invoke the individual `constructProperty_<property_name>()` methods  for each property you have declared and assign them default values in each constructor. If you have multiple properties and constructors it is convenient to create a function `void constructProperties()` as a private method that can be called from each constructor.
   ~~~cpp
   public:
       MyController() { constructProperties(); }
@@ -447,12 +447,12 @@ The main task for Components (as part of a Model) is to generate a System. When 
           constructProperty_functions();
       }
   ~~~
-  4. If you have dependencies on other components  you should specify those dependencies by using the `OpenSim_DECLARE_SOCKET` macro with the Socket name and type of the dependency. For example, a Joint has two sockets of type PhysicalFrame and their names are *parent_frame* and *child_frame* respectively. Sockets automatically generate properties with socket type and name as part of the XML tag.  The expected XML value is the full path name of the dependency component. OpenSim can now check the existence of the component that is your dependency and of the required type and provide meaningful messages.
+  4. If you have dependencies on other components  you should specify those dependencies by using the `OpenSim_DECLARE_SOCKET` macro with the Socket name and type of the dependency. For example, a Joint has two sockets of type PhysicalFrame and their names are *parent_frame* and *child_frame* respectively. Sockets automatically generate properties with socket type and name as part of the XML tag.  The expected XML value is the full path name of the dependency component. OpenSim can now check the existence of the dependency, and ensure it is of the correct type. If the dependency is not satisfied, OpenSim will provide meaningful error messages.
   ~~~cpp
   OpenSim_DECLARE_SOCKET(muscle, Muscle,
           "The muscle for which to compute metabolic rate.");
   ~~~
-  5. Specify your component’s Outputs by employing the `OpenSim_DECLARE_OUTPUT` macro with the name of the output, its value type, and the member function of your component that produces the value of the output . Similarly, use the `OpenSim_DECLARE_INPUT` macro to create a named slot for the Output of another component to plug in.
+  5. Specify your component’s Outputs by employing the `OpenSim_DECLARE_OUTPUT` macro with the name of the output, its value type, and the member function of your component that produces the value of the output. Similarly, use the `OpenSim_DECLARE_INPUT` macro to create a named slot for the Output of another component to plug in.
   ~~~cpp
   OpenSim_DECLARE_INPUT(desired_angle, double, SimTK::Stage::Position,
           "This controller will try to minimize the error from this angle (radians).");
@@ -462,9 +462,9 @@ The main task for Components (as part of a Model) is to generate a System. When 
   ~~~
 
 ## II. Finalize Properties and Connections of the Component {#finalizefromproperties}
-All components are given the opportunity finalize their specification from their properties invoked by `Component::finalizeFromProperties()`. The base (Component) implementation also makes sure Components that are properties (e.g. a BodySet, JoinSet) are included as subcomponents. As subcomponents, any actions invoked on the top-level component invokes its subcomponents, automatically. For example, `finalizeFromProperties()` is invoked on the subcomponents. To add custom functionality to your Component:
+All components are given the opportunity finalize their specification from their properties, which occurs during `OpenSim::Component::finalizeFromProperties()`. The base (Component) implementation also makes sure Components that are properties (e.g. a BodySet, JointSet) are included as subcomponents. As subcomponents, any actions invoked on the top-level component invokes its subcomponents, automatically. For example, `finalizeFromProperties()` is invoked on the subcomponents. To add custom functionality to your Component:
 
-  1. Override `extendFinalizeFromProperties()` to perform any data loading or conversions that the Component will need during a simulation. For example, the Body component has a property that contains six numbers intended to be the moments and products of inertia of a physical body.  Body overrides  `extendFinalizeFromProperties()` to convert those 6 numbers to a proper SimTK::Inertia, which will throw pertinent exceptions about  the validity of those numbers to form a physical inertia tensor. Note, that the base `Component::fnalizeFromProperties()` marks the component as being up-to-date with its properties.  We indicate virtual methods intended for Component writers to extend the basic operations of a Component by using "extend" in the virtual function name.
+  1. Override `OpenSim::Component::extendFinalizeFromProperties()` to perform any data loading or conversions that the Component will need during a simulation. For example, the Body component has a property that contains six numbers intended to be the moments and products of inertia of a physical body.  Body overrides  `extendFinalizeFromProperties()` to convert those 6 numbers to a proper SimTK::Inertia, which will throw pertinent exceptions about  the validity of those numbers to form a physical inertia tensor. Note, that the base `Component::finalizeFromProperties()` marks the component as being up-to-date with its properties.  We indicate virtual methods intended for Component writers to extend the basic operations of a Component by using "extend" in the virtual function name.
   ~~~cpp
   void extendFinalizeFromProperties() {
       Super::extendFinalizeFromProperties();
@@ -474,28 +474,23 @@ All components are given the opportunity finalize their specification from their
   ~~~
 
   2. Similarly, Sockets are handled automatically by the base Component, which establishes that the dependency exists and is connected (throws an Exception otherwise).  Additional connection details or checks are often necessary, in which case you must override:
-  
   ~~~cpp
-  void Component::extendConnect(Component& root)
+  void OpenSim::Component::extendConnect(Component& root)
   ~~~
-
-  for a Component, or
-  
+     for a Component, or
   ~~~cpp
-  void ModelComponent::extendConnectToModel(Model& model)
+  void OpenSim::ModelComponent::extendConnectToModel(Model& model)
   ~~~
-
-  for a ModelComponent. Here you can verify that the components that satisfy its sockets also satisfy other conditions: for example, that the connectees are unique (e.g. a Joint requires parent and child to not be the same PhysicalFrame). Inputs are automatically connected based on the Output name.   However, if you know the output you need (e.g. a Muscle for a MetabolicCalculator), you can directly form the Input connection like this:
-  
+     for a ModelComponent. Here you can verify that the components that satisfy its sockets also satisfy other conditions: for example, that the connectees are unique (e.g. a Joint requires parent and child to not be the same PhysicalFrame). Inputs are automatically connected based on the Output name.   However, if you know the output you need (e.g. a Muscle for a MetabolicCalculator), you can directly form the Input connection like this:
   ~~~cpp
   getInput("fiber_vel").connect(muscle.getOutput("fiber_velocity"));
   ~~~
 
 ## III. Adding your Component’s Dynamics to the System {#addtosystem}
-  1. Override `void extendAddToSystem(SimTK::MultibodySystem& system) const` and add Simbody elements to the System. It is important to note that you must maintain the underlying indices so your component can access them later if necessary. Joint, Constraint, Force, provide methods to help you create new types of those Components and manage the indices for you. Ask for help if you want to expose state variables allocated by underlying Simbody elements.
-  2. If you have component dynamics that you will model as ordinaary differential equations (ODEs) you must also add the corresponding state variable(s) to the system’s state also in `extendAddToSystem()` by invoking `addStateVariable()`.  If you can express your component dynamics as a function of the state: *zdot = F(state)*, then z is the state variable added by your component.
-  3. The function (e.g. *F(state)* above)  that determines the time derivative of your state must be implemented in `void computeStateVariableDerivatives(const SimTK::State& s) const`, which you override and use setStateVariableDerivative() to set the derivative value for a specified  state variable.
-  4. NOTE: Any value that your dynamics depends on that isn’t a constant, must itself be a state variable or an Input. If the values are provided externally (e.g. user supplied) the values must be held as discrete state variables and they are similarly allocated by `addDiscreteVariable()` and must be set before the dynamics of the Component are realized.
+  1. Override `void OpenSim::Component::extendAddToSystem(SimTK::MultibodySystem& system) const` and add Simbody elements to the System. It is important to note that you must maintain the underlying indices so your component can access the Simbody elements later if necessary. Classes like Joint, Constraint, and Force provide methods to help you create new types of these Components and manage the indices for you. Ask for help if you want to expose state variables allocated by underlying Simbody elements.
+  2. If you have component dynamics that you will model as ordinary differential equations (ODEs) you must also add the corresponding state variable(s) to the system’s state also in `extendAddToSystem()` by invoking `addStateVariable()`.  If you can express your component dynamics as a function of the state: *zdot = F(state)*, then z is the state variable added by your component.
+  3. The function (e.g. *F(state)* above) that determines the time derivative of your state must be implemented in `void OpenSim::Component::computeStateVariableDerivatives(const SimTK::State& s) const`, which you override.
+  4. NOTE: Any value that your dynamics depends on that isn’t a constant must itself be a state variable or an Input. If the values are provided externally (e.g. user-supplied) the values must be held as discrete state variables and they are similarly allocated by `OpenSim::Component::addDiscreteVariable()` and must be set before the dynamics of the Component are realized.
   ~~~cpp
   void extendAddToSystem(SimTK::MultibodySystem& sys) const override {
       Super::extendAddToSystem(sys);        
@@ -509,14 +504,14 @@ All components are given the opportunity finalize their specification from their
   ~~~
 
 ## IV. Initializing and Recalling the State {#initstatefromproperties}
-1. It is good practice to initialize your component’s state variables, so that the component and the Model as a whole can simulate without user input. For example, Coordinates maintain "default_value" and "default_speed" properties for this purpose. The translation from properties to state variable values is implemented by `void extendInitStateFromProperties(SimTK::State& state) const`, which you can override to initialize all the state variables your component has added from properties you have defined.
+1. It is good practice to initialize your component’s state variables, so that the component and the Model as a whole can simulate without user input. For example, Coordinates maintain "default_value" and "default_speed" properties for this purpose. The translation from properties to state variable values is implemented by `void OpenSim::Component::extendInitStateFromProperties(SimTK::State& state) const`, which you can override to initialize all the component's state variables from properties.
   ~~~cpp
   void extendInitStateFromProperties(SimTK::State& s) const override {
       Super::extendInitStateFromProperties(s);
       setStateVariableValue(s, "activation", get_default_activation());
   }
   ~~~
-2. Similarly, overriding `void extendSetPropertiesFromState(const SimTK::State& state)` enables you to perform the inverse operation and to update the property (for example the default_value) from the value in the State, for instance after a forward simulation.  Ideally, your component should enable a simulation to be stopped, the state values held as properties, the model saved, then reloaded, initialized from its properties and the simulation resumed, such that concatenation of the two simulations is identical to performing a single simulation of longer duration.
+2. Overriding `void OpenSim::Component::extendSetPropertiesFromState(const SimTK::State& state)` enables you to perform the inverse operation and to update the property (e.g., the default_value) from the value in the State, for instance after a forward simulation. Ideally, your component should enable a simulation to be stopped, the state values held as properties, the model saved, then reloaded, initialized from its properties and the simulation resumed, such that concatenation of the two simulations is identical to performing a single simulation of longer duration.
   ~~~cpp
   void extendSetPropertiesFromState(const SimTK::State& s) const override {
       Super::extendSetPropertiesFromState(s);
@@ -525,11 +520,11 @@ All components are given the opportunity finalize their specification from their
   ~~~
 
 ## Test Components {#testComponents}
-While testing the dynamics of your Component and its results is best left to you, the Component builder, OpenSim provides a test harness for testing the structure and integrity of your Component. The test program in testComponents.cpp  instantiates and performs some standard checks on each Component in its queue, to which you can include your Component, to test:
+While testing the dynamics of your Component and its results is best left to you, the Component builder, OpenSim provides a test harness for testing the structure and integrity of your Component. The test program in testComponents.cpp instantiates and performs some standard checks on each Component in its queue, to which you can add your Component, to test:
   1. serialization and deserialization and their equivalence
   2. cloning (copying) with its equivalence to the original
   3. memory increases due to copying
-  4. adding the component  to a Model
+  4. adding the component to a Model
   5. the use of Sockets to define and satisfy dependencies
-  6. initializing the System (calling `model.initSystem()`) and its impact on memory
+  6. initializing the System (calling `OpenSim::Model::initSystem()`) and its impact on memory
   7. evaluating Outputs at the Stage indicated by the Output.
