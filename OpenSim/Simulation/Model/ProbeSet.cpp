@@ -23,29 +23,3 @@
 
 #include "ProbeSet.h"
 
-using namespace std;
-using namespace OpenSim;
-
-
-//_____________________________________________________________________________
-/**
- * Default constructor of a ProbeSet.
- */
-ProbeSet::ProbeSet()
-{
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a ProbeSet.
- */
-ProbeSet::ProbeSet(const ProbeSet& aAbsProbeSet):
-    ModelComponentSet<Probe>(aAbsProbeSet)
-{
-    *this = aAbsProbeSet;
-}
-
-
-
-
