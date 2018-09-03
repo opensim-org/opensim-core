@@ -132,6 +132,9 @@ after_test:
   - SET DISTR=TRUE # TODO
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  # Upload pre-built dependencies to speed up local development.
+  - 7z a C:\opensim-muscollo-dependencies.zip C:\projects\muscollo_deps_install
+  - appveyor PushArtifact C:\opensim-muscollo-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
   # Create and upload NuGet package.
   #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo
