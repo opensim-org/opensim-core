@@ -135,6 +135,9 @@ after_test:
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
   # Upload pre-built dependencies to speed up local development.
+  # Change the modified timestamp of CMake files because otherwise these files
+  # may have been written "in the future", causing CMake to rebuild every time.
+  - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include *.cmake | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
   - 7z a C:\opensim-muscollo-dependencies.zip C:\projects\deps
   - appveyor PushArtifact C:\opensim-muscollo-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
