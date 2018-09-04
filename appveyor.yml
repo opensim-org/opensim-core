@@ -113,7 +113,7 @@ build_script:
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
 test_script:
-  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
+  # TODO - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
 
    # Build doxygen.
   - cmake --build . --config %BTYPE% --target tropter_doxygen -- /verbosity:minimal
