@@ -213,7 +213,7 @@ public:
                            that.numComponentsPerElement());
         for(const auto& label : that.getColumnLabels()) {
             if(suffixes.empty()) {
-                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i)
+                for(unsigned i = 1; i <= that.numComponentsPerElement(); ++i) 
                     thisLabels.push_back(label + "_" + std::to_string(i));
             } else {
                 for(const auto& suffix : suffixes)
@@ -224,19 +224,19 @@ public:
         setColumnLabels(thisLabels);
 
         // Construct matrix for this table from that table.
-        _depData.resize((int)that.getNumRows(),
-            (int)that.getNumColumns() * numComponentsPerElement());
+        _depData.resize((int)that.getNumRows(), 
+            (int)that.getNumColumns() * that.numComponentsPerElement());
         SimTK::RowVector_<ETY> 
-        thisRow((int)that.getNumColumns() * numComponentsPerElement());
+        thisRow((int)that.getNumColumns() * that.numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatRow = that.getRowAtIndex(r);
-            for (unsigned c = 0; c < that.getNumColumns(); ++c)
-                splitElementAndAppend(
-                    _depData.updRow(r).begin() + c*numComponentsPerElement(), 
-                    _depData.updRow(r).end(),
-                    thatRow[c]);
+            for (unsigned c = 0; c < that.getNumColumns(); ++c) {
+                splitElementAndAppend(_depData.updRow(r).begin() + 
+                                        c*that.numComponentsPerElement(), 
+                                      _depData.updRow(r).end(),
+                                      thatRow[c]);
+            }
         }
-
         _indData = that.getIndependentColumn();
     }
 
@@ -389,7 +389,7 @@ public:
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
             for(unsigned c = 0;
                 c < that.getNumColumns() / numComponentsPerElement(); ++c) {
-                _depData[r,c] = makeElement(
+                _depData.updElt(r,c) = makeElement(
                     thatRow.begin() + c*numComponentsPerElement(), 
                     thatRow.end());
             }
@@ -1360,7 +1360,7 @@ protected:
     template<int N, typename Iter>
     static
     void splitElementAndAppend(Iter begin, Iter end, 
-                                 const SimTK::Vec<N>& elem) {
+                               const SimTK::Vec<N>& elem) {
         for(unsigned i = 0; i < N; ++i) {
             OPENSIM_THROW_IF(begin == end,
                 InvalidArgument,
@@ -1376,7 +1376,7 @@ protected:
     template<int M, int N, typename Iter>
     static
     void splitElementAndAppend(Iter begin, Iter end, 
-                                 const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
+                               const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
         for(unsigned i = 0; i < M; ++i) {
             for(unsigned j = 0; j < N; ++j) {
                 OPENSIM_THROW_IF(begin == end,
