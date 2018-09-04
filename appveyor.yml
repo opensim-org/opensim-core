@@ -30,11 +30,11 @@ cache:
   # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
   # If the appveyor.yml script is changed, then the cache is invalidated.
   # https://www.appveyor.com/docs/build-cache/
-  - C:\projects\eigen -> dependencies\CMakeLists.txt
-  - C:\projects\colpack -> dependencies\colpack.cmake
-  - C:\projects\adol-c -> dependencies\CMakeLists.txt
-  - C:\projects\ipopt -> dependencies\CMakeLists.txt
-  - C:\projects\opensim-core -> dependencies\opensim-core.cmake
+  - C:\projects\deps\eigen -> dependencies\CMakeLists.txt
+  - C:\projects\deps\colpack -> dependencies\colpack.cmake
+  - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
+  - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
+  - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
   - C:\ProgramData\chocolatey\bin -> appveyor.yml # swig.exe
   - C:\ProgramData\chocolatey\lib -> appveyor.yml # supporting swig Lib files.
