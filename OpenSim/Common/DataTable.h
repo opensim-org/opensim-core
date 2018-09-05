@@ -1402,7 +1402,7 @@ protected:
     template<typename ELT>
     static
     SimTK::RowVector_<double> splitElement(const ELT& elt) {
-        SimTK::RowVector_<double> result;
+        SimTK::RowVector_<double> result(numComponentsPerElement_impl(elt));
         splitElementAndAppend(result.begin(), result.end(), elt);
         return result;
     }
