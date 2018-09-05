@@ -229,7 +229,7 @@ public:
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatRow = that.getRowAtIndex(r);
             for (unsigned c = 0; c < that.getNumColumns(); ++c) {
-                splitElementAndAppend(_depData.updRow(r).begin() + 
+                splitElementAndCopy(_depData.updRow(r).begin() +
                                         c*that.numComponentsPerElement(), 
                                       _depData.updRow(r).end(),
                                       thatRow[c]);
@@ -385,8 +385,7 @@ public:
             (int)that.getNumColumns() / numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
-            for(unsigned c = 0;
-                c < that.getNumColumns() / numComponentsPerElement(); ++c) {
+            for(unsigned c = 0; this->getNumColumns(); ++c) {
                 _depData.updElt(r,c) = makeElement(
                     thatRow.begin() + c*numComponentsPerElement(), 
                     thatRow.end());
@@ -1353,33 +1352,37 @@ protected:
         return result;
     }
 
-    // Split element into constituent components and append the components to
-    // the given vector. For example Vec3 has 3 components.
+    // Split element into constituent components and copy the components
+    // according to the iterator argument. This function will write N elements 
+    // starting from *begin* but not necessarily up to *end*. 
+    // Example: Vec3 has 3 components.
     template<int N, typename Iter>
     static
-    void splitElementAndAppend(Iter begin, Iter end, 
+    void splitElementAndCopy(Iter begin, Iter end, 
                                const SimTK::Vec<N>& elem) {
         for(unsigned i = 0; i < N; ++i) {
             OPENSIM_THROW_IF(begin == end,
                 InvalidArgument,
-                "Iterators do not produce enough elements."
+                "Iterators do not produce enough elements. "
                 "Expected: " + std::to_string(N) + " Received: " +
                 std::to_string(i));
 
             *begin++ = elem[i];
         }
     }
-    // Split element into constituent components and append the components to 
-    // the given vector. For example Vec<2, Vec3> has 6 components.
+    // Split element into constituent components and copy the components 
+    // according to the iterator argument. This function will write M*N elements 
+    // starting from *begin* but not necessarily up to *end*. 
+    // Example: Vec<2, Vec3> has 6 components.
     template<int M, int N, typename Iter>
     static
-    void splitElementAndAppend(Iter begin, Iter end, 
+    void splitElementAndCopy(Iter begin, Iter end, 
                                const SimTK::Vec<M, SimTK::Vec<N>>& elem) {
         for(unsigned i = 0; i < M; ++i) {
             for(unsigned j = 0; j < N; ++j) {
                 OPENSIM_THROW_IF(begin == end,
                     InvalidArgument,
-                    "Iterators do not produce enough elements."
+                    "Iterators do not produce enough elements. "
                     "Expected: " + std::to_string(M * N) +
                     " Received: " + std::to_string((i + 1) * j));
 
@@ -1390,7 +1393,7 @@ protected:
     // Unsupported type.
     template<typename Iter>
     static
-    void splitElementAndAppend(Iter begin, Iter end,
+    void splitElementAndCopy(Iter begin, Iter end,
                                  ...) {
         static_assert(!std::is_same<ETY, double>::value,
                       "This constructor cannot be used to construct from "
@@ -1401,7 +1404,7 @@ protected:
     static
     SimTK::RowVector_<double> splitElement(const ELT& elt) {
         SimTK::RowVector_<double> result(numComponentsPerElement_impl(elt));
-        splitElementAndAppend(result.begin(), result.end(), elt);
+        splitElementAndCopy(result.begin(), result.end(), elt);
         return result;
     }
     static
@@ -1415,7 +1418,7 @@ protected:
                             Iter begin, Iter end) {
         OPENSIM_THROW_IF(begin == end,
                          InvalidArgument,
-                         "Iterators do not produce enough elements."
+                         "Iterators do not produce enough elements. "
                          "Expected: 1 Received: 0");
         elem = *begin;
     }
@@ -1426,7 +1429,7 @@ protected:
         for(unsigned i = 0; i < N; ++i) {
             OPENSIM_THROW_IF(begin == end,
                              InvalidArgument,
-                             "Iterators do not produce enough elements."
+                             "Iterators do not produce enough elements. "
                              "Expected: " + std::to_string(N) + " Received: " +
                              std::to_string(i));
 
