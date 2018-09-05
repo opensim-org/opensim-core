@@ -17,22 +17,12 @@
  * -------------------------------------------------------------------------- */
 
 #include <Muscollo/osimMuscollo.h>
-//#include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
-//#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
-//#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-//#include <OpenSim/Simulation/Control/PrescribedController.h>
-//#include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Common/GCVSpline.h>
 
 using namespace OpenSim;
 using SimTK::Vec3;
@@ -401,19 +391,25 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-void runForwardSimulation(Model& model, MucoSolution& solution, MucoProblem& mp) {
+/// Run a foward simulation using controls from an OCP solution and compare the
+/// state trajectories.
+void runForwardSimulation(Model& model, const MucoSolution& solution, 
+    const double& tol) {
 
-    // Run forward simulation 
-    GCVSplineSet solSpline(
-        solution.exportToStatesTrajectory(mp).exportToTable(model));
+    std::vector<std::string> actuNames({"tau0","tau1"});
 
-    Array<std::string> names;
-    model.getActuators().getNames(names);
-    for (int i = 0; i < names.size(); ++i) {
+    // Add prescribed controllers to actuators in the model, where the control
+    // functions are splined versions of the actuator controls from the OCP 
+    // solution.
+    const SimTK::Vector& time = solution.getTime();
+    for (int i = 0; i < actuNames.size(); ++i) {
+        const auto control = solution.getControl(actuNames[i]);
+        auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0], 
+            &control[0]);
         auto* controller = new PrescribedController();
-        controller->setName(names[i] + "_controller");
-        controller->prescribeControlForActuator(names[i],
-            &solSpline.get(names[i]));
+        controller->setName(actuNames[i] + "_controller");
+        controller->addActuator(model.getComponent<Actuator>(actuNames[i]));
+        controller->prescribeControlForActuator(actuNames[i], controlFunction);
         model.addController(controller);
     }
 
@@ -421,15 +417,26 @@ void runForwardSimulation(Model& model, MucoSolution& solution, MucoProblem& mp)
     statesRep->setName("states_reporter");
     statesRep->set_report_time_interval(0.001);
     model.addComponent(statesRep);
-
+    
     // Simulate!
     SimTK::State state = model.initSystem();
     Manager manager(model, state);
-    state = manager.integrate(1.0);
+    state = manager.integrate(1);
 
     TimeSeriesTable states;
     states = statesRep->getStates().exportToTable(model);
 
+    const auto& statesTimes = states.getIndependentColumn();
+    SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
+    // Create a MucoIterate to facilitate states trajectory comparison (with
+    // dummy data for the controls, which we'll ignore).
+    auto forwardSolution = MucoIterate(timeVec, states.getColumnLabels(),
+        states.getColumnLabels(), {}, states.getMatrix(),
+        states.getMatrix(), SimTK::RowVector(0));
+
+    // Compare states trajectory between forward simulation and OCP solution.
+    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(forwardSolution,
+        {}, {"none"}), 0, tol);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -493,6 +500,10 @@ void testDoublePendulumPointOnLine() {
         SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
     }
 
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -564,6 +575,11 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
         // described above.
         SimTK_TEST_EQ_TOL(q1.getValue(s), m*q0.getValue(s) + b, 1e-6);
     }
+
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(model, solution, 1e-2);
 }
 
 /// Solve an optimal control problem where a double pendulum must follow a
@@ -683,7 +699,10 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, 
         {"none"}, {"tau0", "tau1"}), 0, 1);
 
-    
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(model, solution, 1e-3);
 }
 
 int main() {
