@@ -135,9 +135,14 @@ after_test:
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
   # Upload pre-built dependencies to speed up local development.
-  # Change the modified timestamp of CMake files because otherwise these files
-  # may have been written "in the future", causing CMake to rebuild every time.
-  - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include *.cmake | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
+  # Change the modified timestamp of dependencies because otherwise these files
+  # may have been written "in the future" (b/c of the time zone difference
+  # between California and AppVeyor servers), causing CMake to rebuild every
+  # time.
+  # https://blogs.technet.microsoft.com/heyscriptingguy/2015/01/21/adding-and-subtracting-dates-with-powershell/
+  # https://stackoverflow.com/questions/18847145/loop-through-files-in-a-directory-using-powershell
+  # https://superuser.com/questions/10426/windows-equivalent-of-the-linux-command-touch
+  - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include ** | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
   - 7z a C:\opensim-muscollo-dependencies.zip C:\projects\deps
   - appveyor PushArtifact C:\opensim-muscollo-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
