@@ -385,7 +385,7 @@ public:
             (int)that.getNumColumns() / numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             auto thatRow = that.getRowAtIndex(r).getAsRowVector();
-            for(unsigned c = 0; this->getNumColumns(); ++c) {
+            for(unsigned c = 0; c < this->getNumColumns(); ++c) {
                 _depData.updElt(r,c) = makeElement(
                     thatRow.begin() + c*numComponentsPerElement(), 
                     thatRow.end());
