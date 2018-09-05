@@ -226,8 +226,6 @@ public:
         // Construct matrix for this table from that table.
         _depData.resize((int)that.getNumRows(), 
             (int)that.getNumColumns() * that.numComponentsPerElement());
-        SimTK::RowVector_<ETY> 
-        thisRow((int)that.getNumColumns() * that.numComponentsPerElement());
         for(unsigned r = 0; r < that.getNumRows(); ++r) {
             const auto& thatRow = that.getRowAtIndex(r);
             for (unsigned c = 0; c < that.getNumColumns(); ++c) {
