@@ -223,6 +223,6 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
 
     // If this is a named property then the lone object must have its
     // name attribute set to the property name.
-    obj.updateXMLNode(parent, isUnnamedProperty() ? "" : getName());
+    obj.updateXMLNode(parent, this);
 }
 
