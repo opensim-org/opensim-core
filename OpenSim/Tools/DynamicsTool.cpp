@@ -272,11 +272,16 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         loadKinematicsForPointTransformation = temp;
     }
     
+    // TODO: ExternalLoads' logic is broken. 1. It should be added to the Model
+    // in which case connectToModel() is called automatically as a ModelComponent.
+    // 2. ExternalLoads::connectToModel() MUST not require a live system! - aseth
+    _externalLoads.connectToModel(aModel);
+
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
         SimTK::State& s = aModel.initSystem();
-        
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
@@ -299,5 +304,5 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         delete loadKinematics;
 
     IO::chDir(savedCwd);
-    return(true);
+    return true;
 }

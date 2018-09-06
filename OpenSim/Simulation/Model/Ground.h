@@ -47,7 +47,8 @@ public:
 
 protected:
     /** Extending the Component interface. */
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+    void extendFinalizeFromProperties() override final;
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override final;
 
 private:
     /** The transform X_GF is the identity transform since this frame is Ground.*/

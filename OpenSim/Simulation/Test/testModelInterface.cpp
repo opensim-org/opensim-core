@@ -47,6 +47,8 @@ void testModelFinalizePropertiesAndConnections()
 {
         Model model("arm26.osim");
 
+        model.printSubcomponentInfo();
+
         // all subcomponents are accounted for since Model constructor invokes
         // finalizeFromProperties().
         ASSERT(model.countNumComponents() > 0);
@@ -115,7 +117,7 @@ void testModelFinalizePropertiesAndConnections()
         auto& sys = model.getSystem();
 
         auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
-            model.getComponent<Body>("r_humerus"),
+            model.getComponent<Body>("./bodyset/r_humerus"),
             SimTK::Transform(SimTK::Vec3(0, -0.33, 0)) );
 
         model.addComponent(elbowInHumerus);
@@ -125,7 +127,7 @@ void testModelFinalizePropertiesAndConnections()
         state = model.initSystem();
 
         // update the elbow Joint and connect its socket to the new frame
-        Joint& elbow = model.updComponent<Joint>("r_elbow");
+        Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
         elbow.connectSocket_parent_frame(*elbowInHumerus);
 
         // satisfy the new connections in the model
@@ -136,8 +138,8 @@ void testModelFinalizePropertiesAndConnections()
         ASSERT_THROW(ComponentHasNoSystem, model.getSystem());
 
         // verify the new connection was made
-        ASSERT(model.getComponent<Joint>("r_elbow").getParentFrame().getName()
-                == "elbow_in_humerus");
+        ASSERT(model.getComponent<Joint>("./jointset/r_elbow")
+            .getParentFrame().getName() == "elbow_in_humerus");
 }
 
 void testModelTopologyErrors()
@@ -148,7 +150,7 @@ void testModelTopologyErrors()
     // connect the shoulder joint from torso to ground instead of r_humerus
     // this is an invalid tree since the underlying PhysicalFrame in both
     // cases is ground.
-    Joint& shoulder = model.updComponent<Joint>("r_shoulder");
+    Joint& shoulder = model.updComponent<Joint>("./jointset/r_shoulder");
     const PhysicalFrame& shoulderOnHumerus = shoulder.getChildFrame();
     shoulder.connectSocket_child_frame(model.getGround());
 
@@ -161,13 +163,13 @@ void testModelTopologyErrors()
 
     // create and offset for the elbow joint in the humerus
     auto elbowInHumerus = new PhysicalOffsetFrame("elbow_in_humerus",
-        model.getComponent<Body>("r_humerus"),
+        model.getComponent<Body>("./bodyset/r_humerus"),
         SimTK::Transform(SimTK::Vec3(0, -0.33, 0)));
 
     model.addComponent(elbowInHumerus);
 
     // update the elbow to connect to the elbow in the humerus frame
-    Joint& elbow = model.updComponent<Joint>("r_elbow");
+    Joint& elbow = model.updComponent<Joint>("./jointset/r_elbow");
     const PhysicalFrame& elbowOnUlna = elbow.getChildFrame();
     elbow.connectSocket_child_frame(*elbowInHumerus);
 
@@ -225,7 +227,3 @@ void testModelTopologyErrors()
 
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
 }
-
-
-
-

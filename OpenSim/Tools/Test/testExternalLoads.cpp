@@ -135,7 +135,7 @@ void testExternalLoad()
     ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
     xf.setName("grav");
 
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(&xf);
 
     extLoads->print("ExternalLoads_test.xml");
@@ -218,6 +218,7 @@ void testExternalLoad()
 
     //Ask external loads to transform point expressed in ground to the applied body
     extLoads->setDataFileName(forceStore2.getName());
+    extLoads->connectToModel(model);
     extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
 
     // remove previous external force from the model too
@@ -293,7 +294,7 @@ void testExternalLoadDefaultProperties() {
     xf->set_point_expressed_in_body(pendBodyName);
     SimTK_TEST(xf->getForceExpressedInBodyName() == "ground");
     // Leave force_expressed_in_body as default ("ground").
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(xf);
 
     extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");

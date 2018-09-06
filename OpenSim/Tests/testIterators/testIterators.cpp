@@ -53,14 +53,15 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-// 2018-08-22 added 9 for ModelComponentSets: Bodies, Joints. Constraints, ...
-const int expectedNumComponents = 189; 
+// 2018-09-05 updates to accommodate ModelComponentSets: BodySet, JointSet,
+//    ConstraintSet, ForceSet, ProbeSet, WrapObjectSet, ...
+const int expectedNumComponents = 200; 
 const int expectedNumJointsWithStateVariables = 2;
 // 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
 const int expectedNumModelComponentsWithStateVariables = 12;
-// Below updated from 1 to 3 to account for offset frame and its geometry added
-// to the Joint
-const int expectedNumJntComponents = 3;
+// Below updated from 1 to 4 to account for offset frame and its geometry and 
+// wrapobjectset that are now part of the Joint
+const int expectedNumJntComponents = 4;
 // Test using the iterator to skip over every other Component (Frame in this case)
 // nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
 const int expectedNumCountSkipFrames = 3;
