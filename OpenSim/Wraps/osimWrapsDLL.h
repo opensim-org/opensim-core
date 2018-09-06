@@ -1,7 +1,7 @@
-#ifndef _opensim_h_
-#define _opensim_h_
+#ifndef _WrapsDLL_h_
+#define _WrapsDLL_h_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  OpenSim.h                             *
+ *                        OpenSim:  osimWrapsDLL.h                            *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,26 +23,28 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/osimCommon.h"
-#include "Simulation/osimSimulation.h"
+/* Note: This code was originally developed by Realistic Dynamics Inc. 
+ * Author: Frank C. Anderson 
+ */
 
-#include "Actuators/osimActuators.h"
-#include "Wraps/osimWraps.h"
-#include "Analyses/osimAnalyses.h"
-#include "Tools/osimTools.h"
+// UNIX PLATFORM
+#ifndef _WIN32
 
-class osimInstantiator
-{
-public:
-    osimInstantiator() {
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimWraps();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-    }
-};
+#define OSIMWRAPS_API
 
-static osimInstantiator instantiator;
-#endif // _opensim_h_
+// WINDOWS PLATFORM
+#else
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#ifdef OSIMWRAPS_EXPORTS
+#define OSIMWRAPS_API __declspec(dllexport)
+#else
+#define OSIMWRAPS_API __declspec(dllimport)
+#endif
+
+#endif // PLATFORM
+
+
+#endif // _WrapsDLL_h_

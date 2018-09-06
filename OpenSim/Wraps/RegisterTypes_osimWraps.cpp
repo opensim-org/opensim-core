@@ -1,7 +1,5 @@
-#ifndef _opensim_h_
-#define _opensim_h_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  OpenSim.h                             *
+ *                   OpenSim:  RegisterTypes_osimWraps.cpp                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +8,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,26 +21,43 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/osimCommon.h"
-#include "Simulation/osimSimulation.h"
+#include <string>
+#include <iostream>
+#include <OpenSim/Common/Object.h>
+#include "RegisterTypes_osimWraps.h"
 
-#include "Actuators/osimActuators.h"
-#include "Wraps/osimWraps.h"
-#include "Analyses/osimAnalyses.h"
-#include "Tools/osimTools.h"
+#include "tata.h"
 
-class osimInstantiator
+using namespace OpenSim;
+using namespace std;
+
+static osimWrapsInstantiator instantiator;
+
+
+//_____________________________________________________________________________
+/**
+ * The purpose of this routine is to register all class types exported by
+ * the Simulation library.
+ */
+OSIMWRAPS_API void RegisterTypes_osimWraps()
 {
-public:
-    osimInstantiator() {
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimWraps();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-    }
-};
+  try {
 
-static osimInstantiator instantiator;
-#endif // _opensim_h_
+    Object::RegisterType(tata());
+
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimWraps Object registration:\n"
+        << e.what() << "\n";
+  }
+}
+
+osimWrapsInstantiator::osimWrapsInstantiator()
+{
+       registerDllClasses();
+}
+
+void osimWrapsInstantiator::registerDllClasses()
+{
+       RegisterTypes_osimWraps();
+}
