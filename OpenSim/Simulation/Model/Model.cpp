@@ -337,34 +337,44 @@ void Model::constructProperties()
     _forceUnits = Units::Newtons;
 
     BodySet bodies;
+    bodies.setName(IO::Lowercase(bodies.getConcreteClassName()));
     constructProperty_BodySet(bodies);
 
     JointSet joints;
+    joints.setName(IO::Lowercase(joints.getConcreteClassName()));
     constructProperty_JointSet(joints);
 
-    ControllerSet controllerSet;
-    constructProperty_ControllerSet(controllerSet);
+    ControllerSet controllers;
+    controllers.setName(IO::Lowercase(controllers.getConcreteClassName()));
+    constructProperty_ControllerSet(controllers);
 
-    ConstraintSet constraintSet;
-    constructProperty_ConstraintSet(constraintSet);
+    ConstraintSet constraints;
+    constraints.setName(IO::Lowercase(constraints.getConcreteClassName()));
+    constructProperty_ConstraintSet(constraints);
 
-    ForceSet forceSet;
-    constructProperty_ForceSet(forceSet);
+    ForceSet forces;
+    forces.setName(IO::Lowercase(forces.getConcreteClassName()));
+    constructProperty_ForceSet(forces);
 
-    MarkerSet markerSet;
-    constructProperty_MarkerSet(markerSet);
+    MarkerSet markers;
+    markers.setName(IO::Lowercase(markers.getConcreteClassName()));
+    constructProperty_MarkerSet(markers);
 
-    ContactGeometrySet contactGeometrySet;
-    constructProperty_ContactGeometrySet(contactGeometrySet);
+    ContactGeometrySet contacts;
+    contacts.setName(IO::Lowercase(contacts.getConcreteClassName()));
+    constructProperty_ContactGeometrySet(contacts);
 
-    ComponentSet componentSet;
-    constructProperty_ComponentSet(componentSet);
+    ProbeSet probes;
+    probes.setName(IO::Lowercase(probes.getConcreteClassName()));
+    constructProperty_ProbeSet(probes);
 
-    ProbeSet probeSet;
-    constructProperty_ProbeSet(probeSet);
+    ComponentSet miscComponents;
+    miscComponents.setName(IO::Lowercase(miscComponents.getConcreteClassName()));
+    constructProperty_ComponentSet(miscComponents);
 
-    ModelVisualPreferences md;
-    constructProperty_ModelVisualPreferences(md);
+    ModelVisualPreferences mvps;
+    mvps.setName(IO::Lowercase(mvps.getConcreteClassName()));
+    constructProperty_ModelVisualPreferences(mvps);
 }
 
 //------------------------------------------------------------------------------
