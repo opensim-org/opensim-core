@@ -518,9 +518,14 @@ public:
         no parent node is supplied and this object doesn't already have an XML 
         node, this object will become the root node for a new XML document. If 
         this object already has an XML node associated with it, no new nodes 
-        are ever generated and the parent node is not used. 
+        are ever generated and the parent node is not used.
+    @param      prop
+        The pointer to the property that contains this object. If it is
+        present, check if the property is unnamed and if NOT, use the property
+        name as its name when updating the XML node.
     **/
-    void updateXMLNode(SimTK::Xml::Element& parent, const std::string& propName="") const;
+    void updateXMLNode(SimTK::Xml::Element& parent,
+                       const AbstractProperty* prop=nullptr) const;
 
     /** Inlined means an in-memory Object that is not associated with
     an XMLDocument. **/
@@ -542,9 +547,7 @@ protected:
 
     This flag is cleared automatically but if you want to clear it manually
     for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
-    void setObjectIsUpToDateWithProperties() {
-        _objectIsUpToDate = true;
-    }
+    void setObjectIsUpToDateWithProperties();
 
     /** For testing or debugging purposes, manually clear the "object is up to
     date with respect to properties" flag. This is normally done automatically

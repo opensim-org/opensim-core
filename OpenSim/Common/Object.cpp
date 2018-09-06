@@ -125,7 +125,6 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         }
         IO::chDir(saveWorkingDirectory);
     }
-
 }
 //_____________________________________________________________________________
 /**
@@ -1017,7 +1016,8 @@ updateDefaultObjectsFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Object::updateXMLNode(SimTK::Xml::Element& aParent, const std::string& propName) const
+void Object::updateXMLNode(SimTK::Xml::Element& aParent,
+                           const AbstractProperty* prop) const
 {
     // Handle non-inlined object
     if(!getInlined()) {
@@ -1052,14 +1052,14 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent, const std::string& prop
     
     // GENERATE XML NODE for object
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
-    // Write out the name for this Object if it is not an unnamed property
-    // and it is not empty
-    if (getName().empty()) {
-        if (!propName.empty())
-            myObjectElement.setAttributeValue("name", propName);
-    }
-    else
+    
+    // if property is provided and it is not of unnamed type, use the property name
+    if(prop && !prop->isUnnamedProperty()) {
+            myObjectElement.setAttributeValue("name", prop->getName());
+    } // otherwise if object has a name use it as the name value
+    else if (!getName().empty()) { 
         myObjectElement.setAttributeValue("name", getName());
+    }
 
     aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
 
@@ -1558,16 +1558,44 @@ makeObjectFromFile(const std::string &aFileName)
 
     catch(const std::exception& x) {
         cout << x.what() << endl;
-        return 0;
+        return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad
-        return 0;
+        return nullptr;
     }
     assert(!"Shouldn't be here");
-    return 0;
+    return nullptr;
 }
 
+void Object::setObjectIsUpToDateWithProperties() {
+    // To be up-to-date with properties we must reset the name of objects that
+    // can be mangled independent of the property name, which will mean that the
+    // serialized and original object can differ. Once the Object is up-to-date
+    // with its properties it MUST guarantee that the properties and any model 
+    // values/names are consistent. We handle that here.
 
+    // If a single object property, assign the object's name as the property
+    // since renaming will cause the name to be inconsistent with what is 
+    // serialized (property name). We enforce consistency while the object is
+    // still editable and not during serialization when the model is const.
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
+        if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
+                    obj.setName(prop.getName());
+                }
+                obj.setObjectIsUpToDateWithProperties();
+            }
+        }
+    }
+   
+    // Now confirm that the Object and its properties are up-to-date
+    _objectIsUpToDate = true;
+}
 
 
 void Object::updateFromXMLDocument()
