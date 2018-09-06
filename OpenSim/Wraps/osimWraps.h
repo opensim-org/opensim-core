@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 
-#include "tata.h"
+#include "WrapTata.h"
 
 #include "RegisterTypes_osimWraps.h"    // to expose RegisterTypes_osimWraps
 

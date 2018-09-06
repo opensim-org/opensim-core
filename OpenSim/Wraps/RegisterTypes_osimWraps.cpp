@@ -26,7 +26,7 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimWraps.h"
 
-#include "tata.h"
+#include "WrapTata.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -43,7 +43,7 @@ OSIMWRAPS_API void RegisterTypes_osimWraps()
 {
   try {
 
-    Object::RegisterType(tata());
+    Object::RegisterType(WrapTata());
 
   } catch (const std::exception& e) {
     std::cerr 
