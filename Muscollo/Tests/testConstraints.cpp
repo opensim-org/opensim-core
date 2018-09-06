@@ -393,7 +393,7 @@ Model createDoublePendulumModel() {
 
 /// Run a foward simulation using controls from an OCP solution and compare the
 /// state trajectories.
-void runForwardSimulation(Model& model, const MucoSolution& solution, 
+void runForwardSimulation(Model model, const MucoSolution& solution, 
     const double& tol) {
 
     std::vector<std::string> actuNames({"tau0","tau1"});
@@ -421,7 +421,8 @@ void runForwardSimulation(Model& model, const MucoSolution& solution,
     // Simulate!
     SimTK::State state = model.initSystem();
     Manager manager(model, state);
-    state = manager.integrate(1);
+    manager.getIntegrator().setAccuracy(1e-6);
+    state = manager.integrate(time[time.size()-1]);
 
     TimeSeriesTable states;
     states = statesRep->getStates().exportToTable(model);
@@ -433,6 +434,9 @@ void runForwardSimulation(Model& model, const MucoSolution& solution,
     auto forwardSolution = MucoIterate(timeVec, states.getColumnLabels(),
         states.getColumnLabels(), {}, states.getMatrix(),
         states.getMatrix(), SimTK::RowVector(0));
+
+    std::cout << "err: " << solution.compareStatesControlsRMS(forwardSolution,
+        {}, {"none"}) << std::endl;
 
     // Compare states trajectory between forward simulation and OCP solution.
     SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(forwardSolution,
@@ -503,7 +507,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-1);
+    runForwardSimulation(model, solution, 1e-2);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
