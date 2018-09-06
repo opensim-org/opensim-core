@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "OpenSim/Common/IO.h"
 #include "OpenSim/Common/Set.h"
 #include "ModelComponent.h"
 
@@ -80,6 +81,22 @@ public:
     */
     /** Associate the model that owns this ModelComponentSet */
 //    void setModel(Model& model) { _model.reset(&model); }
+    void extendFinalizeFromProperties() override final {
+        Super::extendFinalizeFromProperties();
+        // ModelComponentSets are unnamed properties of models, but as
+        // components they must have a unique name. There is also nothing
+        // stopping users from editing the XML to add a name.
+        // We maintain consistency by overwriting any user set names with
+        // the class name, which is also the default for the unnamed property.
+        if (getName() != IO::Lowercase(getConcreteClassName())) {
+            std::string msg = getConcreteClassName() + " '" + getName() + "' ";
+            setName(IO::Lowercase(getConcreteClassName()));
+
+            msg += "was renamed and is being reset to '" + getName()
+                + "'.";
+            std::cout << msg << std::endl;
+        }
+    }
 
 //=============================================================================
 };  // END of class ModelComponentSet
