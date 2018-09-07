@@ -80,7 +80,6 @@
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"
-#include "Wrap/WrapEllipsoid.h"
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"

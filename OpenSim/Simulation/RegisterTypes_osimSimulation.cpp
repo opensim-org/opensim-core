@@ -89,7 +89,6 @@
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"
-#include "Wrap/WrapEllipsoid.h"
 #include "Wrap/WrapSphere.h"
 #include "Wrap/WrapTorus.h"
 #include "Wrap/WrapObjectSet.h"
@@ -185,7 +184,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PathWrap() );
     Object::registerType( PathWrapSet() );
     Object::registerType( WrapCylinder() );
-    Object::registerType( WrapEllipsoid() );
     Object::registerType( WrapSphere() );
     Object::registerType( WrapTorus() );
     Object::registerType( WrapObjectSet() );

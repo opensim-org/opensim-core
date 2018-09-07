@@ -26,7 +26,7 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimWraps.h"
 
-#include "WrapTata.h"
+#include "WrapEllipsoid.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -43,7 +43,7 @@ OSIMWRAPS_API void RegisterTypes_osimWraps()
 {
   try {
 
-    Object::RegisterType(WrapTata());
+    Object::RegisterType(WrapEllipsoid());
 
   } catch (const std::exception& e) {
     std::cerr 

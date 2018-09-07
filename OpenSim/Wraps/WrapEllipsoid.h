@@ -25,7 +25,8 @@
 
 
 // INCLUDE
-#include "WrapObject.h"
+//#include "WrapObject.h"
+#include "OpenSim/Simulation/Wrap/WrapObject.h"
 #include <OpenSim/Common/PropertyDblArray.h>
 
 #ifdef SWIG
@@ -44,7 +45,7 @@ class WrapResult;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing an ellipsoid for muscle wrapping.
+ * A class implementing an WrapEllipsoid for muscle wrapping.
  *
  * @author Peter Loan
  * @version 1.0
@@ -53,20 +54,14 @@ class OSIMSIMULATION_API WrapEllipsoid : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
 
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-    PropertyDblArray _dimensionsProp;
-    Array<double>& _dimensions;
-
-//=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
+    OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3, "Dimensions")
+
     WrapEllipsoid();
     WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
     virtual ~WrapEllipsoid();
@@ -97,7 +92,7 @@ private:
     void setNull();
     int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
                                                 SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
-    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a,
                                                           SimTK::Vec3& vs, double vs4, bool far_side_wrap,
                                                           WrapResult& aWrapResult) const;
     double findClosestPoint(double a, double b, double c,

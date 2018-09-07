@@ -24,7 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 
-#include "WrapTata.h"
+#include "WrapEllipsoid.h"
 
 #include "RegisterTypes_osimWraps.h"    // to expose RegisterTypes_osimWraps
 
