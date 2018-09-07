@@ -2147,8 +2147,8 @@ void testAutomaticJointReversal()
     modelConstrained.finalizeFromProperties();
 
     const Ground& cground = modelConstrained.getGround();
-    const Body& cpelvis = modelConstrained.getComponent<Body>("pelvis");
-    const Body& cfoot = modelConstrained.getComponent<Body>("foot");
+    const Body& cpelvis = modelConstrained.getComponent<Body>("./bodyset/pelvis");
+    const Body& cfoot = modelConstrained.getComponent<Body>("./bodyset/foot");
 
     // free the pelvis
     auto pelvisFree = new FreeJoint("pelvisFree", cground, zvec, zvec,
@@ -2250,7 +2250,7 @@ void testUserJointReversal()
     // deserialization, the following should be true:
     // - pin1's parent is ground and child is rod1
     // - pin2's parent is rod2 and child is rod1 (parent and child are swapped)
-    auto& pin1 = model.getComponent<Joint>("pin1");
+    auto& pin1 = model.getComponent<Joint>("./jointset/pin1");
     ASSERT(pin1.getParentFrame().findBaseFrame().getName() == "ground",
         __FILE__, __LINE__,
         "Incorrect parent frame when 'reverse' element is set to 'false'");
@@ -2258,7 +2258,7 @@ void testUserJointReversal()
         __FILE__, __LINE__,
         "Incorrect child frame when 'reverse' element is set to 'false'");
 
-    auto& pin2 = model.getComponent<Joint>("pin2");
+    auto& pin2 = model.getComponent<Joint>("./jointset/pin2");
     ASSERT(pin2.getParentFrame().findBaseFrame().getName() == "rod2",
         __FILE__, __LINE__,
         "Incorrect parent frame when 'reverse' element is set to 'true'");
