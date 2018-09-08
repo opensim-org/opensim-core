@@ -225,7 +225,7 @@ void scaleGait2354_GUI(bool useMarkerPlacement)
     
     // Keep track of the folder containing setup file, will be used to locate results to compare against
     std::unique_ptr<MarkerSet> markerSet{ 
-        new MarkerSet(guiModel, setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName()) };
+        new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName()) };
     guiModel.updateMarkerSet(*markerSet);
 
     guiModel.initSystem();
