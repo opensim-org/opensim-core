@@ -43,9 +43,6 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-static std::string SimbodyGroundName = "ground";
-
-
 //=============================================================================
 // EXCEPTIONS
 //=============================================================================
