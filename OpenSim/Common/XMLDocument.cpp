@@ -489,11 +489,17 @@ void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
     //newFrameElement.writeToString(debug);
 
     // This function always adds the frame as a subcomponent of a component
-    // that is 1 level deep, making this frame two levels deep. The connectee
-    // is always only 1 level deep, so prepending "../../" yields the correct
-    // relative path.
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_",
-            "parent", "../../" + parentFrameName);
+    // that is a member of the forceset, making this frame three levels
+    // deep. The connectee is either ground or a member of bodyset.
+    if(parentFrameName == "ground")
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../"
+            + parentFrameName);
+    else
+        XMLDocument::addConnector(newFrameElement,
+            "Connector_PhysicalFrame_", "parent", "../../../bodyset/"
+            + parentFrameName);
+
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
