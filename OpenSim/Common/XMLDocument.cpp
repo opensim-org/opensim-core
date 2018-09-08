@@ -500,7 +500,6 @@ void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
             "Connector_PhysicalFrame_", "parent", "../../../bodyset/"
             + parentFrameName);
 
-
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
     SimTK::Xml::Element translationElement("translation", transValue.str());
