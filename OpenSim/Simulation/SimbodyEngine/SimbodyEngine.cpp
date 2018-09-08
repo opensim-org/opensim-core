@@ -816,10 +816,9 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     int sizeCoordSet = coordinateSet.getSize();
     for(i=0;i<sizeCoordSet;i++) {
         Coordinate& coord = coordinateSet.get(i);
-        string prefix = coord.getJoint().getName() + "/" + coord.getName() + "/";
         coordStateNames = coord.getStateVariableNames();
-        columnLabels.append(prefix+coordStateNames[0]);
-        speedLabels.append(prefix+coordStateNames[1]);
+        columnLabels.append(coordStateNames[0]);
+        speedLabels.append(coordStateNames[1]);
         int fix = aQIn.getStateIndex(coord.getName());
         if (fix < 0) {
             fix = aQIn.getStateIndex(columnLabels[i+1]);
