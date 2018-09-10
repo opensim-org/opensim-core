@@ -6,7 +6,7 @@ OpenSimAddLibrary(
     KIT SimmFileWriter
     AUTHORS "Peter_Loan"
     EXCLUDEFROMPYTHON
-    LINKLIBS osimCommon osimSimulation osimActuators ${Simbody_LIBRARIES}
+    LINKLIBS osimCommon osimSimulation osimActuators osimWraps ${Simbody_LIBRARIES}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS ""

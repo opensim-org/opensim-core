@@ -26,7 +26,7 @@
 
 // INCLUDE
 //#include "WrapObject.h"
-#include "OpenSim/Simulation/Wrap/WrapObject.h"
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 
 #ifdef SWIG

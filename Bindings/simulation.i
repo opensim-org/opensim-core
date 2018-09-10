@@ -140,9 +140,6 @@
 %include <OpenSim/Simulation/Wrap/WrapSphere.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
-%include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -250,6 +247,10 @@
 %include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+
+%include <OpenSim/Wraps/WrapEllipsoid.h>
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 %template(Thelen2003MuscleList)
     OpenSim::ComponentList<const OpenSim::Thelen2003Muscle>;
