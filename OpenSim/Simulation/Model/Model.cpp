@@ -367,6 +367,11 @@ void Model::constructProperties()
     constructProperty_ModelVisualPreferences(md);
 }
 
+// Append to the Model's validation log
+void Model::appendToValidationLog(const std::string& note) {
+    _validationLog.append(note);
+}
+
 //------------------------------------------------------------------------------
 //                                BUILD SYSTEM
 //------------------------------------------------------------------------------
@@ -614,6 +619,54 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
     return coordinatesInTreeOrder;
 }
 
+std::string Model::getWarningMesssageForMotionTypeInconsistency() const
+{
+    std::string message;
+
+    auto enumToString = [](Coordinate::MotionType mt)->std::string {
+        switch (mt) {
+        case Coordinate::MotionType::Rotational :
+            return "Rotational";
+        case Coordinate::MotionType::Translational :
+            return "Translational";
+        case Coordinate::MotionType::Coupled :
+            return "Coupled";
+        default:
+            return "Undefined";
+        }
+    };
+
+    auto coordinates = getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType = 
+            coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+
+        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
+            (oldMotionType != motionType) ){
+            message += "Coordinate '" + coord.getName() +
+                "' was labeled as '" + enumToString(oldMotionType) +
+                "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
+        }
+    }
+
+    // We have a reason to provide a warning. Add more details about the model
+    // and how to resolve future issues.
+    if (message.size()) {
+        message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
+        message += 
+            "You must update any motion files you generated in versions prior to 4.0. You can:\n"
+            "  (1) Run the updatePre40KinematicsFilesFor40MotionType() utility (in the scripting shell) OR\n"
+            "  (2) Re-run the Inverse Kinematics Tool with the updated model in 4.0.\n"
+            "In versions prior to 4.0, we allowed some Coupled coordinates to be incorrectly\n"
+            "labeled as Rotational. This leads to incorrect motion when playing back a pre-4.0\n"
+            "motion file (.mot or .sto in degrees) and incorrect inverse dynamics and\n"
+            "static optimization results.";
+    }
+
+    return message;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -632,11 +685,8 @@ void Model::extendFinalizeFromProperties()
         fs.updMuscles();
     }
 
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered ";
-        cout << "interpreting properties of the model. " <<
-            getValidationLog() << endl;
-    }
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    appendToValidationLog(warn);
 
     updCoordinateSet().populate(*this);
 }

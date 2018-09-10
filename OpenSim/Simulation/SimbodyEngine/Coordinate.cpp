@@ -141,7 +141,7 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties: ";
+    string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 
     // Make sure the default value is within the range when clamped
     if (get_clamped()){
@@ -676,4 +676,37 @@ void Coordinate::SpeedStateVariable::
     string msg = "SpeedStateVariable::setDerivative() - ERROR \n";
     msg +=  "Generalized speed derivative (udot) can only be set by the Multibody system.";
     throw Exception(msg);
+}
+
+//=============================================================================
+// XML Deserialization
+//=============================================================================
+void Coordinate::updateFromXMLNode(SimTK::Xml::Element& aNode,
+    int versionNumber)
+{
+    if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30514) {
+            SimTK::Xml::element_iterator iter = aNode.element_begin("motion_type");
+            if (iter != aNode.element_end()) {
+                SimTK::Xml::Element motionTypeElm = 
+                    SimTK::Xml::Element::getAs(aNode.removeNode(iter));
+                std::string typeName = motionTypeElm.getValue();
+
+                if ((IO::Lowercase(typeName) == "rotational"))
+                    _userSpecifiedMotionTypePriorTo40 = Rotational;
+                else if (IO::Lowercase(typeName) == "translational")
+                    _userSpecifiedMotionTypePriorTo40 = Translational;
+                else if (IO::Lowercase(typeName) == "coupled")
+                    _userSpecifiedMotionTypePriorTo40 = Coupled;
+                else
+                    _userSpecifiedMotionTypePriorTo40 = Undefined;
+            }
+        }
+    }
+    Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+const Coordinate::MotionType& Coordinate::getUserSpecifiedMotionTypePriorTo40() const
+{
+    return _userSpecifiedMotionTypePriorTo40;
 }
