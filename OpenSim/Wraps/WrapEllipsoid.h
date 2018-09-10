@@ -25,8 +25,7 @@
 
 
 // INCLUDE
-//#include "WrapObject.h"
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include "WrapObject.h"
 #include <OpenSim/Common/PropertyDblArray.h>
 
 #ifdef SWIG
@@ -63,6 +62,7 @@ public:
     OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3, "Dimensions")
 
     WrapEllipsoid();
+    WrapEllipsoid(const WrapObject* aWrapEllipsoid);
     WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
     virtual ~WrapEllipsoid();
 

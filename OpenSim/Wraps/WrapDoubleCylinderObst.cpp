@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapDoubleCylinderObst.h"
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
+#include "WrapResult.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================

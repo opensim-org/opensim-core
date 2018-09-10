@@ -24,12 +24,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-//#include "WrapEllipsoid.h"
-#include "OpenSim/Wraps/WrapEllipsoid.h"
-//#include "PathWrap.h"
-#include "OpenSim/Simulation/Wrap/PathWrap.h"
-//#include "WrapResult.h"
-#include "OpenSim/Simulation/Wrap/WrapResult.h"
+#include "WrapEllipsoid.h"
+#include "PathWrap.h"
+#include "WrapResult.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
@@ -59,8 +56,7 @@ static const char* wrapTypeName = "ellipsoid";
 /**
 * Default constructor.
 */
-WrapEllipsoid::WrapEllipsoid()// :
-//   WrapObject()
+WrapEllipsoid::WrapEllipsoid()
 {
     setNull();
     setupProperties();
@@ -80,12 +76,22 @@ WrapEllipsoid::~WrapEllipsoid()
 *
 * @param aWrapEllipsoid WrapEllipsoid to be copied.
 */
-WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid)// :
-//   WrapObject(aWrapEllipsoid)
+WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid)
 {
     setNull();
     setupProperties();
     copyData(aWrapEllipsoid);
+}
+
+WrapEllipsoid::WrapEllipsoid(const WrapObject *aWrapEllipsoid)
+{
+    const OpenSim::WrapEllipsoid* oldEllispoid = dynamic_cast<const OpenSim::WrapEllipsoid*>(aWrapEllipsoid);
+    OPENSIM_THROW_IF(!oldEllispoid, InvalidArgument, "WrapEllipsoid can only be constructed from another WrapEllipsoid")
+
+    setNull();
+    setupProperties();
+    copyData(*oldEllispoid);
+
 }
 
 //=============================================================================
@@ -171,7 +177,7 @@ void WrapEllipsoid::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    set_dimensions(aWrapEllipsoid.get_dimensions());
+    set_dimensions(0, aWrapEllipsoid.get_dimensions());
 }
 
 //_____________________________________________________________________________

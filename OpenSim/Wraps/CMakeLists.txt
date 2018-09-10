@@ -4,9 +4,8 @@ file(GLOB SOURCES *.cpp)
 
 OpenSimAddLibrary(
     KIT Wraps
-    AUTHORS "Pariterre"
+    AUTHORS "Ajay_Seth-Pariterre-Ayman_Habib"
     LINKLIBS osimCommon
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
-    #TESTDIRS "Test"
     )

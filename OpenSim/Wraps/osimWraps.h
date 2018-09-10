@@ -24,7 +24,16 @@
  * -------------------------------------------------------------------------- */
 
 
+#include "PathWrap.h"
+#include "PathWrapSet.h"
+#include "WrapCylinder.h"
+#include "WrapSphere.h"
 #include "WrapEllipsoid.h"
+#include "WrapTorus.h"
+#include "WrapObjectSet.h"
+#include "WrapCylinderObst.h"
+#include "WrapSphereObst.h"
+#include "WrapDoubleCylinderObst.h"
 
 #include "RegisterTypes_osimWraps.h"    // to expose RegisterTypes_osimWraps
 

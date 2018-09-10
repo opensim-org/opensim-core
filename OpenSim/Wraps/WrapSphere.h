@@ -45,12 +45,8 @@ class WrapResult;
 class OSIMSIMULATION_API WrapSphere : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
 
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _radiusProp;
-    double& _radius;
+public:
+OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
 
 //=============================================================================
 // METHODS
@@ -60,6 +56,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
     //--------------------------------------------------------------------------
 public:
     WrapSphere();
+    WrapSphere(const WrapObject* aWrapSphere);
     WrapSphere(const WrapSphere& aWrapSphere);
     virtual ~WrapSphere();
 

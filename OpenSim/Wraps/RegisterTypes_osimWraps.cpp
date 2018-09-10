@@ -27,6 +27,15 @@
 #include "RegisterTypes_osimWraps.h"
 
 #include "WrapEllipsoid.h"
+#include "PathWrap.h"
+#include "PathWrapSet.h"
+#include "WrapCylinder.h"
+#include "WrapSphere.h"
+#include "WrapTorus.h"
+#include "WrapObjectSet.h"
+#include "WrapCylinderObst.h"
+#include "WrapSphereObst.h"
+#include "WrapDoubleCylinderObst.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -43,7 +52,17 @@ OSIMWRAPS_API void RegisterTypes_osimWraps()
 {
   try {
 
-    Object::RegisterType(WrapEllipsoid());
+        Object::registerType( PathWrap() );
+        Object::registerType( PathWrapSet() );
+        Object::registerType( WrapCylinder() );
+        Object::registerType( WrapSphere() );
+        Object::RegisterType( WrapEllipsoid());
+        Object::registerType( WrapTorus() );
+        Object::registerType( WrapObjectSet() );
+        Object::registerType( WrapCylinderObst() );
+        Object::registerType( WrapSphereObst() );
+        Object::registerType( WrapDoubleCylinderObst() );
+
 
   } catch (const std::exception& e) {
     std::cerr 

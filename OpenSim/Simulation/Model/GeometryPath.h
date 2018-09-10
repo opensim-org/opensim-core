@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "PathPointSet.h"
-#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
+#include <OpenSim/Wraps/PathWrapSet.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
 
 

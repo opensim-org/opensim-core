@@ -54,7 +54,10 @@ public:
 //=============================================================================
 public:
     WrapCylinder();
+    WrapCylinder(const WrapObject* aWrapCylinder);
+    WrapCylinder(const WrapCylinder& aWrapCylinder);
     virtual ~WrapCylinder();
+    void copyData(const WrapCylinder& aWrapCylinder);
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;

@@ -53,12 +53,9 @@ private:
 //=============================================================================
 // DATA
 //=============================================================================
-
-    PropertyDbl _innerRadiusProp;
-    double& _innerRadius;
-
-    PropertyDbl _outerRadiusProp;
-    double& _outerRadius;
+public:
+    OpenSim_DECLARE_PROPERTY(innerRadius, double, "The inner radius of the torus.");
+    OpenSim_DECLARE_PROPERTY(outerRadius, double, "The inner radius of the torus.");
 
 //=============================================================================
 // METHODS
@@ -68,6 +65,7 @@ private:
     //--------------------------------------------------------------------------
 public:
     WrapTorus();
+    WrapTorus(const WrapObject* aWrapTorus);
     WrapTorus(const WrapTorus& aWrapTorus);
     virtual ~WrapTorus();
 
