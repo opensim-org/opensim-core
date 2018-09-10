@@ -224,11 +224,14 @@ void ForceSet::updateActuators()
  */
 const Set<Muscle>& ForceSet::getMuscles() const
 {
+    if (_muscles.getSize() == 0)
+        const_cast<ForceSet*>(this)->updateMuscles();
     return _muscles;
 }
 Set<Muscle>& ForceSet::updMuscles() 
 {
-    updateMuscles();
+    if (_muscles.getSize() == 0)
+        updateMuscles();
     return _muscles;
 }
 //_____________________________________________________________________________
