@@ -230,23 +230,25 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
+    ExternalLoads* externalLoads = nullptr;
     try {
-        _externalLoads = ExternalLoads(aExternalLoadsFileName, true);
-        aModel.finalizeFromProperties();
+        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+        aModel.addModelComponent(externalLoads);
     }
-     catch (const Exception& ex) {
+    catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
-             << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
-        if(getDocument()) IO::chDir(savedCwd);
+        cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
+        cout << ". Please make sure the file exists and that it contains an ExternalLoads";
+        cout << "object or create a fresh one." << endl;
+        if (getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
-    _externalLoads.setMemoryOwner(false);
 
-    string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+    string loadKinematicsFileName =
+        externalLoads->getExternalLoadsModelKinematicsFileName();
     
-    const Storage *loadKinematicsForPointTransformation = NULL;
+    const Storage *loadKinematicsForPointTransformation = nullptr;
     
     //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
@@ -264,18 +266,13 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             }
         }
         // if loading the data, do whatever filtering operations are also specified
-        if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
+        if(temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
             cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
             temp->pad(temp->getSize()/2);
             temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
         }
         loadKinematicsForPointTransformation = temp;
     }
-    
-    // TODO: ExternalLoads' logic is broken. 1. It should be added to the Model
-    // in which case connectToModel() is called automatically as a ModelComponent.
-    // 2. ExternalLoads::connectToModel() MUST not require a live system! - aseth
-    _externalLoads.connectToModel(aModel);
 
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
@@ -293,11 +290,8 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
         delete qStore;
         delete uStore;
-    }
-    
-    // Add external loads to the set of all model forces
-    for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.updForceSet().adoptAndAppend(&_externalLoads[i]);
+
+        aModel.invalidateSystem();
     }
 
     if(!loadKinematics)

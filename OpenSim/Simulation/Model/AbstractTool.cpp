@@ -565,10 +565,12 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
+    ExternalLoads* externalLoads = nullptr;
     try {
-        _externalLoads = ExternalLoads(aExternalLoadsFileName, true);
+        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+        aModel.addModelComponent(externalLoads);
     }
-     catch (const Exception &ex) {
+    catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
@@ -577,12 +579,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         if(getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
-    _externalLoads.setMemoryOwner(false);
-    aModel.finalizeFromProperties();
 
-    string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+    string loadKinematicsFileName =
+        externalLoads->getExternalLoadsModelKinematicsFileName();
     
-    const Storage *loadKinematicsForPointTransformation = NULL;
+    const Storage *loadKinematicsForPointTransformation = nullptr;
     
     //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
@@ -612,7 +613,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
         SimTK::State& s = aModel.initSystem();
-        
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
@@ -628,16 +629,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         aModel.invalidateSystem();
     }
     
-    // Add external loads to the set of all model forces
-    for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.addForce(&_externalLoads[i]);
-    }
-
     if(!loadKinematics)
         delete loadKinematics;
 
     IO::chDir(savedCwd);
-    return(true);
+    return true;
 }
 
 
