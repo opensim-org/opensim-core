@@ -83,14 +83,15 @@ public:
 #endif
     virtual double getTaskError(const SimTK::State& s) {
         double val = SimTK::NaN;
+        const auto& forceSet = _model->getForceSet();
         std::string::size_type dix = getName().find(".");
         if(dix != std::string::npos){
             std::string varName = getName();
             varName.replace(dix, 1, "/");
-            val = _model->getStateVariableValue(s, varName);
+            val = forceSet.getStateVariableValue(s, varName);
         }
         else{
-            val = _model->getStateVariableValue(s, getName());
+            val = forceSet.getStateVariableValue(s, getName());
         }
 
         return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
