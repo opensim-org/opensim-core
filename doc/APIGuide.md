@@ -132,13 +132,13 @@ The properties available in any class are listed on Doxygen, the GUI (Help > XML
 
 A [Socket](@subpage OpenSim::Socket) defines the dependency of a Component on another Component (the “connectee”). The type of the connectee must be specified type (e.g., Body, Joint). The dependency is specified by the connectee’s relative or full path name.  A Socket automatically finds and connects to the dependency when connect() is called. The Socket provides the status of the connection (connected or not) and a reference to to the “connectee” when connected. All of a class’ Sockets are listed on the Doxygen page for that class.
 
-You can access a Component for the number of Sockets it has, as well as for their names:
+You can query a Component for the number of Sockets it has, as well as for their names:
 ~~~cpp
 int numConn = joint.getNumSockets();
 auto connNames = joint.getSocketNames();
 ~~~
 
-You can get a specific Socket of a Component using its name:
+You can get a reference to a specific Socket of a Component using its name:
 ~~~cpp
 AbstractSocket& parentSocketparentSocket = joint.updSocket("parent_frame");
 ~~~
@@ -225,7 +225,7 @@ If you have a List Input, then you can wire it to multiple Channels (from both o
 input.connect(tablesource.getOutput("column").getChannel("col1"));
 input.connect(soleus.getOutput("activation"));
 ~~~
-There are cases where an Input might need to “rename” an Output. For example, an InverseKinematics Solver could have a List Input for experimental marker locations, and could require its connectees to be named after markers in the Model. But say the experimental marker that corresponds to the Model’s “toe” marker is called “foot.” One can “rename” an output using “annotations”:
+There are cases where an Input might need to “rename” an Output. For example, an Inverse Kinematics Solver could have a List Input for experimental marker locations, and could require its connectees to be named after markers in the Model. But say the experimental marker that corresponds to the Model’s “toe” marker is called “foot.” One can “rename” an output using “annotations”:
 ~~~cpp
 input.connect(tablesource.getOutput("column").getChannel("foot"), "toe");
 ~~~
@@ -258,7 +258,7 @@ There are several types of Frames:
 
 1. [PhysicalFrame](@ref OpenSim::PhysicalFrame): supports physical connections (e.g., Joints, Constraints) and is the Frame type to which forces can be applied. A concrete example of a PhysicalFrame is a Body. PhysicalFrame is an abstract class.
 2. [Ground](@ref OpenSim::Ground): an inertial reference frame in which the motion of all Frames and Points may conveniently and efficiently be expressed. As a PhysicalFrame, Ground supports physical connections by joints, constraints and forces can be applied to it.
-3. [Body](@ref OpenSim::Ground): a PhysicalFrame with inertia. A Body is specified by its mass, a center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass.
+3. [Body](@ref OpenSim::Body): a PhysicalFrame with inertia. A Body is specified by its mass, a center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass.
 4. [PhysicalOffsetFrame](@ref OpenSim::PhysicalOffsetFrame): a type of Physical Frame whose transform is specified as a constant offset from another Physical Frame. For example, PhysicalOffsetFrames can be used to specify the location and orientation of a Joint or Constraint on a Body.
 
 The following diagram illustrates how each type of PhysicalFrame might appear in a model.
@@ -279,7 +279,7 @@ It is perhaps less evident that Frames can be extremely useful for linking a mul
 
 Given this tree, both the muscle attachment points (in M) and the joint axes, J, change when the anatomical frame, A, changes with respect to the base, B, without requiring muscle attachments and joint axes to be manually adjusted. Consequently, a useful concept is that of a Base frame, and a Frame can always provide a Base frame. If a Frame is not affixed to another frame, its Base frame is itself.
 
-### Points, Station and Marker {#points}
+### Points, Stations and Markers {#points}
 
 A [Point](@ref OpenSim::Point) is an OpenSim representation of any location in space. Points can be used to define and compute the location of physical structures (such as points of constraints and points of muscle attachments). Points can also embody the results of spatial calculations. For example, if your system involves contact, you can define a Point that describes the location of the center-of-pressure as one element rolls over another.
 
@@ -330,7 +330,7 @@ FileAdapter::readFile(string fileName)
 FileAdapter::writeFile(string fileName)
 ~~~
 
-Based on the extension in filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
+Based on the extension part of the filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
 
 1. TRCFileAdapter: reads and writes TRC files.
 2. STOFileAdapter: reads and writes STO files.
