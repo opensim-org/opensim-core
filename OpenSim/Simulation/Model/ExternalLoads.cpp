@@ -58,7 +58,7 @@ _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematic
 }
 
 ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode) :
-    Super(fileName, updateFromXMLNode),
+    Super(fileName, false),
     _dataFileName(_dataFileNameProp.getValueStr()),
     _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
