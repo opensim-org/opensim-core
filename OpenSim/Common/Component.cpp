@@ -799,7 +799,7 @@ double Component::
     }
     
     std::stringstream msg;
-    msg << "Component::getStateVariable: ERR- state named '" << name 
+    msg << "Component::getStateVariableValue: ERR- state named '" << name 
         << "' not found in " << getName() << " of type " << getConcreteClassName();
     throw Exception(msg.str(),__FILE__,__LINE__);
 
