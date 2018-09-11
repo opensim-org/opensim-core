@@ -40,6 +40,7 @@
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
+#include <OpenSim/Wraps/osimWraps.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKcommon/internal/Xml.h"
 
