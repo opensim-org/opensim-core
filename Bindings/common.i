@@ -32,7 +32,7 @@
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
-%template(SetFunctions) OpenSim::Set<OpenSim::Function>;
+%template(SetFunctions) OpenSim::Set<OpenSim::Function, OpenSim::Object>;
 %include <OpenSim/Common/FunctionSet.h>
 
 %include <OpenSim/Common/Constant.h>
@@ -110,7 +110,7 @@ namespace OpenSim {
 
 
 %include <OpenSim/Common/Scale.h>
-%template(SetScales) OpenSim::Set<OpenSim::Scale>;
+%template(SetScales) OpenSim::Set<OpenSim::Scale, OpenSim::Object>;
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
