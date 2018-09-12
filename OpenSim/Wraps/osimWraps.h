@@ -1,7 +1,7 @@
-#ifndef _opensim_h_
-#define _opensim_h_
+#ifndef _osimWraps_h_
+#define _osimWraps_h_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  OpenSim.h                             *
+ *                         OpenSim:  osimWraps.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -23,26 +23,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/osimCommon.h"
-#include "Simulation/osimSimulation.h"
 
-#include "Actuators/osimActuators.h"
-#include "Wraps/osimWraps.h"
-#include "Analyses/osimAnalyses.h"
-#include "Tools/osimTools.h"
+#include "PathWrap.h"
+#include "PathWrapSet.h"
+#include "WrapCylinder.h"
+#include "WrapSphere.h"
+#include "WrapEllipsoid.h"
+#include "WrapTorus.h"
+#include "WrapObjectSet.h"
+#include "WrapCylinderObst.h"
+#include "WrapSphereObst.h"
+#include "WrapDoubleCylinderObst.h"
 
-class osimInstantiator
-{
-public:
-    osimInstantiator() {
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimWraps();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-    }
-};
+#include "RegisterTypes_osimWraps.h"    // to expose RegisterTypes_osimWraps
 
-static osimInstantiator instantiator;
-#endif // _opensim_h_
+#endif // _osimWraps_h_

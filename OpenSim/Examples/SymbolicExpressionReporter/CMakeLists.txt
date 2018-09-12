@@ -14,7 +14,7 @@ add_library(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED
     SymbolicExpressionReporter.h
     )
 target_link_libraries(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
-    osimSimulation osimActuators osimCommon osimAnalyses osimTools osimLepton
+    osimSimulation osimActuators osimWraps osimCommon osimAnalyses osimTools osimLepton
     ${Simbody_LIBRARIES}
 )
 set_target_properties(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}

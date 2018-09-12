@@ -1,7 +1,7 @@
-#ifndef OPENSIM_WRAP_CYLINDER_H_
-#define OPENSIM_WRAP_CYLINDER_H_
+#ifndef __WrapSphere_h__
+#define __WrapSphere_h__
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  WrapCylinder.h                          *
+ *                           OpenSim:  WrapSphere.h                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -26,82 +26,72 @@
 
 // INCLUDE
 #include "WrapObject.h"
+#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
+class Model;
 class PathWrap;
 class WrapResult;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a cylinder for muscle wrapping.
+ * A class implementing a sphere for muscle wrapping.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapCylinder : public WrapObject {
-OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinder, WrapObject);
+class OSIMSIMULATION_API WrapSphere : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
+
 public:
-//==============================================================================
-// PROPERTIES
-//==============================================================================
-    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
-    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
+OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
 public:
-    WrapCylinder();
-    virtual ~WrapCylinder();
+    WrapSphere();
+    WrapSphere(const WrapObject* aWrapSphere);
+    WrapSphere(const WrapSphere& aWrapSphere);
+    virtual ~WrapSphere();
 
+#ifndef SWIG
+    WrapSphere& operator=(const WrapSphere& aWrapSphere);
+#endif
+    void copyData(const WrapSphere& aWrapSphere);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
+    double getRadius() const;
 
-    /** Scale the cylinder's dimensions. The base class (WrapObject) scales the
-        origin of the cylinder in the body's reference frame. */
+    /** Scale the sphere by the average of the scale factors in each direction.
+        The base class (WrapObject) scales the origin of the sphere in the
+        body's reference frame. */
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
+    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    // WrapTorus uses WrapCylinder::wrapLine.
-    friend class WrapTorus;
-
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
-
-    void extendFinalizeFromProperties() override;
+    void setupProperties();
 
 private:
-    void constructProperties();
-
-    void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                                                 bool far_side_wrap,WrapResult& aWrapResult) const;
-    void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-                                                         const SimTK::Vec3& axial_vec,
-                                                         double m[4][4],
-                                                         const SimTK::Vec3& axis,
-                                                         double sense,
-                                                         double t,
-                                                         double theta,
-                                                         SimTK::Vec3& wrap_pt) const;
-
-
-    bool _adjust_tangent_point(SimTK::Vec3& pt1,
-                                                      SimTK::Vec3& dn,
-                                                      SimTK::Vec3& r1,
-                                                      SimTK::Vec3& w1) const;
+    void setNull();
 
 //=============================================================================
-};  // END of class WrapCylinder
+};  // END of class WrapSphere
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_WRAP_CYLINDER_H_
+#endif // __WrapSphere_h__
 
 

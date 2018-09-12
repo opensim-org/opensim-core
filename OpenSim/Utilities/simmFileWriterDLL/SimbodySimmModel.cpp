@@ -49,10 +49,10 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Actuators/Thelen2003Muscle_Deprecated.h>
 #include <OpenSim/Actuators/Schutte1993Muscle_Deprecated.h>
 #include <OpenSim/Actuators/Delp1990Muscle_Deprecated.h>
+#include <OpenSim/Wraps/WrapEllipsoid.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
