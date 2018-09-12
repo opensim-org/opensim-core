@@ -285,7 +285,6 @@ public:
                 constraintBodyForces, constraintMobilityForces);
 
             SimTK::Vector& udot = m_state.updUDot();
-            SimTK::Vector_<SimTK::SpatialVec> A_GB;
             matter.calcAccelerationIgnoringConstraints(m_state,
                 appliedMobilityForces + constraintMobilityForces,
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
@@ -361,6 +360,11 @@ private:
     const MucoPhase& m_phase0;
     mutable Model m_model;
     mutable SimTK::State m_state;
+    // This member variable avoids unnecessary extra allocation of memory for
+    // spatial accelerations, which are incidental to the computation of
+    // generalized accelerations when specifying the dynamics with model 
+    // constraints present.
+    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
     std::vector<int> m_enabledConstraintIdxs;
     // TODO find a better solution for this tracking number of scalar constraint
     // equations (if needed). Need to count them now since the number of model
