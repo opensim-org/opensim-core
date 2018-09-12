@@ -26,7 +26,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
+#include "WrapObject.h"
 
 namespace OpenSim {
 

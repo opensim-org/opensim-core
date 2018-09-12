@@ -61,19 +61,6 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapSphere.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-#include <OpenSim/Simulation/Wrap/WrapTorus.h>
-#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-#include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-#include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-#include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
-
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 
@@ -152,6 +139,19 @@
 #include <OpenSim/Actuators/ForceVelocityCurve.h>
 #include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/TendonForceLengthCurve.h>
+
+#include <OpenSim/Wraps/WrapEllipsoid.h>
+#include <OpenSim/Wraps/WrapObject.h>
+#include <OpenSim/Wraps/PathWrapPoint.h>
+#include <OpenSim/Wraps/WrapSphere.h>
+#include <OpenSim/Wraps/WrapCylinder.h>
+#include <OpenSim/Wraps/WrapTorus.h>
+#include <OpenSim/Wraps/WrapObjectSet.h>
+#include <OpenSim/Wraps/PathWrap.h>
+#include <OpenSim/Wraps/PathWrapSet.h>
+#include <OpenSim/Wraps/WrapCylinderObst.h>
+#include <OpenSim/Wraps/WrapSphereObst.h>
+#include <OpenSim/Wraps/WrapDoubleCylinderObst.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
 

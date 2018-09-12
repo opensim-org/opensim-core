@@ -28,7 +28,7 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
+#include <OpenSim/Wraps/PathWrap.h>
 #include "Model.h"
 
 //=============================================================================

@@ -22,9 +22,9 @@
 %include <OpenSim/Simulation/Model/Frame.h>
 // Following three lines hacked in out of order to work around WrapObjects use
 // in PhysicalFrame
-%include <OpenSim/Simulation/Wrap/WrapObject.h>
+%include <OpenSim/Wraps/WrapObject.h>
 %template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+%include <OpenSim/Wraps/WrapObjectSet.h>
 
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
 %include <OpenSim/Simulation/Model/Ground.h>
@@ -136,20 +136,6 @@
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
-// WrapObject is included up above.
-%include <OpenSim/Simulation/Wrap/WrapSphere.h>
-%include <OpenSim/Simulation/Wrap/WrapCylinder.h>
-%include <OpenSim/Simulation/Wrap/WrapTorus.h>
-%include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
-%include <OpenSim/Simulation/Wrap/PathWrap.h>
-%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
-%include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-%include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
-%include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
-%include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
-
 %include <OpenSim/Simulation/Model/Probe.h>
 %template(SetProbes) OpenSim::Set<OpenSim::Probe>;
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
@@ -168,7 +154,7 @@
 
 %include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 %include <OpenSim/Simulation/Model/PathPoint.h>
-%include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
+%include <OpenSim/Wraps/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 %include <OpenSim/Simulation/Model/MovingPathPoint.h>
 %template(SetPathPoint) OpenSim::Set<OpenSim::AbstractPathPoint>;
@@ -267,6 +253,19 @@
   OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
 %template(getMillard2012EquilibriumMuscleList)
   OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;
+
+
+// WrapObject is included up above.
+%include <OpenSim/Wraps/WrapSphere.h>
+%include <OpenSim/Wraps/WrapCylinder.h>
+%include <OpenSim/Wraps/WrapEllipsoid.h>
+%include <OpenSim/Wraps/WrapTorus.h>
+%include <OpenSim/Wraps/PathWrap.h>
+%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
+%include <OpenSim/Wraps/PathWrapSet.h>
+%include <OpenSim/Wraps/WrapCylinderObst.h>
+%include <OpenSim/Wraps/WrapSphereObst.h>
+%include <OpenSim/Wraps/WrapDoubleCylinderObst.h>
 
 // Compensate for insufficient C++11 support in SWIG
 // =================================================

@@ -36,6 +36,7 @@
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
+#include <OpenSim/Wraps/osimWraps.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
 

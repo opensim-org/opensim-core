@@ -27,8 +27,7 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 #include "simbody/internal/Body.h"
 
-// TODO remove these when corresponding properties are removed
-#include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
+#include <OpenSim/Wraps/WrapObjectSet.h>
 
 namespace SimTK {
 class MobilizedBody;

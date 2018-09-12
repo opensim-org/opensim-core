@@ -54,9 +54,24 @@ static Vec3 dn(0.0, 0.0, 1.0);
 /*
 * Default constructor.
 */
-WrapCylinder::WrapCylinder() : WrapObject()
+WrapCylinder::WrapCylinder()
 {
     constructProperties();
+}
+
+WrapCylinder::WrapCylinder(const WrapObject *aWrapCylinder)
+{
+    const OpenSim::WrapCylinder* oldCylinder = dynamic_cast<const OpenSim::WrapCylinder*>(aWrapCylinder);
+    OPENSIM_THROW_IF(!oldCylinder, InvalidArgument, "WrapCylinder can only be constructed from another WrapCylinder")
+
+    constructProperties();
+    copyData(*oldCylinder);
+}
+
+WrapCylinder::WrapCylinder(const WrapCylinder &aWrapCylinder)
+{
+    constructProperties();
+    copyData(aWrapCylinder);
 }
 
 //_____________________________________________________________________________
@@ -78,6 +93,18 @@ void WrapCylinder::constructProperties()
 {
     constructProperty_radius(-1.0);
     constructProperty_length(1.0);
+}
+
+//_____________________________________________________________________________
+/**
+* Copy data members from one WrapCylinder to another.
+*
+* @param aWrapCylinder WrapCylinder to be copied.
+*/
+void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
+{
+    set_radius(0, aWrapCylinder.get_radius());
+    set_length(0, aWrapCylinder.get_length());
 }
 
 void WrapCylinder::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)

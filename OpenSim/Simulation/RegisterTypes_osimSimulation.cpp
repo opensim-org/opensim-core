@@ -86,17 +86,6 @@
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
 
-#include "Wrap/PathWrap.h"
-#include "Wrap/PathWrapSet.h"
-#include "Wrap/WrapCylinder.h"
-#include "Wrap/WrapEllipsoid.h"
-#include "Wrap/WrapSphere.h"
-#include "Wrap/WrapTorus.h"
-#include "Wrap/WrapObjectSet.h"
-#include "Wrap/WrapCylinderObst.h"
-#include "Wrap/WrapSphereObst.h"
-#include "Wrap/WrapDoubleCylinderObst.h"
-
 #include "SimbodyEngine/SimbodyEngine.h"
 #include "SimbodyEngine/Body.h"
 #include "SimbodyEngine/Constraint.h"
@@ -181,17 +170,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ControlConstant() );
     Object::registerType( ControlLinear() );
     Object::registerType( ControlLinearNode() );
-
-    Object::registerType( PathWrap() );
-    Object::registerType( PathWrapSet() );
-    Object::registerType( WrapCylinder() );
-    Object::registerType( WrapEllipsoid() );
-    Object::registerType( WrapSphere() );
-    Object::registerType( WrapTorus() );
-    Object::registerType( WrapObjectSet() );
-    Object::registerType( WrapCylinderObst() );
-    Object::registerType( WrapSphereObst() );
-    Object::registerType( WrapDoubleCylinderObst() );
 
     // CURRENT RELEASE
     Object::registerType( SimbodyEngine() );

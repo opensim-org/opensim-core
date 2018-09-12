@@ -1,7 +1,7 @@
-#ifndef __WrapSphere_h__
-#define __WrapSphere_h__
+#ifndef __WrapEllipsoid_h__
+#define __WrapEllipsoid_h__
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  WrapSphere.h                           *
+ *                         OpenSim:  WrapEllipsoid.h                          *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -26,7 +26,14 @@
 
 // INCLUDE
 #include "WrapObject.h"
-#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+
+#ifdef SWIG
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
+#endif
 
 namespace OpenSim {
 
@@ -37,20 +44,13 @@ class WrapResult;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a sphere for muscle wrapping.
+ * A class implementing an WrapEllipsoid for muscle wrapping.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapSphere : public WrapObject {
-OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _radiusProp;
-    double& _radius;
+class OSIMSIMULATION_API WrapEllipsoid : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
 
 //=============================================================================
 // METHODS
@@ -59,21 +59,23 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphere, WrapObject);
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapSphere();
-    WrapSphere(const WrapSphere& aWrapSphere);
-    virtual ~WrapSphere();
+    OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3, "Dimensions")
+
+    WrapEllipsoid();
+    WrapEllipsoid(const WrapObject* aWrapEllipsoid);
+    WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
+    virtual ~WrapEllipsoid();
 
 #ifndef SWIG
-    WrapSphere& operator=(const WrapSphere& aWrapSphere);
+    WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
 #endif
-    void copyData(const WrapSphere& aWrapSphere);
+    void copyData(const WrapEllipsoid& aWrapEllipsoid);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    double getRadius() const;
+        SimTK::Vec3 getRadii() const;
 
-    /** Scale the sphere by the average of the scale factors in each direction.
-        The base class (WrapObject) scales the origin of the sphere in the
-        body's reference frame. */
+    /** Scale the ellipsoid's dimensions. The base class (WrapObject) scales the
+        origin of the ellipsoid in the body's reference frame. */
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
@@ -83,18 +85,29 @@ protected:
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+
     void setupProperties();
 
 private:
     void setNull();
-
+    int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
+                                                SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
+    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a,
+                                                          SimTK::Vec3& vs, double vs4, bool far_side_wrap,
+                                                          WrapResult& aWrapResult) const;
+    double findClosestPoint(double a, double b, double c,
+        double u, double v, double w,
+        double* x, double* y, double* z,
+        int specialCaseAxis = -1) const;
+    double closestPointToEllipse(double a, double b, double u,
+        double v, double* x, double* y) const;
 //=============================================================================
-};  // END of class WrapSphere
+};  // END of class WrapEllipsoid
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __WrapSphere_h__
+#endif // __WrapEllipsoid_h__
 
 

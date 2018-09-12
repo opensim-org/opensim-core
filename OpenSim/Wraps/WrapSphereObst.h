@@ -1,7 +1,7 @@
-#ifndef OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
-#define OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
+#ifndef __WrapSphereObst_h__
+#define __WrapSphereObst_h__
 /* -------------------------------------------------------------------------- *
- *                     OpenSim:  WrapDoubleCylinderObst.h                     *
+ *                         OpenSim:  WrapSphereObst.h                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,15 +22,11 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <string>
-#include <OpenSim/Common/PropertyStr.h>
+#include "WrapObject.h"
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 namespace OpenSim {
 
-class Body;
 class Model;
 class PathWrap;
 class WrapResult;
@@ -38,60 +34,24 @@ class WrapResult;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a cylinder obstacle for muscle wrapping, based on
+ * A class implementing a sphere obstacle for muscle wrapping, based on the
  * algorithm presented in Garner & Pandy (2000).
  *
  * @author Brian Garner, derived from Peter Loan
  * @version 0.1
  */
-class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
-OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
+class OSIMSIMULATION_API WrapSphereObst : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphereObst, WrapObject);
 
 //=============================================================================
 // DATA
 //=============================================================================
-
-    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-    {
-        righthand,
-        lefthand
-    };
-
-    PropertyDbl _radiusUcylProp;
-    double& _radiusUcyl;
-
-    PropertyDbl _radiusVcylProp;
-    double& _radiusVcyl;
-
-    // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
-    // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
-    //    right-handed or left-handed about the obstacle's z-axis.
-    PropertyStr _wrapUcylDirectionNameProp;
-    std::string& _wrapUcylDirectionName;
-    WrapDirectionEnum _wrapUcylDirection;
-
-    PropertyStr _wrapVcylDirectionNameProp;
-    std::string& _wrapVcylDirectionName;
-    WrapDirectionEnum _wrapVcylDirection;
-
-    // Name of body to which B cylinder is attached
-    PropertyStr _wrapVcylHomeBodyNameProp;
-    std::string& _wrapVcylHomeBodyName;
-    PhysicalFrame* _wrapVcylHomeBody;
-    PhysicalFrame* _wrapUcylHomeBody;
-
-    PropertyDblArray _xyzBodyRotationVcylProp;
-    Array<double>& _xyzBodyRotationVcyl;
-
-    PropertyDblVec3 _translationVcylProp;
-    SimTK::Vec3 & _translationVcyl;
+private:
+    PropertyDbl _radiusProp;
+    double& _radius;
 
     PropertyDbl _lengthProp;
     double& _length;
-    
-    // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
-    int _activeState;   
-    Model* _model;
 
 //=============================================================================
 // METHODS
@@ -100,21 +60,19 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapDoubleCylinderObst();
-    WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
-    virtual ~WrapDoubleCylinderObst();
+    WrapSphereObst();
+    WrapSphereObst(const WrapSphereObst& aWrapSphereObst);
+    virtual ~WrapSphereObst();
 
 #ifndef SWIG
-    WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
+    WrapSphereObst& operator=(const WrapSphereObst& aWrapSphereObst);
 #endif
-    void copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
+   void copyData(const WrapSphereObst& aWrapSphereObst);
 
-    double getRadius() const { return _radiusUcyl; }
-    void setRadius(double aRadius) { _radiusUcyl = aRadius; }
+    double getRadius() const { return _radius; }
+    void setRadius(double aRadius) { _radius = aRadius; }
     double getLength() const { return _length; }
     void setLength(double aLength) { _length = aLength; }
-    //WrapDirectionEnum getWrapDirection() const { return _wrapUcylDirection; }
-    int getWrapDirection() const { return (int)_wrapUcylDirection; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
@@ -126,16 +84,14 @@ protected:
 
 private:
     void setNull();
-    void getVcylToUcylRotationMatrix(const SimTK::State& s, double M[9]) const;
-
 
 //=============================================================================
-};  // END of class WrapDoubleCylinderObst
+};  // END of class WrapCylinder
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_WRAP_DOUBLE_CYLINDER_OBST_H_
+#endif // __WrapCylinder_h__
 
 

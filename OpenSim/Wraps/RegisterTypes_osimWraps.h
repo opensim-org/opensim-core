@@ -1,7 +1,7 @@
-#ifndef _opensim_h_
-#define _opensim_h_
+#ifndef _RegisterTypes_Wraps_h_
+#define _RegisterTypes_Wraps_h_
 /* -------------------------------------------------------------------------- *
- *                            OpenSim:  OpenSim.h                             *
+ *                    OpenSim:  RegisterTypes_osimWraps.h                     *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -10,7 +10,7 @@
  * through the Warrior Web program.                                           *
  *                                                                            *
  * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Author(s): Frank C. Anderson                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,26 +23,25 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/osimCommon.h"
-#include "Simulation/osimSimulation.h"
+#include "osimWrapsDLL.h"
 
-#include "Actuators/osimActuators.h"
-#include "Wraps/osimWraps.h"
-#include "Analyses/osimAnalyses.h"
-#include "Tools/osimTools.h"
 
-class osimInstantiator
+extern "C" {
+
+OSIMWRAPS_API void RegisterTypes_osimWraps(); 
+
+}
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
+class osimWrapsInstantiator
 {
 public:
-    osimInstantiator() {
-        RegisterTypes_osimCommon();
-        RegisterTypes_osimSimulation();
-        RegisterTypes_osimActuators();
-        RegisterTypes_osimWraps();
-        RegisterTypes_osimAnalyses();
-        RegisterTypes_osimTools();
-    }
+       osimWrapsInstantiator();
+private:
+       void registerDllClasses();
 };
+/// @endcond
 
-static osimInstantiator instantiator;
-#endif // _opensim_h_
+#endif // _RegisterTypes_Wraps_h_
+
+

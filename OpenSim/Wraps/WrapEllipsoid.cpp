@@ -56,9 +56,7 @@ static const char* wrapTypeName = "ellipsoid";
 /**
 * Default constructor.
 */
-WrapEllipsoid::WrapEllipsoid() :
-   WrapObject(),
-   _dimensions(_dimensionsProp.getValueDblArray())
+WrapEllipsoid::WrapEllipsoid()
 {
     setNull();
     setupProperties();
@@ -78,13 +76,22 @@ WrapEllipsoid::~WrapEllipsoid()
 *
 * @param aWrapEllipsoid WrapEllipsoid to be copied.
 */
-WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid) :
-   WrapObject(aWrapEllipsoid),
-   _dimensions(_dimensionsProp.getValueDblArray())
+WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid)
 {
     setNull();
     setupProperties();
     copyData(aWrapEllipsoid);
+}
+
+WrapEllipsoid::WrapEllipsoid(const WrapObject *aWrapEllipsoid)
+{
+    const OpenSim::WrapEllipsoid* oldEllispoid = dynamic_cast<const OpenSim::WrapEllipsoid*>(aWrapEllipsoid);
+    OPENSIM_THROW_IF(!oldEllispoid, InvalidArgument, "WrapEllipsoid can only be constructed from another WrapEllipsoid")
+
+    setNull();
+    setupProperties();
+    copyData(*oldEllispoid);
+
 }
 
 //=============================================================================
@@ -107,10 +114,8 @@ void WrapEllipsoid::setupProperties()
     // BASE CLASS
     //WrapObject::setupProperties();
 
-    const double defaultDimensions[] = {-1.0, -1.0, -1.0};
-    _dimensionsProp.setName("dimensions");
-    _dimensionsProp.setValue(3, defaultDimensions);
-    _propertySet.append(&_dimensionsProp);
+    SimTK::Vec3 defaultDimensions = {-1.0, -1.0, -1.0};
+    constructProperty_dimensions(defaultDimensions);
 }
 
 //_____________________________________________________________________________
@@ -118,7 +123,7 @@ void WrapEllipsoid::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aModel 
+* @param aModel
 */
 void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 {
@@ -127,14 +132,14 @@ void WrapEllipsoid::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
 
     // maybe set a parent pointer, _body = aBody;
 
-    if (_dimensions[0] < 0.0 || _dimensions[1] < 0.0 || _dimensions[2] < 0.0)
+    if (get_dimensions(0)[0] < 0.0 || get_dimensions(0)[1] < 0.0 || get_dimensions(0)[2] < 0.0)
     {
         string errorMessage = "Error: dimensions for WrapEllipsoid " + getName() + " were either not specified, or are negative.";
         throw Exception(errorMessage);
     }
 /*
     Ellipsoid* ellipsoid = new Ellipsoid();
-    ellipsoid->setEllipsoidParams(_dimensions[0], _dimensions[1], _dimensions[2]);
+    ellipsoid->setEllipsoidParams(get_dimensions(0)[0], get_dimensions(0)[1], get_dimensions(0)[2]);
     setGeometryQuadrants(ellipsoid);
 */
 }
@@ -158,8 +163,10 @@ void WrapEllipsoid::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     localScaleVector[1] = _pose.y().elementwiseMultiply(scaleFactors);
     localScaleVector[2] = _pose.z().elementwiseMultiply(scaleFactors);
 
+    SimTK::Vec3 dim(get_dimensions());
     for (int i = 0; i < 3; ++i)
-        _dimensions[i] *= localScaleVector[i].norm();
+        dim[i] *= localScaleVector[i].norm();
+    set_dimensions(0, dim);
 }
 
 //_____________________________________________________________________________
@@ -170,7 +177,7 @@ void WrapEllipsoid::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 */
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
-    _dimensions = aWrapEllipsoid._dimensions;
+    set_dimensions(0, aWrapEllipsoid.get_dimensions());
 }
 
 //_____________________________________________________________________________
@@ -195,7 +202,7 @@ const char* WrapEllipsoid::getWrapTypeName() const
 string WrapEllipsoid::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _dimensions[0] << " " << _dimensions[1] << " " << _dimensions[2];
+    dimensions << "radius " << get_dimensions(0)[0] << " " << get_dimensions(0)[1] << " " << get_dimensions(0)[2];
 
     return dimensions.str();
 }
@@ -208,7 +215,7 @@ string WrapEllipsoid::getDimensionsString() const
  */
 SimTK::Vec3 WrapEllipsoid::getRadii() const
 {
-    return SimTK::Vec3(_dimensions[0], _dimensions[1], _dimensions[2]);
+    return SimTK::Vec3(get_dimensions(0));
 }
 
 //=============================================================================
@@ -276,14 +283,14 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // the ellipsoid dimensions because they do not change from one call to the
     // next. You don't want the factor to change because the algorithm uses
     // some vectors (r1, r2, c1) from the previous call.
-    aWrapResult.factor = 3.0 / (_dimensions[0] + _dimensions[1] + _dimensions[2]);
+    aWrapResult.factor = 3.0 / (get_dimensions(0)[0] + get_dimensions(0)[1] + get_dimensions(0)[2]);
 
     for (i = 0; i < 3; i++)
     {
         p1[i] = aPoint1[i] * aWrapResult.factor;
         p2[i] = aPoint2[i] * aWrapResult.factor;
         m[i]  = origin[i] * aWrapResult.factor;
-        a[i]  = _dimensions[i] * aWrapResult.factor;
+        a[i]  = get_dimensions(0)[i] * aWrapResult.factor;
     }
 
     p1e = -1.0;
@@ -575,7 +582,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
             if (fanWeight > 0.0)
             {
-                SimTK::Vec3 tc1; 
+                SimTK::Vec3 tc1;
                 double bisection = (orig_c1[_wrapAxis] + aWrapResult.c1[_wrapAxis]) / 2.0;
 
                 aWrapResult.c1[_wrapAxis] = aWrapResult.c1[_wrapAxis] + fanWeight * (bisection - aWrapResult.c1[_wrapAxis]);
@@ -821,7 +828,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
                 ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
-                ssqo = ssq;     
+                ssqo = ssq;
 
                 ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
 
@@ -846,9 +853,9 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
 
             ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
-            ssqo = ssq;     
+            ssqo = ssq;
         }
-    }   
+    }
     return 1;
 
 }
@@ -867,7 +874,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
  * @param far_side_wrap Whether or not the wrapping is the long way around
  * @param aWrapResult The wrapping results (tangent points, etc.)
  */
-void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
+void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a,
                                                           SimTK::Vec3& vs, double vs4, bool far_side_wrap,
                                                           WrapResult& aWrapResult) const
 {
@@ -1018,7 +1025,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     {
         Vec3 p = aWrapResult.wrap_pts.get(i);
         Vec3 q = aWrapResult.wrap_pts.get(i+1);
-        MAKE_3DVECTOR21(q, p, dv); 
+        MAKE_3DVECTOR21(q, p, dv);
 
         aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
     }
@@ -1056,7 +1063,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     // is not stable for points near the coordinate planes.  The first part
     // of this code handles those points separately.
     int i,j;
-    
+
     // handle points near the coordinate planes by reducing the problem
     // to a 2-dimensional pt-to-ellipse.
     //
@@ -1065,7 +1072,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     if (specialCaseAxis < 0)
     {
          double uvw[3], minEllipseRadiiSum = SimTK::Infinity;
-       
+
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 
        for (i = 0; i < 3; i++)
@@ -1076,7 +1083,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
 
                for (j = 0; j < 3; j++)
                    if (j != i)
-                       ellipseRadiiSum += _dimensions[j];
+                       ellipseRadiiSum += get_dimensions(0)[j];
 
                if (minEllipseRadiiSum > ellipseRadiiSum)
                {
@@ -1118,7 +1125,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
         else
         {
             double max = a;
-        
+
             if ( b > max )
                 max = b;
             if ( c > max )
@@ -1137,17 +1144,17 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             R = t+c2, _R2 = R*R;
 
             f = P2*Q2*_R2 - a2u2*Q2*_R2 - b2v2*P2*_R2 - c2w2*P2*Q2;
-        
+
             if ( fabs(f) < 1e-09 )
             {
                 *x = a2 * u / P;
                 *y = b2 * v / Q;
                 *z = c2 * w / R;
-            
+
                 dx = *x - u;
                 dy = *y - v;
                 dz = *z - w;
-            
+
                 return sqrt(dx*dx+dy*dy+dz*dz);
             }
 
@@ -1156,7 +1163,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
             QR = Q*R;
             PQR = P*Q*R;
             fp = 2.0*(PQR*(QR+PR+PQ)-a2u2*QR*(Q+R)-b2v2*PR*(P+R)-c2w2*PQ*(P+Q));
-        
+
             t -= f/fp;
         }
     }
@@ -1263,7 +1270,7 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
         double max = a;
 
         //which = 1;
-        
+
         if ( b > max )
             max = b;
 
@@ -1292,10 +1299,10 @@ double WrapEllipsoid::closestPointToEllipse(double a, double b, double u,
 
     return sqrt(dx*dx + dy*dy);
 }
-// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation 
+// Implement generateDecorations by WrapEllipsoid to replace the previous out of place implementation
 // in ModelVisualizer
 void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const 
+    SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
 
     Super::generateDecorations(fixed, hints, state, appendToThis);
@@ -1305,7 +1312,7 @@ void WrapEllipsoid::generateDecorations(bool fixed, const ModelDisplayHints& hin
         const Appearance& defaultAppearance = get_Appearance();
         if (!defaultAppearance.get_visible()) return;
         const Vec3 color = defaultAppearance.get_color();
-        
+
         const auto X_BP = calcWrapGeometryTransformInBaseFrame();
         appendToThis.push_back(
             SimTK::DecorativeEllipsoid(getRadii())

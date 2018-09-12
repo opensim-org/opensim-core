@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "WrapSphereObst.h"
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
+#include "WrapResult.h"
 
 //=============================================================================
 // STATICS
