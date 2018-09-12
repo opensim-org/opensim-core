@@ -26,6 +26,9 @@ set(SWIG_JAVA_ACTUATORS_CXX_FILE
 set(SWIG_JAVA_ACTUATORS_H_FILE   
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_actuators.h")
 
+set(SWIG_JAVA_WRAPS_INTERFACE_FILE 
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_wraps.i")
+
 set(SWIG_JAVA_EXAMPLECOMPONENTS_INTERFACE_FILE 
     "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_examplecomponents.i")
 set(SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE 
@@ -89,6 +92,9 @@ add_custom_command(
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/actuators-analysis-tools
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/wraps-analysis-tools
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/examplecomponents
