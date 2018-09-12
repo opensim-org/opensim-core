@@ -67,7 +67,7 @@ A [Component](@ref OpenSim::Component) is the basic “unit” of modelling and 
 2. Sockets to other components that it depends on (e.g., a Joint connects two Frames).
 3. Input quantities that the component needs to do its job (e.g., a metabolics calculator component could have a “muscle power” input).
 4. Output quantities that component can compute, and that can be used to satisfy other components’ Inputs.
-5. (Internal) Subcomponents: A Component can rely on other (internal) components to do its job (e.g., a Muscle component can use subcomponents for activation and fiber-contraction dynamics). These are not user facing and are of interest only to the component writer.    
+5. Subcomponents: A Component can rely on other components to do its job (e.g., a Muscle component can use subcomponents for activation and fiber-contraction dynamics). These are not user facing and are of interest only to the component writer.    
 
 The common task for a Component (as part of a Model) is to make its contribution to the System (e.g. when Model::initSystem() if called). When the underlying System is built all the variables in the system equations appear in the State. As a unit of computation, the Component has the following computational attributes:
 
