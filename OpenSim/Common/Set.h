@@ -98,7 +98,8 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) : Super(aFileN
     _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
     setNull();
-    if(aUpdateFromXMLNode) updateFromXMLDocument();
+    if (aUpdateFromXMLNode)
+        this->template updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
@@ -139,10 +140,10 @@ void
 setupProperties()
 {
     _propObjects.setName("objects");
-    _propertySet.append(    &_propObjects );
+    this->_propertySet.append(    &_propObjects );
 
     _propObjectGroups.setName("groups");
-    _propertySet.append(    &_propObjectGroups );
+    this->_propertySet.append(    &_propObjectGroups );
 }
 
 public:
