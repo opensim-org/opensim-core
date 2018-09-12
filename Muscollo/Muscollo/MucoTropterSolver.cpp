@@ -337,7 +337,10 @@ public:
         }
 
         integrand = m_phase0.calcIntegralCost(m_state);
-        // Add squared multiplers cost to integrand.
+        // Add squared multiplers cost to integrand. Since we currently don't
+        // include the derivatives of the holonomic contraint equations as path
+        // constraints in the OCP, this term exists in order to impose
+        // uniqueness in the Lagrange multipliers. 
         for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
             integrand += MULTIPLIER_WEIGHT * controls[i] * controls[i];
         }
