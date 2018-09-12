@@ -346,7 +346,6 @@ Storage MucoIterate::exportToStatesStorage() const {
     TimeSeriesTable table(
         std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
         m_states, m_state_names);
-
     return convertTableToStorage(table);
 }
 
@@ -354,7 +353,6 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
         const MucoProblem& problem) const {
     ensureUnsealed();
     Storage storage = exportToStatesStorage();
-
     // TODO update when we support multiple phases.
     const auto& model = problem.getPhase(0).getModel();
     return StatesTrajectory::createFromStatesStorage(model, storage);
