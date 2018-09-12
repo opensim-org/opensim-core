@@ -20,7 +20,7 @@ Contents:
 
 Thank you for contributing!
 
-Ways to Contribute
+Ways to Contribute 
 ------------------
 There are lots of ways to contribute to the OpenSim project, and people with widely varying skill sets can make meaningful contributions. Please don't think your contribution has to be momentous to be appreciated. See a typo? Tell us about it or fix it! Here are some contribution ideas:
 
