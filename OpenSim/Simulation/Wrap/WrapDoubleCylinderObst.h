@@ -46,48 +46,36 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+{
+    righthand,
+    lefthand
+};
 
-//=============================================================================
-// DATA
-//=============================================================================
+    // Name of body to which B cylinder is attached
+    OpenSim_DECLARE_PROPERTY(wrapVcylHomeBodyName, std::string, "The name of body to which B cylinder is attached.");
+    PhysicalFrame* _wrapVcylHomeBody;
+    PhysicalFrame* _wrapUcylHomeBody;
 
-    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-    {
-        righthand,
-        lefthand
-    };
-
-    PropertyDbl _radiusUcylProp;
-    double& _radiusUcyl;
-
-    PropertyDbl _radiusVcylProp;
-    double& _radiusVcyl;
+    OpenSim_DECLARE_PROPERTY(radiusUcyl, double, "The radius of the first cylinder.");
+    OpenSim_DECLARE_PROPERTY(radiusVcyl, double, "The radius of the second cylinder.");
 
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    PropertyStr _wrapUcylDirectionNameProp;
-    std::string& _wrapUcylDirectionName;
+    OpenSim_DECLARE_PROPERTY(wrapUcylDirectionName, std::string, "Describe if the first cylinder is right or left handed.");
+    OpenSim_DECLARE_PROPERTY(wrapVcylDirectionName, std::string, "Describe if the second cylinder is right or left handed.");
     WrapDirectionEnum _wrapUcylDirection;
-
-    PropertyStr _wrapVcylDirectionNameProp;
-    std::string& _wrapVcylDirectionName;
     WrapDirectionEnum _wrapVcylDirection;
 
-    // Name of body to which B cylinder is attached
-    PropertyStr _wrapVcylHomeBodyNameProp;
-    std::string& _wrapVcylHomeBodyName;
-    PhysicalFrame* _wrapVcylHomeBody;
-    PhysicalFrame* _wrapUcylHomeBody;
+    OpenSim_DECLARE_PROPERTY(translationVcyl, SimTK::Vec3, "The translation of the second cylinder.");
+    OpenSim_DECLARE_PROPERTY(xyzBodyRotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
 
-    PropertyDblArray _xyzBodyRotationVcylProp;
-    Array<double>& _xyzBodyRotationVcyl;
-
-    PropertyDblVec3 _translationVcylProp;
-    SimTK::Vec3 & _translationVcyl;
-
-    PropertyDbl _lengthProp;
-    double& _length;
     
     // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
     int _activeState;   
@@ -107,25 +95,17 @@ public:
 #ifndef SWIG
     WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
 #endif
-    void copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
-
-    double getRadius() const { return _radiusUcyl; }
-    void setRadius(double aRadius) { _radiusUcyl = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
-    //WrapDirectionEnum getWrapDirection() const { return _wrapUcylDirection; }
-    int getWrapDirection() const { return (int)_wrapUcylDirection; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
+    void constructProperties();
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    void setupProperties();
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
     void getVcylToUcylRotationMatrix(const SimTK::State& s, double M[9]) const;
 
 
