@@ -99,7 +99,7 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) : Super(aFileN
 {
     setNull();
     if (aUpdateFromXMLNode)
-        this->template updateFromXMLDocument();
+        this->updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**
