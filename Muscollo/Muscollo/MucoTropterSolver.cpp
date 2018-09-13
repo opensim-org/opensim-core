@@ -301,7 +301,8 @@ public:
                 // holonomic constraints for now).
                 SimTK::Vector posErrors(
                     constraint.getPositionErrorsAsVector(m_state));
-                std::copy(&posErrors[0], &posErrors[0] + mp, out.path.data() + mpSum);
+                std::copy(&posErrors[0], &posErrors[0] + mp, 
+                          out.path.data() + mpSum);
                 mpSum += mp;
             }
         } else {
