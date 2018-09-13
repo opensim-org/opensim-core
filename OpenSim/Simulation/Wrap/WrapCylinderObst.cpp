@@ -101,16 +101,14 @@ void WrapCylinderObst::constructProperties()
 }
 
 //_____________________________________________________________________________
-/**
+/*
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
-*
-* @param aModel pointer to OpenSim model.
 */
-void WrapCylinderObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapCylinderObst::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
@@ -255,8 +253,5 @@ int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimT
 
     return wrapped;
 }
-
-
-
 
 
