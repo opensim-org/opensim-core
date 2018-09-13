@@ -135,6 +135,7 @@ Model. (PR #1948)
 - The JointReaction analysis interface has changed in a few ways:
   - "express_in_frame" now takes a `Frame` name. "child" and "parent" keywords are also still accepted, provided that no Frame is named "child" or "parent"
   - If the number of elements in "apply_on_bodies" or "express_in_frame" is neither of length 1 or the same length as indicated by "joint_names", an exception is thrown. This was previously a warning.
+- Updated wrapping properties
 
 
 Composing a Component from other components
