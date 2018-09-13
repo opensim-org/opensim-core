@@ -78,9 +78,9 @@ The common task for a Component (as part of a Model) is to make its contribution
 ### Models are composed of Components {#modelscomposed}
 A Component encapsulates (all or part of the) system dynamics (of a model or element of a model) and provides (computes) values of interest. A component adds its dynamics and allocates necessary resources (state, cache, and other variables). It defines parameters (see Properties below) that specify its behavior/function and defines dependencies on any other Components (see Sockets below) via its Inputs and Outputs.
 
-Components of a [Model](@ref OpenSim::Model) form a rooted directed tree topology of ownership (Components own and know about their descendents). A root component (the top level Model) contains all the necessary Components to define the System. Components in the tree are uniquely identified by their full path name from the root (like a file path)
+Components of a [Model](@ref OpenSim::Model) form a rooted directed tree topology of ownership (Components own and know about their subcomponents). Subcomponents of a component are the descendants in the tree. A root component (the top level Model) contains all the necessary Components to define the System. Components in the tree are uniquely identified by their full path name from the root (like a file path)
 
-A submodel (e.g., a subassembly in CAD) forms its own branch of a Model. This might be a Device, a Leg model or even a FullBody model.
+A branch in the ownership tree of a Model can be a complete subassembly representing a Device, a Leg or another FullBody Model.
 
 This Component architecture means that:
 - A Component can be composed of Components
