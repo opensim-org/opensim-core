@@ -25,8 +25,8 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Common/IO.h"
-#include "OpenSim/Common/Set.h"
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Set.h>
 #include "ModelComponent.h"
 
 #ifdef SWIG
@@ -50,15 +50,18 @@ class Model;
  * @tparam  T   This must be a concrete class derived from ModelComponent.
  */
 
+template<typename T>
+using SetTModelComponent = Set<T, ModelComponent>;
+
 template <class T=ModelComponent>
 class ModelComponentSet : public Set<T, ModelComponent> {
-    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set);
+    OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, SetTModelComponent<T>);
 
-//=============================================================================
+//============================================================================
 // METHODS
 //=============================================================================
 public:
-    using Set::Set;
+    using Set<T, ModelComponent>::Set;
     /** Default constructor creates an empty Set with no associated Model. 
     ModelComponentSet() : Super() {
     }
@@ -88,11 +91,12 @@ public:
         // stopping users from editing the XML to add a name.
         // We maintain consistency by overwriting any user set names with
         // the class name, which is also the default for the unnamed property.
-        if (getName() != IO::Lowercase(getConcreteClassName())) {
-            std::string msg = getConcreteClassName() + " '" + getName() + "' ";
-            setName(IO::Lowercase(getConcreteClassName()));
+        const std::string& name = this->getName();
+        if (name != IO::Lowercase(getConcreteClassName())) {
+            std::string msg = getConcreteClassName() + " '" + name + "' ";
+            this->setName(IO::Lowercase(getConcreteClassName()));
 
-            msg += "was renamed and is being reset to '" + getName()
+            msg += "was renamed and is being reset to '" + name
                 + "'.";
             std::cout << msg << std::endl;
         }
