@@ -62,18 +62,6 @@ WrapCylinderObst::~WrapCylinderObst()
 {
 }
 
-//_____________________________________________________________________________
-/**
-* Copy constructor.
-*
-* @param aWrapCylinderObst WrapCylinderObst to be copied.
-*/
-WrapCylinderObst::WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst)
-{
-    initCircleWrapPts();
-    constructProperties();
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -166,23 +154,6 @@ string WrapCylinderObst::getDimensionsString() const
     dimensions << "radius " << get_radius() << "\nheight " << get_length();
 
     return dimensions.str();
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
-* Assignment operator.
-*
-* @return Reference to this object.
-*/
-WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylinderObst)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapCylinderObst);
-
-    return(*this);
 }
 
 //=============================================================================
