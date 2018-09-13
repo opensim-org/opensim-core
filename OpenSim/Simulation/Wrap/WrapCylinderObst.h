@@ -44,29 +44,25 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+{
+    righthand,
+    lefthand
+};
 
-//=============================================================================
-// DATA
-//=============================================================================
-
-    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-    {
-        righthand,
-        lefthand
-    };
-
-    PropertyDbl _radiusProp;
-    double& _radius;
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(wrapDirectionName, std::string, "Describe if the cylinder is right or left handed.");
 
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    PropertyStr _wrapDirectionNameProp;
-    std::string& _wrapDirectionName;
     WrapDirectionEnum _wrapDirection;
 
-    PropertyDbl _lengthProp;
-    double& _length;
 
 //=============================================================================
 // METHODS
@@ -82,25 +78,16 @@ public:
 #ifndef SWIG
     WrapCylinderObst& operator=(const WrapCylinderObst& aWrapCylinderObst);
 #endif
-    void copyData(const WrapCylinderObst& aWrapCylinderObst);
-
-    double getRadius() const { return _radius; }
-    void setRadius(double aRadius) { _radius = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
-    //WrapDirectionEnum getWrapDirection() const { return _wrapDirection; }
-    int getWrapDirection() const { return (int)_wrapDirection; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
+    void constructProperties();
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    void setupProperties();
 
 private:
-    void setNull();
     void initCircleWrapPts();
 
 //=============================================================================
