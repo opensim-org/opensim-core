@@ -57,9 +57,9 @@ class ControllerSet;
  * 
  * In order to prevent an inconsistency between the Integrator and TimeStepper,
  * we only create a TimeStepper once, specifically when we call
- * initialize(SimTK::State&). To ensure this, the Manager will throw
- * an exception if initialize(SimTK::State&) is called more than once. Note
- * that editing the SimTK::State after calling initialize(SimTK::State&)
+ * initialize(). To ensure this, the Manager will throw
+ * an exception if initialize() is called more than once. Note
+ * that editing the SimTK::State after calling initialize()
  * will not affect the simulation.
  *
  * Note that this interface means that you cannot "reinitialize" a Manager.
@@ -128,7 +128,10 @@ public:
      * constraint tolerance, etc.). */
     Manager(Model& model);
 
-    /** Convenience constructor for creating and initializing a Manager. */
+    /** Convenience constructor for creating and initializing a Manager (by
+     * calling initialize()).
+     * Do not use this constructor if you intend to change integrator settings;
+     * changes to the integrator may not take effect after initializing. */
     Manager(Model& model, const SimTK::State& state);
 
     /** <b>(Deprecated)</b> A Constructor that does not take a model or
@@ -160,6 +163,10 @@ public:
     void setWriteToStorage(bool writeToStorage)
     { _writeToStorage =  writeToStorage; }
 
+    /** @name Configure the Integrator
+      * @note Call these functions before calling `Manager::initialize()`.
+      * @{ */
+
     // Integrator
     /** Supported integrator methods. For MATLAB, int's must be used rather
         than enum's (see example in setIntegratorMethod(IntegratorMethod)). */
@@ -180,7 +187,7 @@ public:
     /** Sets the integrator method used via IntegratorMethod enum. The 
       * integrator will be set to its default options, even if the caller
       * requests the same integrator method. Note that this function must
-      * be called before `Manager::initialize(const SimTK::State&)`.
+      * be called before `Manager::initialize()`.
       
       <b>C++ example</b>
       \code{.cpp}
@@ -225,6 +232,8 @@ public:
     void setIntegratorInternalStepLimit(int nSteps);
 
     //void setIntegratorFixedStepSize(double stepSize);
+   
+    /** @} */
 
     // SPECIFIED TIME STEP
     void setUseSpecifiedDT(bool aTrueFalse);
@@ -256,13 +265,16 @@ public:
     * Manager::integrate() Subsequent changes to the State object passed in 
     * here will not affect the simulation. Calling this function multiple 
     * times with the same Manager will trigger an Exception.
+    *
+    * Changes to the integrator (e.g., setIntegratorAccuracy()) after calling
+    * initialize() may not have any effect.
     */
     void initialize(const SimTK::State& s);
     
     /**
     * Integrate the equations of motion for the specified model, given the current
     * state (at which the integration will start) and a finalTime. You must call
-    * Manager::initialize(SimTK::State&) before calling this function.
+    * Manager::initialize() before calling this function.
     *
     * If you must update states or controls in a loop, you must recreate the 
     * manager within the loop (such discontinuous changes are considered "events"
