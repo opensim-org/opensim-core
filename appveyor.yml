@@ -115,7 +115,7 @@ build_script:
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
 test_script:
-  # TODO - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
+  - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
 
    # Build doxygen.
   - cmake --build . --config %BTYPE% --target tropter_doxygen -- /verbosity:minimal
@@ -131,7 +131,6 @@ after_test:
   # https://www.appveyor.com/docs/packaging-artifacts/
   # Detect if we are on the master branch.
   - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
-  - SET DISTR=TRUE # TODO
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
   # Upload pre-built dependencies to speed up local development.
