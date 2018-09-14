@@ -56,13 +56,13 @@ private:
 public:
     OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
     OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
-    OpenSim_DECLARE_PROPERTY(wrapDirectionName, std::string, "Describe if the cylinder is right or left handed.");
+    OpenSim_DECLARE_PROPERTY(wrapDirection, std::string, "Describe if the cylinder is right or left handed.");
 
 private:
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    WrapDirectionEnum _wrapDirection;
+    WrapDirectionEnum m_wrapDirection;
 
 
 //=============================================================================

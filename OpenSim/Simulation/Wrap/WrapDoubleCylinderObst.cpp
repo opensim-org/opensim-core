@@ -67,15 +67,15 @@ WrapDoubleCylinderObst::~WrapDoubleCylinderObst()
 */
 void WrapDoubleCylinderObst::constructProperties()
 {
-    _wrapUcylDirection = righthand;
-    _wrapVcylDirection = righthand;
+    m_wrapUcylDirection = righthand;
+    m_wrapVcylDirection = righthand;
     _activeState = 0;
 
     constructProperty_radiusUcyl(-1.0);
     constructProperty_radiusVcyl(-1.0);
 
-    constructProperty_wrapUcylDirectionName("Unassigned");
-    constructProperty_wrapVcylDirectionName("Unassigned");
+    constructProperty_wrapUcylDirection("Unassigned");
+    constructProperty_wrapVcylDirection("Unassigned");
     constructProperty_wrapVcylHomeBodyName("Unassigned");
 
     const SimTK::Vec3 defaultRotations(0.0);
@@ -125,15 +125,15 @@ void WrapDoubleCylinderObst::extendFinalizeFromProperties()
     setGeometryQuadrants(cyl);
 */
     // Check wrapUcylDirectionName
-    if (get_wrapUcylDirectionName() == "righthand" || get_wrapUcylDirectionName() == "right" || get_wrapUcylDirectionName() == "righthanded" || get_wrapUcylDirectionName() == "Righthand" || get_wrapUcylDirectionName() == "Right" || get_wrapUcylDirectionName() == "Righthanded")
-        _wrapUcylDirection = righthand;
+    if (get_wrapUcylDirection() == "righthand" || get_wrapUcylDirection() == "right" || get_wrapUcylDirection() == "righthanded" || get_wrapUcylDirection() == "Righthand" || get_wrapUcylDirection() == "Right" || get_wrapUcylDirection() == "Righthanded")
+        m_wrapUcylDirection = righthand;
     else
-    if (get_wrapUcylDirectionName() == "lefthand"  || get_wrapUcylDirectionName() == "left"  || get_wrapUcylDirectionName() == "lefthanded"  || get_wrapUcylDirectionName() == "Lefthand"  || get_wrapUcylDirectionName() == "Left"  || get_wrapUcylDirectionName() == "Lefthanded")
-        _wrapUcylDirection = lefthand;
+    if (get_wrapUcylDirection() == "lefthand"  || get_wrapUcylDirection() == "left"  || get_wrapUcylDirection() == "lefthanded"  || get_wrapUcylDirection() == "Lefthand"  || get_wrapUcylDirection() == "Left"  || get_wrapUcylDirection() == "Lefthanded")
+        m_wrapUcylDirection = lefthand;
     else
-    if (get_wrapUcylDirectionName() == "Unassigned") {  // wrapDirection was not specified in obstacle object definition; use default
-        _wrapUcylDirection = righthand;
-        set_wrapUcylDirectionName("righthand");
+    if (get_wrapUcylDirection() == "Unassigned") {  // wrapDirection was not specified in obstacle object definition; use default
+        m_wrapUcylDirection = righthand;
+        set_wrapUcylDirection("righthand");
     }
     else {  // wrapUcylDirection was specified incorrectly in obstacle object definition; throw an exception
         string errorMessage = "Error: wrapUcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
@@ -141,15 +141,15 @@ void WrapDoubleCylinderObst::extendFinalizeFromProperties()
     }
 
     // Check wrapVcylDirectionName
-    if (get_wrapVcylDirectionName() == "righthand" || get_wrapVcylDirectionName() == "right" || get_wrapVcylDirectionName() == "righthanded" || get_wrapVcylDirectionName() == "Righthand" || get_wrapVcylDirectionName() == "Right" || get_wrapVcylDirectionName() == "Righthanded")
-        _wrapVcylDirection = righthand;
+    if (get_wrapVcylDirection() == "righthand" || get_wrapVcylDirection() == "right" || get_wrapVcylDirection() == "righthanded" || get_wrapVcylDirection() == "Righthand" || get_wrapVcylDirection() == "Right" || get_wrapVcylDirection() == "Righthanded")
+        m_wrapVcylDirection = righthand;
     else
-    if (get_wrapVcylDirectionName() == "lefthand"  || get_wrapVcylDirectionName() == "left"  || get_wrapVcylDirectionName() == "lefthanded"  || get_wrapVcylDirectionName() == "Lefthand"  || get_wrapVcylDirectionName() == "Left"  || get_wrapVcylDirectionName() == "Lefthanded")
-        _wrapVcylDirection = lefthand;
+    if (get_wrapVcylDirection() == "lefthand"  || get_wrapVcylDirection() == "left"  || get_wrapVcylDirection() == "lefthanded"  || get_wrapVcylDirection() == "Lefthand"  || get_wrapVcylDirection() == "Left"  || get_wrapVcylDirection() == "Lefthanded")
+        m_wrapVcylDirection = lefthand;
     else
-    if (get_wrapVcylDirectionName() == "Unassigned"){  // wrapDirection was not specified in obstacle object definition; use default
-        _wrapVcylDirection = righthand;
-        set_wrapVcylDirectionName("righthand");
+    if (get_wrapVcylDirection() == "Unassigned"){  // wrapDirection was not specified in obstacle object definition; use default
+        m_wrapVcylDirection = righthand;
+        set_wrapVcylDirection("righthand");
     }
     else {  // wrapVcylDirection was specified incorrectly in obstacle object definition; throw an exception
         string errorMessage = "Error: wrapVcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
@@ -202,7 +202,7 @@ void WrapDoubleCylinderObst::setLength(double aLength) {
 }
 
 int WrapDoubleCylinderObst::getWrapDirection() const {
-    return (int)_wrapUcylDirection;
+    return (int)m_wrapUcylDirection;
 }
 
 
@@ -428,12 +428,12 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 
     double U[3];    U[0]=get_translation()[0];       U[1]= get_translation()[1];       U[2]= get_translation()[2];
     double V[3];    V[0]=get_translationVcyl()[0];   V[1]=get_translationVcyl()[1];   V[2]=get_translationVcyl()[2];
-    double Ru = ( _wrapUcylDirection==righthand ? get_radiusUcyl() : -get_radiusUcyl() );
-    double Rv = ( _wrapVcylDirection==righthand ? get_radiusVcyl() : -get_radiusVcyl() );
+    double Ru = ( m_wrapUcylDirection==righthand ? get_radiusUcyl() : -get_radiusUcyl() );
+    double Rv = ( m_wrapVcylDirection==righthand ? get_radiusVcyl() : -get_radiusVcyl() );
 
     double P[3],q[3],Q[3],Pq,qQ,QT,ru;      P[0]=aPoint1[0];    P[1]=aPoint1[1];    P[2]=aPoint1[2];
     double S[3],t[3],T[3],Tt,tS,L,rv;       S[0]=aPoint2[0];    S[1]=aPoint2[1];    S[2]=aPoint2[2];
-    
+
     // CONSTRUCT SOME ROTATION MATRICES
     double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cylinder Frame
     double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
@@ -491,11 +491,11 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // Register results and return
     aFlag = true;
     aWrapResult.wrap_path_length = qQ + QT + Tt;    // PQ + TS + QT;
-    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];  
+    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];
     aWrapResult.r2[0]=t[0];  aWrapResult.r2[1]=t[1];  aWrapResult.r2[2]=t[2];
-//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];  
+//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];
 //  aWrapResult.sv[0]=T[0];  aWrapResult.sv[1]=T[1];  aWrapResult.sv[2]=T[2];
-    
+
     // Generate wrap_pts sequence of points tracing out wrapping path
     aWrapResult.wrap_pts.append(aWrapResult.r1);
 //  SimmPoint wppt2(aWrapResult.c1);    aWrapResult.wrap_pts.append(wppt2);
@@ -524,7 +524,7 @@ getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9])
 }
 /*============================================================================*/
 
-    
+
 
 /*============================================================================*/
 /*==== DETERMINE WHETHER 2D PATH FROM P TO S WOULD COME WITHIN R OF ORIGIN ===*/
@@ -680,7 +680,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         /*======= COMPUTE CONSTRAINTS WHICH REPRESENT CONVERGENCE =======*/
         /*===============================================================*/
-        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);    
+        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);
         /*===============================================================*/
         Td=TnU[0]*TnU[0]+TnU[1]*TnU[1]; Trt=Td-Ru*Ru;   Td=Ru/Td;
         if(Trt<0.0) return(-1); Trt=sqrt(Trt);
@@ -710,9 +710,9 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         C[0]=T[0]-x[0]; C[1]=T[1]-x[1]; C[2]=T[2]-x[2];
         /*===============================================================*/
-    
+
         if(fabs(C[0])+fabs(C[1])+fabs(C[2])<1.0e-12) break; /* CONVERGED */
-    
+
         /*===============================================================*/
         /*========= COMPUTE ANALYTICAL GRADIENTS OF CONSTRAINTS =========*/
         /*===============================================================*/

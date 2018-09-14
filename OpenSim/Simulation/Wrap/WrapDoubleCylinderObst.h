@@ -67,8 +67,8 @@ public:
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    OpenSim_DECLARE_PROPERTY(wrapUcylDirectionName, std::string, "Describe if the first cylinder is right or left handed.");
-    OpenSim_DECLARE_PROPERTY(wrapVcylDirectionName, std::string, "Describe if the second cylinder is right or left handed.");
+    OpenSim_DECLARE_PROPERTY(wrapUcylDirection, std::string, "Describe if the first cylinder is right or left handed.");
+    OpenSim_DECLARE_PROPERTY(wrapVcylDirection, std::string, "Describe if the second cylinder is right or left handed.");
 
     OpenSim_DECLARE_PROPERTY(translationVcyl, SimTK::Vec3, "The translation of the second cylinder.");
     OpenSim_DECLARE_PROPERTY(xyz_body_rotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
@@ -77,10 +77,10 @@ public:
 private:
     PhysicalFrame* _wrapVcylHomeBody;
     PhysicalFrame* _wrapUcylHomeBody;
-    WrapDirectionEnum _wrapUcylDirection;
-    WrapDirectionEnum _wrapVcylDirection;
+    WrapDirectionEnum m_wrapUcylDirection;
+    WrapDirectionEnum m_wrapVcylDirection;
     // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
-    int _activeState;   
+    int _activeState;
     Model* _model;
 
 //=============================================================================

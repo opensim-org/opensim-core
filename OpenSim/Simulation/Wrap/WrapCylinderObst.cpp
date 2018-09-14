@@ -83,8 +83,8 @@ void WrapCylinderObst::initCircleWrapPts()
 void WrapCylinderObst::constructProperties()
 {
     constructProperty_radius(-1.0);
-    constructProperty_wrapDirectionName("Unassigned");
-    _wrapDirection = righthand;
+    constructProperty_wrapDirection("Unassigned");
+    m_wrapDirection = righthand;
     constructProperty_length(1.0);
 }
 
@@ -109,15 +109,15 @@ void WrapCylinderObst::extendFinalizeFromProperties()
     Cylinder* cyl = new Cylinder(get_radius(), get_length());
     setGeometryQuadrants(cyl);
 */
-    if (get_wrapDirectionName() == "righthand" || get_wrapDirectionName() == "right" || get_wrapDirectionName() == "righthanded" || get_wrapDirectionName() == "Righthand" || get_wrapDirectionName() == "Right" || get_wrapDirectionName() == "Righthanded")
-        _wrapDirection = righthand;
+    if (get_wrapDirection() == "righthand" || get_wrapDirection() == "right" || get_wrapDirection() == "righthanded" || get_wrapDirection() == "Righthand" || get_wrapDirection() == "Right" || get_wrapDirection() == "Righthanded")
+        m_wrapDirection = righthand;
     else
-    if (get_wrapDirectionName() == "lefthand"  || get_wrapDirectionName() == "left"  || get_wrapDirectionName() == "lefthanded"  || get_wrapDirectionName() == "Lefthand"  || get_wrapDirectionName() == "Left"  || get_wrapDirectionName() == "Lefthanded")
-        _wrapDirection = lefthand;
+    if (get_wrapDirection() == "lefthand"  || get_wrapDirection() == "left"  || get_wrapDirection() == "lefthanded"  || get_wrapDirection() == "Lefthand"  || get_wrapDirection() == "Left"  || get_wrapDirection() == "Lefthanded")
+        m_wrapDirection = lefthand;
     else
-    if (get_wrapDirectionName() == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
-        { _wrapDirection = righthand;
-        set_wrapDirectionName("righthand");
+    if (get_wrapDirection() == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
+        { m_wrapDirection = righthand;
+        set_wrapDirection("righthand");
     }
     else {  // wrapDirection was specified incorrectly in obstacle object definition; throw an exception
         string errorMessage = "wrapDirection was specified incorrectly. "
@@ -173,7 +173,7 @@ void WrapCylinderObst::setLength(double aLength) {
 }
 
 int WrapCylinderObst::getWrapDirection() const {
-    return (int)_wrapDirection;
+    return (int)m_wrapDirection;
 }
 
 //=============================================================================
@@ -193,7 +193,7 @@ int WrapCylinderObst::getWrapDirection() const {
 int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( _wrapDirection==righthand ? get_radius() : -get_radius() );
+    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
     SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
 
     // Initialize return values
