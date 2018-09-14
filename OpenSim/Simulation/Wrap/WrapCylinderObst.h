@@ -1,5 +1,5 @@
-#ifndef __WrapCylinderObst_h__
-#define __WrapCylinderObst_h__
+#ifndef OPENSIM_WRAP_CYLINDER_OBST_H_
+#define OPENSIM_WRAP_CYLINDER_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  WrapCylinderObst.h                        *
  * -------------------------------------------------------------------------- *
@@ -95,6 +95,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_CYLINDER_OBST_H_
 
 
