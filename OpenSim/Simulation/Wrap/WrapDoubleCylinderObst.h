@@ -22,11 +22,11 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <string>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
+
+
+// INCLUDE
+#include "WrapObject.h"
+
 
 namespace OpenSim {
 
@@ -89,23 +89,20 @@ enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylind
     //--------------------------------------------------------------------------
 public:
     WrapDoubleCylinderObst();
-    WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
     virtual ~WrapDoubleCylinderObst();
-
-#ifndef SWIG
-    WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
-#endif
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
-    void constructProperties();
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+
     void extendFinalizeFromProperties() override;
 
 private:
+    void constructProperties();
+
     void getVcylToUcylRotationMatrix(const SimTK::State& s, double M[9]) const;
 
 
