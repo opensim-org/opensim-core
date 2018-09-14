@@ -1,5 +1,5 @@
-#ifndef __WrapCylinderObst_h__
-#define __WrapCylinderObst_h__
+#ifndef OPENSIM_WRAP_CYLINDER_OBST_H_
+#define OPENSIM_WRAP_CYLINDER_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  WrapCylinderObst.h                        *
  * -------------------------------------------------------------------------- *
@@ -43,20 +43,22 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
-public:
+private:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-{
-    righthand,
-    lefthand
-};
+    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+    {
+        righthand,
+        lefthand
+    };
 
+public:
     OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
     OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
     OpenSim_DECLARE_PROPERTY(wrapDirectionName, std::string, "Describe if the cylinder is right or left handed.");
 
+private:
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
@@ -95,6 +97,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_CYLINDER_OBST_H_
 
 
