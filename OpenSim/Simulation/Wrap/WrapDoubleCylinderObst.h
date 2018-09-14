@@ -46,20 +46,20 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
-public:
+private:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-{
-    righthand,
-    lefthand
-};
+    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+    {
+        righthand,
+        lefthand
+    };
 
+
+public:
     // Name of body to which B cylinder is attached
     OpenSim_DECLARE_PROPERTY(wrapVcylHomeBodyName, std::string, "The name of body to which B cylinder is attached.");
-    PhysicalFrame* _wrapVcylHomeBody;
-    PhysicalFrame* _wrapUcylHomeBody;
 
     OpenSim_DECLARE_PROPERTY(radiusUcyl, double, "The radius of the first cylinder.");
     OpenSim_DECLARE_PROPERTY(radiusVcyl, double, "The radius of the second cylinder.");
@@ -69,14 +69,16 @@ enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylind
     //    right-handed or left-handed about the obstacle's z-axis.
     OpenSim_DECLARE_PROPERTY(wrapUcylDirectionName, std::string, "Describe if the first cylinder is right or left handed.");
     OpenSim_DECLARE_PROPERTY(wrapVcylDirectionName, std::string, "Describe if the second cylinder is right or left handed.");
-    WrapDirectionEnum _wrapUcylDirection;
-    WrapDirectionEnum _wrapVcylDirection;
 
     OpenSim_DECLARE_PROPERTY(translationVcyl, SimTK::Vec3, "The translation of the second cylinder.");
-    OpenSim_DECLARE_PROPERTY(xyzBodyRotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
+    OpenSim_DECLARE_PROPERTY(xyz_body_rotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
     OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
 
-    
+private:
+    PhysicalFrame* _wrapVcylHomeBody;
+    PhysicalFrame* _wrapUcylHomeBody;
+    WrapDirectionEnum _wrapUcylDirection;
+    WrapDirectionEnum _wrapVcylDirection;
     // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
     int _activeState;   
     Model* _model;
@@ -93,6 +95,14 @@ public:
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
+
+    double getRadius() const;
+    void setRadius(double aRadius);
+    double getLength() const;
+    void setLength(double aLength);
+    int getWrapDirection() const;
+
+
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,

@@ -156,6 +156,26 @@ string WrapCylinderObst::getDimensionsString() const
     return dimensions.str();
 }
 
+double WrapCylinderObst::getRadius() const {
+    return get_radius();
+}
+
+void WrapCylinderObst::setRadius(double aRadius) {
+    set_radius(aRadius);
+}
+
+double WrapCylinderObst::getLength() const {
+    return get_length();
+}
+
+void WrapCylinderObst::setLength(double aLength) {
+    set_length(aLength);
+}
+
+int WrapCylinderObst::getWrapDirection() const {
+    return (int)_wrapDirection;
+}
+
 //=============================================================================
 // WRAPPING
 //=============================================================================

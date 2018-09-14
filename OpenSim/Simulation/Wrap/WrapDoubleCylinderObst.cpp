@@ -79,7 +79,7 @@ void WrapDoubleCylinderObst::constructProperties()
     constructProperty_wrapVcylHomeBodyName("Unassigned");
 
     const SimTK::Vec3 defaultRotations(0.0);
-    constructProperty_xyzBodyRotationVcyl(defaultRotations);
+    constructProperty_xyz_body_rotationVcyl(defaultRotations);
 
     const SimTK::Vec3 defaultTranslations(0.0);
     constructProperty_translationVcyl(defaultTranslations);
@@ -183,6 +183,26 @@ string WrapDoubleCylinderObst::getDimensionsString() const
     dimensions << "radius " << get_radiusUcyl() << "\nheight " << get_length();
 
     return dimensions.str();
+}
+
+double WrapDoubleCylinderObst::getRadius() const {
+    return get_radiusUcyl();
+}
+
+void WrapDoubleCylinderObst::setRadius(double aRadius) {
+    set_radiusUcyl(aRadius);
+}
+
+double WrapDoubleCylinderObst::getLength() const {
+    return get_length();
+}
+
+void WrapDoubleCylinderObst::setLength(double aLength) {
+    set_length(aLength);
+}
+
+int WrapDoubleCylinderObst::getWrapDirection() const {
+    return (int)_wrapUcylDirection;
 }
 
 
@@ -417,9 +437,9 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // CONSTRUCT SOME ROTATION MATRICES
     double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cylinder Frame
     double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
-    double xyzBodyRotationVcyl[3] = { get_xyzBodyRotationVcyl()[0],get_xyzBodyRotationVcyl()[1],get_xyzBodyRotationVcyl()[2] };
+    double xyz_body_rotationVcyl[3] = { get_xyz_body_rotationVcyl()[0],get_xyz_body_rotationVcyl()[1],get_xyz_body_rotationVcyl()[2] };
     double UcylObstToUcylBody[9];   load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
-    double VcylObstToVcylBody[9];   load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
+    double VcylObstToVcylBody[9];   load_Rxyz(xyz_body_rotationVcyl,VcylObstToVcylBody);
     double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
@@ -493,9 +513,9 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 void WrapDoubleCylinderObst::
 getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9]) const {
     double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
-    double xyzBodyRotationVcyl[3] = { get_xyzBodyRotationVcyl()[0],get_xyzBodyRotationVcyl()[1],get_xyzBodyRotationVcyl()[2] };
+    double xyz_body_rotationVcyl[3] = { get_xyz_body_rotationVcyl()[0],get_xyz_body_rotationVcyl()[1],get_xyz_body_rotationVcyl()[2] };
     double UcylBodyToUcylObst[9];   load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
-    double VcylBodyToVcylObst[9];   load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
+    double VcylBodyToVcylObst[9];   load_Rxyz(xyz_body_rotationVcyl,VcylBodyToVcylObst);
     double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
