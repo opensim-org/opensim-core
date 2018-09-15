@@ -314,8 +314,9 @@ public:
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
     /// Controls are not carried over to the states storage.
-    // TODO use TimeSeriesTable instead?
     Storage exportToStatesStorage() const;
+    /// Same as exportToStatesStorage() except using TimeSeriesTable.
+    TimeSeriesTable exportToStatesTable() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MucoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.

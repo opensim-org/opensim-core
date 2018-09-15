@@ -14,25 +14,41 @@ shallow_clone: false
 
 # No need to build the branch if building a PR.
 skip_branch_with_pr: true
- 
+
+environment:
+  JAVA_DIR: "C:\\Program Files\\Java\\jdk1.8.0"
+  PYTHON_DIR: "C:\\Python27-x64"
+
 init:
   - SET BTYPE=Release
+  - SET PATH=%PYTHON_DIR%;%PATH%
+  - SET JAVA_HOME=%JAVA_DIR%
+  - SET PATH=%JAVA_HOME%\bin;%PATH%
 
 cache:
   ## Cache some dependencies.
   # The syntax here is <dir-to-cache> -> <invalidated-when-this-file-changes>
   # If the appveyor.yml script is changed, then the cache is invalidated.
   # https://www.appveyor.com/docs/build-cache/
-  - C:\projects\eigen -> dependencies\CMakeLists.txt
-  - C:\projects\colpack -> dependencies\colpack.cmake
-  - C:\projects\adol-c -> dependencies\CMakeLists.txt
-  - C:\projects\ipopt -> dependencies\CMakeLists.txt
-  - C:\projects\opensim-core -> dependencies\opensim-core.cmake
+  - C:\projects\deps\eigen -> dependencies\CMakeLists.txt
+  - C:\projects\deps\colpack -> dependencies\colpack.cmake
+  - C:\projects\deps\adol-c -> dependencies\CMakeLists.txt
+  - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
+  - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
+  
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml # swig.exe
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml # supporting swig Lib files.
 
 install:
   - cmake --version
 
   - choco install doxygen.portable
+  
+  ## Use Chocolatey to install SWIG.
+  # Only install swig if it isn't present (as a result of AppVeyor's caching).
+  # SWIG 3.0.8 is the minimum required version, but it does not yet exist in
+  # Chocolatey.
+  - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.9 --yes --limit-output #> $null
 
   # Install dependencies.
   # We are using superbuild for opensim-core, as that allows us to specify
@@ -60,31 +76,33 @@ install:
   # CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
   # - set CXXFLAGS="/W0"
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
+  - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
   - dir C:\projects\
-  - IF NOT EXIST C:\projects\eigen cmake . -DSUPERBUILD_eigen=ON
-  - IF NOT EXIST C:\projects\colpack cmake . -DSUPERBUILD_colpack=ON
-  - IF NOT EXIST C:\projects\adol-c cmake . -DSUPERBUILD_adolc=ON
-  - IF NOT EXIST C:\projects\ipopt cmake . -DSUPERBUILD_ipopt=ON
-  - IF NOT EXIST C:\projects\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
+  - dir C:\projects\deps
+  - IF NOT EXIST C:\projects\deps\eigen cmake . -DSUPERBUILD_eigen=ON
+  - IF NOT EXIST C:\projects\deps\colpack cmake . -DSUPERBUILD_colpack=ON
+  - IF NOT EXIST C:\projects\deps\adol-c cmake . -DSUPERBUILD_adolc=ON
+  - IF NOT EXIST C:\projects\deps\ipopt cmake . -DSUPERBUILD_ipopt=ON
+  - IF NOT EXIST C:\projects\deps\opensim-core cmake . -DSUPERBUILD_opensim-core=ON
   # List the values of the CMake variables.
   - cmake . -LAH
 
   # The dependencies might spew out a lot of warnings that make the log
   # difficult to read.
-  - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:quiet
+  - cmake --build . --config %BTYPE% -- /maxcpucount:4 # TODO /verbosity:quiet
   - dir C:\projects\
   - IF EXIST C:\projects\muscollo_deps_install dir C:\projects\muscollo_deps_install
 
   # To get the caching mechanism to work, we had to use a different directory
   # for the cache (maybe b/c CMake makes empty folders in
   # muscollo_deps_install?).
-  - IF NOT EXIST C:\projects\eigen cmake -E copy_directory C:\projects\muscollo_deps_install\eigen C:\projects\eigen
-  - IF NOT EXIST C:\projects\colpack cmake -E copy_directory C:\projects\muscollo_deps_install\colpack C:\projects\colpack
-  - IF NOT EXIST C:\projects\adol-c cmake -E copy_directory C:\projects\muscollo_deps_install\adol-c C:\projects\adol-c
-  - IF NOT EXIST C:\projects\ipopt cmake -E copy_directory C:\projects\muscollo_deps_install\ipopt C:\projects\ipopt
-  - IF NOT EXIST C:\projects\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\opensim-core
+  - IF NOT EXIST C:\projects\deps\eigen cmake -E copy_directory C:\projects\muscollo_deps_install\eigen C:\projects\deps\eigen
+  - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\muscollo_deps_install\colpack C:\projects\deps\colpack
+  - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\muscollo_deps_install\adol-c C:\projects\deps\adol-c
+  - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\muscollo_deps_install\ipopt C:\projects\deps\ipopt
+  - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\deps\opensim-core
 
 build_script:
 
@@ -92,7 +110,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\adol-c" -DIPOPT_DIR="..\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\eigen;C:\projects\colpack;C:\projects\opensim-core"
+  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\deps\adol-c" -DIPOPT_DIR="..\deps\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
@@ -115,6 +133,17 @@ after_test:
   - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  # Upload pre-built dependencies to speed up local development.
+  # Change the modified timestamp of dependencies because otherwise these files
+  # may have been written "in the future" (b/c of the time zone difference
+  # between California and AppVeyor servers), causing CMake to rebuild every
+  # time.
+  # https://blogs.technet.microsoft.com/heyscriptingguy/2015/01/21/adding-and-subtracting-dates-with-powershell/
+  # https://stackoverflow.com/questions/18847145/loop-through-files-in-a-directory-using-powershell
+  # https://superuser.com/questions/10426/windows-equivalent-of-the-linux-command-touch
+  - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include ** | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
+  - 7z a C:\opensim-muscollo-dependencies.zip C:\projects\deps
+  - appveyor PushArtifact C:\opensim-muscollo-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
   # Create and upload NuGet package.
   #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo

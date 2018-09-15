@@ -343,10 +343,13 @@ TimeSeriesTable MucoIterate::convertToTable() const {
 
 Storage MucoIterate::exportToStatesStorage() const {
     ensureUnsealed();
-    TimeSeriesTable table(
-        std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
-        m_states, m_state_names);
-    return convertTableToStorage(table);
+    return convertTableToStorage(exportToStatesTable());
+}
+
+TimeSeriesTable MucoIterate::exportToStatesTable() const {
+    ensureUnsealed();
+    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_states, m_state_names};
 }
 
 StatesTrajectory MucoIterate::exportToStatesTrajectory(
