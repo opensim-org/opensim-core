@@ -429,8 +429,9 @@ void runForwardSimulation(Model model, const MucoSolution& solution,
     // Simulate!
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
-    Manager manager(model, state);
-    manager.getIntegrator().setAccuracy(1e-6);
+    Manager manager(model);
+    manager.getIntegrator().setAccuracy(1e-9);
+    manager.initialize(state);
     state = manager.integrate(time[time.size()-1]);
 
     // Export results from states reporter to a TimeSeries Table
@@ -514,7 +515,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-1);
+    runForwardSimulation(model, solution, 1e-2);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
