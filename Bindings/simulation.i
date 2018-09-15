@@ -8,7 +8,7 @@
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
-%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent, OpenSim::Object>;
+%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent, OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
 %template(ModelComponentSetModelComponent) OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ComponentSet.h>
@@ -31,12 +31,12 @@
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
 %template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>;
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-%template(SetFrames) OpenSim::Set<OpenSim::Frame, OpenSim::Object>;
+%template(SetFrames) OpenSim::Set<OpenSim::Frame, OpenSim::ModelComponent>;
 %template(ModelComponentSetFrames)
 OpenSim::ModelComponentSet<OpenSim::Frame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
-%template(SetBodies) OpenSim::Set<OpenSim::Body, OpenSim::Object>;
+%template(SetBodies) OpenSim::Set<OpenSim::Body, OpenSim::ModelComponent>;
 %template(ModelComponentSetBodies)
 OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodySet.h>
@@ -50,17 +50,16 @@ OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate, OpenSim::Object>;
-%template(ModelComponentSetCoordinates) OpenSim::ModelComponentSet<OpenSim::Coordinate>;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-%template(SetJoints) OpenSim::Set<OpenSim::Joint, OpenSim::Object>;
+%template(SetJoints) OpenSim::Set<OpenSim::Joint, OpenSim::ModelComponent>;
 %template(ModelComponentSetJoints)
 OpenSim::ModelComponentSet<OpenSim::Joint>;
 %include <OpenSim/Simulation/Model/JointSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
-%template(SetConstraints) OpenSim::Set<OpenSim::Constraint, OpenSim::Object>;
+%template(SetConstraints) OpenSim::Set<OpenSim::Constraint, OpenSim::ModelComponent>;
 %template(ModelComponentSetConstraints)
 OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
@@ -94,7 +93,7 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
 %include <OpenSim/Simulation/Control/Controller.h>
-%template(SetControllers) OpenSim::Set<OpenSim::Controller, OpenSim::Object>;
+%template(SetControllers) OpenSim::Set<OpenSim::Controller, OpenSim::ModelComponent>;
 %template(ModelComponentSetControllers)
 OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ControllerSet.h>
@@ -105,7 +104,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
-%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry, OpenSim::Object>;
+%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry, OpenSim::ModelComponent>;
 %template(ModelComponentSetContactGeometry) OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
 %include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 %include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -137,7 +136,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Marker.h>
-%template(SetMarkers) OpenSim::Set<OpenSim::Marker, OpenSim::Object>;
+%template(SetMarkers) OpenSim::Set<OpenSim::Marker, OpenSim::ModelComponent>;
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
@@ -156,7 +155,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
-%template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::Object>;
+%template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::ModelComponent>;
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
 %include <OpenSim/Simulation/Model/ProbeSet.h>
 %include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
@@ -335,3 +334,15 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
         return new PhysicalOffsetFrame(name, parentName, offset);
     }
 };
+
+EXPOSE_SET_CONSTRUCTORS_HELPER(ModelComponentSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(BodySet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(JointSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ConstraintSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ForcesSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ControllerSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ContactGeometrySet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(PathPointSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ProbeSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
