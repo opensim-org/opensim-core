@@ -20,6 +20,7 @@
 #include "MuscolloUtilities.h"
 
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <simbody/internal/Constraint.h>
 
 #include <tropter/tropter.h>
 
@@ -166,6 +167,46 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
+        // Add control variables representing Lagrange multipliers for any
+        // constraints that exist in the model.
+        const auto& matter = m_model.getMatterSubsystem();
+        const auto NC = matter.getNumConstraints();
+        int mp, mv, ma;
+        int cix = 0;
+        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+            const SimTK::Constraint& constraint = matter.getConstraint(cid);
+            if (!constraint.isDisabled(m_state)) {
+                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
+                // Only considering holonomic constraints for now.
+                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic " 
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " velocity-level " 
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+                // TODO add constraints/multiplier variables based on the
+                // MucoProblem
+                for (int i = 0; i < mp; ++i) {
+                    std::string str_cix = std::to_string(cix);
+                    std::string str_i = std::to_string(i);
+                    this->add_path_constraint(
+                        "model_constraint_" + str_cix + "_" + str_i + "_pos", 0);
+                    // TODO how to specify multiplier bounds?
+                    this->add_control("lambda_" + str_cix + "_" + str_i, 
+                        {-1000, 1000});
+                }
+                // Save constraint indices for enabled constraints only, so we 
+                // don't have to loop through disabled constraints later.
+                m_enabledConstraintIdxs.push_back(cid);
+                m_numScalarConstraintEqs += mp;
+                cix++;
+            }
+        }
+
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getName();
@@ -204,20 +245,74 @@ public:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
+        const auto& matter = m_model.getMatterSubsystem();
+
+        // Set the controls for actuators in the OpenSim model, excluding
+        // controls created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
+            std::copy(controls.data() + m_numScalarConstraintEqs,
+                    controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
 
-        // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
-        // realizing to Velocity and computing forces manually.
-        m_model.realizeAcceleration(m_state);
-        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-                out.dynamics.data());
+        // If enabled constraints exist in the model, compute accelerations
+        // based on Lagrange multipliers (which are currently represented using
+        // control variables).
+        if (m_enabledConstraintIdxs.size()) {
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
+            // realizing to Velocity and computing forces manually.
+            m_model.realizeDynamics(m_state);
 
+            const SimTK::MultibodySystem& multibody = 
+                m_model.getMultibodySystem();
+            const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+                multibody.getRigidBodyForces(m_state, SimTK::Stage::Dynamics);
+            const SimTK::Vector& appliedMobilityForces = 
+                multibody.getMobilityForces(m_state, SimTK::Stage::Dynamics);
+
+            const SimTK::SimbodyMatterSubsystem& matter = 
+                m_model.getMatterSubsystem();
+            SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+            SimTK::Vector constraintMobilityForces;
+            // Multipliers are negated so constraint forces can be used like 
+            // applied forces.
+            SimTK::Vector multipliers(m_numScalarConstraintEqs, 
+                controls.data());
+            matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
+                constraintBodyForces, constraintMobilityForces);
+
+            SimTK::Vector& udot = m_state.updUDot();
+            matter.calcAccelerationIgnoringConstraints(m_state,
+                appliedMobilityForces + constraintMobilityForces,
+                appliedBodyForces + constraintBodyForces, udot, A_GB);
+           
+            // Constraint errors.
+            int mp, mv, ma;
+            int mpSum = 0;
+            for (int i = 0; i < m_enabledConstraintIdxs.size(); ++i) {
+                const auto& constraint = matter.getConstraint(
+                    SimTK::ConstraintIndex(m_enabledConstraintIdxs[i]));
+                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
+                // Pass errors from the scalar constraint equations to their 
+                // associated tropter path constraint output structures (only 
+                // holonomic constraints for now).
+                SimTK::Vector posErrors(
+                    constraint.getPositionErrorsAsVector(m_state));
+                std::copy(&posErrors[0], &posErrors[0] + mp, 
+                          out.path.data() + mpSum);
+                mpSum += mp;
+            }
+        } else {
+            // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
+            // realizing to Velocity and computing forces manually.
+            m_model.realizeAcceleration(m_state);
+        }
+        std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
+                  out.dynamics.data());
+        
     }
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
@@ -228,16 +323,29 @@ public:
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
+
+        // Set the controls for actuators in the OpenSim model, excluding
+        // controls created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data(), controls.data() + controls.size(),
+            std::copy(controls.data() + m_numScalarConstraintEqs, 
+                    controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizePosition(m_state);
             m_model.setControls(m_state, osimControls);
         } else {
             m_model.realizePosition(m_state);
         }
+
         integrand = m_phase0.calcIntegralCost(m_state);
+        // Add squared multiplers cost to integrand. Since we currently don't
+        // include the derivatives of the holonomic contraint equations as path
+        // constraints in the OCP, this term exists in order to impose
+        // uniqueness in the Lagrange multipliers. 
+        for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
+            integrand += MULTIPLIER_WEIGHT * controls[i] * controls[i];
+        }
+        
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
             const VectorX<T>& parameters, T& cost) const override {
@@ -256,6 +364,21 @@ private:
     const MucoPhase& m_phase0;
     mutable Model m_model;
     mutable SimTK::State m_state;
+    // This member variable avoids unnecessary extra allocation of memory for
+    // spatial accelerations, which are incidental to the computation of
+    // generalized accelerations when specifying the dynamics with model 
+    // constraints present.
+    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    std::vector<int> m_enabledConstraintIdxs;
+    // TODO find a better solution for this tracking number of scalar constraint
+    // equations (if needed). Need to count them now since the number of model
+    // constraints might not equal the number of Lagrange multipliers needed,
+    // since multiple scalar constraint equations can be associated with one
+    // model constraint.
+    int m_numScalarConstraintEqs = 0;
+    // TODO create user specified option for the Lagrange multipler weight.
+    // Relatively high weight set for now so model actuators are preferred.
+    const double MULTIPLIER_WEIGHT = 100.0;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

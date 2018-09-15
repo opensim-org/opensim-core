@@ -19,6 +19,8 @@
 #include "MucoProblem.h"
 #include "MuscolloUtilities.h"
 
+#include <simbody/internal/Constraint.h>
+
 using namespace OpenSim;
 
 
@@ -261,12 +263,20 @@ void MucoPhase::initialize(Model& model) const {
         actuNames.append(
                 actu.getAbsolutePath().formRelativePath(modelPath).toString());
     }
+
     // TODO can only handle ScalarActuators?
+    // TODO automatically add control variable infos for model constraints. 
+    // For now, don't throw error if control is a Lagrange multiplier. 
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                "Control info provided for nonexistant actuator '"
-                        + name + "'.");
+        bool isLagrangeMultiplier = false;
+        if (name.find("lambda") != std::string::npos) {
+            isLagrangeMultiplier = true;
+        }
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1 && 
+                !isLagrangeMultiplier, Exception,
+                "Control info provided for nonexistant actuator or Lagrange "
+                        "multiplier '" + name + "'.");
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
