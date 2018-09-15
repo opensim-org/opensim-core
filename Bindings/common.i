@@ -422,3 +422,24 @@ namespace OpenSim {
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
 
 %include <OpenSim/Common/GCVSplineSet.h>
+
+
+// Compensate for insufficient C++11 support in SWIG
+// =================================================
+/*
+Extend concrete Sets to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Set::Set) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_SET_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
+    NAME(const std::string& file, bool updateFromXML=true) {
+        return new NAME(file, updateFromXML);
+    }
+};
+%enddef
