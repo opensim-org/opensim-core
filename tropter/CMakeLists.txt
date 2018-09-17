@@ -135,7 +135,9 @@ add_subdirectory(external)
 
 add_subdirectory(tropter)
 
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 add_subdirectory(sandbox)
 

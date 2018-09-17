@@ -18,7 +18,9 @@ install(DIRECTORY "${OpenSim_ROOT_DIR}/"
 
 add_subdirectory(doc)
 add_subdirectory(Muscollo)
-add_subdirectory(Tests)
+if(BUILD_TESTING)
+    add_subdirectory(Tests)
+endif()
 add_subdirectory(Executable)
 add_subdirectory(Bindings)
 add_subdirectory(Examples)
