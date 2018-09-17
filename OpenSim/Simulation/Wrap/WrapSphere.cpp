@@ -48,12 +48,9 @@ static const char* wrapTypeName = "sphere";
 /**
  * Default constructor.
  */
-WrapSphere::WrapSphere() :
-    WrapObject(),
-   _radius(_radiusProp.getValueDbl())
+WrapSphere::WrapSphere()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -64,69 +61,16 @@ WrapSphere::~WrapSphere()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aWrapSphere WrapSphere to be copied.
- */
-WrapSphere::WrapSphere(const WrapSphere& aWrapSphere) :
-    WrapObject(aWrapSphere),
-   _radius(_radiusProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapSphere);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this WrapSphere to their null values.
- */
-void WrapSphere::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
  * Connect properties to local pointers.
  */
-void WrapSphere::setupProperties()
+void WrapSphere::constructProperties()
 {
-    // BASE CLASS
-    //WrapObject::setupProperties();
-
-    _radiusProp.setName("radius");
-    _radiusProp.setValue(-1.0);
-    _propertySet.append(&_radiusProp);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model.
- */
-void WrapSphere::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
-{
-    // Base class
-    Super::connectToModelAndBody(aModel, aBody);
-
-   // maybe set a parent pointer, _body = aBody;
-
-    if (_radius < 0.0)
-    {
-        string errorMessage = "Error: radius for wrapSphere " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
-/*
-    Sphere* sphere = new Sphere(_radius);
-    setGeometryQuadrants(sphere);
-*/
+    constructProperty_radius(-1.0);
 }
 
 void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -138,18 +82,32 @@ void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
     if (scaleFactors == ModelComponent::InvalidScaleFactors)
         return;
 
-    _radius *= (scaleFactors.sum() / 3.);
+    upd_radius() *= (scaleFactors.sum() / 3.);
 }
 
 //_____________________________________________________________________________
 /**
- * Copy data members from one WrapSphere to another.
+ * Perform some set up functions that happen after the
+ * object has been deserialized or copied.
  *
- * @param aWrapSphere WrapSphere to be copied.
+ * @param aModel OpenSim model.
  */
-void WrapSphere::copyData(const WrapSphere& aWrapSphere)
+void WrapSphere::extendFinalizeFromProperties()
 {
-    _radius = aWrapSphere._radius;
+    // Base class
+    Super::extendFinalizeFromProperties();
+
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius must be specified and cannot be less than zero");
+
+/*
+    Sphere* sphere = new Sphere(_radius);
+    setGeometryQuadrants(sphere);
+*/
 }
 
 //_____________________________________________________________________________
@@ -174,7 +132,7 @@ const char* WrapSphere::getWrapTypeName() const
 string WrapSphere::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radius;
+    dimensions << "radius " << get_radius();
 
     return dimensions.str();
 }
@@ -187,24 +145,7 @@ string WrapSphere::getDimensionsString() const
  */
 double WrapSphere::getRadius() const
 {
-    return _radius;
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapSphere);
-
-    return(*this);
+    return get_radius();
 }
 
 //=============================================================================
@@ -261,12 +202,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     }
 
    // check that neither point is inside the radius of the sphere
-    if (Mtx::Magnitude(3, p1m) < _radius || Mtx::Magnitude(3, p2m) < _radius)
+    if (Mtx::Magnitude(3, p1m) < get_radius() || Mtx::Magnitude(3, p2m) < get_radius())
       return insideRadius;
 
     a = Mtx::DotProduct(3, ri, ri);
    b = -2.0 * Mtx::DotProduct(3, mp, ri);
-   c = Mtx::DotProduct(3, mp, mp) - _radius * _radius;
+   c = Mtx::DotProduct(3, mp, mp) - get_radius() * get_radius();
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
@@ -333,7 +274,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(_radius / Mtx::Magnitude(3, p1m));
+    a1 = asin(get_radius() / Mtx::Magnitude(3, p1m));
 
     WrapMath::Make3x3DirCosMatrix(a1, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
@@ -361,7 +302,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(_radius / Mtx::Magnitude(3, p2m));
+   a2 = asin(get_radius() / Mtx::Magnitude(3, p2m));
    
    WrapMath::Make3x3DirCosMatrix(a2, rrx);
     Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
@@ -437,7 +378,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    {
       if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
       {
-         double tt, r_squared = _radius * _radius;
+         double tt, r_squared = get_radius() * get_radius();
             Vec3 mm;
          // If either muscle point is on the constrained side, then check for intersection
          // of the muscle line and the cylinder. If there is an intersection, then
@@ -543,7 +484,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
    
-   r1r2 = _radius * angle;
+   r1r2 = get_radius() * angle;
    aWrapResult.wrap_path_length = r1r2;
 
     Vec3 axis3;
