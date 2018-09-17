@@ -185,30 +185,6 @@ string WrapDoubleCylinderObst::getDimensionsString() const
     return dimensions.str();
 }
 
-double WrapDoubleCylinderObst::getRadius() const {
-    return get_radiusUcyl();
-}
-
-void WrapDoubleCylinderObst::setRadius(double aRadius) {
-    set_radiusUcyl(aRadius);
-}
-
-double WrapDoubleCylinderObst::getLength() const {
-    return get_length();
-}
-
-void WrapDoubleCylinderObst::setLength(double aLength) {
-    set_length(aLength);
-}
-
-int WrapDoubleCylinderObst::getWrapDirection() const {
-    return (int)m_wrapUcylDirection;
-}
-
-
-
-
-
 
 /*============================================================================*/
 #define OBST_BUFF   0.0001  /* BUFFER BETWEEN OBST SURFACE AND POINTS (IN mm) */

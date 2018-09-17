@@ -96,13 +96,6 @@ public:
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
 
-    double getRadius() const;
-    void setRadius(double aRadius);
-    double getLength() const;
-    void setLength(double aLength);
-    int getWrapDirection() const;
-
-
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
