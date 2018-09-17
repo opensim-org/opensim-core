@@ -32,8 +32,7 @@ public:
     MucoConstraint();
 
 private:
-    OpenSim_DECLARE_PROPERTY_ATLEAST(bounds, MucoBounds, 1);
-
+    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(bounds, MucoBounds, 1, "TODO");
 
 
 
@@ -47,7 +46,7 @@ private:
 
 
 
-
+};
 
 } // namespace OpenSim
 

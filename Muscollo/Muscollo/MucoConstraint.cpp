@@ -27,6 +27,6 @@ MucoConstraint::MucoConstraint() {
 
 
 void MucoConstraint::constructProperties() {
-
-
+    std::vector<MucoBounds> initValue;
+    constructProperty_bounds(initValue);    
 }
