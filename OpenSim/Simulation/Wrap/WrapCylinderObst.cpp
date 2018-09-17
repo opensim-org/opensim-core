@@ -102,7 +102,7 @@ void WrapCylinderObst::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(
         get_radius() < 0,
         InvalidPropertyValue,
-        getProperty_radius().getName(),
+        "radius",
         "Radius must be specified and cannot be less than zero");
 
 /*
@@ -123,7 +123,7 @@ void WrapCylinderObst::extendFinalizeFromProperties()
         string errorMessage = "wrapDirection was specified incorrectly. "
                                 "Use \"righthand\" or \"lefthand\".";
         OPENSIM_THROW_FRMOBJ(InvalidPropertyValue,
-                            getProperty_wrapDirection().getName(),
+                            "wrapDirection",
                             errorMessage);
     }
 
