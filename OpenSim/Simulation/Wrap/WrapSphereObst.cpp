@@ -40,13 +40,9 @@ static const char* wrapTypeName = "sphereObst";
 /**
 * Default constructor.
 */
-WrapSphereObst::WrapSphereObst() :
-WrapObject(),
-_radius(_radiusProp.getValueDbl()),
-_length(_lengthProp.getValueDbl())
+WrapSphereObst::WrapSphereObst()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -57,46 +53,17 @@ WrapSphereObst::~WrapSphereObst()
 {
 }
 
-//_____________________________________________________________________________
-/**
-* Copy constructor.
-*
-* @param aWrapSphereObst WrapSphereObst to be copied.
-*/
-WrapSphereObst::WrapSphereObst(const WrapSphereObst& aWrapSphereObst) :
-WrapObject(aWrapSphereObst),
-_radius(_radiusProp.getValueDbl()),
-_length(_lengthProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapSphereObst);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
-* Set the data members of this WrapSphere to their null values.
-*/
-void WrapSphereObst::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
 * Connect properties to local pointers.
 */
-void WrapSphereObst::setupProperties()
+void WrapSphereObst::constructProperties()
 {
-    _radiusProp.setName("radius");
-    _radiusProp.setValue(-1.0);
-    _propertySet.append(&_radiusProp);
-
-    _lengthProp.setName("length");
-    _lengthProp.setValue(1.0);
-    _propertySet.append(&_lengthProp);
+    constructProperty_radius(-1.0);
+    constructProperty_length(1.0);
 }
 
 //_____________________________________________________________________________
@@ -106,33 +73,21 @@ void WrapSphereObst::setupProperties()
 *
 * @param aModel point to OpenSim Model.
 */
-void WrapSphereObst::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapSphereObst::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
-    if (_radius < 0.0)
-    {
-        string errorMessage = "Error: radius for WrapSphereObst " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius must be specified and cannot be less than zero");
     
 /*  Sphere* sph = new Sphere(_radius);
     setGeometryQuadrants(sph);
 */
-}
-
-//_____________________________________________________________________________
-/**
-* Copy data members from one WrapSphereObst to another.
-*
-* @param aWrapSphereObst WrapSphereObst to be copied.
-*/
-void WrapSphereObst::copyData(const WrapSphereObst& aWrapSphereObst)
-{
-    _radius = aWrapSphereObst._radius;
-    _length = aWrapSphereObst._length;
 }
 
 //_____________________________________________________________________________
@@ -157,28 +112,10 @@ const char* WrapSphereObst::getWrapTypeName() const
 string WrapSphereObst::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radius << "\nheight " << _length;
+    dimensions << "radius " << get_radius() << "\nheight " << get_length();
 
     return dimensions.str();
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
-* Assignment operator.
-*
-* @return Reference to this object.
-*/
-WrapSphereObst& WrapSphereObst::operator=(const WrapSphereObst& aWrapSphereObst)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapSphereObst);
-
-    return(*this);
-}
-
 
 //=============================================================================
 // WRAPPING
@@ -197,7 +134,7 @@ WrapSphereObst& WrapSphereObst::operator=(const WrapSphereObst& aWrapSphereObst)
 int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                         const PathWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*_radius;
+    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*get_radius();
     SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy, Tx,Ty;
 //  cout << aPointP << " " << aPointS << "\n";
 
