@@ -82,8 +82,8 @@ void WrapCylinderObst::initCircleWrapPts()
 */
 void WrapCylinderObst::constructProperties()
 {
-    constructProperty_radius(-1.0);
-    constructProperty_wrapDirection("Unassigned");
+    constructProperty_radius(1.0);
+    constructProperty_wrapDirection("righthand");
     m_wrapDirection = righthand;
     constructProperty_length(1.0);
 }
@@ -102,8 +102,8 @@ void WrapCylinderObst::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(
         get_radius() < 0,
         InvalidPropertyValue,
-        "radius",
-        "Radius must be specified and cannot be less than zero");
+        getProperty_radius().getName(),
+        "Radius cannot be less than zero");
 
 /*
     Cylinder* cyl = new Cylinder(get_radius(), get_length());
@@ -127,6 +127,11 @@ void WrapCylinderObst::extendFinalizeFromProperties()
                             errorMessage);
     }
 
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_length() < 0,
+        InvalidPropertyValue,
+        getProperty_length().getName(),
+        "Length cannot be less than zero");
 }
 
 //_____________________________________________________________________________

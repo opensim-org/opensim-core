@@ -71,11 +71,11 @@ void WrapDoubleCylinderObst::constructProperties()
     m_wrapVcylDirection = righthand;
     _activeState = 0;
 
-    constructProperty_radiusUcyl(-1.0);
-    constructProperty_radiusVcyl(-1.0);
+    constructProperty_radiusUcyl(1.0);
+    constructProperty_radiusVcyl(1.0);
 
-    constructProperty_wrapUcylDirection("Unassigned");
-    constructProperty_wrapVcylDirection("Unassigned");
+    constructProperty_wrapUcylDirection("righthanded");
+    constructProperty_wrapVcylDirection("righthanded");
     constructProperty_wrapVcylHomeBodyName("Unassigned");
 
     const SimTK::Vec3 defaultRotations(0.0);
@@ -117,7 +117,7 @@ void WrapDoubleCylinderObst::extendFinalizeFromProperties()
     // maybe set a parent pointer, _body = aBody;
     if ( (get_radiusUcyl()<0.0) || (get_radiusVcyl() < 0.0) )
     {
-        string errorMessage = "Error: radii for WrapDoubleCylinderObst " + getName() + " were either not specified, or one or more is negative.";
+        string errorMessage = "Error: radii for WrapDoubleCylinderObst " + getName() + " cannot be less than zero.";
         throw Exception(errorMessage);
     }
 /*
