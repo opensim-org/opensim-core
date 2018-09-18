@@ -81,7 +81,7 @@ void WrapEllipsoid::constructProperties()
     // BASE CLASS
     //WrapObject::setupProperties();
 
-    SimTK::Vec3 defaultDimensions = {-1.0, -1.0, -1.0};
+    SimTK::Vec3 defaultDimensions = {1.0, 1.0, 1.0};
     constructProperty_dimensions(defaultDimensions);
 }
 
