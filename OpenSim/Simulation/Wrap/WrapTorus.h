@@ -52,8 +52,8 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(innerRadius, double, "The inner radius of the Torus.");
-    OpenSim_DECLARE_PROPERTY(outerRadius, double, "The outer radius of the Torus.");
+    OpenSim_DECLARE_PROPERTY(inner_radius, double, "The inner radius of the Torus.");
+    OpenSim_DECLARE_PROPERTY(outer_radius, double, "The outer radius of the Torus.");
 
 //=============================================================================
 // METHODS

@@ -74,8 +74,8 @@ WrapTorus::~WrapTorus()
  */
 void WrapTorus::constructProperties()
 {
-    constructProperty_innerRadius(-1.0);
-    constructProperty_outerRadius(-1.0);
+    constructProperty_inner_radius(-1.0);
+    constructProperty_outer_radius(-1.0);
 }
 
 void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -100,8 +100,8 @@ void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 
     const double averageXYScale =
         (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
-   upd_innerRadius() *= averageXYScale;
-   upd_outerRadius() *= averageXYScale;
+   upd_inner_radius() *= averageXYScale;
+   upd_outer_radius() *= averageXYScale;
 }
 
 //_____________________________________________________________________________
@@ -118,16 +118,16 @@ void WrapTorus::extendFinalizeFromProperties()
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
-        get_innerRadius() < 0,
+        get_inner_radius() < 0,
         InvalidPropertyValue,
-        getProperty_innerRadius().getName(),
+        getProperty_inner_radius().getName(),
         "Inner radius must be specified and cannot be less than zero");
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
-        get_outerRadius() < 0,
+        get_outer_radius() < 0,
         InvalidPropertyValue,
-        getProperty_outerRadius().getName(),
+        getProperty_outer_radius().getName(),
         "Outer Radius must be specified and cannot be less than zero");
 
 /*  Torus* torus = new Torus(_innerRadius, (_outerRadius-_innerRadius));
@@ -157,7 +157,7 @@ const char* WrapTorus::getWrapTypeName() const
 string WrapTorus::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << get_innerRadius() << " " << get_outerRadius();
+    dimensions << "radius " << get_inner_radius() << " " << get_outer_radius();
 
     return dimensions.str();
 }
@@ -169,7 +169,7 @@ string WrapTorus::getDimensionsString() const
  */
 SimTK::Real WrapTorus::getInnerRadius() const
 {
-    return get_innerRadius();
+    return get_inner_radius();
 }
 //_____________________________________________________________________________
 /**
@@ -179,7 +179,7 @@ SimTK::Real WrapTorus::getInnerRadius() const
  */
 SimTK::Real WrapTorus::getOuterRadius() const
 {
-    return get_outerRadius();
+    return get_outer_radius();
 }
 
 //=============================================================================
@@ -205,14 +205,14 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     //bool far_side_wrap = false;
     aFlag = true;
 
-    if (findClosestPoint(get_outerRadius(), &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
+    if (findClosestPoint(get_outer_radius(), &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
         return noWrap;
 
     // Now put a cylinder at closestPt and call the cylinder wrap code.
     WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
     SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-    cyl.set_radius(get_innerRadius());
+    cyl.set_radius(get_inner_radius());
     cyl.set_length(CYL_LENGTH);
     cyl.set_quadrant("+x");
 
