@@ -70,7 +70,7 @@ WrapSphere::~WrapSphere()
  */
 void WrapSphere::constructProperties()
 {
-    constructProperty_radius(-1.0);
+    constructProperty_radius(1.0);
 }
 
 void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -102,7 +102,7 @@ void WrapSphere::extendFinalizeFromProperties()
         get_radius() < 0,
         InvalidPropertyValue,
         getProperty_radius().getName(),
-        "Radius must be specified and cannot be less than zero");
+        "Radius cannot be less than zero");
 
 /*
     Sphere* sphere = new Sphere(_radius);
