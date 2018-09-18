@@ -19,35 +19,98 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoBounds.h"
+#include "MuscolloUtilities.h"
 
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+
+#include <simbody/internal/Constraint.h>
+
 
 namespace OpenSim {
+
+// ============================================================================
+// MucoConstraint
+// ============================================================================
 
 class OSIMMUSCOLLO_API MucoConstraint : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraint, Object);
 public:
     // Default constructor.
     MucoConstraint();
+    // Constructor for holonomic constraints.
+    MucoConstraint(const std::string& name, 
+        const std::vector<MucoBounds>& bounds, 
+        const std::vector<std::string>& suffixes);
+    // TODO Generic constructor
 
-private:
-    OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(bounds, MucoBounds, 1, "TODO");
+    // Get and set methods.
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    MucoBounds getBoundsAtIndex(const int& idx) const
+    {   return MucoBounds(get_lower_bounds(idx), get_upper_bounds(idx)); }
+
+    // TODO add check that property has correct number of elements
+    int getNumberScalarEquations() const 
+    {   return getProperty_lower_bounds().size(); }
+
+    void setBoundsAtIndex(const int& idx, const MucoBounds& bounds) {
+        upd_lower_bounds(idx) = bounds.getLower();
+        upd_upper_bounds(idx) = bounds.getUpper();
+    }
+
+    // Function to calculate position errors in constraint equations.
+    virtual void calcPositionErrors(const SimTK::State& state, 
+        SimTK::Vector_<double> out) const;
+
+    // TODO
+    //virtual void calcVelocityErrors(const SimTK::State& state,
+    //    SimTK::Vector_<double> out) const;
+    //virtual void calcAccelerationErrors(const SimTK::State& state,
+    //    SimTK::Vector_<double> out) const;
+
+    
+
+protected:
+    OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "TODO");
+    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double, "TODO");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(suffixes, std::vector<std::string>, 
+        "TODO"); 
 
 
 
-
-
-
-
+   int m_num_position_eqs;
+   //TODO
+   //int m_num_velocity_eqs;
+   //int m_num_acceleration_eqs;
 
 
    void constructProperties();
+};
 
+// ============================================================================
+// MucoSimbodyConstraint
+// ============================================================================
 
+class OSIMMUSCOLLO_API MucoSimbodyConstraint : public MucoConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoSimbodyConstraint, MucoConstraint);
+public:
+    // Default constructor.
+    MucoSimbodyConstraint();
+    // Generic constructor.
+    MucoSimbodyConstraint(const std::string& name);
 
+    void initialize(Model& model) const;
+
+ 
+private:
+    void calcAccelerationsFromMultipliers(const Model& model, 
+        const SimTK::State& state, const SimTK::Vector& multipliers, 
+        SimTK::Vector& udot) const;
+    
 };
 
 } // namespace OpenSim
 
-#endif // MUSCOLLO_MUCOPARAMETER_H
+#endif // MUSCOLLO_MUCOCONSTRAINT_H

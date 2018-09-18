@@ -20,13 +20,73 @@
 
 using namespace OpenSim;
 
+// ============================================================================
+// MucoConstraint
+// ============================================================================
+
 MucoConstraint::MucoConstraint() {
     constructProperties();
-    if (getName().empty()) setName("path_constraint");
+    if (getName().empty()) setName("constraint");
+}
+
+MucoConstraint::MucoConstraint(const std::string& name, 
+    const std::vector<MucoBounds>& bounds, 
+    const std::vector<std::string>& suffixes) : MucoConstraint() {
+    
+    setName(name);
+    for (int i = 0; i < bounds.size(); ++i) {
+        upd_lower_bounds(i) = bounds[i].getLower();
+        upd_upper_bounds(i) = bounds[i].getUpper();
+    }
+    set_suffixes(suffixes);
+
+}
+
+void MucoConstraint::constructProperties() {
+    constructProperty_lower_bounds();
+    constructProperty_upper_bounds();
+    constructProperty_suffixes();
+}
+
+void MucoConstraint::calcPositionErrors(const SimTK::State&,
+    SimTK::Vector_<double> out) const  
+{}
+
+// ============================================================================
+// MucoSimbodyConstraint
+// ============================================================================
+
+
+void MucoSimbodyConstraint::initialize(Model& model) const {
+
+
+
+
+
 }
 
 
-void MucoConstraint::constructProperties() {
-    std::vector<MucoBounds> initValue;
-    constructProperty_bounds(initValue);    
+void MucoSimbodyConstraint::calcAccelerationsFromMultipliers(const Model& model, 
+    const SimTK::State& state,
+    const SimTK::Vector& multipliers, SimTK::Vector& udot) const {
+
+    const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
+    const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
+        multibody.getRigidBodyForces(state, SimTK::Stage::Dynamics);
+    const SimTK::Vector& appliedMobilityForces 
+        = multibody.getMobilityForces(state, SimTK::Stage::Dynamics);
+
+    const SimTK::SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
+    // TODO make these mutable member variables
+    SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
+    SimTK::Vector constraintMobilityForces;
+    // Multipliers are negated so constraint forces can be used like applied 
+    // forces.
+    matter.calcConstraintForcesFromMultipliers(state, -multipliers,
+        constraintBodyForces, constraintMobilityForces);
+
+    SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    matter.calcAccelerationIgnoringConstraints(state,
+        appliedMobilityForces + constraintMobilityForces,
+        appliedBodyForces + constraintBodyForces, udot, A_GB);
 }
