@@ -74,8 +74,8 @@ WrapTorus::~WrapTorus()
  */
 void WrapTorus::constructProperties()
 {
-    constructProperty_inner_radius(-1.0);
-    constructProperty_outer_radius(-1.0);
+    constructProperty_inner_radius(1.0);
+    constructProperty_outer_radius(1.0);
 }
 
 void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -109,7 +109,7 @@ void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel pointer to OpenSim Model 
+ * @param aModel pointer to OpenSim Model
  */
 void WrapTorus::extendFinalizeFromProperties()
 {
@@ -121,14 +121,14 @@ void WrapTorus::extendFinalizeFromProperties()
         get_inner_radius() < 0,
         InvalidPropertyValue,
         getProperty_inner_radius().getName(),
-        "Inner radius must be specified and cannot be less than zero");
+        "Inner radius cannot be less than zero");
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
         get_outer_radius() < 0,
         InvalidPropertyValue,
         getProperty_outer_radius().getName(),
-        "Outer Radius must be specified and cannot be less than zero");
+        "Outer Radius cannot be less than zero");
 
 /*  Torus* torus = new Torus(_innerRadius, (_outerRadius-_innerRadius));
     setGeometryQuadrants(torus);
@@ -279,7 +279,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
    // work arrays
-   int ipvt[2];  
+   int ipvt[2];
    double diag[2], qtf[2], wa1[2], wa2[2], wa3[2], wa4[2];
    // Circle variables
    double u, mag, nx, ny, nz, x, y, z, a1[3], a2[3], distance1, distance2, betterPt = 0;
@@ -446,7 +446,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 }
 
 
-// Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
+// Implement generateDecorations by WrapTorus to replace the previous out of place implementation
 // in ModelVisualizer, not implemented yet in API visualizer
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {
