@@ -23,7 +23,8 @@
 // Following three lines hacked in out of order to work around WrapObjects use
 // in PhysicalFrame
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
-%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject, OpenSim::Object>;
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject, OpenSim::ModelComponent>;
+%template(ModelComponentSetWrapObjects) OpenSim::ModelComponentSet<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -145,8 +146,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
 %include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject, OpenSim::Object>;
-//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
 %template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap, OpenSim::Object>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -347,3 +346,4 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(PathPointSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(ProbeSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);
