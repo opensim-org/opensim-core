@@ -14,6 +14,8 @@ set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
 # To create a drop-down in the CMake GUI:
 set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
+option(MUSCOLLO_BUILD_EXECUTABLE
+    "Build the opensim-muscollo executable." ON)
 option(MUSCOLLO_BUILD_EXAMPLES
     "Build, test, and install Muscollo C++ examples." ON)
 
