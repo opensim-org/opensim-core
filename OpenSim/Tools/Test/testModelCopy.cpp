@@ -84,7 +84,7 @@ int main()
 
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
-        testCopyModel("Neck3dof_point_constraint_40_verbose.osim", 25, "spine", 1);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
     }
     catch (const Exception& e) {
         cout << e.what() << endl;
