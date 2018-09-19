@@ -377,6 +377,11 @@ void Model::constructProperties()
     constructProperty_ModelVisualPreferences(mvps);
 }
 
+// Append to the Model's validation log
+void Model::appendToValidationLog(const std::string& note) {
+    _validationLog.append(note);
+}
+
 //------------------------------------------------------------------------------
 //                                BUILD SYSTEM
 //------------------------------------------------------------------------------
@@ -403,10 +408,6 @@ void Model::buildSystem() {
 SimTK::State& Model::initializeState() {
     if (!hasSystem()) 
         throw Exception("Model::initializeState(): call buildSystem() first.");
-
-    std::string warn = getWarningMesssageForMotionTypeInconsistency();
-    if (warn.size())
-        cout << warn << endl;
 
     // This tells Simbody to finalize the System.
     getMultibodySystem().invalidateSystemTopologyCache();
@@ -653,20 +654,24 @@ std::string Model::getWarningMesssageForMotionTypeInconsistency() const
 
         if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
             (oldMotionType != motionType) ){
-            message += " Coordinate '" + coord.getName() +
-                "' had incorrect MotionType '" + enumToString(oldMotionType) +
-                "', now set to '" + enumToString(motionType) + "'\n";
+            message += "Coordinate '" + coord.getName() +
+                "' was labeled as '" + enumToString(oldMotionType) +
+                "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
         }
     }
 
     // We have a reason to provide a warning. Add more details about the model
     // and how to resolve future issues.
     if (message.size()) {
-        message = "Model '" + getName() + "' has inconsistencies:\n" + message;
-        message += "Please consider updating kinematics (.mot) files associated\n"
-            "with this model to ensure consistent unit conversion (from degrees)\n"
-            "when applying kinematics to the model. See this utility:\n"
-            "updateKinematicsFilesForUpdatedModel(model_file, list_of_MOT_files)";
+        message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
+        message += 
+            "You must update any motion files you generated in versions prior to 4.0. You can:\n"
+            "  (1) Run the updatePre40KinematicsFilesFor40MotionType() utility (in the scripting shell) OR\n"
+            "  (2) Re-run the Inverse Kinematics Tool with the updated model in 4.0.\n"
+            "In versions prior to 4.0, we allowed some Coupled coordinates to be incorrectly\n"
+            "labeled as Rotational. This leads to incorrect motion when playing back a pre-4.0\n"
+            "motion file (.mot or .sto in degrees) and incorrect inverse dynamics and\n"
+            "static optimization results.";
     }
 
     return message;
@@ -690,11 +695,8 @@ void Model::extendFinalizeFromProperties()
         fs.updMuscles();
     }
 
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered ";
-        cout << "interpreting properties of the model. " <<
-            getValidationLog() << endl;
-    }
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    appendToValidationLog(warn);
 
     updCoordinateSet().populate(*this);
 }
