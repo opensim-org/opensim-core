@@ -178,7 +178,7 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
 }
 
 void testModelWithPassiveForces() {
-    AnalyzeTool analyze("staticoptimization_spring_Setup_40.xml");
+    AnalyzeTool analyze("staticoptimization_spring_Setup.xml");
     analyze.run();
     std::string resultsDir("ResultsSO_spring");
     Storage activations(resultsDir + "/walk_subject01_ankle_spring_StaticOptimization_activation.sto");
