@@ -84,7 +84,7 @@ private:
     /* If point of applications for external forces must be re-expressed
        then build new storages to be assigned to the individual ExternalForces
        with the transformed point data. Hang-on to them so we can delete them. */
-    ArrayPtrs<Storage> _storages;
+    std::vector<std::shared_ptr<Storage>> _storages;
 
 //=============================================================================
 // METHODS

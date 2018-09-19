@@ -57,7 +57,7 @@ int main()
     double forceTols[4] = {0.5, 4, 5, 6};
     
     SimTK::Array_<std::string> failures;
-    
+
     for(int i=0; i< muscleModelNames.getSize(); ++i){
         try { // regression test for the Thelen deprecate muscle
            // otherwise verify that SO runs with the new models
@@ -68,7 +68,7 @@ int main()
             failures.push_back("testArm26_"+muscleModelNames[i]);
         }
     }
-    
+
     try {
         testModelWithPassiveForces();
     }
@@ -76,7 +76,7 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testModelWithPassiveForces");
     }
-    
+
     try {
         testLapackErrorDLASD4();
     }
@@ -178,7 +178,7 @@ void testArm26(const string& muscleModelClassName, double actTol, double forceTo
 }
 
 void testModelWithPassiveForces() {
-    AnalyzeTool analyze("staticoptimization_spring_Setup.xml");
+    AnalyzeTool analyze("staticoptimization_spring_Setup_40.xml");
     analyze.run();
     std::string resultsDir("ResultsSO_spring");
     Storage activations(resultsDir + "/walk_subject01_ankle_spring_StaticOptimization_activation.sto");

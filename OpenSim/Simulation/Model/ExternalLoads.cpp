@@ -43,7 +43,6 @@ using SimTK::Vec3;
  */
 ExternalLoads::~ExternalLoads()
 {
-    _storages.clearAndDestroy();
 }
 //_____________________________________________________________________________
 /**
@@ -101,7 +100,7 @@ void ExternalLoads::setNull()
 
     // PROPERTIES
     setupSerializedMembers();
-    _storages.clearAndDestroy();
+    _storages.clear();
 }
 
 
@@ -117,6 +116,7 @@ void ExternalLoads::copyData(const ExternalLoads &aAbsExternalLoads)
     _dataFileName = aAbsExternalLoads._dataFileName;
     _externalLoadsModelKinematicsFileName = aAbsExternalLoads._externalLoadsModelKinematicsFileName;
     _lowpassCutoffFrequencyForLoadKinematics = aAbsExternalLoads._lowpassCutoffFrequencyForLoadKinematics;
+    _storages = aAbsExternalLoads._storages;
 }
 
 //_____________________________________________________________________________
@@ -173,16 +173,18 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
 
 void ExternalLoads::extendConnectToModel(Model& aModel)
 {
-    Storage *forceData = new Storage(_dataFileName);
-
-    for(int i=0; i<getSize(); ++i)
-        get(i).setDataSource(*forceData);
-
     // BASE CLASS
     Super::extendConnectToModel(aModel);
 
-    // add loaded storage into list of storages for later garbage collection
-    _storages.append(forceData);
+    if (_dataFileName.length() > 0) {
+        Storage *forceData = new Storage(_dataFileName);
+
+        for (int i = 0; i < getSize(); ++i)
+            get(i).setDataSource(*forceData);
+
+        // add loaded storage into list of storages for later garbage collection
+        _storages.push_back(shared_ptr<Storage>(forceData));
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -203,18 +205,30 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
  * coordinates for the model. Note that all generalized coordinates must
  * be specified and in radians and Euler parameters.
  */
-void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime, double endTime)
+void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(
+    const Storage &kinematics, double startTime, double endTime)
 {
-    for(int i=0; i<getSize(); i++){
+    std::vector<ExternalForce*> transformedForces;
+    for(int i=0; i<getSize(); ++i){
         ExternalForce *transformedExf = transformPointExpressedInGroundToAppliedBody(get(i), kinematics, startTime, endTime);
-        if(transformedExf){
-            // replace the force
+        transformedForces.push_back(transformedExf);
+    }
+    // Once we've transformed the forces (done with computation),
+    // then replace them in the Set
+    for (int i = 0; i < transformedForces.size(); ++i) {
+        ExternalForce *transformedExf = transformedForces[i];
+        if (transformedExf) {
             set(i, transformedExf);
         }
     }
+
+    if (transformedForces.size())
+        _dataFileName = "";
 }
 
-ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime)
+ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(
+    const ExternalForce &exForce, const Storage &kinematics,
+    double startTime, double endTime)
 {
     if(!hasModel() || !getModel().isValidSystem()) // no model and no system underneath, cannot proceed
         throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
@@ -243,7 +257,8 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
     if (nt > 0){
         if (startTime!= -SimTK::Infinity){  // Start time was actually specified.
-            // since splining relevant data, make sure we don't truncate user specified time by starting one index back
+            // since we are interpolating relevant data, make sure we don't
+            // truncate user specified time by starting one index back
             findex = kinematics.findIndex(startTime)-1; 
             startIndex = findex >= 0 ? findex : 0;
         }
@@ -354,9 +369,9 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
     exF_transformedPoint->setPointExpressedInBodyName(exForce.getAppliedToBodyName());
     exF_transformedPoint->setDataSource(*newDataSource);
 
-    _storages.append(newDataSource);
+    _storages.push_back(shared_ptr<Storage>(newDataSource));
 
-    newDataSource->print("NewDataSource_TransformedP.sto");
+    newDataSource->print(exForce.getName()+"_NewDataSource_TransformedP.sto");
 
     return exF_transformedPoint;
 }
@@ -418,7 +433,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             
             const Array<string> &labels = dataSource->getColumnLabels();
             // Populate data file and other things that haven't changed
-            // Create Set or Forces from this XML node, which we
+            // Create Set of Forces from this XML node, which we
             // then reassign to an ExternalForce and add to ExternalLoads
             Set<PrescribedForce> oldForces(getDocument()->getFileName(), true);
             for(int i=0; i< oldForces.getSize(); i++){
