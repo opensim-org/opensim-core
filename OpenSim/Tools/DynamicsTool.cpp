@@ -218,12 +218,19 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
     }
 }
 
-bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel, const Storage *loadKinematics)
 {
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
+
+    Model copyModel = aModel;
+    // speedup realize position calculations by removing all force elements
+    // including muscles whose path calculations are most intensive
+    copyModel.updForceSet().clearAndDestroy();
+    copyModel.updControllerSet().clearAndDestroy();
 
     // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
@@ -233,7 +240,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     ExternalLoads* externalLoads = nullptr;
     try {
         externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
-        aModel.addModelComponent(externalLoads);
+        copyModel.addModelComponent(externalLoads);
     }
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
@@ -269,7 +276,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         if(temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
             cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
             temp->pad(temp->getSize()/2);
-            temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }
         loadKinematicsForPointTransformation = temp;
     }
@@ -277,22 +284,27 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
-        SimTK::State& s = aModel.initSystem();
+        SimTK::State& s = copyModel.initSystem();
 
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
         // qStore and uStore returned are in radians
-        aModel.getSimbodyEngine().formCompleteStorages(s, 
+        copyModel.getSimbodyEngine().formCompleteStorages(s,
             *loadKinematicsForPointTransformation,
             qStore, uStore);
 
-        _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
+        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
         delete qStore;
         delete uStore;
-
-        aModel.invalidateSystem();
     }
+
+    //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
+    ExternalLoads* exLoadsClone = externalLoads->clone();
+    aModel.addModelComponent(exLoadsClone);
+
+    // copy over created external loads to the external loads owned by the tool
+    _externalLoads = *externalLoads;
 
     if(!loadKinematics)
         delete loadKinematics;

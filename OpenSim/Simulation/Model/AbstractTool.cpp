@@ -553,12 +553,19 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 
 
-bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel, const Storage *loadKinematics)
 {
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
+
+    Model copyModel = aModel;
+    // speedup realize position calculations by removing all force elements
+    // including muscles whose path calculations are most intensive
+    copyModel.updForceSet().clearAndDestroy();
+    copyModel.updControllerSet().clearAndDestroy();
 
     // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
@@ -568,7 +575,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     ExternalLoads* externalLoads = nullptr;
     try {
         externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
-        aModel.addModelComponent(externalLoads);
+        copyModel.addModelComponent(externalLoads);
     }
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
@@ -597,14 +604,15 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             temp = new Storage(loadKinematicsFileName);
             if(!temp){
                 IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+                throw Exception("AbstractTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
             }
         }
         // if loading the data, do whatever filtering operations are also specified
-        if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
+        if(temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
+            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "
+                << externalLoads->getLowpassCutoffFrequencyForLoadKinematics() <<"."<<endl;
             temp->pad(temp->getSize()/2);
-            temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }
         loadKinematicsForPointTransformation = temp;
     }
@@ -612,22 +620,26 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
-        SimTK::State& s = aModel.initSystem();
+        SimTK::State& s = copyModel.initSystem();
 
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, 
+        copyModel.getSimbodyEngine().formCompleteStorages(s,
             *loadKinematicsForPointTransformation,
-            qStore,
-            uStore);
-       
-        _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
+            qStore, uStore);
+
+        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;
-
-        aModel.invalidateSystem();
     }
+
+    //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
+    ExternalLoads* exLoadsClone = externalLoads->clone();
+    aModel.addModelComponent(exLoadsClone);
+
+    // copy over created external loads to the external loads owned by the tool
+    _externalLoads = *externalLoads;
     
     if(!loadKinematics)
         delete loadKinematics;
