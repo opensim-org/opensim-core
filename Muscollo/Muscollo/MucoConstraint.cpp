@@ -48,20 +48,42 @@ void MucoConstraint::constructProperties() {
     constructProperty_suffixes();
 }
 
-void MucoConstraint::calcPositionErrors(const SimTK::State&,
+void MucoConstraint::calcConstraintErrors(const SimTK::State&,
     SimTK::Vector_<double> out) const  
 {}
+
 
 // ============================================================================
 // MucoSimbodyConstraint
 // ============================================================================
 
 
+MucoSimbodyConstraint::MucoSimbodyConstraint() : MucoConstraint() {
+
+}
+
+
+
+
 void MucoSimbodyConstraint::initialize(Model& model) const {
+    auto& matter = model.updMatterSubsystem();
+    auto NC = matter.getNumConstraints();
 
+    const SimTK::State& state = model.initSystem();
+    SimTK::Constraint& constraint 
+        = matter.updConstraint(get_constraint_index());
 
+    // Throw error if constraint is not enabled in model.
+    // TODO do somewhere else?
+    if (constraint.isDisabled(state)) {
+        OPENSIM_THROW(Exception, "Constraint is not enabled in model.");
+    }
 
+    // Get number of scalar equations of each type?
+    constraint.getNumConstraintEquationsInUse(state, m_num_position_eqs, 
+        m_num_velocity_eqs, m_num_acceleration_eqs);
 
+    m_constraint_ref = constraint;
 
 }
 
@@ -77,7 +99,8 @@ void MucoSimbodyConstraint::calcAccelerationsFromMultipliers(const Model& model,
         = multibody.getMobilityForces(state, SimTK::Stage::Dynamics);
 
     const SimTK::SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
-    // TODO make these mutable member variables
+    // TODO make these mutable member variables to avoid unnecessary memory
+    // allocation (is this possible?)
     SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
     SimTK::Vector constraintMobilityForces;
     // Multipliers are negated so constraint forces can be used like applied 
@@ -85,7 +108,6 @@ void MucoSimbodyConstraint::calcAccelerationsFromMultipliers(const Model& model,
     matter.calcConstraintForcesFromMultipliers(state, -multipliers,
         constraintBodyForces, constraintMobilityForces);
 
-    SimTK::Vector_<SimTK::SpatialVec> A_GB;
     matter.calcAccelerationIgnoringConstraints(state,
         appliedMobilityForces + constraintMobilityForces,
         appliedBodyForces + constraintBodyForces, udot, A_GB);

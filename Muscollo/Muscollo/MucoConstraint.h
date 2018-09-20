@@ -39,11 +39,11 @@ class OSIMMUSCOLLO_API MucoConstraint : public Object {
 public:
     // Default constructor.
     MucoConstraint();
-    // Constructor for holonomic constraints.
+    // Convenience constructor.
     MucoConstraint(const std::string& name, 
         const std::vector<MucoBounds>& bounds, 
         const std::vector<std::string>& suffixes);
-    // TODO Generic constructor
+    // TODO Generic constructor.
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
@@ -61,14 +61,8 @@ public:
     }
 
     // Function to calculate position errors in constraint equations.
-    virtual void calcPositionErrors(const SimTK::State& state, 
+    virtual void calcConstraintErrors(const SimTK::State& state, 
         SimTK::Vector_<double> out) const;
-
-    // TODO
-    //virtual void calcVelocityErrors(const SimTK::State& state,
-    //    SimTK::Vector_<double> out) const;
-    //virtual void calcAccelerationErrors(const SimTK::State& state,
-    //    SimTK::Vector_<double> out) const;
 
     
 
@@ -80,14 +74,14 @@ protected:
 
 
 
-   int m_num_position_eqs;
-   //TODO
-   //int m_num_velocity_eqs;
-   //int m_num_acceleration_eqs;
+
+   //int m_num_equations;
 
 
    void constructProperties();
 };
+
+
 
 // ============================================================================
 // MucoSimbodyConstraint
@@ -99,16 +93,40 @@ public:
     // Default constructor.
     MucoSimbodyConstraint();
     // Generic constructor.
-    MucoSimbodyConstraint(const std::string& name);
 
     void initialize(Model& model) const;
 
+
+    // Function to calculate position errors in constraint equations.
+    //virtual void calcConstraintErrors(const SimTK::State& state,
+    //    SimTK::Vector_<double> out) const;
+
+    // TODO
+    //virtual void calcVelocityErrors(const SimTK::State& state,
+    //    SimTK::Vector_<double> out) const;
+    //virtual void calcAccelerationErrors(const SimTK::State& state,
+    //    SimTK::Vector_<double> out) const;
+
  
 private:
+    OpenSim_DECLARE_PROPERTY(constraint_index, SimTK::ConstraintIndex,
+        "TODO");
+
     void calcAccelerationsFromMultipliers(const Model& model, 
         const SimTK::State& state, const SimTK::Vector& multipliers, 
         SimTK::Vector& udot) const;
     
+    mutable int m_num_position_eqs;
+    mutable int m_num_velocity_eqs;
+    mutable int m_num_acceleration_eqs;
+    mutable SimTK::ReferencePtr<SimTK::Constraint> m_constraint_ref;
+
+    // This member variable avoids unnecessary extra allocation of memory for
+    // spatial accelerations, which are incidental to the computation of
+    // generalized accelerations when specifying the dynamics with model 
+    // constraints present.
+    mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+
 };
 
 } // namespace OpenSim
