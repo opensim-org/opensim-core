@@ -557,6 +557,13 @@ protected:
         _objectIsUpToDate = false;
     }
 
+    /** To be up-to-date with properties we must make sure the name of an object,
+    which can be changed independent of the property name, remains consistent
+    with any restrictions specified by the Property. For example, unnamed
+    properties should not have a name. Furthermore, named properties whose object
+    has no name, should have the property name. **/
+    void makeObjectNamesConsistentWithProperties();
+
     /** Use this method only if you're deserializing from a file and the object
     is at the top level; that is, primarily in constructors that take a file
     name as input. **/
@@ -799,7 +806,6 @@ private:
 
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
-
 
 //==============================================================================
 // DATA

@@ -157,7 +157,8 @@ void Component::finalizeFromProperties()
 {
     reset();
 
-    setObjectIsUpToDateWithProperties();
+    // last opportunity to modify Object names based on properties
+    makeObjectNamesConsistentWithProperties();
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 

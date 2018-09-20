@@ -1567,13 +1567,8 @@ makeObjectFromFile(const std::string &aFileName)
     return nullptr;
 }
 
-void Object::setObjectIsUpToDateWithProperties() {
-    // To be up-to-date with properties we must reset the name of objects that
-    // can be mangled independent of the property name, which will mean that the
-    // serialized and original object can differ. Once the Object is up-to-date
-    // with its properties it MUST guarantee that the properties and any model 
-    // values/names are consistent. We handle that here.
-
+void Object::makeObjectNamesConsistentWithProperties()
+{
     // If a single object property, assign the object's name as the property
     // since renaming will cause the name to be inconsistent with what is 
     // serialized (property name). We enforce consistency while the object is
@@ -1588,15 +1583,16 @@ void Object::setObjectIsUpToDateWithProperties() {
                 if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
                     obj.setName(prop.getName());
                 }
-                obj.setObjectIsUpToDateWithProperties();
+                obj.makeObjectNamesConsistentWithProperties();
             }
         }
     }
-   
-    // Now confirm that the Object and its properties are up-to-date
-    _objectIsUpToDate = true;
 }
 
+void Object::setObjectIsUpToDateWithProperties()
+{
+    _objectIsUpToDate = true;
+}
 
 void Object::updateFromXMLDocument()
 {
