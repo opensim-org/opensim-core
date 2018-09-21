@@ -1569,10 +1569,8 @@ makeObjectFromFile(const std::string &aFileName)
 
 void Object::makeObjectNamesConsistentWithProperties()
 {
-    // If a single object property, assign the object's name as the property
-    // since renaming will cause the name to be inconsistent with what is 
-    // serialized (property name). We enforce consistency while the object is
-    // still editable and not during serialization when the model is const.
+    // Cycle through this object's Object properties and make sure those
+    // that are objects have names that are consistent with object property. 
     for (int i = 0; i < getNumProperties(); ++i) {
         auto& prop = updPropertyByIndex(i);
         // check if property is of type Object
@@ -1580,9 +1578,14 @@ void Object::makeObjectNamesConsistentWithProperties()
             // a property is a list so cycle through its contents
             for (int j = 0; j < prop.size(); ++j) {
                 Object& obj = prop.updValueAsObject(j);
+                // If a single object property, set the object's name to the
+                // property's name, otherwise it will be inconsistent with
+                // what is serialized (property name).
                 if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
                     obj.setName(prop.getName());
                 }
+                // In any case, any objects that are properties of this object
+                // also need to be processed
                 obj.makeObjectNamesConsistentWithProperties();
             }
         }
