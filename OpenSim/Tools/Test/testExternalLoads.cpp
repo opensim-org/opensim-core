@@ -139,9 +139,7 @@ void testExternalLoad()
     extLoads->adoptAndAppend(&xf);
 
     extLoads->print("ExternalLoads_test.xml");
-
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
+    model.addModelComponent(extLoads);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter();
@@ -218,16 +216,7 @@ void testExternalLoad()
 
     //Ask external loads to transform point expressed in ground to the applied body
     extLoads->setDataFileName(forceStore2.getName());
-    extLoads->connectToModel(model);
     extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
-
-    // remove previous external force from the model too
-    model.disownAllComponents();
-    model.updForceSet().setSize(0);
-
-    // after external loads has transformed the point of the force, then add it the model
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
 
     // recreate dynamical system to reflect new force
     SimTK::State &s3 = model.initSystem();
