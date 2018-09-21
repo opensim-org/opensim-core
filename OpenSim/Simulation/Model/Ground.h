@@ -63,6 +63,8 @@ private:
     SimTK::SpatialVec
         calcAccelerationInGround(const SimTK::State& state) const override final;
 
+    static const char* GroundNameString;
+
 };  // END of class Ground
 
 //=============================================================================

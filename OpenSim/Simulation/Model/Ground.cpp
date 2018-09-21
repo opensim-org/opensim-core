@@ -32,7 +32,7 @@
 using namespace std;
 using namespace OpenSim;
 
-static const std::string GroundNameString{ "ground" };
+const char* Ground::GroundNameString{ "ground" };
 
 //=============================================================================
 // CONSTRUCTOR(S)
