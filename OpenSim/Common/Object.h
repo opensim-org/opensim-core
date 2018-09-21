@@ -519,11 +519,10 @@ public:
         node, this object will become the root node for a new XML document. If 
         this object already has an XML node associated with it, no new nodes 
         are ever generated and the parent node is not used.
-    @param      prop
+    @param      prop (optional)
         The pointer to the property that contains this object. If it is
         present, check if the property is unnamed and if NOT, use the property
-        name as its name when updating the XML node.
-    **/
+        name as its name when updating the XML node. **/
     void updateXMLNode(SimTK::Xml::Element& parent,
                        const AbstractProperty* prop=nullptr) const;
 

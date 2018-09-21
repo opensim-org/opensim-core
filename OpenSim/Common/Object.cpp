@@ -1025,27 +1025,28 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
         // Handle not-inlined objects first.
         if (!aParent.isValid()) {
             cout<<"Root node must be inlined"<<*this<<endl;
-        } else {
-            // Can we make this more efficient than recreating the node again?
-            // We can possibly check when setInlined() is invoked if we need to do it or not
-            // Create a new document and write object to it
-            string offlineFileName = getDocumentFileName();
-            if(IO::GetPrintOfflineDocuments()) {
-                // The problem is that generateChildXMLDocument makes a root which allows print
-                // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-                // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-                _inlined=true;
-                print(offlineFileName);
-                _inlined=false;
-                SimTK::Xml::Element myObjectElement(getConcreteClassName());
-                myObjectElement.setAttributeValue("file", offlineFileName);
-                aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
-            }
-            /*
-            if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
-            XMLNode::SetAttribute(_refNode,"file",offlineFileName);
-            XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
-            XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
+        }
+        else {
+        // Can we make this more efficient than recreating the node again?
+        // We can possibly check when setInlined() is invoked if we need to do it or not
+        // Create a new document and write object to it
+        string offlineFileName = getDocumentFileName();
+        if(IO::GetPrintOfflineDocuments()) {
+            // The problem is that generateChildXMLDocument makes a root which allows print
+            // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+            // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+            _inlined=true;
+            print(offlineFileName);
+            _inlined=false;
+            SimTK::Xml::Element myObjectElement(getConcreteClassName());
+            myObjectElement.setAttributeValue("file", offlineFileName);
+            aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
+        }
+        /*
+        if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
+        XMLNode::SetAttribute(_refNode,"file",offlineFileName);
+        XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
+        XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
         }
         return;
     }
@@ -1054,8 +1055,8 @@ void Object::updateXMLNode(SimTK::Xml::Element& aParent,
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
     
     // if property is provided and it is not of unnamed type, use the property name
-    if(prop && !prop->isUnnamedProperty()) {
-            myObjectElement.setAttributeValue("name", prop->getName());
+    if(prop && prop->isOneObjectProperty() && !prop->isUnnamedProperty()) {
+        myObjectElement.setAttributeValue("name", prop->getName());
     } // otherwise if object has a name use it as the name value
     else if (!getName().empty()) { 
         myObjectElement.setAttributeValue("name", getName());
