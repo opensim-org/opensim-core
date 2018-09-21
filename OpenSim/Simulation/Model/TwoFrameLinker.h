@@ -599,11 +599,11 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                         frame1_connectee_name,
                         frame1Name, locationInFrame1, orientationInFrame1);
             }
-                // In pre-4.0 models, BushingForces, Constraints, and all other
-                // classes upgraded to use TwoFrameLinker, and the
-                // Bodies they depended on, are necessarily 1 level deep
-                // (subcomponent of model). Therefore, prepend "../" to get the
-                // correct relative path.
+            // Prior to 4.0, all bodies lived in the Model's BodySet and
+            // Constraints and Forces (current TwoFrameLinker) were always
+            // in the ConstraintSet and ForceSet, which means we need to go
+            // two levels up (../../)  and into the bodyset to find the 
+            // Bodies (frames) being linked.
             else if(frame1Name != "ground") {
                 frame1_connectee_name = "../../bodyset/" + frame1Name;
             } else {
