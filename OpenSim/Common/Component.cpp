@@ -28,6 +28,7 @@
 #include "XMLDocument.h"
 #include <unordered_map>
 #include <set>
+#include <regex>
 
 using namespace SimTK;
 
@@ -1137,6 +1138,21 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
                 }
             }
             
+        }
+        if (versionNumber == 30516) {
+            // Rename xml tags for socket_*_connectee_name to socket_*
+            for (auto iter = node.element_begin();
+                iter != node.element_end();
+                ++iter) {
+                auto tagname = iter->getElementTag();
+                if (std::regex_match(tagname, std::regex("(socket_)(.*)(_connectee_name)"))) {
+                    auto pos = tagname.find("_connectee_name");
+                    if (pos != std::string::npos) {
+                        tagname.replace(pos, 15, "");
+                        iter->setElementTag(tagname);
+                    }
+                }
+            }
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
