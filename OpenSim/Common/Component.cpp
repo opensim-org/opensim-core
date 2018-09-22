@@ -1139,7 +1139,7 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
             }
             
         }
-        if (versionNumber == 30516) {
+        if (versionNumber <= 30516) {
             // Rename xml tags for socket_*_connectee_name to socket_*
             for (auto iter = node.element_begin();
                 iter != node.element_end();
