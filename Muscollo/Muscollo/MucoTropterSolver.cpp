@@ -185,7 +185,7 @@ public:
                     "at ConstraintIndex " + std::to_string(cid) + ".");
                 OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
                     "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(mv) + " acceleration-level "
+                    "There are " + std::to_string(ma) + " acceleration-level "
                     "scalar constraints associated with the model Constraint "
                     "at ConstraintIndex " + std::to_string(cid) + ".");
                 // TODO add constraints/multiplier variables based on the
