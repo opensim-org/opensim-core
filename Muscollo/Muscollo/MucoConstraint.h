@@ -30,6 +30,8 @@
 
 namespace OpenSim {
 
+using SimTK::ConstraintIndex;
+
 // ============================================================================
 // MucoConstraint
 // ============================================================================
@@ -50,21 +52,18 @@ public:
     /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBoundsAtIndex(const int& idx) const
     {   return MucoBounds(get_lower_bounds(idx), get_upper_bounds(idx)); }
-
-    // TODO add check that property has correct number of elements
-    int getNumberScalarEquations() const 
-    {   return getProperty_lower_bounds().size(); }
-
     void setBoundsAtIndex(const int& idx, const MucoBounds& bounds) {
         upd_lower_bounds(idx) = bounds.getLower();
         upd_upper_bounds(idx) = bounds.getUpper();
     }
 
+    // TODO add check that property has correct number of elements
+    int getNumberEquations() const
+    {   return m_num_equations;  }
+
     // Function to calculate position errors in constraint equations.
     virtual void calcConstraintErrors(const SimTK::State& state, 
-        SimTK::Vector_<double> out) const;
-
-    
+        SimTK::Vector errors) const;
 
 protected:
     OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "TODO");
@@ -72,16 +71,10 @@ protected:
     OpenSim_DECLARE_OPTIONAL_PROPERTY(suffixes, std::vector<std::string>, 
         "TODO"); 
 
-
-
-
-   //int m_num_equations;
-
+   mutable int m_num_equations;
 
    void constructProperties();
 };
-
-
 
 // ============================================================================
 // MucoSimbodyConstraint
@@ -96,10 +89,16 @@ public:
 
     void initialize(Model& model) const;
 
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    ConstraintIndex getConstraintIndex() const
+    {   return ConstraintIndex(get_constraint_index()); }
+    void setConstraintIndex(const ConstraintIndex& cid) 
+    {   set_constraint_index(cid); }
 
     // Function to calculate position errors in constraint equations.
-    //virtual void calcConstraintErrors(const SimTK::State& state,
-    //    SimTK::Vector_<double> out) const;
+    void calcConstraintErrors(const SimTK::State& state,
+        SimTK::Vector errors) const override;
 
     // TODO
     //virtual void calcVelocityErrors(const SimTK::State& state,
@@ -109,12 +108,10 @@ public:
 
  
 private:
-    OpenSim_DECLARE_PROPERTY(constraint_index, SimTK::ConstraintIndex,
-        "TODO");
+    OpenSim_DECLARE_PROPERTY(constraint_index, int, "TODO");
+    OpenSim_DECLARE_PROPERTY(holonomic_only_mode, bool, "TODO");
 
-    void calcAccelerationsFromMultipliers(const Model& model, 
-        const SimTK::State& state, const SimTK::Vector& multipliers, 
-        SimTK::Vector& udot) const;
+    
     
     mutable int m_num_position_eqs;
     mutable int m_num_velocity_eqs;
@@ -127,6 +124,7 @@ private:
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
 
+    void constructProperties();
 };
 
 } // namespace OpenSim

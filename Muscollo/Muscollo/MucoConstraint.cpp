@@ -19,6 +19,7 @@
 #include "MucoConstraint.h"
 
 using namespace OpenSim;
+using SimTK::ConstraintIndex;
 
 // ============================================================================
 // MucoConstraint
@@ -39,7 +40,6 @@ MucoConstraint::MucoConstraint(const std::string& name,
         upd_upper_bounds(i) = bounds[i].getUpper();
     }
     set_suffixes(suffixes);
-
 }
 
 void MucoConstraint::constructProperties() {
@@ -57,13 +57,14 @@ void MucoConstraint::calcConstraintErrors(const SimTK::State&,
 // MucoSimbodyConstraint
 // ============================================================================
 
-
-MucoSimbodyConstraint::MucoSimbodyConstraint() : MucoConstraint() {
-
+MucoSimbodyConstraint::MucoSimbodyConstraint() {
+    constructProperties();
 }
 
-
-
+void MucoSimbodyConstraint::constructProperties() {
+    constructProperty_constraint_index(0);
+    constructProperty_holonomic_only_mode(true);
+}
 
 void MucoSimbodyConstraint::initialize(Model& model) const {
     auto& matter = model.updMatterSubsystem();
@@ -71,7 +72,7 @@ void MucoSimbodyConstraint::initialize(Model& model) const {
 
     const SimTK::State& state = model.initSystem();
     SimTK::Constraint& constraint 
-        = matter.updConstraint(get_constraint_index());
+        = matter.updConstraint(ConstraintIndex(get_constraint_index()));
 
     // Throw error if constraint is not enabled in model.
     // TODO do somewhere else?
@@ -83,32 +84,15 @@ void MucoSimbodyConstraint::initialize(Model& model) const {
     constraint.getNumConstraintEquationsInUse(state, m_num_position_eqs, 
         m_num_velocity_eqs, m_num_acceleration_eqs);
 
-    m_constraint_ref = constraint;
 
+    m_num_equations = m_num_position_eqs + m_num_velocity_eqs 
+        + m_num_acceleration_eqs;
+
+    m_constraint_ref = constraint;
 }
 
+void MucoSimbodyConstraint::calcConstraintErrors(const SimTK::State& state,
+    SimTK::Vector errors) const {
 
-void MucoSimbodyConstraint::calcAccelerationsFromMultipliers(const Model& model, 
-    const SimTK::State& state,
-    const SimTK::Vector& multipliers, SimTK::Vector& udot) const {
-
-    const SimTK::MultibodySystem& multibody = model.getMultibodySystem();
-    const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces =
-        multibody.getRigidBodyForces(state, SimTK::Stage::Dynamics);
-    const SimTK::Vector& appliedMobilityForces 
-        = multibody.getMobilityForces(state, SimTK::Stage::Dynamics);
-
-    const SimTK::SimbodyMatterSubsystem& matter = model.getMatterSubsystem();
-    // TODO make these mutable member variables to avoid unnecessary memory
-    // allocation (is this possible?)
-    SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces;
-    SimTK::Vector constraintMobilityForces;
-    // Multipliers are negated so constraint forces can be used like applied 
-    // forces.
-    matter.calcConstraintForcesFromMultipliers(state, -multipliers,
-        constraintBodyForces, constraintMobilityForces);
-
-    matter.calcAccelerationIgnoringConstraints(state,
-        appliedMobilityForces + constraintMobilityForces,
-        appliedBodyForces + constraintBodyForces, udot, A_GB);
+    errors = m_constraint_ref->getPositionErrorsAsVector(state);
 }
