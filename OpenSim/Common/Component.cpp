@@ -702,7 +702,8 @@ std::string Component::getAbsolutePathString() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        absPathName.insert(0, "/" + up->getName());
+        if (up->hasOwner()) // Prepend parent only of not top level issue #2276 
+            absPathName.insert(0, "/" + up->getName());
     }
 
     return absPathName;

@@ -355,7 +355,7 @@ public:
         else if(objPathName == ownerPathName)
             setConnecteeName(objPathName);
         else { // otherwise store the absolute path name to the object
-            std::string absPathName = objT->getAbsolutePath().toString();
+            std::string absPathName = objT->getAbsolutePathString();
             setConnecteeName(absPathName);
         }
     }
