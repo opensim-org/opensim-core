@@ -354,9 +354,9 @@ public:
         // connects to a Body of the same name.
         else if(objPathName == ownerPathName)
             setConnecteeName(objPathName);
-        else { // otherwise store the relative path name to the object
-            std::string relPathName = objT->getRelativePathName(getOwner());
-            setConnecteeName(relPathName);
+        else { // otherwise store the absolute path name to the object
+            std::string absPathName = objT->getAbsolutePath().toString();
+            setConnecteeName(absPathName);
         }
     }
 
