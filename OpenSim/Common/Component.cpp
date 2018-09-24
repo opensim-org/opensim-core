@@ -719,7 +719,8 @@ ComponentPath Component::getAbsolutePath() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        pathVec.insert(pathVec.begin(), up->getName());
+        if (up->hasOwner()) // Prepend parent only of not top level issue #2276 
+            pathVec.insert(pathVec.begin(), up->getName());
     }
 
     return ComponentPath(pathVec, true);
