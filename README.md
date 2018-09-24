@@ -22,6 +22,15 @@ control, etc.), and Java and Python wrapping. This repository does *not*
 include source code for the OpenSim GUI.
 
 
+Table of contents
+-----------------
+- [Simple Example](#simple-example)
+- [Building from the source code](#building-from-the-source-code)
+  - [On Windows using Microsoft Visual Studio](#on-windows-using-visual-studio).
+  - [On Mac OSX using Xcode](#on-mac-osx-using-xcode).
+  - [On Ubuntu using Unix Makefiles](#on-ubuntu-using-unix-makefiles).
+
+
 Simple example
 --------------
 Let's simulate a simple arm whose elbow is actuated by a muscle, using
