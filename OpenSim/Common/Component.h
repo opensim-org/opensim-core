@@ -2567,11 +2567,11 @@ protected:
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
             propIndex = this->template addListProperty<std::string>(
-                    "input_" + name + "_connectee_names", propertyComment,
+                    "input_" + name, propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
             propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+                    "input_" + name, propertyComment, "");
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.
