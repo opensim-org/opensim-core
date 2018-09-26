@@ -46,13 +46,7 @@ public:
     /** Use Super's constructors. @see ModelComponentSet */
     using ModelComponentSet::ModelComponentSet;
 
-    ~JointSet();
-
     // default copy, and assignment operator
-
-
-private:
-    void setNull();
 
 //=============================================================================
 };  // END of class JointSet
