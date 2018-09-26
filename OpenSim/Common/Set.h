@@ -93,7 +93,8 @@ Set() : Super(),
  * @param aFileName             Name of the file.
  * @param aUpdateFromXMLNode    Whether to update from XML.
  */
-Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) : Super(aFileName),
+Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION
+    : Super(aFileName),
     _objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
     _objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
