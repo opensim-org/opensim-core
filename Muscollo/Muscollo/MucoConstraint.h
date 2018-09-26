@@ -50,62 +50,65 @@ public:
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     std::vector<MucoBounds> getBounds() const {
-        checkConsistency(getProperty_lower_bounds().size());
-
-        std::vector<MucoBounds> boundsVec;
-        for (int i = 0; i < getProperty_lower_bounds().size(); ++i) {
-            boundsVec.push_back({get_lower_bounds(i), get_upper_bounds(i)});
-        } 
+        int numBounds = (int)getProperty_lower_bounds().size();
+        std::vector<MucoBounds> boundsVec(numBounds);
+        for (int i = 0; i < numBounds; ++i) {
+            boundsVec[i] = {get_lower_bounds(i), get_upper_bounds(i)};
+        }
         return boundsVec;
     }
+    // TODO is this get method necessary with getConstraintLabels()?
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    std::vector<std::string> getSuffixes() const {
+        int numSuffixes = (int)getProperty_suffixes().size();
+        std::vector<std::string> suffixes(numSuffixes);
+        for (int i = 0; i < getProperty_suffixes().size(); ++i) {
+            suffixes[i] = get_suffixes(i);
+        }
+        return suffixes;
+    }
     void setBounds(const std::vector<MucoBounds>& boundsVec) {
-        checkConsistency(boundsVec.size());
-
         for (int i = 0; i < boundsVec.size(); ++i) {
             set_lower_bounds(i, boundsVec[i].getLower());
             set_upper_bounds(i, boundsVec[i].getUpper());
         }
-    }
-    MucoBounds getBoundsAtIndex(const int& idx) const {
-        checkConsistency(getProperty_lower_bounds().size());
-        if ((idx < 0) || (idx >= m_num_equations)) {
-            OPENSIM_THROW(Exception, "Invalid index.");
+    }  
+    void setSuffixes(const std::vector<std::string>& suffixes) {
+        // TODO can we set this list property without a loop?
+        for (int i = 0; i < suffixes.size(); ++i) {
+            set_suffixes(i, suffixes[i]);
         }
-
-        return MucoBounds(get_lower_bounds(idx), get_upper_bounds(idx)); 
     }
+    
+    /// Get a list of constraint labels based on the constraint name and, if
+    /// specified, the list of suffixes. If no suffixes have been specified, 
+    /// zero-indexed, numeric suffixes will be applied as a default.
+    std::vector<std::string> getConstraintLabels();
 
-    std::vector<std::string> getSuffixes() const {
-        checkConsistency(get_suffixes().size());
-        return get_suffixes(); 
-    }
-    void setSuffixes(const std::vector<std::string>& suffixes) {   
-        checkConsistency(suffixes.size());
-        set_suffixes(suffixes); 
-    }
-
-    // Function to calculate position errors in constraint equations.
+    /// Calculate errors in constraint equations and return as a vector.
     SimTK::Vector calcConstraintErrors(const SimTK::State& state) const {
         SimTK::Vector errors(m_num_equations, 0.0);
         calcConstraintErrorsImpl(state, errors);
         return errors;
     }
+
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const {
-        m_model.reset(&model);
-        initializeImpl();
-    }
+    void initialize(const Model& model) const;
+
+    //void printDescription(std::ostream& stream = std::cout) const;
     
 protected:
     OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double, "TODO");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(suffixes, std::vector<std::string>, 
+    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double,  "TODO");
+    OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, 
         "TODO"); 
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.
     /// Upon entry, getModel() is available.
-    /// Use this opportunity to check for errors in user input.
+    /// Use this opportunity to check for errors in user input, in addition to
+    /// the checks provided in initialize().
     virtual void initializeImpl() const {}
     /// Precondition: state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
@@ -120,27 +123,14 @@ protected:
             "Model is not available until the start of initializing.");
         return m_model.getRef();
     }
-
+    /// The number of scalar constraint equations associated with this 
+    /// MucoConstraint. This should be defined in initializeImpl().
     mutable int m_num_equations;
-    
+
 private: 
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
-
-   void checkConsistency(const int& length) const {
-       if (length) {
-           if (!m_num_equations) { 
-              m_num_equations = length;
-           } else {
-               OPENSIM_THROW_IF(length != m_num_equations, Exception,
-                   "Length of input argument is not consistent with current "
-                   "number of scalar constraint equations.");
-           }
-       } else {
-           OPENSIM_THROW(Exception, "Property not specified.");
-       }
-   }
 };
 
 inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
