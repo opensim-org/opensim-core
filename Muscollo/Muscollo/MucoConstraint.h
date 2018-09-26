@@ -38,35 +38,50 @@ using SimTK::ConstraintIndex;
 // MucoConstraint
 // ============================================================================
 
+/// A path constraint to be enforced in the optimal control problem.
+/// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoConstraint : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraint, Object);
 public:
     // Default constructor.
     MucoConstraint();
-    // TODO other constructors.
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    MucoBounds getBoundsAtIndex(const int& idx) const
-    {   return MucoBounds(get_lower_bounds(idx), get_upper_bounds(idx)); }
-    void setBoundsAtIndex(const int& idx, const MucoBounds& bounds) {
-        upd_lower_bounds(idx) = bounds.getLower();
-        upd_upper_bounds(idx) = bounds.getUpper();
+    std::vector<MucoBounds> getBounds() const {
+        checkConsistency(getProperty_lower_bounds().size());
+
+        std::vector<MucoBounds> boundsVec;
+        for (int i = 0; i < getProperty_lower_bounds().size(); ++i) {
+            boundsVec.push_back({get_lower_bounds(i), get_upper_bounds(i)});
+        } 
+        return boundsVec;
     }
-    std::vector<std::string> getSuffixes()
-    {   return get_suffixes(); }
-    void setSuffixes(const std::vector<std::string>& suffixes)
-    {   set_suffixes(suffixes); }
+    void setBounds(const std::vector<MucoBounds>& boundsVec) {
+        checkConsistency(boundsVec.size());
 
-    // TODO add check that property has correct number of elements
-    int getNumScalarEquations() const
-    {   return m_num_equations;  }
+        for (int i = 0; i < boundsVec.size(); ++i) {
+            set_lower_bounds(i, boundsVec[i].getLower());
+            set_upper_bounds(i, boundsVec[i].getUpper());
+        }
+    }
+    MucoBounds getBoundsAtIndex(const int& idx) const {
+        checkConsistency(getProperty_lower_bounds().size());
+        if ((idx < 0) || (idx >= m_num_equations)) {
+            OPENSIM_THROW(Exception, "Invalid index.");
+        }
 
-    /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const {
-        m_model.reset(&model);
-        initializeImpl();
+        return MucoBounds(get_lower_bounds(idx), get_upper_bounds(idx)); 
+    }
+
+    std::vector<std::string> getSuffixes() const {
+        checkConsistency(get_suffixes().size());
+        return get_suffixes(); 
+    }
+    void setSuffixes(const std::vector<std::string>& suffixes) {   
+        checkConsistency(suffixes.size());
+        set_suffixes(suffixes); 
     }
 
     // Function to calculate position errors in constraint equations.
@@ -75,7 +90,12 @@ public:
         calcConstraintErrorsImpl(state, errors);
         return errors;
     }
-
+    /// For use by solvers. This also performs error checks on the Problem.
+    void initialize(const Model& model) const {
+        m_model.reset(&model);
+        initializeImpl();
+    }
+    
 protected:
     OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double, "TODO");
@@ -87,8 +107,11 @@ protected:
     /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
-
-    // Function to calculate position errors in constraint equations.
+    /// Precondition: state is realized to SimTK::Stage::Position.
+    /// If you need access to the controls, you must realize to Velocity:
+    /// @code
+    /// getModel().realizeVelocity(state);
+    /// @endcode
     virtual void calcConstraintErrorsImpl(const SimTK::State& state,
         SimTK::Vector& errors) const;
     /// For use within virtual function implementations.
@@ -99,11 +122,25 @@ protected:
     }
 
     mutable int m_num_equations;
-
+    
 private: 
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
+
+   void checkConsistency(const int& length) const {
+       if (length) {
+           if (!m_num_equations) { 
+              m_num_equations = length;
+           } else {
+               OPENSIM_THROW_IF(length != m_num_equations, Exception,
+                   "Length of input argument is not consistent with current "
+                   "number of scalar constraint equations.");
+           }
+       } else {
+           OPENSIM_THROW(Exception, "Property not specified.");
+       }
+   }
 };
 
 inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
@@ -113,12 +150,14 @@ inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
 // MucoSimbodyConstraint
 // ============================================================================
 
+/// A class to conveniently add a Simbody constraint in the model to the
+/// problem as a MucoConstraint.
+/// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoSimbodyConstraint : public MucoConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoSimbodyConstraint, MucoConstraint);
 public:
     // Default constructor.
     MucoSimbodyConstraint();
-    // TODO other constructors.
 
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
@@ -131,18 +170,6 @@ public:
     {   set_enforce_position_level_only(tf); }
     bool isEnforcingPositionLevelOnly() 
     {   return get_enforce_position_level_only(); }
-    // Get the number of position, velocity, or acceleration-level equations
-    // defined by the Simbody constraint. This number does NOT include any
-    // derivatives of position and velocity-level equations -- those numbers
-    // are reflected in the total number of scalar equations generated by the
-    // constraint, which can be obtained by the base class method
-    // getNumScalarEquations().
-    int getNumPositionEquations()
-    {   return m_num_position_eqs; }
-    int getNumVelocityEquations()
-    {   return m_num_velocity_eqs; }
-    int getNumAccelerationEquations()
-    {   return m_num_acceleration_eqs; }
 
 protected:
     void initializeImpl() const override;

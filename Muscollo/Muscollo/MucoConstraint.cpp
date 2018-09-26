@@ -56,7 +56,6 @@ void MucoSimbodyConstraint::initializeImpl() const {
         = matter.getConstraint(ConstraintIndex(get_constraint_index()));
 
     // Throw error if constraint is not enabled in model.
-    // TODO do somewhere else?
     const SimTK::State state = getModel().getWorkingState();
     if (constraint.isDisabled(state)) {
         OPENSIM_THROW(Exception, "Constraint is not enabled in model.");
@@ -95,13 +94,16 @@ void MucoSimbodyConstraint::initializeImpl() const {
     // Assign reference pointer to the model constraint.
     m_constraint_ref = constraint;
 
-    // Set default properties from the model if not already specified by the
-    // user.
+    // By default, set the name of the constraint to the name set in the model.
     if (getName().empty()) {
         const std::string& name = getModel().getConstraintSet().get(
             get_constraint_index()).getName();
+        // TODO avoid const_cast
         (const_cast <MucoSimbodyConstraint*> (this))->setName(name);
     }
+    // By default, set the suffixes to according to kinematic level being 
+    // enforced by the constraint (position, velocity, or acceleration) and
+    // specify if it represents a derivative of a scalar equation.
     if (get_suffixes().empty()) {
         std::vector<std::string> suffixes;
         if (get_enforce_position_level_only()) {
@@ -132,14 +134,16 @@ void MucoSimbodyConstraint::initializeImpl() const {
                 suffixes.push_back("_dv" + std::to_string(i));
             }
             for (int i = 0; i < m_num_acceleration_eqs; ++i) {
-                suffixes.push_back("_dv" + std::to_string(i));
+                suffixes.push_back("_a" + std::to_string(i));
             }
         }
+        // TODO avoid const_cast
         (const_cast <MucoSimbodyConstraint*> (this))->set_suffixes(suffixes);
     }
 
     // Set lower and upper bounds to zero.
     SimTK::Vector zeros(m_num_equations, 0.0);
+    // TODO avoid const_cast
     (const_cast <MucoSimbodyConstraint*> (this))->set_lower_bounds(zeros);
     (const_cast <MucoSimbodyConstraint*> (this))->set_upper_bounds(zeros);
 }
