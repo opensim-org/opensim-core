@@ -891,7 +891,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_socket_##cname {           \
+    PropertyIndex PropertyIndex_socket_##cname {                            \
         this->template constructSocket<T>(#cname,                           \
                 "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
