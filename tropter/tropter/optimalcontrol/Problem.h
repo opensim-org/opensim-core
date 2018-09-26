@@ -121,14 +121,6 @@ private:
         InitialBounds initial_bounds;
         FinalBounds final_bounds;
     };
-    struct AdjunctInfo : ContinuousVariableInfo {
-        enum AdjunctType {
-            Default,
-            Lambda,
-            LambdaBar,
-            GammaBar,
-        };
-    }
     struct PathConstraintInfo {
         std::string name;
         Bounds bounds;
