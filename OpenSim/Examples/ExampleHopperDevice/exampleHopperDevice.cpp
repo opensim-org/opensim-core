@@ -212,7 +212,6 @@ void run(bool showVisualizer, double finalTime)
     {
         // Build the hopper.
         auto hopper = buildHopper(showVisualizer);
-        hopper.finalizeFromProperties();
 
         // Show all Components in the model.
         hopper.printSubcomponentInfo();
