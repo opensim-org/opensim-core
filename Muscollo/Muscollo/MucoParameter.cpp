@@ -104,21 +104,21 @@ void MucoParameter::initialize(Model& model) const {
                 "Expected property element to be non-negative, but "
                 + std::to_string(get_property_element()) + " was provided.");
             if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
-                OPENSIM_THROW_IF(get_property_element() > 2, Exception,
+                OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
                     "The property element for a Vec3 property must be between "
                     "0 and 2, but the value "
                     + std::to_string(get_property_element()) + "was provided.");
                 m_data_type = Type_Vec3;
             }
             else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
-                OPENSIM_THROW_IF(get_property_element() > 5, Exception,
+                OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
                     "The property element for a Vec6 property must be between "
                     "0 and 5, but the value "
                     + std::to_string(get_property_element()) + "was provided.");
                 m_data_type = Type_Vec6;
             }
             else {
-                OPENSIM_THROW(Exception,
+                OPENSIM_THROW_FRMOBJ(Exception,
                     "Data type of specified model property not supported.");
             }
         }

@@ -19,20 +19,16 @@
  * -------------------------------------------------------------------------- */
 
 #include "MucoBounds.h"
-#include "MuscolloUtilities.h"
 
-#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Simulation/osimSimulation.h>
-
 #include <simbody/internal/Constraint.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
-
-namespace OpenSim {
-
-class Model;
+#include "osimMuscolloDLL.h"
 
 using SimTK::ConstraintIndex;
+
+namespace OpenSim {
 
 // ============================================================================
 // MucoConstraint
@@ -99,10 +95,14 @@ public:
     //void printDescription(std::ostream& stream = std::cout) const;
     
 protected:
-    OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double,  "TODO");
-    OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, 
-        "TODO"); 
+    OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "The lower bounds on "
+        "the set of scalar constraint equations.");
+    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double, "The upper bounds on "
+        "the set of scalar constraint equations.");
+    OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, "(Optional) A list of "
+        "strings to create unique labels for the scalar constraint equations. "
+        "These are appended to the name of the MucoConstraint object when "
+        "calling getConstraintLabels()."); 
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.
@@ -124,7 +124,7 @@ protected:
         return m_model.getRef();
     }
     /// The number of scalar constraint equations associated with this 
-    /// MucoConstraint. This should be defined in initializeImpl().
+    /// MucoConstraint.
     mutable int m_num_equations;
 
 private: 
@@ -167,8 +167,14 @@ protected:
         SimTK::Vector& errors) const override;
 
 private:
-    OpenSim_DECLARE_PROPERTY(constraint_index, int, "TODO");
-    OpenSim_DECLARE_PROPERTY(enforce_position_level_only, bool, "TODO");
+    OpenSim_DECLARE_PROPERTY(constraint_index, int, "The index of the "
+        "constraint in the model's constraint set. This maps to a "
+        "SimTK::ConstraintIndex. ");
+    OpenSim_DECLARE_PROPERTY(enforce_position_level_only, bool, "Whether or "
+        "not to only enforce the position-level constraint equations of a "
+        "holonomic constraint, and not the derivatives. An error is thrown if "
+        "a MucoSimbodyConstraint for a nonholonomic or acceleration constraint "
+        "has this property enabled.");
 
     mutable int m_num_position_eqs;
     mutable int m_num_velocity_eqs;

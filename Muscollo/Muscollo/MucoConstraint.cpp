@@ -81,11 +81,14 @@ MucoSimbodyConstraint::MucoSimbodyConstraint() {
 }
 
 void MucoSimbodyConstraint::constructProperties() {
-    constructProperty_constraint_index(0);
-    constructProperty_enforce_position_level_only(true);
+    constructProperty_constraint_index(-1);
+    constructProperty_enforce_position_level_only(false);
 }
 
 void MucoSimbodyConstraint::initializeImpl() const {
+
+    OPENSIM_THROW_IF_FRMOBJ(get_constraint_index() < 0, Exception, 
+        "A ConstraintIndex must be provided.");
     
     auto& matter = getModel().getMatterSubsystem();
     const SimTK::Constraint& constraint 
@@ -93,23 +96,23 @@ void MucoSimbodyConstraint::initializeImpl() const {
 
     // Throw error if constraint is not enabled in model.
     const SimTK::State state = getModel().getWorkingState();
-    if (constraint.isDisabled(state)) {
-        OPENSIM_THROW(Exception, "Constraint is not enabled in model.");
-    }
-
+    OPENSIM_THROW_IF_FRMOBJ(constraint.isDisabled(state), Exception, "The "
+        "constraint at ConstraintIndex " 
+        + std::to_string(get_constraint_index()) + " is not enabled in model.");
+    
     // Get number of equations of each type: position, velocity, and 
     // acceleration.
     constraint.getNumConstraintEquationsInUse(state, m_num_position_eqs, 
         m_num_velocity_eqs, m_num_acceleration_eqs);
 
     if (get_enforce_position_level_only()) {
-        OPENSIM_THROW_IF(m_num_velocity_eqs != 0, Exception, "Only holonomic "
-            "(position-level) constraints are supported in this mode. "
-            "There are " + std::to_string(m_num_velocity_eqs) + 
+        OPENSIM_THROW_IF_FRMOBJ(m_num_velocity_eqs != 0, Exception, "Only " 
+            "holonomic (position-level) constraints are supported in this "
+            "mode. There are " + std::to_string(m_num_velocity_eqs) + 
             " velocity-level scalar constraints associated with the model "
             "Constraint at ConstraintIndex " + 
             std::to_string(get_constraint_index()) + ".");
-        OPENSIM_THROW_IF(m_num_acceleration_eqs != 0, Exception, "Only "
+        OPENSIM_THROW_IF_FRMOBJ(m_num_acceleration_eqs != 0, Exception, "Only "
             "holonomic (position-level) constraints are supported in this "
             "mode. There are " + std::to_string(m_num_acceleration_eqs) + 
             " acceleration-level scalar constraints associated with the model "
@@ -141,6 +144,7 @@ void MucoSimbodyConstraint::initializeImpl() const {
     // By default, set the suffixes to according to kinematic level being 
     // enforced by the constraint (position, velocity, or acceleration) and
     // specify if it represents a derivative of a scalar equation.
+    // TODO avoid const_cast
     if (getProperty_suffixes().empty()) {
         if (get_enforce_position_level_only()) {
             for (int i = 0; i < m_num_position_eqs; ++i) {
@@ -148,9 +152,19 @@ void MucoSimbodyConstraint::initializeImpl() const {
                     "_p" + std::to_string(i));
             }
         } else {
-            // Constraint errors order (ref. Simbody::Constraint): 
-            // [p1 p2 ... dp1 dp2 ... v1 v2 ... ddp1 ddp2 ... dv1 dv2 
-            //      ... a1 a2 ...]
+            // The constraint errors returned by calcConstraintErrorsImpl()
+            // are ordered as follows:
+            //      1) position-level errors
+            //      2) position-level 1st derivative errors
+            //      3) velocity-level errors
+            //      4) position-level 2nd derivative errors
+            //      5) velocity-level 1st derivative errors
+            //      6) acceleration-level errors
+            //      
+            // Therefore, in general the list of suffixes for a Simbody 
+            // constraint will take the following pattern:
+            //      [_p0 _p1 ... _dp0 _dp1 ... _v0 _v1 ... _ddp0 _ddp1 ... 
+            //       _dv0 _dv1 ... a0 a1 ...]
 
             // Position-level constraints.
             for (int i = 0; i < m_num_position_eqs; ++i) {
@@ -196,6 +210,14 @@ void MucoSimbodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
     if (get_enforce_position_level_only()) {
         errors = m_constraint_ref->getPositionErrorsAsVector(state);
     } else { 
+        // The constraint errors returned are ordered as follows:
+        //      1) position-level errors
+        //      2) position-level 1st derivative errors
+        //      3) velocity-level errors
+        //      4) position-level 2nd derivative errors
+        //      5) velocity-level 1st derivative errors
+        //      6) acceleration-level errors
+
         // Position-level constraint errors.
         perr = m_constraint_ref->getPositionErrorsAsVector(state);
         std::copy(perr.begin(), perr.end(),
