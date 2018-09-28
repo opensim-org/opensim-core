@@ -48,20 +48,25 @@ std::vector<std::string> MucoConstraint::getConstraintLabels() {
             labels[i] = getName() + get_suffixes(i);
         }
     }   
+    return labels;
 }
 
 void MucoConstraint::initialize(const Model& model) const {
     m_model.reset(&model);
     initializeImpl();
 
-    OPENSIM_THROW_IF_FRMOBJ(!m_num_equations, Exception, "The number of "
-        "constraint equations has not be defined.");
+    
     OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().empty() || 
         getProperty_upper_bounds().empty(), Exception, "Constraint bounds must "
         "be provided.");
     OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().size() !=
         getProperty_lower_bounds().size(), Exception, "The number of lower and "
         "upper bounds must be consistent.");
+    if (!m_num_equations) {
+        m_num_equations = getProperty_lower_bounds().size();
+    }
+    OPENSIM_THROW_IF_FRMOBJ(!m_num_equations, Exception, "The number of "
+        "constraint equations has not be defined.");
     OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().size() != 
         m_num_equations, Exception, "Number of bounds must be consistent with "
         "the number of constraint equations.");

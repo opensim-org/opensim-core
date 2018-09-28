@@ -723,6 +723,94 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     runForwardSimulation(model, solution, 1e-2);
 }
 
+class SameActuatorControlConstraint : public MucoConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(SameActuatorControlConstraint, MucoConstraint);
+protected:
+
+    void initializeImpl() const override {
+        (const_cast <SameActuatorControlConstraint*> (this))->set_lower_bounds(0, 0.0);
+        (const_cast <SameActuatorControlConstraint*> (this))->set_upper_bounds(0, 0.0);
+    }
+
+    void calcConstraintErrorsImpl(const SimTK::State& state,
+            SimTK::Vector& errors) const {
+        getModel().realizeVelocity(state);
+
+        controls = getModel().getControls(state);
+
+        errors[0] = controls[1] - controls[0];
+
+    }
+private:
+    mutable SimTK::Vector controls;
+};
+
+/// Solve an optimal control problem where a double pendulum must reach a 
+/// specified final configuration while subject to a constraint that its
+/// actuators must produce the same control.
+void testDoublePendulumSameControl() {
+    MucoTool muco;
+    muco.setName("double_pendulum_same_control");
+    MucoProblem& mp = muco.updProblem();
+    // Create double pendulum model and add the point-on-line constraint. The 
+    // constraint consists of a vertical line in the y-direction (defined in 
+    // ground) and the model end-effector point (the origin of body "b1").
+    Model model = createDoublePendulumModel();
+    const Body& b1 = model.getBodySet().get("b1");
+    const Station& endeff = model.getComponent<Station>("endeff");
+    PointOnLineConstraint* constraint = new PointOnLineConstraint(
+        model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
+    model.addConstraint(constraint);
+    mp.setModel(model);
+
+    mp.setTimeBounds(0, 1);
+    // Coordinate value state boundary conditions are consistent with the 
+    // point-on-line constraint and should require the model to "unfold" itself.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
+    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau1", {-100, 100});
+    // TODO bounds don't get used right now, these control infos are set in 
+    // order for the MucoIterate guess to be compatible with the MucoProblem.
+    mp.setControlInfo("lambda_0_0", {-1000, 1000});
+    mp.setControlInfo("lambda_0_1", {-1000, 1000});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
+    //ms.set_optim_ipopt_print_level(5);
+    ms.set_optim_hessian_approximation("limited-memory");
+    ms.setGuess("bounds");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
+    //muco.visualize(solution);
+
+    model.initSystem();
+    StatesTrajectory states = solution.exportToStatesTrajectory(mp);
+    for (const auto& s : states) {
+        model.realizePosition(s);
+        const SimTK::Vec3& loc = endeff.getLocationInGround(s);
+
+        // The end-effector should not have moved in the x- or z-directions.
+        // TODO: may need to adjust these tolerances
+        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
+        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+    }
+
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(model, solution, 1e-2);
+}
+
 int main() {
     SimTK_START_TEST("testConstraints");
         // DAE calculation subtests.

@@ -30,6 +30,7 @@
 #include "MucoTropterSolver.h"
 #include "MuscolloUtilities.h"
 #include "MucoParameter.h"
+#include "MucoConstraint.h"
 
 #include "RegisterTypes_osimMuscollo.h"
 
