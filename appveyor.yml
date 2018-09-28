@@ -27,8 +27,10 @@ environment:
   PYTHON_DIR: "C:\\Python27-x64"
   matrix:
     - CMAKE_TOOLSET: "v140"
+      NUGET_PACKAGE_ID_SUFFIX_SIMBODY: "-VC140"
       NUGET_PACKAGE_ID_SUFFIX: "-VC140-sets"
     - CMAKE_TOOLSET: "v141"
+      NUGET_PACKAGE_ID_SUFFIX_SIMBODY: "-VC141"
       NUGET_PACKAGE_ID_SUFFIX: "-VC141-sets"
 
 branches:
@@ -89,7 +91,7 @@ install:
   # The URL is for the public project feed that AppVeyor creates for the simbody project, obtained
   # from https://ci.appveyor.com/project/opensim-org/simbody/settings/nuget.
   - nuget sources add -name simbody -source https://ci.appveyor.com/nuget/simbody-9iv11sycwdny
-  - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
+  - nuget install simbody%NUGET_PACKAGE_ID_SUFFIX_SIMBODY% -Version 0.0.0 -ExcludeVersion -OutputDirectory C:\
 
 build_script:
   ## Superbuild dependencies. 
@@ -104,7 +106,7 @@ build_script:
   - cd %OPENSIM_BUILD_DIR%
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Set the CXXFLAGS environment variable to turn warnings into errors.
-  - cmake -E env CXXFLAGS="/WX" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON
+  - cmake -E env CXXFLAGS="/WX" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX_SIMBODY% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON
 
   # Build.
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
