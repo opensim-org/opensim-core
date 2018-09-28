@@ -230,13 +230,11 @@ int main()
     const std::string originalConnecteeName = socket.getConnecteeName();
     try {
         // create an invalid model where joint connects two frames on ground
-        socket.setConnecteeName("ground"); 
-        context->restoreStateFromCachedModel();
+        context->setConnecteeName(shoulder, socket, "ground");
     }
-    catch (...) {
-        // undo the change
-        socket.setConnecteeName(originalConnecteeName);
-        context->restoreStateFromCachedModel();
+    catch (const std::exception& e) {
+        // Expect meaningful error message rather than a crash
+        cout << "Exception: " << e.what() << endl;
     }
     return status;
   } catch (const std::exception& e) {
