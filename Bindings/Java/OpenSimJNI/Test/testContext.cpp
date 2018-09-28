@@ -240,13 +240,11 @@ int main()
     const std::string poriginalConnecteeName = psocket.getConnecteeName();
     try {
         // create an invalid model
-        psocket.setConnecteeName("r_ulna_radius_hand"); 
-        context->restoreStateFromCachedModel();
+        context->setConnecteeName(shoulder, psocket, "r_ulna_radius_hand");
     }
-    catch (...) {
+    catch (const std::exception& e) {
         // undo the change
-        socket.setConnecteeName(originalConnecteeName);
-        context->restoreStateFromCachedModel();
+        cout << "Exception: " << e.what() << endl;
     }
 
     return status;
