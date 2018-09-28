@@ -236,6 +236,19 @@ int main()
         // Expect meaningful error message rather than a crash
         cout << "Exception: " << e.what() << endl;
     }
+    AbstractSocket& psocket = shoulder.updSocket("parent_frame");
+    const std::string poriginalConnecteeName = psocket.getConnecteeName();
+    try {
+        // create an invalid model
+        psocket.setConnecteeName("r_ulna_radius_hand"); 
+        context->restoreStateFromCachedModel();
+    }
+    catch (...) {
+        // undo the change
+        socket.setConnecteeName(originalConnecteeName);
+        context->restoreStateFromCachedModel();
+    }
+
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;
