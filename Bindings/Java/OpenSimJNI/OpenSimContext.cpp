@@ -444,8 +444,10 @@ void OpenSimContext::setConnecteeName(Component& comp, AbstractSocket& socket, c
     Component& componentInClone = clonedModel->updComponent(comp.getAbsolutePath());
     auto& clonesocket = componentInClone.updSocket(socket.getName());
     clonesocket.setConnecteeName(newValue);
+    // The following line either succeeds or throws, if the latter happens then
+    // neither model or socket are changed and the message will be caught by GUI
     clonedModel->initSystem();
-    // if we made it to this line the change is safe, redo in actual model/comp/socket
+    // if we made it to this line then the change is safe, redo in actual model/comp/socket
     socket.setConnecteeName(newValue);
     restoreStateFromCachedModel();
 }
