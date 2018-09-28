@@ -223,7 +223,7 @@ int main()
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
     // Make a change to a socket that is invalid and verify that we can recover
-    // from that invalid change by restoring from a cached model and state.
+    // from that invalid change by not making it on model directly
     context->cacheModelAndState();
     Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
@@ -239,11 +239,10 @@ int main()
     AbstractSocket& psocket = shoulder.updSocket("parent_frame");
     const std::string poriginalConnecteeName = psocket.getConnecteeName();
     try {
-        // create an invalid model
+        // Try to create an invalid model
         context->setConnecteeName(shoulder, psocket, "r_ulna_radius_hand");
     }
     catch (const std::exception& e) {
-        // undo the change
         cout << "Exception: " << e.what() << endl;
     }
 
