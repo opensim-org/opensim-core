@@ -227,25 +227,29 @@ int main()
     context->cacheModelAndState();
     Joint& shoulder = model->updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
-    const std::string originalConnecteeName = socket.getConnecteeName();
     try {
         // create an invalid model where joint connects two frames on ground
+        // this call leaves the model untouched if the change would invalidate topology
         context->setConnecteeName(shoulder, socket, "ground");
     }
     catch (const std::exception& e) {
-        // Expect meaningful error message rather than a crash
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
         cout << "Exception: " << e.what() << endl;
     }
     AbstractSocket& psocket = shoulder.updSocket("parent_frame");
-    const std::string poriginalConnecteeName = psocket.getConnecteeName();
     try {
-        // Try to create an invalid model
+        // Try to create an invalid model again, this call should leave the 
+        // model untouched since change invalidates psocket
         context->setConnecteeName(shoulder, psocket, "r_ulna_radius_hand");
+
     }
     catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
         cout << "Exception: " << e.what() << endl;
     }
-
+    // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;
