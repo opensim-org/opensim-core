@@ -31,8 +31,7 @@ MucoConstraint::MucoConstraint() {
 }
 
 void MucoConstraint::constructProperties() {
-    constructProperty_lower_bounds();
-    constructProperty_upper_bounds();
+    constructProperty_bounds();
     constructProperty_suffixes();
 }
 
@@ -51,30 +50,54 @@ std::vector<std::string> MucoConstraint::getConstraintLabels() {
     return labels;
 }
 
-void MucoConstraint::initialize(const Model& model) const {
+void MucoConstraint::initialize(const Model& model, const int& index) const {
     m_model.reset(&model);
     initializeImpl();
 
-    
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().empty() || 
-        getProperty_upper_bounds().empty(), Exception, "Constraint bounds must "
-        "be provided.");
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().size() !=
-        getProperty_lower_bounds().size(), Exception, "The number of lower and "
-        "upper bounds must be consistent.");
-    if (!m_num_equations) {
-        m_num_equations = getProperty_lower_bounds().size();
+    OPENSIM_THROW_IF_FRMOBJ(index < 0, Exception, "Invalid constraint index "
+        "provided. Indices must be greater than or equal to zero.");
+    m_index = index;
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_bounds().empty(), Exception, 
+        "Constraint bounds must be provided.");
+    // The number of scalar equations is equal to the length of the bounds 
+    // property provided set by the derived class.
+    m_num_equations = getProperty_bounds().size();
+    // Set internal bounds variable.
+    for (int i = 0; i < m_num_equations; ++i) {
+        m_bounds.push_back(get_bounds(i));
     }
-    OPENSIM_THROW_IF_FRMOBJ(!m_num_equations, Exception, "The number of "
-        "constraint equations has not be defined.");
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_lower_bounds().size() != 
-        m_num_equations, Exception, "Number of bounds must be consistent with "
-        "the number of constraint equations.");
-    if (getProperty_suffixes().empty()) {
+    // Suffixes are optional, but if provided, make sure they match the number
+    // of constraint equations.
+    if (!getProperty_suffixes().empty()) {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_suffixes().size() !=
             m_num_equations, Exception, "Number of suffixes must be consistent "
             "with the number of constraint equations.");
+        // Set suffixes internal variable.
+        for (int i = 0; i < m_num_equations; ++i) {
+            m_suffixes.push_back(get_suffixes(i));
+        }
     }
+    // Ensure that the user's implementation returns the correct number of 
+    // constraint errors.
+    SimTK::Vector errors;
+    calcConstraintErrorsImpl(model.getWorkingState(), errors);
+    OPENSIM_THROW_IF_FRMOBJ(errors.size() != m_num_equations, Exception,
+        "The length of the constraint errors vector passed from "
+        "calcConstraintErrorsImpl() must be consistent with the number of "
+        "constraint equations.");
+}
+
+void MucoConstraint::printDescription(std::ostream& stream) const {
+    stream << getName() << ". " << getConcreteClassName() <<
+        ". constraint index: " << m_index << 
+        ". number of scalar equations : " << m_num_equations;
+
+    const std::vector<MucoBounds> bounds = getBounds();
+    stream << ". bounds: ";
+    for (int i = 0; i < bounds.size(); ++i) {
+        bounds[i].printDescription(stream);
+    }
+    stream << std::endl;
 }
 
 // ============================================================================
@@ -86,24 +109,25 @@ MucoSimbodyConstraint::MucoSimbodyConstraint() {
 }
 
 void MucoSimbodyConstraint::constructProperties() {
-    constructProperty_constraint_index(-1);
+    constructProperty_model_constraint_index(-1);
     constructProperty_enforce_position_level_only(false);
 }
 
 void MucoSimbodyConstraint::initializeImpl() const {
 
-    OPENSIM_THROW_IF_FRMOBJ(get_constraint_index() < 0, Exception, 
-        "A ConstraintIndex must be provided.");
+    OPENSIM_THROW_IF_FRMOBJ(get_model_constraint_index() < 0, Exception,
+        "A valid, non-negative ConstraintIndex must be provided.");
     
     auto& matter = getModel().getMatterSubsystem();
     const SimTK::Constraint& constraint 
-        = matter.getConstraint(ConstraintIndex(get_constraint_index()));
+        = matter.getConstraint(ConstraintIndex(get_model_constraint_index()));
 
     // Throw error if constraint is not enabled in model.
     const SimTK::State state = getModel().getWorkingState();
     OPENSIM_THROW_IF_FRMOBJ(constraint.isDisabled(state), Exception, "The "
         "constraint at ConstraintIndex " 
-        + std::to_string(get_constraint_index()) + " is not enabled in model.");
+        + std::to_string(get_model_constraint_index()) + " is not enabled in " 
+        "the model.");
     
     // Get number of equations of each type: position, velocity, and 
     // acceleration.
@@ -116,13 +140,13 @@ void MucoSimbodyConstraint::initializeImpl() const {
             "mode. There are " + std::to_string(m_num_velocity_eqs) + 
             " velocity-level scalar constraints associated with the model "
             "Constraint at ConstraintIndex " + 
-            std::to_string(get_constraint_index()) + ".");
+            std::to_string(get_model_constraint_index()) + ".");
         OPENSIM_THROW_IF_FRMOBJ(m_num_acceleration_eqs != 0, Exception, "Only "
             "holonomic (position-level) constraints are supported in this "
             "mode. There are " + std::to_string(m_num_acceleration_eqs) + 
             " acceleration-level scalar constraints associated with the model "
             "Constraint at ConstraintIndex " 
-            + std::to_string(get_constraint_index()) + ".");
+            + std::to_string(get_model_constraint_index()) + ".");
 
         m_num_equations = m_num_position_eqs;
     } else {
@@ -141,7 +165,7 @@ void MucoSimbodyConstraint::initializeImpl() const {
     // By default, set the name of the constraint to the name set in the model.
     if (getName().empty()) {
         const std::string& name = getModel().getConstraintSet().get(
-            get_constraint_index()).getName();
+            get_model_constraint_index()).getName();
         // TODO avoid const_cast
         (const_cast <MucoSimbodyConstraint*> (this))->setName(name);
     }
@@ -149,12 +173,10 @@ void MucoSimbodyConstraint::initializeImpl() const {
     // By default, set the suffixes to according to kinematic level being 
     // enforced by the constraint (position, velocity, or acceleration) and
     // specify if it represents a derivative of a scalar equation.
-    // TODO avoid const_cast
     if (getProperty_suffixes().empty()) {
         if (get_enforce_position_level_only()) {
             for (int i = 0; i < m_num_position_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_p" + std::to_string(i));
+                m_suffixes.push_back("_p" + std::to_string(i));
             }
         } else {
             // The constraint errors returned by calcConstraintErrorsImpl()
@@ -166,47 +188,41 @@ void MucoSimbodyConstraint::initializeImpl() const {
             //      5) velocity-level 1st derivative errors
             //      6) acceleration-level errors
             //      
-            // Therefore, in general the list of suffixes for a Simbody 
+            // Therefore, in general, the list of suffixes for a Simbody 
             // constraint will take the following pattern:
             //      [_p0 _p1 ... _dp0 _dp1 ... _v0 _v1 ... _ddp0 _ddp1 ... 
             //       _dv0 _dv1 ... a0 a1 ...]
 
             // Position-level constraints.
             for (int i = 0; i < m_num_position_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_p" + std::to_string(i));
+                m_suffixes.push_back("_p" + std::to_string(i));
             }
             // Derivative of position-level and velocity-level constraints. 
             for (int i = 0; i < m_num_position_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_dp" + std::to_string(i));
+                m_suffixes.push_back("_dp" + std::to_string(i));
             }
             for (int i = 0; i < m_num_velocity_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_v" + std::to_string(i));
+                m_suffixes.push_back("_v" + std::to_string(i));
             }
             // Second derivative of position-level, derivative of velocity-
             // level, and acceleration-level constraints.
             for (int i = 0; i < m_num_position_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_ddp" + std::to_string(i));
+                m_suffixes.push_back("_ddp" + std::to_string(i));
             }
             for (int i = 0; i < m_num_velocity_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_dv" + std::to_string(i));
+                m_suffixes.push_back("_dv" + std::to_string(i));
             }
             for (int i = 0; i < m_num_acceleration_eqs; ++i) {
-                (const_cast <MucoSimbodyConstraint*> (this))->append_suffixes(
-                    "_a" + std::to_string(i));
+                m_suffixes.push_back("_a" + std::to_string(i));
             }
         }
     } 
 
     // Set lower and upper bounds to zero.
     SimTK::Vector zeros(m_num_equations, 0.0);
-    // TODO avoid const_cast
-    (const_cast <MucoSimbodyConstraint*> (this))->set_lower_bounds(zeros);
-    (const_cast <MucoSimbodyConstraint*> (this))->set_upper_bounds(zeros);
+    for (int i = 0; i < m_num_equations; ++i) {
+        m_bounds.push_back(MucoBounds(0));
+    }
 }
 
 void MucoSimbodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
@@ -224,17 +240,18 @@ void MucoSimbodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
         //      6) acceleration-level errors
 
         // Position-level constraint errors.
-        perr = m_constraint_ref->getPositionErrorsAsVector(state);
-        std::copy(perr.begin(), perr.end(),
-                  errors.begin());
+        std::copy_n(m_constraint_ref->getPositionErrorsAsVector(state).begin(), 
+            m_num_position_eqs, errors.begin() + m_index);
         // Derivative of position-level and velocity-level constraint errors.
-        pverr = m_constraint_ref->getVelocityErrorsAsVector(state);
-        std::copy(pverr.begin(), pverr.end(),
-            errors.begin() + m_num_position_eqs);
+        std::copy_n(m_constraint_ref->getVelocityErrorsAsVector(state).begin(), 
+            m_num_position_eqs + m_num_velocity_eqs,
+            errors.begin() + m_index + m_num_position_eqs);
         // Second derivative of position-level, derivative of velocity-level,
         // and acceleration-level constraint errors.
-        pvaerr = m_constraint_ref->getAccelerationErrorsAsVector(state);
-        std::copy(pvaerr.begin(), pvaerr.end(),
-            errors.begin() + 2*m_num_position_eqs + m_num_velocity_eqs);
+        std::copy_n(
+            m_constraint_ref->getAccelerationErrorsAsVector(state).begin(),
+            m_num_position_eqs + m_num_velocity_eqs + m_num_acceleration_eqs,
+            errors.begin() + m_index + 2*m_num_position_eqs 
+            + m_num_velocity_eqs);
     } 
 }

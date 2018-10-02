@@ -125,6 +125,10 @@ public:
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 
+    /// Print the name, property name, component paths, property element (if it
+    /// exists), and bounds for this parameter.
+    void printDescription(std::ostream& stream = std::cout) const;
+
 private:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "

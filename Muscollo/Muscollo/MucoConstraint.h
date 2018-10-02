@@ -38,67 +38,65 @@ namespace OpenSim {
 /// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoConstraint : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraint, Object);
+friend class MucoSimbodyConstraint;
 public:
     // Default constructor.
     MucoConstraint();
 
     // Get and set methods.
-    /// @details Note: the return value is constructed fresh on every call from
-    /// the internal property. Avoid repeated calls to this function.
-    std::vector<MucoBounds> getBounds() const {
-        int numBounds = (int)getProperty_lower_bounds().size();
-        std::vector<MucoBounds> boundsVec(numBounds);
-        for (int i = 0; i < numBounds; ++i) {
-            boundsVec[i] = {get_lower_bounds(i), get_upper_bounds(i)};
+    std::vector<MucoBounds> getBounds() const 
+    {   return m_bounds; }
+    std::vector<std::string> getSuffixes() const 
+    {   return m_suffixes; }
+    void setBounds(const std::vector<MucoBounds>& bounds) {
+        for (int i = 0; i < bounds.size(); ++i) {
+            set_bounds(i, bounds[i]);
         }
-        return boundsVec;
-    }
-    // TODO is this get method necessary with getConstraintLabels()?
-    /// @details Note: the return value is constructed fresh on every call from
-    /// the internal property. Avoid repeated calls to this function.
-    std::vector<std::string> getSuffixes() const {
-        int numSuffixes = (int)getProperty_suffixes().size();
-        std::vector<std::string> suffixes(numSuffixes);
-        for (int i = 0; i < getProperty_suffixes().size(); ++i) {
-            suffixes[i] = get_suffixes(i);
-        }
-        return suffixes;
-    }
-    void setBounds(const std::vector<MucoBounds>& boundsVec) {
-        for (int i = 0; i < boundsVec.size(); ++i) {
-            set_lower_bounds(i, boundsVec[i].getLower());
-            set_upper_bounds(i, boundsVec[i].getUpper());
-        }
+        m_bounds = bounds;
     }  
     void setSuffixes(const std::vector<std::string>& suffixes) {
         // TODO can we set this list property without a loop?
         for (int i = 0; i < suffixes.size(); ++i) {
             set_suffixes(i, suffixes[i]);
         }
+        m_suffixes = suffixes;
     }
+    int getNumEquations() const
+    {   return m_num_equations; }
+    int getIndex() const
+    {   return m_index; }
     
     /// Get a list of constraint labels based on the constraint name and, if
     /// specified, the list of suffixes. If no suffixes have been specified, 
     /// zero-indexed, numeric suffixes will be applied as a default.
     std::vector<std::string> getConstraintLabels();
 
-    /// Calculate errors in constraint equations and return as a vector.
-    SimTK::Vector calcConstraintErrors(const SimTK::State& state) const {
-        SimTK::Vector errors(m_num_equations, 0.0);
-        calcConstraintErrorsImpl(state, errors);
-        return errors;
+    /// Calculate errors in the constraint equations. The *errors* argument 
+    /// represents the concatenated error vector for all constraints in the 
+    /// MucoProblem. The *m_index* and *m_num_equations* internal variables are 
+    /// used to create a view into *errors* to access the elements this 
+    /// MucoConstraint is responsible for.
+    void calcConstraintErrors(const SimTK::State& state, 
+            SimTK::Vector& errors) const {
+    
+        // This vector shares writable, borrowed space from the *errors* vector 
+        // (provided by the MucoProblem) to the elements for which this 
+        // MucoConstraint provides constraint error information.
+        SimTK::Vector theseErrors(m_num_equations, 
+            errors.getContiguousScalarData() + m_index, true);
+        calcConstraintErrorsImpl(state, theseErrors);
     }
 
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model) const;
+    void initialize(const Model& model, const int& index) const;
 
-    //void printDescription(std::ostream& stream = std::cout) const;
+    /// Print the name, type, constraint index, number of scalar equations, and
+    /// bounds for this constraint.
+    void printDescription(std::ostream& stream = std::cout) const;
     
 protected:
-    OpenSim_DECLARE_LIST_PROPERTY(lower_bounds, double, "The lower bounds on "
-        "the set of scalar constraint equations.");
-    OpenSim_DECLARE_LIST_PROPERTY(upper_bounds, double, "The upper bounds on "
-        "the set of scalar constraint equations.");
+    OpenSim_DECLARE_LIST_PROPERTY(bounds, MucoBounds, "The bounds on the set "
+        "of scalar constraint equations.");
     OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, "(Optional) A list of "
         "strings to create unique labels for the scalar constraint equations. "
         "These are appended to the name of the MucoConstraint object when "
@@ -122,15 +120,16 @@ protected:
         OPENSIM_THROW_IF(!m_model, Exception,
             "Model is not available until the start of initializing.");
         return m_model.getRef();
-    }
-    /// The number of scalar constraint equations associated with this 
-    /// MucoConstraint.
-    mutable int m_num_equations;
+    }  
 
 private: 
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
+   mutable std::vector<MucoBounds> m_bounds;
+   mutable std::vector<std::string> m_suffixes;
+   mutable int m_index;
+   mutable int m_num_equations;
 };
 
 inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
@@ -152,10 +151,10 @@ public:
     // Get and set methods.
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    ConstraintIndex getConstraintIndex() const
-    {   return ConstraintIndex(get_constraint_index()); }
-    void setConstraintIndex(const ConstraintIndex& cid) 
-    {   set_constraint_index(cid); }
+    ConstraintIndex getModelConstraintIndex() const
+    {   return ConstraintIndex(get_model_constraint_index()); }
+    void setModelConstraintIndex(const ConstraintIndex& cid) 
+    {   set_model_constraint_index(cid); }
     void enforcePositionLevelOnly(const bool& tf) 
     {   set_enforce_position_level_only(tf); }
     bool isEnforcingPositionLevelOnly() 
@@ -167,9 +166,10 @@ protected:
         SimTK::Vector& errors) const override;
 
 private:
-    OpenSim_DECLARE_PROPERTY(constraint_index, int, "The index of the "
-        "constraint in the model's constraint set. This maps to a "
-        "SimTK::ConstraintIndex. ");
+    OpenSim_DECLARE_PROPERTY(model_constraint_index, int, "The index of the "
+        "constraint in the model's constraint set, which maps to a "
+        "SimTK::ConstraintIndex. Note that this index is separate in use from "
+        "the *m_index* member variable of MucoConstraint.");
     OpenSim_DECLARE_PROPERTY(enforce_position_level_only, bool, "Whether or "
         "not to only enforce the position-level constraint equations of a "
         "holonomic constraint, and not the derivatives. An error is thrown if "
@@ -180,10 +180,6 @@ private:
     mutable int m_num_velocity_eqs;
     mutable int m_num_acceleration_eqs;
     mutable SimTK::ReferencePtr<const SimTK::Constraint> m_constraint_ref;
-
-    mutable SimTK::Vector perr;
-    mutable SimTK::Vector pverr;
-    mutable SimTK::Vector pvaerr;
 
     void constructProperties();
 };

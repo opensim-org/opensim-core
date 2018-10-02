@@ -21,6 +21,7 @@
 #include "MucoCost.h"
 #include "MucoBounds.h"
 #include "MucoParameter.h"
+#include "MucoConstraint.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -185,6 +186,16 @@ public:
     /// @precondition
     ///     The completed model must be set.
     void addCost(const MucoCost&);
+    /// Add a constraint to this phase. The passed-in constriant is copied, and
+    /// thus any subsequent edits have not effect.
+    /// Constraints must have a name (MucoConstraint::setName()), and it must be
+    /// unique. Note that constraints have the name "constraint" by default, so
+    /// if you only have one constraint, you don't need to set its name
+    /// manually.
+    ///
+    /// @precondition
+    ///     The completed model must be set.
+    void addConstraint(const MucoConstraint&);
 
     const Model& getModel() const { return get_model(); }
     Model& updModel() { return upd_model(); }
@@ -241,6 +252,16 @@ public:
         }
         return cost;
     }
+    /// Calculate the errors in all the scalar constraint equations in this
+    /// phase.
+    SimTK::Vector calcConstraintErrors(const SimTK::State& state) const {
+        SimTK::Vector errors(m_num_scalar_constraint_eqs, 0.0);
+        for (int i = 0; i < getProperty_constraints().size(); ++i) {
+            get_constraints(i).calcConstraintErrors(state, errors);
+        }
+        return errors;
+    }
+
     /// Apply paramater values to the model passed to initialize() within the
     /// current MucoProblem. Values must be consistent with the order of 
     /// parameters returned from createParameterNames().
@@ -270,9 +291,12 @@ protected: // Protected so that doxygen shows the properties.
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
+    OpenSim_DECLARE_LIST_PROPERTY(constraints, MucoConstraint,
+            "Constraints to enforce in the optimal control problem.");
 
 private:
     void constructProperties();
+    mutable int m_num_scalar_constraint_eqs;
 };
 
 
@@ -313,6 +337,8 @@ public:
     void addParameter(const MucoParameter&);
     /// Add a cost term for phase 0.
     void addCost(const MucoCost&);
+    /// Add a constraint for phase 0.
+    void addConstraint(const MucoConstraint&);
     /// @}
 
     // TODO access phase by name

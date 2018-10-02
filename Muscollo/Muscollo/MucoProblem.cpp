@@ -108,6 +108,7 @@ void MucoPhase::constructProperties() {
     constructProperty_control_infos();
     constructProperty_parameters();
     constructProperty_costs();
+    constructProperty_constraints();
 }
 void MucoPhase::setModel(const Model& model) {
     set_model(model);
@@ -149,6 +150,21 @@ void MucoPhase::addCost(const MucoCost& cost) {
     OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
         "A cost with name '" + cost.getName() + "' already exists.");
     append_costs(cost);
+}
+void MucoPhase::addConstraint(const MucoConstraint& constraint) {
+    OPENSIM_THROW_IF_FRMOBJ(constraint.getName().empty(), Exception,
+        "Cannot add a constraint if it does not have a name (use setName()).");
+    int idx = getProperty_constraints().findIndexForName(constraint.getName());
+    OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
+        "A constraint with name '" + constraint.getName() + "' already "
+        "exists.");
+    for (int i = 0; i < getProperty_constraints().size(); ++i) {
+        OPENSIM_THROW_IF_FRMOBJ(get_constraints(i).getIndex() != 
+            constraint.getIndex(), Exception,
+            "A constraint with index '" + std::to_string(constraint.getIndex())
+            + "' already exists.");
+    }
+    append_constraints(constraint);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
     return MucoInitialBounds(getProperty_time_initial_bounds());
@@ -192,7 +208,6 @@ const MucoVariableInfo& MucoPhase::getControlInfo(
             "No info provided for control for '" + name + "'.");
     return get_control_infos(idx);
 }
-
 const MucoParameter& MucoPhase::getParameter(
         const std::string& name) const {
 
@@ -209,7 +224,6 @@ MucoParameter& MucoPhase::updParameter(
         "No parameter with name '" + name + "' found.");
     return upd_parameters(idx);
 }
-
 void MucoPhase::printDescription(std::ostream& stream) const {
     stream << "Costs:";
     if (getProperty_costs().empty())
@@ -220,6 +234,17 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         stream << "  ";
         get_costs(i).printDescription(stream);
+    }
+
+    stream << "Constraints:";
+    if (getProperty_constraints().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_constraints().size() << ")";
+    stream << "\n";
+    for (int i = 0; i < getProperty_constraints().size(); ++i) {
+        stream << "  ";
+        get_constraints(i).printDescription(stream);
     }
 
     stream << "States:";
@@ -245,6 +270,18 @@ void MucoPhase::printDescription(std::ostream& stream) const {
         stream << "  ";
         get_control_infos(i).printDescription(stream);
     }
+
+    stream << "Parameters:";
+    if (getProperty_parameters().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_parameters().size() << "):";
+    stream << "\n";
+    for (int i = 0; i < getProperty_parameters().size(); ++i) {
+        stream << "  ";
+        get_parameters(i).printDescription(stream);
+    }
+
     stream.flush();
 }
 
@@ -265,18 +302,26 @@ void MucoPhase::initialize(Model& model) const {
     }
 
     // TODO can only handle ScalarActuators?
-    // TODO automatically add control variable infos for model constraints. 
-    // For now, don't throw error if control is a Lagrange multiplier. 
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
-        bool isLagrangeMultiplier = false;
-        if (name.find("lambda") != std::string::npos) {
-            isLagrangeMultiplier = true;
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
+                "Control info provided for nonexistant actuator "
+                "'" + name + "'.");
+    }
+
+    // Add all enabled Simbody constraints to the MucoPhase.
+    const auto& matter = getModel().getMatterSubsystem();
+    const auto NC = getModel().getNumConstraints();
+    const SimTK::State& state = getModel().getWorkingState();
+    for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+        const SimTK::Constraint& constraint = matter.getConstraint(cid);
+        if (!constraint.isDisabled(state)) {
+            MucoSimbodyConstraint simbodyConstraint;
+            simbodyConstraint.setModelConstraintIndex(cid);
+            simbodyConstraint.enforcePositionLevelOnly(true);
+            // TODO avoid const_cast
+            (const_cast<MucoPhase*> (this))->addConstraint(simbodyConstraint);
         }
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1 && 
-                !isLagrangeMultiplier, Exception,
-                "Control info provided for nonexistant actuator or Lagrange "
-                        "multiplier '" + name + "'.");
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {
@@ -285,6 +330,13 @@ void MucoPhase::initialize(Model& model) const {
 
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
+    }
+
+    int m_num_scalar_constraint_eqs = 0;
+    for (int i = 0; i < getProperty_constraints().size(); ++i) {
+        const_cast<MucoConstraint&>(get_constraints(i)).initialize(model,
+            m_num_scalar_constraint_eqs);
+        m_num_scalar_constraint_eqs += get_constraints(i).getNumEquations();
     }
 }
 void MucoPhase::applyParametersToModel(
@@ -328,6 +380,9 @@ void MucoProblem::addParameter(const MucoParameter& parameter) {
 }
 void MucoProblem::addCost(const MucoCost& cost) {
     upd_phases(0).addCost(cost);
+}
+void MucoProblem::addConstraint(const MucoConstraint& cost) {
+    upd_phases(0).addConstraint(cost);
 }
 void MucoProblem::printDescription(std::ostream& stream) const {
     std::stringstream ss;

@@ -723,23 +723,15 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     runForwardSimulation(model, solution, 1e-2);
 }
 
-class SameActuatorControlConstraint : public MucoConstraint {
-OpenSim_DECLARE_CONCRETE_OBJECT(SameActuatorControlConstraint, MucoConstraint);
+class EqualControlConstraint : public MucoConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoConstraint);
 protected:
-
-    void initializeImpl() const override {
-        (const_cast <SameActuatorControlConstraint*> (this))->set_lower_bounds(0, 0.0);
-        (const_cast <SameActuatorControlConstraint*> (this))->set_upper_bounds(0, 0.0);
-    }
-
     void calcConstraintErrorsImpl(const SimTK::State& state,
             SimTK::Vector& errors) const {
         getModel().realizeVelocity(state);
 
         controls = getModel().getControls(state);
-
         errors[0] = controls[1] - controls[0];
-
     }
 private:
     mutable SimTK::Vector controls;
@@ -747,21 +739,17 @@ private:
 
 /// Solve an optimal control problem where a double pendulum must reach a 
 /// specified final configuration while subject to a constraint that its
-/// actuators must produce the same control.
-void testDoublePendulumSameControl() {
+/// actuators must produce an equal control trajectory.
+void testDoublePendulumEqualControl() {
     MucoTool muco;
-    muco.setName("double_pendulum_same_control");
+    muco.setName("double_pendulum_equal_control");
     MucoProblem& mp = muco.updProblem();
-    // Create double pendulum model and add the point-on-line constraint. The 
-    // constraint consists of a vertical line in the y-direction (defined in 
-    // ground) and the model end-effector point (the origin of body "b1").
     Model model = createDoublePendulumModel();
-    const Body& b1 = model.getBodySet().get("b1");
-    const Station& endeff = model.getComponent<Station>("endeff");
-    PointOnLineConstraint* constraint = new PointOnLineConstraint(
-        model.getGround(), Vec3(0, 1, 0), Vec3(0), b1, endeff.get_location());
-    model.addConstraint(constraint);
     mp.setModel(model);
+    
+    EqualControlConstraint equalControlConstraint;
+    equalControlConstraint.setBounds({0.0, 0.0});
+    mp.addConstraint(equalControlConstraint);
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the 
@@ -790,19 +778,15 @@ void testDoublePendulumSameControl() {
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
-    solution.write("testConstraints_testDoublePendulumPointOnLine.sto");
+    solution.write("testConstraints_testDoublePendulumEqualControl.sto");
     //muco.visualize(solution);
 
-    model.initSystem();
-    StatesTrajectory states = solution.exportToStatesTrajectory(mp);
-    for (const auto& s : states) {
-        model.realizePosition(s);
-        const SimTK::Vec3& loc = endeff.getLocationInGround(s);
-
-        // The end-effector should not have moved in the x- or z-directions.
-        // TODO: may need to adjust these tolerances
-        SimTK_TEST_EQ_TOL(loc[0], 0, 1e-6);
-        SimTK_TEST_EQ_TOL(loc[2], 0, 1e-6);
+    const auto& controlsTraj = solution.getControlsTrajectory();
+    // TODO solution.getControl() returns a VectorView, how to compare two 
+    // VectorView's directly?
+    for (int i = 0; i < controlsTraj.nrow(); ++i) {
+        SimTK_TEST_EQ_TOL(controlsTraj.get(i, 0), controlsTraj.get(i, 1),
+            1e-6);
     }
 
     // Run a forward simulation using the solution controls in prescribed 
@@ -826,5 +810,6 @@ int main() {
         MucoSolution couplerSolution;
         SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
         SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
+        SimTK_SUBTEST(testDoublePendulumEqualControl);
     SimTK_END_TEST();
 }
