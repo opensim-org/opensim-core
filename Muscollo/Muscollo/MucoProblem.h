@@ -211,11 +211,13 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
+    /// Get the names of all the MucoConstraints.
+    std::vector<std::string> createConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
-
+    const MucoConstraint& getConstraint(const std::string& name) const;
 
     // TODO add getCost() and/or updCost().
 
@@ -293,10 +295,12 @@ protected: // Protected so that doxygen shows the properties.
             "Quantities to minimize in the cost functional.");
     OpenSim_DECLARE_LIST_PROPERTY(constraints, MucoConstraint,
             "Constraints to enforce in the optimal control problem.");
+    // OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, ...
 
 private:
     void constructProperties();
     mutable int m_num_scalar_constraint_eqs;
+    mutable std::vector<MucoSimbodyConstraint> m_multibody_constraints;
 };
 
 

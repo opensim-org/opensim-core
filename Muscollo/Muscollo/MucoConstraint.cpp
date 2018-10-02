@@ -22,6 +22,48 @@ using namespace OpenSim;
 using SimTK::ConstraintIndex;
 
 // ============================================================================
+// MucoConstraintInfo
+// ============================================================================
+
+MucoConstraintInfo::MucoConstraintInfo() {
+    constructProperties();
+}
+
+MucoConstraintInfo::MucoConstraintInfo(const std::string& name,
+    const std::vector<MucoBounds>& bounds) 
+    : MucoConstraintInfo(name, bounds, {}) {}
+
+MucoConstraintInfo::MucoConstraintInfo(const std::string& name,
+    const std::vector<MucoBounds>& bounds,
+    const std::vector<std::string>& suffixes) : MucoConstraintInfo() {
+    setName(name);
+    setBounds(bounds);
+    setSuffixes(suffixes);
+}
+
+//void MucoConstraintInfo::printDescription(std::ostream& stream) const {
+//    const auto bounds = getBounds();
+//    stream << getName() << ". bounds: ";
+//    bounds.printDescription(stream);
+//    const auto initial = getInitialBounds();
+//    if (initial.isSet()) {
+//        stream << " initial: ";
+//        initial.printDescription(stream);
+//    }
+//    const auto final = getFinalBounds();
+//    if (final.isSet()) {
+//        stream << " final: ";
+//        final.printDescription(stream);
+//    }
+//    stream << std::endl;
+//}
+
+void MucoConstraintInfo::constructProperties() {
+    constructProperty_bounds();
+
+}
+
+// ============================================================================
 // MucoConstraint
 // ============================================================================
 
@@ -56,7 +98,7 @@ void MucoConstraint::initialize(const Model& model, const int& index) const {
 
     // Default error checks. Internal variable states are included include in
     // some of the error conditions to accomodate variables that may have 
-    // already been set by the friend/derived class MucoSimbodyConstraint.
+    // already been set by MucoSimbodyConstraint.
 
     OPENSIM_THROW_IF_FRMOBJ(index < 0, Exception, "Invalid constraint index "
         "provided. Indices must be greater than or equal to zero.");
@@ -117,25 +159,21 @@ MucoSimbodyConstraint::MucoSimbodyConstraint() {
     constructProperties();
 }
 
-void MucoSimbodyConstraint::constructProperties() {
-    constructProperty_model_constraint_index(-1);
-    constructProperty_enforce_position_level_only(false);
-}
+void MucoSimbodyConstraint::initialize(const Model& model, 
+        const int& constraint_index) const {
 
-void MucoSimbodyConstraint::initializeImpl() const {
-
-    OPENSIM_THROW_IF_FRMOBJ(get_model_constraint_index() < 0, Exception,
+    OPENSIM_THROW_IF_FRMOBJ(constraint_index < 0, Exception,
         "A valid, non-negative ConstraintIndex must be provided.");
     
-    auto& matter = getModel().getMatterSubsystem();
+    auto& matter = model.getMatterSubsystem();
     const SimTK::Constraint& constraint 
-        = matter.getConstraint(ConstraintIndex(get_model_constraint_index()));
+        = matter.getConstraint(ConstraintIndex(constraint_index));
 
     // Throw error if constraint is not enabled in model.
-    const SimTK::State state = getModel().getWorkingState();
+    const SimTK::State state = model.getWorkingState();
     OPENSIM_THROW_IF_FRMOBJ(constraint.isDisabled(state), Exception, "The "
         "constraint at ConstraintIndex " 
-        + std::to_string(get_model_constraint_index()) + " is not enabled in " 
+        + std::to_string(constraint_index) + " is not enabled in "
         "the model.");
     
     // Get number of equations of each type: position, velocity, and 
@@ -143,38 +181,21 @@ void MucoSimbodyConstraint::initializeImpl() const {
     constraint.getNumConstraintEquationsInUse(state, m_num_position_eqs, 
         m_num_velocity_eqs, m_num_acceleration_eqs);
 
-    if (get_enforce_position_level_only()) {
-        OPENSIM_THROW_IF_FRMOBJ(m_num_velocity_eqs != 0, Exception, "Only " 
-            "holonomic (position-level) constraints are supported in this "
-            "mode. There are " + std::to_string(m_num_velocity_eqs) + 
-            " velocity-level scalar constraints associated with the model "
-            "Constraint at ConstraintIndex " + 
-            std::to_string(get_model_constraint_index()) + ".");
-        OPENSIM_THROW_IF_FRMOBJ(m_num_acceleration_eqs != 0, Exception, "Only "
-            "holonomic (position-level) constraints are supported in this "
-            "mode. There are " + std::to_string(m_num_acceleration_eqs) + 
-            " acceleration-level scalar constraints associated with the model "
-            "Constraint at ConstraintIndex " 
-            + std::to_string(get_model_constraint_index()) + ".");
-
-        m_num_equations = m_num_position_eqs;
-    } else {
-        // The number of scalar constraint equations equals each of the
-        // position, velocity, and acceleration-level constraints specified by
-        // the Simbody constraint plus the first derivatives of the position and 
-        // velocity-level constraint equations and the second derivatives of the
-        // position-level constraint equations.
-        m_num_equations = 3*m_num_position_eqs + 2*m_num_velocity_eqs +
-            m_num_acceleration_eqs;
-    }
+    // The number of scalar constraint equations equals each of the
+    // position, velocity, and acceleration-level constraints specified by
+    // the Simbody constraint plus the first derivatives of the position and 
+    // velocity-level constraint equations and the second derivatives of the
+    // position-level constraint equations.
+    //m_num_equations = 3*m_num_position_eqs + 2*m_num_velocity_eqs +
+    //    m_num_acceleration_eqs;
 
     // Assign reference pointer to the model constraint.
     m_constraint_ref = constraint;
 
     // By default, set the name of the constraint to the name set in the model.
     if (getName().empty()) {
-        const std::string& name = getModel().getConstraintSet().get(
-            get_model_constraint_index()).getName();
+        const std::string& name = model.getConstraintSet().get(
+            constraint_index).getName();
         // TODO avoid const_cast
         (const_cast <MucoSimbodyConstraint*> (this))->setName(name);
     }
@@ -183,11 +204,6 @@ void MucoSimbodyConstraint::initializeImpl() const {
     // enforced by the constraint (position, velocity, or acceleration) and
     // specify if it represents a derivative of a scalar equation.
     if (getProperty_suffixes().empty()) {
-        if (get_enforce_position_level_only()) {
-            for (int i = 0; i < m_num_position_eqs; ++i) {
-                m_suffixes.push_back("_p" + std::to_string(i));
-            }
-        } else {
             // The constraint errors returned by calcConstraintErrorsImpl()
             // are ordered as follows:
             //      1) position-level errors
@@ -224,7 +240,6 @@ void MucoSimbodyConstraint::initializeImpl() const {
             for (int i = 0; i < m_num_acceleration_eqs; ++i) {
                 m_suffixes.push_back("_a" + std::to_string(i));
             }
-        }
     }
 
     // Set lower and upper bounds to zero.
@@ -237,30 +252,28 @@ void MucoSimbodyConstraint::initializeImpl() const {
 void MucoSimbodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
     SimTK::Vector& errors) const {
 
-    if (get_enforce_position_level_only()) {
-        errors = m_constraint_ref->getPositionErrorsAsVector(state);
-    } else { 
-        // The constraint errors returned are ordered as follows:
-        //      1) position-level errors
-        //      2) position-level 1st derivative errors
-        //      3) velocity-level errors
-        //      4) position-level 2nd derivative errors
-        //      5) velocity-level 1st derivative errors
-        //      6) acceleration-level errors
+    // The constraint errors returned are ordered as follows:
+    //      1) position-level errors
+    //      2) position-level 1st derivative errors
+    //      3) velocity-level errors
+    //      4) position-level 2nd derivative errors
+    //      5) velocity-level 1st derivative errors
+    //      6) acceleration-level errors
 
-        // Position-level constraint errors.
-        std::copy_n(m_constraint_ref->getPositionErrorsAsVector(state).begin(), 
-            m_num_position_eqs, 
-            errors.begin());
-        // Derivative of position-level and velocity-level constraint errors.
-        std::copy_n(m_constraint_ref->getVelocityErrorsAsVector(state).begin(), 
-            m_num_position_eqs + m_num_velocity_eqs, 
-            errors.begin() + m_num_position_eqs);
-        // Second derivative of position-level, derivative of velocity-level,
-        // and acceleration-level constraint errors.
-        std::copy_n(
-            m_constraint_ref->getAccelerationErrorsAsVector(state).begin(),
-            m_num_position_eqs + m_num_velocity_eqs + m_num_acceleration_eqs,
-            errors.begin() + 2*m_num_position_eqs + m_num_velocity_eqs);
-    } 
+    // Position-level constraint errors.
+    std::copy_n(m_constraint_ref->getPositionErrorsAsVector(state).begin(), 
+        m_num_position_eqs, 
+        errors.begin());
+
+    // Derivative of position-level and velocity-level constraint errors.
+    std::copy_n(m_constraint_ref->getVelocityErrorsAsVector(state).begin(), 
+        m_num_position_eqs + m_num_velocity_eqs, 
+        errors.begin() + m_num_position_eqs);
+
+    // Second derivative of position-level, derivative of velocity-level,
+    // and acceleration-level constraint errors.
+    std::copy_n(
+        m_constraint_ref->getAccelerationErrorsAsVector(state).begin(),
+        m_num_position_eqs + m_num_velocity_eqs + m_num_acceleration_eqs,
+        errors.begin() + 2*m_num_position_eqs + m_num_velocity_eqs);
 }

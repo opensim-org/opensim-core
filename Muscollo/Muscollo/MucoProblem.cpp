@@ -193,6 +193,13 @@ std::vector<std::string> MucoPhase::createParameterNames() const {
     }
     return names;
 }
+std::vector<std::string> MucoPhase::createConstraintNames() const {
+    std::vector<std::string> names(getProperty_constraints().size());
+    for (int i = 0; i < getProperty_constraints().size(); ++i) {
+        names[i] = get_constraints(i).getName();
+    }
+    return names;
+}
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
     int idx = getProperty_state_infos().findIndexForName(name);
@@ -223,6 +230,14 @@ MucoParameter& MucoPhase::updParameter(
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
         "No parameter with name '" + name + "' found.");
     return upd_parameters(idx);
+}
+const MucoConstraint& MucoPhase::getConstraint(
+    const std::string& name) const {
+
+    int idx = getProperty_constraints().findIndexForName(name);
+    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+        "No constraint with name '" + name + "' found.");
+    return get_constraints(idx);
 }
 void MucoPhase::printDescription(std::ostream& stream) const {
     stream << "Costs:";
@@ -317,8 +332,9 @@ void MucoPhase::initialize(Model& model) const {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
             MucoSimbodyConstraint simbodyConstraint;
-            simbodyConstraint.setModelConstraintIndex(cid);
-            simbodyConstraint.enforcePositionLevelOnly(true);
+
+            
+ 
             // TODO avoid const_cast
             (const_cast<MucoPhase*> (this))->addConstraint(simbodyConstraint);
         }

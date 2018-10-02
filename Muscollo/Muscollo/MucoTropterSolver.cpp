@@ -167,6 +167,20 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
+        for (std::string name : m_phase0.createConstraintNames()) {
+            const MucoConstraint& constraint = m_phase0.getConstraint(name);
+            auto labels = constraint.getConstraintLabels();
+            auto bounds = constraint.getBounds();
+            for (int i = 0; i < constraint.getNumEquations(); ++i) {
+                this->add_path_constraint(labels[i], convert(bounds[i]));
+                if (constraint.getConcreteClassName() == "MucoSimbodyConstraint") {
+                    this->add_adjunct(labels[i], {-1000, 1000});
+                }
+            }
+
+        }
+
+
         // Add control variables representing Lagrange multipliers for any
         // constraints that exist in the model.
         const auto& matter = m_model.getMatterSubsystem();
