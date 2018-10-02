@@ -1012,7 +1012,9 @@ public:
     /**
      * Get a log of errors/warnings encountered when loading/constructing the model
      */
-    const std::string& getValidationLog() { return _validationLog; };
+    const std::string& getValidationLog() const { return _validationLog; };
+    /** Append to the Model's validation log without affecting is current contents */
+    void appendToValidationLog(const std::string& note);
     void clearValidationLog() { _validationLog = ""; };
 
     /**

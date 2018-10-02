@@ -12,7 +12,7 @@ The OpenSim software has a variety of interfaces: GUI, command line, XML, Python
 ## OpenSim’s Purpose {#opensimpurpose}
 The purpose of OpenSim is to provide anyone interested in human or animal movement with high-performance software to create computer models of the neuromusculoskeletal system, analyze experimental movement data, and simulate movement dynamics to gain insights about the anatomy, physiology, mechanics and control of movement. The software is used in a variety of applications, including neuroscience research, biomechanical analysis, surgical design, and ergonomic analysis, and bioengineering education, just to name a few.  Our goal is to provide physically accurate models and tools that provide a solid foundation for scientific inquiry.
 
-The OpenSim Application Programmer’s Interface (OpenSim API) serves both the OpenSim application, with its graphical user interface (GUI), and enables advanced users and developers to write their own programs to extend the capabilities of OpenSim, including customized analyses and workflows, Components, and OpenSim plug-ins.
+The OpenSim Application Programming Interface (OpenSim API) serves the OpenSim application, with its graphical user interface (GUI), and also enables advanced users and developers to write their own programs to extend the capabilities of OpenSim, including customized analyses and workflows, Components, and OpenSim plug-ins.
 
 ## Design Philosophy {#designphilosophy}
 The ethos of the OpenSim API is that the code is modular, reusable, and easily extensible. To enable the assembly of neuromusculoskeletal systems from constituent biomechanical elements, OpenSim has adopted the [composite design pattern](https://en.wikipedia.org/wiki/Composite_pattern) to systematically define, organize, and manage the elements (components) of a neuromusculoskeletal system.
@@ -84,10 +84,10 @@ A SimTK::System is the computational (mathematical) system of equations that rep
 A [StatesTrajectory](@ref OpenSim::StatesTrajectory) is a sequence of States that satisfy the dynamical system of equations through time.
 
 ~~~~cpp
-// Generate the System and State that implements the model
-SimTK::State state = model.finalizeSystem();
-int nq = state.getNQ();               // Number of generalized coordinates.
-SimTK::Vector q = state.getQ();       // Values of generalized coordinates.
+// Generate the System and State that implements the model (Namespace specification e.g. 'SimTK::' is needed only in C++)
+SimTK::State state = model.initSystem();
+int nq = state.getNQ();               // Number of generalized coordinates
+SimTK::Vector q = state.getQ();       // Values of generalized coordinates
 SimTK::Vector qdot = state.getQDot(); // Derivatives of generalized coordinates.
 ~~~~
 
@@ -98,44 +98,39 @@ model.getMassCenter(state); // Need to know pose of model.
 
 ## Object {#object}
 
-[Object](@ref OpenSim::Object) is the base class for all OpenSim Components, general containers like Set, and Tools that can be written to and read from XML or OSIM files--this is called serialization. Objects use [Properties](@ref OpenSim::Property) to serialize (write to file) and deserialize (read from file) their attributes, which are parameters and settings that define the behavior of the Object.
+[Object](@ref OpenSim::Object) is the base class for all OpenSim Components, general containers like Set, and Tools that require serialization - that is having their attributes written out to file. Objects use Properties to serialize (write to file) and deserialize (read from file) their attributes, which are parameters and settings that define the behavior of the Object.
 
 ## Component {#component}
-A [Component](@ref OpenSim::Component) is the basic "unit" of modelling and computing in OpenSim. It is our abstraction to capture a fundamental unit of computing and/or modeling used to compose a Model and form computational system of equations. It is the base class that provides the supporting infrastructure for building up a hierarchically-structured model with interconnections and numerous inputs and outputs. The components are then combined into a single computationally efficient (mathematical/numerical) system. That computational system is a SimTK::MultibodySystem and it is the computer implementation (think system of equations) of the multibody kinematics and dynamics plus any additional dynamics (ordinary differential equations, e.g. muscle activation dynamics) that need to be solved simultaneously. Any conceptual element that must compute something typically requires the System and must be a Component in OpenSim. Components, like Objects, contain Properties and can be written and read from filesresources for reading and writing (serializing).
+A [Component](@ref OpenSim::Component) is the basic "unit" of modelling and computing in OpenSim. It is our abstraction to capture a fundamental unit of computing and/or modeling used to compose a Model and form computational system of equations. It is the base class that provides the supporting infrastructure for building up a hierarchically structured model with interconnections and numerous inputs and outputs, but is represented by a single computationally efficient (mathematical/numerical) system. That computational system is a SimTK::MultibodySystem and it is the computer implementation (think system of equations) of the multibody kinematics and dynamics plus any additional dynamics (ordinary differential equations, e.g. muscle activation dynamics) that need to be solved simultaneously. Any conceptual element that has to compute something typically requires the System and must be a Component in OpenSim. Component also provides the resources for reading and writing (also known as serializing, which it inherits from Object) the attributes/parameters that define the behavior of the component and adding in its dynamics (equations). The serializable attributes of a Component are called properties in OpenSim.
 <img src="./images/component.png" alt="Figure 3" height="381.5" width="415">
 *Figure 3. Illustration of a generic component object, with property, input, output, and socket attributes.*
 
 
  A Component has the following user-facing attributes:
+1. Properties: constant (time-invariant) parameters (e.g., a Body’s mass).
+2. Sockets to other components that it depends on (e.g., a Joint connects two Frames).
+3. Input quantities that the component needs to do its job (e.g., a metabolics calculator component could have a “muscle power” input).
+4. Output quantities that component can compute, and that can be used to satisfy other components’ Inputs.
+5. Subcomponents: A Component can rely on other components to do its job (e.g., a Muscle component can use subcomponents for activation and fiber-contraction dynamics). These are not user facing and are of interest only to the component writer.    
 
-1. **Properties**: Constant parameters (e.g., a Body’s mass).
-2. **Sockets** to other components that it depends on (e.g., a Joint connects two Frames).
-3. **Input** quantities that the component needs to do its job (e.g., a metabolics calculator component could have a "muscle power" input).
-4. **Output** quantities that the component can compute, and that can be used to satisfy other components’ Inputs.
-5. **Subcomponents**: A Component can rely on other (internal) components to do its job (e.g., a Muscle component can use subcomponents for activation and fiber contraction dynamics).
+The common task for a Component (as part of a Model) is to make its contribution to the System (e.g. when Model::initSystem() if called). When the underlying System is built all the variables in the system equations appear in the State. As a unit of computation, the Component has the following computational attributes:
 
-
-The common task for Components (as part of a Model) is to make its contribution to the System (e.g. when OpenSim::Model::initSystem() if called). When the underlying System is built all the variables in the system of equations appear in the State. As a unit of computation, the Component has the following computational attributes:
-
-1. Continuous state variables (usually referred to as "state variables") are the variables in the dynamical equations contributed by the Component (e.g. activation and fiber length state variables of a Muscle).
-2. Discrete state variables are system unknowns that can change at any time and that may or may not be governed by differential or algebraic equations, and include external inputs and controls. For example, when the actuation (force or tension that an actuator produces) of an Actuator is overridden, the overriding actuation is a discrete state variable and must be supplied.
-3. Cache variables allow saving of (state-dependent) calculations that may be used multiple times, to improve computational efficiency. For example, computing the path length of a muscle with several intermediate points and wrapping over obstacles is expensive. Therefore, the [GeometryPath](@ref OpenSim::GeometryPath) component caches its length so that the muscle (or any other component) that needs the length in its computations does not reevaluate it unnecessarily. The validity of the path length cache variable is dependent on the generalized coordinates---as long as these generalized coordinates do not change, the path length is valid. OpenSim employs categories of dependency known as realization Stages (see Simbody User Guide, Section 2.4 for details) to manage the validity of cache variables. Any changes to the generalized coordinates invalidate (and wipe out) any cache variables associated with the Position Stage and all other subsequent (Velocity, Dynamics, Acceleration) stages. OpenSim automatically invalidates cache variables to support the correctness of simulations. Manual cache management usually results in using "stale" variables and fundamentally incorrect physics. Sadly, while results may appear plausible, they can be completely invalid and sometimes impossible to detect and debug. If you need to cache calculations for performance, use OpenSim’s cache variables rather than your own mechanism.
+1. Continuous state variables (usually referred to as "state variables") are the variables in the dynamical equations contributed by the Component (e.g. activation and fiber-length state variables of a Muscle)
+2. Discrete state variables are system unknowns that may or may not be governed by differential or algebraic equations, and include external inputs and controls. For example, when the actuation (force or tension that an actuator produces) of an Actuator is overridden, the override-actuation is a discrete state variable and must be supplied.
+3. Cache variables allow saving of (state-dependent) calculations that may be used multiple times, to improve computational efficiency. For example, computing the path length of a muscle with several intermediate points and wrapping over obstacles is expensive. Therefore, a path component itself caches its length so that the muscle (or any other component) that needs the length in its computations does not reevaluate it unnecessarily. The validity of the path length cache variable is dependent on the generalized coordinates--as long as these generalized coordinates do not change, the path length is valid. OpenSim employs categories of dependency known as realization Stages (see Simbody User Guide, Section 2.4 for details) to manage the validity of cache variables. Any changes to the generalized coordinates invalidate (and wipe out) any cache variables associated with the Position Stage and all other subsequent (Velocity, Dynamics, Acceleration) stages. OpenSim automatically invalidates cache variables to support the correctness of simulations. Manual cache management is highly prone to errors leading to “stale” variables and potentially incorrect physics. Sadly, while results may appear plausible they are completely invalid and sometimes impossible to detect and debug. If you need to cache for performance, use OpenSim’s facilities.
 
 ### Models are composed of Components {#modelscomposed}
 A Component encapsulates (all or part of the) system dynamics (of a model or element of a model) and provides (computes) values of interest. A component adds its dynamics and allocates necessary resources (state, cache, and other variables). It defines parameters (see Properties below) that specify its behavior/function and defines dependencies on any other Components (see Sockets below) via its Inputs and Outputs.
 
-<img src="./images/physical_system_to_model.png" alt="Figure 1" height="423.5" width="703">
-*Figure 4. A physical system with biological subsystems (left) and the associated OpenSim model composed of Components that represent each biological subsystem the user desires to model (right).*
+Components of a [Model](@ref OpenSim::Model) form a rooted directed tree topology of ownership (Components own and know about their subcomponents). Subcomponents of a component are the descendants in the tree. A root component (the top level Model) contains all the necessary Components to define the System. Components in the tree are uniquely identified by their full path name from the root (like a file path)
 
-
-Components of a [Model](@ref OpenSim::Model) form a rooted directed tree topology of ownership (Components own and know about their subcomponents, not the other way around). A root component (the top level Model) contains all the necessary Components to define the System. Components in the tree are uniquely identified by their full path name from the root (like a file path).
-
-A submodel (e.g., a subassembly in CAD) forms its own branch of a Model. This might be a Device, a Leg model or even a FullBody model.
+A branch in the ownership tree of a Model can be a complete subassembly representing a Device, a Leg or another FullBody Model.
 
 This Component architecture means that:
-- A Component can be composed of Components (new in 4.0).
+- A Component can be composed of Components
 - A Model is a Component.
 - A Model is composed of Components.
+- A Model can be composed of Models*
 
 You can add a subcomponent to another Component like so:
 ~~~cpp
@@ -181,13 +176,13 @@ The properties available in any class are listed on Doxygen, the GUI (Help > XML
 
 An @subpage OpenSim::Socket defines the dependency of a Component on another Component (the "connectee"). The type of the connectee must be specified (e.g., Body, Joint). The dependency is specified by the connectee’s relative or absolute path name.  A Socket finds and connects to the dependency when connect() is called. The Socket provides the status of the connection (connected or not) and a reference to to the "connectee" when connected. All of a class’ Sockets are listed on the Doxygen page for that class.
 
-You can ask a Component for the number of Sockets it has, as well as for their names:
+You can query a Component for the number of Sockets it has, as well as for their names:
 ~~~cpp
 int numConn = joint.getNumSockets();
 auto connNames = joint.getSocketNames();
 ~~~
 
-You can get a specific Socket of a Component using its name:
+You can get a reference to a specific Socket of a Component using its name:
 ~~~cpp
 AbstractSocket& parentSocket = joint.updSocket("parent_frame");
 ~~~
@@ -210,18 +205,18 @@ joint.connectSocket_parent_frame(model.getGround());
 
 To access the connectee itself, you can call the following method on the Component:
 ~~~cpp
-const PhysicalFrame& ground = joint.getConnectee<PhysicalFrame>("parent_frame");
+auto ground = joint.getConnectee<PhysicalFrame>("parent_frame");
 ~~~
 
 ### Inputs and Outputs {#inputsoutputs}
-Inputs and Outputs specify data flow. An Output can be any quantity computed by a compnent as a function of the state. An Output is used to pass results of computation from one Component to any other, provide fast access to Component calculations (same as a member function call), and collect results without needing to know the details of the source Component and/or its methods.
+Inputs and Outputs specify data flow. An Output is any Component “computed” value as a function of the state. An Output is used to pass results of computation from one Component to any other, provide fast access to Component calculations (same as a member function call), and collect results without needing to know the details of the source Component and/or its methods.
 
 <img src="./images/inputs_and_outputs.png" alt="Figure XX" height="276" width="537">
 *Figure 5. Illustration of the relationship between outputs from one component to the inputs of another components. Here, the activation, force, and length outputs from Muscle object are wired to the inputs of a Reporter object, which then become easily accessible to the user after the simulation completes (see the "Reporter" section below).*
 
-An @subpage OpenSim::Input is a "slot" that accepts an Output of a specified type. The Input verifies that the Output can be evaluated/consumed as an Input. Inputs allow for a Component to have dependencies on Outputs (that can come from any Component or user-specified data) rather than a specific Component type (as specified by a `Socket<C>`).
+An [Input](@subpage OpenSim::Input) is a "slot" that accepts an Output of a specified type. The Input verifies that the Output can be evaluated/consumed as an Input. Inputs allow for a Component to have dependencies on Outputs (that can come from any Component or user-specified Data) rather than a specific Component type (as specified by a `Socket<C>`).
 
-An @subpage OpenSim::Output is a value of interest generated by a Component (e.g. Muscle has Outputs for its fiber length and its tension). Outputs are accessed by name and evaluated given a State. Outputs are typed by their value type (e.g. `double`, `Vec3`, `SpatialVec`, `Vector`).
+An [Output](@subpage OpenSim::Output) is a value of interest generated by a Component (e.g. Muscle has Outputs for its fiber-length and its tension). Outputs are accessed by name and evaluated given a State. Outputs are typed by their value type (e.g. `double`, `Vec3`, `SpatialVec`, `Vector`).
 
 The Input provides its status as being connected (to an Output) or not. Thus, if an Input is connected to an Output, the Input triggers the evaluation of the Output by the Component to which the Output belongs. If an Output is not needed by any Input it is never evaluated.
 
@@ -327,8 +322,8 @@ There are several types of Frames:
 
 1. [PhysicalFrame](@ref OpenSim::PhysicalFrame): supports physical connections (e.g., Joints, Constraints) and is the Frame type to which forces can be applied. A concrete example of a PhysicalFrame is a Body. PhysicalFrame is an abstract class.
 2. [Ground](@ref OpenSim::Ground): an inertial reference frame in which the motion of all Frames and Points may conveniently and efficiently be expressed. As a PhysicalFrame, Ground supports physical connections by joints, constraints and forces can be applied to it.
-3. [Body](@ref OpenSim::Ground): a PhysicalFrame with inertia. A Body is specified by its mass, a center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass.
-4. [PhysicalOffsetFrame](@ref OpenSim::PhysicalOffsetFrame): a type of Physical Frame whose transform is specified as a constant offset from another PhysicalFrame. For example, PhysicalOffsetFrames can be used to specify the location and orientation of a Joint or Constraint on a Body.
+3. [Body](@ref OpenSim::Body): a PhysicalFrame with inertia. A Body is specified by its mass, a center-of-mass located in the PhysicalFrame, and its moment of inertia tensor about the center-of-mass.
+4. [PhysicalOffsetFrame](@ref OpenSim::PhysicalOffsetFrame): a type of Physical Frame whose transform is specified as a constant offset from another Physical Frame. For example, PhysicalOffsetFrames can be used to specify the location and orientation of a Joint or Constraint on a Body.
 
 The following diagram illustrates how each type of PhysicalFrame might appear in a model.
 
@@ -350,7 +345,7 @@ It is perhaps less evident that Frames can be extremely useful for linking a mul
 
 Given this tree, both the muscle attachment points (in M) and the joint axes, J, change when the anatomical frame, A, changes with respect to the base, B, without requiring muscle attachments and joint axes to be manually adjusted. Consequently, a useful concept is that of a Base frame, and a Frame can always provide its Base frame. If a Frame is not affixed to another frame, its Base frame is itself.
 
-### Points, Station and Marker {#points}
+### Points, Stations and Markers {#points}
 
 A [Point](@ref OpenSim::Point) is an OpenSim representation of any location in space. Points can be used to define and compute the location of physical structures (such as points of constraints and points of muscle attachments). Points can also embody the results of spatial calculations. For example, if your system involves contact, you can define a Point that describes the location of the center-of-pressure as one element rolls over another.
 
@@ -401,7 +396,7 @@ FileAdapter::readFile(string fileName)
 FileAdapter::writeFile(string fileName)
 ~~~
 
-Based on the extension in filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
+Based on the extension part of the filename, these methods invoke one of the following concrete FileAdapters to perform the read/write. It is also possible to invoke the following concrete FileAdapters directly.
 
 1. [TRCFileAdapter](@ref OpenSim::TRCFileAdapter): reads and writes TRC files.
 2. [STOFileAdapter](@ref OpenSim::STOFileAdapter): reads and writes STO files.

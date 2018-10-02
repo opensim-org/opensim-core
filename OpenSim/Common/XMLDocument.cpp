@@ -64,7 +64,8 @@ using namespace std;
 // 30514 for removing "reverse" property from Joint
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
-const int XMLDocument::LatestVersion = 30516;
+// 30517 for removal of _connectee_name suffix to shorten XML for socket, input
+const int XMLDocument::LatestVersion = 30517;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

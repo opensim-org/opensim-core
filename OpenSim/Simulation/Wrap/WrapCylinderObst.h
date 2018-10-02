@@ -1,5 +1,5 @@
-#ifndef __WrapCylinderObst_h__
-#define __WrapCylinderObst_h__
+#ifndef OPENSIM_WRAP_CYLINDER_OBST_H_
+#define OPENSIM_WRAP_CYLINDER_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                        OpenSim:  WrapCylinderObst.h                        *
  * -------------------------------------------------------------------------- *
@@ -22,11 +22,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <string>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
+
+
+// INCLUDE
+#include "WrapObject.h"
 
 namespace OpenSim {
 
@@ -44,29 +43,27 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
+private:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
     {
         righthand,
         lefthand
     };
 
-    PropertyDbl _radiusProp;
-    double& _radius;
+public:
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(wrapDirection, std::string, "Describe if the cylinder is right or left handed.");
 
+private:
     // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
     // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
     //    right-handed or left-handed about the obstacle's z-axis.
-    PropertyStr _wrapDirectionNameProp;
-    std::string& _wrapDirectionName;
-    WrapDirectionEnum _wrapDirection;
+    WrapDirectionEnum m_wrapDirection;
 
-    PropertyDbl _lengthProp;
-    double& _length;
 
 //=============================================================================
 // METHODS
@@ -76,31 +73,28 @@ OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
     //--------------------------------------------------------------------------
 public:
     WrapCylinderObst();
-    WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst);
     virtual ~WrapCylinderObst();
 
-#ifndef SWIG
-    WrapCylinderObst& operator=(const WrapCylinderObst& aWrapCylinderObst);
-#endif
-    void copyData(const WrapCylinderObst& aWrapCylinderObst);
-
-    double getRadius() const { return _radius; }
-    void setRadius(double aRadius) { _radius = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
-    //WrapDirectionEnum getWrapDirection() const { return _wrapDirection; }
-    int getWrapDirection() const { return (int)_wrapDirection; }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
+
+    double getRadius() const;
+    void setRadius(double aRadius);
+    double getLength() const;
+    void setLength(double aLength);
+    int getWrapDirection() const;
+
+
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    void setupProperties();
+
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
+    void constructProperties();
+
     void initCircleWrapPts();
 
 //=============================================================================
@@ -110,6 +104,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_CYLINDER_OBST_H_
 
 
