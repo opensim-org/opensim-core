@@ -69,10 +69,6 @@ and prints the following information to the console:
 1.00000000e+01| 3.57847134e+01| 1.50716396e+00|
 ~~~
 
-# OpenSim Architecture at a Glance {#architecture}
-
-The following sections provide an overview of the key abstractions and definitions used in the OpenSim API. OpenSim 4.0 includes lots of new functionality, which we have indicated with "(new in 4.0)".
-
 ## System and State {#systemstate}
 
 A SimTK::System is the computational (mathematical) system of equations that represents the model dynamics, in a way that a computer can solve. In OpenSim, the model is formed by rigid bodies (e.g. bones) and connected by joints. A State is a set of values for all the unknowns (variables) of the System’s equations. The State contains all values necessary to fully evaluate the system of equations. The SimTK::State includes time and the generalized coordinates (Q; the joint angles and displacements) and the generalized speeds (U) of the multibody system. Any Component can add to the System (and State). For example, Muscles add their activation and fiber length variables to the State with their corresponding differential equations in the System. An OpenSim Model generates a System in order to perform calculations and solve for unknowns of interest to the modeler.
@@ -109,7 +105,7 @@ A [Component](@ref OpenSim::Component) is the basic "unit" of modelling and comp
  A Component has the following user-facing attributes:
 1. Properties: constant (time-invariant) parameters (e.g., a Body’s mass).
 2. Sockets to other components that it depends on (e.g., a Joint connects two Frames).
-3. Input quantities that the component needs to do its job (e.g., a metabolics calculator component could have a “muscle power” input).
+3. Input quantities that the component needs to do its job (e.g., a metabolics calculator component could have a "muscle power" input).
 4. Output quantities that component can compute, and that can be used to satisfy other components’ Inputs.
 5. Subcomponents: A Component can rely on other components to do its job (e.g., a Muscle component can use subcomponents for activation and fiber-contraction dynamics). These are not user facing and are of interest only to the component writer.    
 
@@ -117,7 +113,7 @@ The common task for a Component (as part of a Model) is to make its contribution
 
 1. Continuous state variables (usually referred to as "state variables") are the variables in the dynamical equations contributed by the Component (e.g. activation and fiber-length state variables of a Muscle)
 2. Discrete state variables are system unknowns that may or may not be governed by differential or algebraic equations, and include external inputs and controls. For example, when the actuation (force or tension that an actuator produces) of an Actuator is overridden, the override-actuation is a discrete state variable and must be supplied.
-3. Cache variables allow saving of (state-dependent) calculations that may be used multiple times, to improve computational efficiency. For example, computing the path length of a muscle with several intermediate points and wrapping over obstacles is expensive. Therefore, a path component itself caches its length so that the muscle (or any other component) that needs the length in its computations does not reevaluate it unnecessarily. The validity of the path length cache variable is dependent on the generalized coordinates--as long as these generalized coordinates do not change, the path length is valid. OpenSim employs categories of dependency known as realization Stages (see Simbody User Guide, Section 2.4 for details) to manage the validity of cache variables. Any changes to the generalized coordinates invalidate (and wipe out) any cache variables associated with the Position Stage and all other subsequent (Velocity, Dynamics, Acceleration) stages. OpenSim automatically invalidates cache variables to support the correctness of simulations. Manual cache management is highly prone to errors leading to “stale” variables and potentially incorrect physics. Sadly, while results may appear plausible they are completely invalid and sometimes impossible to detect and debug. If you need to cache for performance, use OpenSim’s facilities.
+3. Cache variables allow saving of (state-dependent) calculations that may be used multiple times, to improve computational efficiency. For example, computing the path length of a muscle with several intermediate points and wrapping over obstacles is expensive. Therefore, a path component itself caches its length so that the muscle (or any other component) that needs the length in its computations does not reevaluate it unnecessarily. The validity of the path length cache variable is dependent on the generalized coordinates--as long as these generalized coordinates do not change, the path length is valid. OpenSim employs categories of dependency known as realization Stages (see Simbody User Guide, Section 2.4 for details) to manage the validity of cache variables. Any changes to the generalized coordinates invalidate (and wipe out) any cache variables associated with the Position Stage and all other subsequent (Velocity, Dynamics, Acceleration) stages. OpenSim automatically invalidates cache variables to support the correctness of simulations. Manual cache management is highly prone to errors leading to "stale" variables and potentially incorrect physics. Sadly, while results may appear plausible they are completely invalid and sometimes impossible to detect and debug. If you need to cache for performance, use OpenSim’s facilities.
 
 ### Models are composed of Components {#modelscomposed}
 A Component encapsulates (all or part of the) system dynamics (of a model or element of a model) and provides (computes) values of interest. A component adds its dynamics and allocates necessary resources (state, cache, and other variables). It defines parameters (see Properties below) that specify its behavior/function and defines dependencies on any other Components (see Sockets below) via its Inputs and Outputs.
@@ -128,9 +124,9 @@ A branch in the ownership tree of a Model can be a complete subassembly represen
 
 This Component architecture means that:
 - A Component can be composed of Components
-- A Model is a Component.
-- A Model is composed of Components.
-- A Model can be composed of Models*
+- A Model is a Component
+- A Model is composed of Components
+- A Model can be composed of Models
 
 You can add a subcomponent to another Component like so:
 ~~~cpp
@@ -209,7 +205,7 @@ auto ground = joint.getConnectee<PhysicalFrame>("parent_frame");
 ~~~
 
 ### Inputs and Outputs {#inputsoutputs}
-Inputs and Outputs specify data flow. An Output is any Component “computed” value as a function of the state. An Output is used to pass results of computation from one Component to any other, provide fast access to Component calculations (same as a member function call), and collect results without needing to know the details of the source Component and/or its methods.
+Inputs and Outputs specify data flow. An Output is any Component "computed" value as a function of the state. An Output is used to pass results of computation from one Component to any other, provide fast access to Component calculations (same as a member function call), and collect results without needing to know the details of the source Component and/or its methods.
 
 <img src="./images/inputs_and_outputs.png" alt="Figure XX" height="276" width="537">
 *Figure 5. Illustration of the relationship between outputs from one component to the inputs of another components. Here, the activation, force, and length outputs from Muscle object are wired to the inputs of a Reporter object, which then become easily accessible to the user after the simulation completes (see the "Reporter" section below).*
@@ -353,7 +349,7 @@ A Point provides its location, velocity, and acceleration in the Ground frame as
 
 1. [Point](@ref OpenSim::Point): an abstraction for any location in space
 2. [Station](@ref OpenSim::Station): a Point fixed to a PhysicalFrame
-3. [Marker](@ref OpenSim::Marker): a Station that represents a motion capture marker from an experiment.
+3. [Marker](@ref OpenSim::Marker): a Station that represents a motion capture marker from an experiment
 
 OpenSim Stations are Points defined in Euclidian space. They are defined with a three element column vector (Vec3), relative to their parent Frame. Stations are thus analogous to PhysicalOffsetFrames in that constraints and forces can be attached and/or applied to them.
 
