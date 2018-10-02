@@ -23,7 +23,7 @@ OpenSim is built on the computational and simulation core provided by SimTK. Thi
 
 Empowering the computational layer is Simbody, an efficient multibody dynamics solver, which provides an extensible multibody System and State. The OpenSim modeling layer maps biomechanical structures (bones, muscles, tendons, etc.) into bodies and forces so that the dynamics of the System can be computed by Simbody. The Simbody Users Guide can be found [here](https://github.com/simbody/simbody/raw/master/Simbody/doc/SimbodyAndMolmodelUserGuide.pdf) and can help new users to understand the structure of OpenSim.
 
-### The three interface layers of OpenSim built on SimTK
+### The Three Interface Layers of OpenSim Built on SimTK
 <img src="./images/InterfaceLayers.png" alt="Figure XX" height="328.5" width="681">
 
 OpenSim is essentially a set of libraries for building complex actuators (e.g., muscles) and other forces (e.g., foot-ground contact), and enabling the motion (kinematics) of highly articulated bodies (bones). Actuators can then be controlled by model controllers (e.g., Computed Muscle Control) to estimate the neural control and muscle forces required to reproduce human movement. An analysis layer is equipped with solvers and optimization algorithms for performing calculations with the model and to report results. At the highest level, these blocks are assembled into specialized applications (e.g., the `opensim-cmd` command-line application) to simulate and analyze model movement and internal dynamics. The OpenSim application is a Java-based program that calls Tools, Models, and underlying computations in SimTK to provide an interactive graphical user interface (GUI).
