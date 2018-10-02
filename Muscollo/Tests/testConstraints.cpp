@@ -730,11 +730,9 @@ protected:
             SimTK::Vector& errors) const {
         getModel().realizeVelocity(state);
 
-        controls = getModel().getControls(state);
+        const auto& controls = getModel().getControls(state);
         errors[0] = controls[1] - controls[0];
     }
-private:
-    mutable SimTK::Vector controls;
 };
 
 /// Solve an optimal control problem where a double pendulum must reach a 

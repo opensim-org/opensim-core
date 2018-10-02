@@ -55,7 +55,6 @@ public:
         m_bounds = bounds;
     }  
     void setSuffixes(const std::vector<std::string>& suffixes) {
-        // TODO can we set this list property without a loop?
         for (int i = 0; i < suffixes.size(); ++i) {
             set_suffixes(i, suffixes[i]);
         }
