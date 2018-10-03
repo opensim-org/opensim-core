@@ -115,12 +115,8 @@ void testCopyModel(const string& fileName, const int nbod,
         test = new Model(fileName);
         delete test;
     }
-    
-    model->print("clone_" + fileName); //print is not realy const it changes the model
-    // recall finalize from properties to make consistent
-    model->finalizeFromProperties();
-
-    //SimTK::State& defaultState = model->initSystem();
+    // verify that the print is const and has no side-effects on the model
+    model->print("clone_" + fileName);
     
     Model* modelCopy = new Model(*model);
     modelCopy->finalizeFromProperties();
