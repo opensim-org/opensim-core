@@ -230,7 +230,7 @@ int main()
     try {
         // create an invalid model where joint connects two frames on ground
         // this call leaves the model untouched if the change would invalidate topology
-        context->setConnecteeName(shoulder, socket, "ground");
+        context->setSocketConnecteeName(socket, "ground");
     }
     catch (const std::exception& e) {
         // Expect meaningful error message explaining why initsystem failed
@@ -241,7 +241,7 @@ int main()
     try {
         // Try to create an invalid model again, this call should leave the 
         // model untouched since change invalidates psocket
-        context->setConnecteeName(shoulder, psocket, "r_ulna_radius_hand");
+        context->setSocketConnecteeName(psocket, "r_ulna_radius_hand");
 
     }
     catch (const std::exception& e) {
