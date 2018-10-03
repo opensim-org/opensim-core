@@ -34,7 +34,9 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A target for a tracking problem that corresponds to a state variable.
+ * A tracking task objective that corresponds to a state variable of a Force
+ * component (e.g. a Muscle state such as its activation) during a forward
+ * dynamics simulation.
  *
  * @author Ayman Habib & Ajay Seth
  * @version 1.0
