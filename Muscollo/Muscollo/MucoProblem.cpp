@@ -331,12 +331,10 @@ void MucoPhase::initialize(Model& model) const {
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
-            MucoSimbodyConstraint simbodyConstraint;
-
-            
- 
-            // TODO avoid const_cast
-            (const_cast<MucoPhase*> (this))->addConstraint(simbodyConstraint);
+            MucoMultibodyConstraint multibodyConstraint;
+            multibodyConstraint.setName("multibody_constraint_" + 
+                std::to_string(cid));
+            m_multibody_constraints.push_back(multibodyConstraint);
         }
     }
 

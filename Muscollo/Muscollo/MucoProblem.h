@@ -186,16 +186,16 @@ public:
     /// @precondition
     ///     The completed model must be set.
     void addCost(const MucoCost&);
-    /// Add a constraint to this phase. The passed-in constriant is copied, and
-    /// thus any subsequent edits have not effect.
-    /// Constraints must have a name (MucoConstraint::setName()), and it must be
-    /// unique. Note that constraints have the name "constraint" by default, so
-    /// if you only have one constraint, you don't need to set its name
-    /// manually.
+    /// Add a path constraint to this phase. The passed-in constriant is copied, 
+    /// and thus any subsequent edits have not effect.
+    /// Path constraints must have a name (MucoPathConstraint::setName()), and 
+    /// it must be unique. Note that path constraints have the name 
+    /// "path_constraint" by default, so if you only have one path constraint, 
+    /// you don't need to set its name manually.
     ///
     /// @precondition
     ///     The completed model must be set.
-    void addConstraint(const MucoConstraint&);
+    void addPathConstraint(const MucoPathConstraint&);
 
     const Model& getModel() const { return get_model(); }
     Model& updModel() { return upd_model(); }
@@ -212,12 +212,16 @@ public:
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the MucoConstraints.
-    std::vector<std::string> createConstraintNames() const;
+    std::vector<std::string> createPathConstraintNames() const;
+    /// Get the constraint names of all the multibody constraint infos.
+    std::vector<std::string> createMultibodyConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
-    const MucoConstraint& getConstraint(const std::string& name) const;
+    const MucoPathConstraint& getPathConstraint(const std::string& name) const;
+    const MucoMultibodyConstraint& 
+    getMultibodyConstraint(const std::string& name) const;
 
     // TODO add getCost() and/or updCost().
 
@@ -256,10 +260,10 @@ public:
     }
     /// Calculate the errors in all the scalar constraint equations in this
     /// phase.
-    SimTK::Vector calcConstraintErrors(const SimTK::State& state) const {
+    SimTK::Vector calcPathConstraintErrors(const SimTK::State& state) const {
         SimTK::Vector errors(m_num_scalar_constraint_eqs, 0.0);
-        for (int i = 0; i < getProperty_constraints().size(); ++i) {
-            get_constraints(i).calcConstraintErrors(state, errors);
+        for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
+            get_path_constraints(i).calcPathConstraintErrors(state, errors);
         }
         return errors;
     }
@@ -293,14 +297,15 @@ protected: // Protected so that doxygen shows the properties.
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
-    OpenSim_DECLARE_LIST_PROPERTY(constraints, MucoConstraint,
-            "Constraints to enforce in the optimal control problem.");
-    // OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, ...
+    OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MucoPathConstraint,
+            "Path constraints to enforce in the optimal control problem.");
+    OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, 
+            MucoConstraintInfo, "TODO.");
 
 private:
     void constructProperties();
     mutable int m_num_scalar_constraint_eqs;
-    mutable std::vector<MucoSimbodyConstraint> m_multibody_constraints;
+    mutable std::vector<MucoMultibodyConstraint> m_multibody_constraints;
 };
 
 

@@ -167,57 +167,53 @@ public:
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
-        for (std::string name : m_phase0.createConstraintNames()) {
-            const MucoConstraint& constraint = m_phase0.getConstraint(name);
-            auto labels = constraint.getConstraintLabels();
-            auto bounds = constraint.getBounds();
-            for (int i = 0; i < constraint.getNumEquations(); ++i) {
-                this->add_path_constraint(labels[i], convert(bounds[i]));
-                if (constraint.getConcreteClassName() == "MucoSimbodyConstraint") {
-                    this->add_adjunct(labels[i], {-1000, 1000});
-                }
-            }
 
+        // Add any scalar constraints associated with multibody constraints in 
+        // the model as path constraints in the problem.
+        m_mcNames = m_phase0.createMultibodyConstraintNames();
+        for (const auto& mcName : m_mcNames) {
+            const auto& mc = getMultibodyConstraint(mcName);
+            auto mcInfo = mc.getConstraintInfo();
+            auto labels = mcInfo.getConstraintLabels();
+            auto bounds = mcInfo.getBounds();
+            
+            // Only considering holonomic constraints for now.
+            int mv = mc.getNumVelocityEquations();
+            int ma = mc.getNumAccelerationEquations();
+            OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
+                "(position-level) constraints are currently supported. "
+                "There are " + std::to_string(mv) + " velocity-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+            OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                "(position-level) constraints are currently supported. "
+                "There are " + std::to_string(ma) + " acceleration-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+
+            // TODO allow solver to enforce nonholonomic constraints
+            //int numEnforcedConstraints 
+            //    = get_enforce_holonomic_constraints_only() ? 
+            //        mc.getNumPositionEquations() : mcInfo.getNumEquations();
+
+            int numEnforcedScalarConstraintEqs = mc.getNumPositionEquations();
+            for (int i = 0; i < numEnforcedScalarConstraintEqs; ++i) {
+                this->add_path_constraint(labels[i], convert(bounds[i]));
+                this->add_adjunct("lambda_" + labels[i], {-1000, 1000});
+            }
+            m_numMultibodyConstraintEqs += numEnforcedScalarConstraintEqs;
         }
 
-
-        // Add control variables representing Lagrange multipliers for any
-        // constraints that exist in the model.
-        const auto& matter = m_model.getMatterSubsystem();
-        const auto NC = matter.getNumConstraints();
-        int mp, mv, ma;
-        int cix = 0;
-        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
-            const SimTK::Constraint& constraint = matter.getConstraint(cid);
-            if (!constraint.isDisabled(m_state)) {
-                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
-                // Only considering holonomic constraints for now.
-                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic " 
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(mv) + " velocity-level " 
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");
-                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(ma) + " acceleration-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");
-                // TODO add constraints/multiplier variables based on the
-                // MucoProblem
-                for (int i = 0; i < mp; ++i) {
-                    std::string str_cix = std::to_string(cix);
-                    std::string str_i = std::to_string(i);
-                    this->add_path_constraint(
-                        "model_constraint_" + str_cix + "_" + str_i + "_pos", 0);
-                    // TODO how to specify multiplier bounds?
-                    this->add_control("lambda_" + str_cix + "_" + str_i, 
-                        {-1000, 1000});
-                }
-                // Save constraint indices for enabled constraints only, so we 
-                // don't have to loop through disabled constraints later.
-                m_enabledConstraintIdxs.push_back(cid);
-                m_numScalarConstraintEqs += mp;
-                cix++;
+        // Add any generic path constraints included in the problem by the user. 
+        m_pcNames = m_phase0.createPathConstraintNames();
+        for (std::string pcName : m_pcNames) {
+            const MucoPathConstraint& constraint = 
+                m_phase0.getPathConstraint(pcName);
+            auto pcInfo = constraint.getConstraintInfo();
+            auto labels = pcInfo.getConstraintLabels();
+            auto bounds = pcInfo.getBounds();
+            for (int i = 0; i < pcInfo.getNumEquations(); ++i) {
+                this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
 
@@ -250,6 +246,7 @@ public:
 
         const auto& states = in.states;
         const auto& controls = in.controls;
+        const auto& adjuncts = in.adjuncts;
 
         m_state.setTime(in.time);
         std::copy(states.data(), states.data() + states.size(),
@@ -265,9 +262,8 @@ public:
         // controls created for Lagrange multipliers. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_numScalarConstraintEqs,
-                    controls.data() + controls.size(),
-                    &osimControls[0]);
+            std::copy(controls.data(), controls.data() + controls.size(),
+                &osimControls[0]);
             m_model.realizeVelocity(m_state);
             m_model.setControls(m_state, osimControls);
         }
@@ -275,7 +271,7 @@ public:
         // If enabled constraints exist in the model, compute accelerations
         // based on Lagrange multipliers (which are currently represented using
         // control variables).
-        if (m_enabledConstraintIdxs.size()) {
+        if (m_numMultibodyConstraintEqs) {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeDynamics(m_state);
@@ -293,8 +289,8 @@ public:
             SimTK::Vector constraintMobilityForces;
             // Multipliers are negated so constraint forces can be used like 
             // applied forces.
-            SimTK::Vector multipliers(m_numScalarConstraintEqs, 
-                controls.data());
+            SimTK::Vector multipliers(m_numMultibodyConstraintEqs, 
+                adjuncts.data());
             matter.calcConstraintForcesFromMultipliers(m_state, -multipliers,
                 constraintBodyForces, constraintMobilityForces);
 
@@ -304,6 +300,19 @@ public:
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
             // Constraint errors.
+            std::copy(&m_state.getQErr()[0], 
+                &m_state.getQErr()[0] + m_numMultibodyConstraintEquations,
+                out.path.data());
+
+            for (const auto& mcName : m_mcNames) {
+                const auto& mc = getMultibodyConstraint(mcName);
+
+                
+
+            }
+            
+
+
             int mp, mv, ma;
             int mpSum = 0;
             for (int i = 0; i < m_enabledConstraintIdxs.size(); ++i) {
@@ -318,6 +327,8 @@ public:
                 std::copy(&posErrors[0], &posErrors[0] + mp, 
                           out.path.data() + mpSum);
                 mpSum += mp;
+
+                m_state.getU
             }
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
@@ -383,16 +394,15 @@ private:
     // generalized accelerations when specifying the dynamics with model 
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
-    std::vector<int> m_enabledConstraintIdxs;
-    // TODO find a better solution for this tracking number of scalar constraint
-    // equations (if needed). Need to count them now since the number of model
-    // constraints might not equal the number of Lagrange multipliers needed,
-    // since multiple scalar constraint equations can be associated with one
-    // model constraint.
-    int m_numScalarConstraintEqs = 0;
+    // The total number of scalar constraint equations associated with model 
+    // multibody constraints that the solver is responsible for enforcing.
+    int m_numMultibodyConstraintEqs = 0;
     // TODO create user specified option for the Lagrange multipler weight.
     // Relatively high weight set for now so model actuators are preferred.
     const double MULTIPLIER_WEIGHT = 100.0;
+
+    std::vector<std::string> mcNames;
+    std::vector<std::string> pcNames;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {
@@ -423,6 +433,7 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
+    constructProperty_enforce_holonomic_constraints_only(false);
 
     constructProperty_guess_file("");
 }

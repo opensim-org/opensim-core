@@ -67,6 +67,8 @@ public:
     "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
     "IPOPT's verbosity (see IPOPT documentation).");
+    //OpenSim_DECLARE_PROPERTY(enforce_holonomic_constraints_only, bool,
+    // "TODO.");
     // TODO must make more general for multiple phases, mesh refinement.
     // TODO mesh_point_frequency if time is fixed.
 

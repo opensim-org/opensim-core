@@ -74,9 +74,6 @@ public:
         }
     }
 
-
-
-
     /// Print the bounds on this variable.
     //void printDescription(std::ostream& stream = std::cout) const;
 
@@ -99,11 +96,11 @@ private:
 
 /// A path constraint to be enforced in the optimal control problem.
 /// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MucoConstraint : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraint, Object);
+class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MucoPathConstraint, Object);
 public:
     // Default constructor.
-    MucoConstraint();
+    MucoPathConstraint();
 
     
     int getNumEquations() const
@@ -121,15 +118,15 @@ public:
     /// MucoProblem. The *m_index* and *m_num_equations* internal variables are 
     /// used to create a view into *errors* to access the elements this 
     /// MucoConstraint is responsible for.
-    void calcConstraintErrors(const SimTK::State& state, 
+    void calcPathConstraintErrors(const SimTK::State& state,
             SimTK::Vector& errors) const {
     
         // This vector shares writable, borrowed space from the *errors* vector 
         // (provided by the MucoProblem) to the elements for which this 
-        // MucoConstraint provides constraint error information.
+        // MucoPathConstraint provides constraint error information.
         SimTK::Vector theseErrors(m_num_equations, 
             errors.getContiguousScalarData() + m_index, true);
-        calcConstraintErrorsImpl(state, theseErrors);
+        calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
     /// For use by solvers. This also performs error checks on the Problem.
@@ -140,7 +137,7 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
     
 protected:
-    OpenSim_DECLARE_PROPERTY(constraint_info, MucoBounds, "TODO.");
+    OpenSim_DECLARE_PROPERTY(constraint_info, MucoConstraintInfo, "TODO.");
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.
@@ -153,7 +150,7 @@ protected:
     /// @code
     /// getModel().realizeVelocity(state);
     /// @endcode
-    virtual void calcConstraintErrorsImpl(const SimTK::State& state,
+    virtual void calcPathConstraintErrorsImpl(const SimTK::State& state,
         SimTK::Vector& errors) const;
     /// For use within virtual function implementations.
     const Model& getModel() const {
@@ -166,13 +163,11 @@ private:
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
-   mutable std::vector<MucoBounds> m_bounds;
-   mutable std::vector<std::string> m_suffixes;
    mutable int m_index;
    mutable int m_num_equations;
 };
 
-inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
+inline void MucoPathConstraint::calcPathConstraintErrorsImpl(const SimTK::State&,
         SimTK::Vector&) const {}
 
 // ============================================================================
@@ -182,15 +177,14 @@ inline void MucoConstraint::calcConstraintErrorsImpl(const SimTK::State&,
 /// A class to conveniently add a Simbody constraint in the model to the
 /// problem as a MucoConstraint.
 /// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MucoSimbodyConstraint : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoSimbodyConstraint, Object);
+class OSIMMUSCOLLO_API MucoMultibodyConstraint : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoMultibodyConstraint, Object);
 public:
     // Default constructor.
-    MucoSimbodyConstraint();
+    MucoMultibodyConstraint();
 
-    void initialize(const Model& model, const int& index) const;
-    void calcConstraintErrorsImpl(const SimTK::State& state,
-        SimTK::Vector& errors) const override;
+    void initialize(const Model& model) const;
+
 
 private:
 

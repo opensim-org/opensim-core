@@ -67,17 +67,17 @@ void MucoConstraintInfo::constructProperties() {
 // MucoConstraint
 // ============================================================================
 
-MucoConstraint::MucoConstraint() {
+MucoPathConstraint::MucoPathConstraint() {
     constructProperties();
-    if (getName().empty()) setName("constraint");
+    if (getName().empty()) setName("path_constraint");
 }
 
-void MucoConstraint::constructProperties() {
+void MucoPathConstraint::constructProperties() {
     constructProperty_bounds();
     constructProperty_suffixes();
 }
 
-std::vector<std::string> MucoConstraint::getConstraintLabels() {
+std::vector<std::string> MucoPathConstraint::getConstraintLabels() {
     OPENSIM_THROW_IF(!m_num_equations, Exception,
         "Labels are not available until after initialization.");
 
@@ -92,7 +92,8 @@ std::vector<std::string> MucoConstraint::getConstraintLabels() {
     return labels;
 }
 
-void MucoConstraint::initialize(const Model& model, const int& index) const {
+void MucoPathConstraint::initialize(const Model& model, const int& index) const 
+{
     m_model.reset(&model);
     initializeImpl();
 
@@ -138,7 +139,7 @@ void MucoConstraint::initialize(const Model& model, const int& index) const {
         "constraint equations.");
 }
 
-void MucoConstraint::printDescription(std::ostream& stream) const {
+void MucoPathConstraint::printDescription(std::ostream& stream) const {
     stream << getName() << ". " << getConcreteClassName() <<
         ". constraint index: " << m_index << 
         ". number of scalar equations : " << m_num_equations;
@@ -155,15 +156,11 @@ void MucoConstraint::printDescription(std::ostream& stream) const {
 // MucoSimbodyConstraint
 // ============================================================================
 
-MucoSimbodyConstraint::MucoSimbodyConstraint() {
+MucoMultibodyConstraint::MucoMultibodyConstraint() {
     constructProperties();
 }
 
-void MucoSimbodyConstraint::initialize(const Model& model, 
-        const int& constraint_index) const {
-
-    OPENSIM_THROW_IF_FRMOBJ(constraint_index < 0, Exception,
-        "A valid, non-negative ConstraintIndex must be provided.");
+void MucoMultibodyConstraint::initialize(const Model& model) const {
     
     auto& matter = model.getMatterSubsystem();
     const SimTK::Constraint& constraint 
@@ -197,7 +194,7 @@ void MucoSimbodyConstraint::initialize(const Model& model,
         const std::string& name = model.getConstraintSet().get(
             constraint_index).getName();
         // TODO avoid const_cast
-        (const_cast <MucoSimbodyConstraint*> (this))->setName(name);
+        (const_cast <MucoMultibodyConstraint*> (this))->setName(name);
     }
 
     // By default, set the suffixes to according to kinematic level being 
@@ -249,7 +246,7 @@ void MucoSimbodyConstraint::initialize(const Model& model,
     }
 }
 
-void MucoSimbodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
+void MucoMultibodyConstraint::calcConstraintErrorsImpl(const SimTK::State& state,
     SimTK::Vector& errors) const {
 
     // The constraint errors returned are ordered as follows:
