@@ -108,7 +108,7 @@ void testModelFinalizePropertiesAndConnections()
         // Test for the effects of calling finalizeConnections() on the model
         // after initSystem() has been called.
         // In this case, there are no changes to the connections to be finalized.
-        model.finalizeConnections(model);
+        model.finalizeConnections();
 
         // verify that finalizeConnections() does not wipe out the underlying 
         // System when there are no changes to the connections
@@ -129,7 +129,7 @@ void testModelFinalizePropertiesAndConnections()
         elbow.connectSocket_parent_frame(*elbowInHumerus);
 
         // satisfy the new connections in the model
-        model.finalizeConnections(model);
+        model.finalizeConnections();
 
         // now finalizing the connections will invalidate the System because
         // a Component (the elbow Joint and its connection) was updated

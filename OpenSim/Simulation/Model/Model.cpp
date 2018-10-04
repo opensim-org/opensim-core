@@ -1088,7 +1088,7 @@ void Model::setup()
     // automatically marks properties that are Components as subcomponents
     finalizeFromProperties();
     //now connect the Model and all its subcomponents all up
-    finalizeConnections(*this);
+    finalizeConnections();
 }
 
 //_____________________________________________________________________________

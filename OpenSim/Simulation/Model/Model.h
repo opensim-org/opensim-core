@@ -266,6 +266,14 @@ public:
     **/
     explicit Model(const std::string& filename) SWIG_DECLARE_EXCEPTION;
 
+    /** Satisfy all connections (Sockets and Inputs) in the model, using this
+     * model as the root Component. This is a convenience form of
+     * Component::finalizeConnections() that uses this model as root.
+     */
+    void finalizeConnections() { finalizeConnections(*this); }
+    // Allow overloading.
+   using Component::finalizeConnections;
+
     /**
      * Perform some set up functions that happen after the
      * object has been deserialized. TODO: this method is

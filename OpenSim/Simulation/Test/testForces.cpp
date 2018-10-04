@@ -622,7 +622,7 @@ void testBushingForce()
 
     // To print (serialize) the latest connections of the model, it is 
     // necessary to finalizeConnections() first.
-    osimModel.finalizeConnections(osimModel);
+    osimModel.finalizeConnections();
     osimModel.print("BushingForceModel.osim");
 
     Model previousVersionModel("BushingForceModel_30000.osim");
@@ -740,14 +740,14 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     // It's necessary to correct the connectee names in the BushingForce, which
     // we can do with finalizeConnections() (they are incorrect otherwise
     // because `spring` is initially orphaned).
-    osimModel.finalizeConnections(osimModel);
+    osimModel.finalizeConnections();
     osimModel.print("BushingForceOffsetModel.osim");
 
     Model previousVersionModel("BushingForceOffsetModel_30000.osim");
     previousVersionModel.finalizeFromProperties();
     // This line is necessary for wiring up the FrameGeometry of the
     // OffsetFrames.
-    previousVersionModel.finalizeConnections(osimModel);
+    previousVersionModel.finalizeConnections();
     previousVersionModel.print("BushingForceOffsetModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =

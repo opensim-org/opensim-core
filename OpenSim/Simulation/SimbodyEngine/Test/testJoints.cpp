@@ -2241,7 +2241,7 @@ void testUserJointReversal()
 
     // Open model.
     auto model = Model("double_pendulum_testReverse.osim");
-    model.finalizeConnections(model); //calls finalizeFromProperties internally
+    model.finalizeConnections(); //calls finalizeFromProperties internally
 
     // In this model file:
     // - pin1's parent is ground and child is rod1
