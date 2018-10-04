@@ -556,11 +556,11 @@ protected:
         _objectIsUpToDate = false;
     }
 
-    /** To be up-to-date with properties we must make sure the name of an object,
-    which can be changed independent of the property name, remains consistent
-    with any restrictions specified by the Property. For example, unnamed
-    properties should not have a name. Furthermore, named properties whose object
-    has no name, should have the property name. **/
+    /** Make sure the name of an object is consistent with its property type. A
+    name can be changed independent of the property name, which may be inconsistent
+    with any restrictions specified by the Property. For example, unnamed property
+    object should not have a name. Furthermore, named properties whose object
+    name is empty, should have the property name. **/
     void makeObjectNamesConsistentWithProperties();
 
     /** Use this method only if you're deserializing from a file and the object
