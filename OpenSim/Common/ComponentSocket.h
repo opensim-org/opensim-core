@@ -281,7 +281,7 @@ private:
     SimTK::ReferencePtr<const Component> _owner;
     // _isList must be after _owner, as _owner is used to set its value.
     bool _isList;
-    
+
     /* So that Component can invoke setOwner(), etc. */
     friend Component;
 

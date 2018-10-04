@@ -1793,12 +1793,12 @@ protected:
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
-    void MyComponent::extendConnect(Component& root) {
-        Super::extendConnect(root); // invoke parent class method
+    void MyComponent::extendFinalizeConnections(Component& root) {
+        Super::extendFinalizeConnections(root); // invoke parent class method
         // ... your code goes here
     }
     @endcode   */
-    virtual void extendConnect(Component& root) {};
+    virtual void extendFinalizeConnections(Component& root) {};
 
     /** Build the tree of Components from this component through its descendants.
     This method is invoked whenever a ComponentList<C> is requested. Note that
@@ -2597,7 +2597,7 @@ private:
     void componentsFinalizeFromProperties() const;
 
     /// Invoke connect() on the (sub)components of this Component.
-    void componentsConnect(Component& root);
+    void componentsFinalizeConnections(Component& root);
 
     /// Base Component must create underlying resources in computational System.
     void baseAddToSystem(SimTK::MultibodySystem& system) const;
@@ -2727,24 +2727,24 @@ protected:
     /// Helper method to enable Component makers to specify the order of their
     /// subcomponents to be added to the System during addToSystem(). It is
     /// highly unlikely that you will need to reorder the subcomponents of your
-    /// custom component. This ability is primarily intended for Model (and 
+    /// custom component. This ability is primarily intended for Model (and
     /// other top-level) components that have the responsibility of creating a
-    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such
-    /// as MobilizedBodies must be added sequentially to form a Multibody tree.
+    /// valid SimTK::MultibodySystem. MultibodySystem (Simbody) elements such as
+    /// MobilizedBodies must be added sequentially to form a Multibody tree.
     /// SimTK::Constraints and SimTK::Forces must be applied to MobilizedBodies
     /// that are already present in the MultibodySystem. The Model component
     /// handles this order for you and should handle user-defined Components
     /// without any issues. You should rarely need to use this method yourself.
-    /// If needed, use this method in extendConnect() of your Component (or
-    /// within your extendConnectToModel() for ModelComponents) to set the
-    /// order of your subcomponents. For example, Model orders subcomponents
-    /// according to the Multibody tree and adds bodies and joints in order
-    /// starting from Ground and growing outward.
-    /// If the subcomponent already appears in the ordered list setting it
-    /// later in the list has no effect. The list remains unique.
-    /// NOTE: If you do need to set the order of your subcomponents, you must
-    /// do so for all your immediate subcomponents, otherwise those
-    /// components not in the ordered list will not be added to the System.
+    /// If needed, use this method in extendFinalizeConnections() of your
+    /// Component (or within your extendConnectToModel() for ModelComponents) to
+    /// set the order of your subcomponents. For example, Model orders
+    /// subcomponents according to the Multibody tree and adds bodies and joints
+    /// in order starting from Ground and growing outward. If the subcomponent
+    /// already appears in the ordered list setting it later in the list has no
+    /// effect. The list remains unique. NOTE: If you do need to set the order
+    /// of your subcomponents, you must do so for all your immediate
+    /// subcomponents, otherwise those components not in the ordered list will
+    /// not be added to the System.
     void setNextSubcomponentInSystem(const Component& sub) const;
 
     /// resetSubcomponentOrder clears this Component's list of ordered

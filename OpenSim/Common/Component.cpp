@@ -319,10 +319,10 @@ void Component::finalizeConnections(Component& root)
     // Allow derived Components to handle/check their connections and also 
     // override the order in which its subcomponents are ordered when 
     // adding subcomponents to the System
-    extendConnect(root);
+    extendFinalizeConnections(root);
 
     // Allow subcomponents to form their connections
-    componentsConnect(root);
+    componentsFinalizeConnections(root);
 
     // Forming connections changes the Socket which is a property
     // Remark as upToDate.
@@ -330,7 +330,7 @@ void Component::finalizeConnections(Component& root)
 }
 
 // invoke connect on all (sub)components of this component
-void Component::componentsConnect(Component& root) 
+void Component::componentsFinalizeConnections(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {

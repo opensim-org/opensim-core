@@ -61,9 +61,9 @@ Model& ModelComponent::updModel()
 }
 
 
-void ModelComponent::extendConnect(Component &root)
+void ModelComponent::extendFinalizeConnections(Component& root)
 {
-    Super::extendConnect(root);
+    Super::extendFinalizeConnections(root);
     Model* model = dynamic_cast<Model*>(&root);
     // Allow (model) component to include its own subcomponents
     // before calling the base method which automatically invokes

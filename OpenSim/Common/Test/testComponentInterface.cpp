@@ -201,8 +201,8 @@ public:
 
 protected:
     /** Component Interface */
-    void extendConnect(Component& root) override {
-        Super::extendConnect(root);
+    void extendFinalizeConnections(Component& root) override {
+        Super::extendFinalizeConnections(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
     }
@@ -286,14 +286,14 @@ public:
 
 protected:
     /** Component Interface */
-    void extendConnect(Component& root) override{
-        Super::extendConnect(root);
+    void extendFinalizeConnections(Component& root) override{
+        Super::extendFinalizeConnections(root);
         // do any internal wiring
         world = dynamic_cast<TheWorld*>(&root);
         // perform custom checking
         if (&updSocket<Foo>("parentFoo").getConnectee()
                 == &updSocket<Foo>("childFoo").getConnectee()){
-            string msg = "ERROR - Bar::extendConnect()\n";
+            string msg = "ERROR - Bar::extendFinalizeConnections()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
             throw OpenSim::Exception(msg);
         }
