@@ -84,7 +84,7 @@ int main()
 
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
-        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "bodyset/spine", 1);
     }
     catch (const Exception& e) {
         cout << e.what() << endl;
@@ -155,17 +155,10 @@ void testCopyModel(const string& fileName, const int nbod,
 
     int nb = modelSerialized->getNumBodies();
 
-    const PhysicalFrame* physFrame = nullptr;
-    if(modelSerialized->hasComponent<PhysicalFrame>("./" + physicalFrameName)){
-        physFrame = &modelSerialized
-            ->getComponent<PhysicalFrame>("./" + physicalFrameName);
-    }
-    else {
-        physFrame = &modelSerialized
-            ->getComponent<PhysicalFrame>("./bodyset/" + physicalFrameName);
-    }
+    const PhysicalFrame& physFrame = 
+        modelSerialized->getComponent<PhysicalFrame>(physicalFrameName);
 
-    int ng = physFrame->getProperty_attached_geometry().size();
+    int ng = physFrame.getProperty_attached_geometry().size();
 
     ASSERT(nb == nbod);
     ASSERT(ng == ngeom);
