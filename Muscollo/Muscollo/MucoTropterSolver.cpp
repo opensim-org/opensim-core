@@ -53,6 +53,72 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
+std::map<int, std::string> createQErrMap(const Model& model, 
+        std::vector<MucoConstraintInfo> mcInfos) {
+
+    std::map<int, std::string> qerrMap;
+    std::map<int, std::string> uerrMap;
+    std::map<int, std::string> udoterrMap;
+
+    SimTK::Vector_<SimTK::SpatialVec> bodyForcesInAncestor;
+    SimTK::Vector mobilityForces;
+
+    auto s = model.getWorkingState();
+    s.updQ() = 0;
+
+    std::vector<int> qerrIndices;
+    std::vector<int> uerrIndices;
+    std::vector<int> udoterrIndices;
+
+    // Loop through all Q's in the state.
+    for (int iq = 0; iq < s.getNQ(); ++iq) {
+
+        // Set this Q to NaN.
+        s.updQ()[iq] = SimTK::NaN;
+
+        // Update state to reflect NaN-valued Q.
+        model.realizeVelocity(s);
+        model.updMultibodySystem().project(s);
+        model.realizeAcceleration(s);
+
+        // Find NaN QErr's, UErr's, and UDotErrs and store indices.
+        for (int iqerr = 0; iqerr < s.getNQErr(); ++iqerr) {
+            if (SimTK::isNaN(s.getQErr()[iqerr])) {
+                qerrIndices.push_back(iqerr);
+            }
+        }
+        for (int iuerr = 0; iuerr < s.getNUErr(); ++iuerr) {
+            if (SimTK::isNaN(s.getUErr()[iuerr])) {
+                uerrIndices.push_back(iuerr);
+            }
+        }
+        for (int iudoterr = 0; iudoterr < s.getNUDotErr(); ++iudoterr) {
+            if (SimTK::isNaN(s.getUDotErr()[iudoterr])) {
+                udoterrIndices.push_back(iudoterr);
+            }
+        }
+
+
+        // Loop through all multibody constraint infos.
+        for (const auto& mcInfo : mcInfos) {
+
+            // For the model constraint associated with this multibody
+            // constraint info, are constraint forces NaN when the current
+            model.getConstraintSet().get(mcInfo.getName()).calcConstraintForces(
+                s, bodyForcesInAncestor, mobilityForces);
+
+            bool areForcesNaN = false;
+            for (int i = 0; i < bodyForcesInAncestor.size(); ++i) {
+
+            }
+            
+
+        }
+    }
+
+}
+
+
 template <typename MucoIterateType, typename tropIterateType>
 MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& tropTime = tropSol.time;

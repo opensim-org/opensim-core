@@ -177,7 +177,6 @@ void testWeldConstraint() {
     WeldConstraint* constraint = new WeldConstraint("weld", firstBodyName, 
         lastBodyName);
     model.addConstraint(constraint);
-
     createState(model, state);
     // Check that constraint was added successfully.
     SimTK_TEST(state.getNMultipliers() > 0);
