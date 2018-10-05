@@ -55,7 +55,7 @@ const std::string modelFilename = "arm26.osim";
 // and orientation offsets.
 // 2018-09-05 updates to accommodate ModelComponentSets: BodySet, JointSet,
 //    ConstraintSet, ForceSet, ProbeSet, WrapObjectSet, ...
-const int expectedNumComponents = 200; 
+const int expectedNumComponents = 194; 
 const int expectedNumJointsWithStateVariables = 2;
 // 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
 const int expectedNumModelComponentsWithStateVariables = 12;

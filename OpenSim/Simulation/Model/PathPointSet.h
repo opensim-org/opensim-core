@@ -36,12 +36,12 @@ namespace OpenSim {
  *
  * @authors Peter Loan
  */
-class OSIMSIMULATION_API PathPointSet : public ModelComponentSet<AbstractPathPoint> {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, ModelComponentSet<AbstractPathPoint>);
+class OSIMSIMULATION_API PathPointSet : public Set<AbstractPathPoint> {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathPointSet, Set<AbstractPathPoint>);
 
 public:
-    /** Use Super's constructors. @see ModelComponentSet */
-    using Super::ModelComponentSet;
+    /** Use Super's constructors. @see Set */
+    using OpenSim::Set<OpenSim::AbstractPathPoint, OpenSim::Object>::Set;
 
     // default copy, assignment operator, and destructor
 

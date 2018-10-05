@@ -23,6 +23,7 @@
 %include <OpenSim/Common/ObjectGroup.h>
 
 %include <OpenSim/Common/Set.h>
+%template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
 %include <OpenSim/Common/StateVector.h>
 %template(ArrayStateVector) OpenSim::Array<OpenSim::StateVector>;
 %include <OpenSim/Common/StorageInterface.h>

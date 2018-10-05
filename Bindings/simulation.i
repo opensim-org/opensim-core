@@ -175,8 +175,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 %include <OpenSim/Simulation/Model/MovingPathPoint.h>
-%template(SetPathPoint) OpenSim::Set<OpenSim::AbstractPathPoint, OpenSim::ModelComponent>;
-%template(ModelComponentSetPathPoints) OpenSim::ModelComponentSet<OpenSim::AbstractPathPoint>;
+%template(SetOfPathPoints) OpenSim::Set<OpenSim::AbstractPathPoint>;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::AbstractPathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
 
