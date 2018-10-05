@@ -67,8 +67,20 @@ public:
     "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
     "IPOPT's verbosity (see IPOPT documentation).");
-    //OpenSim_DECLARE_PROPERTY(enforce_holonomic_constraints_only, bool,
-    // "TODO.");
+    OpenSim_DECLARE_PROPERTY(multibody_constraint_info, MucoConstraintInfo,
+    "The bounds on the multibody constraints in the model to be enforced. By "
+    "default the constraints are strictly enforced (zero bounds). WARNING: "
+    "suffixes in this MucoConstraintInfo are ignored.");
+    OpenSim_DECLARE_PROPERTY(multiplier_info, MucoVariableInfo,
+    "Variable info to apply to all Lagrange multipliers in the problem. The "
+    "default bounds are [-1000 1000].");
+    OpenSim_DECLARE_PROPERTY(multiplier_weight, double,
+    "The weight of the squared multiplier cost term included in the optimal "
+    "control problem when only enforcing holonomic constraints in the model. A "
+    "relatively high weight of 100 is set by default (so model actuators are  "
+    "preferred).")
+    // TODO OpenSim_DECLARE_PROPERTY(enforce_holonomic_constraints_only, bool,
+    // "");
     // TODO must make more general for multiple phases, mesh refinement.
     // TODO mesh_point_frequency if time is fixed.
 

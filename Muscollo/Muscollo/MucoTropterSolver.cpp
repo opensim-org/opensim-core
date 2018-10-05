@@ -53,72 +53,6 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
     return svNamesInSysOrder;
 }
 
-std::map<int, std::string> createQErrMap(const Model& model, 
-        std::vector<MucoConstraintInfo> mcInfos) {
-
-    std::map<int, std::string> qerrMap;
-    std::map<int, std::string> uerrMap;
-    std::map<int, std::string> udoterrMap;
-
-    SimTK::Vector_<SimTK::SpatialVec> bodyForcesInAncestor;
-    SimTK::Vector mobilityForces;
-
-    auto s = model.getWorkingState();
-    s.updQ() = 0;
-
-    std::vector<int> qerrIndices;
-    std::vector<int> uerrIndices;
-    std::vector<int> udoterrIndices;
-
-    // Loop through all Q's in the state.
-    for (int iq = 0; iq < s.getNQ(); ++iq) {
-
-        // Set this Q to NaN.
-        s.updQ()[iq] = SimTK::NaN;
-
-        // Update state to reflect NaN-valued Q.
-        model.realizeVelocity(s);
-        model.updMultibodySystem().project(s);
-        model.realizeAcceleration(s);
-
-        // Find NaN QErr's, UErr's, and UDotErrs and store indices.
-        for (int iqerr = 0; iqerr < s.getNQErr(); ++iqerr) {
-            if (SimTK::isNaN(s.getQErr()[iqerr])) {
-                qerrIndices.push_back(iqerr);
-            }
-        }
-        for (int iuerr = 0; iuerr < s.getNUErr(); ++iuerr) {
-            if (SimTK::isNaN(s.getUErr()[iuerr])) {
-                uerrIndices.push_back(iuerr);
-            }
-        }
-        for (int iudoterr = 0; iudoterr < s.getNUDotErr(); ++iudoterr) {
-            if (SimTK::isNaN(s.getUDotErr()[iudoterr])) {
-                udoterrIndices.push_back(iudoterr);
-            }
-        }
-
-
-        // Loop through all multibody constraint infos.
-        for (const auto& mcInfo : mcInfos) {
-
-            // For the model constraint associated with this multibody
-            // constraint info, are constraint forces NaN when the current
-            model.getConstraintSet().get(mcInfo.getName()).calcConstraintForces(
-                s, bodyForcesInAncestor, mobilityForces);
-
-            bool areForcesNaN = false;
-            for (int i = 0; i < bodyForcesInAncestor.size(); ++i) {
-
-            }
-            
-
-        }
-    }
-
-}
-
-
 template <typename MucoIterateType, typename tropIterateType>
 MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& tropTime = tropSol.time;
@@ -236,43 +170,57 @@ public:
 
         // Add any scalar constraints associated with multibody constraints in 
         // the model as path constraints in the problem.
-        m_mcNames = m_phase0.createMultibodyConstraintNames();
-        for (const auto& mcName : m_mcNames) {
-            const auto& mc = getMultibodyConstraint(mcName);
-            auto mcInfo = mc.getConstraintInfo();
-            auto labels = mcInfo.getConstraintLabels();
-            auto bounds = mcInfo.getBounds();
+        const auto& matter = m_model.getMatterSubsystem();
+        const auto NC = matter.getNumConstraints();
+        int mp, mv, ma;
+        auto multInfo = get_multiplier_info();
+        auto mcInfo = get_multibody_constraint_info();
+        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+            const SimTK::Constraint& constraint = matter.getConstraint(cid);
+            if (!constraint.isDisabled(m_state)) {
+                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
             
-            // Only considering holonomic constraints for now.
-            int mv = mc.getNumVelocityEquations();
-            int ma = mc.getNumAccelerationEquations();
-            OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
-                "(position-level) constraints are currently supported. "
-                "There are " + std::to_string(mv) + " velocity-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
-            OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
-                "(position-level) constraints are currently supported. "
-                "There are " + std::to_string(ma) + " acceleration-level "
-                "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
+                // Only considering holonomic constraints for now.
+                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(mv) + " velocity-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
+                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                    "(position-level) constraints are currently supported. "
+                    "There are " + std::to_string(ma) + " acceleration-level "
+                    "scalar constraints associated with the model Constraint "
+                    "at ConstraintIndex " + std::to_string(cid) + ".");
 
-            // TODO allow solver to enforce nonholonomic constraints
-            //int numEnforcedConstraints 
-            //    = get_enforce_holonomic_constraints_only() ? 
-            //        mc.getNumPositionEquations() : mcInfo.getNumEquations();
-
-            int numEnforcedScalarConstraintEqs = mc.getNumPositionEquations();
-            for (int i = 0; i < numEnforcedScalarConstraintEqs; ++i) {
-                this->add_path_constraint(labels[i], convert(bounds[i]));
-                this->add_adjunct("lambda_" + labels[i], {-1000, 1000});
-            }
-            m_numMultibodyConstraintEqs += numEnforcedScalarConstraintEqs;
+                for (int i = 0; i < mp; ++i) {
+                    // TODO name constraints based on model constraint names
+                    // or coordinate names if a locked or prescribed coordinate
+                    this->add_path_constraint(mcInfo.getName() + "_cid" 
+                         + std::to_string(cid) + "_p" + std::to_string(i),
+                         convert(mcInfo.getBounds()));
+                    this->add_adjunct(multInfo.getName() + std::to_string(cid) 
+                        + "_p" + std::to_string(i), 
+                        convert(multInfo.getBounds()), 
+                        convert(multInfo.getInitialBounds()),
+                        convert(multInfo.getFinalBounds()));
+                }
+                m_mpSum += mp;
+                // TODO if (!get_enforce_holonomic_constraints_only()) {
+                //      m_mvSum += mv; (plus path constraints and adjuncts)
+                //      m_maSum += ma; (plus path constraints and adjuncts)
+                // }
+            }  
         }
+        // TODO if (!get_enforce_holonomic_constraints_only()) {
+        //      m_numMultibodyConstraintEqs += 3*m_mpSum;
+        //      m_numMultibodyConstraintEqs += 2*m_mvSum; 
+        //      m_numMultibodyConstraintEqs += m_maSum; 
+        // } else {
+        m_numMultibodyConstraintEqs += m_mpSum;
+        // }
 
-        // Add any generic path constraints included in the problem by the user. 
-        m_pcNames = m_phase0.createPathConstraintNames();
-        for (std::string pcName : m_pcNames) {
+        // Add any generic path constraints included in the problem. 
+        for (std::string pcName : m_phase0.createPathConstraintNames()) {
             const MucoPathConstraint& constraint = 
                 m_phase0.getPathConstraint(pcName);
             auto pcInfo = constraint.getConstraintInfo();
@@ -282,6 +230,7 @@ public:
                 this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
+        m_numPathConstraintEqs = m_phase0.getNumPathConstraintEquations();
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
@@ -324,8 +273,7 @@ public:
 
         const auto& matter = m_model.getMatterSubsystem();
 
-        // Set the controls for actuators in the OpenSim model, excluding
-        // controls created for Lagrange multipliers. 
+        // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
             std::copy(controls.data(), controls.data() + controls.size(),
@@ -335,8 +283,7 @@ public:
         }
 
         // If enabled constraints exist in the model, compute accelerations
-        // based on Lagrange multipliers (which are currently represented using
-        // control variables).
+        // based on Lagrange multipliers.
         if (m_numMultibodyConstraintEqs) {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
@@ -366,45 +313,36 @@ public:
                 appliedBodyForces + constraintBodyForces, udot, A_GB);
            
             // Constraint errors.
+            // TODO double-check that disable constraints don't show up in 
+            // state
             std::copy(&m_state.getQErr()[0], 
-                &m_state.getQErr()[0] + m_numMultibodyConstraintEquations,
+                &m_state.getQErr()[0] + m_mpSum,
                 out.path.data());
+            // TODO if (!get_enforce_holonomic_constraints_only()) {
+            //    std::copy(&m_state.getUErr()[0],
+            //        &m_state.getUErr()[0] + m_mpSum + m_mvSum,
+            //        out.path.data() + m_mpSum);
+            //    std::copy(&m_state.getUDotErr()[0],
+            //        &m_state.getUDotErr()[0] + m_mpSum + m_mvSum + m_maSum,
+            //        out.path.data() + 2*m_mpSum + m_mvSum);
+            //}
 
-            for (const auto& mcName : m_mcNames) {
-                const auto& mc = getMultibodyConstraint(mcName);
-
-                
-
-            }
-            
-
-
-            int mp, mv, ma;
-            int mpSum = 0;
-            for (int i = 0; i < m_enabledConstraintIdxs.size(); ++i) {
-                const auto& constraint = matter.getConstraint(
-                    SimTK::ConstraintIndex(m_enabledConstraintIdxs[i]));
-                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
-                // Pass errors from the scalar constraint equations to their 
-                // associated tropter path constraint output structures (only 
-                // holonomic constraints for now).
-                SimTK::Vector posErrors(
-                    constraint.getPositionErrorsAsVector(m_state));
-                std::copy(&posErrors[0], &posErrors[0] + mp, 
-                          out.path.data() + mpSum);
-                mpSum += mp;
-
-                m_state.getU
-            }
         } else {
             // TODO Antoine and Gil said realizing Dynamics is a lot costlier than
             // realizing to Velocity and computing forces manually.
             m_model.realizeAcceleration(m_state);
         }
+
+        // Copy errors from generic path constraints into output struct.
+        std::copy_n(m_phase0.calcPathConstraintErrors(m_state).begin(),
+            m_numPathConstraintEqs,
+            out.path.data() + m_numMultibodyConstraintEqs);
+
+        // Copy state derivative values to output struct.
         std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
-                  out.dynamics.data());
-        
+                  out.dynamics.data());   
     }
+    
     void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls, 
@@ -415,12 +353,10 @@ public:
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
 
-        // Set the controls for actuators in the OpenSim model, excluding
-        // controls created for Lagrange multipliers. 
+        // Set the controls for actuators in the OpenSim model. 
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
-            std::copy(controls.data() + m_numScalarConstraintEqs, 
-                    controls.data() + controls.size(),
+            std::copy(controls.data(), controls.data() + controls.size(),
                     &osimControls[0]);
             m_model.realizePosition(m_state);
             m_model.setControls(m_state, osimControls);
@@ -429,13 +365,16 @@ public:
         }
 
         integrand = m_phase0.calcIntegralCost(m_state);
+
+        // TODO if (get_enforce_holonomic_constraints_only()) {
         // Add squared multiplers cost to integrand. Since we currently don't
         // include the derivatives of the holonomic contraint equations as path
         // constraints in the OCP, this term exists in order to impose
         // uniqueness in the Lagrange multipliers. 
-        for (int i = 0; i < m_numScalarConstraintEqs; ++i) {
-            integrand += MULTIPLIER_WEIGHT * controls[i] * controls[i];
+        for (int i = 0; i < m_numMultibodyConstraintEqs; ++i) {
+            integrand += get_multiplier_weight() * adjuncts[i] * adjuncts[i];
         }
+        // }
         
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
@@ -460,15 +399,18 @@ private:
     // generalized accelerations when specifying the dynamics with model 
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
+    // The number of holonomic constraints enabled in the model.
+    mutable int m_mpSum = 0;
+    // TODO nonholonomic constraints 
+    // int m_mvSum = 0; 
+    // TODO acceleration-only constraints
+    // int m_maSum = 0 ;
     // The total number of scalar constraint equations associated with model 
     // multibody constraints that the solver is responsible for enforcing.
-    int m_numMultibodyConstraintEqs = 0;
-    // TODO create user specified option for the Lagrange multipler weight.
-    // Relatively high weight set for now so model actuators are preferred.
-    const double MULTIPLIER_WEIGHT = 100.0;
-
-    std::vector<std::string> mcNames;
-    std::vector<std::string> pcNames;
+    mutable int m_numMultibodyConstraintEqs = 0;
+    // The total number of scalar constraint equations associated with
+    // MucoPathConstraints added to the MucoProblem.
+    mutable int m_numPathConstraintEqs = 0;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {
@@ -499,7 +441,12 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_enforce_holonomic_constraints_only(false);
+    constructProperty_multibody_constraint_info(
+        MucoConstraintInfo("multibody_constraint", {-1000.0, 1000.0}));
+    constructProperty_multiplier_info(MucoVariableInfo("multiplier", 
+        {-1000.0, 1000.0}, {-1000.0, 1000.0}, {-1000.0, 1000.0}));
+    constructProperty_multiplier_weight(100.0);
+    // TODO constructProperty_enforce_holonomic_constraints_only(true);
 
     constructProperty_guess_file("");
 }

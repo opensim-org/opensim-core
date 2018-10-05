@@ -214,20 +214,18 @@ public:
     /// Get the names of all the MucoConstraints.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the constraint names of all the multibody constraint infos.
-    std::vector<std::string> createMultibodyConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
-    const MucoMultibodyConstraint& 
-    getMultibodyConstraint(const std::string& name) const;
+    int getNumPathConstraintEquations() const 
+    {   return m_num_path_constraint_eqs;   }
 
     // TODO add getCost() and/or updCost().
 
     /// Print a brief description of the costs and variables in this phase.
     void printDescription(std::ostream& stream = std::cout) const;
-
 
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
@@ -261,7 +259,8 @@ public:
     /// Calculate the errors in all the scalar constraint equations in this
     /// phase.
     SimTK::Vector calcPathConstraintErrors(const SimTK::State& state) const {
-        SimTK::Vector errors(m_num_scalar_constraint_eqs, 0.0);
+        // TODO should we be creating this vector on every call?
+        SimTK::Vector errors(getNumPathConstraintEquations(), 0.0);
         for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
             get_path_constraints(i).calcPathConstraintErrors(state, errors);
         }
@@ -299,13 +298,12 @@ protected: // Protected so that doxygen shows the properties.
             "Quantities to minimize in the cost functional.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MucoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");
-    OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, 
-            MucoConstraintInfo, "TODO.");
+    //OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, 
+    //        MucoConstraintInfo, "TODO.");
 
 private:
     void constructProperties();
-    mutable int m_num_scalar_constraint_eqs;
-    mutable std::vector<MucoMultibodyConstraint> m_multibody_constraints;
+    mutable int m_num_path_constraint_eqs = 0;
 };
 
 
@@ -347,7 +345,7 @@ public:
     /// Add a cost term for phase 0.
     void addCost(const MucoCost&);
     /// Add a constraint for phase 0.
-    void addConstraint(const MucoConstraint&);
+    void addPathConstraint(const MucoPathConstraint&);
     /// @}
 
     // TODO access phase by name
