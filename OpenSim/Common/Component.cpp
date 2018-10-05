@@ -158,7 +158,10 @@ void Component::finalizeFromProperties()
     reset();
 
     // last opportunity to modify Object names based on properties
-    makeObjectNamesConsistentWithProperties();
+    if (!hasOwner()) {
+        // only call when Component is root since method is recursive
+        makeObjectNamesConsistentWithProperties();
+    }
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
