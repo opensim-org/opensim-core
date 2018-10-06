@@ -158,7 +158,10 @@ void Component::finalizeFromProperties()
     reset();
 
     // last opportunity to modify Object names based on properties
-    makeObjectNamesConsistentWithProperties();
+    if (!hasOwner()) {
+        // only call when Component is root since method is recursive
+        makeObjectNamesConsistentWithProperties();
+    }
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
@@ -768,7 +771,7 @@ Array<std::string> Component::getStateVariableNames() const
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    Array<std::string> stateNames = getStateVariablesNamesAddedByComponent();
+    Array<std::string> stateNames = getStateVariableNamesAddedByComponent();
 
     for (int i = 0; i < stateNames.size(); ++i) {
         stateNames[i] = (getAbsolutePathString() + "/" + stateNames[i]);
@@ -777,7 +780,7 @@ Array<std::string> Component::getStateVariableNames() const
     for (auto& comp : getComponentList<Component>()) {
         const std::string& pathName = comp.getAbsolutePathString();// *this);
         Array<std::string> subStateNames = 
-            comp.getStateVariablesNamesAddedByComponent();
+            comp.getStateVariableNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
             stateNames.append(pathName + "/" + subStateNames[i]);
         }
@@ -1302,7 +1305,7 @@ getCacheVariableIndex(const std::string& name) const
 }
 
 Array<std::string> Component::
-getStateVariablesNamesAddedByComponent() const
+getStateVariableNamesAddedByComponent() const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();

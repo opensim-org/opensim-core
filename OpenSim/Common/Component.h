@@ -2641,7 +2641,7 @@ private:
     // managed by this Component.
     int getNumStateVariablesAddedByComponent() const 
     {   return (int)_namedStateVariableInfo.size(); }
-    Array<std::string> getStateVariablesNamesAddedByComponent() const;
+    Array<std::string> getStateVariableNamesAddedByComponent() const;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const
         {   return getSystem().getDefaultSubsystem(); }

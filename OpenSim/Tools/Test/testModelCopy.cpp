@@ -84,7 +84,7 @@ int main()
 
         LoadOpenSimLibrary("osimActuators");
         testCopyModel("arm26.osim", 2, "ground", 6);
-        testCopyModel("Neck3dof_point_constraint.osim", 25, "spine", 1);
+        testCopyModel("Neck3dof_point_constraint.osim", 25, "bodyset/spine", 1);
     }
     catch (const Exception& e) {
         cout << e.what() << endl;
@@ -115,12 +115,8 @@ void testCopyModel(const string& fileName, const int nbod,
         test = new Model(fileName);
         delete test;
     }
-    
-    model->print("clone_" + fileName); //print is not realy const it changes the model
-    // recall finalize from properties to make consistent
-    model->finalizeFromProperties();
-
-    //SimTK::State& defaultState = model->initSystem();
+    // verify that the print is const and has no side-effects on the model
+    model->print("clone_" + fileName);
     
     Model* modelCopy = new Model(*model);
     modelCopy->finalizeFromProperties();
@@ -159,17 +155,10 @@ void testCopyModel(const string& fileName, const int nbod,
 
     int nb = modelSerialized->getNumBodies();
 
-    const PhysicalFrame* physFrame = nullptr;
-    if(modelSerialized->hasComponent<PhysicalFrame>("./" + physicalFrameName)){
-        physFrame = &modelSerialized
-            ->getComponent<PhysicalFrame>("./" + physicalFrameName);
-    }
-    else {
-        physFrame = &modelSerialized
-            ->getComponent<PhysicalFrame>("./bodyset/" + physicalFrameName);
-    }
+    const PhysicalFrame& physFrame = 
+        modelSerialized->getComponent<PhysicalFrame>(physicalFrameName);
 
-    int ng = physFrame->getProperty_attached_geometry().size();
+    int ng = physFrame.getProperty_attached_geometry().size();
 
     ASSERT(nb == nbod);
     ASSERT(ng == ngeom);
