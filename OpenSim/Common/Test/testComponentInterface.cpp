@@ -284,6 +284,10 @@ public:
     double getCopytestingMemVar(const SimTK::State& s) const
     { return copytestingViaMemberVariable; }
 
+    class ParentAndFooAreSame : OpenSim::Exception {
+    public:
+        using OpenSim::Exception::Exception;
+    };
 protected:
     /** Component Interface */
     void extendFinalizeConnections(Component& root) override{
@@ -295,7 +299,7 @@ protected:
                 == &updSocket<Foo>("childFoo").getConnectee()){
             string msg = "ERROR - Bar::extendFinalizeConnections()\n";
             msg += " parentFoo and childFoo cannot be the same component.";
-            throw OpenSim::Exception(msg);
+            throw ParentAndFooAreSame(msg);
         }
     }
 
@@ -673,14 +677,15 @@ void testMisc() {
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar2.updSocket<Foo>("parentFoo")
-    .setConnecteeName(compFoo.getRelativePathName(bar2));
+    bar2.updSocket<Foo>("parentFoo").setConnecteeName(
+            compFoo.getRelativePathName(bar2));
     
     bar2.connectSocket_childFoo(foo);
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
     world3.finalizeFromProperties();
+    world3.connect(); // TODO added.
     world3.print("Compound_" + modelFile);
 
     cout << "Adding world3 to theWorld" << endl;

@@ -3004,33 +3004,47 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
 template<class C>
 void Socket<C>::findAndConnect(const Component& root) {
  
-    ComponentPath path(getConnecteeName());
-    const C* comp = nullptr;
+    if (_latestModification == LatestModification::Property) {
+        ComponentPath path(getConnecteeName());
+        const C* comp = nullptr;
 
-    try {
-        if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path);
+        try {
+            if (path.isAbsolute()) {
+                comp = &root.template getComponent<C>(path);
+            } else {
+                comp = &getOwner().template getComponent<C>(path);
+            }
         }
-        else {
-            comp =  &getOwner().template getComponent<C>(path);
+        catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+            // TODO if (Object::getDebugLevel() > 0) {
+                // TODO once we fix how connections are established when building
+                // models programmatically, we should show this warning even for
+                // debug level 0.
+                std::cout << ex.getMessage() << std::endl;
+            // TODO }
+            comp = root.template findComponent<C>(path);
         }
+        if (comp) {
+            connectInternal(*comp);
+        }
+            // TODO connect(*comp);
+        else
+            OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
+                          path.toString(),
+                          C::getClassName(),
+                          getName());
+    } else if (_latestModification == LatestModification::Reference) {
+
+        std::string objPathName = connectee->getAbsolutePathString();
+        std::string ownerPathName = getOwner().getAbsolutePathString();
+        // This can happen when top level components like a Joint and Body
+        // have the same name like a pelvis Body and pelvis Joint that
+        // connects to a Body of the same name.
+        // otherwise store the relative path name to the object
+        std::string relPathName = connectee->getRelativePathName(getOwner());
+        updConnecteeNameProp().setValue(0, relPathName);
     }
-    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-        if (Object::getDebugLevel() > 0) {
-            // TODO once we fix how connections are established when building
-            // models programmatically, we should show this warning even for
-            // debug level 0.
-            std::cout << ex.getMessage() << std::endl;
-        }
-        comp =  root.template findComponent<C>(path);
-    }
-    if (comp)
-        connect(*comp);
-    else
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-            path.toString(),
-            C::getClassName(),
-            getName() );
+    _latestModification = LatestModification::Finalize;
 }
 
 template<class T>
@@ -3052,15 +3066,33 @@ void Input<T>::connect(const AbstractOutput& output,
             "' cannot connect to list output '" + output.getPathName() + ".");
     }
 
+    if (_latestModification != LatestModification::Reference) {
+        clearConnecteeName();
+        _latestModification = LatestModification::Reference;
+    }
+
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
-    
+
+        connectInternal(chan.second, alias);
+
+        /* TODO
+
+        // TODO what to do with these?
         // Record the number of pre-existing satisfied connections...
         const size_t numPreexistingSatisfiedConnections(_connectees.size());
         // ...which happens to be the index of this new connectee.
         const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
         _connectees.push_back(
             SimTK::ReferencePtr<const Channel>(&chan.second) );
+
+        // TODO aliases.
+
+        // Use the provided alias for all channels.
+        _aliases.push_back(alias);
+         */
+
+        /*
 
         // Update the connectee name as
         // <RelOwnerPath>/<Output><:Channel><(annotation)>
@@ -3084,6 +3116,7 @@ void Input<T>::connect(const AbstractOutput& output,
 
         // Use the provided alias for all channels.
         _aliases.push_back(alias);
+         */
     }
 }
 
@@ -3099,18 +3132,31 @@ void Input<T>::connect(const AbstractChannel& channel,
             << "' of type " << channel.getTypeName() << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
-    
+
+    if (_latestModification != LatestModification::Reference) {
+        clearConnecteeName();
+        _latestModification = LatestModification::Reference;
+    }
+
     if (!isListSocket()) {
         // Remove the existing connectee (if it exists).
         disconnect();
     }
-    
+
+    connectInternal(*chanT, alias);
+
+    /* TODO
     // Record the number of pre-existing satisfied connections...
     const size_t numPreexistingSatisfiedConnections(_connectees.size());
     // ...which happens to be the index of this new connectee.
     const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
     _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-    
+
+    // Store the provided alias.
+    _aliases.push_back(alias);
+     */
+
+    /* TODO
     // Update the connectee name as
     // <RelOwnerPath>/<Output><:Channel><(annotation)>
     ComponentPath
@@ -3131,57 +3177,93 @@ void Input<T>::connect(const AbstractChannel& channel,
         setConnecteeName(pathStr, unsigned(idxThisConnectee));
     else
         appendConnecteeName(pathStr);
-    
-    // Store the provided alias.
-    _aliases.push_back(alias);
+    */
 }
 
+// TODO rename.
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
-    std::string compPathStr, outputName, channelName, alias;
-    for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-        parseConnecteeName(getConnecteeName(ix),
-                           compPathStr, outputName, channelName, alias);
-        ComponentPath compPath(compPathStr);
-        const AbstractOutput* output = nullptr;
 
-        if (compPath.isAbsolute()) { //absolute path string
-            if (compPathStr.empty()) {
-                output = &root.getOutput(outputName);
-            }
-            else {
-                output = &root.getComponent(compPathStr).getOutput(outputName);
-            }
-        }
+    if (_latestModification == LatestModification::Property) {
+        std::string compPathStr, outputName, channelName, alias;
+        for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
+            parseConnecteeName(getConnecteeName(ix),
+                               compPathStr, outputName, channelName, alias);
+            ComponentPath compPath(compPathStr);
+            const AbstractOutput* output = nullptr;
 
-        else { // relative path string
-            const Component* comp = nullptr;
-            if (compPathStr.empty()) {
-                comp = &getOwner();
-            }
-            else {
-                try {
-                    comp = &getOwner().getComponent(compPathStr);
-                } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-                    // If we cannot find the component at the specified path,
-                    // look for the component anywhere in the model.
-                    if (Object::getDebugLevel() > 0) {
-                        // TODO once we fix how connections are established
-                        // when building models programmatically, we should
-                        // show this warning even for debug level 0.
-                        std::cout << ex.getMessage() << std::endl;
-                    }
-                    comp = root.findComponent(compPath);
+            if (compPath.isAbsolute()) { //absolute path string
+                if (compPathStr.empty()) {
+                    output = &root.getOutput(outputName);
+                } else {
+                    output = &root.getComponent(compPathStr).getOutput(
+                            outputName);
                 }
+            } else { // relative path string
+                const Component* comp = nullptr;
+                if (compPathStr.empty()) {
+                    comp = &getOwner();
+                } else {
+                    try {
+                        comp = &getOwner().getComponent(compPathStr);
+                    } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+                        // If we cannot find the component at the specified path,
+                        // look for the component anywhere in the model.
+                        if (Object::getDebugLevel() > 0) {
+                            // TODO once we fix how connections are established
+                            // when building models programmatically, we should
+                            // show this warning even for debug level 0.
+                            std::cout << ex.getMessage() << std::endl;
+                        }
+                        comp = root.findComponent(compPath);
+                    }
+                }
+                // comp should never be null at this point.
+                OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
+                                                   "could not find component '" +
+                                                   compPathStr + ".");
+                output = &comp->getOutput(outputName);
             }
-            // comp should never be null at this point.
-            OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
-                             "could not find component '" + compPathStr + ".");
-            output = &comp->getOutput(outputName);
+            const auto& channel = output->getChannel(channelName);
+
+            // TODO put this check in one place only.
+            const auto* chanT = dynamic_cast<const Channel*>(&channel);
+            if (!chanT) {
+                std::stringstream msg;
+                msg << "Type mismatch between Input and Output: Input '"
+                        << getName() << "' of type " << getConnecteeTypeName()
+                        << " cannot connect to Output (channel) '"
+                        << channel.getPathName()
+                        << "' of type " << channel.getTypeName() << ".";
+                OPENSIM_THROW(Exception, msg.str());
+            }
+            connectInternal(*chanT, alias);
+            // TODO connect(channel, alias);
         }
-        const auto& channel = output->getChannel(channelName);
-        connect(channel, alias);
+    } else if (_latestModification == LatestModification::Reference) {
+        SimTK_ASSERT_ALWAYS(getNumConnectees() == 0,
+                "Somehow the connectees weren't cleared.");
+        int i = -1;
+        for (const auto& chan : getChannels()) {
+            ++i;
+            // Update the connectee name as
+            // <RelOwnerPath>/<Output><:Channel><(annotation)>
+            ComponentPath
+                    path(chan->getOutput().getOwner().getRelativePathName(
+                    getOwner()));
+
+            auto pathStr = composeConnecteeName(path.toString(),
+                                                chan->getOutput().getName(),
+                                                chan->getOutput().isListOutput()
+                                                ?
+                                                chan->getChannelName() :
+                                                "",
+                                                _aliases[i]);
+
+            updConnecteeNameProp().appendValue(pathStr);
+        }
     }
+    _latestModification = LatestModification::Finalize;
 }
 
 

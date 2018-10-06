@@ -167,6 +167,10 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractSocket::setConnecteeName()");
+        if (_latestModification != LatestModification::Property) {
+            disconnect();
+            _latestModification = LatestModification::Property;
+        }
         updConnecteeNameProp().setValue(ix, name);
     }
 
@@ -190,7 +194,20 @@ public:
     void appendConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Socket.");
+        if (_latestModification != LatestModification::Property) {
+            disconnect();
+            _latestModification = LatestModification::Property;
+        }
         updConnecteeNameProp().appendValue(name);
+    }
+
+    /** Clear all connectee names in the connectee name property. */
+    void clearConnecteeName() {
+        // TODO what about single-value sockets? should the size be 1?
+        if (isListSocket())
+            updConnecteeNameProp().clear();
+        else
+            updConnecteeNameProp().setValue(0, "");
     }
 
 protected:
@@ -249,7 +266,7 @@ protected:
             }
             
             // Use the cleaned-up connectee name created by ComponentPath.
-            setConnecteeName(cp.toString(), iname);
+            // TODO setConnecteeName(cp.toString(), iname);
             // TODO update the above for Inputs when ChannelPath exists.
             
             // TODO There might be a bug with empty connectee name being
@@ -257,7 +274,17 @@ protected:
         }
     }
 
-private:
+    // We keep track of how the connectee was last updated.
+    enum class LatestModification {
+        Property, // Edited the connectee name property.
+        Reference, // Used connect().
+        Finalize // finalizeConnections().
+    };
+    // A newly-constructed model's connectees are specified by XML.
+    SimTK::ReinitOnCopy<LatestModification> _latestModification =
+            LatestModification::Property;
+
+protected:
     
     /// Const access to the connectee name property from the Component in which
     /// this Socket resides. The name of that property is something like
@@ -270,7 +297,10 @@ private:
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
     Property<std::string>& updConnecteeNameProp();
-    
+
+
+private:
+
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteeNameIndex;
@@ -315,9 +345,10 @@ public:
     Return a const reference to the object connected to this Socket */
     const T& getConnectee() const {
         if (!isConnected()) {
-            std::string msg = getOwner().getConcreteClassName() + "::Socket '"
-                + getName() + "' is not connected to '" + getConnecteeName()
-                + "' of type " + T::getClassName();
+            std::string msg = "Socket " + getName() + " of type " +
+                    T::getClassName() + " in " +
+                    getOwner().getAbsolutePathString() + " of type " +
+                    getOwner().getConcreteClassName() + " is not connected.";
             OPENSIM_THROW(Exception, msg);
         }
         return connectee.getRef();
@@ -334,12 +365,18 @@ public:
                 << object.getConcreteClassName() << ".";
             OPENSIM_THROW(Exception, msg.str());
         }
-        
-        connectee = *objT;
+
+        if (_latestModification != LatestModification::Reference ) {
+            clearConnecteeName();
+            _latestModification = LatestModification::Reference;
+        }
+        connectInternal(*objT);
+        // TODO connectee = *objT;
+
+        /*
 
         std::string objPathName = objT->getAbsolutePathString();
         std::string ownerPathName = getOwner().getAbsolutePathString();
-
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasOwner()) {
             // The API permits connecting to orphans when passing in the
@@ -358,6 +395,7 @@ public:
             std::string relPathName = objT->getRelativePathName(getOwner());
             setConnecteeName(relPathName);
         }
+         */
     }
 
     /** Connect this Socket given its connectee name property  */
@@ -401,6 +439,11 @@ protected:
     friend Component;
 
 private:
+
+    void connectInternal(const T& objT) {
+        connectee = &objT;
+    }
+
     mutable SimTK::ReferencePtr<const T> connectee;
 }; // END class Socket<T>
             
@@ -839,6 +882,10 @@ protected:
     friend Component;
     
 private:
+    void connectInternal(const Channel& chanT, const std::string& alias) {
+        _connectees.push_back(SimTK::ReferencePtr<const Channel>(&chanT));
+        _aliases.push_back(alias);
+    }
     SimTK::ResetOnCopy<ChannelList> _connectees;
     // Aliases are serialized, since tools may depend on them for
     // interpreting the connected channels.

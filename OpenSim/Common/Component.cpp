@@ -277,7 +277,7 @@ void Component::finalizeConnections(Component& root)
 
     for (auto& it : _socketsTable) {
         auto& socket = it.second;
-        socket->disconnect();
+        // TODO socket->disconnect();
         try {
             socket->findAndConnect(root);
         }
@@ -305,7 +305,7 @@ void Component::finalizeConnections(Component& root)
             continue;
         }
 
-        input->disconnect();
+        // TODO input->disconnect();
         try {
             input->findAndConnect(root);
         }
