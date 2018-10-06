@@ -439,7 +439,7 @@ constructors because they have additional arguments.
     NAME() {
         return new NAME();
     }
-    NAME(const std::string& file, bool updateFromXML=true) {
+    NAME(const std::string& file, bool updateFromXML=true) throw(OpenSim::Exception) {
         return new NAME(file, updateFromXML);
     }
 };
