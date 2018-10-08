@@ -209,6 +209,7 @@ void testExternalLoad()
 
     ExternalForce xf2(forceStore2, id_base+"_F", point_id, id_base+"_T", pendBodyName, "ground", "ground");
     xf2.setName("xf_pInG");
+    xf2.finalizeFromProperties();
     // Empty out existing external forces
     extLoads->setMemoryOwner(false);
     extLoads->setSize(0);

@@ -132,6 +132,10 @@ void ExternalForce::extendFinalizeFromProperties() {
         OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, 
             getName(), "ExternalForce:: no force or torque identified.");
     }
+    
+    _appliesForce = appliesForce();
+    _specifiesPoint = specifiesPoint();
+    _appliesTorque = appliesTorque();
 }
 
 void ExternalForce::extendConnectToModel(Model& model)
@@ -145,10 +149,6 @@ void ExternalForce::extendConnectToModel(Model& model)
 
     // This might not have been supplied in which case it will have size()==0.
     const Property<string>& dataSourceProp = getProperty_data_source_name();
-
-    _appliesForce = appliesForce();
-    _specifiesPoint = specifiesPoint();
-    _appliesTorque = appliesTorque();
 
     // hook up body pointers from names
     _appliedToBody.reset();
