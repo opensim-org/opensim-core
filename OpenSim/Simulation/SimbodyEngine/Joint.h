@@ -484,9 +484,9 @@ private:
         return mobod.getDefaultQ().size();
     }
 
-    // Only Model's extednConnectToModel should access private members
-    // of the Joint, to set that the Joint is connected to a slave body.
-    // See, Model::createMultibodyTree();
+    // Only Model::extendConnectToModel() should access private members
+    // of the Joint to set whether the Joint is connected to a slave body.
+    // See Model::createMultibodyTree();
     friend Model;
 
     void setSlaveBodyForParent(Body& slaveForParent){
