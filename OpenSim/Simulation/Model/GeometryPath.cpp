@@ -117,10 +117,6 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 {        
     // There is no fixed geometry to generate here.
     if (fixed) { return; }
-    
-    // Ensure that the state has been realized to Stage::Dynamics to give
-    // clients of this path a chance to calculate meaningful color information.
-    getModel().realizeDynamics(state);
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
@@ -496,8 +492,13 @@ addPathPoint(const SimTK::State& s, int aIndex, const PhysicalFrame& frame)
 {
     PathPoint* newPoint = new PathPoint();
     newPoint->setParentFrame(frame);
-    Vec3 location = newPoint->getLocation(s);
-    placeNewPathPoint(s, location, aIndex, frame);
+    Vec3 newLocation(0.0); 
+    // Note: placeNewPathPoint() returns a location by reference.
+    // It computes a new location according to the index where the new path point 
+    // will be inserted along the path(among the other path points).
+    placeNewPathPoint(s, newLocation, aIndex, frame);
+    // Now set computed new location into the newPoint
+    newPoint->setLocation(newLocation);
     upd_PathPointSet().insert(aIndex, newPoint);
 
     // Rename the path points starting at this new one.

@@ -883,6 +883,10 @@ public:
     std::vector<SimTK::ReferencePtr<const Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** Get a warning message if any Coordinates have a MotionType that is NOT
+        consistent with its previous user-specified value that existed in 
+        Model files prior to OpenSim 4.0 */
+    std::string getWarningMesssageForMotionTypeInconsistency() const;
 
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
@@ -1008,7 +1012,9 @@ public:
     /**
      * Get a log of errors/warnings encountered when loading/constructing the model
      */
-    const std::string& getValidationLog() { return _validationLog; };
+    const std::string& getValidationLog() const { return _validationLog; };
+    /** Append to the Model's validation log without affecting is current contents */
+    void appendToValidationLog(const std::string& note);
     void clearValidationLog() { _validationLog = ""; };
 
     /**

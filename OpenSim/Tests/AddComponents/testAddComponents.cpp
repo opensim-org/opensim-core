@@ -361,12 +361,9 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the manager managing the forward integration and its outputs
-        Manager manager(osimModel,  integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, cout);

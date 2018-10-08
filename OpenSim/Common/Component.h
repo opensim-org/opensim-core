@@ -480,7 +480,16 @@ public:
     obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
     once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
     as rubber band lines, force arrows, labels, or debugging aids.
-  
+
+    Please note that there is a precondition that the state passed in to
+    generateDecorations be realized to Stage::Position. If your component can
+    visualize quantities realized at Velocity, Dynamics or Acceleration stages,
+    then you must check that the stage has been realized before using/requesting
+    stage dependent values. It is forbidden to realize the model to a higher
+    stage within generateDecorations, because this can trigger costly side-
+    effects such as evaluating all model forces even when performing a purely
+    kinematic study.
+
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
@@ -493,6 +502,14 @@ public:
         // invoke parent class method
         Super::generateDecorations(fixed,hints,state,appendToThis); 
         // ... your code goes here
+        // can render velocity dependent quanities if stage is Velocity or higher
+        if(state.getSystemStage() >= Stage::Velocity) {
+            // draw velocity vector for model COM
+        }
+        // can render computed forces if stage is Dynamics or higher
+        if(state.getSystemStage() >= Stage::Dynamics) {
+            // change the length of a force arrow based on the force in N
+        }
     }
     @endcode
 
@@ -938,7 +955,7 @@ public:
             // immediately after copying.
             if (!it->second->hasOwner()) {
                 // The `this` pointer must be non-const because the Socket
-                // will want to be able to modify the connectee_name property.
+                // will want to be able to modify the connectee name property.
                 const_cast<AbstractSocket*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
             }
@@ -2416,7 +2433,7 @@ protected:
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
         PropertyIndex propIndex = this->template addProperty<std::string>(
-                "socket_" + name + "_connectee_name", propertyComment, "");
+                "socket_" + name , propertyComment, "");
         // We must create the Property first: the Socket needs the property's
         // index in order to access the property later on.
         _socketsTable[name].reset(
@@ -2550,11 +2567,11 @@ protected:
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
             propIndex = this->template addListProperty<std::string>(
-                    "input_" + name + "_connectee_names", propertyComment,
+                    "input_" + name, propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
             propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+                    "input_" + name, propertyComment, "");
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.

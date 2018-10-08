@@ -237,6 +237,11 @@ void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
     recreateSystemKeepStage();
 }
 
+void OpenSimContext::setLocation(PathPoint& mp, const SimTK::Vec3& newLocation) {
+    mp.setLocation(newLocation);
+    recreateSystemKeepStage();
+}
+
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     mw.setEndPoint(*_configState, newEndPt );
     recreateSystemKeepStage();
@@ -292,6 +297,9 @@ void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
 
 void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
     p.addPathWrap( awo );
+    // Adding WrapObject to a GeometryPath requires initSystem similar to other Path edit operations
+    recreateSystemKeepStage();
+    p.updateGeometry(*_configState);
     return;
 }
 
