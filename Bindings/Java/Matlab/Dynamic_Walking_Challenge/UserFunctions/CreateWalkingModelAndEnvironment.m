@@ -32,7 +32,7 @@ outputModelName = 'WalkerModel';
 
 % Model Body Parameters
 PlatformLength  = 10;
-PlatformWidth   = 0.05;
+PlatformHeight   = 0.05;
 PlatformOffset  = 0.5;
 
 PelvisMass      = 0.5;
@@ -93,9 +93,10 @@ platformToGround    = WeldJoint('PlatformToGround', ...
 
 % Add geometry to display in the GUI
 platformGeomOffset = PhysicalOffsetFrame(platform, ...
-    Transform(Vec3(PlatformLength/2 - PlatformOffset, 0, 0)));
+    Transform(...
+        Vec3(PlatformLength/2 - PlatformOffset, 0, 0)));
 platformGeomOffset.attachGeometry(...
-    Brick(Vec3(PlatformLength, PlatformWidth, 1)));
+    Brick(Vec3(0.5 * PlatformLength, 0.5 * PlatformHeight, 0.5)));
 platform.addComponent(platformGeomOffset);
 
 % Add Body to Model
@@ -282,7 +283,7 @@ RightPelvisContactSphere = ContactSphere(footSphereRadius, ...
 RightPelvisContactSphere.setName('RHipContact');
 osimModel.addContactGeometry(RightPelvisContactSphere);
 
-groundContactLoc = Vec3(0,PlatformWidth/2,0);
+groundContactLoc = Vec3(0,PlatformHeight/2,0);
 groundContactOri = Vec3(0,0,-pi/2);
 groundContactSpace = ...
     ContactHalfSpace(groundContactLoc, groundContactOri, platform);
@@ -460,7 +461,7 @@ if addObstacles
     for i = 1:1:numSpheres
         radius = minObstacleRadius+(maxObstacleRadius - minObstacleRadius)*rand(1,1);
         locX = endingPoint-distance*abs(.30*randn(1,1))-PlatformOffset;
-        locY = PlatformWidth/2-radius*0.8;
+        locY = PlatformHeight/2-radius*0.8;
         locZ = PelvisWidth/2*(sign(-0.5+rand(1,1)));
         sphere = ContactSphere(radius, Vec3(locX,locY,locZ), platform);
         name = ['Obstacle',num2str(i)];
