@@ -441,7 +441,7 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(9, i, __FILE__, __LINE__,
+    ASSERT_EQUAL(11, i, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 9 Frames in the model.");
 
     i = 0;
@@ -450,7 +450,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(8, i, __FILE__, __LINE__,
+    ASSERT_EQUAL(10, i, __FILE__, __LINE__,
         "testFilterByFrameType failed to find 8 PhysicalFrames.");
 
     i = 0;
@@ -471,7 +471,7 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(5, i, __FILE__, __LINE__,
+    ASSERT_EQUAL(7, i, __FILE__, __LINE__,
         "testFilterByFrameType failed to find the 5 PhyscicalOffsetFrame in the model.");
 }
 

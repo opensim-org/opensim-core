@@ -53,15 +53,15 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-const int expectedNumComponents = 180;
+const int expectedNumComponents = 184;
 const int expectedNumJointsWithStateVariables = 2;
 const int expectedNumModelComponentsWithStateVariables = 10;
-// Below updated from 1 to 3 to account for offset frame and its geometry added
-// to the Joint
-const int expectedNumJntComponents = 3;
+// Below updated from 1 to 5 to account for 2 offset frames and their 
+// geometry added to the Joint
+const int expectedNumJntComponents = 5;
 // Test using the iterator to skip over every other Component (Frame in this case)
-// nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
-const int expectedNumCountSkipFrames = 3;
+// nf = 1 ground + 2 bodies + 4 joint offsets = 7, skipping - 3 = 4
+const int expectedNumCountSkipFrames = 4;
 
 namespace OpenSim {
     
