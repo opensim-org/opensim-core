@@ -214,6 +214,7 @@ public:
     /// Get the names of all the MucoConstraints.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the constraint names of all the multibody constraint infos.
+    std::vector<std::string> createMultibodyConstraintInfoNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
@@ -221,6 +222,8 @@ public:
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
     int getNumPathConstraintEquations() const 
     {   return m_num_path_constraint_eqs;   }
+    const MucoMultibodyConstraintInfo& 
+    getMultibodyConstraintInfo(const std::string& name) const;
 
     // TODO add getCost() and/or updCost().
 
@@ -298,12 +301,23 @@ protected: // Protected so that doxygen shows the properties.
             "Quantities to minimize in the cost functional.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MucoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");
-    //OpenSim_DECLARE_LIST_PROPERTY(multibody_constraint_infos, 
-    //        MucoConstraintInfo, "TODO.");
+    // TODO make this a list propety of MucoConstraintInfos when we are able to
+    // map OpenSim constraint names Simbody constraints
+    OpenSim_DECLARE_PROPERTY(multibody_constraint_bounds, MucoBounds,
+        "The bounds on all the multibody constraints in the model to be "
+        "enforced. By default the constraints are strictly enforced (zero "
+        "bounds).");
+    OpenSim_DECLARE_PROPERTY(multiplier_bounds, MucoBounds,
+        "Variable info to apply to all Lagrange multipliers in the problem. "
+        "The default bounds are [-1000 1000].");
 
 private:
     void constructProperties();
     mutable int m_num_path_constraint_eqs = 0;
+    mutable std::vector<MucoMultibodyConstraintInfo> 
+        m_multibody_constraint_infos;
+    mutable std::vector<MucoVariableInfo> m_multiplier_infos;
+
 };
 
 

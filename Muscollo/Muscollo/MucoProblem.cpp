@@ -109,6 +109,8 @@ void MucoPhase::constructProperties() {
     constructProperty_parameters();
     constructProperty_costs();
     constructProperty_path_constraints();
+    constructProperty_multibody_constraint_bounds({0, 0.0});
+    constructProperty_multiplier_bounds({-1000.0, 1000.0});
 }
 void MucoPhase::setModel(const Model& model) {
     set_model(model);
@@ -160,9 +162,9 @@ void MucoPhase::addPathConstraint(const MucoPathConstraint& constraint) {
         "A constraint with name '" + constraint.getName() + "' already "
         "exists.");
     for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
-        OPENSIM_THROW_IF_FRMOBJ(get_path_constraints(i).getIndex() != 
-            constraint.getIndex(), Exception,
-            "A constraint with index '" + std::to_string(constraint.getIndex())
+        OPENSIM_THROW_IF_FRMOBJ(get_path_constraints(i).getPathConstraintIndex() 
+            != constraint.getPathConstraintIndex(), Exception, "A constraint "
+            "with index '" + std::to_string(constraint.getPathConstraintIndex()) 
             + "' already exists.");
     }
     append_path_constraints(constraint);
@@ -253,14 +255,20 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     }
 
     stream << "Constraints:";
-    if (getProperty_path_constraints().empty())
+    if (getProperty_path_constraints().empty() 
+            && m_multibody_constraint_infos.empty())
         stream << " none";
     else
-        stream << " (total: " << getProperty_path_constraints().size() << ")";
+        stream << " (total: " << getProperty_path_constraints().size() << 
+            m_multibody_constraint_infos.size() << ")";
     stream << "\n";
+    for (int i = 0; i < m_multibody_constraint_infos.size(); ++i) {
+        stream << "  ";
+        m_multibody_constraint_infos[i].printDescription(stream);
+    }
     for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
         stream << "  ";
-        get_path_constraints(i).printDescription(stream);
+        get_path_constraints(i).getConstraintInfo().printDescription(stream);
     }
 
     stream << "States:";
@@ -333,6 +341,29 @@ void MucoPhase::initialize(Model& model) const {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
 
+    const auto& matter = model.getMatterSubsystem();
+    const auto NC = matter.getNumConstraints();
+    const auto& state = model.getWorkingState();
+    int mp, mv, ma;
+    for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
+        const SimTK::Constraint& constraint = matter.getConstraint(cid);
+        if (!constraint.isDisabled(state)) {
+            constraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
+            MucoMultibodyConstraintInfo mcInfo(cid, mp, mv, ma);
+
+            // If user provided custom bounds for the multibody constraint
+            // equations, update the current multibody constraint info.
+            // TODO user eventually should specify a constraint info
+            if (!getProperty_multibody_constraint_bounds().empty()) {
+                std::vector<MucoBounds> mcBounds(mcInfo.getNumEquations(), 
+                    get_multibody_constraint_bounds());
+                mcInfo.setBounds(mcBounds);
+            }
+
+            m_multibody_constraint_infos.push_back(mcInfo);
+        }
+    }
+
     for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
         const_cast<MucoPathConstraint&>(get_path_constraints(i)).initialize(
             model, m_num_path_constraint_eqs);
@@ -351,6 +382,8 @@ void MucoPhase::applyParametersToModel(
         get_parameters(i).applyParameterToModel(parameterValues(i));
     }
 }
+
+
 
 // ============================================================================
 // MucoProblem

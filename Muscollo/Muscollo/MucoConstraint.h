@@ -34,16 +34,11 @@ namespace OpenSim {
 // MucoConstraintInfo
 // ============================================================================
 
-/// 
+/// TODO
 class OSIMMUSCOLLO_API MucoConstraintInfo : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraintInfo, Object);
 public:
     MucoConstraintInfo();
-    MucoConstraintInfo(const std::string& name, 
-        const std::vector<MucoBounds>& bounds);
-    MucoConstraintInfo(const std::string& name, 
-        const std::vector<MucoBounds>& bounds,
-        const std::vector<std::string>& suffixes);
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
@@ -64,20 +59,35 @@ public:
         return suffixes;
     }
     void setBounds(const std::vector<MucoBounds>& bounds) {
+        checkEquationConsistency(bounds.size());
         for (int i = 0; i < bounds.size(); ++i) {
             set_bounds(i, bounds[i]);
         }
     }
     void setSuffixes(const std::vector<std::string>& suffixes) {
+        checkEquationConsistency(suffixes.size());
         for (int i = 0; i < suffixes.size(); ++i) {
             set_suffixes(i, suffixes[i]);
         }
     }
+    int getNumEquations() const {   
+        OPENSIM_THROW_IF(!m_num_equations, Exception, "Insufficient "
+            "information available to determine the number of scalar "
+            "constraint equations. Please set the bounds property. Optionally, "
+            "you may also set the suffixes property.");
+        return m_num_equations;  
+    }
 
-    /// Print the bounds on this variable.
-    //void printDescription(std::ostream& stream = std::cout) const;
+    /// Get a list of constraint labels based on the constraint name and, if
+    /// specified, the list of suffixes. If no suffixes have been specified, 
+    /// zero-indexed, numeric suffixes will be applied as a default.
+    std::vector<std::string> getConstraintLabels();
 
-protected:
+    /// Print the name, type, number of scalar equations, and bounds for this 
+    /// constraint.
+    void printDescription(std::ostream& stream = std::cout) const;
+
+private:
     OpenSim_DECLARE_LIST_PROPERTY(bounds, MucoBounds, "The bounds on the set "
         "of scalar constraint equations.");
     OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, "(Optional) A list of "
@@ -85,13 +95,64 @@ protected:
         "These are appended to the name of the MucoConstraint object when "
         "calling getConstraintLabels().");
 
-private:
     void constructProperties();
+
+    int m_num_equations;
+    void checkEquationConsistency(int propSize) {
+        if (!m_num_equations) {
+            m_num_equations = propSize;
+        } else {
+            OPENSIM_THROW_IF(m_num_equations != propSize, Exception, "Size of "
+                "property assignment not consistent with current number of "
+                "constraint equations.");
+        }
+    }
 };
 
+// ============================================================================
+// MucoMultibodyConstraintInfo
+// ============================================================================
+
+class OSIMMUSCOLLO_API MucoMultibodyConstraintInfo : public MucoConstraintInfo{
+    OpenSim_DECLARE_CONCRETE_OBJECT(MucoMultibodyConstraintInfo, 
+        MucoConstraintInfo);
+public:
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal variable. Avoid repeated calls to this function.
+    ConstraintIndex getSimbodyConstraintIndex() const
+    {   return ConstraintIndex(m_simbody_constraint_index); }
+
+    /// Get the number of scalar constraint equations at each kinematic level.
+    /// Note that the total number of scalar constraint equations enforced is
+    /// *NOT* equal to the sum of each of these values -- you must include the
+    /// first and second derivatives of the position equations and the first
+    /// derivatives of the velocity equations into that count as well (this 
+    /// value can be obtained by calling getNumEquations()). 
+    int getNumPositionEquations() const
+    {   return m_num_position_eqs; }
+    int getNumVelocityEquations() const
+    {   return m_num_velocity_eqs; }
+    int getNumAccelerationEquations() const
+    {   return m_num_acceleration_eqs; }
+
+private:
+    int m_num_position_eqs;
+    int m_num_velocity_eqs;
+    int m_num_acceleration_eqs;
+    int m_simbody_constraint_index;
+
+    /// The constructor for this class is private since we don't want the user
+    /// constructing these infos directly. Rather, they should be constructed
+    /// directly from the model within the initialization for each MucoPhase,
+    /// which is a friend of this class. This implementation ensures that the
+    /// correct information is passed to set the default property values, which 
+    /// should be sufficient for most users. 
+    MucoMultibodyConstraintInfo(int cid, int mp, int mv, int ma);
+    friend class MucoPhase;
+};
 
 // ============================================================================
-// MucoConstraint
+// MucoPathConstraint
 // ============================================================================
 
 /// A path constraint to be enforced in the optimal control problem.
@@ -101,40 +162,33 @@ class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
 public:
     // Default constructor.
     MucoPathConstraint();
+        
+    MucoConstraintInfo getConstraintInfo() const 
+    {   return get_constraint_info(); }
+    void setConstraintInfo(const MucoConstraintInfo& cInfo) 
+    {   return set_constraint_info(cInfo); }
+    int getPathConstraintIndex() const
+    {   return m_path_constraint_index; }
 
-    
-    int getNumEquations() const
-    {   return m_num_equations; }
-    int getIndex() const
-    {   return m_index; }
-    
-    /// Get a list of constraint labels based on the constraint name and, if
-    /// specified, the list of suffixes. If no suffixes have been specified, 
-    /// zero-indexed, numeric suffixes will be applied as a default.
-    std::vector<std::string> getConstraintLabels();
-
-    /// Calculate errors in the constraint equations. The *errors* argument 
-    /// represents the concatenated error vector for all constraints in the 
-    /// MucoProblem. The *m_index* and *m_num_equations* internal variables are 
-    /// used to create a view into *errors* to access the elements this 
-    /// MucoConstraint is responsible for.
+    /// Calculate errors in the path constraint equations. The *errors* argument 
+    /// represents the concatenated error vector for all path constraints in the 
+    /// MucoProblem. The *m_path_constraint_index* variable the number of scalar
+    /// constraint equations (obtained from the MucoConstraintInfo) are used to 
+    /// create a view into *errors* to access the elements this 
+    /// MucoPathConstraint is responsible for.
     void calcPathConstraintErrors(const SimTK::State& state,
             SimTK::Vector& errors) const {
     
         // This vector shares writable, borrowed space from the *errors* vector 
         // (provided by the MucoProblem) to the elements for which this 
         // MucoPathConstraint provides constraint error information.
-        SimTK::Vector theseErrors(m_num_equations, 
-            errors.getContiguousScalarData() + m_index, true);
+        SimTK::Vector theseErrors(getConstraintInfo().getNumEquations(), 
+            errors.getContiguousScalarData() + getPathConstraintIndex(), true);
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
     /// For use by solvers. This also performs error checks on the Problem.
-    void initialize(const Model& model, const int& index) const;
-
-    /// Print the name, type, constraint index, number of scalar equations, and
-    /// bounds for this constraint.
-    void printDescription(std::ostream& stream = std::cout) const;
+    void initialize(const Model& model, const int& pathConstraintIndex) const;
     
 protected:
     OpenSim_DECLARE_PROPERTY(constraint_info, MucoConstraintInfo, "TODO.");
@@ -163,38 +217,11 @@ private:
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
-   mutable int m_index;
-   mutable int m_num_equations;
+   mutable int m_path_constraint_index;
 };
 
-inline void MucoPathConstraint::calcPathConstraintErrorsImpl(const SimTK::State&,
-        SimTK::Vector&) const {}
-
-// ============================================================================
-// MucoSimbodyConstraint
-// ============================================================================
-
-/// A class to conveniently add a Simbody constraint in the model to the
-/// problem as a MucoConstraint.
-/// @ingroup mucoconstraint
-class OSIMMUSCOLLO_API MucoMultibodyConstraint : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoMultibodyConstraint, Object);
-public:
-    // Default constructor.
-    MucoMultibodyConstraint();
-
-    void initialize(const Model& model) const;
-
-
-private:
-
-    mutable int m_num_position_eqs;
-    mutable int m_num_velocity_eqs;
-    mutable int m_num_acceleration_eqs;
-    mutable SimTK::ReferencePtr<const SimTK::Constraint> m_constraint_ref;
-    mutable int m_model_constraint_index;
-
-};
+inline void MucoPathConstraint::calcPathConstraintErrorsImpl(
+        const SimTK::State&, SimTK::Vector&) const {}
 
 } // namespace OpenSim
 

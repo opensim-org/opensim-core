@@ -170,46 +170,43 @@ public:
 
         // Add any scalar constraints associated with multibody constraints in 
         // the model as path constraints in the problem.
-        const auto& matter = m_model.getMatterSubsystem();
-        const auto NC = matter.getNumConstraints();
-        int mp, mv, ma;
-        auto multInfo = get_multiplier_info();
-        auto mcInfo = get_multibody_constraint_info();
-        for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
-            const SimTK::Constraint& constraint = matter.getConstraint(cid);
-            if (!constraint.isDisabled(m_state)) {
-                constraint.getNumConstraintEquationsInUse(m_state, mp, mv, ma);
-            
-                // Only considering holonomic constraints for now.
-                OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(mv) + " velocity-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");
-                OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
-                    "(position-level) constraints are currently supported. "
-                    "There are " + std::to_string(ma) + " acceleration-level "
-                    "scalar constraints associated with the model Constraint "
-                    "at ConstraintIndex " + std::to_string(cid) + ".");
 
-                for (int i = 0; i < mp; ++i) {
-                    // TODO name constraints based on model constraint names
-                    // or coordinate names if a locked or prescribed coordinate
-                    this->add_path_constraint(mcInfo.getName() + "_cid" 
-                         + std::to_string(cid) + "_p" + std::to_string(i),
-                         convert(mcInfo.getBounds()));
-                    this->add_adjunct(multInfo.getName() + std::to_string(cid) 
-                        + "_p" + std::to_string(i), 
-                        convert(multInfo.getBounds()), 
-                        convert(multInfo.getInitialBounds()),
-                        convert(multInfo.getFinalBounds()));
-                }
-                m_mpSum += mp;
-                // TODO if (!get_enforce_holonomic_constraints_only()) {
-                //      m_mvSum += mv; (plus path constraints and adjuncts)
-                //      m_maSum += ma; (plus path constraints and adjuncts)
-                // }
-            }  
+        for (const auto& mcName : createMultibodyConstraintInfoNames()) { 
+            const auto& mcInfo = getMultibodyConstraintInfo(mcName);
+            int mp = mcInfo.getNumPositionEquations();
+            int mv = mcInfo.getNumVelocityEquations();
+            int ma = mcInfo.getNumAccelerationEquation();
+
+            // Only considering holonomic constraints for now.
+            OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
+                "(position-level) constraints are currently supported. "
+                "There are " + std::to_string(mv) + " velocity-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+            OPENSIM_THROW_IF(ma != 0, Exception, "Only holonomic "
+                "(position-level) constraints are currently supported. "
+                "There are " + std::to_string(ma) + " acceleration-level "
+                "scalar constraints associated with the model Constraint "
+                "at ConstraintIndex " + std::to_string(cid) + ".");
+
+            for (int i = 0; i < mp; ++i) {
+                // TODO name constraints based on model constraint names
+                // or coordinate names if a locked or prescribed coordinate
+                this->add_path_constraint(mcInfo.getName() + "_cid" 
+                        + std::to_string(cid) + "_p" + std::to_string(i),
+                        convert(mcInfo.getBounds()));
+                this->add_adjunct(multInfo.getName() + std::to_string(cid) 
+                    + "_p" + std::to_string(i), 
+                    convert(multInfo.getBounds()), 
+                    convert(multInfo.getInitialBounds()),
+                    convert(multInfo.getFinalBounds()));
+            }
+            m_mpSum += mp;
+            // TODO if (!get_enforce_holonomic_constraints_only()) {
+            //      m_mvSum += mv; (plus path constraints and adjuncts)
+            //      m_maSum += ma; (plus path constraints and adjuncts)
+            // }
+
         }
         // TODO if (!get_enforce_holonomic_constraints_only()) {
         //      m_numMultibodyConstraintEqs += 3*m_mpSum;
@@ -441,10 +438,6 @@ void MucoTropterSolver::constructProperties() {
     constructProperty_optim_hessian_approximation("limited-memory");
     constructProperty_optim_sparsity_detection("random");
     constructProperty_optim_ipopt_print_level(-1);
-    constructProperty_multibody_constraint_info(
-        MucoConstraintInfo("multibody_constraint", {-1000.0, 1000.0}));
-    constructProperty_multiplier_info(MucoVariableInfo("multiplier", 
-        {-1000.0, 1000.0}, {-1000.0, 1000.0}, {-1000.0, 1000.0}));
     constructProperty_multiplier_weight(100.0);
     // TODO constructProperty_enforce_holonomic_constraints_only(true);
 
