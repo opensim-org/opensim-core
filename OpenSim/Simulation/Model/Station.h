@@ -23,14 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
 // INCLUDE
 #include "OpenSim/Simulation/Model/Point.h"
-#include "PhysicalFrame.h"
 
 namespace OpenSim {
 
-class Body;
+class PhysicalFrame;
 
 //=============================================================================
 //=============================================================================
