@@ -128,7 +128,7 @@ public:
     If there is no `<connectors>` element, then this function does not edit
     componentElt. */
     static void updateConnectors30508(SimTK::Xml::Element& componentElt);
-    static void addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
+    static void addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
         const std::string& frameName,
         const std::string& parentFrameName,
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);

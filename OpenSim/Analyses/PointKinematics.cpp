@@ -297,20 +297,26 @@ deleteStorage()
 // GET AND SET
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the model for which the point kinematics are to be computed.
- *
- * @param aModel Model pointer
- */
-void PointKinematics::
-setModel(Model& aModel)
+/* Set the model for which the point kinematics are to be computed. */
+void PointKinematics::setModel(Model& model)
 {
-    Analysis::setModel(aModel);
+    Analysis::setModel(model);
+
+    _body = nullptr;
+    _relativeToBody = nullptr;
 
     // Map name to index
-    _body = &aModel.getComponent<PhysicalFrame>(_bodyName);
-    if (aModel.updBodySet().contains(_relativeToBodyName))
-        _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
+    if (model.hasComponent<PhysicalFrame>(_bodyName))
+        _body = &model.getComponent<PhysicalFrame>(_bodyName);
+    else if (model.hasComponent<PhysicalFrame>("./bodyset/" + _bodyName))
+        _body = &model.getComponent<PhysicalFrame>("./bodyset/"+_bodyName);
+
+    if (model.hasComponent<PhysicalFrame>(_relativeToBodyName))
+        _relativeToBody = &model.getComponent<PhysicalFrame>(
+            _relativeToBodyName);
+    else if(model.hasComponent<PhysicalFrame>("./bodyset/" + _relativeToBodyName))
+        _relativeToBody = &model.getComponent<PhysicalFrame>(
+            "./bodyset/" + _relativeToBodyName);
 
     // DESCRIPTION AND LABELS
     constructDescription();
@@ -515,7 +521,7 @@ record(const SimTK::State& s)
     SimTK::Vec3 vec;
 
     const double& time = s.getTime();
-    Ground ground = _model->getGround();
+    const Ground& ground = _model->getGround();
 
     // POSITION
     vec = _body->findStationLocationInGround(s, _point);

@@ -582,7 +582,8 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // identity transforms.
             if ((location_in_parent.norm() > 0.0) ||
                 (orientation_in_parent.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame30505(aNode, parentFrameName+"_offset",
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
+                    parentFrameName+"_offset",
                     parentFrameName, location_in_parent, orientation_in_parent);
                 parentNameElt->setValue(parentFrameName + "_offset");
             }
@@ -590,7 +591,8 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // again for the offset frame on the child
             if ((location_in_child.norm() > 0.0) ||
                 (orientation_in_child.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame30505(aNode, childFrameName + "_offset",
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
+                    childFrameName + "_offset",
                     childFrameName, location_in_child, orientation_in_child);
                 childNameElt->setValue(childFrameName + "_offset");
             }

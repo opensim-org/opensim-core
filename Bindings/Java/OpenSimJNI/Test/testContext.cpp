@@ -204,7 +204,7 @@ int main()
     std::cout << pathAfterDeletionInXML << endl;
     
     // Test adding PathPoint to TRIlong muscle (Stationary)
-    Component& frame = model->updComponent(saveFrameName);
+    Component& frame = model->updBodySet().updComponent(saveFrameName);
     PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
     context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
     assert(pathPoints.getSize() == origSize);
@@ -225,7 +225,7 @@ int main()
     // Make a change to a socket that is invalid and verify that we can recover
     // from that invalid change by restoring from a cached model and state.
     context->cacheModelAndState();
-    Joint& shoulder = model->updComponent<Joint>("r_shoulder");
+    Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
     const std::string originalConnecteeName = socket.getConnecteeName();
     try {

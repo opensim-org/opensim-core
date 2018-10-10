@@ -572,7 +572,6 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             Vec3 locationInFrame2(0);
             Vec3 orientationInFrame2(0);
 
-
             if (locBody1Elt != aNode.element_end()) {
                 locBody1Elt->getValueAs<Vec3>(locationInFrame1);
             }
@@ -596,29 +595,35 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
                 frame1_connectee_name = frame1Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame1_connectee_name,
                         frame1Name, locationInFrame1, orientationInFrame1);
+            }
+            // Prior to 4.0, all bodies lived in the Model's BodySet and
+            // Constraints and Forces (current TwoFrameLinker) were always
+            // in the ConstraintSet and ForceSet, which means we need to go
+            // two levels up (../../)  and into the bodyset to find the 
+            // Bodies (frames) being linked.
+            else if(frame1Name != "ground") {
+                frame1_connectee_name = "../../bodyset/" + frame1Name;
             } else {
-                // In pre-4.0 models, BushingForces, Constraints, and all other
-                // classes upgraded to use TwoFrameLinker, and the
-                // Bodies they depended on, are necessarily 1 level deep
-                // (subcomponent of model). Therefore, prepend "../" to get the
-                // correct relative path.
-                frame1_connectee_name = "../" + frame1Name;
+                frame1_connectee_name = "../../" + frame1Name;
             }
 
             // again for the offset frame on the child
             if ((locationInFrame2.norm() > 0.0) ||
                 (orientationInFrame2.norm() > 0.0)) {
                 frame2_connectee_name = frame2Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame2_connectee_name,
                         frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
+            } else if (frame2Name != "ground") {
+                frame2_connectee_name = "../../bodyset/" + frame2Name;
             } else {
-                frame2_connectee_name = "../" + frame2Name;
+                frame2_connectee_name = "../../" + frame2Name;
             }
+
 
             // Now we know whether to use the original body_1 and body_2
             // strings or if we should use the offsets.

@@ -614,7 +614,6 @@ bool CMCTool::run()
         GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
         for (int i=0; i< stateFuntcions->getSize(); i++)
             qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
-
     }
 
     taskSet.setFunctions(*qAndPosSet);

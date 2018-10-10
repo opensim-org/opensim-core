@@ -339,6 +339,8 @@ int main()
         osimModel.setName("testAddComponents_model");
         addComponentsToModel(osimModel);
 
+        osimModel.printSubcomponentInfo();
+
         // Save the model to a file
         osimModel.print(osimModel.getName()+".osim");
 
