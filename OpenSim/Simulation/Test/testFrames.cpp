@@ -442,7 +442,7 @@ void testFilterByFrameType()
     }
 
     ASSERT_EQUAL(11, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 9 Frames in the model.");
+        "testFilterByFrameType failed to find the 11 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -451,7 +451,7 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
     ASSERT_EQUAL(10, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find 8 PhysicalFrames.");
+        "testFilterByFrameType failed to find 10 PhysicalFrames.");
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -472,7 +472,7 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
     ASSERT_EQUAL(7, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 5 PhyscicalOffsetFrame in the model.");
+        "testFilterByFrameType failed to find the 7 PhyscicalOffsetFrame in the model.");
 }
 
 void testVelocityAndAccelerationMethods()
