@@ -470,7 +470,7 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
     componentElt.eraseNode(connectors_node);
 }
 
-void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
+void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
     const SimTK::Vec3& location, const SimTK::Vec3& orientation)

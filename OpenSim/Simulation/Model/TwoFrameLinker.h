@@ -595,7 +595,7 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
                 frame1_connectee_name = frame1Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame1_connectee_name,
                         frame1Name, locationInFrame1, orientationInFrame1);
             }
@@ -614,7 +614,7 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             if ((locationInFrame2.norm() > 0.0) ||
                 (orientationInFrame2.norm() > 0.0)) {
                 frame2_connectee_name = frame2Name + "_offset";
-                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                XMLDocument::addPhysicalOffsetFrame30505_30517(aNode,
                         frame2_connectee_name,
                         frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
