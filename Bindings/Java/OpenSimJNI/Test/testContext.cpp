@@ -223,21 +223,33 @@ int main()
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
     // Make a change to a socket that is invalid and verify that we can recover
-    // from that invalid change by restoring from a cached model and state.
+    // from that invalid change by not making it on model directly
     context->cacheModelAndState();
     Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
-    const std::string originalConnecteeName = socket.getConnecteeName();
     try {
         // create an invalid model where joint connects two frames on ground
-        socket.setConnecteeName("ground"); 
-        context->restoreStateFromCachedModel();
+        // this call leaves the model untouched if the change would invalidate topology
+        context->setSocketConnecteeName(socket, "ground");
     }
-    catch (...) {
-        // undo the change
-        socket.setConnecteeName(originalConnecteeName);
-        context->restoreStateFromCachedModel();
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
     }
+    AbstractSocket& psocket = shoulder.updSocket("parent_frame");
+    try {
+        // Try to create an invalid model again, this call should leave the 
+        // model untouched since change invalidates psocket
+        context->setSocketConnecteeName(psocket, "r_ulna_radius_hand");
+
+    }
+    catch (const std::exception& e) {
+        // Expect meaningful error message explaining why initsystem failed
+        // in GUI use case this gets propagated to users
+        cout << "Exception: " << e.what() << endl;
+    }
+    // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;
