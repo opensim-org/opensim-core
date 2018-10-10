@@ -19,6 +19,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -450,7 +451,16 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
     clonesocket.setConnecteeName(componentPathName);
     // The following line either succeeds or throws, if the latter happens then
     // neither model or socket are changed and the message will be caught by GUI
-    clonedModel->initSystem();
+    try {
+        clonedModel->initSystem();
+    }
+    catch(const std::exception& ex) {
+        std::string message = "Unable to connect Socket<"
+            + socket.getConnecteeTypeName() + "> '" + socket.getName() +
+            "' to Component at '" + componentPathName + "'.\n Reason:" +
+            ex.what();
+        OPENSIM_THROW(Exception, message);
+    }
     // if we made it to this line then the change is safe, redo in actual model/comp/socket
     socket.setConnecteeName(componentPathName);
     restoreStateFromCachedModel();
