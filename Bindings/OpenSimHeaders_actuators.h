@@ -13,5 +13,6 @@
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
+#include <OpenSim/Actuators/McKibbenActuator.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_

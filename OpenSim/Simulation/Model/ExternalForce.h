@@ -62,7 +62,7 @@ public:
         "Name of the body the force is applied to.");
     OpenSim_DECLARE_PROPERTY(force_expressed_in_body, std::string,
         "Name of the body the force is expressed in (default is ground).");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(point_expressed_in_body, std::string,
+    OpenSim_DECLARE_PROPERTY(point_expressed_in_body, std::string,
         "Name of the body the point is expressed in (default is ground).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(force_identifier, std::string,
         "Identifier (string) to locate the force to be applied in the data source.");
@@ -88,13 +88,21 @@ public:
     /**
      * Convenience Constructor of an ExternalForce. 
      * 
-     * @param dataSource        a storage containing the pertinent force data through time
-     * @param forceIdentifier   string used to access the force data in the dataSource
-     * @param pointIdentifier   string used to access the point of application of the force in dataSource
-     * @param torqueIdentifier  string used to access the force data in the dataSource
-     * @param appliedToBodyName         string used to specify the body to which the force is applied
-     * @param forceExpressedInBodyName  string used to define in which body the force is expressed
-     * @param pointExpressedInBodyName  string used to define the body in which the point is expressed
+     * @param dataSource        
+     *      a storage containing the pertinent force data through time
+     * @param forceIdentifier
+     *      string used to access the force data in the dataSource
+     * @param pointIdentifier
+     *      string used to access the point of application of the force in
+     *      dataSource
+     * @param torqueIdentifier
+     *      string used to access the force data in the dataSource
+     * @param appliedToBodyName
+     *      string used to specify the body to which the force is applied
+     * @param forceExpressedInBodyName
+     *      string used to define in which body the force is expressed
+     * @param pointExpressedInBodyName
+     *      string used to define the body in which the point is expressed
      */
     ExternalForce(const Storage& dataSource, 
                   const std::string& forceIdentifier="force", 
@@ -107,9 +115,6 @@ public:
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
-
-    // Copy properties from XML into member variables
-    void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     // ACCESS METHODS
     /**
@@ -208,6 +213,8 @@ public:
 
 
 protected:
+
+    void extendFinalizeFromProperties() override;
 
     /**  ModelComponent interface */ 
     void extendConnectToModel(Model& model) override;

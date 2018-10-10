@@ -40,18 +40,6 @@ public:
     }
 };
 
-class STODataTypeNotFound : public Exception {
-public:
-    STODataTypeNotFound(const std::string& file,
-                        size_t line,
-                        const std::string& func) :
-        Exception(file, line, func) {
-        std::string msg = "DataType not specified in the header.";
-
-        addMessage(msg);
-    }
-};
-
 /** STOFileAdapter is a DelimFileAdapter that presets the delimiters 
 appropriately for STO files. The format of the file is as follows:
 \code
@@ -138,7 +126,7 @@ public:
 
 template<typename T>
 STOFileAdapter_<T>::STOFileAdapter_() :
-    DelimFileAdapter<T>(" \t", // delimiter for read between elements
+    DelimFileAdapter<T>("\t", // delimiter for read between elements
                         "\t",  // delimiter for write between elements
                         ",",   // delim for reading components(within element)
                         ","    // delim for writing components(within element)

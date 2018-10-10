@@ -308,7 +308,7 @@ setModel(Model& aModel)
     Analysis::setModel(aModel);
 
     // Map name to index
-    _body = &aModel.updBodySet().get(_bodyName);
+    _body = &aModel.getComponent<PhysicalFrame>(_bodyName);
     if (aModel.updBodySet().contains(_relativeToBodyName))
         _relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
 
@@ -343,8 +343,7 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
  *
  * @param aBody Body ID
  */
-void PointKinematics::
-setBody(Body* aBody)
+void PointKinematics::setBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
@@ -358,8 +357,7 @@ setBody(Body* aBody)
     _bodyName = _body->getName();
     cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
 }
-void PointKinematics::
-setRelativeToBody(Body* aBody)
+void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
@@ -380,12 +378,12 @@ setRelativeToBody(Body* aBody)
  *
  * @return Body pointer
  */
-Body* PointKinematics::getBody()
+const PhysicalFrame* PointKinematics::getBody() const
 {
     return(_body);
 }
 
-Body* PointKinematics::getRelativeToBody()
+const PhysicalFrame* PointKinematics::getRelativeToBody() const
 {
     return(_relativeToBody);
 }
@@ -563,7 +561,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-begin( SimTK::State& s)
+begin( const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -619,7 +617,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-end( SimTK::State& s)
+end( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     record(s);

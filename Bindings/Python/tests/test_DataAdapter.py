@@ -15,7 +15,7 @@ class TestDataAdapter(unittest.TestCase):
         assert table.getNumRows()    == 1202
         assert table.getNumColumns() == 2
 
-        table = adapter.read(os.path.join(test_dir, 'TRCFileWithNANs.trc'))
+        table = adapter.read(os.path.join(test_dir, 'dataWithNaNsOfDifferentCases.trc'))
         assert table.getNumRows()    == 5
         assert table.getNumColumns() == 14
 
@@ -36,7 +36,7 @@ class TestDataAdapter(unittest.TestCase):
         except AttributeError:
             # C3D support not available. OpenSim was not compiled with BTK.
             return
-        tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'))
+        tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'), 0)
         markers = tables['markers']
         forces = tables['forces']
         
@@ -45,7 +45,7 @@ class TestDataAdapter(unittest.TestCase):
         assert forces.getNumRows()     == 9992
         assert forces.getNumColumns()  == 6
 
-        tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'))
+        tables = adapter.read(os.path.join(test_dir, 'walking5.c3d'), 1)
 
         # Marker data read from C3D.
         markers = tables['markers']
@@ -91,8 +91,8 @@ class TestDataAdapter(unittest.TestCase):
         assert fpOrigins[0].ncol() == 1
         assert fpOrigins[1].nrow() == 3
         assert fpOrigins[1].ncol() == 1
-        assert forces.getDependentsMetaDataString('units') == ('N', 'Nmm', 'mm',
-                                                               'N', 'Nmm', 'mm')
+        assert forces.getDependentsMetaDataString('units') == ('N', 'mm', 'Nmm',
+                                                               'N', 'mm', 'Nmm')
 
         # Flatten forces data.
         forcesFlat = forces.flatten()

@@ -69,10 +69,6 @@ public:
 #ifndef SWIG
     BodySet& operator=(const BodySet &aAbsBodySet);
 #endif
-    //--------------------------------------------------------------------------
-    // UTILITIES
-    //--------------------------------------------------------------------------
-    void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
 
 //=============================================================================
 };  // END of class BodySet

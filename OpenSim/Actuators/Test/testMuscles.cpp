@@ -124,23 +124,23 @@ int main()
     try { testRigidTendonMuscle();
         cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testRigidTendonMuscle"); }
+        { e.print(cout); failures.push_back("testRigidTendonMuscle"); }
 
     try { testThelen2003Muscle();
         cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
-        { e.print(cerr); failures.push_back("testThelen2003Muscle"); }
-    
+        { e.print(cout); failures.push_back("testThelen2003Muscle"); }
+
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
     }catch (const Exception& e){ 
-        e.print(cerr);
+        e.print(cout);
         failures.push_back("testMillard2012EquilibriumMuscle");
     }
     try { testMillard2012AccelerationMuscle();
         cout << "Millard2012AccelerationMuscle Test passed" << endl; 
     }catch (const Exception& e){ 
-        e.print(cerr);
+        e.print(cout);
         failures.push_back("testMillard2012AccelerationMuscle");
     }
 
@@ -380,21 +380,19 @@ void simulateMuscle(
 // 4. SIMULATION Integration
 //==========================================================================
 
-    // Create the integrator
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(IntegrationAccuracy);
-
     // Create the manager
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(IntegrationAccuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     cout<<"\nIntegrating from " << initialTime<< " to " << finalTime << endl;
 
     // Start timing the simulation
     const clock_t start = clock();
     // simulate
-    manager.integrate(si, finalTime);
+    manager.integrate(finalTime);
 
     // how long did it take?
     double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;
@@ -600,9 +598,12 @@ void testThelen2003Muscle()
         &control, 
         false);
 
+    Model m;
+    muscle.addNewPathPoint("p1", m.getGround(), SimTK::Vec3(0.0));
+    muscle.addNewPathPoint("p2", m.getGround(), SimTK::Vec3(1.0));
     // Test property bounds.
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_FmaxTendonStrain(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
@@ -611,31 +612,31 @@ void testThelen2003Muscle()
         musc.finalizeFromProperties();
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_FmaxMuscleStrain(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_KshapeActive(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_KshapePassive(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_Af(0.0);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_Flen(1.001);
         musc.set_fv_linear_extrap_threshold(5.0);
         musc.finalizeFromProperties();
@@ -645,12 +646,12 @@ void testThelen2003Muscle()
                 SimTK::Exception::ErrorCheck);
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_Flen(1.3);
         musc.finalizeFromProperties();
     }
     {
-        Thelen2003Muscle musc;
+        Thelen2003Muscle musc = muscle;
         musc.set_fv_linear_extrap_threshold(1.0 / 1.4);
         SimTK_TEST_MUST_THROW_EXC(musc.finalizeFromProperties(),
                 SimTK::Exception::ErrorCheck);
@@ -684,9 +685,13 @@ void testThelen2003Muscle()
 
         // Create muscle and add to model.
         Model myModel;
+        cout << "new Thelen2003Muscle myMuscle" << endl;
         Thelen2003Muscle* myMcl = new Thelen2003Muscle("myMuscle",
             MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
             PennationAngle0);
+        
+        myMcl->addNewPathPoint("p1", myModel.getGround(), SimTK::Vec3(0.0));
+        myMcl->addNewPathPoint("p2", myModel.getGround(), SimTK::Vec3(1.0));
         myModel.addForce(myMcl);
 
         // Set properties of Thelen2003Muscle.
@@ -698,6 +703,7 @@ void testThelen2003Muscle()
         myMcl->setMinimumActivation(minimumActivation);
         myMcl->setMinControl(minimumActivation);
 
+        cout << "myMuscle->finalizeFromProperties" << endl;
         myMcl->finalizeFromProperties();
 
         // Check properties of MuscleFixedWidthPennationModel.
@@ -762,7 +768,7 @@ void testThelen2003Muscle()
 
     // Test exception when muscle cannot be initialized.
     {
-        auto model = Model();
+        Model model;
 
         const double optimalFiberLength = 0.001; //short fiber and tendon
         const double tendonSlackLength  = 0.001;
@@ -775,6 +781,52 @@ void testThelen2003Muscle()
         SimTK::State& state = model.initSystem();
         ASSERT_THROW( MuscleCannotEquilibrate,
                       muscle->computeInitialFiberEquilibrium(state) );
+    }
+
+    // Test exception handling when invalid properties are propagated to
+    // MuscleFixedWidthPennationModel and MuscleFirstOrderActivationDynamicModel
+    // subcomponents.
+    {
+        Model model;
+        auto muscle = new Thelen2003Muscle("muscle", 1., 0.5, 0.5, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the pennation model outside
+        // its valid range.
+        muscle->setOptimalFiberLength(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setOptimalFiberLength(0.5);
+        model.finalizeFromProperties();
+
+        muscle->setPennationAngleAtOptimalFiberLength(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setPennationAngleAtOptimalFiberLength(0.);
+        model.finalizeFromProperties();
+
+        muscle->setMaximumPennationAngle(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setMaximumPennationAngle(0.);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the activation dynamics model
+        // outside its valid range.
+        muscle->setActivationTimeConstant(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setActivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setDeactivationTimeConstant(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setDeactivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setMinimumActivation(-0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setMinimumActivation(0.01);
+        model.finalizeFromProperties();
     }
 }
 
@@ -806,7 +858,7 @@ void testMillard2012EquilibriumMuscle()
 
     // Test extremely short fiber where muscle should still initialize.
     {
-        auto model = Model();
+        Model model;
 
         const double optimalFiberLength = 0.01; //short fiber and
         const double tendonSlackLength  = 100.0; //long tendon
@@ -824,7 +876,7 @@ void testMillard2012EquilibriumMuscle()
 
     // Test extremely short (but stretched) fiber, which should still initialize.
     {
-        auto model = Model();
+        Model model;
 
         const double optimalFiberLength = 0.01; //short fiber and
         const double tendonSlackLength =  0.1; //short tendon
@@ -840,6 +892,51 @@ void testMillard2012EquilibriumMuscle()
         muscle->computeInitialFiberEquilibrium(state);
     }
 
+    // Test exception handling when invalid properties are propagated to
+    // MuscleFixedWidthPennationModel and MuscleFirstOrderActivationDynamicModel
+    // subcomponents.
+    {
+        Model model;
+        auto muscle = new Millard2012EquilibriumMuscle("mcl", 1., 0.5, 0.5, 0.);
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        model.addForce(muscle);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the pennation model outside
+        // its valid range.
+        muscle->setOptimalFiberLength(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setOptimalFiberLength(0.5);
+        model.finalizeFromProperties();
+
+        muscle->setPennationAngleAtOptimalFiberLength(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setPennationAngleAtOptimalFiberLength(0.);
+        model.finalizeFromProperties();
+
+        muscle->set_maximum_pennation_angle(SimTK::Pi/2.0 + 0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->set_maximum_pennation_angle(0.);
+        model.finalizeFromProperties();
+
+        // Set each property that is propagated to the activation dynamics model
+        // outside its valid range.
+        muscle->setActivationTimeConstant(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setActivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setDeactivationTimeConstant(0.);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setDeactivationTimeConstant(0.1);
+        model.finalizeFromProperties();
+
+        muscle->setMinimumActivation(-0.1);
+        ASSERT_THROW(InvalidPropertyValue, model.finalizeFromProperties());
+        muscle->setMinimumActivation(0.01);
+        model.finalizeFromProperties();
+    }
 }
 
 void testMillard2012AccelerationMuscle()
@@ -965,7 +1062,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
-    for (int i = 0; i < nstates; ++i) {
+    for (size_t i = 0; i < nstates; ++i) {
         s = statesTraj[i];
 
         // test a full sweep of default activations at each state
@@ -976,7 +1073,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
             try {
                 muscle.computeEquilibrium(s);
             }
-            catch (const MuscleCannotEquilibrate& x) {
+            catch (const MuscleCannotEquilibrate&) {
                 // Write out the muscle equilibrium error as a function of
                 // fiber lengths.
                 if (const auto* thelen =

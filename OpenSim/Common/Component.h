@@ -75,6 +75,22 @@ public:
     }
 };
 
+class InvalidComponentName : public Exception {
+public:
+    InvalidComponentName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& invalidChars,
+        const std::string& componentConcreteClassName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' of type " +
+            componentConcreteClassName + " contains invalid characters of: '" +
+            invalidChars + "'.";
+        addMessage(msg);
+    }
+};
+
 class ComponentNotFoundOnSpecifiedPath : public Exception {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
@@ -106,6 +122,21 @@ public:
             "Verify that finalizeFromProperties() has been invoked on the " + 
             "root Component or that this Component is not a clone, which has " +
             "not been added to another Component.";
+        addMessage(msg);
+    }
+};
+
+class SubcomponentsWithDuplicateName : public Exception {
+public:
+    SubcomponentsWithDuplicateName(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& duplicateName) :
+        Exception(file, line, func) {
+        std::string msg = "Component '" + thisName + "' has subcomponents " +
+            "with duplicate name '" + duplicateName + "'. "
+            "Please supply unique names for immediate subcomponents.";
         addMessage(msg);
     }
 };
@@ -449,7 +480,16 @@ public:
     obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
     once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
     as rubber band lines, force arrows, labels, or debugging aids.
-  
+
+    Please note that there is a precondition that the state passed in to
+    generateDecorations be realized to Stage::Position. If your component can
+    visualize quantities realized at Velocity, Dynamics or Acceleration stages,
+    then you must check that the stage has been realized before using/requesting
+    stage dependent values. It is forbidden to realize the model to a higher
+    stage within generateDecorations, because this can trigger costly side-
+    effects such as evaluating all model forces even when performing a purely
+    kinematic study.
+
     If you override this method, be sure to invoke the base class method first, 
     using code like this:
     @code
@@ -462,6 +502,14 @@ public:
         // invoke parent class method
         Super::generateDecorations(fixed,hints,state,appendToThis); 
         // ... your code goes here
+        // can render velocity dependent quanities if stage is Velocity or higher
+        if(state.getSystemStage() >= Stage::Velocity) {
+            // draw velocity vector for model COM
+        }
+        // can render computed forces if stage is Dynamics or higher
+        if(state.getSystemStage() >= Stage::Dynamics) {
+            // change the length of a force arrow based on the force in N
+        }
     }
     @endcode
 
@@ -600,8 +648,12 @@ public:
     template <typename T = Component>
     unsigned countNumComponents() const {
         unsigned count = 0u;
-        for (const auto& comp : getComponentList<T>())
+        const auto compList = getComponentList<T>();
+        auto it = compList.begin();
+        while (it != compList.end()) {
             ++count;
+            ++it;
+        }
         return count;
     }
 
@@ -614,16 +666,26 @@ public:
     friend class ComponentListIterator;
 
 
-    /** Get the complete (absolute) pathname for this Component to its 
-     * ancestral Component, which is the root of the tree to which this 
-     * Component belongs.
-     * For example: a Coordinate Component would have an absolute path name 
-     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its 
-     * absolutePathName from root is guaranteed to be unique. */
-    std::string getAbsolutePathName() const;
+    /** Get the complete (absolute) pathname for this Component to its ancestral
+     * Component, which is the root of the tree to which this Component belongs.
+     * For example: a Coordinate Component would have an absolute path name
+     * like: `/arm26/elbow_r/flexion`. Accessing a Component by its
+     * absolutePathName from root is guaranteed to be unique. The
+     * absolutePathName is generated on-the-fly by traversing the ownership tree
+     * and, therefore, calling this method is not "free". */
+    std::string getAbsolutePathString() const;
 
+    /** Return a ComponentPath of the absolute path of this Component. 
+     * Note that this has more overhead than calling `getName()` because 
+     * it traverses up the tree to generate the absolute pathname (and its
+     * computational cost is thus a function of depth). Consider other 
+     * options if this is repeatedly called and efficiency is important.
+     * For instance, `getAbsolutePathString()` is faster if you only
+     * need the path as a string. */
+    ComponentPath getAbsolutePath() const;
 
-    /** Get the relative pathname of this Component with respect to another one */
+    /** Get the relative pathname of this Component with respect to another
+     * Component. */
     std::string getRelativePathName(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
@@ -650,7 +712,7 @@ public:
     bool hasComponent(const std::string& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'C' must be derived from Component.");
-        const C* comp = this->template traversePathToComponent<C>(pathname);
+        const C* comp = this->template traversePathToComponent<C>({pathname});
         return comp != nullptr;
     }
 
@@ -676,6 +738,10 @@ public:
      */
     template <class C = Component>
     const C& getComponent(const std::string& pathname) const {
+        return getComponent<C>(ComponentPath(pathname));
+    }
+    template <class C = Component>
+    const C& getComponent(const ComponentPath& pathname) const {
         static_assert(std::is_base_of<Component, C>::value, 
             "Template parameter 'CompType' must be derived from Component.");
 
@@ -685,7 +751,7 @@ public:
         }
 
         // Only error cases remain
-        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname,
+        OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath, pathname.toString(),
                                                        C::getClassName(),
                                                        getName());
     }
@@ -723,6 +789,10 @@ public:
     */
     template <class C = Component>
     C& updComponent(const std::string& name) {
+        return updComponent<C>(ComponentPath(name));
+    }
+    template <class C = Component>
+    C& updComponent(const ComponentPath& name) {
         clearObjectIsUpToDateWithProperties();
         return *const_cast<C*>(&(this->template getComponent<C>(name)));
     }
@@ -885,7 +955,7 @@ public:
             // immediately after copying.
             if (!it->second->hasOwner()) {
                 // The `this` pointer must be non-const because the Socket
-                // will want to be able to modify the connectee_name property.
+                // will want to be able to modify the connectee name property.
                 const_cast<AbstractSocket*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
             }
@@ -1235,9 +1305,15 @@ public:
 
     /**
      * %Set all values of the state variables allocated by this Component.
-     * Includes state variables allocated by its subcomponents.
+     * Includes state variables allocated by its subcomponents. Note, this
+     * method simply sets the values on the input State. If other conditions
+     * must be met (such as satisfying kinematic constraints for Coordinates,
+     * or fiber and tendon equilibrium for muscles) you must invoke the
+     * appropriate methods on Model (e.g. assemble() to satisfy constraints or
+     * equilibrateMuscles()) to satisfy these conditions starting from the
+     * State values provided by setStateVariableValues.
      *
-     * @param state   the State for which to get the value
+     * @param state   the State whose values are set
      * @param values  Vector of state variable values of length
      *                getNumStateVariables() in the order returned by
      *                getStateVariableNames()
@@ -1517,11 +1593,11 @@ public:
         // subcomponents and to find the longest concrete class name.
         const std::string concreteClassName = this->getConcreteClassName();
         unsigned numSubcomponents = 0;
-        unsigned maxlen = concreteClassName.length();
+        size_t maxlen = concreteClassName.length();
         for (const C& thisComp : compList) {
             ++numSubcomponents;
             auto len = thisComp.getConcreteClassName().length();
-            maxlen = std::max(maxlen, static_cast<unsigned>(len));
+            maxlen = std::max(maxlen, len);
         }
 
         if (numSubcomponents == 0) {
@@ -1544,14 +1620,14 @@ public:
 
         std::cout << std::string(maxlen-concreteClassName.length(), ' ')
                   << "[" << concreteClassName << "]"
-                  << "  " << getAbsolutePathName() << std::endl;
+                  << "  " << getAbsolutePathString() << std::endl;
 
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
             std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
                       << thisClass << "]  ";
-            auto path = ComponentPath(thisComp.getAbsolutePathName());
+            auto path = thisComp.getAbsolutePath();
             std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
                       << "/" << path.getComponentName() << std::endl;
         }
@@ -2117,33 +2193,38 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunsupported-friend"
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wunsupported-friend"
+#endif
     template<class C>
     friend void Socket<C>::findAndConnect(const Component& root);
-#pragma clang diagnostic pop
+    template<class T>
+    friend void Input<T>::findAndConnect(const Component& root);
+#if defined(__clang__)
+    #pragma clang diagnostic pop
+#endif
 
-    /** Utility method to find a component in the list of sub components of this
-        component and any of their sub components, etc..., by name or state variable name.
-        The search can be sped up considerably if the "path" or even partial path name
-        is known. For example name = "forearm/elbow/elbow_flexion" will find the 
-        Coordinate component of the elbow joint that connects the forearm body in 
-        linear time (linear search for name at each component level. Whereas
-        supplying "elbow_flexion" requires a tree search.
-        Returns NULL if Component of that specified name cannot be found. 
-        If the name provided is a component's state variable name and a
-        StateVariable pointer is provided, the pointer will be set to the 
-        StateVariable object that was found. This facilitates the getting and setting
-        of StateVariables by name. 
+    /** Utility method to find a component in the list of sub components of
+    this component and any of their sub components, etc..., by name or state
+    variable name. The search can be sped up considerably if the "path" or even
+    partial path name is known. For example name = "forearm/elbow/elbow_flexion"
+    will find the Coordinate component of the elbow joint that connects the
+    forearm body in linear time (linear search for name at each component level.
+    Whereas supplying "elbow_flexion" requires a tree search. Returns NULL if
+    Component of that specified name cannot be found. If the name provided is a
+    component's state variable name and a StateVariable pointer is provided, the
+    pointer will be set to the StateVariable object that was found. This
+    facilitates the getting and setting of StateVariables by name. 
         
-        NOTE: If the component name or the state variable name is ambiguous, 
-         an exception is thrown. To disambiguate use the absolute path provided
-         by owning component(s). */
+    NOTE: If the component name or the state variable name is ambiguous, 
+    an exception is thrown. To disambiguate use the absolute path provided
+    by owning component(s). */
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
-    const C* findComponent(const std::string& name, 
+    const C* findComponent(const ComponentPath& pathToFind,
                            const StateVariable** rsv = nullptr) const {
+        const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
         if (name.empty()) {
@@ -2151,8 +2232,7 @@ protected:
             throw Exception(msg);
         }
 
-        ComponentPath thisAbsPath(getAbsolutePathName());
-        ComponentPath pathToFind(name);
+        ComponentPath thisAbsPath = getAbsolutePath();
 
         const C* found = NULL;
         if (thisAbsPath == pathToFind) {
@@ -2175,8 +2255,8 @@ protected:
         for (const C& comp : compsList) {
             // if a child of this Component, one should not need
             // to specify this Component's absolute path name
-            ComponentPath compAbsPath(comp.getAbsolutePathName());
-            ComponentPath thisAbsPathPlusSubname(getAbsolutePathName());
+            ComponentPath compAbsPath = comp.getAbsolutePath();
+            ComponentPath thisAbsPathPlusSubname = getAbsolutePath();
             thisAbsPathPlusSubname.pushBack(subname);
             if (compAbsPath == thisAbsPathPlusSubname) {
                 foundCs.push_back(&comp);
@@ -2231,81 +2311,69 @@ protected:
 #endif
 
     template<class C>
-    const C* traversePathToComponent(const std::string& path) const
+    const C* traversePathToComponent(ComponentPath path) const
     {
+        // Get rid of all the ".."'s that are not at the front of the path.
+        path.trimDotAndDotDotElements();
+
+        // Move up either to the root component or just enough to resolve all
+        // the ".."'s.
+        size_t iPathEltStart = 0u;
         const Component* current = this;
-        ComponentPath pathToFind(path);
-        std::string pathNameToFind = pathToFind.getComponentName();
-        size_t numPathLevels = pathToFind.getNumPathLevels();
-        size_t ind = 0;
-        ComponentPath currentSubpath;
-        ComponentPath upPath("..");
-        ComponentPath curCompPath(".");
-
-        while (ind < numPathLevels && current) {
-            currentSubpath = ComponentPath(pathToFind.getSubcomponentNameAtLevel(ind));
-            ComponentPath currentPathName(current->getName());
-
-            if (currentSubpath == upPath && current->hasOwner())
+        if (path.isAbsolute()) {
+            while (current->hasOwner()) current = &current->getOwner();
+            if (path.getNumPathLevels() == 0 ||
+                    current->getName() != path.getSubcomponentNameAtLevel(0))
+                return nullptr;
+            // Skip over the root name.
+            iPathEltStart = 1u;
+        } else {
+            while (iPathEltStart < path.getNumPathLevels() &&
+                    path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
+                // The path sends us up farther than the root.
+                if (!current->hasOwner()) return nullptr;
                 current = &current->getOwner();
-            // if currentPathName matches currentSubpath traversing the path
-            else if (currentPathName == currentSubpath) {
-                ind++;
-                continue;
+                ++iPathEltStart;
             }
-            // if currentSubpath is empty we are at root or have a nameless 
-            // comp
-            // if currentSubpath is '.' we are in the right owner, and loop
-            // again so that currentSubpath is the name of the component we want
-            else if (!currentSubpath.toString().empty() && currentSubpath != curCompPath) {
-                if (current->getNumImmediateSubcomponents() == 0) {
-                    current = nullptr;
-                    continue;
-                }
-                auto compsList = current->getComponentList<Component>();
-                // descend to next component in the path otherwise not found
-                ComponentPath currentAbsPathPlusSubpath(current->getAbsolutePathName());
-                currentAbsPathPlusSubpath.pushBack(currentSubpath.toString());
-                for (const Component& comp : compsList) {
-                    ComponentPath compAbsPath(comp.getAbsolutePathName());
-                    std::string compName = comp.getName();
-                    // Check if we're in the right component
-                    if (compAbsPath == currentAbsPathPlusSubpath) {
-                        // In the right component and has matching name
-                        // update current to this comp
-                        current = &comp;
-                        if (compName == pathNameToFind) {
-                            // now verify type
-                            const C* compC = dynamic_cast<const C*>(&comp);
-                            if (compC)
-                                return  compC;
-                            else // keep traversing this list
-                                continue;
-                        } 
-                        // get out of this list and start going down the new current
-                        break;
-                    }
-                    // No match in this component
-                    current = nullptr;
-                }
-            }
-            ind++;
         }
+        
+        using RefComp = SimTK::ReferencePtr<const Component>;
 
-        if (currentSubpath == pathNameToFind)
-            return dynamic_cast<const C*>(current);
-
+        // Skip over the root component name.
+        for (size_t i = iPathEltStart; i < path.getNumPathLevels(); ++i) {
+            // At this depth in the tree, is there a component whose name
+            // matches the corresponding path element?
+            const auto& currentPathElement =
+                path.getSubcomponentNameAtLevel(i);
+            const auto& currentSubs = current->getImmediateSubcomponents();
+            const auto it = std::find_if(currentSubs.begin(), currentSubs.end(),
+                    [currentPathElement](const RefComp& sub)
+                    { return sub->getName() == currentPathElement; });
+            if (it != currentSubs.end())
+                current = it->get();
+            else
+                return nullptr;
+        }
+        if (const C* comp = dynamic_cast<const C*>(current))
+            return comp;
         return nullptr;
     }
 
 public:
 #ifndef SWIG // StateVariable is protected.
     /**
-     * Find a StateVariable of this Component (includes its subcomponents).
+     * Get a StateVariable anywhere in the Component tree, given a
+     * StateVariable path. The StateVariable doesn't need to be in a
+     * subcomponent of this compoonent; it could be located in a different
+     * branch of the Component tree (in such a case, the specified path might
+     * begin with "../").
+     * This returns nullptr if a StateVariable does not exist at the specified
+     * path or if the path is invalid.
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    const StateVariable* findStateVariable(const std::string& name) const;
+    const StateVariable* traverseToStateVariable(
+            const std::string& pathName) const;
 #endif
 
     /// @name Access to the owning component (advanced).
@@ -2365,7 +2433,7 @@ protected:
         // create a custom-copy-ctor version of all of this?
         // TODO property type should be ComponentPath or something like that.
         PropertyIndex propIndex = this->template addProperty<std::string>(
-                "socket_" + name + "_connectee_name", propertyComment, "");
+                "socket_" + name , propertyComment, "");
         // We must create the Property first: the Socket needs the property's
         // index in order to access the property later on.
         _socketsTable[name].reset(
@@ -2499,11 +2567,11 @@ protected:
         // TODO property type should be OutputPath or ChannelPath.
         if (isList) {
             propIndex = this->template addListProperty<std::string>(
-                    "input_" + name + "_connectee_names", propertyComment,
+                    "input_" + name, propertyComment,
                     0, std::numeric_limits<int>::max());
         } else {
             propIndex = this->template addProperty<std::string>(
-                    "input_" + name + "_connectee_name", propertyComment, "");
+                    "input_" + name, propertyComment, "");
         }
         // We must create the Property first: the Input needs the property's
         // index in order to access the property later on.
@@ -2941,15 +3009,20 @@ void Socket<C>::findAndConnect(const Component& root) {
 
     try {
         if (path.isAbsolute()) {
-            comp =  &root.template getComponent<C>(path.toString());
+            comp =  &root.template getComponent<C>(path);
         }
         else {
-            comp =  &getOwner().template getComponent<C>(path.toString());
+            comp =  &getOwner().template getComponent<C>(path);
         }
     }
-    catch (const ComponentNotFoundOnSpecifiedPath&) {
-        // TODO leave out for hackathon std::cout << ex.getMessage() << std::endl;
-        comp =  root.template findComponent<C>(path.toString());
+    catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+        if (Object::getDebugLevel() > 0) {
+            // TODO once we fix how connections are established when building
+            // models programmatically, we should show this warning even for
+            // debug level 0.
+            std::cout << ex.getMessage() << std::endl;
+        }
+        comp =  root.template findComponent<C>(path);
     }
     if (comp)
         connect(*comp);
@@ -3082,13 +3155,29 @@ void Input<T>::findAndConnect(const Component& root) {
         }
 
         else { // relative path string
+            const Component* comp = nullptr;
             if (compPathStr.empty()) {
-                output = &getOwner().getOutput(outputName);
+                comp = &getOwner();
             }
             else {
-                output = &getOwner().getComponent(compPathStr).getOutput(outputName);
+                try {
+                    comp = &getOwner().getComponent(compPathStr);
+                } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
+                    // If we cannot find the component at the specified path,
+                    // look for the component anywhere in the model.
+                    if (Object::getDebugLevel() > 0) {
+                        // TODO once we fix how connections are established
+                        // when building models programmatically, we should
+                        // show this warning even for debug level 0.
+                        std::cout << ex.getMessage() << std::endl;
+                    }
+                    comp = root.findComponent(compPath);
+                }
             }
-            
+            // comp should never be null at this point.
+            OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
+                             "could not find component '" + compPathStr + ".");
+            output = &comp->getOutput(outputName);
         }
         const auto& channel = output->getChannel(channelName);
         connect(channel, alias);

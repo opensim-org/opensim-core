@@ -253,6 +253,13 @@ double FiberCompressiveForceLengthCurve::
     return m_curve.calcDerivative(aNormLength,order);
 }
 
+double FiberCompressiveForceLengthCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 SimTK::Vec2 FiberCompressiveForceLengthCurve::getCurveDomain() const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,

@@ -86,7 +86,7 @@ namespace OpenSim {
 
 // Forward declarations for methods used below.
 Model buildHopper(bool showVisualizer);    //defined in buildHopperModel.cpp
-Model buildTestbed(bool showVisualizer);   //defined in helperMethods.h
+Model buildTestbed(bool showVisualizer);   //defined in buildTestbedModel.cpp
 Device* buildDevice();  //defined in buildDevice.cpp
 
 
@@ -97,6 +97,9 @@ Device* buildDevice();  //defined in buildDevice.cpp
 void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     const std::string& modelFrameAname, const std::string& modelFrameBname)
 {
+    // Add the device to the model.
+    model.addComponent(&device);
+    
     //TODO: Get writable references to the "anchor" joints in the device.
     #pragma region Step2_TaskD_solution
 
@@ -119,9 +122,6 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     anchorB.connectSocket_parent_frame(frameB);
 
     #pragma endregion
-
-    // Add the device to the model.
-    model.addComponent(&device);
 
     // Configure the device to wrap over the patella (if one exists; there is no
     // patella in the testbed).

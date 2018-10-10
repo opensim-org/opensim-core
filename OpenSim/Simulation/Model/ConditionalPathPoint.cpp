@@ -67,10 +67,32 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
     if (versionNumber < 30505) {
         // replace old properties with latest use of Sockets
         SimTK::Xml::element_iterator coord = node.element_begin("coordinate");
-        std::string coord_name("");
+        std::string coordName("");
         if (coord != node.element_end())
-            coord->getValueAs<std::string>(coord_name);
-        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate", coord_name);
+            coord->getValueAs<std::string>(coordName);
+
+        // As a backup, we will specify just the coordinate name as the
+        // connectee name...
+        std::string connectee_name = coordName;
+
+        // ...but if possible, we try to create a relative path from this
+        // PathPoint to the coordinate.
+        SimTK::Xml::Element coordElem = 
+            XMLDocument::findElementWithName(node, coordName);
+        if (coordElem.isValid() && coordElem.hasParentElement()) {
+            // We found an Xml Element with the coordinate's name.
+            std::string jointName =
+                coordElem.getParentElement().getOptionalAttributeValue("name");
+            // PathPoints in pre-4.0 models are necessarily
+            // 3 levels deep (model, muscle, geometry path), and Coordinates 
+            // are necessarily 2 levels deep: prepend "../../../<joint-name>/"
+            // to get the correct relative path.
+            if (!jointName.empty())
+                connectee_name = "../../../" + jointName + "/" + coordName;
+        }
+
+        XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate",
+                connectee_name);
     }
 
     // Call base class now assuming _node has been corrected for current version

@@ -294,12 +294,9 @@ int main()
         // Compute initial conditions for muscles.
         //osimModel.computeEquilibriumForAuxiliaryStates(si);
 
-        // Create the integrator and manager for the simulation.
-        SimTK::RungeKuttaMersonIntegrator
-            integrator( osimModel.getMultibodySystem() );
-        integrator.setAccuracy( 1.0e-4 );
-
-        Manager manager( osimModel, integrator );
+        // Create the manager for the simulation.
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-4);
 
         // Examine the model.
         osimModel.printDetailedInfo( si, std::cout );
@@ -314,9 +311,10 @@ int main()
 
         // Integrate from initial time to final time.
         si.setTime(initialTime);
+        manager.initialize(si);
         std::cout << "\n\nIntegrating from " << initialTime
             << " to " << finalTime << std::endl;
-        manager.integrate(si, finalTime);
+        manager.integrate(finalTime);
 
         // Save the simulation results.
         auto controlsTable = osimModel.getControlsTable();

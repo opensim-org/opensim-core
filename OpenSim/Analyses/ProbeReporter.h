@@ -141,11 +141,11 @@ public:
     //--------------------------------------------------------------------------
 
     int
-        begin(SimTK::State& s ) override;
+        begin(const SimTK::State& s ) override;
     int
         step(const SimTK::State& s, int setNumber ) override;
     int
-        end(SimTK::State& s ) override;
+        end(const SimTK::State& s ) override;
 protected:
     virtual int
         record(const SimTK::State& s );

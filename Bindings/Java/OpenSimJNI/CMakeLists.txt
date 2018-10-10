@@ -64,11 +64,6 @@ OpenSimGenerateJavaWrapper(examplecomponents
     ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE})
 
-include_directories(${OpenSim_SOURCE_DIR} 
-                    ${OpenSim_SOURCE_DIR}/Vendors 
-                    ${JAVA_INCLUDE_PATH}
-                    ${JAVA_INCLUDE_PATH2})
-
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 add_library(osim${KIT} 
@@ -85,6 +80,9 @@ add_library(osim${KIT}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
+
+target_include_directories(osim${KIT} PRIVATE
+                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 
 target_link_libraries(osim${KIT} osimTools osimSimmFileWriter osimExampleComponents)
     
@@ -113,21 +111,11 @@ set_source_files_properties(
         ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
-if(${OPENSIM_USE_INSTALL_RPATH})
-    # The osim libraries that osimJavaJNI needs are in the same folder as
-    # osimJavaJNI.
-    if(APPLE)
-        # Adding @loader_rpath (the \ is to escape the @) to the run-path list
-        # will let osimJavaJNI find osimTools, etc. 
-        set(install_rpath "\@loader_path/")
-    elseif(UNIX)
-        # $ORIGIN is the equivalent mechanism on Linux.
-        set(install_rpath "\$ORIGIN/")
-    endif()
-    set_property(TARGET osim${KIT} APPEND PROPERTY
-        INSTALL_RPATH "${install_rpath}"
-        )
-endif()
+# RPATH: The osim libraries that osimJavaJNI needs are in the same folder as
+# osimJavaJNI.
+OpenSimAddInstallRPATHSelf(TARGET osim${KIT} LOADER)
+OpenSimAddInstallRPATHSimbody(TARGET osim${KIT} LOADER
+    FROM "${CMAKE_INSTALL_LIBDIR}")
 
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)

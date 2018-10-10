@@ -73,19 +73,3 @@ void ConstraintSet::setNull()
 {
     setAuthors("Ajay Seth");
 }
-
-//=============================================================================
-// UTILITY
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Anything that will be applied to all Constraints
- */
-
-/**
- * Scale constraint set by a set of scale factors
- */
-void ConstraintSet::scale(const ScaleSet& aScaleSet)
-{
-    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
-}

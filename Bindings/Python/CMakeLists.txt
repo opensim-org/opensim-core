@@ -120,13 +120,10 @@ macro(OpenSimAddPythonModule)
     endif()
     set_source_files_properties("${_output_cxx_file}"
         PROPERTIES COMPILE_FLAGS "${_COMPILE_FLAGS}")
-    
-    include_directories(${OpenSim_SOURCE_DIR} 
-                        ${OpenSim_SOURCE_DIR}/Vendors 
-                        ${PYTHON_INCLUDE_PATH}
-                        )
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
+
+    target_include_directories(${_libname} PRIVATE ${PYTHON_INCLUDE_PATH})
     
     target_link_libraries(${_libname}
         osimTools osimExampleComponents ${PYTHON_LIBRARIES})
@@ -146,33 +143,23 @@ macro(OpenSimAddPythonModule)
         set_target_properties(${_libname} PROPERTIES SUFFIX ".so")
     endif()
     
-    if(${OPENSIM_USE_INSTALL_RPATH})
-        # We always set a relative RPATH but only use an absolute RPATH if the
-        # python package is not standalone, as the libraries are not copied
-        # into the python package.
-        if(APPLE)
-            set(rpath_macro "\@loader_path")
-        elseif(UNIX)
-            set(rpath_macro "\$ORIGIN")
-        endif()
-
-        set(run_path_list "${rpath_macro}/")
-
-        # Locate osim libraries, etc in the lib dir.
-        file(RELATIVE_PATH py_dir_to_install_dir
-            "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_PYTHONDIR}/opensim"
-            "${CMAKE_INSTALL_PREFIX}")
-        set(py_dir_to_lib_dir
-            "${py_dir_to_install_dir}${CMAKE_INSTALL_LIBDIR}")
-        list(APPEND run_path_list "${rpath_macro}/${py_dir_to_lib_dir}")
-
-        # Absolute RPATH.
-        if(NOT OPENSIM_PYTHON_STANDALONE)
-            list(APPEND run_path_list
-                    "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
-        endif()
-        set_property(TARGET ${_libname} APPEND PROPERTY
-            INSTALL_RPATH "${run_path_list}")
+    # RPATH: We always set a relative RPATH but only use an absolute RPATH if
+    # the python package is not standalone, as the libraries are not copied
+    # into the python package. If Simbody libraries are not installed in the
+    # same folder as the OpenSim libraries, then we must also provide the path
+    # to the Simbody libraries within OpenSim's installation.
+    OpenSimAddInstallRPATHSelf(TARGET ${_libname})
+    OpenSimAddInstallRPATH(TARGET ${_libname} LOADER 
+        FROM "${OPENSIM_INSTALL_PYTHONDIR}/opensim"
+        TO "${CMAKE_INSTALL_LIBDIR}")
+    if(NOT OPENSIM_PYTHON_STANDALONE)
+        OpenSimAddInstallRPATHAbsolute(TARGET ${_libname}
+            TO "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+    OpenSimAddInstallRPATHSimbody(TARGET ${_libname} LOADER
+        FROM "${CMAKE_INSTALL_LIBDIR}/opensim")
+    if(NOT OPENSIM_PYTHON_STANDALONE)
+        OpenSimAddInstallRPATHSimbody(TARGET ${_libname} ABSOLUTE)
     endif()
 
     # Copy files into the build tree python package.
@@ -237,7 +224,7 @@ foreach(test_file
         "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
         "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
         "${CMAKE_SOURCE_DIR}/OpenSim/Sandbox/futureOrientationInverseKinematics.trc"
-        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/TRCFileWithNANs.trc"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc"
         "${CMAKE_SOURCE_DIR}/Applications/Analyze/test/subject02_grf_HiFreq.mot"
         "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"

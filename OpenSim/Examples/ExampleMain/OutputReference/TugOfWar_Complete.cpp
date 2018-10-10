@@ -314,20 +314,18 @@ int main()
         ForceReporter* reporter = new ForceReporter(&osimModel);
         osimModel.addAnalysis(reporter);
 
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the manager managing the forward integration and its outputs
-        Manager manager(osimModel,  integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, cout);
 
         // Integrate from initial time to final time
         si.setTime(initialTime);
+        manager.initialize(si);
         cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
-        manager.integrate(si, finalTime);
+        manager.integrate(finalTime);
 
         //////////////////////////////
         // SAVE THE RESULTS TO FILE //

@@ -118,37 +118,6 @@ void MarkerSet::getMarkerNames(Array<string>& markerNamesArray) const
     }
 }
 
-//_____________________________________________________________________________
-/**
- * Scale marker set by a set of scale factors
- */
-void MarkerSet::scale(const ScaleSet& scaleSet)
-{
-    Vec3    scaleFactors(1.0);
-
-    for (int i = 0; i < getSize(); i++)
-    {
-        Marker& nextMarker = get(i);
-        const string& refFrameName = nextMarker.getFrameName();
-        //assert(refBodyName);
-        bool found = false;
-        for (int j = 0; j < scaleSet.getSize() && !found; j++)
-        {
-            Scale& nextScale = scaleSet.get(j);
-            if (nextScale.getSegmentName() == refFrameName)
-            {
-                found = true;
-                nextScale.getScaleFactors(scaleFactors);
-                nextMarker.scale(scaleFactors);
-            }
-        }
-    }
-}
-
-//_____________________________________________________________________________
-/**
- * Add name prefix.
- */
 void MarkerSet::addNamePrefix(const string& prefix)
 {
     int i;
@@ -158,24 +127,3 @@ void MarkerSet::addNamePrefix(const string& prefix)
         get(i).setName(prefix + get(i).getName());
 }
 
-//_____________________________________________________________________________
-/**
- * Create a new marker and add it to the set.
- */
-Marker* MarkerSet::addMarker(const string& aName, const SimTK::Vec3& aOffset, OpenSim::PhysicalFrame& aPhysicalFrame)
-{
-    // If a marker by this name already exists, do nothing.
-    if (contains(aName))
-        return NULL;
-
-    // Create a marker and add it to the set.
-    Marker* m = new Marker();
-    m->setName(aName);
-    m->set_location(aOffset);
-    // Frame will be based on this name when marker is connected to Model.
-
-    m->setFrameName(aPhysicalFrame.getName()); 
-    aPhysicalFrame.updModel().addMarker(m);
-
-    return m;
-}

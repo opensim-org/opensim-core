@@ -35,8 +35,10 @@ class PolygonalMeshImpl;
 // We only want the template instantiation to occur once. This symbol is defined
 // in the SimTKcommon compilation unit that defines the PolygonalMesh class but 
 // should not be defined any other time.
+#ifndef SWIG
 #ifndef SimTK_SIMTKCOMMON_DEFINING_POLYGONALMESH
     extern template class PIMPLHandle<PolygonalMesh, PolygonalMeshImpl, true>;
+#endif
 #endif
 
 /** This class provides a description of a mesh made of polygonal faces (not 

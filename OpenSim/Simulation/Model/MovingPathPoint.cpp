@@ -30,7 +30,7 @@
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-
+#include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================
 // STATICS
@@ -162,20 +162,48 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
         SimTK::Xml::element_iterator zCoord = aNode.element_begin("z_coordinate");
 
         std::string xCoord_name(""), yCoord_name(""), zCoord_name("");
-        // If default constructed then elements not serialized since they are default
-        // values. Check that we have associated elements, then extract their values.
+        // If default constructed then elements not serialized since they are
+        // default values. Check that we have associated elements, then extract
+        // their values.
         if (xCoord != aNode.element_end())
             xCoord->getValueAs<std::string>(xCoord_name);
         if (yCoord != aNode.element_end())
             yCoord->getValueAs<std::string>(yCoord_name);
         if (zCoord != aNode.element_end())
             zCoord->getValueAs<std::string>(zCoord_name);
+
+        // Helper function to try creating relative paths to the coordinates.
+        auto createConnecteeName = [](SimTK::Xml::Element& elem, 
+                const std::string& coordName) -> std::string {
+            if (coordName.empty()) return coordName;
+            // As a backup, we will specify just the coordinate name as the
+            // connectee name...
+            std::string connectee_name = coordName;
+            // ...but if possible, we try to create a relative path from this
+            // PathPoint to the coordinate.
+            SimTK::Xml::Element coordElem = 
+                XMLDocument::findElementWithName(elem, coordName);
+            if (coordElem.isValid() && coordElem.hasParentElement()) {
+                // We found an Xml Element with the coordinate's name.
+                const auto jointElem = coordElem.getParentElement();
+                std::string jointName =
+                    jointElem.getOptionalAttributeValue("name");
+                // PathPoints in pre-4.0 models are necessarily 3 levels deep
+                // (model, muscle, geometry path), and Coordinates were
+                // necessarily 2 level deep: prepend "../../../<joint-name>/"
+                // to get the correct relative path.
+                if (!jointName.empty())
+                    connectee_name = "../../../" + jointName + "/" + coordName;
+            }
+            return connectee_name;
+        };
+        
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "x_coordinate", xCoord_name);
+            "x_coordinate", createConnecteeName(aNode, xCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "y_coordinate", yCoord_name);
+            "y_coordinate", createConnecteeName(aNode, yCoord_name));
         XMLDocument::addConnector(aNode, "Connector_Coordinate_", 
-            "z_coordinate", zCoord_name);
+            "z_coordinate", createConnecteeName(aNode, zCoord_name));
     }
 
     // Call base class now assuming _node has been corrected for current version
@@ -283,20 +311,27 @@ SimTK::Vec3 MovingPathPoint::getdPointdQ(const SimTK::State& s) const
     return dPdq_B;
 }
 
-
-void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
+void MovingPathPoint::
+extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
+    Super::extendScale(s, scaleSet);
+
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactors == ModelComponent::InvalidScaleFactors)
+        return;
+
     if (!_xCoordinate.empty()) {
         // If the function is already a MultiplierFunction, just update its scale factor.
         // Otherwise, make a MultiplierFunction from it and make the muscle point use
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_x_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[0]);
+            mf->setScale(mf->getScale() * scaleFactors[0]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_x_location(MultiplierFunction(get_x_location().clone(), aScaleFactors[0]));
+            set_x_location(MultiplierFunction(get_x_location().clone(), scaleFactors[0]));
         }
     }
 
@@ -306,11 +341,11 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_y_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[1]);
+            mf->setScale(mf->getScale() * scaleFactors[1]);
         } else {
             // Make a copy of the original function and delete the original
             // (so its node will be removed from the XML document).
-            set_y_location(MultiplierFunction(get_y_location().clone(), aScaleFactors[1]));
+            set_y_location(MultiplierFunction(get_y_location().clone(), scaleFactors[1]));
         }
     }
 
@@ -320,9 +355,9 @@ void MovingPathPoint::scale(const SimTK::Vec3& aScaleFactors)
         // the new MultiplierFunction.
         MultiplierFunction* mf = dynamic_cast<MultiplierFunction*>(&upd_z_location());
         if (mf) {
-            mf->setScale(mf->getScale() * aScaleFactors[2]);
+            mf->setScale(mf->getScale() * scaleFactors[2]);
         } else {
-            set_z_location(MultiplierFunction(get_z_location().clone(), aScaleFactors[2]));
+            set_z_location(MultiplierFunction(get_z_location().clone(), scaleFactors[2]));
         }
     }
 }

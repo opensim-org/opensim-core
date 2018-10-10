@@ -141,7 +141,7 @@ public:
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this %Socket according to its connectee_name property
+    /** Connect this %Socket according to its connectee name property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
     virtual void findAndConnect(const Component& root) {
@@ -202,7 +202,7 @@ protected:
     @param name               name of the socket, usually describes its 
                               dependency.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Socket's connectee_name(s).
+                              that holds this Socket's connectee name(s).
     @param connectAtStage     Stage at which Socket should be connected.
     @param owner              Component to which this Socket belongs. */
     AbstractSocket(const std::string& name,
@@ -221,7 +221,7 @@ protected:
     This should only be called by Component.
     This exists so that after the containing Component is copied, the 'owner'
     is the new Component. This Socket needs to be able to modify
-    the associated connectee_name property in the Component. Thus, we require
+    the associated connectee name property in the Component. Thus, we require
     a writable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
@@ -229,51 +229,43 @@ protected:
     /** This will be false immediately after copy construction or assignment.*/
     bool hasOwner() const { return !_owner.empty(); }
     
-    /** Check if entries of the connectee_name property's value is valid (if 
+    /** Check if entries of the connectee name property's value is valid (if 
     it contains spaces, etc.); if so, print out a warning. */
     void checkConnecteeNameProperty() {
-        // TODO Move this check elsewhere once the connectee_name
+        // TODO Move this check elsewhere once the connectee name
         // property is a ComponentPath (or a ChannelPath?).
         for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
             const auto& connecteeName = getConnecteeName(iname);
-            
-            if (connecteeName.find(" ") != std::string::npos) {
+            ComponentPath cp(connecteeName);
+            if (!cp.isLegalPathElement(cp.getComponentName()) ) {
                 std::string msg = "In Socket '" + getName() +
                         "', connectee name '" + connecteeName +
-                        "' contains spaces, but spaces are not allowed.";
+                        "' contains illegal characters such as spaces.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
                            "names for a single-value Socket?";
                 }
-                // TODO Would ideally throw an exception, but some models *do*
-                // use spaces in names, and the error for this should be
-                // handled elsewhere.
-                // OPENSIM_THROW(Exception, msg);
-                std::cout << "Warning: " << msg << std::endl;
+                OPENSIM_THROW(Exception, msg);
             }
             
-            // Use ComponentPath constructor to validate the connectee_name.
-            // We still need the check above for spaces, as ComponentPath
-            // currently treats spaces as valid.
-            ComponentPath compPath(connecteeName);
-            // Use the cleaned-up connectee_name created by ComponentPath.
-            setConnecteeName(compPath.toString(), iname);
+            // Use the cleaned-up connectee name created by ComponentPath.
+            setConnecteeName(cp.toString(), iname);
             // TODO update the above for Inputs when ChannelPath exists.
             
-            // TODO There might be a bug with empty connectee_name being
+            // TODO There might be a bug with empty connectee name being
             // interpreted as "this component."
         }
     }
 
 private:
     
-    /// Const access to the connectee_name property from the Component in which
+    /// Const access to the connectee name property from the Component in which
     /// this Socket resides. The name of that property is something like
-    /// 'socket_<name>_connectee_name'. This is a special type of property
+    /// 'socket_<name>'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
-    /// `get_socket_<name>_connectee_name()` function).
+    /// `get_socket_<name>()` function).
     const Property<std::string>& getConnecteeNameProp() const;
-    /// Writable access to the connectee_name property from the Component in
+    /// Writable access to the connectee name property from the Component in
     /// which this Socket resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
@@ -345,8 +337,8 @@ public:
         
         connectee = *objT;
 
-        std::string objPathName = objT->getAbsolutePathName();
-        std::string ownerPathName = getOwner().getAbsolutePathName();
+        std::string objPathName = objT->getAbsolutePathString();
+        std::string ownerPathName = getOwner().getAbsolutePathString();
 
         // Check if the connectee is an orphan (yet to be adopted component)
         if (!objT->hasOwner()) {
@@ -368,7 +360,7 @@ public:
         }
     }
 
-    /** Connect this Socket given its connectee_name property  */
+    /** Connect this Socket given its connectee name property  */
     void findAndConnect(const Component& root) override;
 
     void disconnect() override {
@@ -395,7 +387,7 @@ protected:
     can ever construct this class.
     @param name               name of the socket used to describe its dependency.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Socket's connectee_name(s).
+                              that holds this Socket's connectee name(s).
     @param connectAtStage     Stage at which Socket should be connected.
     @param owner              The component that contains this input. */
     Socket(const std::string& name,
@@ -421,14 +413,13 @@ can connect to multiple (Output) Channels.
 #### XML Syntax of a connectee name
 
 For every %Input that a component has, the XML representation of the component
-contains an element named `input_<input_name>_connectee_name` (or
-`input_<input_name>_connectee_names` for list inputs). For example, a component
+contains an element named `input_<input_name>`. For example, a component
 that has an Input named `desired_angle` might look like the following in XML:
 @code
     <MyComponent name="my_comp">
-        <input_desired_angle_connectee_name>
+        <input_desired_angle>
             ../foo/angle
-        </input_desired_angle_connectee_name>
+        </input_desired_angle>
         ...
     </MyComponent>
 @endcode
@@ -462,9 +453,9 @@ Here are some examples:
 List inputs can contain multiple entries in its connectee name, with the
 entries separated by a space. For example:
 @code
-<input_experimental_markers_connectee_names>
+<input_experimental_markers>
     ../marker_data|column:left_ankle ../marker_data|column:right_ankle ../averager|output(knee_joint_center)
-</input_experimental_markers_connectee_names>
+</input_experimental_markers>
 @endcode
 */
 class OSIMCOMMON_API AbstractInput : public AbstractSocket {
@@ -625,7 +616,7 @@ protected:
     Only Component should ever construct this class.
     @param name              name of the dependent (Abstract)Output.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Input's connectee_name(s).
+                              that holds this Input's connectee name(s).
     @param connectAtStage     Stage at which Input should be connected.
     @param owner              The component that contains this input. */
     AbstractInput(const std::string& name,
@@ -659,7 +650,7 @@ public:
                  const std::string& alias = "") override;
 
     /** Connect this Input given a root Component to search for
-    the Output according to the connectee_name of this Input  */
+    the Output according to the connectee name of this Input  */
     void findAndConnect(const Component& root) override;
     
     void disconnect() override {
@@ -797,7 +788,7 @@ public:
     SimTK::Vector_<T>. The elements are in the same order as the channels.
     */
     SimTK::Vector_<T> getVector(const SimTK::State& state) const {
-        SimTK::Vector_<T> v(_connectees.size());
+        SimTK::Vector_<T> v(static_cast<int>(_connectees.size()));
         for (unsigned ichan = 0u; ichan < _connectees.size(); ++ichan) {
             v[ichan] = _connectees[ichan]->getValue(state);
         }
@@ -837,7 +828,7 @@ protected:
     construct an Input.
     @param name               name of the Output dependency.
     @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Input's connectee_name(s).
+                              that holds this Input's connectee name(s).
     @param connectAtStage     Stage at which Input should be connected.
     @param owner              The component that contains this input. */
     Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
@@ -892,15 +883,15 @@ private:
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** In an XML file, you can set this Socket's connectee name         */ \
-    /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
+    /** via the <b>\<socket_##cname\></b> element.                       */ \
     /** This socket was generated with the                               */ \
     /** #OpenSim_DECLARE_SOCKET macro;                                   */ \
     /** see AbstractSocket for more information.                         */ \
-    /** @socketmethods connectSocket_##cname##()                         */ \
+    /** @see connectSocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_socket_##cname##_connectee_name {           \
+    PropertyIndex PropertyIndex_socket_##cname {                            \
         this->template constructSocket<T>(#cname,                           \
                 "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
@@ -968,13 +959,13 @@ private:
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** In an XML file, you can set this socket's connectee name         */ \
-    /** via the <b>\<socket_##cname##_connectee_name\></b> element.      */ \
+    /** via the <b>\<socket_##cname\></b> element.                       */ \
     /** See AbstractSocket for more information.                         */ \
-    /** @socketmethods connectsocket_##cname##()                         */ \
+    /** @see connectsocket_##cname##()                                   */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_socket_##cname##_connectee_name {           \
+    PropertyIndex PropertyIndex_socket_##cname {           \
         constructSocket_##cname()                                           \
     };                                                                      \
     /* Declare the method used in the in-class member initializer.       */ \
@@ -1053,17 +1044,17 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** comment                                                          */ \
     /** This input is needed at stage istage##.                          */ \
     /** In an XML file, you can set this Input's connectee name          */ \
-    /** via the <b>\<input_##iname##_connectee_name\></b> element.       */ \
+    /** via the <b>\<input_##iname\></b> element.                        */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro;                                    */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname##_connectee_name {            \
+    PropertyIndex PropertyIndex_input_##iname {                             \
         this->template constructInput<T>(#iname, false,                     \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
@@ -1092,7 +1083,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called
-// first within these macros, b/c the connectee_name property must exist before
+// first within these macros, b/c the connectee name property must exist before
 // the Input etc is constructed.
 
 
@@ -1114,17 +1105,17 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** This input can connect to multiple outputs, all of which are     */ \
     /** needed at stage istage##.                                        */ \
     /** In an XML file, you can set this Input's connectee name          */ \
-    /** via the <b>\<input_##iname##_connectee_names\></b> element.      */ \
+    /** via the <b>\<input_##iname\></b> element.                        */ \
     /** The syntax for a connectee name is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
     /** see AbstractInput for more information.                          */ \
-    /** @inputmethods connectInput_##iname##()                           */ \
+    /** @see connectInput_##iname##()                                    */ \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname##_connectee_names {           \
+    PropertyIndex PropertyIndex_input_##iname {                             \
         this->template constructInput<T>(#iname, true,                      \
             "Paths to outputs (channels) to satisfy the list Input '"       \
             #iname "' of type " #T " (description: " comment "). "          \

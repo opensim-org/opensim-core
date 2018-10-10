@@ -132,11 +132,20 @@ public:
 
     /** get the value of the Coordinate from the state */
     double getValue(const SimTK::State& s) const;
-    /** set the value of the Coordinate on to the state.
-        optional flag to enforce the constraints immediately, which may 
-        adjust its value in the state. Use getValue(s) to see if/how the
-        value was adjusted to satisfy the kinematic constraints. */
-    void setValue(SimTK::State& s, double aValue, bool aEnforceContraints=true) const;
+    /** Set the value of the Coordinate on to the state.
+        Optional flag to enforce the constraints immediately (true by default),
+        which can adjust all coordinate values in the state to satisfy model
+        constraints. Use getValue(s) to see if/how the value was adjusted to
+        satisfy the kinematic constraints. If setting multiple Coordinate values
+        consecutively, e.g. in a loop, set the flag to false and then call
+        Model::assemble(state) once all Coordinate values have been set.
+        Alternatively, use Model::setStateVariableValues() to set all coordinate
+        values and their speeds at once followed by Model::assemble(state).
+      
+        The provided value will be clamped to the coordinate's range if
+        the coordinate is clamped and enforceConstraints is true.
+        */
+    void setValue(SimTK::State& s, double aValue, bool enforceContraints=true) const;
 
     /** get the speed value of the Coordinate from the state */
     double getSpeedValue(const SimTK::State& s) const;
@@ -212,6 +221,11 @@ public:
     SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
     /**@}**/
 
+    /* For internal consistency checking. Returns the user-specified MotionType
+       serialized with pre-4.0 model files if one is provided, otherwise
+        returns MotionType::Undefined. */
+    const MotionType& getUserSpecifiedMotionTypePriorTo40() const;
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -238,6 +252,11 @@ protected:
     // Only the coordinate or the joint itself can specify the owner
     // of Coordinate
     void setJoint(const Joint& aOwningJoint);
+
+    // Override to account for version updates in the XML format.
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
 
 //=============================================================================
 // MODEL DATA
@@ -309,6 +328,9 @@ private:
 
     /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
+
+    /* User set MotionType from versions of OpenSim that predate 4.0 */
+    MotionType _userSpecifiedMotionTypePriorTo40;
 
     mutable bool _lockedWarningGiven;
 

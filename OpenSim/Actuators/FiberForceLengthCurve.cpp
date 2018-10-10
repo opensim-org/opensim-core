@@ -231,6 +231,13 @@ double FiberForceLengthCurve::calcDerivative(double normFiberLength,
     return m_curve.calcDerivative(normFiberLength,order);
 }
 
+double FiberForceLengthCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
 double FiberForceLengthCurve::calcIntegral(double normFiberLength) const
 {
     SimTK_ASSERT(isObjectUpToDateWithProperties(),

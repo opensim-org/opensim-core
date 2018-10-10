@@ -56,6 +56,7 @@ void testPathSpring();
 void testExternalForce();
 void testSpringMass();
 void testBushingForce();
+void testTwoFrameLinkerUpdateFromXMLNode();
 void testFunctionBasedBushingForce();
 void testExpressionBasedBushingForceTranslational();
 void testExpressionBasedBushingForceRotational();
@@ -89,6 +90,12 @@ int main()
     try { testBushingForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testBushingForce");
+    }
+
+    try { testTwoFrameLinkerUpdateFromXMLNode(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl;
+        failures.push_back("testTwoFrameLinkerUpdateFromXMLNode");
     }
 
     try { testFunctionBasedBushingForce(); }
@@ -225,13 +232,13 @@ void testExpressionBasedCoordinateForce()
     double nsteps = 10;
     double dt = final_t/nsteps;
 
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-7);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-7);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -314,14 +321,13 @@ void testExpressionBasedPointToPointForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(model,  integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(1e-6);
     state.setTime(0.0);
+    manager.initialize(state);
 
     double final_t = 1.0;
-    manager.integrate(state, final_t);
+    state = manager.integrate(final_t);
 
     //manager.getStateStorage().print("testExpressionBasedPointToPointForce.sto");
 
@@ -429,13 +435,13 @@ void testPathSpring()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 10.0;
-    manager.integrate(osim_state, final_t);
+    osim_state = manager.integrate(final_t);
 
     // tension should only be velocity dependent
     osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
@@ -509,8 +515,6 @@ void testSpringMass()
 
     osimModel.addForce(&spring);
 
-    //osimModel.print("SpringMassModel.osim");
-
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
     osimModel.addAnalysis(reporter);
@@ -523,17 +527,17 @@ void testSpringMass()
     //==========================================================================
     // Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-7);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-7);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -556,6 +560,14 @@ void testSpringMass()
     PointToPointSpring *copyOfSpring = spring.clone();
 
     ASSERT(*copyOfSpring == spring);
+
+    // Verify that the PointToPointSpring is correctly deserialized from
+    // previous major version of OpenSim.
+    Model bouncer("bouncing_block_30000.osim");
+    SimTK::State& s = bouncer.initSystem();
+    bouncer.realizeAcceleration(s);
+
+    /*Vec3 comA =*/ bouncer.calcMassCenterAcceleration(s);
 }
 
 void testBushingForce()
@@ -576,21 +588,23 @@ void testBushingForce()
     osimModel.setName("BushingTest");
     //OpenSim bodies
     const Ground& ground = osimModel.getGround();;
-    OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
-    ball.attachGeometry(new Sphere{0.1});
-    ball.scale(Vec3(ball_radius), false);
+    auto* ball = new OpenSim::Body("ball", mass, Vec3(0),
+            mass*SimTK::Inertia::sphere(0.1));
+    ball->attachGeometry(new Sphere{0.1});
+    ball->scale(Vec3(ball_radius), false);
 
     // Add joints
-    SliderJoint slider("slider", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+    auto* slider = new SliderJoint("slider", ground, Vec3(0), Vec3(0,0,Pi/2),
+            *ball, Vec3(0), Vec3(0,0,Pi/2));
 
     double positionRange[2] = {-10, 10};
     // Rename coordinate for the slider joint
-    auto& sliderCoord = slider.updCoordinate();
+    auto& sliderCoord = slider->updCoordinate();
     sliderCoord.setName("ball_h");
     sliderCoord.setRange(positionRange);
 
-    osimModel.addBody(&ball);
-    osimModel.addJoint(&slider);
+    osimModel.addBody(ball);
+    osimModel.addJoint(slider);
 
     Vec3 rotStiffness(0);
     Vec3 transStiffness(stiffness);
@@ -599,13 +613,16 @@ void testBushingForce()
 
     osimModel.setGravity(gravity_vec);
 
-    BushingForce spring("bushing", "ground", "ball",
+    auto* spring = new BushingForce("bushing", "ground", "ball",
         transStiffness, rotStiffness, transDamping, rotDamping);
 
-    osimModel.addForce(&spring);
+    osimModel.addForce(spring);
     const BushingForce& bushingForce =
         osimModel.getComponent<BushingForce>("bushing");
 
+    // To print (serialize) the latest connections of the model, it is 
+    // necessary to finalizeConnections() first.
+    osimModel.finalizeConnections(osimModel);
     osimModel.print("BushingForceModel.osim");
 
     Model previousVersionModel("BushingForceModel_30000.osim");
@@ -628,26 +645,25 @@ void testBushingForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
+        Vec3 pos = ball->findStationLocationInGround(osim_state, Vec3(0));
         
         double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
         ASSERT_EQUAL(height, pos(1), 1e-4);
 
         //Now check that the force reported by spring
-        Array<double> model_force = spring.getRecordValues(osim_state);
+        Array<double> model_force = spring->getRecordValues(osim_state);
 
         // get the forces applied to the ground and ball
         double analytical_force = -stiffness*height;
@@ -661,11 +677,85 @@ void testBushingForce()
     reporter->getForceStorage().print("bushing_forces.mot");  
 
     // Before exiting lets see if copying the spring works
-    BushingForce *copyOfSpring = spring.clone();
+    BushingForce* copyOfSpring = spring->clone();
 
-    ASSERT(*copyOfSpring == spring);
+    ASSERT(*copyOfSpring == *spring);
+}
 
-    osimModel.disownAllComponents();
+// testBushingForce() performs similar checks as does this test, but this test
+// ensures intermediate offset frames are created correctly. This test still
+// uses BushingForce to test the TwoFrameLinker.
+void testTwoFrameLinkerUpdateFromXMLNode() {
+    using namespace SimTK;
+
+    double mass = 1;
+    double start_h = 0.5;
+    double ball_radius = 0.25;
+
+    // Setup OpenSim model
+    Model osimModel{};
+    osimModel.setName("TwoFrameLinkerUpdateFromXMLNodeTest");
+    //OpenSim bodies
+    const Ground& ground = osimModel.getGround();;
+    auto* ball = new OpenSim::Body("ball", mass, Vec3(0),
+            mass*SimTK::Inertia::sphere(0.1));
+    ball->attachGeometry(new Sphere{0.1});
+    ball->scale(Vec3(ball_radius), false);
+
+    // Add joints
+    auto* slider = new SliderJoint("slider", ground, Vec3(0), Vec3(0,0,Pi/2),
+            *ball, Vec3(0), Vec3(0,0,Pi/2));
+
+    double positionRange[2] = {-10, 10};
+    // Rename coordinate for the slider joint
+    auto& sliderCoord = slider->updCoordinate();
+    sliderCoord.setName("ball_h");
+    sliderCoord.setRange(positionRange);
+
+    osimModel.addBody(ball);
+    osimModel.addJoint(slider);
+
+    Vec3 rotStiffness(15, 21, 30);
+    Vec3 transStiffness(10, 10, 10);
+    Vec3 rotDamping(0.4, 0.5, 0.6);
+    Vec3 transDamping(0.2, 0.3, 0.4);
+
+    osimModel.setGravity(gravity_vec);
+
+    auto* spring = new BushingForce("bushing",
+            "ground",
+            Transform(Rotation(BodyRotationSequence,
+                    -0.5, XAxis, 0, YAxis, 0.5, ZAxis),
+                Vec3(1, 2, 3)),
+            "ball",
+            Transform(Rotation(BodyRotationSequence,
+                    0.1, XAxis, 0.2, YAxis, 0.3, ZAxis), 
+                Vec3(4, 5, 6)),
+        transStiffness, rotStiffness, transDamping, rotDamping);
+
+    osimModel.addForce(spring);
+    const BushingForce& bushingForce =
+        osimModel.getComponent<BushingForce>("bushing");
+
+    // It's necessary to correct the connectee names in the BushingForce, which
+    // we can do with finalizeConnections() (they are incorrect otherwise
+    // because `spring` is initially orphaned).
+    osimModel.finalizeConnections(osimModel);
+    osimModel.print("BushingForceOffsetModel.osim");
+
+    Model previousVersionModel("BushingForceOffsetModel_30000.osim");
+    previousVersionModel.finalizeFromProperties();
+    // This line is necessary for wiring up the FrameGeometry of the
+    // OffsetFrames.
+    previousVersionModel.finalizeConnections(osimModel);
+    previousVersionModel.print("BushingForceOffsetModel_30000_in_Latest.osim");
+
+    const BushingForce& bushingForceFromPrevious =
+        previousVersionModel.getComponent<BushingForce>("bushing");
+
+    ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
+        "current bushing force FAILED to match bushing force from previous "
+        "model.");
 }
 
 void testFunctionBasedBushingForce()
@@ -730,17 +820,17 @@ void testFunctionBasedBushingForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -848,17 +938,17 @@ void testExpressionBasedBushingForceTranslational()
     
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
     
     double final_t = 2.0;
     double nsteps = 10;
     double dt = final_t/nsteps;
     
     for(int i = 1; i <=nsteps; ++i){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos = ball.findStationLocationInGround(osim_state, Vec3(0));
         
@@ -966,10 +1056,10 @@ void testExpressionBasedBushingForceRotational()
 
     //=========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
     double nsteps = 10;
@@ -980,7 +1070,7 @@ void testExpressionBasedBushingForceRotational()
     double omega = sqrt(stiffness / I_y);
 
     for (int i = 1; i <= nsteps; ++i) {
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         // compute the current rotation about the y axis
@@ -1044,18 +1134,17 @@ void testElasticFoundation()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
 
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(osim_state, final_t);
+    osim_state = manager.integrate(final_t);
 
     // end timing
     cout << "Elastic Foundation simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;;
@@ -1121,18 +1210,17 @@ void testHuntCrossleyForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 2.0;
 
     // start timing
     clock_t startTime = clock();
 
-    manager.integrate(osim_state, final_t);
+    osim_state = manager.integrate(final_t);
 
     // end timing
     cout << "Hunt Crossley simulation time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms" << endl;
@@ -1263,17 +1351,17 @@ void testCoordinateLimitForce()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(1e-6);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(1e-6);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 1.0;
     double nsteps = 20;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         
         double h = q_h.getValue(osim_state);
@@ -1405,18 +1493,17 @@ void testCoordinateLimitForceRotational()
 
     //==========================================================================
     // Perform a simulation an monitor energy conservation
-
-    RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem() );
-    integrator.setAccuracy(1e-8);
-    Manager manager(osimModel,  integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-8);
     osim_state.setTime(0.0);
+    manager.initialize(osim_state);
 
     double final_t = 1.0;
     double nsteps = 20;
     double dt = final_t/nsteps;
 
     for(int i = 1; i <=nsteps; i++){
-        manager.integrate(osim_state, dt*i);
+        osim_state = manager.integrate(dt*i);
         osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
         double ediss = clf->getDissipatedEnergy(osim_state);
@@ -1496,14 +1583,14 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s, 0.1);
 
     double accuracy = 1e-6;
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(model,  integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Specify the initial and final times of the simulation.
     double tf = 2.0;
     s.setTime(0.0);
-    manager.integrate(s, tf);
+    manager.initialize(s);
+    s = manager.integrate(tf);
 
     manager.getStateStorage().print("external_force_test_model_states.sto");;
 
@@ -1540,11 +1627,11 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s2, 0.3);
     model.setPropertiesFromState(s2);
 
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
-    integrator2.setAccuracy(accuracy);
-    Manager manager2(model, integrator2);
+    Manager manager2(model);
+    manager2.setIntegratorAccuracy(accuracy);
     s2.setTime(0.0);
-    manager2.integrate(s2, tf);
+    manager2.initialize(s2);
+    s2 = manager2.integrate(tf);
 
     // all dofs should remain constant
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1577,11 +1664,11 @@ void testExternalForce()
     freeJoint.getCoordinate(FreeJoint::Coord::TranslationX).setValue(s3, 0.4); // yield -3Nm for force only
     model.setPropertiesFromState(s3);
 
-    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
-    integrator3.setAccuracy(accuracy);
-    Manager manager3(model, integrator3);
+    Manager manager3(model);
+    manager3.setIntegratorAccuracy(accuracy);
     s3.setTime(0.0);
-    manager3.integrate(s3, tf);
+    manager3.initialize(s3);
+    s3 = manager3.integrate(tf);
 
     // all dofs should remain constant except Y
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){
@@ -1628,9 +1715,11 @@ void testExternalForce()
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
     integrator4.setAccuracy(accuracy);
-    Manager manager4(model, integrator4);
+    Manager manager4(model);
+    manager4.setIntegratorAccuracy(accuracy);
     s4.setTime(0.0);
-    manager4.integrate(s4, tf);
+    manager4.initialize(s4);
+    s4 = manager4.integrate(tf);
 
     // all dofs should remain constant except X-translation
     for(int i=0; i<model.getCoordinateSet().getSize(); i++){

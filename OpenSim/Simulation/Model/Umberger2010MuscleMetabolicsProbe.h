@@ -458,6 +458,14 @@ public:
 //==============================================================================
 //          Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter
 //==============================================================================
+
+/**
+ * Documentation for this class has been provided with the documentation for the
+ * Umberger2010MuscleMetabolicsProbe class.
+ *
+ * @see Umberger2010MuscleMetabolicsProbe
+ */
+
 class OSIMSIMULATION_API 
     Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter 
     : public Object  

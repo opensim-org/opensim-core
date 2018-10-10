@@ -222,6 +222,22 @@ int main()
     std::string pathAfterTypeChangeToViaInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
+    // Make a change to a socket that is invalid and verify that we can recover
+    // from that invalid change by restoring from a cached model and state.
+    context->cacheModelAndState();
+    Joint& shoulder = model->updComponent<Joint>("r_shoulder");
+    AbstractSocket& socket = shoulder.updSocket("child_frame");
+    const std::string originalConnecteeName = socket.getConnecteeName();
+    try {
+        // create an invalid model where joint connects two frames on ground
+        socket.setConnecteeName("ground"); 
+        context->restoreStateFromCachedModel();
+    }
+    catch (...) {
+        // undo the change
+        socket.setConnecteeName(originalConnecteeName);
+        context->restoreStateFromCachedModel();
+    }
     return status;
   } catch (const std::exception& e) {
       cout << "Exception: " << e.what() << endl;

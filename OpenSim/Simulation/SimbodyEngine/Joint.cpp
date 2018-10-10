@@ -28,7 +28,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include "simbody/internal/Constraint.h"
 #include "simbody/internal/MobilizedBody_Ground.h"
 
@@ -259,52 +258,6 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
     return false;
 }
 
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-
-void Joint::scale(const ScaleSet& scaleSet)
-{
-    SimTK::Vec3 parentFactors(1.0);
-    SimTK::Vec3 childFactors(1.0);
-
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const string& parentName = getParentFrame().findBaseFrame().getName();
-    const string& childName = getChildFrame().findBaseFrame().getName();
-    // Get scale factors
-    bool found_p = false;
-    bool found_b = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_p && (scale.getSegmentName() == parentName)) {
-            scale.getScaleFactors(parentFactors);
-            found_p = true;
-        }
-        if (!found_b && (scale.getSegmentName() == childName)) {
-            scale.getScaleFactors(childFactors);
-            found_b = true;
-        }
-        if (found_p && found_b)
-            break;
-    }
-
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getParentFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(parentFactors);
-    }
-    found = getProperty_frames().findIndex(getChildFrame());
-    if (found >= 0) {
-        PhysicalOffsetFrame& offset
-            = SimTK_DYNAMIC_CAST_DEBUG<PhysicalOffsetFrame&>(upd_frames(found));
-        offset.scale(childFactors);
-    }
-}
-
 const SimTK::MobilizedBodyIndex Joint::
     getMobilizedBodyIndex(const OpenSim::Body& body) const
 {
@@ -316,6 +269,17 @@ void Joint::setChildMobilizedBodyIndex(const SimTK::MobilizedBodyIndex index) co
     getChildFrame().setMobilizedBodyIndex(index);
 }
 
+
+void Joint::extendConnectToModel(Model& model) 
+{
+    Super::extendConnectToModel(model);
+
+    auto& parent = updSocket<PhysicalFrame>("parent_frame").getConnectee();
+    auto& child = updSocket<PhysicalFrame>("child_frame").getConnectee();
+
+    OPENSIM_THROW_IF(&parent == &child, JointFramesAreTheSame,
+        getName(), parent.getName());
+}
 
 void Joint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
@@ -569,6 +533,10 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (connectorElement->getRequiredAttributeValue("name") == "parent_frame"){
                     parentNameElt = connectorElement->element_begin("connectee_name");
                     parentNameElt->getValueAs<std::string>(parentFrameName);
+
+                    const auto slashLoc = parentFrameName.rfind('/');
+                    if (slashLoc != std::string::npos)
+                        parentFrameName = parentFrameName.substr(slashLoc + 1);
                 }
                 if (connectorElement->getRequiredAttributeValue("name") == "child_body") {
                     connectorElement->setAttributeValue("name", "child_frame");
@@ -576,6 +544,9 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (connectorElement->getRequiredAttributeValue("name") == "child_frame") {
                     childNameElt =  connectorElement->element_begin("connectee_name");
                     childNameElt->getValueAs<std::string>(childFrameName);
+                    const auto slashLoc = childFrameName.rfind('/');
+                    if (slashLoc != std::string::npos)
+                        childFrameName = childFrameName.substr(slashLoc + 1);
                 }
                 ++connectorElement;
             }
@@ -611,7 +582,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // identity transforms.
             if ((location_in_parent.norm() > 0.0) ||
                 (orientation_in_parent.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, parentFrameName+"_offset",
+                XMLDocument::addPhysicalOffsetFrame30505(aNode, parentFrameName+"_offset",
                     parentFrameName, location_in_parent, orientation_in_parent);
                 parentNameElt->setValue(parentFrameName + "_offset");
             }
@@ -619,7 +590,7 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // again for the offset frame on the child
             if ((location_in_child.norm() > 0.0) ||
                 (orientation_in_child.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, childFrameName + "_offset",
+                XMLDocument::addPhysicalOffsetFrame30505(aNode, childFrameName + "_offset",
                     childFrameName, location_in_child, orientation_in_child);
                 childNameElt->setValue(childFrameName + "_offset");
             }

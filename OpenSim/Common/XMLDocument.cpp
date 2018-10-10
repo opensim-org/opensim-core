@@ -31,6 +31,7 @@
 //-----------------------------------------------------------------------------
 #include "XMLDocument.h"
 #include "Object.h"
+#include <functional>
 
 
 using namespace OpenSim;
@@ -63,7 +64,8 @@ using namespace std;
 // 30514 for removing "reverse" property from Joint
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
-const int XMLDocument::LatestVersion = 30516;
+// 30517 for removal of _connectee_name suffix to shorten XML for socket, input
+const int XMLDocument::LatestVersion = 30517;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -469,7 +471,7 @@ void XMLDocument::updateConnectors30508(SimTK::Xml::Element& componentElt)
     componentElt.eraseNode(connectors_node);
 }
 
-void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
+void XMLDocument::addPhysicalOffsetFrame30505(SimTK::Xml::Element& element,
     const std::string& frameName,
     const std::string& parentFrameName, 
     const SimTK::Vec3& location, const SimTK::Vec3& orientation)
@@ -487,7 +489,12 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
     newFrameElement.setAttributeValue("name", frameName);
     //newFrameElement.writeToString(debug);
 
-    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_", "parent", parentFrameName);
+    // This function always adds the frame as a subcomponent of a component
+    // that is 1 level deep, making this frame two levels deep. The connectee
+    // is always only 1 level deep, so prepending "../../" yields the correct
+    // relative path.
+    XMLDocument::addConnector(newFrameElement, "Connector_PhysicalFrame_",
+            "parent", "../../" + parentFrameName);
 
     std::ostringstream transValue;
     transValue << location[0] << " " << location[1] << " " << location[2];
@@ -501,4 +508,39 @@ void XMLDocument::addPhysicalOffsetFrame(SimTK::Xml::Element& element,
 
     frames_node->insertNodeAfter(frames_node->element_end(), newFrameElement);
     //frames_node->writeToString(debug);
+}
+
+SimTK::Xml::Element XMLDocument::findElementWithName(
+        SimTK::Xml::Element& element, const std::string& name) {
+    using namespace SimTK;
+
+    if (name.empty()) return Xml::Element();
+
+    // First, get to the root of the XML document.
+    Xml::Element current = element;
+    while (current.hasParentElement())
+        current = current.getParentElement();
+    Xml::Element root = current;
+
+    // This will be a recursive lambda function.
+    std::function<Xml::Element(Xml::Element&, const std::string&)>
+        searchForElement;
+    // For recursion, must capture the function itself.
+    // Returns an invalid Element if no element with `name` could be found.
+    searchForElement = [&searchForElement](
+            Xml::Element& elem, const std::string& name) -> Xml::Element {
+        // This is a depth-first search.
+        for (auto it = elem.element_begin(); it != elem.element_end();
+                ++it) {
+            std::string elemName = it->getOptionalAttributeValue("name");
+            if (elemName == name)
+                return elem;
+            Xml::Element foundElem = searchForElement(*it, name);
+            if (foundElem.isValid())
+                return foundElem;
+            // Keep searching other branches.
+        }
+        return Xml::Element(); // Did not find.
+    };
+    return searchForElement(root, name);
 }

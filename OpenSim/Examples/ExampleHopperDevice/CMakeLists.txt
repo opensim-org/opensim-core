@@ -1,5 +1,3 @@
-include_directories(${PROJECT_SOURCE_DIR})
-
 add_executable(exampleHopperDevice
     exampleHopperDevice.cpp
     buildHopperModel.cpp

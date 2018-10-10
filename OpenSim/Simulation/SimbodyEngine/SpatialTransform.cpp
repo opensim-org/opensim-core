@@ -105,9 +105,6 @@ void SpatialTransform::connectToJoint(CustomJoint& owningJoint)
     for(int i=0; i < NumTransformAxes; ++i) {
         TransformAxis& transform = updTransformAxis(i);
 
-        // Ask the transform axis to connect itself to the joint too.
-        transform.connectToJoint(*((Joint*)(&owningJoint)));
-
         // check if it has a function
         if(!transform.hasFunction()){
             // does it have a coordinate?
@@ -118,6 +115,9 @@ void SpatialTransform::connectToJoint(CustomJoint& owningJoint)
             else
                 transform.setFunction(new Constant());
         }
+
+        // Ask the transform axis to connect itself to the joint.
+        transform.connectToJoint(*((Joint*)(&owningJoint)));
     }
 }
 

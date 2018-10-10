@@ -129,7 +129,7 @@ initialTime = 0.0;
 finalTime = 3.0;
 
 muscleController = PrescribedController();
-muscleController.setName('LinearRamp Controller')
+muscleController.setName('LinearRamp_Controller')
 muscleController.setActuators(model.updActuators())
 
 % Define linear functions for the control values for the two muscles

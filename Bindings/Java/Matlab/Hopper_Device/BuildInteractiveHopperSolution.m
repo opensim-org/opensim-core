@@ -164,6 +164,9 @@ for d = 1:length(devices)
         device.printSubcomponentInfo();
     end
     
+    % Add the device to the hopper model.
+    hopper.addComponent(device);
+    
     % Get the 'anchor' joints in the device, and downcast them to the
     % WeldJoint class. Get the 'deviceAttach' frames in the hopper
     % model, and downcast them to the PhysicalFrame class.
@@ -180,17 +183,14 @@ for d = 1:length(devices)
     anchorA.connectSocket_parent_frame(thighAttach);
     anchorB.connectSocket_parent_frame(shankAttach);
     
-    % Add the device to the hopper model.
-    hopper.addComponent(device);
-    
     % Configure the device to wrap over the patella.
     if patellaWrap{d} && hopper.hasComponent([deviceNames{d}])
         if strcmp(deviceNames{d},'device_passive')
             % TODO: Change to downcast from PathSpring when PathSpring is
             % working for passive device
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBpassive'));
+            cable = PathActuator.safeDownCast(device.updComponent('cableAtoBpassive'));
         elseif strcmp(deviceNames{d},'device_active')
-            cable = PathActuator.safeDownCast(device.updComponent('/cableAtoBactive'));
+            cable = PathActuator.safeDownCast(device.updComponent('cableAtoBactive'));
         end
         patellaPath = 'thigh/patellaFrame/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));

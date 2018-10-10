@@ -24,7 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <Vendors/lepton/include/Lepton.h>
+#include <Lepton.h>
 
 #include "ExpressionBasedBushingForce.h"
 
@@ -376,8 +376,9 @@ void ExpressionBasedBushingForce::generateDecorations
         geometryArray.push_back(decorativeFrame1);
         geometryArray.push_back(decorativeFrame2);
 
-        // if the model is moving, calculate and draw the bushing forces.
-        if(!fixed){
+        // if the model is moving and the state is adequately realized,
+        // calculate and draw the bushing forces.
+        if(!fixed && (s.getSystemStage() >= Stage::Dynamics)){
             SpatialVec F_GM(Vec3(0.0), Vec3(0.0));
             SpatialVec F_GF(Vec3(0.0), Vec3(0.0));
 

@@ -172,24 +172,54 @@ SimTK::Quaternion createObject<SimTK::Quaternion>() {
 template<typename T>
 void testReadingWriting() {
     using namespace OpenSim;
-  
+
     std::string fileA{"testSTOFileAdapter_A.sto"};
     std::string fileB{"testSTOFileAdapter_B.sto"};
-    TimeSeriesTable_<T> table{};
-    table.setColumnLabels({"c0", "c1", "c2"});
-    for(auto t = 0; t < 10; ++t) {
-        auto elem = createObject<T>();
-        table.appendRow(t, {elem, elem, elem});
+    {
+        TimeSeriesTable_<T> table{};
+        table.setColumnLabels({"c0", "c1", "c2"});
+        for (auto t = 0; t < 10; ++t) {
+            auto elem = createObject<T>();
+            table.appendRow(t, {elem, elem, elem});
+        }
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
     }
-    STOFileAdapter_<T>::write(table, fileA);
-    auto table_copy = STOFileAdapter_<T>::read(fileA);
-    auto table_ptr = FileAdapter::readFile(fileA).at("table");
-    DataAdapter::InputTables inputTables{};
-    inputTables.emplace(std::string{"table"}, table_ptr.get());
-    FileAdapter::writeFile(inputTables, fileB);
-    compareFiles(fileA, fileB);
-    std::remove(fileA.c_str());
-    std::remove(fileB.c_str());
+
+    {
+        // Empty table.
+        TimeSeriesTable_<T> table{};
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
+    }
+
+    {
+        // No columns.
+        TimeSeriesTable_<T> table{std::vector<double>{0, 0.1, 0.2}};
+        STOFileAdapter_<T>::write(table, fileA);
+        auto table_copy = STOFileAdapter_<T>::read(fileA);
+        auto table_ptr = FileAdapter::readFile(fileA).at("table");
+        DataAdapter::InputTables inputTables{};
+        inputTables.emplace(std::string{"table"}, table_ptr.get());
+        FileAdapter::writeFile(inputTables, fileB);
+        compareFiles(fileA, fileB);
+        std::remove(fileA.c_str());
+        std::remove(fileB.c_str());
+    }
 }
 
 int main() {
@@ -239,6 +269,24 @@ int main() {
 
     std::remove(tmpfile.c_str());
 
+    // test detection of invalid column labels
+    TimeSeriesTable table{};
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "c2", "", "c4" }),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "  ", "c3", "\t" }),
+        InvalidColumnLabel);
+    table.setColumnLabels({ "c1", "c2", "c3", "c4" });
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(3, " \n hi"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(2, "hel\rlo"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(1, "ABC\tDEF"),
+        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(0, "   ABC DEF   "),
+        InvalidColumnLabel);
+    // space within the label should be OK
+    table.setColumnLabel(1, "ABC DEF");
+
     std::cout << "Testing reading/writing STOFileAdapter_<SimTK::Vec2>"
               << std::endl;
     testReadingWriting<SimTK::Vec2>();
@@ -270,6 +318,16 @@ int main() {
     std::ofstream emptyFile(emptyFileName);
     SimTK_TEST_MUST_THROW_EXC(STOFileAdapter::read(emptyFileName), FileIsEmpty);
     std::remove(emptyFileName.c_str());
+
+    std::cout << "Testing reading STO version 1.0 using "
+              << "FileAdapter::readFile()." << std::endl;
+    // There was a bug where the FileAdapter::readFile() could not handle
+    // version-1.0 STO files because the "DataType" metadata was required to
+    // determine the template argument for STOFileAdapter (Issue #1725).
+    // This test ensures that bug is fixed (test.sto is version 1.0).
+    auto outputTables = FileAdapter::readFile("test.sto");
+    SimTK_TEST(outputTables["table"]->getNumRows() == 2);
+    SimTK_TEST(outputTables["table"]->getNumColumns() == 2);
 
     std::cout << "\nAll tests passed!" << std::endl;
 

@@ -105,6 +105,27 @@ public:
     }
 };
 
+class JointFramesHaveSameBaseFrame : public Exception {
+public:
+    JointFramesHaveSameBaseFrame(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& parentName,
+        const std::string& childName,
+        const std::string& baseName) :
+        Exception(file, line, func) {
+        std::string msg = "Joint '" + thisName + 
+            "' cannot connect parent frame '" +
+            parentName + "' to child frame '" + childName + "'.\n" +
+            "Parent and child frames have the same base frame '" +
+            baseName + "'.";
+        addMessage(msg);
+    }
+};
+
+
+
 //==============================================================================
 //                                  MODEL
 //==============================================================================
@@ -140,7 +161,19 @@ OpenSim_OBJECT_NONTEMPLATE_DEFS(Model, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
-//==============================================================================
+//==============================================================================    
+    OpenSim_DECLARE_PROPERTY(credits, std::string,
+        "Credits (e.g., model author names) associated with the model.");
+
+    OpenSim_DECLARE_PROPERTY(publications, std::string,
+        "Publications and references associated with the model.");
+
+    OpenSim_DECLARE_PROPERTY(length_units, std::string,
+        "Units for all lengths.");
+
+    OpenSim_DECLARE_PROPERTY(force_units, std::string,
+        "Units for all forces.");
+        
     OpenSim_DECLARE_PROPERTY(assembly_accuracy, double,
     "Specify how accurate the resulting configuration of a model assembly "
     "should be. This translates to the number of significant digits in the "
@@ -152,50 +185,38 @@ public:
     "at locations measured to five significant digits while the model lacks dofs "
     "to change stance width, in which case it cannot achieve 1e-9 accuracy." );
 
+    OpenSim_DECLARE_PROPERTY(gravity, SimTK::Vec3,
+        "Acceleration due to gravity, expressed in ground.");
+    
     OpenSim_DECLARE_PROPERTY(ground, Ground,
         "The model's ground reference frame.");
-
-    OpenSim_DECLARE_PROPERTY(gravity,SimTK::Vec3,
-        "Acceleration due to gravity, expressed in ground.");
-
-    OpenSim_DECLARE_PROPERTY(credits,std::string,
-        "Credits (e.g., model author names) associated with the model.");
-
-    OpenSim_DECLARE_PROPERTY(publications,std::string,
-        "Publications and references associated with the model.");
-
-    OpenSim_DECLARE_PROPERTY(length_units,std::string,
-        "Units for all lengths.");
-
-    OpenSim_DECLARE_PROPERTY(force_units,std::string,
-        "Units for all forces.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
-        "Controllers that provide the control inputs for Actuators.");  
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
-        "Constraints in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
-        "Forces in the model (includes Actuators).");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
-        "Markers in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
-        "Geometry to be used in contact forces.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
-        "Additional components in the model.");
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
-        "Probes in the model.");
-
+    
     OpenSim_DECLARE_UNNAMED_PROPERTY(BodySet,
         "List of bodies that make up this model.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(JointSet,
         "List of joints that connect the bodies.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ConstraintSet,
+        "Constraints in the model.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MarkerSet,
+        "Markers in the model.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ForceSet,
+        "Forces in the model (includes Actuators).");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ControllerSet, 
+        "Controllers that provide the control inputs for Actuators.");  
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ContactGeometrySet,
+        "Geometry to be used in contact forces.");
+    
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ProbeSet,
+        "Probes in the model.");
+
+    OpenSim_DECLARE_UNNAMED_PROPERTY(ComponentSet,
+        "Additional components in the model.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(ModelVisualPreferences,
         "Visual preferences for this model.");
@@ -400,7 +421,9 @@ public:
      * with values populated from originalStorage. Use the default state value if
      * a state is unspecified in the originalStorage. If warnUnspecifiedStates is
      * true then a warning is printed that includes the default value used for
-     * the state value unspecified in originalStorage.
+     * the state value unspecified in originalStorage. The input originalStorage 
+     * must be in meters or radians for Coordinate values and their speeds
+     * (m/s, rad/s) otherwise an Exception is thrown.
      */
     void formStateStorage(const Storage& originalStorage, 
                           Storage& statesStorage,
@@ -860,6 +883,10 @@ public:
     std::vector<SimTK::ReferencePtr<const Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
+    /** Get a warning message if any Coordinates have a MotionType that is NOT
+        consistent with its previous user-specified value that existed in 
+        Model files prior to OpenSim 4.0 */
+    std::string getWarningMesssageForMotionTypeInconsistency() const;
 
     BodySet& updBodySet() { return upd_BodySet(); }
     const BodySet& getBodySet() const { return get_BodySet(); }
@@ -889,7 +916,7 @@ public:
     //--------------------------------------------------------------------------
     MarkerSet& updMarkerSet() { return upd_MarkerSet(); }
     const MarkerSet& getMarkerSet() const { return get_MarkerSet(); }
-    int replaceMarkerSet(const SimTK::State& s, const MarkerSet& aMarkerSet);
+
     void writeMarkerFile(const std::string& aFileName);
 
     /**
@@ -931,19 +958,24 @@ public:
     /**
      * Scale the model.
      *
-     * @param state     State containing parameter values that might be 
-     *                  modified here.
-     * @param scaleSet  The set of XYZ scale factors for the bodies.
-     * @param finalMass The mass that the scaled model should have.
-     * @param preserveMassDist 
-     *                  Whether or not the masses of the individual bodies 
-     *                  should be scaled with the body scale factors.
-     * @returns         Whether or not scaling was successful.
+     * @param state      State containing parameter values that might be
+     *                   modified here.
+     * @param scaleSet   The set of XYZ scale factors for the bodies.
+     * @param preserveMassDist
+     *                   Whether the masses of the bodies should be scaled by
+     *                   the scale factors. If `false`, body masses will be
+     *                   adjusted only if `finalMass` has been specified; if
+     *                   `true`, body masses will be scaled by the product of
+     *                   the body's scale factors (and then a second time if
+     *                   `finalMass` has been specified). Inertias are always
+     *                   updated to reflect changes in body dimensions.
+     * @param finalMass  The total mass that the scaled model should have.
+     * @returns          Whether or not scaling was successful.
      */
-    bool scale(SimTK::State&    state, 
-               const ScaleSet&  scaleSet, 
-               double           finalMass = -1.0, 
-               bool             preserveMassDist = false);
+    bool scale(SimTK::State&    state,
+               const ScaleSet&  scaleSet,
+               bool             preserveMassDist,
+               double           finalMass = -1.0);
 
     //--------------------------------------------------------------------------
     // PRINT
@@ -980,7 +1012,9 @@ public:
     /**
      * Get a log of errors/warnings encountered when loading/constructing the model
      */
-    const std::string& getValidationLog() { return _validationLog; };
+    const std::string& getValidationLog() const { return _validationLog; };
+    /** Append to the Model's validation log without affecting is current contents */
+    void appendToValidationLog(const std::string& note);
     void clearValidationLog() { _validationLog = ""; };
 
     /**

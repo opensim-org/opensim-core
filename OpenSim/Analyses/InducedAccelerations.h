@@ -190,9 +190,9 @@ public:
     // INTEGRATION
     //-------------------------------------------------------------------------
     virtual void initialize(const SimTK::State& s); 
-    int begin( SimTK::State& s) override;
+    int begin( const SimTK::State& s) override;
     int step( const SimTK::State& s, int stepNumber) override;
-    int end( SimTK::State& s) override;
+    int end( const SimTK::State& s) override;
 
     //-------------------------------------------------------------------------
     // IO

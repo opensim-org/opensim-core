@@ -26,5 +26,5 @@
 
 using namespace OpenSim;
 std::string AbstractOutput::getPathName() const {
-    return getOwner().getAbsolutePathName() + "/" + getName();
+    return getOwner().getAbsolutePathString() + "/" + getName();
 }

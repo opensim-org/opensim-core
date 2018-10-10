@@ -27,6 +27,7 @@
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
+#include <OpenSim/Analyses/OutputReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 
@@ -128,6 +129,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
     // Test that the default activation is taken into consideration by
     // the Analysis and reflected in the AnalyzeTool solution
     muscle.set_default_activation(defaultAct);
+
     analyze.run();
 
     // Load the AnalyzTool results for the muscle's force through time
@@ -136,6 +138,11 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_ForceReporter_forces.sto");
     assert(results.getNumColumns() == 1);
     SimTK::Vector forces = results.getDependentColumnAtIndex(0);
+
+    TimeSeriesTable_<double> outputs_table =
+        STOFileAdapter_<double>::
+        read("Analyze_Tug_of_War/Tug_of_War_Millard_Iso_Outputs.sto");
+    SimTK::Vector tf_output = outputs_table.getDependentColumnAtIndex(1);
 
     // Load input data as StatesTrajectory used to perform the Analysis
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
@@ -154,7 +161,7 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
 
     SimTK::State s = model.getWorkingState();
     // Independently compute the active fiber force at every state
-    for (int i = 0; i < nstates; ++i) {
+    for (size_t i = 0; i < nstates; ++i) {
         s = statesTraj[i];
         // When the muscle states are not supplied in the input dataStore
         // (isCoordinatesOnly == true), then set it to its default value.
@@ -208,11 +215,17 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         // Verify that the current computed and AnalyzeTool reported force are
         // equivalent for the provided motion file
         cout << s.getTime() << " :: muscle-fiber-force: " << mf <<
-            " Analyze reported force: " << forces[i] << endl;
-        ASSERT_EQUAL<double>(mf, forces[i], equilTol, __FILE__, __LINE__,
+            " Analyze reported force: " << forces[int(i)] << endl;
+        ASSERT_EQUAL<double>(mf, forces[int(i)], equilTol, __FILE__, __LINE__,
             "Total fiber force failed to match reported muscle force.");
 
-        double delta = (i > 0) ? abs(forces[i]-forces[i-1]) : 0;
+        cout << s.getTime() << " :: tendon-force: " << tf <<
+            " Analyze Output reported: " << tf_output[int(i)] << endl;
+        ASSERT_EQUAL<double>(tf, tf_output[int(i)], equilTol,
+            __FILE__, __LINE__,
+            "Output reported muscle-tendon force failed to match computed.");
+
+        double delta = (i > 0) ? abs(forces[int(i)]-forces[int(i-1)]) : 0;
 
         SimTK_ASSERT_ALWAYS(delta < maxDelta,
             "Force trajectory has unexplained discontinuity.");

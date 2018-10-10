@@ -53,15 +53,15 @@ public:
     Path(const char separator, const std::string invalidChars);
 
     /// Construct Path from a string, given separator character and a string
-    /// of invalidChars. Will also clean up the path by removing "." and
-    /// resolving ".." when possible.
+    /// of invalidChars. This constructor removes "." elements and resolves
+    /// ".." if possible.
     Path(const std::string path,
          const char separator,
          const std::string invalidChars);
 
     /// Construct Path from a vector of strings (pathVec), given separator
-    /// character and a string of invalidChars. Performs a cleanPath() at 
-    /// the end of construction.
+    /// character and a string of invalidChars. This constructor removes "."
+    /// elements and resolves ".." if possible.
     Path(const std::vector<std::string> pathVec,
          const char separator,
          const std::string invalidChars,
@@ -97,6 +97,16 @@ public:
     /// Pure virtual function that returns a string of invalid characters.
     virtual const std::string getInvalidChars() const = 0;
 
+    /// Return true if pathElement does not contain any chars from the list
+    /// of getInvalidChars()
+    bool isLegalPathElement(const std::string& pathElement) const;
+
+    /// This removes "." elements and resolves ".." elements if
+    /// possible (i.e., it will not remove leading ".." but otherwise will
+    /// remove pairs of ".." and the preceding element). This method also checks
+    /// if a path is invalid due to an absolute path starting with "..".
+    void trimDotAndDotDotElements();
+
 protected:
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.
@@ -111,6 +121,9 @@ protected:
     /// the last one.
     std::vector<std::string> getParentPathVec() const
     {
+        if (!getNumPathLevels()) {
+            return std::vector<std::string>{}; 
+        }
         return getSubPathVec(0, getNumPathLevels() - 1);
     }
 
@@ -138,12 +151,6 @@ private:
     /// invalid character or if it is an empty string.
     void appendPathElement(const std::string& pathElement);
 
-    /// Cleans up a path. This includes removing "." and resolving ".." if
-    /// possible (i.e. it will not remove leading ".." but otherwise will
-    /// remove the previous pathElement from _path. This method also checks
-    /// if a path is invalid due to an absolute path starting with "..".
-    void cleanPath();
-
     /// Return the sub-path, on the range [first, last).
     std::vector<std::string> getSubPathVec(size_t first, size_t last) const
     {
@@ -152,9 +159,9 @@ private:
         return subPath;
     }
 
-    /// Return true if pathElement does not contain any chars from the list
-    /// of _invalidChars
-    bool isLegalPathElement(const std::string& pathElement) const;
+    /// Return true if all elements in pathVec do not contain any chars from
+    /// the list of _invalidChars
+    bool isLegalPathVec(const std::vector<std::string>& pathVec) const;
 
     // Path variables
     std::vector<std::string> _path;

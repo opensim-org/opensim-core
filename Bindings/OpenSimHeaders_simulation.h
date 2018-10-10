@@ -138,6 +138,8 @@
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>

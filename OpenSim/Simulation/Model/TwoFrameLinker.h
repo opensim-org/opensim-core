@@ -26,7 +26,6 @@
 // INCLUDE
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include <simbody/internal/MobilizedBody.h>
 
 namespace OpenSim {
@@ -47,10 +46,6 @@ namespace OpenSim {
  *
  * @tparam C The base class.
  * @tparam F The type of frame that the class links together.
- *
- * @internal @note If your base class C has a virtual `scale()` member function
- * that you need to implement, you may want to use the scaleFrames() function
- * in this class template (e.g., see WeldConstraint).
  *
  * @author Ajay Seth
  */
@@ -194,24 +189,6 @@ protected:
     void 
     updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     /**@}**/
-
-    /**
-    * This can be used by derived classes to implement a base class' `scale()`
-    * function (e.g., see WeldConstraint). This function is NOT invoked
-    * automatically.
-    *
-    * The behavior is to scale the locations of PhyscialOffsetFrames according
-    * to the scale factors of the physical frames upon which they are attached.
-    *
-    * @internal @note Some of the base classes C used for this mixin have a
-    * virtual `scale()` member function (e.g., Constraint), but this is not
-    * true for all potential base classes.. We would ideally name this function
-    * as `scale()` and mark it as `override`, but this would give a compiler
-    * error when the base class C does not have a virtual `scale()` function.
-    *
-    * @param scaleSet   Set of XYZ scale factors for PhysicalFrames.
-    */
-    void scaleFrames(const ScaleSet& scaleSet);
 
     /** Helper method to convert internal force expressed in the mobility basis
         between frame1 and frame2, dq, as individual spatial forces acting on
@@ -378,50 +355,6 @@ const F& TwoFrameLinker<C, F>::getFrame2() const
         _frame2 = &(this->template getSocket<F>("frame2").getConnectee());
     }
     return _frame2.getRef();
-}
-
-template<class C, class F>
-void TwoFrameLinker<C, F>::scaleFrames(const ScaleSet& scaleSet)
-{
-    SimTK::Vec3 frame1Factors(1.0);
-    SimTK::Vec3 frame2Factors(1.0);
-
-    // Find the factors associated with the PhysicalFrames this Joint connects
-    const std::string& base1Name = this->getFrame1().findBaseFrame().getName();
-    const std::string& base2Name = this->getFrame2().findBaseFrame().getName();
-    // Get scale factors
-    bool found_b1 = false;
-    bool found_b2 = false;
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        Scale& scale = scaleSet.get(i);
-        if (!found_b1 && (scale.getSegmentName() == base1Name)) {
-            scale.getScaleFactors(frame1Factors);
-            found_b1 = true;
-        }
-        if (!found_b2 && (scale.getSegmentName() == base2Name)) {
-            scale.getScaleFactors(frame2Factors);
-            found_b2 = true;
-        }
-        if (found_b1 && found_b2)
-            break;
-    }
-
-    // if the frame is owned by this Joint scale it,
-    // otherwise let the owner of the frame decide.
-    int found = getProperty_frames().findIndex(getFrame1());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame1Factors);
-    }
-    found = getProperty_frames().findIndex(getFrame2());
-    if (found >= 0) {
-        PhysicalOffsetFrame* offset
-            = dynamic_cast<PhysicalOffsetFrame*>(&upd_frames(found));
-        if (offset)
-            offset->scale(frame2Factors);
-    }
 }
 
 template<class C, class F>
@@ -607,7 +540,8 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
     int documentVersion = versionNumber;
     if (documentVersion < XMLDocument::getLatestVersion()) {
         if (documentVersion < 30505) {
-            // replace old properties with latest use of PhysicalOffsetFrames properties
+            // replace old properties with latest use of PhysicalOffsetFrames
+            // properties
             SimTK::Xml::element_iterator body1Element =
                 aNode.element_begin("body_1");
             SimTK::Xml::element_iterator body2Element =
@@ -633,15 +567,11 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 body2Element->getValueAs<std::string>(frame2Name);
             }
 
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame1", frame1Name);
-            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                "frame2", frame2Name);
-
             Vec3 locationInFrame1(0);
             Vec3 orientationInFrame1(0);
             Vec3 locationInFrame2(0);
             Vec3 orientationInFrame2(0);
+
 
             if (locBody1Elt != aNode.element_end()) {
                 locBody1Elt->getValueAs<Vec3>(locationInFrame1);
@@ -656,22 +586,46 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 orientBody2Elt->getValueAs<Vec3>(orientationInFrame2);
             }
 
+            // The value of the connectee name depends on if we need to insert
+            // offset frames.
+            std::string frame1_connectee_name;
+            std::string frame2_connectee_name;
+
             // now append updated frames to the property list if they are not
             // identity transforms.
             if ((locationInFrame1.norm() > 0.0) ||
                 (orientationInFrame1.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame1Name + "_offset",
-                    frame1Name, locationInFrame1, orientationInFrame1);
-                body1Element->setValue(frame1Name + "_offset");
+                frame1_connectee_name = frame1Name + "_offset";
+                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                        frame1_connectee_name,
+                        frame1Name, locationInFrame1, orientationInFrame1);
+            } else {
+                // In pre-4.0 models, BushingForces, Constraints, and all other
+                // classes upgraded to use TwoFrameLinker, and the
+                // Bodies they depended on, are necessarily 1 level deep
+                // (subcomponent of model). Therefore, prepend "../" to get the
+                // correct relative path.
+                frame1_connectee_name = "../" + frame1Name;
             }
 
             // again for the offset frame on the child
             if ((locationInFrame2.norm() > 0.0) ||
                 (orientationInFrame2.norm() > 0.0)) {
-                XMLDocument::addPhysicalOffsetFrame(aNode, frame2Name + "_offset",
-                    frame2Name, locationInFrame2, orientationInFrame2);
+                frame2_connectee_name = frame2Name + "_offset";
+                XMLDocument::addPhysicalOffsetFrame30505(aNode,
+                        frame2_connectee_name,
+                        frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
+            } else {
+                frame2_connectee_name = "../" + frame2Name;
             }
+
+            // Now we know whether to use the original body_1 and body_2
+            // strings or if we should use the offsets.
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame1", frame1_connectee_name);
+            XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
+                "frame2", frame2_connectee_name);
         }
     }
     Super::updateFromXMLNode(aNode, versionNumber);

@@ -263,18 +263,16 @@ bool ForwardTool::run()
 
     // SETUP SIMULATION
     // Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
-    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
-    Manager manager(*_model, integrator);
+    Manager manager(*_model);
     setManager( manager );
     manager.setSessionName(getName());
     if (!_printResultFiles){
         manager.setWriteToStorage(false);
     }
-    // Initialize integrator
-    integrator.setInternalStepLimit(_maxSteps);
-    integrator.setMaximumStepSize(_maxDT);
-    integrator.setMinimumStepSize(_minDT);
-    integrator.setAccuracy(_errorTolerance);
+    manager.setIntegratorInternalStepLimit(_maxSteps);
+    manager.setIntegratorMaximumStepSize(_maxDT);
+    manager.setIntegratorMinimumStepSize(_minDT);
+    manager.setIntegratorAccuracy(_errorTolerance);
 
 
     // integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
@@ -307,7 +305,8 @@ bool ForwardTool::run()
 
         cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
         s.setTime(_ti);
-        manager.integrate(s, _tf);
+        manager.initialize(s);
+        manager.integrate(_tf);
     } catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;

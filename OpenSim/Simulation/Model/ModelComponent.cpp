@@ -127,4 +127,30 @@ void ModelComponent::updateFromXMLNode(SimTK::Xml::Element& aNode,
     Super::updateFromXMLNode(aNode, versionNumber);
 }
 
+// Base class implementations of virtual methods for scaling.
+void ModelComponent::preScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPreScale(s, scaleSet); }
+
+void ModelComponent::scale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendScale(s, scaleSet); }
+
+void ModelComponent::postScale(const SimTK::State& s, const ScaleSet& scaleSet)
+{   extendPostScale(s, scaleSet); }
+
+// (static) Returned by getScaleFactors() if scale factors not found.
+const SimTK::Vec3 ModelComponent::InvalidScaleFactors = SimTK::Vec3(0);
+
+const SimTK::Vec3& ModelComponent::
+getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
+{
+    const std::string& baseFrameName = frame.findBaseFrame().getName();
+
+    for (int i = 0; i < scaleSet.getSize(); ++i)
+        if (scaleSet[i].getSegmentName() == baseFrameName)
+            return scaleSet[i].getScaleFactors();
+
+    // No scale factors found for the base Body.
+    return InvalidScaleFactors;
+}
+
 } // end of namespace OpenSim

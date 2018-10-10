@@ -219,7 +219,6 @@ int AnalysisPlugin_Template::
 record(const SimTK::State& s)
 {
     // VARIABLES
-    double dirCos[3][3];
     SimTK::Vec3 vec,angVec;
     double Mass = 0.0;
 
@@ -279,8 +278,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int AnalysisPlugin_Template::
-begin(SimTK::State& s)
+int AnalysisPlugin_Template::begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -345,7 +343,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-end(SimTK::State& s)
+end(const SimTK::State&s)
 {
     if(!proceed()) return(0);
 

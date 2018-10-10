@@ -269,7 +269,7 @@
 						<default_color>0.9 0.9 0.9</default_color>
 					</GeometryPath>
 					<!--resting length of the ligament-->
-					<resting_length>0.14</resting_length>
+					<resting_length>0.28</resting_length>
 					<!--force magnitude that scales the force-length curve-->
 					<pcsa_force>1000</pcsa_force>
 					<!--Function representing the force-length behavior of the ligament-->
@@ -315,7 +315,7 @@
 						<default_color>0.9 0.9 0.9</default_color>
 					</GeometryPath>
 					<!--resting length of the ligament-->
-					<resting_length>0.14</resting_length>
+					<resting_length>0.28</resting_length>
 					<!--force magnitude that scales the force-length curve-->
 					<pcsa_force>1000</pcsa_force>
 					<!--Function representing the force-length behavior of the ligament-->
@@ -361,7 +361,7 @@
 						<default_color>0.9 0.9 0.9</default_color>
 					</GeometryPath>
 					<!--resting length of the ligament-->
-					<resting_length>0.06</resting_length>
+					<resting_length>0.08</resting_length>
 					<!--force magnitude that scales the force-length curve-->
 					<pcsa_force>1000</pcsa_force>
 					<!--Function representing the force-length behavior of the ligament-->
@@ -407,7 +407,7 @@
 						<default_color>0.9 0.9 0.9</default_color>
 					</GeometryPath>
 					<!--resting length of the ligament-->
-					<resting_length>0.289196876423888</resting_length>
+					<resting_length>0.294</resting_length>
 					<!--force magnitude that scales the force-length curve-->
 					<pcsa_force>1000</pcsa_force>
 					<!--Function representing the force-length behavior of the ligament-->

@@ -27,6 +27,8 @@
 #include "OpenSim/Common/IO.h"
 #include "XMLDocument.h"
 #include <unordered_map>
+#include <set>
+#include <regex>
 
 using namespace SimTK;
 
@@ -161,11 +163,15 @@ void Component::finalizeFromProperties()
     // handle nameless components so assign them their class name
     // - aseth
     if (getName().empty()) {
-        setName(IO::Lowercase(getConcreteClassName()) + "_");
+        setName(IO::Lowercase(getConcreteClassName()));
     }
 
     OPENSIM_THROW_IF( getName().empty(), ComponentHasNoName,
                       getConcreteClassName() );
+
+    ComponentPath cp;
+    OPENSIM_THROW_IF( !cp.isLegalPathElement(getName()), InvalidComponentName,
+        getName(), cp.getInvalidChars(), getConcreteClassName());
 
     for (auto& comp : _memberSubcomponents) {
         comp->setOwner(*this);
@@ -192,6 +198,52 @@ void Component::finalizeFromProperties()
 
     markPropertiesAsSubcomponents();
     componentsFinalizeFromProperties();
+
+    // The following block is used to ensure that deserialized names of 
+    // Components are unique so they can be used to unambiguously locate
+    // and connect all loaded Components. If a duplicate is encountered,
+    // it is assigned a unique name.
+    auto subs = getImmediateSubcomponents();
+    std::set<std::string> names{};
+
+    // increment the count of duplicates to use as a unique suffix
+    int count{ 0 };
+    // temp variable to hold the unique name used to rename a duplicate
+    std::string uniqueName{};
+
+    for (auto& sub : subs) {
+        const std::string& name = sub->getName();
+
+        // reset duplicate count and search name
+        count = 0;
+        uniqueName = name;
+
+        // while the name is still not unique keep incrementing the count
+        while (names.find(uniqueName) != names.cend()) {
+            // In the future this should become an Exception 
+            //OPENSIM_THROW(SubcomponentsWithDuplicateName, getName(), searchName);
+            // for now, rename the duplicately named subcomponent 
+            // but first test the uniqueness of the name (the while condition)
+            uniqueName = name + "_" + std::to_string(count++);
+        }
+
+        if (count > 0) { // if a duplicate
+            // Warn of the problem
+            std::string msg = getConcreteClassName() + " '" + getName() +
+                "' has subcomponents with duplicate name '" + name +  "'.\n" +
+                "The duplicate is being renamed to '" + uniqueName + "'.";
+            std::cout << msg << std::endl;
+
+            // Now rename the subcomponent with its verified unique name
+            Component* mutableSub = const_cast<Component *>(sub.get());
+            mutableSub->setName(uniqueName);
+        }
+
+        // keep track of unique names
+        names.insert(uniqueName);
+    }
+    // End of duplicate finding and renaming.
+
     extendFinalizeFromProperties();
     setObjectIsUpToDateWithProperties();
 }
@@ -345,6 +397,10 @@ void Component::baseAddToSystem(SimTK::MultibodySystem& system) const
 
         throw Exception(msg);
     }
+
+    // Clear cached list of all related StateVariables if any from a previous
+    // System.
+    _allStateVariables.clear();
 
     // Briefly get write access to the Component to record some
     // information associated with the System; that info is const after this.
@@ -580,7 +636,7 @@ unsigned Component::printComponentsMatching(const std::string& substring) const
     components.setFilter(ComponentFilterAbsolutePathNameContainsString(substring));
     unsigned count = 0;
     for (const auto& comp : components) {
-        std::cout << comp.getAbsolutePathName() << std::endl;
+        std::cout << comp.getAbsolutePathString() << std::endl;
         ++count;
     }
     return count;
@@ -638,7 +694,22 @@ void Component::setOwner(const Component& owner)
     _owner.reset(&owner);
 }
 
-std::string Component::getAbsolutePathName() const
+std::string Component::getAbsolutePathString() const
+{
+    std::string absPathName("/" + getName());
+
+    const Component* up = this;
+
+    while (up && up->hasOwner()) {
+        up = &up->getOwner();
+        absPathName.insert(0, "/" + up->getName());
+    }
+
+    return absPathName;
+
+}
+
+ComponentPath Component::getAbsolutePath() const
 {
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
@@ -649,67 +720,42 @@ std::string Component::getAbsolutePathName() const
         up = &up->getOwner();
         pathVec.insert(pathVec.begin(), up->getName());
     }
-    // The root must have a leading '/' 
-    ComponentPath path(pathVec, true);
 
-    return path.toString();
+    return ComponentPath(pathVec, true);
 }
 
 std::string Component::getRelativePathName(const Component& wrt) const
 {
-    ComponentPath thisP(getAbsolutePathName());
-    ComponentPath wrtP(wrt.getAbsolutePathName());
+    ComponentPath thisP = getAbsolutePath();
+    ComponentPath wrtP = wrt.getAbsolutePath();
 
     return thisP.formRelativePath(wrtP).toString();
 }
 
 const Component::StateVariable* Component::
-    findStateVariable(const std::string& name) const
+    traverseToStateVariable(const std::string& pathName) const
 {
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    // Split the prefix from the varName (part of string past the last "/")
-    // In the case where no "/" is found, prefix = name.
-    std::string::size_type back = name.rfind("/");
-    std::string prefix = name.substr(0, back);
-
-    // In the case where no "/" is found, this assigns varName = name.
-    // When "/" is not found, back = UINT_MAX. Then, back + 1 = 0.
-    // Subtracting by UINT_MAX is effectively adding by 1, so the next line
-    // should work in all cases except if name.length() = UINT_MAX.
-    std::string varName = name.substr(back + 1, name.length() - back);
-
-    // first assume that the state variable named belongs to this
-    // top level component
-    std::map<std::string, StateVariableInfo>::const_iterator it;
-    it = _namedStateVariableInfo.find(varName);
-
-    if (it != _namedStateVariableInfo.end()) {
-        return it->second.stateVariable.get();
-    }
+    ComponentPath svPath(pathName);
 
     const StateVariable* found = nullptr;
-    const Component* comp = traversePathToComponent<Component>(prefix);
-
-    if (comp) {
-        found = comp->findStateVariable(varName);
-    }
-
-    // Path not given or could not find it along given path name
-    // Now try complete search.
-    if (!found) {
-        for (unsigned int i = 0; i < _propertySubcomponents.size(); ++i) {
-            comp = _propertySubcomponents[i]->findComponent(prefix, &found);
-            if (found) {
-                return found;
-            }
-            if (comp) {
-                return comp->findStateVariable(varName);
-            }
+    if (svPath.getNumPathLevels() == 1) {
+        // There was no slash. The state variable should be in this component.
+        auto it = _namedStateVariableInfo.find(pathName);
+        if (it != _namedStateVariableInfo.end()) {
+            return it->second.stateVariable.get();
+        }
+    } else if (svPath.getNumPathLevels() > 1) {
+        const auto& compPath = svPath.getParentPath();
+        const Component* comp = traversePathToComponent<Component>(compPath);
+        if (comp) {
+            // This is the leaf of the path:
+            const auto& varName = svPath.getComponentName();
+            found = comp->traverseToStateVariable(varName);
         }
     }
-
     return found;
 }
 
@@ -724,11 +770,11 @@ Array<std::string> Component::getStateVariableNames() const
 
 /** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
-        stateNames[i] = (getAbsolutePathName() + "/" + stateNames[i]);
+        stateNames[i] = (getAbsolutePathString() + "/" + stateNames[i]);
     }
 
     for (auto& comp : getComponentList<Component>()) {
-        const std::string& pathName = comp.getAbsolutePathName();// *this);
+        const std::string& pathName = comp.getAbsolutePathString();// *this);
         Array<std::string> subStateNames = 
             comp.getStateVariablesNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
@@ -792,7 +838,7 @@ double Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable with this component or its subcomponents
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
     if (rsv) {
         return rsv->getValue(s);
     }
@@ -823,7 +869,7 @@ double Component::
     } 
     else{
         // otherwise find the component that variable belongs to
-        const StateVariable* rsv = findStateVariable(name);
+        const StateVariable* rsv = traverseToStateVariable(name);
         if (rsv) {
             return rsv->getDerivative(state);
         }
@@ -847,7 +893,7 @@ void Component::
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable
-    const StateVariable* rsv = findStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(name);
 
     if(rsv){ // find required rummaging through the state variable names
             return rsv->setValue(s, value);
@@ -904,7 +950,7 @@ SimTK::Vector Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     Vector stateVariableValues(nsv, SimTK::NaN);
@@ -937,7 +983,7 @@ void Component::
         _allStateVariables.resize(nsv);
         Array<std::string> names = getStateVariableNames();
         for (int i = 0; i < nsv; ++i)
-            _allStateVariables[i].reset(findStateVariable(names[i]));
+            _allStateVariables[i].reset(traverseToStateVariable(names[i]));
     }
 
     for(int i=0; i<nsv; ++i){
@@ -1040,6 +1086,29 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
+        if (versionNumber < 30500) {
+            // In 3.3 and earlier, spaces in names were tolerated. Spaces are
+            // no longer acceptable in Component names.
+            if (node.hasAttribute("name")) {
+                auto name = node.getRequiredAttribute("name").getValue();
+                if (name.find_first_of("\n\t ") < std::string::npos) {
+                    std::cout << getConcreteClassName() << " name '" << name
+                        << "' contains whitespace. ";
+                    name.erase(
+                        std::remove_if(name.begin(), name.end(), ::isspace),
+                        name.end() );
+                    node.setAttributeValue("name", name);
+                    std::cout << "It was renamed '" << name << "'." << std::endl;
+                }
+            }
+            else { // As 4.0 all Components must have a name. If none, assign one.
+                // Note: in finalizeFromProperties(), the Component will ensure
+                // that names are unique by travesing its list of subcomponents
+                // and renaming any duplicates.
+                node.setAttributeValue("name", 
+                    IO::Lowercase(getConcreteClassName()));
+            }
+        }
         if (versionNumber < 30508) {
             // Here's an example of the change this function might make:
             // Previous: <connectors>
@@ -1069,6 +1138,29 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
                 }
             }
             
+        }
+        if (versionNumber <= 30516) {
+            // Rename xml tags for socket_*_connectee_name to socket_*
+            std::string connecteeNameString = "_connectee_name";
+            for (auto iter = node.element_begin();
+                iter != node.element_end();
+                ++iter) {
+                auto tagname = iter->getElementTag();
+                if (std::regex_match(tagname, std::regex("(socket_|input_)(.*)(_connectee_name)"))) {
+                    auto pos = tagname.find(connecteeNameString);
+                    if (pos != std::string::npos) {
+                        tagname.replace(pos, connecteeNameString.length(), "");
+                        iter->setElementTag(tagname);
+                    }
+                }
+                else if (std::regex_match(tagname, std::regex("(input_)(.*)(_connectee_names)"))) {
+                    auto pos = tagname.find(connecteeNameString);
+                    if (pos != std::string::npos) {
+                        tagname.replace(pos, connecteeNameString.length()+1, "");
+                        iter->setElementTag(tagname);
+                    }
+                }
+            }
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
@@ -1138,8 +1230,8 @@ void Component::markAsPropertySubcomponent(const Component* component)
             SimTK::ReferencePtr<Component>(const_cast<Component*>(component)));
     }
     else{
-        auto compPath = component->getAbsolutePathName();
-        auto foundPath = it->get()->getAbsolutePathName();
+        auto compPath = component->getAbsolutePathString();
+        auto foundPath = it->get()->getAbsolutePathString();
         OPENSIM_THROW( ComponentAlreadyPartOfOwnershipTree,
                        component->getName(), getName());
     }
@@ -1551,11 +1643,10 @@ void Component::printSubcomponentInfo() const {
 }
 
 void Component::printOutputInfo(const bool includeDescendants) const {
-    using ValueType = std::pair<std::string, SimTK::ClonePtr<AbstractOutput>>;
 
     // Do not display header for Components with no outputs.
     if (getNumOutputs() > 0) {
-        const std::string msg = "Outputs from " + getAbsolutePathName() +
+        const std::string msg = "Outputs from " + getAbsolutePathString() +
             " [" + getConcreteClassName() + "]";
         std::cout << msg << "\n" << std::string(msg.size(), '=') << std::endl;
 

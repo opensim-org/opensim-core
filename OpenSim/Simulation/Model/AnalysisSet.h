@@ -96,12 +96,9 @@ public:
     //--------------------------------------------------------------------------
     // CALLBACKS
     //--------------------------------------------------------------------------
-    virtual void
-        begin(SimTK::State& s );
-    virtual void
-        step(const SimTK::State& s, int stepNumber );
-    virtual void
-        end(SimTK::State& s );
+    void begin(const SimTK::State& s );
+    void step(const SimTK::State& s, int stepNumber );
+    void end(const SimTK::State& s );
 
     //--------------------------------------------------------------------------
     // RESULTS

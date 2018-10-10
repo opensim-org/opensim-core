@@ -143,13 +143,13 @@ void testMcKibbenActuator()
     double nsteps = 10;
     double dt = final_t / nsteps;
 
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(1e-7);
-    Manager manager(*model, integrator);
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(1e-7);
     si.setTime(0.0);
+    manager.initialize(si);
 
     for (int i = 1; i <= nsteps; i++){
-        manager.integrate(si, dt*i);
+        si = manager.integrate(dt*i);
         model->getMultibodySystem().realize(si, Stage::Velocity);
         Vec3 pos = ball->findStationLocationInGround(si, Vec3(0));
 
@@ -304,14 +304,14 @@ void testTorqueActuator()
     // determine the initial kinetic energy of the system
     /*double iKE = */model->getMatterSubsystem().calcKineticEnergy(state);
 
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model,  integrator);
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state.setTime(0.0);
+    manager.initialize(state);
 
     double final_t = 1.00;
-    manager.integrate(state, final_t);
+    state = manager.integrate(final_t);
 
     model->computeStateVariableDerivatives(state);
 
@@ -447,16 +447,15 @@ void testClutchedPathSpring()
 
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model,  integrator);
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(integ_accuracy);
     manager.setWriteToStorage(true);
 
     state.setTime(0.0);
+    manager.initialize(state);
 
     double final_t = 4.99999;
-    manager.integrate(state, final_t);
+    state = manager.integrate(final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -477,7 +476,7 @@ void testClutchedPathSpring()
 
     // unclamp and continue integrating
     final_t = 5.99999;
-    manager.integrate(state, final_t);
+    state = manager.integrate(final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -491,7 +490,7 @@ void testClutchedPathSpring()
 
     // spring is reclamped at 7s so keep integrating
     final_t = 10.0;
-    manager.integrate(state, final_t);
+    state = manager.integrate(final_t);
 
     // tension is dynamics dependent because controls must be computed
     model->getMultibodySystem().realize(state, Stage::Dynamics);
@@ -677,14 +676,14 @@ void testBodyActuator()
         ASSERT_EQUAL(udotMobility[i], udotBodyActuator[i], SimTK::Eps);
     }
 
-    // -------------- Setup integrator and manager -------------------
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model, integrator);
+    // -------------- Setup manager -------------------
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state1.setTime(0.0);
+    manager.initialize(state1);
     double final_t = 1.00;
-    manager.integrate(state1, final_t);
+    state1 = manager.integrate(final_t);
 
     // ----------------- Test Copying the model -------------------
     // Before exiting lets see if copying the actuator works
@@ -903,14 +902,14 @@ void testActuatorsCombination()
         ASSERT_EQUAL(udotOnlyBodyActuator[i], udotActuatorsCombination[i], 1.0e-12);
     }
     
-    // ------------------------ Setup integrator and manager -----------------------
-    RungeKuttaMersonIntegrator integrator(model->getMultibodySystem());
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*model, integrator);
+    // ------------------------ Setup manager -----------------------
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     state2.setTime(0.0);
+    manager.initialize(state2);
     double final_t = 1.00;
-    manager.integrate(state2, final_t);
+    state2 = manager.integrate(final_t);
 
 
     std::cout << " ********** Test Actuator Combination time = ********** " <<

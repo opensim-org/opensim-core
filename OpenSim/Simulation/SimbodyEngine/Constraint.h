@@ -96,8 +96,6 @@ public:
      * size. */
     virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
-    virtual void scale(const ScaleSet& aScaleSet) {};
-
     /**
     * This method specifies the interface that a constraint must implement
     * in order to be used by the Induced Accelerations Analysis

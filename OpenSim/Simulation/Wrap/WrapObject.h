@@ -44,7 +44,7 @@ class AbstractPathPoint;
  * @version 1.0
  */
 class OSIMSIMULATION_API WrapObject : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Component);
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, ModelComponent);
 public:
 //==============================================================================
 // PROPERTIES
@@ -96,7 +96,7 @@ public:
 
     // Use default copy and assignment operator
 
-    virtual void scale(const SimTK::Vec3& aScaleFactors);
+    void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
     virtual void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) {}
 
     const PhysicalFrame& getFrame() const;
@@ -137,7 +137,6 @@ protected:
                          const PathWrap& aPathWrap,
                          WrapResult& aWrapResult, bool& aFlag) const = 0;
 
-    virtual void updateGeometry() {};
     /**
      * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
      * it is attached to.

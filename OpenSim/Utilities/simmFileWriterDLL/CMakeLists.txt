@@ -10,4 +10,6 @@ OpenSimAddLibrary(
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS ""
+    # Don't install the headers (see function definition).
+    INCLUDEDIRS TRUE
     )

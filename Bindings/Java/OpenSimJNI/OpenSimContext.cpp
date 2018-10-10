@@ -46,9 +46,10 @@
 
 namespace OpenSim {
 
-OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
-    _configState(s),
-  _model(model) {}
+OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) {
+    _configState.reset(s);
+    _model.reset(model);
+}
 
 
 // Transforms
@@ -236,6 +237,11 @@ void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
     recreateSystemKeepStage();
 }
 
+void OpenSimContext::setLocation(PathPoint& mp, const SimTK::Vec3& newLocation) {
+    mp.setLocation(newLocation);
+    recreateSystemKeepStage();
+}
+
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     mw.setEndPoint(*_configState, newEndPt );
     recreateSystemKeepStage();
@@ -291,6 +297,9 @@ void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
 
 void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
     p.addPathWrap( awo );
+    // Adding WrapObject to a GeometryPath requires initSystem similar to other Path edit operations
+    recreateSystemKeepStage();
+    p.updateGeometry(*_configState);
     return;
 }
 
@@ -359,11 +368,11 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      const std::string& aPathToSubject,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updWorkingState();
+    _configState.reset(&aModel->updWorkingState());
   bool retValue= modelScaler.processModel(aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updWorkingState();
+    _configState.reset(&aModel->updWorkingState());
   aModel->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
   return retValue;
 }
@@ -399,7 +408,7 @@ void OpenSimContext::realizeVelocity() {
 
 void OpenSimContext::cacheModelAndState() 
 {
-    clonedModel = _model->clone();
+    clonedModel.reset(_model->clone());
     clonedState = this->getCurrentStateCopy();
 }
 
@@ -422,6 +431,5 @@ void OpenSimContext::restoreStateFromCachedModel()
     }
     this->setState(&(_model->updWorkingState()));
     this->realizePosition();
-    delete clonedModel;
 }
 } // namespace

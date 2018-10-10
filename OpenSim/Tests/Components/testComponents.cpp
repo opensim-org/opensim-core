@@ -240,10 +240,15 @@ void testComponent(const Component& instanceToTest)
             if (dependency) {
                 //give it some random values including a name
                 randomize(dependency.get());
-                socket.setConnecteeName(dependency->getName());
 
                 // add the dependency 
+                const Object* depRawPtr = dependency.get();
                 addObjectAsComponentToModel(dependency.release(), model);
+
+                // Connect the socket. This should come after adding the
+                // dependency to the model, otherwise the "connectee name"
+                // relative path will be incorrect.
+                socket.connect(*depRawPtr);
             }
         }
         

@@ -60,7 +60,7 @@ BodyActuator::BodyActuator(const Body& body,
     setAuthors("Soha Pouya, Michael Sherman");
     constructProperties();
 
-    updSocket<Body>("body").setConnecteeName(body.getName());
+    connectSocket_body(body);
 
     set_point(point); // origin
     set_point_is_global(pointIsGlobal);

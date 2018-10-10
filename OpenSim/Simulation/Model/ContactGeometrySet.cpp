@@ -108,15 +108,3 @@ ContactGeometrySet& ContactGeometrySet::operator=(const ContactGeometrySet &aCon
     return (*this);
 }
 #endif
-
-//=============================================================================
-// UTILITY
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale ContactGeometrySet by a set of scale factors
- */
-void ContactGeometrySet::scale(const ScaleSet& aScaleSet)
-{
-    for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
-}

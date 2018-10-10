@@ -268,6 +268,10 @@ public:
     */
     double calcDerivative(double aNormLength, int order) const;
 
+    /// If possible, use the simpler overload above.
+    double calcDerivative(const std::vector<int>& derivComponents,
+                          const SimTK::Vector& x) const override;
+
     /**     
     @param aNormLength
                 Here aNormLength = l/l0, where l is the length 

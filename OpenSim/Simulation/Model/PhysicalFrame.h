@@ -65,8 +65,7 @@ public:
     /* TODO: Both VisibleObject and the WrapObjectSet should NOT be properties
     of the PhysicalFrame. This is an intermediate solution as we integrate Frames 
     use into the OpenSim API. These properties should be their own components with
-    Sockets to the PhysicalFrames they attach to. This must be addressed prior
-    to OpenSim 4.0 release. - aseth
+    Sockets to the PhysicalFrames they attach to. - aseth
 
     Note: VisibleObject was removed from this class by @aymanhab via PR #417.
                                                             -@chrisdembia
@@ -135,10 +134,6 @@ public:
 
     // End of underlying MobilizedBody accessors.
     ///@}
-
-    /** Scale PhysicalFrame related dimensions according to predetermined 
-        ScaleFactors */
-    void scale(const SimTK::Vec3& scaleFactors);
 
     /** @name DEPRECATED API */
 
@@ -212,11 +207,13 @@ private:
         const SimTK::Vec6& outerTransform,
         SimTK::Xml::Element& geomSetElement);
 
-    /* Utility to construct a PhysicalOffsetFrame from properties of an
-       offset transform. */
+    /* Utility for updating XML: add a PhysicalOffsetFrame to the XML element
+    pointed to by ownerIter, and gives the frame the provided name, transform
+    (from the frame's parent frame), and the path (connectee name) to the
+    parent frame.*/
     static void createFrameForXform(const SimTK::Xml::element_iterator&,
         const std::string& frameName,
-        const SimTK::Vec6& localXform, const std::string& bodyName);
+        const SimTK::Vec6& localXform, const std::string& parentConnecteeName);
 
 
     /* ID for the underlying mobilized body in Simbody system.

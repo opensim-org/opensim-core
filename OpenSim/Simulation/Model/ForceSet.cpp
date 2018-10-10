@@ -258,7 +258,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 //_____________________________________________________________________________
 /**
  * Set the actuator at an index.  A copy of the specified actuator is NOT made.
- * The actuator previously set a the index is removed (and deleted).
+ * The actuator previously set at the index is removed (and deleted).
  *
  * This method overrides the method in Set<Force> so that several
  * internal variables of the actuator set can be updated.
@@ -268,9 +268,10 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
  * @param aActuator Pointer to the actuator to be set.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::set(int aIndex,Force *aActuator)
+bool ForceSet::set(int aIndex,Force *aActuator, bool preserveGroups)
 {
-    bool success = ModelComponentSet<Force>::set(aIndex,aActuator);
+    bool success = ModelComponentSet<Force>::set(aIndex, aActuator,
+                                                 preserveGroups);
 
     if(success) {
         updateActuators();

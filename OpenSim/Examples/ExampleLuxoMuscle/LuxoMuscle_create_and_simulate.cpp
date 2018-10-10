@@ -243,12 +243,9 @@ int main(int argc, char* argv[]) {
         luxo.addAnalysis(reporter);
         
         //setup simulation
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator(luxo.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the manager managing the forward integration and its outputs
-        Manager manager(luxo,  integrator);
+        Manager manager(luxo);
+        manager.setIntegratorAccuracy(1.0e-6);
         
         // Print out details of the model
         luxo.printDetailedInfo(state, std::cout);
@@ -258,8 +255,9 @@ int main(int argc, char* argv[]) {
         
         
         state.setTime(0.0);
+        manager.initialize(state);
         std::cout<<"Integrating for " << sim_time << " seconds" <<std::endl;
-        manager.integrate(state, sim_time);
+        manager.integrate(sim_time);
         std::cout<<"Integration finished."<<std::endl;
         
         //////////////////////////////

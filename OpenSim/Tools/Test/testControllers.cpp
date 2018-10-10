@@ -142,14 +142,14 @@ void testControlSetControllerOnBlock()
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
     double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
@@ -234,14 +234,14 @@ void testPrescribedControllerOnBlock(bool enabled)
 
     // Create the integrator and manager for the simulation.
     double accuracy = 1.0e-3;
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(accuracy);
-    Manager manager(osimModel, integrator);
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(accuracy);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
 
@@ -302,10 +302,9 @@ void testCorrectionControllerOnBlock()
     // Initialize the system and get the state representing the state system
     /*SimTK::State& si = */osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-4);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-4);
 
     osimModel.disownAllComponents();
 }// end of testCorrectionControllerOnBlock()
@@ -341,15 +340,15 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-    integrator.setAccuracy(1.0e-5);
-    Manager manager(osimModel, integrator);
+    // Create the manager for the simulation.
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
     si.setTime(initialTime);
+    manager.initialize(si);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager.integrate(si, finalTime);
+    si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
     // Save the simulation results
@@ -382,15 +381,15 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Initialize the system and get the state representing the state system
     SimTK::State& s2 = osimModel.initSystem();
 
-    // Create the integrator and manager for the simulation.
-    SimTK::RungeKuttaMersonIntegrator integrator2(osimModel.getMultibodySystem());
-    integrator2.setAccuracy(1.0e-5);
-    Manager manager2(osimModel, integrator2);
+    // Create the manager for the simulation.
+    Manager manager2(osimModel);
+    manager2.setIntegratorAccuracy(1.0e-5);
 
     // Integrate from initial time to final time
     s2.setTime(initialTime);
+    manager2.initialize(s2);
     cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
-    manager2.integrate(s2, finalTime);
+    s2 = manager2.integrate(finalTime);
 
     // Save the simulation results
     Storage states(manager2.getStateStorage());

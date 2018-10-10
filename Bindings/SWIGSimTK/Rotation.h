@@ -196,7 +196,6 @@ public:
     /// Calculate R_AB by knowing one of B's unit vector expressed in A.
     /// Note: The other vectors are perpendicular (but somewhat arbitrarily so).
     //@{
-#ifndef SWIG
     Rotation_( const UnitVec3& uvec, const CoordinateAxis axis )  { setRotationFromOneAxis(uvec,axis); }
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromOneAxis( const UnitVec3& uvec, const CoordinateAxis axis );
     //@}
@@ -210,7 +209,6 @@ public:
     //@{
     Rotation_( const UnitVec3& uveci, const CoordinateAxis& axisi, const Vec3& vecjApprox, const CoordinateAxis& axisjApprox )  { setRotationFromTwoAxes(uveci,axisi,vecjApprox,axisjApprox); }
     /* SimTK_SimTKCOMMON_EXPORT */ Rotation_&  setRotationFromTwoAxes( const UnitVec3& uveci, const CoordinateAxis& axisi, const Vec3& vecjApprox, const CoordinateAxis& axisjApprox );
-#endif
     //@}
 
     // Converts rotation matrix to one or two or three orientation angles.

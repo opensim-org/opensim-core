@@ -68,37 +68,53 @@ namespace OpenSim {
     }
     inline std::string GetCompilerVersion() {
         std::string os = GetOSInfo();
-        std::string str;
+        std::string str = "(Unknown)";
 
         if( 0 == os.compare("Windows")) {
-            switch( atoi(GET_COMPILER_INFO) ) {
-            case 1910:
-                str = "Visual Studio 2017";
-                break;
-            case 1900:
-                str = "Visual Studio 2015";
-                break;
-            case 1800:
-                str = "Visual Studio 2013";
-                break;
-            case 1700:
-                str = "Visual Studio 2011";
-                break;
-            case 1600:
-                str = "Visual Studio 2010";
-                break;
-            case 1500:
-                str = "Visual Studio 2008";
-                break;
-            case 1400:
-                str = "Visual Studio 2005";
-                break;
-            case 1310:
-                str = "Visual Studio 2003";
-                break;
-            case 1300:
-                str = "Visual Studio 2002";
-                break;
+            const int MSVCVersion = atoi(GET_COMPILER_INFO);
+            if( MSVCVersion >= 1910 ) {
+                // With Visual Studio 2017, the versioning of the Visual C++
+                // compiler became more fine-grained, so we can no longer use
+                // a switch statement.
+                // Also, Visual Studio 2017 decouples the Visual Studio IDE
+                // from the C++ toolset (compiler), so providing the IDE year 
+                // does not indicate the compiler version (it may be possible
+                // to use the Visual Studio 2019 IDE, or whatever is next, 
+                // with the same C++ toolset that came with Visual Studio 2017.
+                // Therefore, we no longer provide the Visual Studio year.
+                // https://blogs.msdn.microsoft.com/vcblog/2016/10/05/visual-c-compiler-version/
+                // https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+                if (1910 <= MSVCVersion && MSVCVersion < 2000) {
+                    str = "Microsoft Visual C++ 14.1";
+                }
+                str += " (MSC_VER " + std::to_string(MSVCVersion) + ")";
+            } else {
+                switch( MSVCVersion ) {
+                case 1900:
+                    str = "Visual Studio 2015";
+                    break;
+                case 1800:
+                    str = "Visual Studio 2013";
+                    break;
+                case 1700:
+                    str = "Visual Studio 2011";
+                    break;
+                case 1600:
+                    str = "Visual Studio 2010";
+                    break;
+                case 1500:
+                    str = "Visual Studio 2008";
+                    break;
+                case 1400:
+                    str = "Visual Studio 2005";
+                    break;
+                case 1310:
+                    str = "Visual Studio 2003";
+                    break;
+                case 1300:
+                    str = "Visual Studio 2002";
+                    break;
+                }
             }
         } else if( 0 == os.compare("Darwin")) {
             str = "Mac OS X :";

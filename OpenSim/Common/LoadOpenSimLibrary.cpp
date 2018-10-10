@@ -103,7 +103,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
     // mode and a debug library is specified, we'll first try loading the debug library,
     // and then try loading the release library.
     bool tryDebugThenRelease = false;
-#ifdef _DEBUG
+#ifndef NDEBUG
     if(!hasDebugSuffix) {
         if(verbose) cout << "Will try loading debug library first" << endl;
         tryDebugThenRelease = true;
@@ -146,7 +146,7 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
 OSIMCOMMON_API void
 OpenSim::LoadOpenSimLibrary(const std::string &aLibraryName)
 {
-    OPENSIM_PORTABLE_HINSTANCE library = LoadOpenSimLibrary(aLibraryName, true);
+    LoadOpenSimLibrary(aLibraryName, true);
 }
 
 OSIMCOMMON_API bool

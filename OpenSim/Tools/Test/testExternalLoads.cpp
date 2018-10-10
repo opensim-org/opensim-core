@@ -29,18 +29,14 @@ using namespace OpenSim;
 using namespace std;
 
 void testExternalLoad();
+void testExternalLoadDefaultProperties();
 
 int main()
 {
-    try {
-        testExternalLoad();
-    }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
+    SimTK_START_TEST("testExternalLoads");
+        SimTK_SUBTEST(testExternalLoad);
+        SimTK_SUBTEST(testExternalLoadDefaultProperties);
+    SimTK_END_TEST();
 }
 
 
@@ -112,13 +108,13 @@ void testExternalLoad()
 
     // Integrator and integration manager
     double integ_accuracy = 1e-6;
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integ_accuracy);
     s.setTime(init_t);
+    manager.initialize(s);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager.integrate(s, dt*i);
+        manager.integrate(dt*i);
         q_grav[i] = model.updCoordinateSet()[0].getValue(s);
     }
 
@@ -169,17 +165,17 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s2, q_init);
 
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem() );
-    integrator2.setAccuracy(integ_accuracy);
-    Manager manager2(model,  integrator2);
+    Manager manager2(model);
+    manager2.setIntegratorAccuracy(integ_accuracy);
     s2.setTime(init_t);
+    manager2.initialize(s2);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf(nsteps+1);
     Vector_<Vec3> pcom_xf(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager2.integrate(s2, dt*i);
+        manager2.integrate(dt*i);
         q_xf[i] = model.updCoordinateSet()[0].getValue(s2);
     }
 
@@ -242,16 +238,16 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s3, q_init);
 
-    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem() );
-    integrator3.setAccuracy(integ_accuracy);
-    Manager manager3(model,  integrator3);
+    Manager manager3(model);
+    manager3.setIntegratorAccuracy(integ_accuracy);
     s3.setTime(init_t);
+    manager3.initialize(s3);
 
     // Simulate with the external force applied instead of gravity
     Vector_<double> q_xf2(nsteps+1);
 
     for(int i = 0; i < nsteps+1; i++){
-        manager3.integrate(s3, dt*i);
+        manager3.integrate(dt*i);
         q_xf2[i] = model.updCoordinateSet()[0].getValue(s3);
     }
 
@@ -262,4 +258,60 @@ void testExternalLoad()
 
     // kinematics should match to within integ accuracy
     ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
+}
+
+// Ensure the default values for the ExternalForce properties work as expected.
+void testExternalLoadDefaultProperties() {
+    using namespace SimTK;
+
+    Model model("Pendulum.osim");
+
+    auto& pendulum = model.getBodySet().get(model.getNumBodies()-1);
+    string pendBodyName = pendulum.getName();
+    Vec3 comInB = pendulum.getMassCenter();
+
+    Storage forceStore;
+    addLoadToStorage(forceStore,  pendulum.getMass()*model.getGravity(),
+            comInB, Vec3(0, 0, 0));
+    forceStore.setName("test_external_load_default_properties.sto");
+    forceStore.print(forceStore.getName());
+
+    ExternalForce* xf = new ExternalForce();
+    xf->setName("grav");
+    xf->setDataSource(forceStore);
+    SimTK_TEST(!xf->appliesForce());
+    SimTK_TEST(!xf->specifiesPoint());
+    SimTK_TEST(!xf->appliesTorque());
+    xf->set_force_identifier("force");
+    SimTK_TEST(xf->appliesForce());
+    xf->set_point_identifier("point");
+    SimTK_TEST(xf->specifiesPoint());
+    xf->set_torque_identifier("torque");
+    SimTK_TEST(xf->appliesTorque());
+    SimTK_TEST(xf->getAppliedToBodyName() == "");
+    xf->set_applied_to_body(pendBodyName);
+    SimTK_TEST(xf->getPointExpressedInBodyName() == "ground");
+    xf->set_point_expressed_in_body(pendBodyName);
+    SimTK_TEST(xf->getForceExpressedInBodyName() == "ground");
+    // Leave force_expressed_in_body as default ("ground").
+    ExternalLoads* extLoads = new ExternalLoads(model);
+    extLoads->adoptAndAppend(xf);
+
+    extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");
+
+    for(int i=0; i<extLoads->getSize(); i++)
+        model.addForce(&(*extLoads)[i]);
+    
+    // Ensure that, even when force_expressed_in_body is unspecified, no issues
+    // occur when initializing ExternalForce.
+    model.initSystem();
+
+    // ExternalForce throws an exception if it can't find the applied_to_body.
+    xf->set_applied_to_body("");
+    SimTK_TEST_MUST_THROW_EXC(model.initSystem(), OpenSim::Exception);
+    xf->set_applied_to_body(pendBodyName);
+
+    // If force_expressed_in_body can't be found, it's set to ground; no error.
+    xf->set_force_expressed_in_body("nonexistent");
+    model.initSystem();
 }

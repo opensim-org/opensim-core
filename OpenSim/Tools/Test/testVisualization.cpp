@@ -169,6 +169,10 @@ void testVisModel(Model& model, const std::string standard_filename)
     if (visualDebug) 
         model.setUseVisualizer(true);
     SimTK::State& si = model.initSystem();
+
+    // Compute muscle dynamics to evaluate Muscle color
+    model.realizeDynamics(si);
+    
     if (visualDebug) 
         model.getVisualizer().show(si);
     ModelDisplayHints mdh; 
@@ -251,9 +255,10 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
     const ModelDisplayHints& mdh = model.getDisplayHints();
     SimTK::Array_<SimTK::DecorativeGeometry> geometryToDisplay;
     model.generateDecorations(true, mdh, si, geometryToDisplay);
-    cout << geometryToDisplay.size() << endl;
+    cout << "Number of fixed geometries: " << geometryToDisplay.size() << endl;
     model.generateDecorations(false, mdh, si, geometryToDisplay);
-    cout << geometryToDisplay.size() << endl;
+    cout << "Number of fixed and non-fixed geometries: "
+         << geometryToDisplay.size() << endl;
     /*
     DecorativeGeometryImplementationText textFromModel;
     textFromModel.setPrintTransforms(true); // Debugging
@@ -276,6 +281,10 @@ bool testVisModelAgainstStandard(Model& model, const SimTK::Array_<DecorativeGeo
                 throw  OpenSim::Exception("failed comparing " + dgiTextFromStandard.getAsString() + "vs." + dgiTextFromModel.getAsString());
             // Compare transforms, this has to be more lenient than String comparison due to roundoff
             SimTK::Mat44 diffTransform = nextGeom->getTransform().toMat44() - geometryToDisplay[i].getTransform().toMat44();
+            // std::cout << "Transform from standard: "
+            //      << nextGeom->getTransform().toMat44() << std::endl;
+            // std::cout << "Transform from model: "
+            //      << geometryToDisplay[i].getTransform().toMat44() << std::endl;
             double norm = diffTransform.norm();
             SimTK_TEST_EQ(norm, 0.)
              ++i;
@@ -433,10 +442,10 @@ void populate_contactModelPrimitives(SimTK::Array_<DecorativeGeometry>& stdPrimi
     SimTK::Transform transform;
     transform.updR().setRotationFromAngleAboutZ(.5);
     stdPrimitives.push_back(
-        DecorativeBrick({ 0.005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
+        DecorativeBrick({ 0.0005,0.5,0.5 }).setBodyId(0).setColor(SimTK::Cyan)
         .setIndexOnBody(-1).setOpacity(0.7).setScale(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
-        .setTransform(transform));
+        .setTransform(transform * Transform(Vec3(0.0005, 0, 0))));
 
 }
 

@@ -206,17 +206,12 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
     // SETUP OpenSim SIMULATION Manager
     osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
 
-    Manager manager(*osimModel,  integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
-    // Specify the initial and final times of the simulation.
-    // In this case, the initial and final times are set based on
-    // the range of times over which the controls are available.
-    //Control *control;
-    osim_state.setTime(0.0);
-    manager.integrate(osim_state, duration);
+    manager.initialize(osim_state);
+    osim_state = manager.integrate(duration);
 }
 
 void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb,
@@ -308,8 +303,8 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
     // Get the state at the end of the integration from OpenSim.
     Vector& qf = osim_state.updQ();
     Vector& uf = osim_state.updU();
-    cout<<"\nOpenSim Final q's:\n "<<qf<<endl;
-    cout<<"\nOpenSim Final u's:\n "<<uf<<endl;
+    qf.dump("\nOpenSim Final q's:");
+    uf.dump("\nOpenSim Final u's:");
 
     //==========================================================================================================
     // Compare Simulation Results
@@ -357,7 +352,7 @@ void testPointConstraint()
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
 
     //OpenSim foot
     OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
@@ -475,6 +470,12 @@ void testCoordinateLocking()
 {
     using namespace SimTK;
 
+    cout << endl;
+    cout << "==================================================================" << endl;
+    cout << " OpenSim testCoordinateLocking " << endl;
+    cout << "==================================================================" << endl;
+
+
     double fixedKneeAngle = Pi/2;
 
     // Setup OpenSim model
@@ -535,12 +536,10 @@ void testCoordinateLocking()
     osimModel->getMultibodySystem().realize(si2, Stage::Velocity );
  
     // Create the integrator and manager for the simulation.
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
-    integrator.setMaximumStepSize(1.0e-3);
-    integrator.setMinimumStepSize(1.0e-6);
-    integrator.setAccuracy(integ_accuracy);
-
-    Manager manager(*osimModel,  integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorMaximumStepSize(1.0e-3);
+    manager.setIntegratorMinimumStepSize(1.0e-6);
+    manager.setIntegratorAccuracy(integ_accuracy);
 
     // Print out the initial position and velocity states
     si2.getQ().dump("Initial q's"); // pendulum positions
@@ -549,8 +548,9 @@ void testCoordinateLocking()
 
     // Integrate from initial time to final time
     si2.setTime(0.0);
+    manager.initialize(si2);
     cout<<"\n\nIntegrating from "<<si2.getTime()<<" to "<<duration<<std::endl;
-    manager.integrate(si2, duration);
+    si2 = manager.integrate(duration);
 
     // Print out the final position and velocity states
     Vector qf = si2.getQ();

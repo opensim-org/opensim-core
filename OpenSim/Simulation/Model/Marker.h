@@ -46,9 +46,9 @@ class OSIMSIMULATION_API Marker : public Station {
 
 class Body;
 public:
-    //==============================================================================
-    // PROPERTIES
-    //==============================================================================
+//==============================================================================
+// PROPERTIES
+//==============================================================================
     OpenSim_DECLARE_PROPERTY(fixed, bool,
         "Flag (true or false) specifying whether the marker is fixed in its "
         "parent frame during the marker placement step of scaling.  If false, "
@@ -57,24 +57,40 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
+    /** Default constructor */
     Marker();
+
+    /** Convenience constructor
+    @param[in] name      Marker name string.
+    @param[in] frame     PhysicalFrame in which the Marker is located.
+    @param[in] location  Vec3 location of the station in its PhysicalFrame */
+    Marker(const std::string& name, const PhysicalFrame& frame,
+           const SimTK::Vec3& location);
+
     virtual ~Marker();
 
-    const std::string& getFrameName() const;
+    /** Convenience method to get the 'parent_frame' Socket's connectee_name */
+    const std::string& getParentFrameName() const;
 
-    void setFrameName(const std::string& aName);
-    void changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame );
-    void changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame );
-    void scale(const SimTK::Vec3& aScaleFactors);
+    /** Convenience method to set the 'parent_frame' Socket's connectee_name.
+        The the named parent frame is not connected and finalizeConnections()
+        must be invoked to establish the connection. */
+    void setParentFrameName(const std::string& parentFrameName);
+    /** Change the parent PhysicalFrame that this marker is attached to. */
+    void changeFrame(const PhysicalFrame& parentFrame);
+    /**  Change the parent PhysicalFrame that this marker is attached to. In  
+         addition, preserve the marker location in the inertial (Ground) frame
+         by using the state to compute the location in the new parent frame and
+         to set its location property. */
+    void changeFramePreserveLocation(const SimTK::State& s, 
+                                     const PhysicalFrame& newParentFrame );
 
     /** Override of the default implementation to account for versioning. */
     void updateFromXMLNode(SimTK::Xml::Element& aNode,
         int versionNumber = -1) override;
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
 private:

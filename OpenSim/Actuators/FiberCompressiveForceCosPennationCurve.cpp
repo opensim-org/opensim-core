@@ -250,6 +250,13 @@ double FiberCompressiveForceCosPennationCurve::
 }
 
 double FiberCompressiveForceCosPennationCurve::
+    calcDerivative(const std::vector<int>& derivComponents,
+                   const SimTK::Vector& x) const
+{
+    return m_curve.calcDerivative(derivComponents, x);
+}
+
+double FiberCompressiveForceCosPennationCurve::
     calcIntegral(double cosPennationAngle) const
 {    
     SimTK_ASSERT(isObjectUpToDateWithProperties()==true,

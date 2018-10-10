@@ -38,7 +38,7 @@ using SimTK::Vec3;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor.
  */
 Marker::Marker() :
@@ -48,7 +48,19 @@ Station()
 }
 
 //_____________________________________________________________________________
-/**
+/*
+ * Convenience constructor.
+ */
+Marker::Marker(const std::string& name, const PhysicalFrame& frame, 
+               const SimTK::Vec3& location) :
+Station(frame, location)
+{
+    constructProperties();
+    setName(name);
+}
+
+//_____________________________________________________________________________
+/*
  * Destructor.
  */
 Marker::~Marker()
@@ -56,7 +68,7 @@ Marker::~Marker()
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Set the data members of this Marker to their null values.
  */
 void Marker::setNull()
@@ -64,106 +76,60 @@ void Marker::setNull()
 
 }
 //_____________________________________________________________________________
-/**
-* Construct properties and initialize their default values.
-*/
+/*
+ * Construct properties and initialize their default values.
+ */
 void Marker::constructProperties()
 {
     // Indicate whether the Marker is fixed or not (for MarkerPlacement)
     constructProperty_fixed(false);
 }
 
-//_____________________________________________________________________________
-/**
- * Set the 'frame name' field, which is used when the marker is added to
- * an existing model.
- *
- * @param  name of frame
- */
-void Marker::setFrameName(const string& name)
+void Marker::setParentFrameName(const string& name)
 {
-    const auto& refFrame = getModel().getComponent<PhysicalFrame>(name);
-    setParentFrame(refFrame);
+    updSocket<PhysicalFrame>("parent_frame").setConnecteeName(name);
 }
 
 //_____________________________________________________________________________
-/**
+/*
  * Get the 'frame name' field, which is used when the marker is added to
  * an existing model.
- *
- * @return aName frame name.
  */
-const string& Marker::getFrameName() const
-{
-    //if (_bodyNameProp.getValueIsDefault())
-    //  return NULL;
 
-    return getParentFrame().getName();
+const string& Marker::getParentFrameName() const
+{
+    return getSocket<PhysicalFrame>("parent_frame").getConnecteeName();
 }
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the frame is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param aFrame Reference to the PhysicalFrame.
- */
-void Marker::changeFrame(const OpenSim::PhysicalFrame& aPhysicalFrame)
-{
 
-    if (aPhysicalFrame == getParentFrame())
+void Marker::changeFrame(const PhysicalFrame& parentFrame)
+{
+    if (&parentFrame == &getParentFrame())
         return;
 
-    setFrameName(aPhysicalFrame.getName());
-
-    extendConnectToModel(updModel());
+    setParentFrame(parentFrame);
 }
 
-//_____________________________________________________________________________
-/**
- * Change the PhysicalFrame that this marker is attached to. It assumes that the body is
- * already set, so that extendConnectToModel() needs to be called to update 
- * dependent information.
- *
- * @param s State.
- * @param aBody Reference to the PhysicalFrame.
- */
-void Marker::changeFramePreserveLocation(const SimTK::State& s, OpenSim::PhysicalFrame& aPhysicalFrame)
+void Marker::changeFramePreserveLocation(const SimTK::State& s, 
+                                         const PhysicalFrame& parentFrame)
 {
 
-    if (aPhysicalFrame == getParentFrame())
+    if (&parentFrame == &getParentFrame())
         return;
 
     // Preserve location means to switch bodies without changing
     // the location of the marker in the inertial reference frame.
     Vec3 newLocation;
-    newLocation = findLocationInFrame(s, aPhysicalFrame);
+    newLocation = findLocationInFrame(s, parentFrame);
     set_location(newLocation);
-
-    setFrameName(aPhysicalFrame.getName());
-    extendConnectToModel(aPhysicalFrame.updModel());
+    setParentFrame(parentFrame);
 }
 
-//=============================================================================
-// SCALING
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Scale the marker.
- *
- * @param aScaleFactors XYZ scale factors.
+/*
+ * Override default implementation by object to intercept and fix the XML node
+ * underneath the Marker to match current version
  */
-void Marker::scale(const SimTK::Vec3& aScaleFactors)
-{
-    upd_location() = get_location().elementwiseMultiply(aScaleFactors);
-}
-
-//_____________________________________________________________________________
-/**
-* Override default implementation by object to intercept and fix the XML node
-* underneath the Marker to match current version
-*/
 /*virtual*/
 void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
@@ -179,6 +145,10 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             connectorsElement.insertNodeAfter(connectorsElement.node_end(), frameElement);
             frameElement.setAttributeValue("name", "parent_frame");
             SimTK::Xml::Element connecteeElement("connectee_name");
+            // Markers in pre-4.0 models are necessarily 1 level deep
+            // (model, markers), and Bodies were necessarily 1 level deep:
+            // prepend "../" to get the correct relative path.
+            if (!bName.empty()) bName = "../" + bName;
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);
@@ -203,7 +173,7 @@ void Marker::generateDecorations(bool fixed, const ModelDisplayHints& hints, con
     //SimTK::Transform bTrans = frame.findTransformInBaseFrame();
     //const Vec3& p_BM = bTrans*get_location();
     appendToThis.push_back(
-        SimTK::DecorativeSphere(.005).setBodyId(frame.getMobilizedBodyIndex())
+        SimTK::DecorativeSphere(.01).setBodyId(frame.getMobilizedBodyIndex())
         .setColor(color).setOpacity(1.0)
         .setTransform(get_location()));
     

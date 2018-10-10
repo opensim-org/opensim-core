@@ -9,7 +9,7 @@
 					<ElasticFoundationForce::ContactParametersSet name="">
 						<objects>
 							<ElasticFoundationForce::ContactParameters name="">
-								<geometry> ball ground </geometry>
+								<geometry> sphere floor </geometry>
 								<stiffness>   10000.00000000 </stiffness>
 								<dissipation>       0.750000 </dissipation>
 								<static_friction>       0.30000000 </static_friction>
@@ -204,12 +204,12 @@
 		<!--ContactGeometry objects in the model.-->
 		<ContactGeometrySet name="">
 			<objects>
-				<ContactHalfSpace name="ground">
+				<ContactHalfSpace name="floor">
 					<body_name> ground </body_name>
 					<location>       0.00000000       0.00000000       0.00000000 </location>
 					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
 				</ContactHalfSpace>
-				<ContactMesh name="ball">
+				<ContactMesh name="sphere">
 					<body_name> ball </body_name>
 					<location>       0.00000000       0.00000000       0.00000000 </location>
 					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>

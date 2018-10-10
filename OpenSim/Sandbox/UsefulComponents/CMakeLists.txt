@@ -4,10 +4,6 @@ file(GLOB TO_COMPILE "future*.cpp")
 
 # These executables are *not* tests.
 
-include_directories(${OpenSim_SOURCE_DIR}
-                    ${OpenSim_SOURCE_DIR}/Vendors)
-
-
 get_filename_component(_target_name ${TO_COMPILE} NAME_WE)
 add_executable(${_target_name} EXCLUDE_FROM_ALL ${TO_COMPILE} ${COMPONENT_FILES})
 target_link_libraries(${_target_name} osimTools)

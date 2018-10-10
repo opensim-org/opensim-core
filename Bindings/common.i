@@ -82,7 +82,7 @@ namespace OpenSim {
 %template(OutputVec3) OpenSim::Output<SimTK::Vec3>;
 %template(OutputTransform) OpenSim::Output<SimTK::Transform>;
 %template(OutputVector) OpenSim::Output<SimTK::Vector>;
-
+%template(OutputSpatialVec) OpenSim::Output<SimTK::SpatialVec>;
 
 namespace OpenSim {
     %ignore Input::downcast(AbstractInput&); // suppress warning 509.
@@ -180,15 +180,15 @@ namespace OpenSim {
 %ignore OpenSim::DataTable_::DataTable_(const DataTable_<double, double>&,
                                         const std::vector<std::string>&);
 %ignore OpenSim::DataTable_<double, double>::flatten;
-%extend OpenSim::DataTable_ {
-    OpenSim::DataTable_<ETX, ETY>* clone() const {
-        return new OpenSim::DataTable_<ETX, ETY>{*$self};
-    }
-}
 // A version of SWIG between 3.0.6 and 3.0.12 broke the ability to extend class
 // templates with more than 1 template parameter, so we must enumerate the
 // possible template arguments (not necesary for TimeSeriesTable's clone; that
 // template has only 1 param.).
+//%extend OpenSim::DataTable_ {
+//    OpenSim::DataTable_<ETX, ETY>* clone() const {
+//        return new OpenSim::DataTable_<ETX, ETY>{*$self};
+//    }
+//}
 %define DATATABLE_CLONE(ETX, ETY)
 %extend OpenSim::DataTable_<ETX, ETY> {
     OpenSim::DataTable_<ETX, ETY>* clone() const {
@@ -382,6 +382,27 @@ namespace OpenSim {
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
+%extend OpenSim::C3DFileAdapter {
+    Tables read(const std::string& fileName, unsigned int wrt) {
+        C3DFileAdapter::ForceLocation location;
+        switch(wrt) {
+            case 0:
+                location = C3DFileAdapter::ForceLocation::OriginOfForcePlate;
+                break;
+            case 1:
+                location = C3DFileAdapter::ForceLocation::CenterOfPressure;
+                break;
+            case 2:
+                location = C3DFileAdapter::ForceLocation::PointOfWrenchApplication;
+                break;
+            default:
+                throw OpenSim::Exception{
+                    "An invalid C3DFileAdapter::ForceLocation was provided."};
+        }
+        return C3DFileAdapter::read(fileName, location);
+    };
+};
+
 namespace OpenSim {
     %ignore TableSource_::TableSource_(TableSource_ &&);
 }
@@ -395,6 +416,7 @@ namespace OpenSim {
 %template(ReporterVector) OpenSim::Reporter<SimTK::Vector>;
 %template(TableReporter) OpenSim::TableReporter_<SimTK::Real>;
 %template(TableReporterVec3) OpenSim::TableReporter_<SimTK::Vec3>;
+%template(TableReporterSpatialVec) OpenSim::TableReporter_<SimTK::SpatialVec>;
 %template(TableReporterVector) OpenSim::TableReporter_<SimTK::Vector, SimTK::Real>;
 %template(ConsoleReporter) OpenSim::ConsoleReporter_<SimTK::Real>;
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;

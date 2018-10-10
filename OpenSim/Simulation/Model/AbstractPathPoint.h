@@ -74,8 +74,6 @@ public:
     DEPRECATED_14("Use getParentFrame().getName() instead.")
     const std::string& getBodyName() const;
 
-    virtual void scale(const SimTK::Vec3& scaleFactors) = 0;
-
     virtual const WrapObject* getWrapObject() const { return nullptr; }
 
     virtual bool isActive(const SimTK::State& s) const { return true; }

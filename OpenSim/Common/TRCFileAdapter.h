@@ -22,6 +22,31 @@
 #ifndef OPENSIM_TRC_FILE_ADAPTER_H_
 #define OPENSIM_TRC_FILE_ADAPTER_H_
 
+/** @file
+* TRCFileAdapter is a concrete FileAdpater for reading and writing TRC format
+files. A TRC file is a Motion Analysis Trace file that contains a time trace
+or trajectory of 3D markers location with respect to a lab or Ground reference
+frame. A TRC file contains a structured header with information for the file
+type, filename, number of markers, sampling rate, units and several others.
+Data are tab-delimited rows with the same number of elements. Missing values
+can be blank and/or NaN. Blank values are interpreted as NaN. Here is an
+example of a valid TRC file:
+
+   \code
+PathFileType<tab>4<tab>(X/Y/Z)<tab>example.trc
+DataRate<tab>CameraRate<tab>NumFrames<tab>NumMarkers<tab>Units<tab>OrigDataRate<tab>OrigDataStartFrame<tab>OrigNumFrames
+100<tab>100<tab>5<tab>3<tab>m<tab>100<tab>1<tab>5
+Frame#<tab>Time<tab>marker1<tab><tab><tab>marker2<tab><tab><tab>marker3<tab><tab>
+<tab><tab>X1<tab>Y1<tab>Z1<tab>X2<tab>Y2<tab>Z2<tab>X3<tab>Y3<tab>Z3
+1<tab>0.01<tab><tab><tab><tab>-0.152<tab>0.245<tab>-1.71<tab>-0.0517<tab>0.305<tab>-1.7
+2<tab>0.02<tab>-0.273<tab>0.0745<tab>-1.57<tab>-0.152<tab>0.245<tab>-1.71<tab>-0.0517<tab>0.305<tab>-1.7
+3<tab>0.03<tab>-0.273<tab>0.0745<tab>-1.57<tab>Nan<tab>nan<tab>NAN<tab>-0.0517<tab>0.305<tab>-1.7
+4<tab>0.04<tab>-0.273<tab>0.0745<tab>-1.57<tab>-0.152<tab>0.245<tab>-1.71<tab>-0.0517<tab>0.305<tab>-1.7
+5<tab>0.05<tab>-0.273<tab>0.0745<tab>-1.57<tab>-0.152<tab>0.245<tab>-1.71<tab>-0.0517<tab>0.305<tab>-1.7
+\endcode
+
+*/
+
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 
@@ -29,7 +54,9 @@ namespace OpenSim {
 
 class MissingHeader : public IOError {
 public:
+#ifndef SWIG
     using IOError::IOError;
+#endif
 };
 
 class IncorrectNumMetaDataKeys : public IOError {
@@ -140,6 +167,8 @@ protected:
                      const std::string& filename) const override;
     
 private:
+    /** Delimiter used for parsing the header of TRC file.                    */
+    static const std::string              _headerDelimiters;
     /** Delimiter used for writing.                                           */
     static const std::string              _delimiterWrite;
     /** Delimiters used for reading.                                          */

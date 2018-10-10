@@ -116,6 +116,8 @@ function(AddDependency)
              -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE})
         list(APPEND CMAKE_ARGS
              -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO})
+        list(APPEND CMAKE_ARGS
+             -DCMAKE_OSX_DEPLOYMENT_TARGET:STRING=${CMAKE_OSX_DEPLOYMENT_TARGET})
 
         ExternalProject_Add(${DEP_NAME}
             TMP_DIR          ${BINARY_DIR}/tmp
@@ -141,13 +143,13 @@ SetDefaultCMakeBuildType()
 
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
-              URL        https://github.com/klshrinidhi/BTKCore.git
-              TAG        ae0d2a43de0fe6c9ef2acce34a87c944dd113829
+              URL        https://github.com/opensim-org/BTKCore.git
+              TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              TAG        332fd91cc6c17d4fbc1a2b1d41757f814174c8b6
+              TAG        Simbody-3.6.1
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
                      

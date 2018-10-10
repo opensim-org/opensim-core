@@ -475,6 +475,14 @@ private:
 //==============================================================================
 //          Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter
 //==============================================================================
+
+/**
+ * Documentation for this class has been provided with the documentation for the
+ * Bhargava2004MuscleMetabolicsProbe class.
+ *
+ * @see Bhargava2004MuscleMetabolicsProbe
+ */
+
 class OSIMSIMULATION_API 
     Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter 
     : public Object  

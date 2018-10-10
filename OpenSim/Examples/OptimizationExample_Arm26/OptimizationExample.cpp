@@ -54,11 +54,7 @@ public:
         numControls(numParameters), 
         si(s),
         osimModel(aModel)
-    {
-        // Create the integrator for the simulation.
-        p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
-        p_integrator->setAccuracy(desired_accuracy);
-    }
+    {}
                 
     int objectiveFunc(const Vector &newControls,
         bool new_coefficients, Real& f) const override {
@@ -70,12 +66,14 @@ public:
         osimModel.updDefaultControls() = newControls;
                 
         // Integrate from initial time to final time
-        Manager manager(osimModel, *p_integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
         s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-        manager.integrate(s, finalTime);
+        manager.initialize(s);
+        s = manager.integrate(finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
         *  In this case, we’re maximizing forward velocity of the 
@@ -196,15 +194,15 @@ int main()
         ofile.close(); 
 
         // Re-run simulation with optimal controls.
-        RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(desired_accuracy);
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.
         si.setTime(initialTime);
         osimModel.getMultibodySystem().realize(si, Stage::Acceleration);
-        manager.integrate(si, finalTime);
+        manager.initialize(si);
+        si = manager.integrate(finalTime);
 
         auto statesTable = manager.getStatesTable();
         STOFileAdapter_<double>::write(statesTable, 

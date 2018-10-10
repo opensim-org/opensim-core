@@ -848,7 +848,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int InducedAccelerations::begin(SimTK::State &s)
+int InducedAccelerations::begin(const SimTK::State &s)
 {
     if(!proceed()) return(0);
 
@@ -900,7 +900,7 @@ int InducedAccelerations::step(const SimTK::State &s, int stepNumber)
  *
  * @return -1 on error, 0 otherwise.
  */
-int InducedAccelerations::end(SimTK::State &s)
+int InducedAccelerations::end(const SimTK::State &s)
 {
     if(!proceed()) return(0);
 

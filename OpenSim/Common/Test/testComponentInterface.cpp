@@ -35,6 +35,7 @@ using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
 
+
 class Foo;
 class Bar;
 
@@ -407,7 +408,8 @@ void testMisc() {
         SimTK::State sBlank;
         const std::string varName = "waldo"; //dummy name
 
-        ASSERT_THROW(ComponentHasNoSystem, theWorld.findStateVariable(varName));
+        ASSERT_THROW(ComponentHasNoSystem,
+                theWorld.traverseToStateVariable(varName));
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getNumStateVariables());
         ASSERT_THROW(ComponentHasNoSystem, theWorld.getStateVariableNames());
         ASSERT_THROW(ComponentHasNoSystem,
@@ -478,7 +480,7 @@ void testMisc() {
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
-    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathName());
+    bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathString());
     bar.connectSocket_childFoo(foo);
         
     // add a subcomponent
@@ -491,19 +493,19 @@ void testMisc() {
     std::cout << "list begin: " << worldTreeAsList.begin()->getName() << std::endl;
     for (auto it = worldTreeAsList.begin();
               it != worldTreeAsList.end(); ++it) {
-        std::cout << "Iterator is at: " << it->getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << it->getAbsolutePathString() << std::endl;
     }
 
         
     std::cout << "Using range-for loop: " << std::endl;
     for (const Component& component : worldTreeAsList) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
         
     std::cout << "Iterate over only Foo's." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
     Foo& foo2 = *new Foo();
@@ -514,7 +516,7 @@ void testMisc() {
 
     std::cout << "Iterate over Foo's after adding Foo2." << std::endl;
     for (auto& component : theWorld.getComponentList<Foo>()) {
-        std::cout << "Iter at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iter at: " << component.getAbsolutePathString() << std::endl;
     }
 
     // Query existing components.
@@ -759,7 +761,7 @@ void testMisc() {
 
     std::cout << "Iterate over all Components in the world." << std::endl;
     for (auto& component : theWorld.getComponentList<Component>()) {
-        std::cout << "Iterator is at: " << component.getAbsolutePathName() << std::endl;
+        std::cout << "Iterator is at: " << component.getAbsolutePathString() << std::endl;
     }
 
     // Should fail to get Component when path is not specified
@@ -767,18 +769,40 @@ void testMisc() {
         theWorld.getComponent<CompoundFoo>("BigFoo") );
 
     // With path to the component it should work
-    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World/World3/BigFoo");
+    auto& bigFoo = theWorld.getComponent<CompoundFoo>("World3/BigFoo");
     // const Sub& topSub = theWorld.getComponent<Sub>("InternalWorld/internalSub");
         
     // Should also be able to get top-level
     auto& topFoo = theWorld.getComponent<Foo>("Foo2");
-    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathName() << endl;
+    cout << "Top level Foo2 path name: " << topFoo.getAbsolutePathString() << endl;
 
     // And the leaf Foo2 from BigFoo
     auto& leafFoo = bigFoo.getComponent<Foo>("Foo2");
-    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathName() << endl;
+    cout << "Leaf level Foo2 path name: " << leafFoo.getAbsolutePathString() << endl;
 
     theWorld.print("Nested_" + modelFile);
+}
+
+void testThrowOnDuplicateNames() {
+    TheWorld theWorld;
+    theWorld.setName("World");
+    theWorld.finalizeFromProperties();
+
+    Foo* a = new Foo();
+    a->setName("A");
+
+    Foo* b = new Foo();
+    b->setName("B");
+
+    theWorld.addComponent(a);
+    theWorld.addComponent(b);
+
+    b->setName("A");
+
+    SimTK_TEST_MUST_THROW_EXC(
+        theWorld.finalizeFromProperties(),
+        OpenSim::SubcomponentsWithDuplicateName );
+
 }
 
 // In order to access subcomponents in a copy, One must invoke
@@ -860,7 +884,6 @@ void testListInputs() {
     ASSERT(tabReporter->getTable().getNumRows() == 0);
 }
 
-
 void testListSockets() {
     MultibodySystem system;
     TheWorld theWorld;
@@ -898,51 +921,20 @@ void testListSockets() {
 void testComponentPathNames()
 {
     Foo foo;
-    Bar bar;
-    TheWorld top;
-
-    // These are not valid component names
-    // Only using for testing as surrogates for path names
-    // which are computed by the component. Just testing
-    // the relative path name facility here.
-    top.setName("Top");
-    foo.setName("A/B/C/D");
-    bar.setName("A/B/E");
-
-    std::string fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../C/D"); // "/A/B/" as common
-
-    std::string barWrtFoo= bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../../E"); // "/A/B/" as common
-
-    // null case foo wrt foo
-    std::string fooWrtFoo = foo.getRelativePathName(foo);
-    ASSERT(fooWrtFoo == "");
-
-    std::string topAbsPath = top.getAbsolutePathName();
-    std::string fooWrtTop = foo.getRelativePathName(top);
-    ASSERT(fooWrtTop == "../A/B/C/D");
-
-    std::string topWrtFoo = top.getRelativePathName(foo);
-    ASSERT(topWrtFoo== "../../../../Top");
-
-    foo.setName("World/Foo");
-    bar.setName("World3/bar2");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "../../World/Foo");
-
-    foo.setName("World3/bar2/foo1");
-    fooWrtBar = foo.getRelativePathName(bar);
-    ASSERT(fooWrtBar == "foo1");
-
-    bar.setName("LegWithConstrainedFoot/footConstraint");
     foo.setName("LegWithConstrainedFoot/foot");
-    barWrtFoo = bar.getRelativePathName(foo);
-    ASSERT(barWrtFoo == "../footConstraint");
-
-    // Now build use real components and assemble them 
+    // verify that this illegal name throws when we try to finalize
+    // the component from its property values
+    ASSERT_THROW(InvalidComponentName, foo.finalizeFromProperties());
+  
+    // Build using real components and assemble them 
     // into a tree and test the path names that are 
     // generated on the fly.
+    TheWorld top;
+    TheWorld otherTop;
+
+    top.setName("Top");
+    otherTop.setName("OtherTop");
+
     TheWorld* A = new TheWorld();
     TheWorld* B = new TheWorld();
     TheWorld* C = new TheWorld();
@@ -963,11 +955,28 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
 
-    std::string absPathC = C->getAbsolutePathName();
+    std::string absPathC = C->getAbsolutePathString();
     ASSERT(absPathC == "/Top/A/B/C");
 
-    std::string absPathE = E->getAbsolutePathName();
+    std::string absPathE = E->getAbsolutePathString();
     ASSERT(absPathE == "/Top/A/D/E");
+
+    // Specific tests to relative path name facilities
+    std::string EWrtB = E->getRelativePathName(*B);
+    ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
+
+    std::string BWrtE = B->getRelativePathName(*E);
+    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+
+    // null case component wrt itself
+    std::string fooWrtFoo = D->getRelativePathName(*D);
+    ASSERT(fooWrtFoo == "");
+
+    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
+    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+
+    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
+    ASSERT(OtherTopWrtC == "../../../../OtherTop");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -1005,9 +1014,9 @@ void testComponentPathNames()
     top.printOutputInfo();
 
     std::string fFoo1AbsPath = 
-        F->getComponent<Foo>("Foo1").getAbsolutePathName();
+        F->getComponent<Foo>("Foo1").getAbsolutePathString();
     std::string aBar2AbsPath = 
-        A->getComponent<Bar>("Bar2").getAbsolutePathName();
+        A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo = 
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 
@@ -1037,6 +1046,135 @@ void testComponentPathNames()
     top.printSubcomponentInfo();
     top.printOutputInfo();
     top.connect();
+}
+
+void testTraversePathToComponent() {
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        A(const std::string& name) { setName(name); }
+    };
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        B(const std::string& name) { setName(name); }
+    };
+
+    // Add lots of subcomponents to check the performance of
+    // traversePathToSubcomponent().
+    auto addLotsOfSubcomponents = [](Component& c) {
+        for (int i = 0; i < 100; ++i) {
+            c.addComponent(new A("unuseda" + std::to_string(i)));
+            c.addComponent(new B("unusedb" + std::to_string(i)));
+        }
+    };
+
+    A top("top");
+    addLotsOfSubcomponents(top);
+
+    A* a1 = new A("a1");
+    addLotsOfSubcomponents(*a1);
+    top.addComponent(a1);
+    B* b1 = new B("b1");
+    addLotsOfSubcomponents(*b1);
+    top.addComponent(b1);
+
+    A* a2 = new A("a2");
+    addLotsOfSubcomponents(*a2);
+    a1->addComponent(a2);
+    B* b2 = new B("b2");
+    addLotsOfSubcomponents(*b2);
+    a1->addComponent(b2);
+
+    // top.printSubcomponentInfo();
+
+    // Self.
+    SimTK_TEST(&top.getComponent<A>("") == &top);
+    SimTK_TEST(&top.getComponent<A>(".") == &top);
+    SimTK_TEST(&a1->getComponent<A>("") == a1);
+    SimTK_TEST(&b2->getComponent<B>("") == b2);
+
+    SimTK_TEST(&top.getComponent<A>("a1") == a1);
+    SimTK_TEST(&top.getComponent<A>("a1/") == a1);
+    SimTK_TEST(&top.getComponent<B>("b1") == b1);
+    SimTK_TEST(&top.getComponent<A>("a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<B>("a1/b2") == b2);
+    // Going up.
+    SimTK_TEST(&a1->getComponent<A>("..") == &top);
+    SimTK_TEST(&a2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&b2->getComponent<A>("../../") == &top);
+    SimTK_TEST(&a2->getComponent<A>("..") == a1);
+    SimTK_TEST(&b2->getComponent<A>("..") == a1);
+    // Going up and then back down.
+    SimTK_TEST(&a1->getComponent<A>("../a1") == a1);
+    SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
+    SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
+    // Absolute paths.
+    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
+
+
+    // No component.
+    // -------------
+    // Incorrect path.
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("oops/a2"));
+    SimTK_TEST_MUST_THROW(b1->getComponent("/nonexistent"));
+    // Wrong type.
+    SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
+    // Going too high up.
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
+    SimTK_TEST_MUST_THROW(top.getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(a1->getComponent<A>("../../"));
+    SimTK_TEST_MUST_THROW(b2->getComponent<A>("../../../"));
+
+    // Repeated name bug.
+    // ------------------
+    // There used to be a bug where calling traversePathToComponent({"tx/tx"})
+    // would return the component at "tx" rather than the one at "tx/tx".
+    A* atx = new A("tx");
+    top.addComponent(atx);
+    B* btx = new B("tx");
+    atx->addComponent(btx);
+    SimTK_TEST(&top.getComponent<Component>("tx/tx") == btx);
+}
+
+void testGetStateVariableValue() {
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    SimTK_TEST(s.getNY() == 3);
+    s.updY()[0] = 10; // "top/internalSub/subState"
+    s.updY()[1] = 20; // "top/a/subState"
+    s.updY()[2] = 30; // "top/a/b/subState"
+
+    SimTK_TEST(top.getStateVariableValue(s, "internalSub/subState") == 10);
+    SimTK_TEST(top.getStateVariableValue(s, "a/subState") == 20);
+    SimTK_TEST(top.getStateVariableValue(s, "a/b/subState") == 30);
+    SimTK_TEST(a->getStateVariableValue(s, "subState") == 20);
+    SimTK_TEST(a->getStateVariableValue(s, "b/subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "subState") == 30);
+    SimTK_TEST(b->getStateVariableValue(s, "../subState") == 20);
+    SimTK_TEST(b->getStateVariableValue(s, "../../internalSub/subState") == 10);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            top.getStateVariableValue(s, "typo/b/subState"),
+            OpenSim::Exception);
 }
 
 void testInputOutputConnections()
@@ -1182,7 +1320,6 @@ void testInputConnecteeNames() {
 
     // TODO test invalid names as well.
 }
-
 
 void testExceptionsForConnecteeTypeMismatch() {
     // Create Component classes for use in the following tests.
@@ -1506,7 +1643,7 @@ void testTableSource() {
         TheWorld model{};
         auto tablesource = new TableSourceVec3{};
         tablesource->setName("tablesource");
-        tablesource->set_filename("testEformatParsing.trc");
+        tablesource->set_filename("dataWithEformat.trc");
         tablesource->set_tablename("markers");
         model.addComponent(tablesource);
 
@@ -1614,16 +1751,21 @@ void testTableReporter() {
             TimeStepper ts(system, integ);
             ts.initialize(s);
             ts.stepTo(1.0);
-            std::cout << "TableReporter table after simulating:\n";
             const auto& table = reporter->getTable();
-            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+            std::cout << "TableReporter table after simulating:\n"
+                      << table.toString() << std::endl;
+            SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                                      EmptyTable);
         }
 
         // Ensure that clearing the table and performing a new simulation works
         // even if the reporter's input has no connectees.
         reporter->clearTable();
-        std::cout << "TableReporter table after clearing:\n";
-        SimTK_TEST_MUST_THROW_EXC(reporter->getTable().toString(), EmptyTable);
+        std::cout << "TableReporter table after clearing:\n"
+                  << reporter->getTable().toString() << std::endl;
+        SimTK_TEST_MUST_THROW_EXC(
+            reporter->getTable().getDependentColumnAtIndex(0),
+            EmptyTable);
     
         {
             SimTK::State s = system.realizeTopology();
@@ -1632,9 +1774,11 @@ void testTableReporter() {
             TimeStepper ts(system, integ);
             ts.initialize(s);
             ts.stepTo(1.0);
-            std::cout << "TableReporter table after simulating again:\n";
             const auto& table = reporter->getTable();
-            SimTK_TEST_MUST_THROW_EXC(table.toString(), EmptyTable);
+            std::cout << "TableReporter table after simulating again:\n"
+                      << table.toString() << std::endl;
+            SimTK_TEST_MUST_THROW_EXC(table.getDependentColumnAtIndex(0),
+                                      EmptyTable);
         }
     }
 }
@@ -1871,7 +2015,7 @@ void testSingleValueInputConnecteeSerialization() {
         // for editing the input's connectee_name does not allow multiple
         // connectee names for a single-value input.
         auto& connectee_name = Property<std::string>::updAs(
-                        foo->updPropertyByName("input_input1_connectee_name"));
+                        foo->updPropertyByName("input_input1"));
         connectee_name.setAllowableListSize(0, 10);
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");
@@ -1882,14 +2026,9 @@ void testSingleValueInputConnecteeSerialization() {
     // Deserialize.
     {
         // Single-value connectee cannot have multiple connectee_names.
-        // TODO Would ideally check for an exception, but we only emit a warning
-        // for now. This is because the way we determine if multiple
-        // connectee names were specified is by looking for spaces, but old
-        // models used have spaces in their names.
-        // SimTK_TEST_MUST_THROW_EXC(
-        //     TheWorld world(modelFileNameMultipleValues),
-        //     OpenSim::Exception);
-        TheWorld world(modelFileNameMultipleValues);
+        SimTK_TEST_MUST_THROW_EXC(
+             TheWorld world(modelFileNameMultipleValues),
+             OpenSim::Exception);
     }
     
     // Test error case: connectee_name has invalid characters.
@@ -1988,6 +2127,64 @@ void testAliasesAndLabels() {
     SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "thud");
 }
 
+void testGetAbsolutePathStringSpeed() {
+    
+    std::clock_t constructStartTime = std::clock();
+
+    TheWorld* A = new TheWorld();
+    TheWorld* B = new TheWorld();
+    TheWorld* C = new TheWorld();
+    TheWorld* D = new TheWorld();
+    TheWorld* E = new TheWorld();
+    // Use longer names to avoid short string optimization
+    A->setName("a2345678901234567890");
+    B->setName("b2345678901234567890");
+    C->setName("c2345678901234567890");
+    D->setName("d2345678901234567890");
+    E->setName("e2345678901234567890");
+
+    A->add(B);
+    B->add(C);
+    C->add(D);
+    D->add(E);
+
+    double avgTime = 0;
+    int numTrials = 10;
+    int numLoops = 1000000;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getAbsolutePathString();
+            B->getAbsolutePathString();
+            C->getAbsolutePathString();
+            D->getAbsolutePathString();
+            E->getAbsolutePathString();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getAbsolutePathString avgTime = " << avgTime / numTrials << "s" << endl;
+
+    avgTime = 0;
+    for (int trial = 0; trial < numTrials; ++trial) {
+        std::clock_t loopStartTime = std::clock();
+        for (int i = 0; i < numLoops; ++i) {
+            A->getName();
+            B->getName();
+            C->getName();
+            D->getName();
+            E->getName();
+        }
+        std::clock_t loopEndTime = std::clock();
+        double loopClocks = loopEndTime - loopStartTime;
+        avgTime += loopClocks / CLOCKS_PER_SEC;
+    }
+
+    cout << "getName avgTime = " << avgTime / numTrials << "s" << endl;
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -1997,10 +2194,14 @@ int main() {
 
     SimTK_START_TEST("testComponentInterface");
         SimTK_SUBTEST(testMisc);
+        // Uncomment test for duplicate names when we re-enable the exception
+        //SimTK_SUBTEST(testThrowOnDuplicateNames);
         SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testTraversePathToComponent);
+        SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteeNames);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
@@ -2014,6 +2215,11 @@ int main() {
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
+
+        // This is commented out since it adds ~20-30sec without testing
+        // any new functionality. Make sure to uncomment to use (and
+        // consider commenting other subtests for more stable benchmark).
+        //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
 
     SimTK_END_TEST();
 }
