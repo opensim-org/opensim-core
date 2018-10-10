@@ -1917,7 +1917,7 @@ void Model::setAllControllersEnabled( bool enabled ) {
     _allControllersEnabled = enabled;
 }
 
-void Model::formStateStorage(const Storage& originalStorage,
+bool Model::formStateStorage(const Storage& originalStorage,
                              Storage& statesStorage,
                              bool warnUnspecifiedStates) const
 {
@@ -2001,6 +2001,31 @@ void Model::formStateStorage(const Storage& originalStorage,
     }
     rStateNames.insert(0, "time");
     statesStorage.setColumnLabels(rStateNames);
+    
+    
+    // Determine the return value.
+    // ---------------------------
+    // Get coordinate state variable names.
+    const auto coords = getCoordinatesInMultibodyTreeOrder();
+    // Coordinate value names must be unique.
+    std::set<std::string> coordValueNames;
+    const auto modelPath = getAbsolutePath();
+    for (size_t i = 0; i < coords.size(); ++i) {
+        const auto& coord = coords[i];
+        const auto coordPath =
+                coord->getAbsolutePath().formRelativePath(modelPath).toString();
+        const auto& coordValueStateVarName = coordPath + "/value";
+        coordValueNames.insert(coordValueStateVarName);
+    }
+    
+    // Check if any of the unspecified states are coordinate values.
+    for (int i = 0; i < mapColumns.size(); ++i) {
+        // Must add 1 because, at this point, rStateNames includes "time".
+        if (mapColumns[i] == -1 &&
+                coordValueNames.find(rStateNames[i+1]) != coordValueNames.end())
+            return false;
+    }
+    return true;
 }
 
 /**
