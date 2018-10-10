@@ -170,14 +170,26 @@ public:
 
         // Add any scalar constraints associated with multibody constraints in 
         // the model as path constraints in the problem.
+        int cid, mp, mv, ma, numEquationsEnforced, multIndexThisConstraint;
+        std::vector<MucoBounds> bounds;
+        std::vector<std::string> labels;
+        std::vector<bool> derivFlags;
+        std::vector<std::string> mcNames = 
+            m_phase0.createMultibodyConstraintInfoNames();
+        for (const auto& mcName : mcNames) {
+            const auto& mcInfo = m_phase0.getMultibodyConstraintInfo(mcName);
+            const auto& multInfos = m_phase0.getMultiplierInfos(mcName);
+            cid = mcInfo.getSimbodyConstraintIndex();
+            mp = mcInfo.getNumPositionEquations();
+            mv = mcInfo.getNumVelocityEquations();
+            ma = mcInfo.getNumAccelerationEquations();
+            bounds = mcInfo.getBounds();
+            labels = mcInfo.getConstraintLabels();
+            derivFlags = mcInfo.getConstraintDerivativeFlags();
 
-        for (const auto& mcName : createMultibodyConstraintInfoNames()) { 
-            const auto& mcInfo = getMultibodyConstraintInfo(mcName);
-            int mp = mcInfo.getNumPositionEquations();
-            int mv = mcInfo.getNumVelocityEquations();
-            int ma = mcInfo.getNumAccelerationEquation();
-
+            m_mpSum += mp;
             // Only considering holonomic constraints for now.
+            // TODO if (get_enforce_holonomic_constraints_only()) {
             OPENSIM_THROW_IF(mv != 0, Exception, "Only holonomic "
                 "(position-level) constraints are currently supported. "
                 "There are " + std::to_string(mv) + " velocity-level "
@@ -187,35 +199,47 @@ public:
                 "(position-level) constraints are currently supported. "
                 "There are " + std::to_string(ma) + " acceleration-level "
                 "scalar constraints associated with the model Constraint "
-                "at ConstraintIndex " + std::to_string(cid) + ".");
-
-            for (int i = 0; i < mp; ++i) {
-                // TODO name constraints based on model constraint names
-                // or coordinate names if a locked or prescribed coordinate
-                this->add_path_constraint(mcInfo.getName() + "_cid" 
-                        + std::to_string(cid) + "_p" + std::to_string(i),
-                        convert(mcInfo.getBounds()));
-                this->add_adjunct(multInfo.getName() + std::to_string(cid) 
-                    + "_p" + std::to_string(i), 
-                    convert(multInfo.getBounds()), 
-                    convert(multInfo.getInitialBounds()),
-                    convert(multInfo.getFinalBounds()));
-            }
-            m_mpSum += mp;
-            // TODO if (!get_enforce_holonomic_constraints_only()) {
-            //      m_mvSum += mv; (plus path constraints and adjuncts)
-            //      m_maSum += ma; (plus path constraints and adjuncts)
+                "at ConstraintIndex " + std::to_string(cid) + ".");         
+            // } else {
+            //   m_mvSum += mv;
+            //   m_maSum += ma;
             // }
 
-        }
-        // TODO if (!get_enforce_holonomic_constraints_only()) {
-        //      m_numMultibodyConstraintEqs += 3*m_mpSum;
-        //      m_numMultibodyConstraintEqs += 2*m_mvSum; 
-        //      m_numMultibodyConstraintEqs += m_maSum; 
-        // } else {
-        m_numMultibodyConstraintEqs += m_mpSum;
-        // }
+            numEquationsEnforced = mp;
+            //TODO numEquationsEnforced = 
+            //    get_enforce_holonomic_constraints_only() 
+            //        ? mp : mcInfo.getNumEquations();
 
+            // Loop through all scalar constraints associated with the model 
+            // constraint and corresponding path constraints to the optimal
+            // control problem.
+            //
+            // We need a different index for the Lagrange multipliers since 
+            // they are only added if the current constraint equation is not
+            // derivative of a position- or velocity-level equation.
+            multIndexThisConstraint = 0;
+            for (int i = 0; i < numEquationsEnforced; ++i) {
+                
+                // TODO name constraints based on model constraint names
+                // or coordinate names if a locked or prescribed coordinate
+                this->add_path_constraint(labels[i], convert(bounds[i]));
+
+                // If the index for this path constraint represents an 
+                // a non-derivative scalar constraint equation, also add a 
+                // Lagrange multplier to the problem.
+                if (!derivFlags[i]) {
+                    const auto& multInfo = multInfos[multIndexThisConstraint];
+                    this->add_adjunct(multInfo.getName(), 
+                                      convert(multInfo.getBounds()), 
+                                      convert(multInfo.getInitialBounds()),
+                                      convert(multInfo.getFinalBounds()));
+                    ++multIndexThisConstraint;
+                }
+            }
+
+            m_numMultibodyConstraintEqs += numEquationsEnforced;
+        }
+        
         // Add any generic path constraints included in the problem. 
         for (std::string pcName : m_phase0.createPathConstraintNames()) {
             const MucoPathConstraint& constraint = 
@@ -398,10 +422,9 @@ private:
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
     // The number of holonomic constraints enabled in the model.
     mutable int m_mpSum = 0;
-    // TODO nonholonomic constraints 
-    // int m_mvSum = 0; 
-    // TODO acceleration-only constraints
-    // int m_maSum = 0 ;
+    // TODO mutable int m_mvSum = 0; (nonholonomic constraints)
+    // TODO mutable int m_maSum = 0; (acceleration-only constraints)
+
     // The total number of scalar constraint equations associated with model 
     // multibody constraints that the solver is responsible for enforcing.
     mutable int m_numMultibodyConstraintEqs = 0;

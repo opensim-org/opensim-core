@@ -34,7 +34,8 @@ namespace OpenSim {
 // MucoConstraintInfo
 // ============================================================================
 
-/// TODO
+/// Information for a given constraint in the optimal control problem. The name
+/// should correspond to a MucoPathConstraint in the problem. 
 class OSIMMUSCOLLO_API MucoConstraintInfo : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoConstraintInfo, Object);
 public:
@@ -113,6 +114,11 @@ private:
 // MucoMultibodyConstraintInfo
 // ============================================================================
 
+/// A special derived class of MucoConstraintInfo that store information about
+/// any multibody constraints that exist in the model. Objects of this class
+/// can only be instantiated by a MucoPhase, since information from each 
+/// constraint in the model is required to ensure that the correct values are 
+/// assigned to internal variables during construction. 
 class OSIMMUSCOLLO_API MucoMultibodyConstraintInfo : public MucoConstraintInfo{
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoMultibodyConstraintInfo, 
         MucoConstraintInfo);
@@ -135,11 +141,28 @@ public:
     int getNumAccelerationEquations() const
     {   return m_num_acceleration_eqs; }
 
+    /// Get a vector of flags specifying whether or not a given index 
+    /// represents a derivative of a position or velocity-level scalar
+    /// constraint equation, as these equations may need to be treated 
+    /// differently in a solver (e.g. don't add Lagrange multipliers for *true*
+    /// indices when looping through all scalar constraint equations).
+    std::vector<bool> getConstraintDerivativeFlags() const
+    {   return m_constraint_derivative_flags; }
+
+    /// Convenience method for calculating constraint errors given a 
+    /// SimTK::State object. This may not be the most efficient solution for 
+    /// solvers, but could be useful for a quick implementation or for 
+    /// debugging model constraints causing issues in an optimal control 
+    /// problem.
+    void calcMultibodyConstraintErrors(const Model& model, 
+        const SimTK::State& state, SimTK::Vector& errors);
+
 private:
     int m_num_position_eqs;
     int m_num_velocity_eqs;
     int m_num_acceleration_eqs;
     int m_simbody_constraint_index;
+    std::vector<bool> m_constraint_derivative_flags;
 
     /// The constructor for this class is private since we don't want the user
     /// constructing these infos directly. Rather, they should be constructed

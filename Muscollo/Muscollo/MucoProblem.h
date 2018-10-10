@@ -168,6 +168,16 @@ public:
     // TODO by default, use the actuator's control_min and control_max.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set the bounds on *all* of the multibody constraint equations in this
+    /// phase. During initialization, these bounds are used to create 
+    /// MucoConstraintInfo's for each constraint equation in the phase.
+    void setMultibodyConstraintBounds(const MucoBounds& bounds)
+    {   set_multibody_constraint_bounds(bounds); }
+    /// Set the bounds on *all* of the Lagrange multipliers in this phase. 
+    /// During initialization, these bounds are used to create 
+    /// MucoVariableInfo's for each Lagrange multiplier in the phase.
+    void setMultiplierBounds(const MucoBounds& bounds)
+    {   set_multiplier_bounds(bounds); }
     /// Add a parameter to this phase. The passed-in parameter is copied, and
     /// thus any subsequent edits have no effect.
     /// Parameter variables must have a name (MucoParameter::setName()), and it
@@ -224,6 +234,8 @@ public:
     {   return m_num_path_constraint_eqs;   }
     const MucoMultibodyConstraintInfo& 
     getMultibodyConstraintInfo(const std::string& name) const;
+    const std::vector<MucoVariableInfo>& 
+    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
 
     // TODO add getCost() and/or updCost().
 
@@ -316,7 +328,8 @@ private:
     mutable int m_num_path_constraint_eqs = 0;
     mutable std::vector<MucoMultibodyConstraintInfo> 
         m_multibody_constraint_infos;
-    mutable std::vector<MucoVariableInfo> m_multiplier_infos;
+    mutable std::map<std::string, std::vector<MucoVariableInfo>>
+        m_multiplier_infos_map;
 
 };
 

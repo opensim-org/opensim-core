@@ -109,7 +109,7 @@ void MucoPhase::constructProperties() {
     constructProperty_parameters();
     constructProperty_costs();
     constructProperty_path_constraints();
-    constructProperty_multibody_constraint_bounds({0, 0.0});
+    constructProperty_multibody_constraint_bounds(MucoBounds());
     constructProperty_multiplier_bounds({-1000.0, 1000.0});
 }
 void MucoPhase::setModel(const Model& model) {
@@ -203,6 +203,12 @@ std::vector<std::string> MucoPhase::createPathConstraintNames() const {
     }
     return names;
 }
+std::vector<std::string> MucoPhase::createMultibodyConstraintInfoNames() const {
+    std::vector<std::string> names(m_multibody_constraint_infos.size());
+    for (int i = 0; i < m_multibody_constraint_infos.size(); ++i) {
+        names[i] = m_multibody_constraint_infos[i].getName();
+    }
+}
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
     int idx = getProperty_state_infos().findIndexForName(name);
@@ -241,6 +247,27 @@ const MucoPathConstraint& MucoPhase::getPathConstraint(
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
         "No constraint with name '" + name + "' found.");
     return get_path_constraints(idx);
+}
+const MucoMultibodyConstraintInfo& MucoPhase::getMultibodyConstraintInfo(
+    const std::string& name) const {
+
+    for (const auto& info : m_multibody_constraint_infos) {
+        if (info.getName() == name) { return info; }
+    }
+    OPENSIM_THROW_FRMOBJ(Exception,
+        "No multibody constraint info with name '" + name + "' found.");
+}
+const std::vector<MucoVariableInfo>& MucoPhase::getMultiplierInfos(
+    const std::string& multibodyConstraintInfoName) const {
+
+    auto search = m_multiplier_infos_map.find(multibodyConstraintInfoName);
+    if (search != m_multiplier_infos_map.end()) {
+        return m_multiplier_infos_map.at(multibodyConstraintInfoName);
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception,
+            "No variable infos for multibody constraint info with name '" 
+            + multibodyConstraintInfoName + "' found.");
+    }
 }
 void MucoPhase::printDescription(std::ostream& stream) const {
     stream << "Costs:";
@@ -340,7 +367,14 @@ void MucoPhase::initialize(Model& model) const {
     for (int i = 0; i < getProperty_costs().size(); ++i) {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
-
+    
+    // Get property values.
+    const auto& mcBounds = get_multibody_constraint_bounds();
+    const MucoBounds& multBounds = get_multiplier_bounds();
+    MucoInitialBounds multInitBounds(multBounds.getLower(), 
+        multBounds.getUpper);
+    MucoFinalBounds multFinalBounds(multBounds.getLower(), multBounds.getUpper);
+    // Get model information to loop through constraints.
     const auto& matter = model.getMatterSubsystem();
     const auto NC = matter.getNumConstraints();
     const auto& state = model.getWorkingState();
@@ -354,13 +388,32 @@ void MucoPhase::initialize(Model& model) const {
             // If user provided custom bounds for the multibody constraint
             // equations, update the current multibody constraint info.
             // TODO user eventually should specify a constraint info
-            if (!getProperty_multibody_constraint_bounds().empty()) {
-                std::vector<MucoBounds> mcBounds(mcInfo.getNumEquations(), 
-                    get_multibody_constraint_bounds());
-                mcInfo.setBounds(mcBounds);
+            if (mcBounds.isSet()) {
+                std::vector<MucoBounds> mcBoundVec(mcInfo.getNumEquations(), 
+                    mcBounds);
+                mcInfo.setBounds(mcBoundVec);
             }
-
             m_multibody_constraint_infos.push_back(mcInfo);
+
+            // Add variable infos for all Lagrange multipliers in the problem
+            // TODO how to name multplier variables?
+            std::vector<MucoVariableInfo> multInfos;
+            for (int i = 0; i < mp; ++i) {
+                multInfos.push_back(MucoVariableInfo("lambda_cid" + 
+                    std::to_string(cid) + "_p" + std::to_string(i), multBounds,
+                    multInitBounds, multFinalBounds));
+            }
+            for (int i = 0; i < mv; ++i) {
+                multInfos.push_back(MucoVariableInfo("lambda_cid" +
+                    std::to_string(cid) + "_v" + std::to_string(i), multBounds,
+                    multInitBounds, multFinalBounds));
+            }
+            for (int i = 0; i < ma; ++i) {
+                multInfos.push_back(MucoVariableInfo("lambda_cid" +
+                    std::to_string(cid) + "_a" + std::to_string(i), multBounds,
+                    multInitBounds, multFinalBounds));
+            }
+            m_multiplier_infos_map.insert({mcInfo.getName(), multInfos});
         }
     }
 
