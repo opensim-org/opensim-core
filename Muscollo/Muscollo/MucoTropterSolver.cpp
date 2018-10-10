@@ -215,7 +215,7 @@ public:
             // control problem.
             //
             // We need a different index for the Lagrange multipliers since 
-            // they are only added if the current constraint equation is not
+            // they are only added if the current constraint equation is not a
             // derivative of a position- or velocity-level equation.
             multIndexThisConstraint = 0;
             for (int i = 0; i < numEquationsEnforced; ++i) {

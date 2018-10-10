@@ -479,10 +479,8 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't get used right now, these control infos are set in 
-    // order for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-    mp.setControlInfo("lambda_0_1", {-1000, 1000});
+    mp.setMultibodyConstraintBounds({0.0, 0.0});
+    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -558,9 +556,8 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't get used right now, this control info is set in order
-    // for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
+    mp.setMultibodyConstraintBounds({0.0, 0.0});
+    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -632,10 +629,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50});
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds get used right now, these control infos are set in 
-    // order for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-    mp.setControlInfo("lambda_1_0", {-1000, 1000});
+    mp.setMultibodyConstraintBounds({0.0, 0.0});
+    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -723,75 +718,74 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     runForwardSimulation(model, solution, 1e-2);
 }
 
-//class EqualControlConstraint : public MucoConstraint {
-//OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoConstraint);
-//protected:
-//    void calcConstraintErrorsImpl(const SimTK::State& state,
-//            SimTK::Vector& errors) const {
-//        getModel().realizeVelocity(state);
-//
-//        const auto& controls = getModel().getControls(state);
-//        errors[0] = controls[1] - controls[0];
-//    }
-//};
-//
-///// Solve an optimal control problem where a double pendulum must reach a 
-///// specified final configuration while subject to a constraint that its
-///// actuators must produce an equal control trajectory.
-//void testDoublePendulumEqualControl() {
-//    MucoTool muco;
-//    muco.setName("double_pendulum_equal_control");
-//    MucoProblem& mp = muco.updProblem();
-//    Model model = createDoublePendulumModel();
-//    mp.setModel(model);
-//    
-//    EqualControlConstraint equalControlConstraint;
-//    equalControlConstraint.setBounds({0.0, 0.0});
-//    mp.addConstraint(equalControlConstraint);
-//
-//    mp.setTimeBounds(0, 1);
-//    // Coordinate value state boundary conditions are consistent with the 
-//    // point-on-line constraint and should require the model to "unfold" itself.
-//    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-//    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
-//    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
-//    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
-//    mp.setControlInfo("tau0", {-100, 100});
-//    mp.setControlInfo("tau1", {-100, 100});
-//    // TODO bounds don't get used right now, these control infos are set in 
-//    // order for the MucoIterate guess to be compatible with the MucoProblem.
-//    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-//    mp.setControlInfo("lambda_0_1", {-1000, 1000});
-//
-//    MucoControlCost effort;
-//    mp.addCost(effort);
-//
-//    MucoTropterSolver& ms = muco.initSolver();
-//    ms.set_num_mesh_points(50);
-//    ms.set_verbosity(2);
-//    ms.set_optim_solver("ipopt");
-//    ms.set_optim_convergence_tolerance(1e-3);
-//    //ms.set_optim_ipopt_print_level(5);
-//    ms.set_optim_hessian_approximation("limited-memory");
-//    ms.setGuess("bounds");
-//
-//    MucoSolution solution = muco.solve();
-//    solution.write("testConstraints_testDoublePendulumEqualControl.sto");
-//    //muco.visualize(solution);
-//
-//    const auto& controlsTraj = solution.getControlsTrajectory();
-//    // TODO solution.getControl() returns a VectorView, how to compare two 
-//    // VectorView's directly?
-//    for (int i = 0; i < controlsTraj.nrow(); ++i) {
-//        SimTK_TEST_EQ_TOL(controlsTraj.get(i, 0), controlsTraj.get(i, 1),
-//            1e-6);
-//    }
-//
-//    // Run a forward simulation using the solution controls in prescribed 
-//    // controllers for the model actuators and see if we get the correct states
-//    // trajectory back.
-//    runForwardSimulation(model, solution, 1e-2);
-//}
+class EqualControlConstraint : public MucoPathConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
+protected:
+    void calcConstraintErrorsImpl(const SimTK::State& state,
+            SimTK::Vector& errors) const {
+        getModel().realizeVelocity(state);
+
+        const auto& controls = getModel().getControls(state);
+        errors[0] = controls[1] - controls[0];
+    }
+};
+
+/// Solve an optimal control problem where a double pendulum must reach a 
+/// specified final configuration while subject to a constraint that its
+/// actuators must produce an equal control trajectory.
+void testDoublePendulumEqualControl() {
+    MucoTool muco;
+    muco.setName("double_pendulum_equal_control");
+    MucoProblem& mp = muco.updProblem();
+    Model model = createDoublePendulumModel();
+    mp.setModel(model);
+    
+    MucoConstraintInfo cInfo;
+    cInfo.setBounds(std::vector<MucoBounds>(1, {0.0, 0.0}));
+    EqualControlConstraint equalControlConstraint;
+    equalControlConstraint.setConstraintInfo(cInfo);
+    mp.addPathConstraint(equalControlConstraint);
+
+    mp.setTimeBounds(0, 1);
+    // Coordinate value state boundary conditions are consistent with the 
+    // point-on-line constraint and should require the model to "unfold" itself.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("j1/q1/value", {-10, 10}, SimTK::Pi, 0);
+    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau1", {-100, 100});
+    mp.setMultiplierBounds({-1000, 1000});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(50);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
+    //ms.set_optim_ipopt_print_level(5);
+    ms.set_optim_hessian_approximation("limited-memory");
+    ms.setGuess("bounds");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumEqualControl.sto");
+    //muco.visualize(solution);
+
+    const auto& controlsTraj = solution.getControlsTrajectory();
+
+    const auto& control_tau0 = solution.getControl("tau0");
+    const auto& control_tau1 = solution.getControl("tau1");
+    const auto& control_res = control_tau1 - control_tau0;
+
+    SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
+    
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(model, solution, 1e-2);
+}
 
 int main() {
     SimTK_START_TEST("testConstraints");
@@ -808,6 +802,6 @@ int main() {
         MucoSolution couplerSolution;
         SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
         SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
-        //SimTK_SUBTEST(testDoublePendulumEqualControl);
+        SimTK_SUBTEST(testDoublePendulumEqualControl);
     SimTK_END_TEST();
 }

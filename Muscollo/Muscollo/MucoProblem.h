@@ -367,6 +367,10 @@ public:
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set bounds for the multibody constraints in phase 0.
+    void setMultibodyConstraintBounds(const MucoBounds& bounds);
+    /// Set bounds for the Lagrange multipliers in phase 0.
+    void setMultiplierBounds(const MucoBounds& bounds);
     /// Add a parameter variable for phase 0.
     void addParameter(const MucoParameter&);
     /// Add a cost term for phase 0.

@@ -462,6 +462,12 @@ void MucoProblem::setControlInfo(const std::string& name,
         const MucoInitialBounds& initial, const MucoFinalBounds& final) {
     upd_phases(0).setControlInfo(name, bounds, initial, final);
 }
+void MucoProblem::setMultibodyConstraintBounds(const MucoBounds& bounds) {
+    upd_phases(0).setMultibodyConstraintBounds(bounds);
+}
+void MucoProblem::setMultiplierBounds(const MucoBounds& bounds) {
+    upd_phases(0).setMultiplierBounds(bounds);
+}
 void MucoProblem::addParameter(const MucoParameter& parameter) {
     upd_phases(0).addParameter(parameter);
 }
