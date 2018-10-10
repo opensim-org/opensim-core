@@ -440,7 +440,7 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket, const std::s
     // 3. If successful, change is safe, redo on Model and be done
     // 4. If it fails exception is thrown and we return, model is unchanged
     cacheModelAndState();
-    clonedModel->initSystem(); // needed to populate socket/connection in clone
+
     const Component& comp = socket.getOwner();
     Component& componentInClone = clonedModel->updComponent(comp.getAbsolutePath());
     auto& clonesocket = componentInClone.updSocket(socket.getName());
