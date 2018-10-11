@@ -27,6 +27,8 @@ using namespace SimTK;
    }
 %}
 
+%rename OpenSim::PathPointSet::clone unused_clone;
+
 %extend OpenSim::Body {
     void getInertia(Array<double>& rInertia) {
         SimTK::Mat33 inertia= self->getInertia().toMat33();

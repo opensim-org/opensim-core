@@ -294,11 +294,15 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
             }
             else{
                 Property<Function>& prop = Property<Function>::updAs(ap);
-                prop = LinearFunction();
+                LinearFunction f;
+                randomize(&f);
+                prop = f;
             }
             
         } else if (ap.isObjectProperty() && !isList) {
             randomize(&ap.updValueAsObject(0));
+            if (ap.isUnnamedProperty())
+                ap.updValueAsObject(0).setName("");
             ap.setValueIsDefault(false);
         } else {
             //cerr << "Unrecognized Property:"<< ap.getName()<< ":" 

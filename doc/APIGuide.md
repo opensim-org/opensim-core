@@ -19,7 +19,7 @@ The ethos of the OpenSim API is that the code is modular, reusable, and easily e
 
 ## Organization of OpenSim {#organization}
 
-OpenSim is built on the computational and simulation libraries provided by SimTK. This core includes low-level, efficient math and matrix algebra libraries, such as LAPACK, as well as the infrastructure for defining a dynamic System and its State. One can think of the System as the set of differential equations, and the state as its variables. 
+OpenSim is built on SimTK computational and simulation libraries that provide low-level, efficient math and matrix algebra libraries, such as LAPACK, as well as the infrastructure for defining a dynamic System and its State. One can think of the System as the set of differential equations, and the state as its variables. 
 
 Empowering the computational layer is Simbody, an efficient multibody dynamics solver, which provides an extensible multibody System and State. The OpenSim modeling layer maps biomechanical structures (bones, muscles, tendons, etc.) into bodies and forces so that the dynamics of the System can be computed by Simbody. The Simbody Users Guide can be found [here](https://github.com/simbody/simbody/raw/master/Simbody/doc/SimbodyAndMolmodelUserGuide.pdf) and can help new users to understand the structure of OpenSim.
 

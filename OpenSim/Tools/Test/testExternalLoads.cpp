@@ -135,13 +135,11 @@ void testExternalLoad()
     ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
     xf.setName("grav");
 
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(&xf);
 
     extLoads->print("ExternalLoads_test.xml");
-
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
+    model.addModelComponent(extLoads);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter();
@@ -211,6 +209,7 @@ void testExternalLoad()
 
     ExternalForce xf2(forceStore2, id_base+"_F", point_id, id_base+"_T", pendBodyName, "ground", "ground");
     xf2.setName("xf_pInG");
+    xf2.finalizeFromProperties();
     // Empty out existing external forces
     extLoads->setMemoryOwner(false);
     extLoads->setSize(0);
@@ -218,16 +217,7 @@ void testExternalLoad()
 
     //Ask external loads to transform point expressed in ground to the applied body
     extLoads->setDataFileName(forceStore2.getName());
-    extLoads->invokeConnectToModel(model);
     extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
-
-    // remove previous external force from the model too
-    model.disownAllComponents();
-    model.updForceSet().setSize(0);
-
-    // after external loads has transformed the point of the force, then add it the model
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
 
     // recreate dynamical system to reflect new force
     SimTK::State &s3 = model.initSystem();
@@ -294,7 +284,7 @@ void testExternalLoadDefaultProperties() {
     xf->set_point_expressed_in_body(pendBodyName);
     SimTK_TEST(xf->getForceExpressedInBodyName() == "ground");
     // Leave force_expressed_in_body as default ("ground").
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(xf);
 
     extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");

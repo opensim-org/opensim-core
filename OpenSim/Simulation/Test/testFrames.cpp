@@ -378,7 +378,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
 
     // Now attach them such that offsetFrameProximal is attached to rod2 of
     // the pendulum and offsetFrameDistal is attached to offsetFrameProximal
-    const Body& rod2 = pendulum.getComponent<Body>("rod2");
+    const Body& rod2 = pendulum.getComponent<Body>("./bodyset/rod2");
     offsetFrameProximal->setParentFrame(rod2);
     offsetFrameDistal->setParentFrame(*offsetFrameProximal);
 

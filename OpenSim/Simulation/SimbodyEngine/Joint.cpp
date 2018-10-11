@@ -580,11 +580,11 @@ void Joint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 
             // now append updated frames to the property list for
             // both parent and child
-            XMLDocument::addPhysicalOffsetFrame30505(aNode, parentFrameName+"_offset",
+            XMLDocument::addPhysicalOffsetFrame30505_30517(aNode, parentFrameName+"_offset",
                 parentFrameName, location_in_parent, orientation_in_parent);
             parentNameElt->setValue(parentFrameName + "_offset");
 
-            XMLDocument::addPhysicalOffsetFrame30505(aNode, childFrameName + "_offset",
+            XMLDocument::addPhysicalOffsetFrame30505_30517(aNode, childFrameName + "_offset",
                 childFrameName, location_in_child, orientation_in_child);
             childNameElt->setValue(childFrameName + "_offset");
         }

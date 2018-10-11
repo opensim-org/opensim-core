@@ -56,13 +56,30 @@ GeometryPath::GeometryPath() :
 
 //_____________________________________________________________________________
 /*
- * Perform set up functions after model has been deserialized or copied.
- *
- * @param aModel The model containing this path.
- */
+* Perform set up functions after model has been deserialized or copied.
+*
+*/
+void GeometryPath::extendFinalizeFromProperties()
+{
+    Super::extendFinalizeFromProperties();
+
+    for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
+        if (upd_PathWrapSet()[i].getName().empty()) {
+            std::stringstream label;
+            label << "pathwrap_" << i;
+            upd_PathWrapSet()[i].setName(label.str());
+        }
+    }
+}
+
 void GeometryPath::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
+
+    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2,
+        InvalidPropertyValue,
+        getProperty_PathPointSet().getName(),
+        "A valid path must be connected to a model by at least two PathPoints.")
 
     // Name the path points based on the current path
     // (i.e., the set of currently active points is numbered
@@ -1141,23 +1158,6 @@ computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
     return _maSolver->solve(s, aCoord,  *this);
 }
 
-void GeometryPath::extendFinalizeFromProperties()
-{
-    Super::extendFinalizeFromProperties();
-
-    OPENSIM_THROW_IF_FRMOBJ(get_PathPointSet().getSize() < 2,
-        InvalidPropertyValue,
-        getProperty_PathPointSet().getName(),
-        "A valid path requires at least two PathPoints.")
-
-    for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
-        if (upd_PathWrapSet()[i].getName().empty()) {
-            std::stringstream label;
-            label << "pathwrap_" << i;
-            upd_PathWrapSet()[i].setName(label.str());
-        }
-    }
-}
 //_____________________________________________________________________________
 // Override default implementation by object to intercept and fix the XML node
 // underneath the model to match current version.
