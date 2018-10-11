@@ -43,7 +43,6 @@
 #include <OpenSim/Tools/MarkerPlacer.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 
 using namespace OpenSim;
@@ -253,7 +252,8 @@ int main()
         cout << "Exception: " << e.what() << endl;
     }
     const Object& connecteeAfter = psocket.getConnecteeAsObject();
-    assert(&connecteeAfter == &connecteeBefore);
+    OPENSIM_THROW_IF(&connecteeAfter != &connecteeBefore, OpenSim::Exception, 
+        "Connectee changed after unsuccessful edit");
     // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {
