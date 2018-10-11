@@ -459,7 +459,7 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
             + socket.getConnecteeTypeName() + "> '" + socket.getName() +
             "' to Component '" + componentPathName + "'.\n Reason: " +
             ex.what();
-        OPENSIM_THROW(Exception, message);
+        throw OpenSim::Exception(message);
     }
     // if we made it to this line then the change is safe, redo in actual model/comp/socket
     socket.setConnecteeName(componentPathName);
