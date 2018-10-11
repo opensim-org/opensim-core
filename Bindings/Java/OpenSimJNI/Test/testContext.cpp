@@ -43,6 +43,7 @@
 #include <OpenSim/Tools/MarkerPlacer.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 
 using namespace OpenSim;
@@ -224,12 +225,13 @@ int main()
  
     // Make a change to a socket that is invalid and verify that we can recover
     // from that invalid change by not making it on model directly
+    // context has reference to the model already
     context->cacheModelAndState();
     Joint& shoulder = model->updJointSet().updComponent<Joint>("r_shoulder");
     AbstractSocket& socket = shoulder.updSocket("child_frame");
     try {
-        // create an invalid model where joint connects two frames on ground
-        // this call leaves the model untouched if the change would invalidate topology
+        // create an invalid model where joint connects two frames on ground,
+        // the test will verify the connectee has not been changed 
         context->setSocketConnecteeName(socket, "ground");
     }
     catch (const std::exception& e) {
@@ -238,6 +240,7 @@ int main()
         cout << "Exception: " << e.what() << endl;
     }
     AbstractSocket& psocket = shoulder.updSocket("parent_frame");
+    const Object& connecteeBefore = psocket.getConnecteeAsObject();
     try {
         // Try to create an invalid model again, this call should leave the 
         // model untouched since change invalidates psocket
@@ -249,6 +252,8 @@ int main()
         // in GUI use case this gets propagated to users
         cout << "Exception: " << e.what() << endl;
     }
+    const Object& connecteeAfter = psocket.getConnecteeAsObject();
+    assert(&connecteeAfter == &connecteeBefore);
     // model is still valid here despite attempts to make invalid edits
     return status;
   } catch (const std::exception& e) {

@@ -457,7 +457,7 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
     catch(const std::exception& ex) {
         std::string message = "Unable to connect Socket<"
             + socket.getConnecteeTypeName() + "> '" + socket.getName() +
-            "' to Component at '" + componentPathName + "'.\n Reason:" +
+            "' to Component '" + componentPathName + "'.\n Reason: " +
             ex.what();
         OPENSIM_THROW(Exception, message);
     }
