@@ -489,7 +489,8 @@ void testMisc() {
         
     // add a subcomponent
     // connect internals
-    ASSERT_THROW( OpenSim::Exception,
+    // TODO theWorld.connect();
+    ASSERT_THROW( Bar::ParentAndFooAreSame,
                   theWorld.connect() );
 
 
@@ -535,6 +536,11 @@ void testMisc() {
     bar.connectSocket_childFoo(foo2);
     string socketName = bar.updSocket<Foo>("childFoo").getName();
 
+    // TODO std::cout << "DEBUG beforeConnecting theWorld parentFoo " << theWorld.updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
+
+    // do any other input/output connections
+    foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
+
     // Bar should connect now
     theWorld.connect();
     theWorld.buildUpSystem(system);
@@ -542,8 +548,7 @@ void testMisc() {
     const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
     ASSERT(foo2 == foo2found);
 
-    // do any other input/output connections
-    foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
+    // TODO theWorld.connect();
     
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
@@ -613,7 +618,12 @@ void testMisc() {
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
-        
+    // TODO std::cout << "DEBUG world2 parentFoo " << world2->updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
+    // TODO std::cout << "DEBUG world2 childFoo " << world2->updComponent("Bar").getSocket("childFoo").getConnecteeName()  << std::endl;
+    world2->finalizeFromProperties();
+
+    // TODO std::cout << "DEBUG finalized world2 parentFoo " << world2->updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
+    // TODO std::cout << "DEBUG finalized world2 childFoo " << world2->updComponent("Bar").getSocket("childFoo").getConnecteeName()  << std::endl;
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
     SimTK_TEST_MUST_THROW_EXC(
@@ -706,14 +716,15 @@ void testMisc() {
     reporter->set_report_time_interval(0.1);
     reporter->connectInput_inputs(foo.getOutput("Qs"));
     theWorld.add(reporter);
+    
+    // Connect our state variables.
+    foo.connectInput_fiberLength(bar.getOutput("fiberLength"));
+    foo.connectInput_activation(bar.getOutput("activation"));
 
     MultibodySystem system3;
     cout << "Building theWorld's system:" << endl;
     theWorld.buildUpSystem(system3);
 
-    // Connect our state variables.
-    foo.connectInput_fiberLength(bar.getOutput("fiberLength"));
-    foo.connectInput_activation(bar.getOutput("activation"));
     // Since hiddenStateVar is a hidden state variable, it has no
     // corresponding output.
     ASSERT_THROW( OpenSim::Exception,
@@ -2064,7 +2075,7 @@ void testSingleValueInputConnecteeSerialization() {
 }
 
 void testAliasesAndLabels() {
-    TheWorld* theWorld = new TheWorld();
+    auto theWorld = std::unique_ptr<TheWorld>(new TheWorld());
     theWorld->setName("world");
 
     Foo* foo = new Foo();  foo->setName("foo");
@@ -2082,6 +2093,7 @@ void testAliasesAndLabels() {
 
     // Non-list Input, no alias.
     foo->connectInput_input1( bar->getOutput("Output1") );
+    theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
     SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
 
@@ -2103,12 +2115,14 @@ void testAliasesAndLabels() {
 
     // Non-list Input, with alias.
     foo->connectInput_input1( bar->getOutput("Output1"), "baz" );
+    theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias() == "baz");
     SimTK_TEST(foo->getInput("input1").getLabel() == "baz");
 
     // List Input, no aliases.
     foo->connectInput_listInput1( bar->getOutput("Output1") );
     foo->connectInput_listInput1( bar->getOutput("Output3") );
+    theWorld->connect();
 
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getAlias());
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
@@ -2124,6 +2138,7 @@ void testAliasesAndLabels() {
     // List Input, with aliases.
     foo->connectInput_listInput1( bar->getOutput("Output1"), "plugh" );
     foo->connectInput_listInput1( bar->getOutput("Output3"), "thud" );
+    theWorld->connect();
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0) == "plugh");
     SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "plugh");

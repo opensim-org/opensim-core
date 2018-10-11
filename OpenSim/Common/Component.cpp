@@ -292,22 +292,25 @@ void Component::finalizeConnections(Component& root)
     for (auto& it : _inputsTable) {
         auto& input = it.second;
 
-        if (!input->isListSocket() && input->getConnecteeName(0).empty()) {
-            // TODO When we support verbose/debug logging we should include
-            // message about unspecified Outputs but generally this OK
-            // if the Input's value is not required.
-            /**
-            std::cout << getConcreteClassName() << "'" << getName() << "'";
-            std::cout << "::connect() Input<" << input.getConnecteeTypeName();
-            std::cout << ">`" << input.getName();
-            std::cout << "' Output has not been specified." << std::endl;
-            */
-            continue;
-        }
+        // TODO address this.
+        // if (!input->isListSocket() && input->getConnecteeName(0).empty()) {
+        //     // TODO When we support verbose/debug logging we should include
+        //     // message about unspecified Outputs but generally this OK
+        //     // if the Input's value is not required.
+        //     /**
+        //     std::cout << getConcreteClassName() << "'" << getName() << "'";
+        //     std::cout << "::connect() Input<" << input.getConnecteeTypeName();
+        //     std::cout << ">`" << input.getName();
+        //     std::cout << "' Output has not been specified." << std::endl;
+        //     */
+        //     continue;
+        // }
 
         // TODO input->disconnect();
         try {
-            input->findAndConnect(root);
+            if (input->isConnecteeSpecified()) {
+                input->findAndConnect(root);
+            }
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Input '" +

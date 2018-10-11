@@ -509,7 +509,7 @@ public:
     // Change the return type of clone(). This is similar to what the Object
     // macros do (see OpenSim_OBJECT_ABSTRACT_DEFS).
     AbstractInput* clone() const override = 0;
-    
+
     // Socket interface
     void connect(const Object& object) override {
         std::stringstream msg;
@@ -518,6 +518,9 @@ public:
             ". Input can only connect to an Output.";
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
+
+    /** TODO */
+    virtual bool isConnecteeSpecified() const = 0;
 
     /** Connect this Input to a single-valued (single-channel) Output or, if
     this is a list %Input and the %Output is a list %Output, connect to all the
@@ -533,7 +536,7 @@ public:
     %Input to refer to the %Channel. */
     virtual void connect(const AbstractChannel& channel,
                          const std::string& alias = "") = 0;
-    
+
     /** Get the alias for a Channel. An alias is a description for a %Channel
     that is specific to how the Input will use the %Channel. For example, the
     Component that owns this %Input might expect the aliases to be the names of
@@ -684,6 +687,18 @@ public:
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 
+    bool isConnecteeSpecified() const override {
+        std::cout << "DEBUG isConnecteeSpecified(): " << getName() << std::endl;
+        if (isListSocket() && (getNumConnectees() > 0 || _connectees.size()))
+            return true;
+        std::cout << "DEBUG 2 " << getName() << std::endl;
+        if (!isListSocket() &&
+                (!getConnecteeName().empty() || _connectees.size()))
+            return true;
+        std::cout << "DEBUG 3 " << getName() << std::endl;
+        return false;
+    }
+
     /** Connect this Input to the provided (Abstract)Output. */
     // Definition is in Component.h
     void connect(const AbstractOutput& output,
@@ -702,7 +717,11 @@ public:
     }
     
     bool isConnected() const override {
-        return _connectees.size() == getNumConnectees();
+        // TODO not a valid way to check for single-value inputs because
+        // there is always one connectee? Should isConnected() mean it's been
+        // finalized and the reference and property are in sync?
+        return _connectees.size() == getNumConnectees() &&
+                _latestModification == LatestModification::Finalize;
     }
     
     /** Get the value of this Input when it is connected. Redirects to connected
@@ -793,11 +812,13 @@ public:
                            outputName,
                            channelName,
                            currAlias);
-        setConnecteeName(composeConnecteeName(componentPath,
-                                              outputName,
-                                              channelName,
-                                              alias),
-                         index);
+        // TODO this flips the LastestModification flag.
+        // TODO TODO TODO TODO
+        updConnecteeNameProp().setValue(index,
+                composeConnecteeName(componentPath,
+                                     outputName,
+                                     channelName,
+                                     alias));
         
         _aliases[index] = alias;
     }
@@ -883,7 +904,9 @@ protected:
     
 private:
     void connectInternal(const Channel& chanT, const std::string& alias) {
-        _connectees.push_back(SimTK::ReferencePtr<const Channel>(&chanT));
+        std::cout << "DEBUG Input connectInternal addr before " << &chanT << std::endl;
+        _connectees.emplace_back(&chanT);
+        std::cout << "DEBUG Input connectInternal addr after " << _connectees.back().get() << std::endl;
         _aliases.push_back(alias);
     }
     SimTK::ResetOnCopy<ChannelList> _connectees;

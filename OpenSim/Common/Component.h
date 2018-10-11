@@ -3025,6 +3025,8 @@ void Socket<C>::findAndConnect(const Component& root) {
             comp = root.template findComponent<C>(path);
         }
         if (comp) {
+            std::cout << info << "using comp " << comp->getAbsolutePathString()
+                      << std::endl;
             connectInternal(*comp);
         }
             // TODO connect(*comp);
@@ -3241,16 +3243,24 @@ void Input<T>::findAndConnect(const Component& root) {
             // TODO connect(channel, alias);
         }
     } else if (_latestModification == LatestModification::Reference) {
-        SimTK_ASSERT_ALWAYS(getNumConnectees() == 0,
+        SimTK_ASSERT_ALWAYS(
+                (isListSocket() && getNumConnectees() == 0) ||
+                        (!isListSocket() && getConnecteeName().empty()),
                 "Somehow the connectees weren't cleared.");
+        OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
+            Exception,
+            "Cannot connect single-value input to multiple channels.");
+
         int i = -1;
         for (const auto& chan : getChannels()) {
             ++i;
             // Update the connectee name as
             // <RelOwnerPath>/<Output><:Channel><(annotation)>
-            ComponentPath
-                    path(chan->getOutput().getOwner().getRelativePathName(
-                    getOwner()));
+            std::cout << "DEBUG findAndConnct chan " << chan->getName()
+                    << " address " << chan.get() << std::endl;
+            ComponentPath path(
+                    chan->getOutput().getOwner().getRelativePathName(
+                            getOwner()));
 
             auto pathStr = composeConnecteeName(path.toString(),
                                                 chan->getOutput().getName(),
@@ -3260,9 +3270,16 @@ void Input<T>::findAndConnect(const Component& root) {
                                                 "",
                                                 _aliases[i]);
 
-            updConnecteeNameProp().appendValue(pathStr);
+            if (isListSocket())
+                updConnecteeNameProp().appendValue(pathStr);
+            else
+                updConnecteeNameProp().setValue(pathStr);
         }
     }
+    std::cout << "DEBUG Input<[..]>::findAndConnect(): latestModification" << getName() << " ";
+    for (int i = 0; i < getNumConnectees(); ++i)
+        std::cout << getConnecteeName(i) << " ";
+    std::cout << std::endl;
     _latestModification = LatestModification::Finalize;
 }
 
