@@ -27,6 +27,7 @@ using SimTK::ConstraintIndex;
 
 MucoConstraintInfo::MucoConstraintInfo() {
     constructProperties();
+    if (getName().empty()) setName("path_constraint");
 }
 
 std::vector<std::string> MucoConstraintInfo::getConstraintLabels() {
@@ -36,7 +37,7 @@ std::vector<std::string> MucoConstraintInfo::getConstraintLabels() {
             labels[i] = getName() + "_" + std::to_string(i);
         }
         else {
-            labels[i] = getName() + get_suffixes(i);
+            labels[i] = getName() + "_" + get_suffixes(i);
         }
     }
     return labels;
@@ -44,7 +45,7 @@ std::vector<std::string> MucoConstraintInfo::getConstraintLabels() {
 
 void MucoConstraintInfo::printDescription(std::ostream& stream) const {
     stream << getName() << ". " << getConcreteClassName() <<
-        ". number of scalar equations : " << getNumEquations();
+        ". number of scalar equations: " << getNumEquations();
 
     const std::vector<MucoBounds> bounds = getBounds();
     stream << ". bounds: ";
@@ -63,22 +64,21 @@ void MucoConstraintInfo::constructProperties() {
 // MucoMultibodyConstraintInfo
 // ============================================================================
 
-MucoMultibodyConstraintInfo::MucoMultibodyConstraintInfo(int cid, int mp, 
-        int mv, int ma) {
+MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid, 
+    int mp, int mv, int ma) {
 
-    // Store Simbody SimTK::ConstraintIndex (internally as int)
+    // Store Simbody SimTK::ConstraintIndex
     m_simbody_constraint_index = cid;
 
-    // Set the default name based on the constraint index.
-    setName("multibody_constraint_cid" + std::to_string(cid));
+    // Set the default constraint info name based on the constraint index.
+    m_constraint_info.setName("multibody_constraint_cid" + std::to_string(cid));
 
     // Set the number of constraint equations for each kinematic level.
     m_num_position_eqs = mp;
     m_num_velocity_eqs = mv;
     m_num_acceleration_eqs = ma;
 
-    // The constraint errors enforced by MucoTropterSolver are ordered as
-    // follows:
+    // The constraint errors to enforced by a solver are ordered as follows:
     //      1) position-level errors (mp length)
     //      2) position-level 1st derivative errors (mp length)
     //      3) velocity-level errors (mv length)
@@ -96,55 +96,57 @@ MucoMultibodyConstraintInfo::MucoMultibodyConstraintInfo(int cid, int mp,
     }
     // This also sets the internal variable tracking the number of
     // constraint equations.
-    setBounds(bounds);
+    m_constraint_info.setBounds(bounds);
 
     // In general, the default list of suffixes for a Simbody constraint 
     // will take the following pattern:
-    //      [_p0 _p1 ... _dp0 _dp1 ... _v0 _v1 ... _ddp0 _ddp1 ... 
-    //       _dv0 _dv1 ... a0 a1 ...]
+    //      [p0 p1 ... dp0 dp1 ... v0 v1 ... ddp0 ddp1 ... 
+    //       dv0 dv1 ... a0 a1 ...]
     std::vector<std::string> suffixes;
 
     // Position-level constraints.
     for (int i = 0; i < m_num_position_eqs; ++i) {
-        suffixes.push_back("_p" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(false);
+        suffixes.push_back("p" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::Position);
     }
     // Derivative of position-level and velocity-level constraints. 
     for (int i = 0; i < m_num_position_eqs; ++i) {
-        suffixes.push_back("_dp" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(true);
+        suffixes.push_back("dp" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::DtPosition);
     }
     for (int i = 0; i < m_num_velocity_eqs; ++i) {
-        suffixes.push_back("_v" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(false);
+        suffixes.push_back("v" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::Velocity);
     }
     // Second derivative of position-level, derivative of velocity-
     // level, and acceleration-level constraints.
     for (int i = 0; i < m_num_position_eqs; ++i) {
-        suffixes.push_back("_ddp" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(true);
+        suffixes.push_back("ddp" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::DtDtPosition);
     }
     for (int i = 0; i < m_num_velocity_eqs; ++i) {
-        suffixes.push_back("_dv" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(true);
+        suffixes.push_back("dv" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::DtVelocity);
     }
     for (int i = 0; i < m_num_acceleration_eqs; ++i) {
-        suffixes.push_back("_a" + std::to_string(i));
-        m_constraint_derivative_flags.push_back(false);
+        suffixes.push_back("a" + std::to_string(i));
+        m_kinematic_levels.push_back(KinematicLevel::Acceleration);
     }
-    setSuffixes(suffixes);
+    m_constraint_info.setSuffixes(suffixes);
 }
 
-void MucoMultibodyConstraintInfo::calcMultibodyConstraintErrors(
+void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
     const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
 
-    // If necessary, resize errors vector.
-    if (errors.size() != getNumEquations()) {
-        errors.resize(getNumEquations());
-    }
 
-    // Get Simbody constraint.
-    SimTK::Vector errors(getNumEquations());
+    OPENSIM_THROW_IF_FRMOBJ(
+        errors.size() != m_constraint_info.getNumEquations(), Exception,
+        "The size of the errors vector passed is not consistent with the "
+        "number of scalar equations this MucoMultibodyConstraintInfo "
+        "represents.");
+
+    // Get the Simbody constraint.
+    SimTK::Vector errors(m_constraint_info.getNumEquations());
     const auto& matter = model.getMatterSubsystem();
     const SimTK::Constraint& constraint = 
         matter.getConstraint(getSimbodyConstraintIndex());
@@ -174,7 +176,7 @@ MucoPathConstraint::MucoPathConstraint() {
 }
 
 void MucoPathConstraint::constructProperties() {
-    constructProperty_constraint_info(MucoConstraintInfo());
+    constructProperty_MucoConstraintInfo(MucoConstraintInfo());
 }
 
 void MucoPathConstraint::initialize(const Model& model, 
@@ -183,24 +185,14 @@ void MucoPathConstraint::initialize(const Model& model,
     m_model.reset(&model);
     initializeImpl();
 
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_constraint_info().empty(),
-        Exception, "No MucoConstraintInfo provided.");
-
-    if (getName().empty()) {
-        const_cast<MucoPathConstraint*>(this)->setName(
-            get_constraint_info().getName());
-    } else {
-        OPENSIM_THROW_IF_FRMOBJ(get_constraint_info().getName() != getName(),
-            Exception, "Name of the provided MucoConstraintInfo does not match "
-            "the name of this MucoPathConstraint object.");
-    }
-
     OPENSIM_THROW_IF_FRMOBJ(pathConstraintIndex < 0, Exception, "Invalid "
-        "constraint index provided. Indices must be greater than or equal to "
+        "constraint index provided. The index must be greater than or equal to "
         "zero.");
     m_path_constraint_index = pathConstraintIndex;
 
-    OPENSIM_THROW_IF_FRMOBJ(get_constraint_info().getBounds().empty(),
+
+    // TODO remove this return zeros if empty
+    OPENSIM_THROW_IF_FRMOBJ(get_MucoConstraintInfo().getBounds().empty(),
         Exception, "Constraint bounds must be provided within the constraint "
         "info.");
 
@@ -209,8 +201,9 @@ void MucoPathConstraint::initialize(const Model& model,
     SimTK::Vector errors;
     calcPathConstraintErrorsImpl(model.getWorkingState(), errors);
     OPENSIM_THROW_IF_FRMOBJ(errors.size() != 
-        get_constraint_info().getNumEquations(), Exception,
+        get_MucoConstraintInfo().getNumEquations(), Exception,
         "The length of the constraint errors vector passed from "
         "calcConstraintErrorsImpl() must be consistent with the number of "
-        "constraint equations.");
+        "equations defined in the current constraint info (i.e. " 
+        "getConstraintInfo().getNumEquations()).");
 }

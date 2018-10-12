@@ -721,8 +721,8 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
 class EqualControlConstraint : public MucoPathConstraint {
 OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
 protected:
-    void calcConstraintErrorsImpl(const SimTK::State& state,
-            SimTK::Vector& errors) const {
+    void calcPathConstraintErrorsImpl(const SimTK::State& state,
+            SimTK::Vector& errors) const override {
         getModel().realizeVelocity(state);
 
         const auto& controls = getModel().getControls(state);

@@ -128,7 +128,7 @@ void MucoParameter::initialize(Model& model) const {
 }
 
 void MucoParameter::printDescription(std::ostream& stream) const {
-    stream << getName() << ". ";
+    stream << getName();
     stream << ". model property name: " << getPropertyName();
     stream << ". component paths: ";
     const std::vector<std::string> componentPaths = getComponentPaths();
@@ -139,7 +139,7 @@ void MucoParameter::printDescription(std::ostream& stream) const {
     if (getProperty_property_element().empty()) {
         stream << "n/a";
     } else {
-        stream << std::to_string(getProperty_property_element().getValue());
+        stream << getProperty_property_element().getValue();
     }
     stream << ". bounds: ";
     getBounds().printDescription(stream);
