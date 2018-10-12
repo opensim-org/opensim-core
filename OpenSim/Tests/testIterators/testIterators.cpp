@@ -55,16 +55,16 @@ const std::string modelFilename = "arm26.osim";
 // and orientation offsets.
 // 2018-09-05 updates to accommodate ModelComponentSets: BodySet, JointSet,
 //    ConstraintSet, ForceSet, ProbeSet, WrapObjectSet, ...
-const int expectedNumComponents = 194; 
+const int expectedNumComponents = 200; 
 const int expectedNumJointsWithStateVariables = 2;
 // 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
 const int expectedNumModelComponentsWithStateVariables = 12;
-// Below updated from 1 to 4 to account for offset frame and its geometry and 
+// Below updated from 1 to 7 to account for offset frame and its geometry and 
 // wrapobjectset that are now part of the Joint
-const int expectedNumJntComponents = 4;
+const int expectedNumJntComponents = 7;
 // Test using the iterator to skip over every other Component (Frame in this case)
-// nf = 1 ground + 2 bodies + 2 joint offsets = 5, skipping - 2 = 3
-const int expectedNumCountSkipFrames = 3;
+// nf = 1 ground + 2 bodies + 4 joint offsets = 7, skipping - 3 = 4
+const int expectedNumCountSkipFrames = 4;
 
 namespace OpenSim {
     

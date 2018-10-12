@@ -41,14 +41,14 @@ class TestSockets(unittest.TestCase):
 
         # Check that the connectees point to the correct objects.
         assert (shoulder.getConnectee("child_frame").this ==
-                model.getBodySet().get("r_humerus").this)
+                shoulder.getComponent("r_humerus_offset").this)
 
         assert (
             type(shoulder.getSocket("child_frame").getConnecteeAsObject())
             == osim.OpenSimObject)
         # In Python, we are able to get the concrete type from this method.
         # by using a SWIG typemap(out).
-        assert type(shoulder.getConnectee("child_frame")) == osim.Body
+        assert type(shoulder.getConnectee("child_frame")) == osim.PhysicalOffsetFrame
 
     def test_iterate_sockets(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
