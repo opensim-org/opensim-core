@@ -934,9 +934,9 @@ writeAdjustedModel()
     _model->updForceSet() = _originalForceSet;
 
     // ExternalLoads were added as miscellaneous ModelComponents
-    int exfIx = _model->getMiscModelComponentSet().getIndex("externalloads");
-    if (exfIx >= 0) {
-        _model->updMiscModelComponentSet().remove(exfIx);
+    cout << _model->updMiscModelComponentSet() << endl;
+    if (hasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_externalLoads.release());
     }
 
     // CMC was added as a model controller, now remove before printing out
