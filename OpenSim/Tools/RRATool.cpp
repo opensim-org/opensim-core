@@ -933,6 +933,12 @@ writeAdjustedModel()
     // NOTE: use operator= so actuator groups are properly copied over
     _model->updForceSet() = _originalForceSet;
 
+    // ExternalLoads were added as miscellaneous ModelComponents
+    int exfIx = _model->getMiscModelComponentSet().getIndex("externalloads");
+    if (exfIx >= 0) {
+        _model->updMiscModelComponentSet().remove(exfIx);
+    }
+
     // CMC was added as a model controller, now remove before printing out
     int c = _model->updControllerSet().getIndex("CMC");
     _model->updControllerSet().remove(c);
