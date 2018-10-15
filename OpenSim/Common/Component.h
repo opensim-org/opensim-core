@@ -2390,6 +2390,10 @@ public:
      * (2) has not been added to another component */
     bool hasOwner() const;
 
+    /** Obtain the root %Component, which is this component if it is orphaned.
+     */
+    const Component& getRoot() const;
+
 protected:
     /** %Set this %Component's reference to its owning %Component */
     void setOwner(const Component& owner);
@@ -2999,14 +3003,67 @@ void ComponentListIterator<T>::advanceToNextValidComponent() {
     }
     return;
 }
+    
+
+class ConnecteeNotSpecified : public Exception {
+public:
+    ConnecteeNotSpecified(const std::string& file,
+                          size_t line,
+                          const std::string& func,
+                          const AbstractSocket& socket,
+                          const Component& owner) :
+    Exception(file, line, func) {
+        std::string msg = "Socket '" + socket.getName() + "' of type " +
+        socket.getConnecteeTypeName() + " in " +
+        owner.getConcreteClassName() + " '" +
+        owner.getName() + "' is unspecified.";
+        addMessage(msg);
+    }
+};
+
 
 
 template<class C>
+// TODO rename to syncConnectee.
 void Socket<C>::findAndConnect(const Component& root) {
- 
-    if (_latestModification == LatestModification::Property) {
-        ComponentPath path(getConnecteeName());
+    const std::string info = "Socket<[..]>::findAndConnect() comp "
+            + getOwner().getAbsolutePathString() + " of type "
+            + getOwner().getConcreteClassName() + " socket "
+            + getName() + " of type " + getConnecteeTypeName() + ": ";
+
+    // If the reference to the connectee is set, use that. Otherwise, use the
+    // connectee name property.
+    if (isConnected()) {
+        // TODO add a similar change to Input<[..]>::findAndConnect().
+        const auto& comp = *connectee;
+        const auto& rootOfConnectee = comp.getRoot();
+        const auto& myRoot = getOwner().getRoot();
+        OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
+            "Socket<" + getConnecteeTypeName() + "> '" + getName() +
+            "' in " + getOwner().getConcreteClassName() + " at " +
+            getOwner().getAbsolutePathString() + " cannot connect to " +
+            comp.getConcreteClassName() + " at " +
+            comp.getAbsolutePathString() + ": components do not have the same "
+            "root component. Did you intend to add '" +
+            comp.getRoot().getName() + "' to '" + myRoot.getName() + "'?");
+
+        std::string objPathName = connectee->getAbsolutePathString();
+        std::string ownerPathName = getOwner().getAbsolutePathString();
+        // otherwise store the relative path name to the object
+        std::string relPathName = connectee->getRelativePathName(getOwner());
+        std::cout << info << " Reference relPath " << relPathName
+                << std::endl;
+        updConnecteeNameProp().setValue(0, relPathName);
+        
+    } else {
+        const auto connecteeName = getConnecteeName();
+        OPENSIM_THROW_IF(connecteeName.empty(), ConnecteeNotSpecified,
+                        *this, getOwner());
+
+        ComponentPath path(connecteeName);
         const C* comp = nullptr;
+        std::cout << info << "Property path " << path.toString()
+                  << std::endl;
 
         try {
             if (path.isAbsolute()) {
@@ -3028,25 +3085,14 @@ void Socket<C>::findAndConnect(const Component& root) {
             std::cout << info << "using comp " << comp->getAbsolutePathString()
                       << std::endl;
             connectInternal(*comp);
-        }
             // TODO connect(*comp);
+        }
         else
             OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
                           path.toString(),
                           C::getClassName(),
                           getName());
-    } else if (_latestModification == LatestModification::Reference) {
-
-        std::string objPathName = connectee->getAbsolutePathString();
-        std::string ownerPathName = getOwner().getAbsolutePathString();
-        // This can happen when top level components like a Joint and Body
-        // have the same name like a pelvis Body and pelvis Joint that
-        // connects to a Body of the same name.
-        // otherwise store the relative path name to the object
-        std::string relPathName = connectee->getRelativePathName(getOwner());
-        updConnecteeNameProp().setValue(0, relPathName);
     }
-    _latestModification = LatestModification::Finalize;
 }
 
 template<class T>
@@ -3068,10 +3114,7 @@ void Input<T>::connect(const AbstractOutput& output,
             "' cannot connect to list output '" + output.getPathName() + ".");
     }
 
-    if (_latestModification != LatestModification::Reference) {
-        clearConnecteeName();
-        _latestModification = LatestModification::Reference;
-    }
+    clearConnecteeName();
 
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
@@ -3135,10 +3178,7 @@ void Input<T>::connect(const AbstractChannel& channel,
         OPENSIM_THROW(Exception, msg.str());
     }
 
-    if (_latestModification != LatestModification::Reference) {
-        clearConnecteeName();
-        _latestModification = LatestModification::Reference;
-    }
+    clearConnecteeName();
 
     if (!isListSocket()) {
         // Remove the existing connectee (if it exists).
@@ -3186,14 +3226,44 @@ void Input<T>::connect(const AbstractChannel& channel,
 template<class T>
 void Input<T>::findAndConnect(const Component& root) {
 
-    if (_latestModification == LatestModification::Property) {
+    if (isConnected()) {
+        clearConnecteeName();
+        OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
+                         Exception,
+                         "Cannot connect single-value input to multiple channels.");
+        
+        int i = -1;
+        for (const auto& chan : getChannels()) {
+            ++i;
+            // Update the connectee name as
+            // <RelOwnerPath>/<Output><:Channel><(annotation)>
+            std::cout << "DEBUG findAndConnct chan " << chan->getName()
+            << " address " << chan.get() << std::endl;
+            ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
+                    getOwner()));
+            
+            auto pathStr = composeConnecteeName(path.toString(),
+                                                chan->getOutput().getName(),
+                                                chan->getOutput().isListOutput()
+                                                ?
+                                                chan->getChannelName() :
+                                                "",
+                                                _aliases[i]);
+            
+            if (isListSocket())
+                updConnecteeNameProp().appendValue(pathStr);
+            else
+                updConnecteeNameProp().setValue(pathStr);
+        }
+    } else {
+        if (!isListSocket() && getConnecteeName().empty()) return;
         std::string compPathStr, outputName, channelName, alias;
         for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
             parseConnecteeName(getConnecteeName(ix),
                                compPathStr, outputName, channelName, alias);
             ComponentPath compPath(compPathStr);
             const AbstractOutput* output = nullptr;
-
+            
             if (compPath.isAbsolute()) { //absolute path string
                 if (compPathStr.empty()) {
                     output = &root.getOutput(outputName);
@@ -3222,65 +3292,31 @@ void Input<T>::findAndConnect(const Component& root) {
                 }
                 // comp should never be null at this point.
                 OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
-                                                   "could not find component '" +
-                                                   compPathStr + ".");
+                                 "could not find component '" +
+                                 compPathStr + ".");
                 output = &comp->getOutput(outputName);
             }
             const auto& channel = output->getChannel(channelName);
-
+            
             // TODO put this check in one place only.
             const auto* chanT = dynamic_cast<const Channel*>(&channel);
             if (!chanT) {
                 std::stringstream msg;
                 msg << "Type mismatch between Input and Output: Input '"
-                        << getName() << "' of type " << getConnecteeTypeName()
-                        << " cannot connect to Output (channel) '"
-                        << channel.getPathName()
-                        << "' of type " << channel.getTypeName() << ".";
+                << getName() << "' of type " << getConnecteeTypeName()
+                << " cannot connect to Output (channel) '"
+                << channel.getPathName()
+                << "' of type " << channel.getTypeName() << ".";
                 OPENSIM_THROW(Exception, msg.str());
             }
             connectInternal(*chanT, alias);
             // TODO connect(channel, alias);
-        }
-    } else if (_latestModification == LatestModification::Reference) {
-        SimTK_ASSERT_ALWAYS(
-                (isListSocket() && getNumConnectees() == 0) ||
-                        (!isListSocket() && getConnecteeName().empty()),
-                "Somehow the connectees weren't cleared.");
-        OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
-            Exception,
-            "Cannot connect single-value input to multiple channels.");
-
-        int i = -1;
-        for (const auto& chan : getChannels()) {
-            ++i;
-            // Update the connectee name as
-            // <RelOwnerPath>/<Output><:Channel><(annotation)>
-            std::cout << "DEBUG findAndConnct chan " << chan->getName()
-                    << " address " << chan.get() << std::endl;
-            ComponentPath path(
-                    chan->getOutput().getOwner().getRelativePathName(
-                            getOwner()));
-
-            auto pathStr = composeConnecteeName(path.toString(),
-                                                chan->getOutput().getName(),
-                                                chan->getOutput().isListOutput()
-                                                ?
-                                                chan->getChannelName() :
-                                                "",
-                                                _aliases[i]);
-
-            if (isListSocket())
-                updConnecteeNameProp().appendValue(pathStr);
-            else
-                updConnecteeNameProp().setValue(pathStr);
         }
     }
     std::cout << "DEBUG Input<[..]>::findAndConnect(): latestModification" << getName() << " ";
     for (int i = 0; i < getNumConnectees(); ++i)
         std::cout << getConnecteeName(i) << " ";
     std::cout << std::endl;
-    _latestModification = LatestModification::Finalize;
 }
 
 

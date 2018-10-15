@@ -167,10 +167,6 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
                                 "AbstractSocket::setConnecteeName()");
-        if (_latestModification != LatestModification::Property) {
-            disconnect();
-            _latestModification = LatestModification::Property;
-        }
         updConnecteeNameProp().setValue(ix, name);
     }
 
@@ -194,10 +190,6 @@ public:
     void appendConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
             "Multiple connectee names can only be appended to a list Socket.");
-        if (_latestModification != LatestModification::Property) {
-            disconnect();
-            _latestModification = LatestModification::Property;
-        }
         updConnecteeNameProp().appendValue(name);
     }
 
@@ -273,16 +265,6 @@ protected:
             // interpreted as "this component."
         }
     }
-
-    // We keep track of how the connectee was last updated.
-    enum class LatestModification {
-        Property, // Edited the connectee name property.
-        Reference, // Used connect().
-        Finalize // finalizeConnections().
-    };
-    // A newly-constructed model's connectees are specified by XML.
-    SimTK::ReinitOnCopy<LatestModification> _latestModification =
-            LatestModification::Property;
 
 protected:
     
@@ -366,36 +348,9 @@ public:
             OPENSIM_THROW(Exception, msg.str());
         }
 
-        if (_latestModification != LatestModification::Reference ) {
-            clearConnecteeName();
-            _latestModification = LatestModification::Reference;
-        }
+        clearConnecteeName();
         connectInternal(*objT);
         // TODO connectee = *objT;
-
-        /*
-
-        std::string objPathName = objT->getAbsolutePathString();
-        std::string ownerPathName = getOwner().getAbsolutePathString();
-        // Check if the connectee is an orphan (yet to be adopted component)
-        if (!objT->hasOwner()) {
-            // The API permits connecting to orphans when passing in the
-            // dependency directly.
-            // Workaround: Identify it as a "floating"
-            // Component and we will find its absolute path next time we try to
-            // connect
-            setConnecteeName(objT->getName());
-        }
-        // This can happen when top level components like a Joint and Body
-        // have the same name like a pelvis Body and pelvis Joint that
-        // connects to a Body of the same name.
-        else if(objPathName == ownerPathName)
-            setConnecteeName(objPathName);
-        else { // otherwise store the relative path name to the object
-            std::string relPathName = objT->getRelativePathName(getOwner());
-            setConnecteeName(relPathName);
-        }
-         */
     }
 
     /** Connect this Socket given its connectee name property  */
@@ -520,7 +475,7 @@ public:
     }
 
     /** TODO */
-    virtual bool isConnecteeSpecified() const = 0;
+//    virtual bool isConnecteeSpecified() const = 0;
 
     /** Connect this Input to a single-valued (single-channel) Output or, if
     this is a list %Input and the %Output is a list %Output, connect to all the
@@ -687,17 +642,17 @@ public:
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 
-    bool isConnecteeSpecified() const override {
-        std::cout << "DEBUG isConnecteeSpecified(): " << getName() << std::endl;
-        if (isListSocket() && (getNumConnectees() > 0 || _connectees.size()))
-            return true;
-        std::cout << "DEBUG 2 " << getName() << std::endl;
-        if (!isListSocket() &&
-                (!getConnecteeName().empty() || _connectees.size()))
-            return true;
-        std::cout << "DEBUG 3 " << getName() << std::endl;
-        return false;
-    }
+//    bool isConnecteeSpecified() const override {
+//        std::cout << "DEBUG isConnecteeSpecified(): " << getName() << std::endl;
+//        if (isListSocket() && (getNumConnectees() > 0 || _connectees.size()))
+//            return true;
+//        std::cout << "DEBUG 2 " << getName() << std::endl;
+//        if (!isListSocket() &&
+//                (!getConnecteeName().empty() || _connectees.size()))
+//            return true;
+//        std::cout << "DEBUG 3 " << getName() << std::endl;
+//        return false;
+//    }
 
     /** Connect this Input to the provided (Abstract)Output. */
     // Definition is in Component.h
@@ -720,8 +675,7 @@ public:
         // TODO not a valid way to check for single-value inputs because
         // there is always one connectee? Should isConnected() mean it's been
         // finalized and the reference and property are in sync?
-        return _connectees.size() == getNumConnectees() &&
-                _latestModification == LatestModification::Finalize;
+        return _connectees.size();
     }
     
     /** Get the value of this Input when it is connected. Redirects to connected
@@ -766,7 +720,8 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::getChannel()");
-
+        SimTK_ASSERT(index < _connectees.size(), "Internal error: "
+            "getNumConnectees() and _connectees.size() are not consistent.");
         return _connectees[index].getRef();
     }
     
@@ -785,7 +740,8 @@ public:
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::getAlias()");
-
+        SimTK_ASSERT(index < _aliases.size(), "Internal error: "
+            "getNumConnectees() and _aliases.size() are not consistent.");
         return _aliases[index];
     }
 

@@ -184,11 +184,13 @@ void Component::finalizeFromProperties()
     // (this) so that they can invoke the component's methods.
     for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
+        // TODO it.second->disconnect();
         // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
+        // TODO it.second->disconnect();
         // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
@@ -308,9 +310,9 @@ void Component::finalizeConnections(Component& root)
 
         // TODO input->disconnect();
         try {
-            if (input->isConnecteeSpecified()) {
+            // TODO if (input->isConnecteeSpecified()) {
                 input->findAndConnect(root);
-            }
+            // TODO }
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Input '" +
@@ -681,6 +683,14 @@ const Component& Component::getOwner() const
 bool Component::hasOwner() const
 {
     return !_owner.empty();
+}
+
+const Component& Component::getRoot() const {
+    const Component* root = this;
+    while (root->hasOwner()) {
+        root = &root->getOwner();
+    }
+    return *root;
 }
 
 void Component::setOwner(const Component& owner)

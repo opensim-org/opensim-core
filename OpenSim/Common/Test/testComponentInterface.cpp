@@ -481,6 +481,7 @@ void testMisc() {
 
     Bar barEqual(bar);
     ASSERT(barEqual == bar);
+    theWorld.finalizeFromProperties();
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
@@ -684,17 +685,18 @@ void testMisc() {
 
     world3.add(&compFoo);
     world3.add(&bar2);
+    
+    world3.finalizeFromProperties();
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updSocket<Foo>("parentFoo").setConnecteeName(
             compFoo.getRelativePathName(bar2));
     
-    bar2.connectSocket_childFoo(foo);
+    bar2.connectSocket_childFoo(compFoo.get_Foo1());
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
-    world3.finalizeFromProperties();
     world3.connect(); // TODO added.
     world3.print("Compound_" + modelFile);
 
@@ -834,7 +836,7 @@ void testExceptionsFinalizeFromPropertiesAfterCopy() {
     }
     {
         TheWorld copy = theWorld;
-        SimTK_TEST_MUST_THROW(copy.getComponentList());
+        SimTK_TEST_MUST_THROW_EXC(copy.getComponentList(), ComponentIsAnOrphan);
     }
 }
 
@@ -1852,6 +1854,8 @@ void testListInputConnecteeSerialization() {
         world.add(source);
         world.add(reporter);
         
+        world.finalizeFromProperties();
+        
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
@@ -1859,7 +1863,6 @@ void testListInputConnecteeSerialization() {
         reporter->addToReport(output.getChannel("c"));
         // We want to make sure aliases are preserved.
         reporter->addToReport(output.getChannel("b"), "berry");
-        world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
@@ -1937,6 +1940,8 @@ void testSingleValueInputConnecteeSerialization() {
         // Add to world.
         world.add(source);
         world.add(foo);
+
+        world.finalizeFromProperties();
         
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
@@ -1944,7 +1949,10 @@ void testSingleValueInputConnecteeSerialization() {
         foo->connectInput_input1(output.getChannel("b"));
         // We want to make sure aliases are preserved.
         foo->connectInput_fiberLength(output.getChannel("d"), "desert");
-        world.finalizeFromProperties();
+        // world.finalizeFromProperties(); TODO putting ffP() here causes
+        // getOutput() to give an error. must give a better error message
+        // in that situation. Use shared pointers? Communicate back
+        // to the input that the channel has been deleted.
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);

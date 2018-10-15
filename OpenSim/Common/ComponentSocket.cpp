@@ -33,6 +33,8 @@ AbstractSocket::getConnecteeNameProp() const {
 
 Property<std::string>&
 AbstractSocket::updConnecteeNameProp() {
-    return const_cast<Component*>(_owner.get())->updProperty<std::string>(
-                _connecteeNameIndex);
+    auto* owner = const_cast<Component*>(_owner.get());
+    // We do not want to flip the isObjectUpToDateWithProperties flag.
+    const auto& prop = owner->getProperty<std::string>(_connecteeNameIndex);
+    return const_cast<Property<std::string>&>(prop);
 }
