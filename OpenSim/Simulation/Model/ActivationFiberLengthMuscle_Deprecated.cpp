@@ -380,13 +380,9 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
         // ask for muscle derivatives, which will be integrated
         // in the case the force is being overridden, the states aren't being used
         // but a valid derivative cache entry is still required
-        int numStateVariables = getNumStateVariables();
-        Array<std::string> stateVariableNames = getStateVariableNames();
-        for (int i = 0; i < numStateVariables; ++i) {
-            setStateVariableDeriv(s, stateVariableNames[i], 0.0);
-        }
+        setStateVariableDeriv(s, STATE_ACTIVATION_NAME, 0.0);
+        setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, 0.0);
     } 
-
 }
 
 //_____________________________________________________________________________

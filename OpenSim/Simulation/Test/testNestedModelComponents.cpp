@@ -95,8 +95,8 @@ void testPendulumModelWithNestedJoints()
     pendulum->addModelComponent(device);
 
     // Connect the device to bodies of the pendulum
-    const auto& rod1 = pendulum->getComponent<OpenSim::Body>("rod1");
-    const auto& rod2 = pendulum->getComponent<OpenSim::Body>("rod2");
+    const auto& rod1 = pendulum->getComponent<OpenSim::Body>("bodyset/rod1");
+    const auto& rod2 = pendulum->getComponent<OpenSim::Body>("bodyset/rod2");
     anchorA->connectSocket_parent_frame(rod1);
     anchorB->connectSocket_parent_frame(rod2);
 

@@ -478,9 +478,9 @@ void simulateModelWithoutMuscles(const string &modelFile, double finalTime)
     osimModel.setUseVisualizer(true);
 
     // remove all forces
-    Set<OpenSim::Force> &forces = osimModel.updForceSet();
+    auto& forces = osimModel.updForceSet();
     for(int i = 0; i<forces.getSize(); ++i){
-        forces.remove(&forces[i]);
+        forces.remove(i);
     }
 
     SimTK::State& si = osimModel.initSystem();

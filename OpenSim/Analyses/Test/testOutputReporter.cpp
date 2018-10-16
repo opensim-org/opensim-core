@@ -184,14 +184,14 @@ void simulateMuscle(
     //==========================================================================
     OutputReporter* outputReporter = new OutputReporter(&model);
     outputReporter->append_output_paths("kinetic_energy");
-    outputReporter->append_output_paths("slider/tx/value");
-    outputReporter->append_output_paths("ball/linear_velocity");
-    outputReporter->append_output_paths("ball/angular_acceleration");
-    outputReporter->append_output_paths("ball/acceleration");
-    outputReporter->append_output_paths("slider/reaction_on_child");
+    outputReporter->append_output_paths("jointset/slider/tx/value");
+    outputReporter->append_output_paths("bodyset/ball/linear_velocity");
+    outputReporter->append_output_paths("bodyset/ball/angular_acceleration");
+    outputReporter->append_output_paths("bodyset/ball/acceleration");
+    outputReporter->append_output_paths("jointset/slider/reaction_on_child");
 
     // should print a warning
-    outputReporter->append_output_paths("ball/transform");
+    outputReporter->append_output_paths("bodyset/ball/transform");
 
     model.addAnalysis(outputReporter);
 

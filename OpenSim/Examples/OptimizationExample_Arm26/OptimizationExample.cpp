@@ -80,7 +80,7 @@ public:
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
+        const auto& hand = osimModel.getBodySet().get("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
         Vec3 massCenter = hand.getMassCenter();
         Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);

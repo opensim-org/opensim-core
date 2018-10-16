@@ -537,6 +537,9 @@ int InducedAccelerations::record(const SimTK::State& s)
     // DO NOT recreate the system, will lose location of constraint
     _model->initStateWithoutRecreatingSystem(s_analysis);
 
+    //Use same conditions on constraints
+    s_analysis.setTime(aT);
+
     // Cycle through the force contributors to the system acceleration
     for(int c=0; c< _contributors.getSize(); c++){          
         //cout << "Solving for contributor: " << _contributors[c] << endl;
@@ -547,8 +550,6 @@ int InducedAccelerations::record(const SimTK::State& s)
             // Set gravity ON
             _model->getGravityForce().enable(s_analysis);
 
-            //Use same conditions on constraints
-            s_analysis.setTime(aT);
             // Set the configuration (gen. coords and speeds) of the model.
             s_analysis.setQ(Q);
             s_analysis.setU(s.getU());
@@ -624,8 +625,6 @@ int InducedAccelerations::record(const SimTK::State& s)
             // Set gravity ON
             _model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), false);
 
-            //s_analysis = _model->initSystem();
-            s_analysis.setTime(aT);
             s_analysis.setQ(Q);
 
             // zero velocity
@@ -642,7 +641,6 @@ int InducedAccelerations::record(const SimTK::State& s)
             // Set gravity off
             _model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
-            s_analysis.setTime(aT);
             s_analysis.setQ(Q);
 
             // non-zero velocity
@@ -667,8 +665,6 @@ int InducedAccelerations::record(const SimTK::State& s)
                                                               false);
             }
 
-            //s_analysis = _model->initSystem();
-            s_analysis.setTime(aT);
             s_analysis.setQ(Q);
 
             // zero velocity
@@ -817,13 +813,11 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 
     // Create a set of constraints used to model contact with the ground
     // based on external forces (ExternalForces) applied to the model
-    for(int i=0; i < _model->getForceSet().getSize(); i++){
-        ExternalForce *exf = dynamic_cast<ExternalForce *>(&_model->getForceSet().get(i));
-        if(exf){
-            addContactConstraintFromExternalForce(exf);
-            exf->setAppliesForce(s_copy, false);
-            exf->set_appliesForce(false);
-        }
+    auto externalForces = _model->updComponentList<ExternalForce>();
+    for(auto& exf : externalForces){
+        addContactConstraintFromExternalForce(&exf);
+        exf.setAppliesForce(s_copy, false);
+        exf.set_appliesForce(false);
     }
 
     // Get value for gravity

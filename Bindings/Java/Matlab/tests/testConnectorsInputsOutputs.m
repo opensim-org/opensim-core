@@ -81,7 +81,7 @@ concreteOutput.getValue(state);
 % --------
 % Access AbstractChannels.
 assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
-              '/leg/pin/pin_coord_0|speed'));
+              '/leg/jointset/pin/pin_coord_0|speed'));
 
 % Access the value of a concrete Channel.
 % TODO Concrete channels are not wrapped yet.
@@ -107,7 +107,7 @@ rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
 % Access (and iterate through) the AbstractInputs, using names.
 names = rep.getInputNames();
 expectedAliases = {'', 'target', '', 'second_col'};
-expectedLabels  = {'/leg/pin/pin_coord_0|value', 'target', ...
+expectedLabels  = {'/leg/jointset/pin/pin_coord_0|value', 'target', ...
                    '/leg/source|column:c1', 'second_col'};
 for i = 0:(names.size() - 1)
     % Actually, there is only one Input, named 'inputs'.

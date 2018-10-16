@@ -22,84 +22,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MarkerSet.h"
-#include "Marker.h"
-#include "Model.h"
-#include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
 using namespace OpenSim;
-using SimTK::Vec3;
 
-//=============================================================================
-// DESTRUCTOR AND CONSTRUCTORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-MarkerSet::~MarkerSet(void)
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Constructor of a markerSet from a file.
- */
-MarkerSet::MarkerSet(Model& aModel, const string& aMarkersFileName) :
-ModelComponentSet<Marker>(aModel, aMarkersFileName, false)
-{
-    setNull();
-    SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
-    updateFromXMLNode(e, getDocument()->getDocumentVersion());
-}
-
-//_____________________________________________________________________________
-/**
- * Default constructor of a markerSet.
- */
-MarkerSet::MarkerSet() :
-ModelComponentSet<Marker>()
-{
-    setNull();
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a markerSet.
- */
-MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
-ModelComponentSet<Marker>(aMarkerSet)
-{
-    setNull();
-    *this = aMarkerSet;
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-/**
- * Set the data members of this MarkerSet to their null values.
- */
-void MarkerSet::setNull()
-{
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
-{
-    Set<Marker>::operator=(aMarkerSet);
-    return (*this);
-}
-#endif
 
 //=============================================================================
 // UTILITY
