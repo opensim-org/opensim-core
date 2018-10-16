@@ -74,8 +74,8 @@ WrapTorus::~WrapTorus()
  */
 void WrapTorus::constructProperties()
 {
-    constructProperty_inner_radius(1.0);
-    constructProperty_outer_radius(1.0);
+    constructProperty_inner_radius(0.01);
+    constructProperty_outer_radius(0.05);
 }
 
 void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -118,17 +118,23 @@ void WrapTorus::extendFinalizeFromProperties()
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
-        get_inner_radius() < 0,
+        get_inner_radius() <= 0,
         InvalidPropertyValue,
         getProperty_inner_radius().getName(),
-        "Inner radius cannot be less than zero");
+        "Inner radius cannot be equal or less than zero");
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
-        get_outer_radius() < 0,
+        get_outer_radius() <= 0,
         InvalidPropertyValue,
         getProperty_outer_radius().getName(),
-        "Outer Radius cannot be less than zero");
+        "Outer Radius cannot be equal or less than zero");
+
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_outer_radius() <= get_inner_radius(),
+        InvalidPropertyValue,
+        getProperty_outer_radius().getName(),
+        "Outer Radius cannot be equal or less than inner radius");
 
 /*  Torus* torus = new Torus(_innerRadius, (_outerRadius-_innerRadius));
     setGeometryQuadrants(torus);
