@@ -76,7 +76,7 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
-        
+
     try { testExternalForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testExternalForce");
@@ -100,7 +100,7 @@ int main()
 
     try { testFunctionBasedBushingForce(); }
     catch (const std::exception& e){
-        cout << e.what() <<endl; 
+        cout << e.what() <<endl;
         failures.push_back("testFunctionBasedBushingForce");
     }
 
@@ -613,8 +613,11 @@ void testBushingForce()
 
     osimModel.setGravity(gravity_vec);
 
-    auto* spring = new BushingForce("bushing", "ground", "ball",
-        transStiffness, rotStiffness, transDamping, rotDamping);
+    auto* spring = new BushingForce("bushing", ground, *ball);
+    spring->set_translational_stiffness(transStiffness);
+    spring->set_rotational_stiffness(rotStiffness);
+    spring->set_translational_damping(transDamping);
+    spring->set_rotational_damping(rotDamping);
 
     osimModel.addForce(spring);
     const BushingForce& bushingForce =
@@ -1302,6 +1305,7 @@ void testCoordinateLimitForce()
     // BAD: have to set memoryOwner to false or program will crash when this test is complete.
     osimModel->disownAllComponents();
 
+    osimModel->finalizeConnections();
     osimModel->print("CoordinateLimitForceTest.osim");
 
     // Check serialization and deserialization
