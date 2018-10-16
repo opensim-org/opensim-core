@@ -47,8 +47,8 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
-    OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the sphere.");
 
 //=============================================================================
 // METHODS

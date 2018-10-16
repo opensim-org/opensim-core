@@ -62,8 +62,8 @@ WrapSphereObst::~WrapSphereObst()
 */
 void WrapSphereObst::constructProperties()
 {
-    constructProperty_radius(1.0);
-    constructProperty_length(1.0);
+    constructProperty_radius(0.05);
+    constructProperty_length(0.1);
 }
 
 //_____________________________________________________________________________
@@ -80,16 +80,16 @@ void WrapSphereObst::extendFinalizeFromProperties()
 
     // maybe set a parent pointer, _body = aBody;
     OPENSIM_THROW_IF_FRMOBJ(
-        get_radius() < 0,
+        get_radius() <= 0,
         InvalidPropertyValue,
         getProperty_radius().getName(),
-        "Radius cannot be less than zero");
+        "Radius cannot be less than or equal zero");
 
     OPENSIM_THROW_IF_FRMOBJ(
-        get_length() < 0,
+        get_length() <= 0,
         InvalidPropertyValue,
         getProperty_length().getName(),
-        "Length cannot be less than zero");
+        "Length cannot be less than or equal zero");
     
 /*  Sphere* sph = new Sphere(_radius);
     setGeometryQuadrants(sph);
