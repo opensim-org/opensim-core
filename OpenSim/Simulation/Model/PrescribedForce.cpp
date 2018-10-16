@@ -83,8 +83,12 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             bodyElement->getValueAs<std::string>(frame_name);
             // Forces in pre-4.0 models are necessarily 1 level deep
             // (model, forces), and Bodies are necessarily 1 level deep.
-            // Prepend "../" to get the correct relative path.
-            if (!frame_name.empty()) frame_name = "../" + frame_name;
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (frame_name == "ground")
+                frame_name = "../../" + frame_name;
+            else if (!frame_name.empty())
+                frame_name = "../../bodyset/" + frame_name;
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "frame", frame_name);
         }

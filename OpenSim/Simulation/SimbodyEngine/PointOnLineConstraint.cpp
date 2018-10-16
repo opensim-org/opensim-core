@@ -182,7 +182,8 @@ void PointOnLineConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
             // extract their values.
             // Constraints in pre-4.0 models are necessarily 1 level deep
             // (model, constraints), and Bodies are necessarily 1 level deep.
-            // TODO add more documentation.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
             if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
                 if (body1_name == "ground")
