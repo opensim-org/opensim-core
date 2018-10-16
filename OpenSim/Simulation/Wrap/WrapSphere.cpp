@@ -70,7 +70,7 @@ WrapSphere::~WrapSphere()
  */
 void WrapSphere::constructProperties()
 {
-    constructProperty_radius(1.0);
+    constructProperty_radius(0.05);
 }
 
 void WrapSphere::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
