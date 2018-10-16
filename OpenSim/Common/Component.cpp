@@ -127,8 +127,7 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_components();
 }
 
-void Component::addComponent(Component* subcomponent)
-{
+bool Component::isComponentInOwnershipTree(const Component* subcomponent) const {
     //get to the root Component
     const Component* root = this;
     while (root->hasOwner()) {
@@ -139,12 +138,17 @@ void Component::addComponent(Component* subcomponent)
     if ((root->getNumImmediateSubcomponents() > 0)) {
         auto components = root->getComponentList<Component>();
         for (auto& c : components) {
-            if (subcomponent == &c) {
-                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
-                    subcomponent->getName(), getName());
-            }
+            if (subcomponent == &c) return true;
         }
     }
+    return false;
+}
+
+void Component::addComponent(Component* subcomponent)
+{
+    OPENSIM_THROW_IF(isComponentInOwnershipTree(subcomponent),
+                     ComponentAlreadyPartOfOwnershipTree,
+                      subcomponent->getName(), getName());
 
     updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();

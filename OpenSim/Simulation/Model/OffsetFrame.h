@@ -358,7 +358,7 @@ template<class C>
 void OffsetFrame<C>::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
-    OPENSIM_THROW_IF(*this == getParentFrame(), Exception,
+    OPENSIM_THROW_IF(this == &getParentFrame(), Exception,
         getConcreteClassName() + " cannot connect to itself!");
 }
 

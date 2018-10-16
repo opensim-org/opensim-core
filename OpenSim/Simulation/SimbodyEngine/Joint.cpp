@@ -258,6 +258,16 @@ bool Joint::isCoordinateUsed(const Coordinate& aCoordinate) const
     return false;
 }
 
+
+void Joint::addFrame(PhysicalOffsetFrame* frame)
+{
+    OPENSIM_THROW_IF(isComponentInOwnershipTree(frame),
+                     ComponentAlreadyPartOfOwnershipTree,
+                     frame->getName(), getName());
+    updProperty_frames().adoptAndAppendValue(frame);
+    finalizeFromProperties();
+}
+
 const SimTK::MobilizedBodyIndex Joint::
     getMobilizedBodyIndex(const OpenSim::Body& body) const
 {

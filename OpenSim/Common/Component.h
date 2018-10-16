@@ -557,6 +557,10 @@ public:
     * Component has not added itself to the System.  */
     bool hasSystem() const { return !_system.empty(); }
 
+    /** Does the provided component already exist anywhere in the ownership
+     * tree (not just subcomponents of this component)? */
+    bool isComponentInOwnershipTree(const Component* component) const;
+
     /**
     * Add a Component (as a subcomponent) of this component.
     * This component takes ownership of the subcomponent and it will be

@@ -47,6 +47,15 @@ BushingForce::BushingForce() : TwoFrameLinker<Force, PhysicalFrame>()
     constructProperties();
 }
 
+BushingForce::BushingForce(const std::string& name,
+                           const PhysicalFrame& frame1,
+                           const PhysicalFrame& frame2)
+    : TwoFrameLinker<Force, PhysicalFrame>(name, frame1, frame2)
+{
+    setNull();
+    constructProperties();
+}
+
 BushingForce::BushingForce( const std::string& name,
                             const std::string& frame1Name,
                             const std::string& frame2Name)

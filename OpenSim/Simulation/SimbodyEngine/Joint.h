@@ -225,6 +225,10 @@ public:
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
 
+    /** TODO */
+    // TODO hide the frames property.
+    void addFrame(PhysicalOffsetFrame* frame);
+
     // Computation
     /** Given some system mobility (generalized) forces, calculate the 
     equivalent spatial body force for this Joint. Keep in mind that there are 

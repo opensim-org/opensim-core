@@ -74,6 +74,16 @@ public:
     /** Convenience Constructor.
     Create a BushingForce between two PhysicalFrames, frame1 and frame2.
     @param[in] name         the name of this BushingForce
+    @param[in] frame1       the bushing's first PhysicalFrame
+    @param[in] frame2       the bushing's second PhysicalFrame
+    */
+    BushingForce(const std::string& name,
+                 const PhysicalFrame& frame1,
+                 const PhysicalFrame& frame2);
+
+    /** Convenience Constructor.
+    Create a BushingForce between two PhysicalFrames, frame1 and frame2.
+    @param[in] name         the name of this BushingForce
     @param[in] frame1Name   the name of the bushing's first PhysicalFrame
     @param[in] frame2Name   the name of the bushing's second PhysicalFrame
     */

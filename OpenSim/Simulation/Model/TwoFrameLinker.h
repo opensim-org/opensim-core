@@ -80,6 +80,15 @@ public:
     TwoFrameLinker();
 
     /** Convenience Constructor.
+    Create a TwoFrameLinker Component between two Frames.
+
+    @param[in] name         the name of this TwoFrameLinker component
+    @param[in] frame1       the name of the first Frame being linked
+    @param[in] frame2       the name of the second Frame being linked
+    */
+    TwoFrameLinker(const std::string &name, const F& frame1, const F& frame2);
+
+    /** Convenience Constructor.
     Create a TwoFrameLinker Component between two Frames identified by name.
 
     @param[in] name         the name of this TwoFrameLinker component
@@ -251,6 +260,16 @@ TwoFrameLinker<C, F>::TwoFrameLinker() : C()
 {
     this->setAuthors("Ajay Seth");
     this->constructProperties();
+}
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+    const F& frame1,
+    const F& frame2) : TwoFrameLinker<C, F>()
+{
+    this->setName(name);
+    this->template updSocket<F>("frame1").connect(frame1);
+    this->template updSocket<F>("frame2").connect(frame2);
 }
 
 // Convenience constructors

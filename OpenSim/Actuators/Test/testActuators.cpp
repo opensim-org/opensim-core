@@ -355,6 +355,7 @@ void testClutchedPathSpring()
     controller->prescribeControlForActuator("clutch_spring", controlfunc);
     model->addController(controller);
 
+    model->finalizeConnections(); // TODO should this be necessary?
     model->print("ClutchedPathSpringModel.osim");
 
     //Test deserialization

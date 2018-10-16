@@ -430,41 +430,43 @@ void testConstantDistanceConstraint()
 
     //==========================================================================================================
     // Setup OpenSim model
-    Model *osimModel = new Model;
+    Model osimModel;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel.getGround();
 
     //OpenSim foot
-    OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+    auto* osim_foot = new OpenSim::Body("foot", footMass.getMass(),
+                                        footMass.getMassCenter(),
+                                        footMass.getInertia());
 
     // create foot as a free joint
-    FreeJoint footJoint("footToGround", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
+    auto* footJoint = new FreeJoint("footToGround", ground, Vec3(0), Vec3(0),
+                                    *osim_foot, Vec3(0), Vec3(0));
     
     // Add the thigh body which now also contains the hip joint to the model
-    osimModel->addBody(&osim_foot);
-    osimModel->addJoint(&footJoint);
+    osimModel.addBody(osim_foot);
+    osimModel.addJoint(footJoint);
 
     // add a constant distance constraint
-    ConstantDistanceConstraint rodConstraint(ground, pointOnGround, osim_foot, pointOnFoot,rodLength);
-    osimModel->addConstraint(&rodConstraint);
+    auto* rodConstraint = new ConstantDistanceConstraint(
+                ground, pointOnGround, *osim_foot, pointOnFoot, rodLength);
+    osimModel.addConstraint(rodConstraint);
 
-    // BAD: have to set memoryOwner to false or program will crash when this test is complete.
-    osimModel->disownAllComponents();
-
-    osimModel->setGravity(gravity_vec);
+    osimModel.setGravity(gravity_vec);
 
     //Add analyses before setting up the model for simulation
-    Kinematics *kinAnalysis = new Kinematics(osimModel);
+    Kinematics* kinAnalysis = new Kinematics(&osimModel);
     kinAnalysis->setInDegrees(false);
-    osimModel->addAnalysis(kinAnalysis);
+    osimModel.addAnalysis(kinAnalysis);
 
-    // Need to setup model before adding an analysis since it creates the AnalysisSet
-    // for the model if it does not exist.
-    State& osim_state = osimModel->initSystem();
+    // Need to setup model before adding an analysis since it creates the
+    // AnalysisSet for the model if it does not exist.
+    State& osim_state = osimModel.initSystem();
 
-    //==========================================================================================================
+    //=========================================================================
     // Compare Simbody system and OpenSim model simulations
-    compareSimulations(system, state, osimModel, osim_state, "testConstantDistanceConstraint FAILED\n");
+    compareSimulations(system, state, &osimModel, osim_state,
+                       "testConstantDistanceConstraint FAILED\n");
 }
 void testCoordinateLocking()
 {
@@ -909,6 +911,7 @@ void testCoordinateCouplerConstraint()
     osimModel->disownAllComponents();
 
     // write out the model to file
+    osimModel->finalizeConnections();
     osimModel->print("testCouplerConstraint.osim");
 
     //wipe-out the model just constructed

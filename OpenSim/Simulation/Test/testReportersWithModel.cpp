@@ -50,15 +50,14 @@ void testConsoleReporterLabels() {
     reporter->addToReport(slider->getCoordinate().getOutput("value"), "height");
     model.addComponent(reporter);
 
-    // Redirect cout to stringstream so ConsoleReporter output can be tested.
-    stringstream buf;
-    streambuf* oldBuf = cout.rdbuf(buf.rdbuf());
-
-    // Simulate.
     State& state = model.initSystem();
     Manager manager(model);
     state.setTime(0.0);
     manager.initialize(state);
+
+    // Redirect cout to stringstream so ConsoleReporter output can be tested.
+    stringstream buf;
+    streambuf* oldBuf = cout.rdbuf(buf.rdbuf());
     manager.integrate(1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
