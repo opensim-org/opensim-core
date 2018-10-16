@@ -46,7 +46,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3, "The length of the radii of the ellipsoid.");
+    OpenSim_DECLARE_PROPERTY(dimensions, SimTK::Vec3,
+                             "The length of the radii of the ellipsoid.");
 
 //=============================================================================
 // METHODS

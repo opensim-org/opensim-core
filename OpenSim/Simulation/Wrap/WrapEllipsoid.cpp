@@ -81,7 +81,7 @@ void WrapEllipsoid::constructProperties()
     // BASE CLASS
     //WrapObject::setupProperties();
 
-    SimTK::Vec3 defaultDimensions = {1.0, 1.0, 1.0};
+    SimTK::Vec3 defaultDimensions = {0.05, 0.05, 0.05};
     constructProperty_dimensions(defaultDimensions);
 }
 
@@ -97,11 +97,9 @@ void WrapEllipsoid::extendFinalizeFromProperties()
     // Base class
     WrapObject::extendFinalizeFromProperties();
 
-    // maybe set a parent pointer, _body = aBody;
-
-    if (get_dimensions()[0] < 0.0 || get_dimensions()[1] < 0.0 || get_dimensions()[2] < 0.0)
+    if (get_dimensions()[0] <= 0.0 || get_dimensions()[1] <= 0.0 || get_dimensions()[2] <= 0.0)
     {
-        string errorMessage = "Error: dimensions for WrapEllipsoid " + getName() + " were either not specified, or are negative.";
+        string errorMessage = "Error: Dimensions the WrapEllipsoid radii cannot be less than or equal to 0.";
         throw Exception(errorMessage);
     }
 /*
@@ -222,7 +220,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // the ellipsoid dimensions because they do not change from one call to the
     // next. You don't want the factor to change because the algorithm uses
     // some vectors (r1, r2, c1) from the previous call.
-    aWrapResult.factor = 3.0 / (get_dimensions()[0] + get_dimensions()[1] + get_dimensions()[2]);
+    aWrapResult.factor = 3.0 / get_dimensions().sum();
 
     for (i = 0; i < 3; i++)
     {
