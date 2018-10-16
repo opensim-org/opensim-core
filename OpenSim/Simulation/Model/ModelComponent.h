@@ -101,14 +101,14 @@ public:
     /** Connect this ModelComponent to its aggregate- a  Model */
     void connectToModel(Model& model);
 
-    /**
-     * Get a const reference to the Model this component is part of.
-     */
+    /** Get a const reference to the Model this component is part of. */
     const Model& getModel() const;
-    /**
-     * Get a modifiable reference to the Model this component is part of.
-     */
+
+    /** Get a modifiable reference to the Model this component is part of. */
     Model& updModel();
+
+    /** Does this ModelComponent have a Model associated with it? */
+    bool hasModel() const { return !_model.empty(); }
 
     /** Perform any computations that must occur before ModelComponent::scale()
         is invoked on all ModelComponents in the Model. For example, a

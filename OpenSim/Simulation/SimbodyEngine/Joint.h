@@ -484,10 +484,10 @@ private:
         return mobod.getDefaultQ().size();
     }
 
-    // Only Model's connectToModel can access private
-    // members of the Joint to set Joint connected to a slave body
-    // of a master body.
-    friend Model; // void Model::extendConnectToModel(Model &model);
+    // Only Model::extendConnectToModel() should access private members
+    // of the Joint to set whether the Joint is connected to a slave body.
+    // See Model::createMultibodyTree();
+    friend Model;
 
     void setSlaveBodyForParent(Body& slaveForParent){
         _slaveBodyForParent = slaveForParent;
@@ -512,8 +512,6 @@ private:
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
     SimTK::Array_<Coordinate::MotionType> _motionTypes;
-
-    friend class JointSet;
 
 //==============================================================================
 };  // END of class Joint

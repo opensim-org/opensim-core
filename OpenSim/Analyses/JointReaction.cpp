@@ -310,8 +310,16 @@ void JointReaction::setupReactionList()
             if (_inFrame.size()) {
                 expressedIn = (i < _inFrame.size()) ? _inFrame[i] : _inFrame[0];
             }
+
             if (_model->hasComponent<Frame>(expressedIn))
-                currentKey.expressedInFrame = &_model->getComponent<Frame>(expressedIn);
+                currentKey.expressedInFrame =
+                    &_model->getComponent<Frame>(expressedIn);
+            else if (_model->getBodySet().hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame =
+                    &_model->getBodySet().getComponent<Frame>(expressedIn);
+            else if (_model->getJointSet().hasComponent<Frame>(expressedIn))
+                currentKey.expressedInFrame =
+                    &_model->getJointSet().getComponent<Frame>(expressedIn);
             else {
                 std::transform(expressedIn.begin(), expressedIn.end(), expressedIn.begin(), ::tolower);
                 if (expressedIn == "child")

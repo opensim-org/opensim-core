@@ -330,7 +330,7 @@ private:
     SimTK::ReferencePtr<const Joint> _joint;
 
     /* User set MotionType from versions of OpenSim that predate 4.0 */
-    MotionType _userSpecifiedMotionTypePriorTo40;
+    MotionType _userSpecifiedMotionTypePriorTo40{ Undefined };
 
     mutable bool _lockedWarningGiven;
 

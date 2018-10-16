@@ -43,7 +43,6 @@
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
-#include "Set.h"
 
 
 #ifdef _WIN32

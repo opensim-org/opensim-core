@@ -8,12 +8,12 @@
 %include <OpenSim/Simulation/Model/Appearance.h>
 %include <OpenSim/Simulation/Model/Geometry.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
-%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
+%template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent, OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
 %template(ModelComponentSetModelComponent) OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
 %include <OpenSim/Simulation/Model/ComponentSet.h>
 
-%template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
+%template(SetMuscles) OpenSim::Set<OpenSim::Muscle, OpenSim::Object>;
 
 %include <OpenSim/Simulation/Solver.h>
 %include <OpenSim/Simulation/InverseDynamicsSolver.h>
@@ -23,7 +23,8 @@
 // Following three lines hacked in out of order to work around WrapObjects use
 // in PhysicalFrame
 %include <OpenSim/Simulation/Wrap/WrapObject.h>
-%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
+%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject, OpenSim::ModelComponent>;
+%template(ModelComponentSetWrapObjects) OpenSim::ModelComponentSet<OpenSim::WrapObject>;
 %include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
 %include <OpenSim/Simulation/Model/PhysicalFrame.h>
@@ -31,42 +32,46 @@
 %include <OpenSim/Simulation/Model/OffsetFrame.h>
 %template(PhysicalFrameWithOffset)   OpenSim::OffsetFrame<OpenSim::PhysicalFrame>;
 %include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-%template(SetFrames) OpenSim::Set<OpenSim::Frame>;
-%template(ModelComponentSetFrames) OpenSim::ModelComponentSet<OpenSim::Frame>;
+%template(SetFrames) OpenSim::Set<OpenSim::Frame, OpenSim::ModelComponent>;
+%template(ModelComponentSetFrames)
+OpenSim::ModelComponentSet<OpenSim::Frame>;
 
 %include <OpenSim/Simulation/SimbodyEngine/Body.h>
-%template(SetBodies) OpenSim::Set<OpenSim::Body>;
-%template(ModelComponentSetBodies) OpenSim::ModelComponentSet<OpenSim::Body>;
+%template(SetBodies) OpenSim::Set<OpenSim::Body, OpenSim::ModelComponent>;
+%template(ModelComponentSetBodies)
+OpenSim::ModelComponentSet<OpenSim::Body>;
 %include <OpenSim/Simulation/Model/BodySet.h>
 
 %include <OpenSim/Simulation/Model/BodyScale.h>
-%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale>;
+%template(SetBodyScales) OpenSim::Set<OpenSim::BodyScale, OpenSim::Object>;
 %include <OpenSim/Simulation/Model/BodyScaleSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 %include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-%template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
-%template(ModelComponentSetCoordinates) OpenSim::ModelComponentSet<OpenSim::Coordinate>;
+%template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate, OpenSim::Object>;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-%template(SetJoints) OpenSim::Set<OpenSim::Joint>;
-%template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
+%template(SetJoints) OpenSim::Set<OpenSim::Joint, OpenSim::ModelComponent>;
+%template(ModelComponentSetJoints)
+OpenSim::ModelComponentSet<OpenSim::Joint>;
 %include <OpenSim/Simulation/Model/JointSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
-%template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
-%template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
+%template(SetConstraints) OpenSim::Set<OpenSim::Constraint, OpenSim::ModelComponent>;
+%template(ModelComponentSetConstraints)
+OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Force.h>
-%template(SetForces) OpenSim::Set<OpenSim::Force>;
+%template(SetForces) OpenSim::Set<OpenSim::Force, OpenSim::ModelComponent>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/ExternalForce.h>
-%template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
+%template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce, OpenSim::ModelComponent>;
+%template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 
 %include <OpenSim/Simulation/Model/TwoFrameLinker.h>
 %template(TwoFrameLinkerForce) OpenSim::TwoFrameLinker<OpenSim::Force, OpenSim::PhysicalFrame>;
@@ -90,8 +95,9 @@
 %include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 
 %include <OpenSim/Simulation/Control/Controller.h>
-%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
-%template(ModelComponentSetControllers) OpenSim::ModelComponentSet<OpenSim::Controller>;
+%template(SetControllers) OpenSim::Set<OpenSim::Controller, OpenSim::ModelComponent>;
+%template(ModelComponentSetControllers)
+OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ControllerSet.h>
 
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
@@ -100,7 +106,7 @@
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
-%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
+%template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry, OpenSim::ModelComponent>;
 %template(ModelComponentSetContactGeometry) OpenSim::ModelComponentSet<OpenSim::ContactGeometry>;
 %include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 %include <OpenSim/Simulation/Model/ContactHalfSpace.h>
@@ -110,13 +116,13 @@
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 
 %include <OpenSim/Simulation/Model/Actuator.h>
-%template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
+%template(SetActuators) OpenSim::Set<OpenSim::Actuator, OpenSim::Object>;
 %include <OpenSim/Simulation/Model/Analysis.h>
-%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;
+%template(SetAnalysis) OpenSim::Set<OpenSim::Analysis, OpenSim::Object>;
 %include <OpenSim/Simulation/Model/AnalysisSet.h>
 
 %include <OpenSim/Simulation/Control/Control.h>
-%template(SetControls) OpenSim::Set<OpenSim::Control>;
+%template(SetControls) OpenSim::Set<OpenSim::Control, OpenSim::Object>;
 %include <OpenSim/Simulation/Control/ControlSet.h>
 %include <OpenSim/Simulation/Control/ControlConstant.h>
 %include <OpenSim/Simulation/Control/ControlLinearNode.h>
@@ -132,7 +138,7 @@
 %include <OpenSim/Simulation/Model/Station.h>
 %include <OpenSim/Simulation/Model/Point.h>
 %include <OpenSim/Simulation/Model/Marker.h>
-%template(SetMarkers) OpenSim::Set<OpenSim::Marker>;
+%template(SetMarkers) OpenSim::Set<OpenSim::Marker, OpenSim::ModelComponent>;
 %template(ModelComponentSetMarkers) OpenSim::ModelComponentSet<OpenSim::Marker>;
 %include <OpenSim/Simulation/Model/MarkerSet.h>
 
@@ -141,17 +147,15 @@
 %include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 %include <OpenSim/Simulation/Wrap/WrapTorus.h>
 %include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
-//%template(SetWrapObject) OpenSim::Set<OpenSim::WrapObject>;
-//%include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 %include <OpenSim/Simulation/Wrap/PathWrap.h>
-%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap>;
+%template(SetPathWrap) OpenSim::Set<OpenSim::PathWrap, OpenSim::Object>;
 %include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 %include <OpenSim/Simulation/Wrap/WrapCylinderObst.h>
 %include <OpenSim/Simulation/Wrap/WrapSphereObst.h>
 %include <OpenSim/Simulation/Wrap/WrapDoubleCylinderObst.h>
 
 %include <OpenSim/Simulation/Model/Probe.h>
-%template(SetProbes) OpenSim::Set<OpenSim::Probe>;
+%template(SetProbes) OpenSim::Set<OpenSim::Probe, OpenSim::ModelComponent>;
 %template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
 %include <OpenSim/Simulation/Model/ProbeSet.h>
 %include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
@@ -171,7 +175,7 @@
 %include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 %include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 %include <OpenSim/Simulation/Model/MovingPathPoint.h>
-%template(SetPathPoint) OpenSim::Set<OpenSim::AbstractPathPoint>;
+%template(SetOfPathPoints) OpenSim::Set<OpenSim::AbstractPathPoint>;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::AbstractPathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
 
@@ -201,7 +205,7 @@
 
 
 %include <OpenSim/Simulation/MarkersReference.h>
-%template(SetMarkerWeights) OpenSim::Set<MarkerWeight>;
+%template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
@@ -330,3 +334,16 @@ EXPOSE_JOINT_CONSTRUCTORS_HELPER(PlanarJoint);
         return new PhysicalOffsetFrame(name, parentName, offset);
     }
 };
+
+EXPOSE_SET_CONSTRUCTORS_HELPER(ModelComponentSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(BodySet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(JointSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ConstraintSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ForcesSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ControllerSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ContactGeometrySet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(PathPointSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(ProbeSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
+EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);

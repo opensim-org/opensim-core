@@ -158,6 +158,12 @@ void Component::finalizeFromProperties()
 {
     reset();
 
+    // last opportunity to modify Object names based on properties
+    if (!hasOwner()) {
+        // only call when Component is root since method is recursive
+        makeObjectNamesConsistentWithProperties();
+    }
+
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
     // handle nameless components so assign them their class name
@@ -779,9 +785,8 @@ Array<std::string> Component::getStateVariableNames() const
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    Array<std::string> names = getStateVariablesNamesAddedByComponent();
+    Array<std::string> stateNames = getStateVariableNamesAddedByComponent();
 
-/** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
         stateNames[i] = (getAbsolutePathString() + "/" + stateNames[i]);
     }
@@ -789,58 +794,13 @@ Array<std::string> Component::getStateVariableNames() const
     for (auto& comp : getComponentList<Component>()) {
         const std::string& pathName = comp.getAbsolutePathString();// *this);
         Array<std::string> subStateNames = 
-            comp.getStateVariablesNamesAddedByComponent();
+            comp.getStateVariableNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
             stateNames.append(pathName + "/" + subStateNames[i]);
         }
     }
-*/
 
-    // Include the states of its subcomponents
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName = _memberSubcomponents[i]->getName();
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if (back >= front) // have non-whitespace name
-            prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
-        }
-    }
-    for(unsigned int i=0; i<_propertySubcomponents.size(); i++){
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName =  _propertySubcomponents[i]->getName();
-        // TODO: We should implement checks that names do not have whitespace at the time 
-        // they are assigned and not here where it is a waste of time - aseth
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if(back >= front) // have non-whitespace name
-            prefix = subCompName+"/";
-        for(int j =0; j<nsubs; ++j){
-            names.append(prefix+subnames[j]);
-        }
-    }
-
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        Array<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName = _adoptedSubcomponents[i]->getName();
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if (back >= front) // have non-whitespace name
-            prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
-        }
-    }
-
-    return names;
+    return stateNames;
 }
 
 // Get the value of a state variable allocated by this Component.
@@ -857,7 +817,7 @@ double Component::
     }
     
     std::stringstream msg;
-    msg << "Component::getStateVariable: ERR- state named '" << name 
+    msg << "Component::getStateVariableValue: ERR- state named '" << name 
         << "' not found in " << getName() << " of type " << getConcreteClassName();
     throw Exception(msg.str(),__FILE__,__LINE__);
 
@@ -1382,7 +1342,7 @@ getCacheVariableIndex(const std::string& name) const
 }
 
 Array<std::string> Component::
-getStateVariablesNamesAddedByComponent() const
+getStateVariableNamesAddedByComponent() const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();

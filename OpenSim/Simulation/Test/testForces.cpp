@@ -618,7 +618,7 @@ void testBushingForce()
 
     osimModel.addForce(spring);
     const BushingForce& bushingForce =
-        osimModel.getComponent<BushingForce>("bushing");
+        osimModel.getComponent<BushingForce>("forceset/bushing");
 
     // To print (serialize) the latest connections of the model, it is 
     // necessary to finalizeConnections() first.
@@ -629,7 +629,7 @@ void testBushingForce()
     previousVersionModel.print("BushingForceModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =
-        previousVersionModel.getComponent<BushingForce>("bushing");
+        previousVersionModel.getComponent<BushingForce>("forceset/bushing");
 
     ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
         "current bushing force FAILED to match bushing force from previous model.");
@@ -733,9 +733,11 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
                 Vec3(4, 5, 6)),
         transStiffness, rotStiffness, transDamping, rotDamping);
 
+    spring->print("bushingForceAPICreated.xml");
+
     osimModel.addForce(spring);
     const BushingForce& bushingForce =
-        osimModel.getComponent<BushingForce>("bushing");
+        osimModel.getComponent<BushingForce>("./forceset/bushing");
 
     // It's necessary to correct the connectee names in the BushingForce, which
     // we can do with finalizeConnections() (they are incorrect otherwise
@@ -744,14 +746,11 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     osimModel.print("BushingForceOffsetModel.osim");
 
     Model previousVersionModel("BushingForceOffsetModel_30000.osim");
-    previousVersionModel.finalizeFromProperties();
-    // This line is necessary for wiring up the FrameGeometry of the
-    // OffsetFrames.
     previousVersionModel.finalizeConnections();
     previousVersionModel.print("BushingForceOffsetModel_30000_in_Latest.osim");
 
     const BushingForce& bushingForceFromPrevious =
-        previousVersionModel.getComponent<BushingForce>("bushing");
+        previousVersionModel.getComponent<BushingForce>("./forceset/bushing");
 
     ASSERT(bushingForce == bushingForceFromPrevious, __FILE__, __LINE__,
         "current bushing force FAILED to match bushing force from previous "
@@ -1023,8 +1022,6 @@ void testExpressionBasedBushingForceRotational()
 
     osimModel.addBody(&ball);
     osimModel.addJoint(&pin);
-
-    
 
     // create an ExpressionBasedBushingForce that represents an
     // uncoupled, linear bushing between the ball body and welded base body

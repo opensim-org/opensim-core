@@ -202,6 +202,9 @@ public:
             updConnecteeNameProp().setValue(0, "");
     }
 
+    /** Get owner component of this socket */
+    const Component& getOwner() const { return _owner.getRef(); }
+
 protected:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
@@ -224,8 +227,6 @@ protected:
             _owner(&owner),
             _isList(getConnecteeNameProp().isListProperty()) {}
 
-
-    const Component& getOwner() const { return _owner.getRef(); }
     /** %Set an internal pointer to the Component that contains this Socket.
     This should only be called by Component.
     This exists so that after the containing Component is copied, the 'owner'
