@@ -236,23 +236,55 @@ void Object::setNull()
 // operator.
 bool Object::operator==(const Object& other) const
 {
-    if (getConcreteClassName()  != other.getConcreteClassName()) return false;
-    if (getName()               != other.getName())         return false;
-    if (getDescription()        != other.getDescription())  return false;
-    if (getAuthors()            != other.getAuthors())      return false;
-    if (getReferences()         != other.getReferences())   return false;
+    auto printDiff = [](const std::string& name,
+                            const std::string& thisValue,
+                            const std::string& otherValue) {
+        if (Object::getDebugLevel() > 0) {
+            std::cout << "In Object::operator==(), differing " << name << ":\n"
+                << "left: " << thisValue
+                << "\nright: " << otherValue << std::endl;
+        }
+
+    };
+    if (getConcreteClassName()  != other.getConcreteClassName()) {
+        printDiff("ConcreteClassName", getConcreteClassName(),
+                  other.getConcreteClassName());
+        return false;
+    }
+    if (getName()               != other.getName()) {
+        printDiff("name", getName(), other.getName());
+        return false;
+    }
+    if (getDescription()        != other.getDescription()) {
+        printDiff("description", getDescription(), other.getDescription());
+        return false;
+    }
+    if (getAuthors()            != other.getAuthors()) {
+        printDiff("authors", getAuthors(), other.getAuthors());
+        return false;
+    }
+    if (getReferences()         != other.getReferences()) {
+        printDiff("references", getReferences(), other.getReferences());
+        return false;
+    }
 
     // Must have the same number of properties, in the same order.
     const int numProps = getNumProperties();
-    if (other.getNumProperties() != numProps)
+    if (other.getNumProperties() != numProps) {
+        printDiff("number of properties", std::to_string(numProps),
+                  std::to_string(other.getNumProperties()));
         return false;
+    }
 
     for (int px = 0; px < numProps; ++px) {
         const AbstractProperty& myProp    = getPropertyByIndex(px);
         const AbstractProperty& otherProp = other.getPropertyByIndex(px);
 
-        if (!myProp.equals(otherProp))
+        if (!myProp.equals(otherProp)) {
+            printDiff("property '" + myProp.getName() + "'",
+                      myProp.toString(), otherProp.toString());
             return false;
+        }
     }
 
     return true;
@@ -776,6 +808,11 @@ try {
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
         prop.readFromXMLParentElement(aNode, versionNumber);
+        std::cout << "DEBUG Object::updateFromXMLNode "
+                  << "thisobj " << getName()
+                  << " prop " << prop.getName()
+                  << " value " << prop.toString()
+                  << std::endl;
     }
 
     // LOOP THROUGH DEPRECATED PROPERTIES
