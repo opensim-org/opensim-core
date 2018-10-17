@@ -1746,6 +1746,8 @@ void Component::reset()
     _simTKcomponentIndex.invalidate();
     clearStateAllocations();
 
+    _propertySubcomponents.clear();
+    _adoptedSubcomponents.clear();
     resetSubcomponentOrder();
 }
 
