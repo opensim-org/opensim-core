@@ -72,8 +72,8 @@ public:
     "control problem when only enforcing holonomic constraints in the model. A "
     "relatively high weight of 100 is set by default (so model actuators are  "
     "preferred).")
-    // TODO OpenSim_DECLARE_PROPERTY(enforce_holonomic_constraints_only, bool,
-    // "");
+    // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels, 
+    //   std::string, "");
     // TODO must make more general for multiple phases, mesh refinement.
     // TODO mesh_point_frequency if time is fixed.
 

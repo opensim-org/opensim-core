@@ -173,7 +173,7 @@ public:
         int cid, mp, mv, ma, numEquationsEnforced, multIndexThisConstraint;
         std::vector<MucoBounds> bounds;
         std::vector<std::string> labels;
-        std::vector<bool> derivFlags;
+        std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames = 
             m_phase0.createMultibodyConstraintInfoNames();
         for (const auto& mcName : mcNames) {
@@ -185,7 +185,7 @@ public:
             ma = mcInfo.getNumAccelerationEquations();
             bounds = mcInfo.getBounds();
             labels = mcInfo.getConstraintLabels();
-            derivFlags = mcInfo.getConstraintDerivativeFlags();
+            kinLevels = mcInfo.getKinematicLevels();
 
             m_mpSum += mp;
             // Only considering holonomic constraints for now.
@@ -227,7 +227,10 @@ public:
                 // If the index for this path constraint represents an 
                 // a non-derivative scalar constraint equation, also add a 
                 // Lagrange multplier to the problem.
-                if (!derivFlags[i]) {
+                if (kinLevel[i] == KinematicLevel::Position ||
+                    kinLevel[i] == KinematicLevel::Velocity || 
+                    kinLevel[i] == KinematicLevel::Acceleration) {
+
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     this->add_adjunct(multInfo.getName(), 
                                       convert(multInfo.getBounds()), 
@@ -420,7 +423,9 @@ private:
     // generalized accelerations when specifying the dynamics with model 
     // constraints present.
     mutable SimTK::Vector_<SimTK::SpatialVec> A_GB;
-    // The number of holonomic constraints enabled in the model.
+    // The number of scalar holonomic constraint equations enabled in the model. 
+    // This does not count equations for derivatives of scalar holonomic 
+    // constraints. 
     mutable int m_mpSum = 0;
     // TODO mutable int m_mvSum = 0; (nonholonomic constraints)
     // TODO mutable int m_maSum = 0; (acceleration-only constraints)

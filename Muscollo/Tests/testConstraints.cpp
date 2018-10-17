@@ -479,8 +479,6 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    mp.setMultibodyConstraintBounds({0.0, 0.0});
-    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -556,8 +554,6 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    mp.setMultibodyConstraintBounds({0.0, 0.0});
-    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -629,8 +625,6 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50});
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    mp.setMultibodyConstraintBounds({0.0, 0.0});
-    mp.setMultiplierBounds({-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
