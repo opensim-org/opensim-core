@@ -23,20 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/** @file
- * This file defines the Socket class, which formalizes the dependency of 
- * of a Component on another Object/Component in order to operate, BUT it does 
- * not own it. While Components can be composites (of multiple components) 
- * they often depend on unrelated objects/components that are defined and
- * owned elsewhere.
- *
- * For example a Joint connects two bodies together, but the Joint does 
- * not own either body. Instead, the Joint has Sockets to a parent and 
- * a child body that already exists. The maintenance of the dependency and 
- * the run-time verification of the existence of the bodies is the duty
- * of the Socket.
- */
-
 // INCLUDES
 #include "osimCommonDLL.h"
 
@@ -68,12 +54,15 @@ public:
 //=============================================================================
 //                        OPENSIM COMPONENT SOCKET
 //=============================================================================
+
 /**
  * A Socket formalizes the dependency between a Component and another object
- * (typically another Component) without owning that object. The object that
- * satisfies the requirements of the Socket we term the "connectee". When a 
- * Socket is satisfied by a connectee we have a successful "connection" or
- * is said to be connected.
+ * (typically another Component) without owning that object. While Components
+ * can be composites (of multiple components) they often depend on unrelated
+ * objects/components that are defined and owned elsewhere. The object that
+ * satisfies the requirements of the Socket we term the "connectee". When a
+ * Socket is satisfied by a connectee we have a successful "connection" or is
+ * said to be connected.
  *
  * The purpose of a Socket is to specify: 1) the connectee type that the
  * Component is dependent on, 2) by when (what stage) the socket must be
@@ -92,6 +81,24 @@ public:
  * Other Components like a Marker or a Probe that do not change the system
  * topology or add new states could potentially be connected at later stages
  * like Model or Instance.
+ *
+ * Programmatically, the connectee can be specified as an object reference
+ * or via a path (connectee name):
+ *
+ * @code{.cpp}
+ * // Specifying the connectee using an object reference.
+ * socket.connect(myConnectee);
+ * // Specifying the connectee via a path.
+ * socket.setConnecteeName("/path/to/connectee");
+ * @endcode
+ *
+ * Use finalizeConnection() to synchronize the object reference and connectee
+ * name. It is preferable to use connect() instead of setConnecteeName().
+ * If *both* are set, then the object reference overrides the connectee name.
+ *
+ * The connectee name appears in XML files and is how a connection is maintained
+ * across serialization (writing to an XML file) and deserialization (reading
+ * from an XML file).
  *
  * @author  Ajay Seth
  */
@@ -114,7 +121,9 @@ public:
     /** Can this Socket have more than one connectee? */
     bool isListSocket() const { return _isList; }
     /** The number of slots to fill in order to satisfy this socket.
-     * This is 1 for a non-list socket. */
+     * This is 1 for a non-list socket. This is the number of elements in the
+     * connectee name property; to sync this with the number of connectee
+     * objects, call finalizeConnection(). */
     unsigned getNumConnectees() const {
         return static_cast<unsigned>(getConnecteeNameProp().size());
     }
@@ -144,16 +153,20 @@ public:
     /** Connect this %Socket according to its connectee name property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
-    virtual void findAndConnect(const Component& root) {
-        throw Exception("findAndConnect() not implemented; not supported "
+    virtual void finalizeConnection(const Component& root) {
+        throw Exception("finalizeConnection() not implemented; not supported "
                         "for this type of socket", __FILE__, __LINE__);
     }
 
-    /** Disconnect this %Socket from its connectee. */
+    /** Clear references to connectees. The connectee name property is not
+     * affected. Calling finalizeConnection() will use the connectee name
+     * property to satisfy the socket. */
     virtual void disconnect() = 0;
 
     /** %Set connectee name. This function can only be used if this socket is
-    not a list socket.                                                     */
+     * not a list socket. If a connectee reference has already been set (with
+     * connect()) the connectee name is ignored; call disconnect() first if you
+     * want the socket to be connected using the connectee name. */
     void setConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF(_isList,
                          Exception,
@@ -162,7 +175,10 @@ public:
     }
 
     /** %Set connectee name of a connectee among a list of connectees. This
-    function is used if this socket is a list socket.                   */
+     * function is used if this socket is a list socket. If a connectee
+     * reference has already been set (with connect()) the connectee name is
+     * ignored; call disconnect() first if you want the socket to be connected
+     * using the connectee name. */
     void setConnecteeName(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
@@ -351,7 +367,7 @@ public:
     }
 
     /** Connect this Socket given its connectee name property  */
-    void findAndConnect(const Component& root) override;
+    void finalizeConnection(const Component& root) override;
 
     void disconnect() override {
         connectee.reset(nullptr);
@@ -661,7 +677,7 @@ public:
 
     /** Connect this Input given a root Component to search for
     the Output according to the connectee name of this Input  */
-    void findAndConnect(const Component& root) override;
+    void finalizeConnection(const Component& root) override;
     
     void disconnect() override {
         _connectees.clear();

@@ -2202,9 +2202,9 @@ protected:
     #pragma clang diagnostic ignored "-Wunsupported-friend"
 #endif
     template<class C>
-    friend void Socket<C>::findAndConnect(const Component& root);
+    friend void Socket<C>::finalizeConnection(const Component& root);
     template<class T>
-    friend void Input<T>::findAndConnect(const Component& root);
+    friend void Input<T>::finalizeConnection(const Component& root);
 #if defined(__clang__)
     #pragma clang diagnostic pop
 #endif
@@ -3028,9 +3028,8 @@ public:
 
 
 template<class C>
-// TODO rename to syncConnectee.
-void Socket<C>::findAndConnect(const Component& root) {
-    const std::string info = "Socket<[..]>::findAndConnect() comp "
+void Socket<C>::finalizeConnection(const Component& root) {
+    const std::string info = "Socket<[..]>::finalizeConnection() comp "
             + getOwner().getAbsolutePathString() + " of type "
             + getOwner().getConcreteClassName() + " socket "
             + getName() + " of type " + getConnecteeTypeName() + ": ";
@@ -3038,7 +3037,7 @@ void Socket<C>::findAndConnect(const Component& root) {
     // If the reference to the connectee is set, use that. Otherwise, use the
     // connectee name property.
     if (isConnected()) {
-        // TODO add a similar change to Input<[..]>::findAndConnect().
+        // TODO add a similar change to Input<[..]>::finalizeConnection().
         const auto& comp = *connectee;
         const auto& rootOfConnectee = comp.getRoot();
         const auto& myRoot = getOwner().getRoot();
@@ -3207,7 +3206,7 @@ void Input<T>::connect(const AbstractChannel& channel,
 
 // TODO rename.
 template<class T>
-void Input<T>::findAndConnect(const Component& root) {
+void Input<T>::finalizeConnection(const Component& root) {
 
     if (isConnected()) {
         clearConnecteeName();
@@ -3296,7 +3295,7 @@ void Input<T>::findAndConnect(const Component& root) {
             // TODO connect(channel, alias);
         }
     }
-    std::cout << "DEBUG Input<[..]>::findAndConnect(): latestModification" << getName() << " ";
+    std::cout << "DEBUG Input<[..]>::finalizeConnection(): latestModification" << getName() << " ";
     for (int i = 0; i < getNumConnectees(); ++i)
         std::cout << getConnecteeName(i) << " ";
     std::cout << std::endl;

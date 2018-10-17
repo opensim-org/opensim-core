@@ -291,7 +291,7 @@ void Component::finalizeConnections(Component& root)
         auto& socket = it.second;
         // TODO socket->disconnect();
         try {
-            socket->findAndConnect(root);
+            socket->finalizeConnection(root);
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
@@ -321,7 +321,7 @@ void Component::finalizeConnections(Component& root)
         // TODO input->disconnect();
         try {
             // TODO if (input->isConnecteeSpecified()) {
-                input->findAndConnect(root);
+            input->finalizeConnection(root);
             // TODO }
         }
         catch (const std::exception& x) {
