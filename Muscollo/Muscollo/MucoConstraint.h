@@ -40,25 +40,31 @@ class OSIMMUSCOLLO_API MucoConstraintInfo : public Object {
 public:
     MucoConstraintInfo();
 
-    void setNumEquations(int numEqs) {   
-        m_num_equations = numEqs; 
-        checkPropertySize(getProperty_bounds());
-        checkPropertySize(getProperty_suffixes());
-    }
+    // Get and set methods.
+
     int getNumEquations() const 
     {   return m_num_equations; }
 
+    /// Get the bounds on the scalar constraint equations. If the number of 
+    /// equations have been set, but not the bounds, zero-bounds are returned
+    /// as a default. If nothing has been set, this returns an empty vector.
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    // Get and set methods.
     std::vector<MucoBounds> getBounds() const {
         std::vector<MucoBounds> bounds;
-        for (int i = 0; i < getProperty_bounds().size(); ++i) {
-            bounds.push_back(get_bounds(i));
+        for (int i = 0; i < getNumEquations(); ++i) {
+            if (getProperty_bounds().empty()) {
+                bounds.push_back({0.0, 0.0});
+            } else { 
+                bounds.push_back(get_bounds(i));
+            }
         }
         return bounds;
     }
-    /// @copydoc getBounds()
+    /// Get the suffixes for the scalar constraint equations. If the suffixes
+    /// have not been set, this returns an empty vector.
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
     std::vector<std::string> getSuffixes() const {
         std::vector<std::string> suffixes;
         for (int i = 0; i < getProperty_suffixes().size(); ++i) {
@@ -66,6 +72,10 @@ public:
         }
         return suffixes;
     }
+    /// @details Note: if the number of equations has not been set, this updates 
+    /// the internal equation count variable. If the number of equations has 
+    /// been set and the vector passed is the incorrect size, an error is 
+    /// thrown.
     void setBounds(const std::vector<MucoBounds>& bounds) {
         updProperty_bounds().setAllowableListSize(bounds.size());
         for (int i = 0; i < bounds.size(); ++i) {
@@ -73,6 +83,7 @@ public:
         }
         updateNumEquationsFromProperty(getProperty_bounds());
     }
+    /// @copydoc setBounds()
     void setSuffixes(const std::vector<std::string>& suffixes) {
         updProperty_suffixes().setAllowableListSize(suffixes.size());
         for (int i = 0; i < suffixes.size(); ++i) {
@@ -103,6 +114,15 @@ private:
     void constructProperties();
 
     int m_num_equations = 0;
+
+    void setNumEquations(int numEqs) {
+        m_num_equations = numEqs;
+        checkPropertySize(getProperty_bounds());
+        checkPropertySize(getProperty_suffixes());
+    }
+    friend class MucoPathConstraint;
+    friend class MucoMultibodyConstraint;
+    
     void updateNumEquationsFromProperty(const AbstractProperty& prop) {
         if (!m_num_equations) {
             m_num_equations = prop.size();
@@ -117,6 +137,7 @@ private:
                 "current number of constraint equations.");
         }
     }
+    
 };
 
 // ============================================================================
@@ -224,6 +245,8 @@ public:
         
     MucoConstraintInfo getConstraintInfo() const 
     {   return get_MucoConstraintInfo(); }
+    MucoConstraintInfo& updConstraintInfo() 
+    {   return upd_MucoConstraintInfo(); }
     void setConstraintInfo(const MucoConstraintInfo& cInfo) 
     {   set_MucoConstraintInfo(cInfo); }
     /// For use by solvers. This index is the location of this 

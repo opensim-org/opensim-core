@@ -88,15 +88,7 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
     //
     // Therefore, the *total* number of equations to be enforced is equal to
     //                          3*mp + 2*mv + ma
-
-    // Zero-bounds by default.
-    std::vector<MucoBounds> bounds;
-    for (int i = 0; i < (3*mp + 2*mv + ma); ++i) {
-        bounds.push_back({0.0, 0.0});
-    }
-    // This also sets the internal variable tracking the number of
-    // constraint equations.
-    m_constraint_info.setBounds(bounds);
+    m_constraint_info.setNumEquations(3*mp + 2*mv + ma);
 
     // In general, the default list of suffixes for a Simbody constraint 
     // will take the following pattern:
@@ -190,20 +182,10 @@ void MucoPathConstraint::initialize(const Model& model,
         "zero.");
     m_path_constraint_index = pathConstraintIndex;
 
-
-    // TODO remove this return zeros if empty
-    OPENSIM_THROW_IF_FRMOBJ(get_MucoConstraintInfo().getBounds().empty(),
-        Exception, "Constraint bounds must be provided within the constraint "
-        "info.");
-
-    // Ensure that the user's implementation returns the correct number of 
-    // constraint errors.
+    // Set the number of scalar equations based on the user's constraint error 
+    // implementation.
     SimTK::Vector errors;
     calcPathConstraintErrorsImpl(model.getWorkingState(), errors);
-    OPENSIM_THROW_IF_FRMOBJ(errors.size() != 
-        get_MucoConstraintInfo().getNumEquations(), Exception,
-        "The length of the constraint errors vector passed from "
-        "calcConstraintErrorsImpl() must be consistent with the number of "
-        "equations defined in the current constraint info (i.e. " 
-        "getConstraintInfo().getNumEquations()).");
+    const_cast<MucoPathConstraint*>(this)
+        ->updConstraintInfo().setNumEquations(errors.size());
 }
