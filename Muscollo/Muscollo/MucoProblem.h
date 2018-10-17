@@ -40,16 +40,12 @@ public:
     MucoVariableInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds&, const MucoFinalBounds&);
 
-    /// @details Note: the return value is constructed fresh on every call from
-    /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBounds() const
-    {   return MucoBounds(getProperty_bounds()); }
-    /// @copydoc getBounds()
+    {   return get_bounds(); }
     MucoInitialBounds getInitialBounds() const
-    {   return MucoInitialBounds(getProperty_initial_bounds()); }
-    /// @copydoc getBounds()
+    {   return get_initial_bounds(); }
     MucoFinalBounds getFinalBounds() const
-    {   return MucoFinalBounds(getProperty_final_bounds()); }
+    {   return get_final_bounds(); }
 
     /// Throws an exception if initial and final bounds are not within bounds.
     // TODO Move to finalizeFromProperties() and cache MucoBounds.
@@ -60,15 +56,12 @@ public:
 
 protected:
 
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
-            "1 value: required value over all time. "
-            "2 values: lower, upper bounds on value over all time.");
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(initial_bounds, double, 2,
-            "1 value: required initial value. "
-            "2 values: lower, upper bounds on initial value.");
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(final_bounds, double, 2,
-            "1 value: required final value. "
-            "2 values: lower, upper bounds on final value.");
+    OpenSim_DECLARE_PROPERTY(bounds, MucoBounds,
+            "Bounds over all time.");
+    OpenSim_DECLARE_PROPERTY(initial_bounds, MucoInitialBounds,
+            "Bounds on initial value.");
+    OpenSim_DECLARE_PROPERTY(final_bounds, MucoFinalBounds,
+            "Bounds on final value.");
 
 private:
     void constructProperties();
@@ -221,10 +214,10 @@ public:
     std::vector<std::string> createControlInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
-    /// Get the names of all the MucoConstraints.
+    /// Get the names of all the MucoPathConstraints.
     std::vector<std::string> createPathConstraintNames() const;
-    /// Get the constraint names of all the multibody constraint infos.
-    std::vector<std::string> createMultibodyConstraintInfoNames() const;
+    /// Get the constraint names of all the multibody constraints.
+    std::vector<std::string> createMultibodyConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;

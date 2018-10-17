@@ -19,7 +19,6 @@
 #include "MucoConstraint.h"
 
 using namespace OpenSim;
-using SimTK::ConstraintIndex;
 
 // ============================================================================
 // MucoConstraintInfo
@@ -61,7 +60,7 @@ void MucoConstraintInfo::constructProperties() {
 }
 
 // ============================================================================
-// MucoMultibodyConstraintInfo
+// MucoMultibodyConstraint
 // ============================================================================
 
 MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid, 
@@ -129,7 +128,6 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
 
 void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
     const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
-
 
     OPENSIM_THROW_IF_FRMOBJ(
         errors.size() != m_constraint_info.getNumEquations(), Exception,

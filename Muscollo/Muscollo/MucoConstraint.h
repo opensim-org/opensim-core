@@ -40,11 +40,8 @@ class OSIMMUSCOLLO_API MucoConstraintInfo : public Object {
 public:
     MucoConstraintInfo();
 
-    // Get and set methods.
-
     int getNumEquations() const 
     {   return m_num_equations; }
-
     /// Get the bounds on the scalar constraint equations. If the number of 
     /// equations have been set, but not the bounds, zero-bounds are returned
     /// as a default. If nothing has been set, this returns an empty vector.
@@ -91,7 +88,6 @@ public:
         }
         updateNumEquationsFromProperty(getProperty_suffixes());
     }
-
     /// Get a list of constraint labels based on the constraint name and, if
     /// specified, the list of suffixes. If no suffixes have been specified, 
     /// zero-indexed, numeric suffixes will be applied as a default. The length
@@ -104,8 +100,8 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
 
 private:
-    OpenSim_DECLARE_LIST_PROPERTY(bounds, MucoBounds, "The bounds on the set "
-        "of scalar constraint equations.");
+    OpenSim_DECLARE_LIST_PROPERTY(bounds, MucoBounds, "(Optional) The bounds " 
+        "on the set of scalar constraint equations.");
     OpenSim_DECLARE_LIST_PROPERTY(suffixes, std::string, "(Optional) A list of "
         "strings to create unique labels for the scalar constraint equations. "
         "These are appended to the name of the MucoConstraint object when "
@@ -114,7 +110,6 @@ private:
     void constructProperties();
 
     int m_num_equations = 0;
-
     void setNumEquations(int numEqs) {
         m_num_equations = numEqs;
         checkPropertySize(getProperty_bounds());
@@ -180,7 +175,6 @@ public:
     /// index to the path constraint errors vector in a MucoProblem.
     SimTK::ConstraintIndex getSimbodyConstraintIndex() const
     {   return m_simbody_constraint_index; }
-
     /// Get the number of scalar constraint equations at each kinematic level.
     /// Note that the total number of scalar constraint equations enforced is
     /// *NOT* equal to the sum of each of these values -- you must include the
@@ -193,7 +187,6 @@ public:
     {   return m_num_velocity_eqs; }
     int getNumAccelerationEquations() const
     {   return m_num_acceleration_eqs; }
-
     /// Get a vector of enums specifying the kinematic level of each scalar
     /// constraint equation in the associated model constraint, as each equation 
     /// may need to be treated differently in a solver (e.g. don't add Lagrange 
@@ -240,7 +233,6 @@ private:
 class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MucoPathConstraint, Object);
 public:
-    // Default constructor.
     MucoPathConstraint();
         
     MucoConstraintInfo getConstraintInfo() const 
@@ -254,7 +246,7 @@ public:
     /// constraint errors vector. Since it is set by the MucoProblem, it is only
     /// available after initialization.
     int getPathConstraintIndex() const {   
-        OPENSIM_THROW_IF(!m_path_constraint_index, Exception,
+        OPENSIM_THROW_IF(m_path_constraint_index == -1, Exception,
             "Path constraint index is not available until after "
             "initialization.");
         return m_path_constraint_index; 
@@ -263,8 +255,8 @@ public:
     /// Calculate errors in the path constraint equations. The *errors* argument 
     /// represents the concatenated error vector for all path constraints in the 
     /// MucoProblem. This method creates a view into *errors* to access the 
-    /// elements this MucoPathConstraint is responsible for and passes this view
-    /// to the users constraint error implementation.
+    /// elements this for this MucoPathConstraint and passes this view to the 
+    /// users constraint error implementation.
     void calcPathConstraintErrors(const SimTK::State& state,
             SimTK::Vector& errors) const {
     
@@ -309,7 +301,7 @@ private:
    void constructProperties();
 
    mutable SimTK::ReferencePtr<const Model> m_model;
-   mutable int m_path_constraint_index;
+   mutable int m_path_constraint_index = -1;
 };
 
 } // namespace OpenSim

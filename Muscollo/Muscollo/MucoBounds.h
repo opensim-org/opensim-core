@@ -30,7 +30,9 @@ class MucoVariableInfo;
 class MucoParameter;
 
 /// Small struct to handle bounds.
-struct OSIMMUSCOLLO_API MucoBounds {
+class OSIMMUSCOLLO_API MucoBounds : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoBounds, Object);
+public:
     /// The bounds are NaN, which means (-inf, inf).
     MucoBounds() = default;
     /// The lower and upper bound are equal (the variable is constrained to this
@@ -99,13 +101,17 @@ protected:
     friend MucoParameter;
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
-struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
+class OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoInitialBounds, MucoBounds);
+
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;
 };
 /// Used for specifying the bounds on a variable at the end of a phase.
-struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
+class OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalBounds, MucoBounds);
+
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;
