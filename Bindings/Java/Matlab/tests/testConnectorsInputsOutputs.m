@@ -33,7 +33,7 @@ model.addComponent(rep);
 
 
 % Sockets
-% ==========
+% =======
 
 % Access (and iterate through) a component's AbstractSockets, using names.
 names = joint.getSocketNames();
@@ -56,6 +56,7 @@ assert(body.getMass() == 2);
 % Connect a socket. Try the different methods to ensure they all work.
 offset.connectSocket_parent(ground);
 offset.updSocket('parent').connect(ground);
+model.finalizeConnections()
 assert(strcmp(offset.getSocket('parent').getConnecteeName(), '../ground'));
 
 
@@ -99,7 +100,7 @@ rep.connectInput_inputs(coord.getOutput('speed'), 'target');
 rep.addToReport(source.getOutput('column').getChannel('c1'));
 rep.updInput('inputs').connect(source.getOutput('column').getChannel('c2'), ...
                                'second_col');
-
+model.finalizeConnections()
 
 % Inputs
 % ======
