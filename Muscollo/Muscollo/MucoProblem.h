@@ -163,7 +163,8 @@ public:
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
     /// Set the bounds on *all* of the multibody constraint equations in this
     /// phase. During initialization, these bounds are used to create 
-    /// MucoConstraintInfo's for each constraint equation in the phase.
+    /// MucoConstraintInfo's for each multibody constraint equation in the 
+    /// phase.
     void setMultibodyConstraintBounds(const MucoBounds& bounds)
     {   set_multibody_constraint_bounds(bounds); }
     /// Set the bounds on *all* of the Lagrange multipliers in this phase. 
@@ -216,17 +217,35 @@ public:
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the MucoPathConstraints.
     std::vector<std::string> createPathConstraintNames() const;
-    /// Get the constraint names of all the multibody constraints.
+    /// Get the constraint names of all the multibody constraints. Note: this
+    /// should only be called after initialization().
     std::vector<std::string> createMultibodyConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
+    /// Get a MucoPathConstraint from this MucoPhase. Note: this does not 
+    /// MucoMultibodyConstraints, use getMultibodyConstraint() instead.
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
-    int getNumPathConstraintEquations() const 
-    {   return m_num_path_constraint_eqs;   }
-    const MucoMultibodyConstraintInfo& 
-    getMultibodyConstraintInfo(const std::string& name) const;
+    /// Get the number of scalar path constraints in the MucoProblem. This does 
+    /// not include multibody constraints equations, and is only available after 
+    /// initialization. 
+    int getNumPathConstraintEquations() const {   
+        OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
+            "The number of scalar path constraint equations is not available "
+            "until after initialization.");
+        return m_num_path_constraint_eqs;
+    }
+    /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not 
+    /// MucoPathConstraints, use getPathConstraint() instead. Since these are
+    /// created directly from model information, this should only be called
+    /// after initialization.
+    const MucoMultibodyConstraint& 
+    getMultibodyConstraint(const std::string& name) const;
+    /// Given a multibody constraint name, get a vector of MucoVariableInfos 
+    /// corresponding to the Lagrange multipliers for that multibody constraint.
+    /// Note: Since these are created directly from model constraint
+    /// information, this should only be called after initialization.
     const std::vector<MucoVariableInfo>& 
     getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
 
@@ -306,8 +325,8 @@ protected: // Protected so that doxygen shows the properties.
             "Quantities to minimize in the cost functional.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MucoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");
-    // TODO make this a list propety of MucoConstraintInfos when we are able to
-    // map OpenSim constraint names Simbody constraints
+    // TODO make this a list property of MucoConstraintInfos when we are able to
+    // map OpenSim constraint names to Simbody constraints.
     OpenSim_DECLARE_PROPERTY(multibody_constraint_bounds, MucoBounds,
         "The bounds on all the multibody constraints in the model to be "
         "enforced. By default the constraints are strictly enforced (zero "
@@ -318,9 +337,9 @@ protected: // Protected so that doxygen shows the properties.
 
 private:
     void constructProperties();
-    mutable int m_num_path_constraint_eqs = 0;
-    mutable std::vector<MucoMultibodyConstraintInfo> 
-        m_multibody_constraint_infos;
+    mutable int m_num_path_constraint_eqs = -1;
+    mutable std::vector<MucoMultibodyConstraint> 
+        m_multibody_constraints;
     mutable std::map<std::string, std::vector<MucoVariableInfo>>
         m_multiplier_infos_map;
 

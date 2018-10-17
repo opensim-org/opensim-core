@@ -165,7 +165,6 @@ public:
             "number of scalar constraint equations in this multibody "
             "constraint.");
         m_constraint_info = cInfo; 
-  
     }
 
     /// Get the SimTK::ConstraintIndex associated with this 

@@ -109,8 +109,8 @@ void MucoPhase::constructProperties() {
     constructProperty_parameters();
     constructProperty_costs();
     constructProperty_path_constraints();
-    constructProperty_multibody_constraint_bounds(MucoBounds());
-    constructProperty_multiplier_bounds({-1000.0, 1000.0});
+    constructProperty_multibody_constraint_bounds(MucoBounds(0));
+    constructProperty_multiplier_bounds(MucoBounds(-1000.0, 1000.0));
 }
 void MucoPhase::setModel(const Model& model) {
     set_model(model);
@@ -161,12 +161,6 @@ void MucoPhase::addPathConstraint(const MucoPathConstraint& constraint) {
     OPENSIM_THROW_IF_FRMOBJ(idx != -1, Exception,
         "A constraint with name '" + constraint.getName() + "' already "
         "exists.");
-    for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
-        OPENSIM_THROW_IF_FRMOBJ(get_path_constraints(i).getPathConstraintIndex() 
-            != constraint.getPathConstraintIndex(), Exception, "A constraint "
-            "with index '" + std::to_string(constraint.getPathConstraintIndex()) 
-            + "' already exists.");
-    }
     append_path_constraints(constraint);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
@@ -203,10 +197,11 @@ std::vector<std::string> MucoPhase::createPathConstraintNames() const {
     }
     return names;
 }
-std::vector<std::string> MucoPhase::createMultibodyConstraintInfoNames() const {
-    std::vector<std::string> names(m_multibody_constraint_infos.size());
-    for (int i = 0; i < m_multibody_constraint_infos.size(); ++i) {
-        names[i] = m_multibody_constraint_infos[i].getName();
+std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
+    std::vector<std::string> names(m_multibody_constraints.size());
+    // Multibody constraint names are stored in the internal constraint info.
+    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+        names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
     }
 }
 const MucoVariableInfo& MucoPhase::getStateInfo(
@@ -248,14 +243,15 @@ const MucoPathConstraint& MucoPhase::getPathConstraint(
         "No constraint with name '" + name + "' found.");
     return get_path_constraints(idx);
 }
-const MucoMultibodyConstraintInfo& MucoPhase::getMultibodyConstraintInfo(
+const MucoMultibodyConstraint& MucoPhase::getMultibodyConstraint(
     const std::string& name) const {
 
-    for (const auto& info : m_multibody_constraint_infos) {
-        if (info.getName() == name) { return info; }
+    // Multibody constraint names are stored in the internal constraint info.
+    for (const auto& mc : m_multibody_constraints) {
+        if (mc.getConstraintInfo().getName() == name) { return mc; }
     }
     OPENSIM_THROW_FRMOBJ(Exception,
-        "No multibody constraint info with name '" + name + "' found.");
+        "No multibody constraint with name '" + name + "' found.");
 }
 const std::vector<MucoVariableInfo>& MucoPhase::getMultiplierInfos(
     const std::string& multibodyConstraintInfoName) const {
@@ -281,18 +277,23 @@ void MucoPhase::printDescription(std::ostream& stream) const {
         get_costs(i).printDescription(stream);
     }
 
-    stream << "Constraints:";
-    if (getProperty_path_constraints().empty() 
-            && m_multibody_constraint_infos.empty())
+    stream << "Multibody constraints: ";
+    if (m_multibody_constraints.empty())
         stream << " none";
     else
-        stream << " (total: " << getProperty_path_constraints().size() << 
-            m_multibody_constraint_infos.size() << ")";
+        stream << " (total: " << m_multibody_constraints.size() << ")";
     stream << "\n";
-    for (int i = 0; i < m_multibody_constraint_infos.size(); ++i) {
+    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
         stream << "  ";
-        m_multibody_constraint_infos[i].printDescription(stream);
+        m_multibody_constraints[i].getConstraintInfo().printDescription(stream);
     }
+
+    stream << "Path constraints:";
+    if (getProperty_path_constraints().empty())
+        stream << " none";
+    else
+        stream << " (total: " << getProperty_path_constraints().size() << ")";
+    stream << "\n";
     for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
         stream << "  ";
         get_path_constraints(i).getConstraintInfo().printDescription(stream);
@@ -368,7 +369,7 @@ void MucoPhase::initialize(Model& model) const {
         const_cast<MucoCost&>(get_costs(i)).initialize(model);
     }
     
-    // Get property values.
+    // Get property values for constraint and Lagrange multipliers.
     const auto& mcBounds = get_multibody_constraint_bounds();
     const MucoBounds& multBounds = get_multiplier_bounds();
     MucoInitialBounds multInitBounds(multBounds.getLower(), 
@@ -383,20 +384,25 @@ void MucoPhase::initialize(Model& model) const {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
             constraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
-            MucoMultibodyConstraintInfo mcInfo(cid, mp, mv, ma);
+            MucoMultibodyConstraint mc(cid, mp, mv, ma);
+            
+            // Set the bounds for this multibody constraint based on the 
+            // property.
+            MucoConstraintInfo mcInfo = mc.getConstraintInfo();
+            std::vector<MucoBounds> mcBoundVec(
+                mc.getConstraintInfo().getNumEquations(), mcBounds);
+            mcInfo.setBounds(mcBoundVec);
+            mc.setConstraintInfo(mcInfo);
 
-            // If user provided custom bounds for the multibody constraint
-            // equations, update the current multibody constraint info.
-            // TODO user eventually should specify a constraint info
-            if (mcBounds.isSet()) {
-                std::vector<MucoBounds> mcBoundVec(mcInfo.getNumEquations(), 
-                    mcBounds);
-                mcInfo.setBounds(mcBoundVec);
-            }
-            m_multibody_constraint_infos.push_back(mcInfo);
+            // Append this multibody constraint to the internal vector variable.
+            m_multibody_constraints.push_back(mc);
 
-            // Add variable infos for all Lagrange multipliers in the problem
-            // TODO how to name multplier variables?
+            // Add variable infos for all Lagrange multipliers in the problem.
+            // Multipliers are only added based on the number of holonomic, 
+            // nonholonomic, or acceleration multibody constraints and are *not* 
+            // based on the number for derivatives of holonomic or nonholonomic 
+            // constraint equations. 
+            // TODO how to name multiplier variables?
             std::vector<MucoVariableInfo> multInfos;
             for (int i = 0; i < mp; ++i) {
                 multInfos.push_back(MucoVariableInfo("lambda_cid" + 
@@ -417,6 +423,7 @@ void MucoPhase::initialize(Model& model) const {
         }
     }
 
+    m_num_path_constraint_eqs = 0;
     for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
         const_cast<MucoPathConstraint&>(get_path_constraints(i)).initialize(
             model, m_num_path_constraint_eqs);
