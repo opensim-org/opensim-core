@@ -659,7 +659,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>ground_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>r_humerus</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../../bodyset/r_humerus</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="r_shoulder_elev">
@@ -683,7 +683,7 @@
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>ground</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../../ground</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>-0.017545000000000002 -0.0070000000000000001 0.17000000000000001</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -760,7 +760,7 @@
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
 					<socket_parent_frame_connectee_name>r_humerus_offset</socket_parent_frame_connectee_name>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>r_ulna_radius_hand</socket_child_frame_connectee_name>
+					<socket_child_frame_connectee_name>../../bodyset/r_ulna_radius_hand</socket_child_frame_connectee_name>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="r_elbow_flex">
@@ -784,7 +784,7 @@
 					<frames>
 						<PhysicalOffsetFrame name="r_humerus_offset">
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>r_humerus</socket_parent_connectee_name>
+							<socket_parent_connectee_name>../../../bodyset/r_humerus</socket_parent_connectee_name>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0.0061000000000000004 -0.29039999999999999 -0.0123</translation>
 							<!--Orientation offset of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -877,31 +877,31 @@
 							<objects>
 								<PathPoint name="TRIlong-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../ground</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.053650000000000003 -0.013729999999999999 0.14723</location>
 								</PathPoint>
 								<PathPoint name="TRIlong-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.027140000000000001 -0.11441 -0.0066400000000000001</location>
 								</PathPoint>
 								<PathPoint name="TRIlong-P3">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.03184 -0.22636999999999999 -0.01217</location>
 								</PathPoint>
 								<PathPoint name="TRIlong-P4">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
 								</PathPoint>
 								<PathPoint name="TRIlong-P5">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
 								</PathPoint>
@@ -982,31 +982,31 @@
 							<objects>
 								<PathPoint name="TRIlat-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.0059899999999999997 -0.12645999999999999 0.00428</location>
 								</PathPoint>
 								<PathPoint name="TRIlat-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.023439999999999999 -0.14527999999999999 0.0092800000000000001</location>
 								</PathPoint>
 								<PathPoint name="TRIlat-P3">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.03184 -0.22636999999999999 -0.01217</location>
 								</PathPoint>
 								<PathPoint name="TRIlat-P4">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
 								</PathPoint>
 								<PathPoint name="TRIlat-P5">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
 								</PathPoint>
@@ -1071,31 +1071,31 @@
 							<objects>
 								<PathPoint name="TRImed-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.0083800000000000003 -0.13694999999999999 -0.0090600000000000003</location>
 								</PathPoint>
 								<PathPoint name="TRImed-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.026009999999999998 -0.15139 -0.010800000000000001</location>
 								</PathPoint>
 								<PathPoint name="TRImed-P3">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.03184 -0.22636999999999999 -0.01217</location>
 								</PathPoint>
 								<PathPoint name="TRImed-P4">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.017430000000000001 -0.26756999999999997 -0.01208</location>
 								</PathPoint>
 								<PathPoint name="TRImed-P5">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.021899999999999999 0.010460000000000001 -0.00077999999999999999</location>
 								</PathPoint>
@@ -1160,55 +1160,55 @@
 							<objects>
 								<PathPoint name="BIClong-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../ground</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.039234999999999999 0.00347 0.14795</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../ground</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.028944999999999999 0.01391 0.15639</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P3">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.021309999999999999 0.017930000000000001 0.010279999999999999</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P4">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.023779999999999999 -0.00511 0.01201</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P5">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.01345 -0.02827 0.0013600000000000001</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P6">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.01068 -0.077359999999999998 -0.00165</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P7">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.01703 -0.12125 0.00024000000000000001</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P8">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.022800000000000001 -0.1754 -0.0063</location>
 								</PathPoint>
 								<PathPoint name="BIClong-P9">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.0075100000000000002 -0.048390000000000002 0.02179</location>
 								</PathPoint>
@@ -1273,37 +1273,37 @@
 							<objects>
 								<PathPoint name="BICshort-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../ground</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.0046750000000000003 -0.01231 0.13475000000000001</location>
 								</PathPoint>
 								<PathPoint name="BICshort-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../ground</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.0070749999999999997 -0.040039999999999999 0.14507</location>
 								</PathPoint>
 								<PathPoint name="BICshort-P3">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.011169999999999999 -0.075759999999999994 -0.011010000000000001</location>
 								</PathPoint>
 								<PathPoint name="BICshort-P4">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.01703 -0.12125 -0.010789999999999999</location>
 								</PathPoint>
 								<PathPoint name="BICshort-P5">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.022800000000000001 -0.1754 -0.0063</location>
 								</PathPoint>
 								<PathPoint name="BICshort-P6">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.0075100000000000002 -0.048390000000000002 0.02179</location>
 								</PathPoint>
@@ -1359,13 +1359,13 @@
 							<objects>
 								<PathPoint name="BRA-P1">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>0.0067999999999999996 -0.1739 -0.0035999999999999999</location>
 								</PathPoint>
 								<PathPoint name="BRA-P2">
 									<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-									<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+									<socket_parent_frame_connectee_name>../../../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 									<!--The fixed location of the station expressed in its parent frame.-->
 									<location>-0.0032000000000000002 -0.023900000000000001 0.00089999999999999998</location>
 								</PathPoint>
@@ -1428,7 +1428,7 @@
 			<objects>
 				<Marker name="r_acromion">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>ground</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../../ground</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.01256 0.040000000000000001 0.17000000000000001</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -1436,7 +1436,7 @@
 				</Marker>
 				<Marker name="r_humerus_epicondyle">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>r_humerus</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../../bodyset/r_humerus</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.0050000000000000001 -0.29039999999999999 0.029999999999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
@@ -1444,7 +1444,7 @@
 				</Marker>
 				<Marker name="r_radius_styloid">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
-					<socket_parent_frame_connectee_name>r_ulna_radius_hand</socket_parent_frame_connectee_name>
+					<socket_parent_frame_connectee_name>../../bodyset/r_ulna_radius_hand</socket_parent_frame_connectee_name>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>-0.0011000000000000001 -0.23558999999999999 0.094299999999999995</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->

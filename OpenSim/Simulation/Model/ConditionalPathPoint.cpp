@@ -88,8 +88,10 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
             // are necessarily 2 levels deep.
             // Here we create the correct relative path (accounting for sets
             // being components).
-            if (!jointName.empty())
-                connectee_name = "../../../../jointset/" +
+            if (jointName.empty())
+                jointName = IO::Lowercase(
+                        coordElem.getParentElement().getElementTag());
+            connectee_name = "../../../../jointset/" +
                     jointName + "/" + coordName;
         }
 

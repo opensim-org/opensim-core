@@ -1030,8 +1030,8 @@ void testRollingOnSurfaceConstraint()
 
     // add a point on line constraint
     auto roll = new RollingOnSurfaceConstraint();
-    roll->setRollingBodyByName("rod");
-    roll->setSurfaceBodyByName("ground");
+    roll->connectSocket_rolling_body(*osim_rod);
+    roll->connectSocket_surface_body(ground);
 
     /*double h = */roll->get_surface_height();
     

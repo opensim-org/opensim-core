@@ -195,7 +195,6 @@ public:
 
     /** Clear all connectee names in the connectee name property. */
     void clearConnecteeName() {
-        // TODO what about single-value sockets? should the size be 1?
         if (isListSocket())
             updConnecteeNameProp().clear();
         else
@@ -257,9 +256,6 @@ protected:
                 }
                 OPENSIM_THROW(Exception, msg);
             }
-            
-            // Use the cleaned-up connectee name created by ComponentPath.
-            // TODO setConnecteeName(cp.toString(), iname);
             // TODO update the above for Inputs when ChannelPath exists.
             
             // TODO There might be a bug with empty connectee name being

@@ -66,7 +66,7 @@
 							<connectors>
 								<Connector_PhysicalFrame_ name="parent">
 									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>../../model_/ground</connectee_name>
+									<connectee_name>../../../ground</connectee_name>
 								</Connector_PhysicalFrame_>
 							</connectors>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
@@ -79,7 +79,7 @@
 							<connectors>
 								<Connector_PhysicalFrame_ name="parent">
 									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>ball</connectee_name>
+									<connectee_name>../../../bodyset/ball</connectee_name>
 								</Connector_PhysicalFrame_>
 							</connectors>
 							<!--Translational offset of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
@@ -140,7 +140,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="frame">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>model_/ground</connectee_name>
+							<connectee_name>../../ground</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of geometry center in the PhysicalFrame.-->
@@ -155,7 +155,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="frame">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>model_/ball</connectee_name>
+							<connectee_name>../../bodyset/ball</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of geometry center in the PhysicalFrame.-->
@@ -170,7 +170,7 @@
           <connectors>
             <Connector_PhysicalFrame_ name="frame">
               <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>model_/ball</connectee_name>
+              <connectee_name>../../bodyset/ball</connectee_name>
             </Connector_PhysicalFrame_>
           </connectors>
           <!--Location of geometry center in the PhysicalFrame.-->
@@ -185,7 +185,7 @@
           <connectors>
             <Connector_PhysicalFrame_ name="frame">
               <!--Name of the component this Connector should be connected to.-->
-              <connectee_name>model_/ground</connectee_name>
+              <connectee_name>../../ground</connectee_name>
             </Connector_PhysicalFrame_>
           </connectors>
           <!--List of components that this component owns and serializes.-->

@@ -193,9 +193,10 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
                 // necessarily 2 level deep.
                 // Here we create the correct relative path (accounting for sets
                 // being components).
-                if (!jointName.empty())
-                    connectee_name = "../../../../jointset/" +
-                        jointName + "/" + coordName;
+                if (jointName.empty())
+                    jointName = IO::Lowercase(jointElem.getElementTag());
+                connectee_name = "../../../../jointset/" +
+                                 jointName + "/" + coordName;
             }
             return connectee_name;
         };

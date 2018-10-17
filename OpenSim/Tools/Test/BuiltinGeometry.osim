@@ -240,7 +240,7 @@
 						</Connector_PhysicalFrame_>
 						<Connector_PhysicalFrame_ name="child_frame">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>../block</connectee_name>
+							<connectee_name>../../bodyset/block</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Set holding the generalized coordinates (q's) that parameterize this joint.-->
@@ -298,7 +298,7 @@
 							<connectors>
 								<Connector_PhysicalFrame_ name="parent">
 									<!--Name of the component this Connector should be connected to.-->
-									<connectee_name>../../ground</connectee_name>
+									<connectee_name>../../../ground</connectee_name>
 								</Connector_PhysicalFrame_>
 							</connectors>
 							<!--The geometry used to display the axes of this Frame.-->
@@ -353,11 +353,11 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="body_1">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>../ground</connectee_name>
+							<connectee_name>../../ground</connectee_name>
 						</Connector_PhysicalFrame_>
 						<Connector_PhysicalFrame_ name="body_2">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>../block</connectee_name>
+							<connectee_name>../../bodyset/block</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Location of the point in first body specified in body1 reference frame.-->
@@ -388,7 +388,7 @@
 									<connectors>
 										<Connector_PhysicalFrame_ name="parent_frame">
 											<!--Name of the component this Connector should be connected to.-->
-											<connectee_name>../../../ground</connectee_name>
+											<connectee_name>../../../../ground</connectee_name>
 										</Connector_PhysicalFrame_>
 									</connectors>
 									<!--The fixed location of the station expressed in its parent frame.-->
@@ -399,7 +399,7 @@
 									<connectors>
 										<Connector_PhysicalFrame_ name="parent_frame">
 											<!--Name of the component this Connector should be connected to.-->
-											<connectee_name>../../../block</connectee_name>
+											<connectee_name>../../../../bodyset/block</connectee_name>
 										</Connector_PhysicalFrame_>
 									</connectors>
 									<!--The fixed location of the station expressed in its parent frame.-->
@@ -437,7 +437,7 @@
 									<connectors>
 										<Connector_PhysicalFrame_ name="parent_frame">
 											<!--Name of the component this Connector should be connected to.-->
-											<connectee_name>../../../ground</connectee_name>
+											<connectee_name>../../../../ground</connectee_name>
 										</Connector_PhysicalFrame_>
 									</connectors>
 									<!--The fixed location of the station expressed in its parent frame.-->
@@ -448,7 +448,7 @@
 									<connectors>
 										<Connector_PhysicalFrame_ name="parent_frame">
 											<!--Name of the component this Connector should be connected to.-->
-											<connectee_name>../../../block</connectee_name>
+											<connectee_name>../../../../bodyset/block</connectee_name>
 										</Connector_PhysicalFrame_>
 									</connectors>
 									<!--The fixed location of the station expressed in its parent frame.-->
@@ -476,7 +476,7 @@
 					<connectors>
 						<Connector_PhysicalFrame_ name="frame">
 							<!--Name of the component this Connector should be connected to.-->
-							<connectee_name>../block</connectee_name>
+							<connectee_name>../../bodyset/block</connectee_name>
 						</Connector_PhysicalFrame_>
 					</connectors>
 					<!--Three functions describing the force to be applied.-->

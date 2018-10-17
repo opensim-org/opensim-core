@@ -3055,8 +3055,9 @@ void Socket<C>::findAndConnect(const Component& root) {
         std::string ownerPathName = getOwner().getAbsolutePathString();
         // otherwise store the relative path name to the object
         std::string relPathName = connectee->getRelativePathName(getOwner());
-        std::cout << info << " Reference relPath " << relPathName
-                << std::endl;
+        // TODO
+//        std::cout << info << " Reference relPath " << relPathName
+//                << std::endl;
         updConnecteeNameProp().setValue(0, relPathName);
         
     } else {
@@ -3066,36 +3067,14 @@ void Socket<C>::findAndConnect(const Component& root) {
 
         ComponentPath path(connecteeName);
         const C* comp = nullptr;
-        std::cout << info << "Property path " << path.toString()
+        if (path.isAbsolute()) {
+            comp = &root.template getComponent<C>(path);
+        } else {
+            comp = &getOwner().template getComponent<C>(path);
+        }
+        std::cout << info << "using comp " << comp->getAbsolutePathString()
                   << std::endl;
-
-        try {
-            if (path.isAbsolute()) {
-                comp = &root.template getComponent<C>(path);
-            } else {
-                comp = &getOwner().template getComponent<C>(path);
-            }
-        }
-        catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-            // TODO if (Object::getDebugLevel() > 0) {
-                // TODO once we fix how connections are established when building
-                // models programmatically, we should show this warning even for
-                // debug level 0.
-                std::cout << ex.getMessage() << std::endl;
-            // TODO }
-            comp = root.template findComponent<C>(path);
-        }
-        if (comp) {
-            std::cout << info << "using comp " << comp->getAbsolutePathString()
-                      << std::endl;
-            connectInternal(*comp);
-            // TODO connect(*comp);
-        }
-        else
-            OPENSIM_THROW(ComponentNotFoundOnSpecifiedPath,
-                          path.toString(),
-                          C::getClassName(),
-                          getName());
+        connectInternal(*comp);
     }
 }
 

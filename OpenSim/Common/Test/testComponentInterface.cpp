@@ -859,9 +859,9 @@ void testListInputs() {
     bar.setName("Bar");
     theWorld.add(&bar);
 
-    bar.updSocket<Foo>("parentFoo").setConnecteeName("Foo");
-    bar.updSocket<Foo>("childFoo").setConnecteeName("Foo2");
-    
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
     auto* reporter = new ConsoleReporter();
     reporter->setName("rep0");
     theWorld.add(reporter);
@@ -917,9 +917,9 @@ void testListSockets() {
     theWorld.add(&bar);
     
     // Non-list sockets.
-    bar.updSocket<Foo>("parentFoo").setConnecteeName("foo");
-    bar.updSocket<Foo>("childFoo").setConnecteeName("foo2");
-    
+    bar.connectSocket_parentFoo(foo);
+    bar.connectSocket_childFoo(foo2);
+
     // Ensure that calling connect() on bar's "parentFoo" doesn't increase
     // its number of connectees.
     bar.connectSocket_parentFoo(foo);
