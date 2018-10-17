@@ -102,7 +102,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
 
         //Use same conditions on constraints
         s_solver.updU() = s.getU();
-        s_solver.updU() = s.getZ();
+        s_solver.updZ() = s.getZ();
 
         //Make sure all the actuators are on!
         for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
