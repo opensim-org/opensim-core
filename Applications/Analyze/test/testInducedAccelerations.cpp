@@ -106,7 +106,6 @@ void testDoublePendulumWithSolver()
 
         // Compute total acceleration due to all force contributors
         Vector udot_tot = iaaSolver.solve(s, "total");
-        // velocity first, since other contributors set u's to zero and the state is not restored until next iteration. 
         Vector udot = calcDoublePendulumUdot(pendulum, s, torq1, torq2, true, true);
         ASSERT_EQUAL(udot[0], udot_tot[0], 1e-5, __FILE__, __LINE__,
             "Total Induced Accelerations for double pendulum q1 FAILED");
