@@ -1,33 +1,37 @@
+%% clear working space
+clear all;close all;clc;
 
-
+%% Import OpenSim Libraries
 import org.opensim.modeling.*
 
-model = Model('../../../../OpenSim/Tests/shared/arm26.osim')
+%% Instantiate a model from file
+model = Model('../../../../OpenSim/Tests/shared/arm26.osim');
 
-%% Body list
-% get a Matlab BodyList object
+%% Test Body list
+% Get a Matlab BodyList object
 bodylist = osimList(model,'Body');
-% size of the list 
+% Get the size of the list 
 n = bodylist.getSize();  
-% cell of strings
+% Get all the Body names as a cell of strings
 names = bodylist.getNames(); 
-% cell of strings
+% Get all the component Outputs as a cell of strings
 outputnames = bodylist.getOutputNames(); 
-% get a reference to a a body
-body = bodylist.get(names{1}); 
-
+% Get a reference to one of the Bodies in the list
+body = bodylist.getByName(names{1}); 
+body = bodylist.getByIndex(1); 
 
 %% Muscle List 
 % get a Matlab MuscleList object
 musclelist = osimList(model, 'Muscle');
 % get the number of muscles
 nm = musclelist.getSize();
-% get the names of all the muslces
+% Get all the Muscle names as a cell of strings
 names = musclelist.getNames();
-% get all the outputs from the class type
+% Get all the component Outputs as a cell of strings
 outputnames = musclelist.getOutputNames();
-% get a reference to a muscle
-muscle = musclelist.get(names{1});
+% Get a reference to one of the Muscles in the list
+muscle = musclelist.getByName(names{1});
+muscle = musclelist.getByIndex(2);
 
 
 

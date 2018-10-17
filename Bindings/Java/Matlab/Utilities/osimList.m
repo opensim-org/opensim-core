@@ -49,9 +49,13 @@ properties
             % Use input string (classname) to determine the type of list
             % returned. Examples could be 'Body', 'Frame', 'Joint',
             % 'Muscle', 'Actuator'
-            eval(['list = model.get' classname 'List();'])
+            try
+                eval(['list = model.get' classname 'List();']);
+                disp('List creation Successful');
+            catch 
+                error(['OpenSim classname, ' classname ', does not exist']);
+            end
             
-            % disp('List creation Successful')
             % allocate the list and model to local properties
             obj.list = list;
             obj.model = model;
