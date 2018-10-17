@@ -163,6 +163,7 @@ void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
 
 MucoPathConstraint::MucoPathConstraint() {
     constructProperties();
+    if (getName().empty()) setName("path_constraint");
 }
 
 void MucoPathConstraint::constructProperties() {

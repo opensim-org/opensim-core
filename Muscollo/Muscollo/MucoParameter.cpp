@@ -133,9 +133,14 @@ void MucoParameter::printDescription(std::ostream& stream) const {
     stream << ". component paths: ";
     const std::vector<std::string> componentPaths = getComponentPaths();
     for (int i = 0; i < componentPaths.size(); ++i) {
-        stream << componentPaths[i] << ", ";
+        stream << componentPaths[i];
+        if (i < componentPaths.size()-1) {
+           stream << ", ";
+        } else {
+           stream << ". ";
+        }   
     }
-    stream << ". property element: ";
+    stream << "property element: ";
     if (getProperty_property_element().empty()) {
         stream << "n/a";
     } else {
