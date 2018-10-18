@@ -380,6 +380,7 @@ void MucoPhase::initialize(Model& model) const {
     const auto NC = matter.getNumConstraints();
     const auto& state = model.getWorkingState();
     int mp, mv, ma;
+    m_num_multibody_constraint_eqs = 0;
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {
@@ -393,6 +394,10 @@ void MucoPhase::initialize(Model& model) const {
                 mc.getConstraintInfo().getNumEquations(), mcBounds);
             mcInfo.setBounds(mcBoundVec);
             mc.setConstraintInfo(mcInfo);
+
+            // Update number of scalar multibody constraint equations.
+            m_num_multibody_constraint_eqs +=
+                mc.getConstraintInfo().getNumEquations();
 
             // Append this multibody constraint to the internal vector variable.
             m_multibody_constraints.push_back(mc);

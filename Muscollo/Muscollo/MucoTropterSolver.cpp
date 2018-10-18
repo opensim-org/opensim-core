@@ -255,6 +255,7 @@ public:
             }
         }
         m_numPathConstraintEqs = m_phase0.getNumPathConstraintEquations();
+        m_pathConstraintErrors.resize(m_numPathConstraintEqs, 0.0);
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
@@ -358,9 +359,10 @@ public:
         }
 
         // Copy errors from generic path constraints into output struct.
-        std::copy_n(m_phase0.calcPathConstraintErrors(m_state).begin(),
-            m_numPathConstraintEqs,
-            out.path.data() + m_numMultibodyConstraintEqs);
+        m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+        std::copy(m_pathConstraintErrors.begin(),
+                  m_pathConstraintErrors.end(),
+                  out.path.data() + m_numMultibodyConstraintEqs);
 
         // Copy state derivative values to output struct.
         std::copy(&m_state.getYDot()[0], &m_state.getYDot()[0] + states.size(),
@@ -436,6 +438,8 @@ private:
     // The total number of scalar constraint equations associated with
     // MucoPathConstraints added to the MucoProblem.
     mutable int m_numPathConstraintEqs = 0;
+    // Cached path constraint errors.
+    mutable SimTK::Vector m_pathConstraintErrors;
 
     void applyParametersToModel(const VectorX<T>& parameters) const
     {

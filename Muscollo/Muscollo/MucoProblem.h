@@ -242,6 +242,15 @@ public:
     /// after initialization.
     const MucoMultibodyConstraint& 
     getMultibodyConstraint(const std::string& name) const;
+    /// Get the number of scalar multibody constraints in the MucoProblem. This 
+    /// does not include path constraints equations, and is only available after 
+    /// initialization. 
+    int getNumMultibodyConstraintEquations() const {
+        OPENSIM_THROW_IF(m_num_multibody_constraint_eqs == -1, Exception,
+            "The number of scalar multibody constraint equations is not "
+            "available until after initialization.");
+        return m_num_multibody_constraint_eqs;
+    }
     /// Given a multibody constraint name, get a vector of MucoVariableInfos 
     /// corresponding to the Lagrange multipliers for that multibody constraint.
     /// Note: Since these are created directly from model constraint
@@ -283,13 +292,40 @@ public:
         }
         return cost;
     }
-    /// Calculate the errors in all the scalar constraint equations in this
+    /// Calculate the errors in all the scalar path constraint equations in this
     /// phase.
-    SimTK::Vector calcPathConstraintErrors(const SimTK::State& state) const {
-        // TODO should we be creating this vector on every call?
-        SimTK::Vector errors(getNumPathConstraintEquations(), 0.0);
+    void calcPathConstraintErrors(const SimTK::State& state, 
+        SimTK::Vector& errors) const {
+        
+        OPENSIM_THROW_IF_FRMOBJ(
+            errors.size() != getNumPathConstraintEquations(), Exception,
+            "The size of the errors vector passed is not consistent with the "
+            "number of scalar path constraint equations in this MucoProblem.");
+
         for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
             get_path_constraints(i).calcPathConstraintErrors(state, errors);
+        }
+    }
+    /// Calculate the errors in all the scalar multibody constraint equations in
+    /// this phase. This may not be the most efficient solution for solvers, but 
+    /// is rather intended as a convenience method for a quick implementation or 
+    /// for debugging model constraints causing issues in an optimal control 
+    /// problem.
+    SimTK::Vector calcMultibodyConstraintErrors(const SimTK::State& state) const 
+    {
+        SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
+        int index = 0;
+        int thisConstraintNumEqs;
+        for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+            thisConstraintNumEqs = 
+            m_multibody_constraints[i].getConstraintInfo().getNumEquations();
+
+            SimTK::Vector currConstraintErrors(thisConstraintNumEqs, 0.0);
+            m_multibody_constraints[i].calcMultibodyConstraintErrors(getModel(), 
+                state, currConstraintErrors);
+            std::copy(currConstraintErrors.begin(), currConstraintErrors.end(),
+                errors.begin() + index);
+            index += thisConstraintNumEqs;
         }
         return errors;
     }
@@ -338,6 +374,7 @@ protected: // Protected so that doxygen shows the properties.
 private:
     void constructProperties();
     mutable int m_num_path_constraint_eqs = -1;
+    mutable int m_num_multibody_constraint_eqs = -1;
     mutable std::vector<MucoMultibodyConstraint> 
         m_multibody_constraints;
     mutable std::map<std::string, std::vector<MucoVariableInfo>>

@@ -154,7 +154,6 @@ void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
     std::copy_n(constraint.getAccelerationErrorsAsVector(state).begin(), 
         m_num_position_eqs + m_num_velocity_eqs + m_num_acceleration_eqs,
         errors.begin() + 2*m_num_position_eqs + m_num_velocity_eqs);
-
 }
 
 // ============================================================================
