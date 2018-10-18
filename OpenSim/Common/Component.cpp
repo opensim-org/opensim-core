@@ -1750,28 +1750,37 @@ void Component::reset()
 }
 
 void Component::warnBeforePrint() const {
+    if (!isObjectUpToDateWithProperties()) return;
     std::string message;
-    for (const auto& comp : getComponentList()) {
+    auto check = [](const Component& comp, std::string& message) {
         for (const auto& it : comp._socketsTable) {
             const auto& socket = it.second;
             if (socket->isConnected() &&
-                    ((socket->isListSocket() &&
-                    socket->getNumConnectees() == 0) ||
-                    (!socket->isListSocket() &&
-                    socket->getConnecteeName().empty()))) {
+                ((socket->isListSocket() &&
+                  socket->getNumConnectees() == 0) ||
+                 (!socket->isListSocket() &&
+                  socket->getConnecteeName().empty()))) {
                 // TODO: Improve this condition by making sure the connectee
                 // name is correct.
                 message += "  Socket '" + socket->getName() + "' in " +
-                        comp.getConcreteClassName() + " at " +
-                        comp.getAbsolutePathString() + "\n";
+                           comp.getConcreteClassName() + " at " +
+                           comp.getAbsolutePathString() + "\n";
             }
+        }
+    };
+    if (getNumImmediateSubcomponents() == 0) {
+        check(*this, message);
+    } else {
+        for (const auto& comp : getComponentList()) {
+            check(comp, message);
         }
     }
     if (!message.empty()) {
         std::cout << "Warning in " << getConcreteClassName()
-                << "::print(): The following connections will not be updated "
-                   "in the resulting XML file. Call finalizeConnections() "
-                   "before print().\n" << message << std::endl;
+                << "::print(): The following connections are not finalized "
+                   "and will not appear in the resulting XML file. "
+                   "Call finalizeConnections() before print().\n"
+                << message << std::endl;
     }
 }
 
