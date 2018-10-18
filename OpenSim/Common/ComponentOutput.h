@@ -43,6 +43,7 @@
 namespace OpenSim {
 
 class Component;
+class AbstractInput;
 
 /** One of the values of an Output. */
 class AbstractChannel {
@@ -64,6 +65,15 @@ public:
      * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
+private:
+    // TODO
+//    void registerInput(const AbstractInput*) const;
+//    void unregisterInput(const AbstractInput*) const;
+//    // Inputs connected to this channel.
+//    mutable std::set<SimTK::ReferencePtr<const AbstractInput>>
+//            _inputsConnectedToMe;
+    // TODO have a way for the Input to let the channel know it's being
+    // deleted.
 };
 
 

@@ -924,6 +924,9 @@ private:
     /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
     /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    /** Call finalizeConnections() afterwards to update the socket's     */ \
+    /** connectee name property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectSocket_##cname(const Object& object) {                      \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
@@ -1001,6 +1004,9 @@ private:
     /** @name Socket-related functions                                   */ \
     /** @{                                                               */ \
     /** Connect the '##cname##' Socket to an object of type T##.         */ \
+    /** Call finalizeConnections() afterwards to update the socket's     */ \
+    /** connectee name property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectSocket_##cname(const Object& object) {                      \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
@@ -1092,6 +1098,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** list output.                                                     */ \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the output.                                */ \
+    /** Call finalizeConnections() afterwards to update the input's      */ \
+    /** connectee name property. The reference to the output set here    */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectInput_##iname(const AbstractOutput& output,                 \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
@@ -1099,6 +1108,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Connect this Input to an output channel of type T##.             */ \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
+    /** Call finalizeConnections() afterwards to update the input's      */ \
+    /** connectee name property. The reference to the channel set here   */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectInput_##iname(const AbstractChannel& channel,               \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \
@@ -1155,6 +1167,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the output; the alias will be used for all */ \
     /** channels of the output.                                          */ \
+    /** Call finalizeConnections() afterwards to update the input's      */ \
+    /** connectee name property. The reference to the output set here    */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectInput_##iname(const AbstractOutput& output,                 \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
@@ -1162,6 +1177,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Connect this Input to an output channel of type T##.             */ \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
+    /** Call finalizeConnections() afterwards to update the input's      */ \
+    /** connectee name property. The reference to the channel set here   */ \
+    /** takes precedence over the connectee name property.               */ \
     void connectInput_##iname(const AbstractChannel& channel,               \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \

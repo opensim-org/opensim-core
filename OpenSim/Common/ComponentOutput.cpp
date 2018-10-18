@@ -25,6 +25,22 @@
 #include "Component.h"
 
 using namespace OpenSim;
+
+/* TODO
+AbstractChannel::~AbstractChannel() {
+    for (const auto& in : _inputsConnectedToMe) {
+        if (in) in->TODO();
+    }
+}
+
+void AbstractChannel::registerInput(const AbstractInput* input) const {
+    _inputsConnectedToMe.emplace(input);
+}
+void AbstractChannel::unregisterInput(const AbstractInput* input) const {
+    _inputsConnectedToMe.erase(SimTK::ReferencePtr<const AbstractInput>(input));
+}
+ */
+
 std::string AbstractOutput::getPathName() const {
     return getOwner().getAbsolutePathString() + "/" + getName();
 }

@@ -3089,7 +3089,9 @@ void Input<T>::connect(const AbstractOutput& output,
             << "' of type " << output.getTypeName() << ".";
         OPENSIM_THROW(Exception, msg.str());
     }
-    
+
+    // TODO this check should occur in finalizeConnection or inside connectInternal.
+    // TODO we want this check to also happen if setting from Properties.
     if (!isListSocket() && outT->isListOutput()) {
         OPENSIM_THROW(Exception,
             "Non-list input '" + getName() +
@@ -3098,7 +3100,7 @@ void Input<T>::connect(const AbstractOutput& output,
 
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
-
+        // TODO registerChannel(chan.second, alias);
         connectInternal(chan.second, alias);
     }
 }
@@ -3122,13 +3124,14 @@ void Input<T>::connect(const AbstractChannel& channel,
         disconnect();
     }
 
+    // TODO registerChannel(*chanT, alias);
     connectInternal(*chanT, alias);
 }
 
 template<class T>
 void Input<T>::finalizeConnection(const Component& root) {
 
-    if (isConnected()) {
+    if (isConnected()) { // TODO (hasRegisteredChannels()) {
         clearConnecteeName();
         OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
                          Exception,
