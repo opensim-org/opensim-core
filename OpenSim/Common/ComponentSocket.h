@@ -164,9 +164,11 @@ public:
     virtual void disconnect() = 0;
 
     /** %Set connectee name. This function can only be used if this socket is
-     * not a list socket. If a connectee reference has already been set (with
-     * connect()) the connectee name is ignored; call disconnect() first if you
-     * want the socket to be connected using the connectee name. */
+     * not a list socket. If a connectee reference is set (with connect()) the
+     * connectee name is ignored; call disconnect() if you want the socket to be
+     * connected using the connectee name.
+     *
+     * It is preferable to use connect() instead of this function. */
     void setConnecteeName(const std::string& name) {
         OPENSIM_THROW_IF(_isList,
                          Exception,
@@ -176,9 +178,11 @@ public:
 
     /** %Set connectee name of a connectee among a list of connectees. This
      * function is used if this socket is a list socket. If a connectee
-     * reference has already been set (with connect()) the connectee name is
-     * ignored; call disconnect() first if you want the socket to be connected
-     * using the connectee name. */
+     * reference is set (with connect()) the connectee name is ignored; call
+     * disconnect() if you want the socket to be connected using the connectee
+     * name.
+     *
+     * It is preferable to use connect() instead of this function. */
     void setConnecteeName(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
@@ -666,6 +670,7 @@ public:
     void finalizeConnection(const Component& root) override;
     
     void disconnect() override {
+        _registeredChannels.clear();
         _connectees.clear();
         _aliases.clear();
     }
@@ -725,7 +730,6 @@ public:
     }
     
     const std::string& getAlias() const override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
         OPENSIM_THROW_IF(isListSocket(),
                          Exception,
                          "Input<T>::getAlias(): this is a list Input; an index "
@@ -745,8 +749,6 @@ public:
     }
 
     void setAlias(const std::string& alias) override {
-        OPENSIM_THROW_IF(!isConnected(), InputNotConnected, getName());
-
         for (unsigned i=0; i<getNumConnectees(); ++i)
             setAlias(i, alias);
     }
@@ -856,13 +858,57 @@ protected:
     friend Component;
     
 private:
-    void connectInternal(const Channel& chanT, const std::string& alias) {
-        // TODO in connect(), store Output and the channel ID somehow.
-        // then in finalizeConnection(), finally grab the channel.
-        // TODO chanT.registerInput(this);
-        _connectees.emplace_back(&chanT);
+    /** Register a channel to connect to. Since channels are created on the fly,
+     * we do not want to hold onto references to channels. Instead, we hold
+     * onto references of outputs. */
+    void registerChannel(const AbstractChannel& channel,
+            const std::string& alias, bool validate = true)
+    {
+        const Channel* chanT = nullptr;
+        if (validate) {
+            chanT = dynamic_cast<const Channel*>(&channel);
+            if (!chanT) {
+                std::stringstream msg;
+                msg << "Type mismatch between Input and Output: Input '"
+                    << getName() << "' of type " << getConnecteeTypeName()
+                    << " cannot connect to Output (channel) '"
+                    << channel.getPathName()
+                    << "' of type " << channel.getTypeName() << ".";
+                OPENSIM_THROW(Exception, msg.str());
+            }
+        } else {
+            chanT = static_cast<const Channel*>(&channel);
+        }
+        _registeredChannels.emplace_back(
+                SimTK::ReferencePtr<const Output<T>>(&chanT->getOutput()),
+                chanT->getChannelName(), alias);
+    }
+    void connectInternal(const AbstractChannel& channel,
+            const std::string& alias) {
+        const auto* chanT = dynamic_cast<const Channel*>(&channel);
+        if (!chanT) {
+            std::stringstream msg;
+            msg << "Type mismatch between Input and Output: Input '"
+                << getName() << "' of type " << getConnecteeTypeName()
+                << " cannot connect to Output (channel) '"
+                << channel.getPathName()
+                << "' of type " << channel.getTypeName() << ".";
+            OPENSIM_THROW(Exception, msg.str());
+        }
+
+        if (!isListSocket()) {
+            // Remove the existing connectee (if it exists).
+            disconnect();
+        }
+
+        _connectees.emplace_back(chanT);
         _aliases.push_back(alias);
     }
+    // These are channels the user has requested that we connect to.
+    using RegisteredChannel =
+            std::tuple<SimTK::ReferencePtr<const Output<T>>,
+                    std::string, std::string>;
+    SimTK::ResetOnCopy<std::vector<RegisteredChannel>> _registeredChannels;
     SimTK::ResetOnCopy<ChannelList> _connectees;
     // Aliases are serialized, since tools may depend on them for
     // interpreting the connected channels.

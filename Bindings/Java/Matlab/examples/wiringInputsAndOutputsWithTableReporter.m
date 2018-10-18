@@ -52,8 +52,6 @@ reporter = TableReporterVec3();
 reporter.setName('reporter');
 reporter.set_report_time_interval(0.1);
 
-model.addComponent(reporter);
-
 % Report the position of the origin of the body.
 reporter.addToReport(body.getOutput('position'));
 % For comparison, we will also get the center of mass position from the
@@ -65,6 +63,9 @@ reporter.addToReport(model.getOutput('com_position'), 'com_pos');
 disp('Reporter input-output connections in XML:');
 disp(reporter.dump());
 
+model.addComponent(reporter);
+
+% We must finalize connections to save the connections in the model file.
 model.finalizeConnections();
 model.print(modelFilename);
 

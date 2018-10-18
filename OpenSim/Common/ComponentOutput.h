@@ -65,15 +65,6 @@ public:
      * method might return something like "/model/metabolics|heat_rate:soleus_r".
      */
     virtual std::string getPathName() const = 0;
-private:
-    // TODO
-//    void registerInput(const AbstractInput*) const;
-//    void unregisterInput(const AbstractInput*) const;
-//    // Inputs connected to this channel.
-//    mutable std::set<SimTK::ReferencePtr<const AbstractInput>>
-//            _inputsConnectedToMe;
-    // TODO have a way for the Input to let the channel know it's being
-    // deleted.
 };
 
 
@@ -256,9 +247,12 @@ public:
             throw Exception("Channel name cannot be empty.");
         _channels[channelName] = Channel(this, channelName);
     }
-    
+
+    /** For a single-value output, name must be empty or must be the output's
+     * name. */
     const AbstractChannel& getChannel(const std::string& name) const override {
         try {
+            if (!isListOutput() && name == getName()) return _channels.at("");
             return _channels.at(name);
         } catch (const std::out_of_range&) {
             OPENSIM_THROW(Exception, "Output '" + getName() + "' does not have "

@@ -1844,9 +1844,7 @@ void testListInputConnecteeSerialization() {
         // Add to world.
         world.add(source);
         world.add(reporter);
-        
-        world.finalizeFromProperties();
-        
+
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
@@ -1854,6 +1852,9 @@ void testListInputConnecteeSerialization() {
         reporter->addToReport(output.getChannel("c"));
         // We want to make sure aliases are preserved.
         reporter->addToReport(output.getChannel("b"), "berry");
+        // Ensure that re-finalizing from properties does not cause Inputs
+        // to hold onto stale references to the outputs' channels.
+        world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);
@@ -1896,7 +1897,7 @@ void testListInputConnecteeSerialization() {
         system.realize(s, Stage::Model);
         s.setTime(0.3);
         auto actualInputValues = Input<double>::downcast(input).getVector(s);
-        
+
         SimTK_TEST_EQ(expectedInputValues, actualInputValues);
     }
 }
@@ -1932,18 +1933,15 @@ void testSingleValueInputConnecteeSerialization() {
         world.add(source);
         world.add(foo);
 
-        world.finalizeFromProperties();
-        
         // Connect, finalize, etc.
         const auto& output = source->getOutput("column");
         // See if we preserve the ordering of the channels.
         foo->connectInput_input1(output.getChannel("b"));
         // We want to make sure aliases are preserved.
         foo->connectInput_fiberLength(output.getChannel("d"), "desert");
-        // world.finalizeFromProperties(); TODO putting ffP() here causes
-        // getOutput() to give an error. must give a better error message
-        // in that situation. Use shared pointers? Communicate back
-        // to the input that the channel has been deleted.
+        // Ensure that re-finalizing from properties does not cause Inputs
+        // to hold onto stale references to the outputs' channels.
+        world.finalizeFromProperties();
         world.connect();
         MultibodySystem system;
         world.buildUpSystem(system);

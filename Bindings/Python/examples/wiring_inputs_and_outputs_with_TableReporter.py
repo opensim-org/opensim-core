@@ -98,8 +98,6 @@ sto.write(table, 'wiring_inputs_and_outputs_with_TableReporter.sto')
 # You can open the .sto file in a text editor and see that both outputs
 # (position of body's origin, and position of system mass center) are the same.
 
-# TODO probably doesn't work b/c channels are reset.
-
 
 
 

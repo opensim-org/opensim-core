@@ -3034,15 +3034,10 @@ public:
 
 template<class C>
 void Socket<C>::finalizeConnection(const Component& root) {
-    const std::string info = "Socket<[..]>::finalizeConnection() comp "
-            + getOwner().getAbsolutePathString() + " of type "
-            + getOwner().getConcreteClassName() + " socket "
-            + getName() + " of type " + getConnecteeTypeName() + ": ";
 
     // If the reference to the connectee is set, use that. Otherwise, use the
     // connectee name property.
     if (isConnected()) {
-        // TODO add a similar change to Input<[..]>::finalizeConnection().
         const auto& comp = *connectee;
         const auto& rootOfConnectee = comp.getRoot();
         const auto& myRoot = getOwner().getRoot();
@@ -3053,7 +3048,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
             comp.getConcreteClassName() + " at " +
             comp.getAbsolutePathString() + ": components do not have the same "
             "root component. Did you intend to add '" +
-            comp.getRoot().getName() + "' to '" + myRoot.getName() + "'?");
+            rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
         std::string objPathName = connectee->getAbsolutePathString();
         std::string ownerPathName = getOwner().getAbsolutePathString();
@@ -3090,55 +3085,57 @@ void Input<T>::connect(const AbstractOutput& output,
         OPENSIM_THROW(Exception, msg.str());
     }
 
-    // TODO this check should occur in finalizeConnection or inside connectInternal.
-    // TODO we want this check to also happen if setting from Properties.
-    if (!isListSocket() && outT->isListOutput()) {
+    if (!isListSocket() && outT->getChannels().size() > 1) {
         OPENSIM_THROW(Exception,
             "Non-list input '" + getName() +
-            "' cannot connect to list output '" + output.getPathName() + ".");
+            "' cannot connect to output '" + output.getPathName() +
+            " with more than 1 channel");
     }
 
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
-        // TODO registerChannel(chan.second, alias);
-        connectInternal(chan.second, alias);
+        registerChannel(chan.second, alias);
     }
 }
 
 template<class T>
 void Input<T>::connect(const AbstractChannel& channel,
                        const std::string& alias) {
-    const auto* chanT = dynamic_cast<const Channel*>(&channel);
-    if (!chanT) {
-        std::stringstream msg;
-        msg << "Type mismatch between Input and Output: Input '" << getName()
-            << "' of type " << getConnecteeTypeName()
-            << " cannot connect to Output (channel) '" << channel.getPathName()
-            << "' of type " << channel.getTypeName() << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
-
-    /// TODO move this to connectInternal().
-    if (!isListSocket()) {
-        // Remove the existing connectee (if it exists).
-        disconnect();
-    }
-
-    // TODO registerChannel(*chanT, alias);
-    connectInternal(*chanT, alias);
+    registerChannel(channel, alias);
 }
 
 template<class T>
 void Input<T>::finalizeConnection(const Component& root) {
 
-    if (isConnected()) { // TODO (hasRegisteredChannels()) {
+    _connectees.clear();
+    _aliases.clear();
+    if (!_registeredChannels.empty()) {
         clearConnecteeName();
         OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
                          Exception,
                          "Cannot connect single-value input to multiple channels.");
+        for (const auto& reg : _registeredChannels) {
+            const Output<T>& output = std::get<0>(reg).getRef();
+            std::string channelName = std::get<1>(reg);
+            const AbstractChannel& channel = output.getChannel(channelName);
+            const std::string& alias = std::get<2>(reg);
+            connectInternal(channel, std::get<2>(reg));
+        }
 
         int i = -1;
         for (const auto& chan : getChannels()) {
+
+            const auto& rootOfConnectee =
+                    chan->getOutput().getOwner().getRoot();
+            const auto& myRoot = getOwner().getRoot();
+            OPENSIM_THROW_IF(&myRoot != &rootOfConnectee, Exception,
+                "Input<" + getConnecteeTypeName() + "> '" + getName() +
+                "' in " + getOwner().getConcreteClassName() + " at " +
+                getOwner().getAbsolutePathString() + " cannot connect to " +
+                "Channel " + chan->getPathName() + ": components do not have "
+                "the same root component. Did you intend to add '" +
+                rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
+
             ++i;
             // Update the connectee name as
             // <RelOwnerPath>/<Output><:Channel><(annotation)>
@@ -3179,19 +3176,7 @@ void Input<T>::finalizeConnection(const Component& root) {
                 if (compPathStr.empty()) {
                     comp = &getOwner();
                 } else {
-                    try {
-                        comp = &getOwner().getComponent(compPathStr);
-                    } catch (const ComponentNotFoundOnSpecifiedPath& ex) {
-                        // If we cannot find the component at the specified path,
-                        // look for the component anywhere in the model.
-                        if (Object::getDebugLevel() > 0) {
-                            // TODO once we fix how connections are established
-                            // when building models programmatically, we should
-                            // show this warning even for debug level 0.
-                            std::cout << ex.getMessage() << std::endl;
-                        }
-                        comp = root.findComponent(compPath);
-                    }
+                    comp = &getOwner().getComponent(compPathStr);
                 }
                 // comp should never be null at this point.
                 OPENSIM_THROW_IF(!comp, Exception, "Internal error: "
@@ -3200,19 +3185,7 @@ void Input<T>::finalizeConnection(const Component& root) {
                 output = &comp->getOutput(outputName);
             }
             const auto& channel = output->getChannel(channelName);
-            
-            // TODO put this check in one place only.
-            const auto* chanT = dynamic_cast<const Channel*>(&channel);
-            if (!chanT) {
-                std::stringstream msg;
-                msg << "Type mismatch between Input and Output: Input '"
-                << getName() << "' of type " << getConnecteeTypeName()
-                << " cannot connect to Output (channel) '"
-                << channel.getPathName()
-                << "' of type " << channel.getTypeName() << ".";
-                OPENSIM_THROW(Exception, msg.str());
-            }
-            connectInternal(*chanT, alias);
+            connectInternal(channel, alias);
         }
     }
 }
