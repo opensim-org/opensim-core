@@ -21,69 +21,95 @@
 % ----------------------------------------------------------------------- %
 
 classdef osimList < matlab.mixin.SetGet
-% osimList(classname)
-%   Use OpenSim lists to iterate through model components
-%   OpenSim Utility Class
-%   Inputs:
-%   model               Reference to OpenSim Model (Model())
-%   classname           OpenSim component class name ('Body', 'Muscle' 
-
-properties
-        model % a reference to an opensim model
-        list; % an opensim list
-    end
-    
-    methods 
-        function obj = osimList(model,classname)
-            % Constructor for osimList class. Takes a model and a classname
-            % (string). constructs an instance of the osimList class with
-            % properties model and list
-            if nargin == 0
-                error('no inputs to constructor')
-            elseif nargin == 1
-                error('constructor takes two inputs, not one')
-            elseif nargin > 2
-                error(['2 inputs required, ' num2str(nargin) 'given'])
-            end
+% osimList()
+%   OsimList provides static methods to get a reference to a Model component
+%   using the Model component interface. according to type by name. Use
+%   this method when you are trying to get a reference to a single
+%   component. 
+% 
+%   Get Number of components in a list;
+%       nComps = osimList().getNumComponents(model, classname);
+%   Get the all component names as strings;
+%       names  = osimList().getComponentNames(model, classname);
+%   Get a reference to a component;
+%       ref    = osimList().getComponent(model, classname, name);
+%     
+%
+%   When iterating through a list to get/set properties on multiple 
+%   components, use the list iterator directly;
+%
+%   % Set a property from all of the components of type 'Body'
+%   list = model.getBodyList();
+%   li = list.begin()
+%   while ~li.equals(list.end())
+%       li.next();
+%       li.setSomePropertyValue(val);
+%   end
+    methods (Static)
+        function nComps = getNumComponents(model, classname)
+            % Get the number of components, of a type, in a model
+            %   nComponents = osimList.getNumComponents(Model(), Classname)
+            %   eg n = osimList.getNumComponents(model, 'Body')  
             
-            % Use input string (classname) to determine the type of list
-            % returned. Examples could be 'Body', 'Frame', 'Joint',
-            % 'Muscle', 'Actuator'
-            try
-                eval(['list = model.get' classname 'List();']);
-                disp('List creation Successful');
-            catch 
-                error(['OpenSim classname, ' classname ', does not exist']);
-            end
+            % Validate the number of inputs and get the Component list
+            list = osimList.getList(model, classname);
             
-            % allocate the list and model to local properties
-            obj.list = list;
-            obj.model = model;
-        end
-        function size = getSize(obj)
-            % get the size of the list
-            list = obj.list;
+            % Get the size of the list
             li = list.begin();
-            size = 0;
+            nComps = 0;
             while ~li.equals(list.end())
                  li.next();
-                 size = size + 1;
+                 nComps = nComps + 1;
             end
         end
-        function names = getNames(obj)
-            % get all names in the list as a Matlab array of strings
-            list = obj.list;
+        function names = getComponentNames(model, classname)
+            % Get the names of all the components, of a type, in a model
+            %   listOfNames = osimList.getComponentNames(Model(), Classname)
+            %   eg names = osimList.getComponentNames(model, 'Body')  
+            
+            % Validate the number of inputs and get the Component list
+            list = osimList.getList(model, classname);
+            
+            % Get all names in the list as a Matlab cell of strings
             li = list.begin();
-            names = [{}];
+            names = {};
             while ~li.equals(list.end())
                 names = [names {char(li.getName())}];
                 li.next();
             end
             names = names';
+            
         end
-        function outputnames = getOutputNames(obj)
-            % get all output names of the class as a Matlab array of strings
-            list = obj.list;
+        function reference = getComponent(model, classname, name)
+            % Get a component reference from the list by name
+            %   reference = osimList.getComponent(Model(), Classname,  String )
+            %   eg ref = osimList.getComponent(model, 'Body', 'Pelvis')   
+            
+            % Validate the number of inputs and get the Component list
+            list = osimList.getList(model, classname);
+            
+            % Get a reference to the component of interest
+            li = list.begin();
+            while ~li.equals(list.end())
+                if strcmp(char(li.getName()),name)
+                    reference = li.deref;
+                    return
+                end
+                li.next();
+            end 
+            if ~exist('reference','var')
+                error(['Component name not found: ' name])
+            end
+        end
+        function outputnames = getOutputNames(model, classname)
+            % Get a list of output names as a cell of strings
+            %   OutputNames = osimList.getOutputNames(Model(), Classname)
+            %   eg oNames = osimList.getOutputNames(model, 'Muscle')   
+            
+            % Validate the number of inputs and get the Component list
+            list = osimList.getList(model, classname);
+            
+            % Get all the output names from a component 
             li = list.begin();
             outNames = li.getOutputNames();
             sz = outNames.size();
@@ -92,39 +118,18 @@ properties
                 outputnames = [outputnames {char(outNames.get(j))}];
             end
             outputnames = outputnames';
-        end
-        function reference = getByName(obj,name)
-            % return a reference for a object in the list
-            import org.opensim.modeling.*
-            list = obj.list;
-            li = list.begin();
-            while ~li.equals(list.end())
-                if strcmp(char(li.getName()),name)
-                    reference = li.deref;
-                    break
-                end
-                li.next();
-            end 
-            if ~exist('reference','var')
-                error(['Component name not found: ' name])
+        end 
+        function list = getList(model, classname, nInputs, nInputsNeeded)
+            try
+                eval(['list = model.get' classname 'List();']);
+%                 disp('List creation Successful');
+            catch 
+                error(['No list for get' classname 'List() found']);
             end
-        end
-        function reference = getByIndex(obj,index)
-            % return a reference for a object in the list
-            list = obj.list;
-            li = list.begin();
-            if index > 0
-                for i = 1 : index 
-                    li.next();
-                end
-            end
-            
-            if index > obj.getSize() - 1
-                error(['index is out of bounds. Index range is 0 to ' num2str(obj.getSize()-1)])
-            end
-            reference = li.deref;
         end
     end
 end
+ 
+
 
        
