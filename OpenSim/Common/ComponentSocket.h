@@ -361,9 +361,7 @@ public:
             OPENSIM_THROW(Exception, msg.str());
         }
 
-        clearConnecteeName();
         connectInternal(*objT);
-        // TODO connectee = *objT;
     }
 
     /** Connect this Socket given its connectee name property  */
@@ -655,18 +653,6 @@ public:
     
     Input<T>* clone() const override { return new Input<T>(*this); }
 
-//    bool isConnecteeSpecified() const override {
-//        std::cout << "DEBUG isConnecteeSpecified(): " << getName() << std::endl;
-//        if (isListSocket() && (getNumConnectees() > 0 || _connectees.size()))
-//            return true;
-//        std::cout << "DEBUG 2 " << getName() << std::endl;
-//        if (!isListSocket() &&
-//                (!getConnecteeName().empty() || _connectees.size()))
-//            return true;
-//        std::cout << "DEBUG 3 " << getName() << std::endl;
-//        return false;
-//    }
-
     /** Connect this Input to the provided (Abstract)Output. */
     // Definition is in Component.h
     void connect(const AbstractOutput& output,
@@ -781,8 +767,6 @@ public:
                            outputName,
                            channelName,
                            currAlias);
-        // TODO this flips the LastestModification flag.
-        // TODO TODO TODO TODO
         updConnecteeNameProp().setValue(index,
                 composeConnecteeName(componentPath,
                                      outputName,
@@ -873,9 +857,10 @@ protected:
     
 private:
     void connectInternal(const Channel& chanT, const std::string& alias) {
-        std::cout << "DEBUG Input connectInternal addr before " << &chanT << std::endl;
+        // TODO in connect(), store Output and the channel ID somehow.
+        // then in finalizeConnection(), finally grab the channel.
+        // TODO chanT.registerInput(this);
         _connectees.emplace_back(&chanT);
-        std::cout << "DEBUG Input connectInternal addr after " << _connectees.back().get() << std::endl;
         _aliases.push_back(alias);
     }
     SimTK::ResetOnCopy<ChannelList> _connectees;

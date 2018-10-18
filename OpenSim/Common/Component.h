@@ -3054,9 +3054,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
         std::string ownerPathName = getOwner().getAbsolutePathString();
         // otherwise store the relative path name to the object
         std::string relPathName = connectee->getRelativePathName(getOwner());
-        // TODO
-//        std::cout << info << " Reference relPath " << relPathName
-//                << std::endl;
         updConnecteeNameProp().setValue(0, relPathName);
         
     } else {
@@ -3071,8 +3068,6 @@ void Socket<C>::finalizeConnection(const Component& root) {
         } else {
             comp = &getOwner().template getComponent<C>(path);
         }
-        std::cout << info << "using comp " << comp->getAbsolutePathString()
-                  << std::endl;
         connectInternal(*comp);
     }
 }
@@ -3096,54 +3091,10 @@ void Input<T>::connect(const AbstractOutput& output,
             "' cannot connect to list output '" + output.getPathName() + ".");
     }
 
-    clearConnecteeName();
-
     // For a non-list socket, there will only be one channel.
     for (const auto& chan : outT->getChannels()) {
 
         connectInternal(chan.second, alias);
-
-        /* TODO
-
-        // TODO what to do with these?
-        // Record the number of pre-existing satisfied connections...
-        const size_t numPreexistingSatisfiedConnections(_connectees.size());
-        // ...which happens to be the index of this new connectee.
-        const size_t idxThisConnectee = numPreexistingSatisfiedConnections;
-        _connectees.push_back(
-            SimTK::ReferencePtr<const Channel>(&chan.second) );
-
-        // TODO aliases.
-
-        // Use the provided alias for all channels.
-        _aliases.push_back(alias);
-         */
-
-        /*
-
-        // Update the connectee name as
-        // <RelOwnerPath>/<Output><:Channel><(annotation)>
-        ComponentPath path(output.getOwner().getRelativePathName(getOwner()));
-
-        auto pathStr =
-            composeConnecteeName(path.toString(),
-                                 chan.second.getOutput().getName(),
-                                 chan.second.getOutput().isListOutput() ?
-                                 chan.second.getChannelName() :
-                                 "",
-                                 alias);
-    
-        // set the connectee name so that the connection can be
-        // serialized
-        const unsigned numDesiredConnections = getNumConnectees();
-        if (idxThisConnectee < numDesiredConnections)
-            setConnecteeName(pathStr, unsigned(idxThisConnectee));
-        else
-            appendConnecteeName(pathStr);
-
-        // Use the provided alias for all channels.
-        _aliases.push_back(alias);
-         */
     }
 }
 
@@ -3160,51 +3111,15 @@ void Input<T>::connect(const AbstractChannel& channel,
         OPENSIM_THROW(Exception, msg.str());
     }
 
-    clearConnecteeName();
-
+    /// TODO move this to connectInternal().
     if (!isListSocket()) {
         // Remove the existing connectee (if it exists).
         disconnect();
     }
 
     connectInternal(*chanT, alias);
-
-    /* TODO
-    // Record the number of pre-existing satisfied connections...
-    const size_t numPreexistingSatisfiedConnections(_connectees.size());
-    // ...which happens to be the index of this new connectee.
-    const size_t idxThisConnectee{ numPreexistingSatisfiedConnections };
-    _connectees.push_back(SimTK::ReferencePtr<const Channel>(chanT));
-
-    // Store the provided alias.
-    _aliases.push_back(alias);
-     */
-
-    /* TODO
-    // Update the connectee name as
-    // <RelOwnerPath>/<Output><:Channel><(annotation)>
-    ComponentPath
-        path(chanT->getOutput().getOwner().getRelativePathName(getOwner()));
-
-    auto pathStr = composeConnecteeName(path.toString(),
-                                        chanT->getOutput().getName(),
-                                        chanT->getOutput().isListOutput() ?
-                                        chanT->getChannelName() :
-                                        "",
-                                        alias);
-    
-    // Set the connectee name so the connection can be serialized.
-    const unsigned numDesiredConnections = getNumConnectees();
-
-    if (idxThisConnectee < numDesiredConnections)
-        // satisifed <= desired
-        setConnecteeName(pathStr, unsigned(idxThisConnectee));
-    else
-        appendConnecteeName(pathStr);
-    */
 }
 
-// TODO rename.
 template<class T>
 void Input<T>::finalizeConnection(const Component& root) {
 
@@ -3219,8 +3134,6 @@ void Input<T>::finalizeConnection(const Component& root) {
             ++i;
             // Update the connectee name as
             // <RelOwnerPath>/<Output><:Channel><(annotation)>
-            std::cout << "DEBUG findAndConnct chan " << chan->getName()
-            << " address " << chan.get() << std::endl;
             ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
                     getOwner()));
             
@@ -3292,13 +3205,8 @@ void Input<T>::finalizeConnection(const Component& root) {
                 OPENSIM_THROW(Exception, msg.str());
             }
             connectInternal(*chanT, alias);
-            // TODO connect(channel, alias);
         }
     }
-    std::cout << "DEBUG Input<[..]>::finalizeConnection(): latestModification" << getName() << " ";
-    for (int i = 0; i < getNumConnectees(); ++i)
-        std::cout << getConnecteeName(i) << " ";
-    std::cout << std::endl;
 }
 
 

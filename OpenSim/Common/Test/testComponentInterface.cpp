@@ -490,7 +490,6 @@ void testMisc() {
 
     // add a subcomponent
     // connect internals
-    // TODO theWorld.connect();
     ASSERT_THROW( Bar::ParentAndFooAreSame,
                   theWorld.connect() );
 
@@ -537,8 +536,6 @@ void testMisc() {
     bar.connectSocket_childFoo(foo2);
     string socketName = bar.updSocket<Foo>("childFoo").getName();
 
-    // TODO std::cout << "DEBUG beforeConnecting theWorld parentFoo " << theWorld.updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
-
     // do any other input/output connections
     foo.connectInput_input1(bar.getOutput("PotentialEnergy"));
 
@@ -549,8 +546,6 @@ void testMisc() {
     const Foo& foo2found = theWorld.getComponent<Foo>("Foo2");
     ASSERT(foo2 == foo2found);
 
-    // TODO theWorld.connect();
-    
     // check how this model serializes
     string modelFile("testComponentInterfaceModel.osim");
     theWorld.print(modelFile);
@@ -619,12 +614,8 @@ void testMisc() {
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
-    // TODO std::cout << "DEBUG world2 parentFoo " << world2->updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
-    // TODO std::cout << "DEBUG world2 childFoo " << world2->updComponent("Bar").getSocket("childFoo").getConnecteeName()  << std::endl;
     world2->finalizeFromProperties();
 
-    // TODO std::cout << "DEBUG finalized world2 parentFoo " << world2->updComponent("Bar").getSocket("parentFoo").getConnecteeName()  << std::endl;
-    // TODO std::cout << "DEBUG finalized world2 childFoo " << world2->updComponent("Bar").getSocket("childFoo").getConnecteeName()  << std::endl;
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
     SimTK_TEST_MUST_THROW_EXC(

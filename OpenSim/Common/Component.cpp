@@ -194,13 +194,11 @@ void Component::finalizeFromProperties()
     // (this) so that they can invoke the component's methods.
     for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
-        // TODO it.second->disconnect();
         // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
-        // TODO it.second->disconnect();
         // Let the Socket handle any errors in the connectee_name property.
         it.second->checkConnecteeNameProperty();
     }
@@ -289,7 +287,6 @@ void Component::finalizeConnections(Component& root)
 
     for (auto& it : _socketsTable) {
         auto& socket = it.second;
-        // TODO socket->disconnect();
         try {
             socket->finalizeConnection(root);
         }
@@ -1539,8 +1536,9 @@ void Component::AddedStateVariable::
 
 
 void Component::printSocketInfo() const {
-    std::cout << "Sockets for component " << getName() << " of type ["
-              << getConcreteClassName() << "] along with connectee names:";
+    std::cout << "Sockets for component " << getName()
+              << " of type [" << getConcreteClassName()
+              << "] along with connectee names:";
     if (getNumSockets() == 0)
         std::cout << " none";
     std::cout << std::endl;
