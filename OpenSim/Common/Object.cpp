@@ -808,12 +808,6 @@ try {
     for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
         AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
         prop.readFromXMLParentElement(aNode, versionNumber);
-        // TODO
-//        std::cout << "DEBUG Object::updateFromXMLNode "
-//                  << "thisobj " << getName()
-//                  << " prop " << prop.getName()
-//                  << " value " << prop.toString()
-//                  << std::endl;
     }
 
     // LOOP THROUGH DEPRECATED PROPERTIES

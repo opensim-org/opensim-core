@@ -367,7 +367,6 @@ void createLuxoJr(OpenSim::Model& model){
     PinJoint* base_pivot = new PinJoint("base_pivot", *pivot_frame_on_base,
                                         *pivot_frame_on_bottom_bracket);
 
-    // TODO should not allow appending (copying) like this.
     base_pivot->addFrame(pivot_frame_on_base);
     base_pivot->addFrame(pivot_frame_on_bottom_bracket);
     // add base pivot joint to the model
