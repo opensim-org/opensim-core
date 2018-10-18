@@ -808,6 +808,10 @@ private:
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
+    /** This is invoked at the start of print(). Derived classes can use this
+     * as an opportunity to issue warnings to users. */
+    virtual void warnBeforePrint() const {}
+
 //==============================================================================
 // DATA
 //==============================================================================

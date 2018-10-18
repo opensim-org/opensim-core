@@ -688,7 +688,7 @@ void testMisc() {
     compFoo.upd_Foo1().updInput("input1")
         .connect(bar2.getOutput("PotentialEnergy"));
 
-    world3.connect(); // TODO added.
+    world3.connect();
     world3.print("Compound_" + modelFile);
 
     cout << "Adding world3 to theWorld" << endl;

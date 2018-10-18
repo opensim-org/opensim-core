@@ -2663,6 +2663,8 @@ private:
     // Reset by clearing underlying system indices.
     void reset();
 
+    void warnBeforePrint() const override;
+
 protected:
     //Derived Components must create concrete StateVariables to expose their state 
     //variables. When exposing state variables allocated by the underlying Simbody
@@ -3017,10 +3019,13 @@ public:
                           const AbstractSocket& socket,
                           const Component& owner) :
     Exception(file, line, func) {
-        std::string msg = "Socket '" + socket.getName() + "' of type " +
-        socket.getConnecteeTypeName() + " in " +
-        owner.getConcreteClassName() + " '" +
-        owner.getName() + "' is unspecified.";
+        std::string msg = "Connectee for Socket '" + socket.getName() +
+                "' of type " + socket.getConnecteeTypeName() + " in " +
+                owner.getConcreteClassName() + " at " +
+                owner.getAbsolutePathString() + " is unspecified. "
+                "If this model was built programmatically, perhaps "
+                "finalizeConnections() was not called before "
+                "printing.";
         addMessage(msg);
     }
 };
@@ -3128,7 +3133,7 @@ void Input<T>::finalizeConnection(const Component& root) {
         OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
                          Exception,
                          "Cannot connect single-value input to multiple channels.");
-        
+
         int i = -1;
         for (const auto& chan : getChannels()) {
             ++i;
@@ -3136,7 +3141,7 @@ void Input<T>::finalizeConnection(const Component& root) {
             // <RelOwnerPath>/<Output><:Channel><(annotation)>
             ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
                     getOwner()));
-            
+
             auto pathStr = composeConnecteeName(path.toString(),
                                                 chan->getOutput().getName(),
                                                 chan->getOutput().isListOutput()
@@ -3144,7 +3149,7 @@ void Input<T>::finalizeConnection(const Component& root) {
                                                 chan->getChannelName() :
                                                 "",
                                                 _aliases[i]);
-            
+
             if (isListSocket())
                 updConnecteeNameProp().appendValue(pathStr);
             else

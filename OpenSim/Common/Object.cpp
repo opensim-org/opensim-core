@@ -1373,6 +1373,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
 bool Object::
 print(const string &aFileName) const
 {
+    warnBeforePrint();
     // Temporarily change current directory so that inlined files are written to correct relative directory
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aFileName));
