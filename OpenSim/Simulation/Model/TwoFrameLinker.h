@@ -130,6 +130,28 @@ public:
         const SimTK::Transform& offsetOnFrame2);
 
     /** Backwards compatible Convenience Constructor
+    TwoFrameLinker with offsets specified in terms of the location and
+    orientation in respective PhysicalFrames.
+
+    @param[in] name             the name of this TwoFrameLinker component
+    @param[in] frame1              the first Frame being linked
+    @param[in] locationInFrame1    Vec3 of offset location on the first frame
+    @param[in] orientationInFrame1 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame1.
+    @param[in] frame2              the second Frame being linked
+    @param[in] locationInFrame2    Vec3 of offset location on the second frame
+    @param[in] orientationInFrame2 Vec3 of orientation offset expressed as
+                                   XYZ body-fixed Euler angles w.r.t frame2.
+    */
+    TwoFrameLinker(const std::string &name,
+                   const PhysicalFrame& frame1,
+                   const SimTK::Vec3& locationInFrame1,
+                   const SimTK::Vec3& orientationInFrame1,
+                   const PhysicalFrame& frame2,
+                   const SimTK::Vec3& locationInFrame2,
+                   const SimTK::Vec3& orientationInFrame2);
+
+    /** Backwards compatible Convenience Constructor
     TwoFrameLinker with offsets specified in terms of the location and 
     orientation in respective PhysicalFrames.
 
@@ -332,6 +354,25 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     this->connectSocket_frame1(get_frames(ix1));
     this->connectSocket_frame2(get_frames(ix2));
 }
+
+template <class C, class F>
+TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
+               const PhysicalFrame& frame1,
+               const SimTK::Vec3& locationInFrame1,
+               const SimTK::Vec3& orientationInFrame1,
+               const PhysicalFrame& frame2,
+               const SimTK::Vec3& locationInFrame2,
+               const SimTK::Vec3& orientationInFrame2)
+    : TwoFrameLinker(name,
+        frame1, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame1[0], SimTK::XAxis,
+            orientationInFrame1[1], SimTK::YAxis,
+            orientationInFrame1[2], SimTK::ZAxis), locationInFrame1),
+        frame2, SimTK::Transform(SimTK::Rotation(SimTK::BodyRotationSequence,
+            orientationInFrame2[0], SimTK::XAxis,
+            orientationInFrame2[1], SimTK::YAxis,
+            orientationInFrame2[2], SimTK::ZAxis), locationInFrame2))
+{}
 
 template <class C, class F>
 TwoFrameLinker<C, F>::TwoFrameLinker(const std::string& name,

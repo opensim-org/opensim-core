@@ -726,11 +726,11 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     osimModel.setGravity(gravity_vec);
 
     auto* spring = new BushingForce("bushing",
-            "ground",
+            ground,
             Transform(Rotation(BodyRotationSequence,
                     -0.5, XAxis, 0, YAxis, 0.5, ZAxis),
                 Vec3(1, 2, 3)),
-            "ball",
+            *ball,
             Transform(Rotation(BodyRotationSequence,
                     0.1, XAxis, 0.2, YAxis, 0.3, ZAxis), 
                 Vec3(4, 5, 6)),
@@ -803,8 +803,8 @@ void testFunctionBasedBushingForce()
     osimModel.setGravity(gravity_vec);
 
     FunctionBasedBushingForce spring("linear_bushing",
-                    "ground", Vec3(0), Vec3(0), 
-                    "ball", Vec3(0), Vec3(0),
+                    ground, Vec3(0), Vec3(0),
+                    ball, Vec3(0), Vec3(0),
                     transStiffness, rotStiffness, transDamping, rotDamping);
 
     osimModel.addForce(&spring);
@@ -918,8 +918,8 @@ void testExpressionBasedBushingForceTranslational()
     Vec3 transDamping(0);
     
     ExpressionBasedBushingForce spring("linear_bushing",
-        "base_body", Vec3(0), Vec3(0), 
-        "ball", Vec3(0), Vec3(0), 
+        base, Vec3(0), Vec3(0),
+        ball, Vec3(0), Vec3(0),
         transStiffness, rotStiffness, transDamping, rotDamping);
     
     spring.setName("translational_linear_bushing");
@@ -1034,8 +1034,8 @@ void testExpressionBasedBushingForceRotational()
     Vec3 transDamping(0);
 
     ExpressionBasedBushingForce spring("rotatinal_spring", 
-        "base_body", Vec3(0), Vec3(0),
-        "ball", Vec3(0), Vec3(0),
+        base, Vec3(0), Vec3(0),
+        ball, Vec3(0), Vec3(0),
         transStiffness, rotStiffness, transDamping, rotDamping);
 
     spring.setName("rotational_linear_bushing");

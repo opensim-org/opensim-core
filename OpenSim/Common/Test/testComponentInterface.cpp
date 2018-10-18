@@ -487,7 +487,7 @@ void testMisc() {
     //Will get resolved and connected automatically at Component connect
     bar.updSocket<Foo>("parentFoo").setConnecteeName(foo.getAbsolutePathString());
     bar.connectSocket_childFoo(foo);
-        
+
     // add a subcomponent
     // connect internals
     // TODO theWorld.connect();
