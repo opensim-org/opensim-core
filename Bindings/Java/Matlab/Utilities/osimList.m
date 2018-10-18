@@ -1,3 +1,28 @@
+% osimList()
+%   OsimList provides static methods to get a reference to a Model component
+%   using the Model component interface. according to type by name. Use
+%   this method when you are trying to get a reference to a single
+%   component. 
+% 
+%   Get Number of components in a list;
+%       nComps = osimList().getNumComponents(model, classname);
+%   Get the all component names as strings;
+%       names  = osimList().getComponentNames(model, classname);
+%   Get a reference to a component;
+%       ref    = osimList().getComponent(model, classname, name);
+%     
+%
+%   When iterating through a list to get/set properties on multiple 
+%   components, use the list iterator directly;
+%
+%   % Set a value for a property for all of the components of type 'Body'
+%   list = model.getBodyList();
+%   li = list.begin()
+%   while ~li.equals(list.end())
+%       li.next();
+%       li.setSomePropertyValue(val);
+%   end
+
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -19,32 +44,8 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
 classdef osimList < matlab.mixin.SetGet
-% osimList()
-%   OsimList provides static methods to get a reference to a Model component
-%   using the Model component interface. according to type by name. Use
-%   this method when you are trying to get a reference to a single
-%   component. 
-% 
-%   Get Number of components in a list;
-%       nComps = osimList().getNumComponents(model, classname);
-%   Get the all component names as strings;
-%       names  = osimList().getComponentNames(model, classname);
-%   Get a reference to a component;
-%       ref    = osimList().getComponent(model, classname, name);
-%     
-%
-%   When iterating through a list to get/set properties on multiple 
-%   components, use the list iterator directly;
-%
-%   % Set a property from all of the components of type 'Body'
-%   list = model.getBodyList();
-%   li = list.begin()
-%   while ~li.equals(list.end())
-%       li.next();
-%       li.setSomePropertyValue(val);
-%   end
+
     methods (Static)
         function nComps = getNumComponents(model, classname)
             % Get the number of components, of a type, in a model
@@ -119,10 +120,9 @@ classdef osimList < matlab.mixin.SetGet
             end
             outputnames = outputnames';
         end 
-        function list = getList(model, classname, nInputs, nInputsNeeded)
+        function list = getList(model, classname)
             try
                 eval(['list = model.get' classname 'List();']);
-%                 disp('List creation Successful');
             catch 
                 error(['No list for get' classname 'List() found']);
             end
