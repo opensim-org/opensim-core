@@ -810,8 +810,9 @@ private:
 
     /** This is invoked at the start of print(). Derived classes can use this
      * as an opportunity to issue warnings to users.
-     * Do not throw exceptions in this function, as that would prevent the user
-     * from printing the object, which could be useful for debugging. */
+     * Any exception thrown in this function is ignored, as exceptions would
+     * prevent the user from printing the object, which could be useful for
+     * debugging. */
     virtual void warnBeforePrint() const {}
 
 //==============================================================================

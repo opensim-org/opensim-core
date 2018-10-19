@@ -511,32 +511,38 @@ public:
     that is specific to how the Input will use the %Channel. For example, the
     Component that owns this %Input might expect the aliases to be the names of
     markers in the model. This method can be used only for non-list %Inputs; for
-    list %Inputs, use the overload that takes an index. */
+    list %Inputs, use the overload that takes an index.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual const std::string& getAlias() const = 0;
 
     /** Get the alias for the Channel indicated by the provided index. An alias
     is a description for a %Channel that is specific to how the Input will use
     the %Channel. For example, the Component that owns this %Input might expect
-    the aliases to be the names of markers in the model. */
+    the aliases to be the names of markers in the model.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual const std::string& getAlias(unsigned index) const = 0;
 
     /** %Set the alias for a Channel. If this is a list Input, the aliases of all
     %Channels will be set to the provided string. If you wish to set the alias
-    of only one %Channel, use the two-argument overload. */
+    of only one %Channel, use the two-argument overload.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual void setAlias(const std::string& alias) = 0;
 
-    /** %Set the alias for the Channel indicated by the provided index. */
+    /** %Set the alias for the Channel indicated by the provided index.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual void setAlias(unsigned index, const std::string& alias) = 0;
 
     /** Get the label for this Channel. If an alias has been set, the label is
     the alias; otherwise, the label is the full path of the Output that has been
     connected to this Input. This method can be used only for non-list %Inputs;
-    for list %Inputs, use the single-argument overload. */
+    for list %Inputs, use the single-argument overload.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual std::string getLabel() const = 0;
 
     /** Get the label for the Channel indicated by the provided index. If an
     alias has been set, the label is the alias; otherwise, the label is the full
-    path of the %Channel that has been connected to this Input. */
+    path of the %Channel that has been connected to this Input.
+    You must finalize connections (Component::finalizeConnections()) first. */
     virtual std::string getLabel(unsigned index) const = 0;
 
     /** Break up a connectee name into its output path, channel name

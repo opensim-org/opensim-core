@@ -481,7 +481,6 @@ void testMisc() {
 
     Bar barEqual(bar);
     ASSERT(barEqual == bar);
-    theWorld.finalizeFromProperties();
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
@@ -614,7 +613,6 @@ void testMisc() {
 
     MultibodySystem system2;
     TheWorld *world2 = new TheWorld(modelFile, true);
-    world2->finalizeFromProperties();
 
     world2->updComponent("Bar").getSocket<Foo>("childFoo");
     // We haven't called connect yet, so this connection isn't made yet.
@@ -676,8 +674,6 @@ void testMisc() {
 
     world3.add(&compFoo);
     world3.add(&bar2);
-    
-    world3.finalizeFromProperties();
 
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect

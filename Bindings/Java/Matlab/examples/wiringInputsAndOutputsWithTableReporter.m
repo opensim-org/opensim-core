@@ -65,7 +65,8 @@ disp(reporter.dump());
 
 model.addComponent(reporter);
 
-% We must finalize connections to save the connections in the model file.
+% We must finalize connections to save the input-output connections in the
+% model file.
 model.finalizeConnections();
 model.print(modelFilename);
 
