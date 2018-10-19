@@ -90,6 +90,7 @@ OpenSimAddMatlabTest(Simbody testSimbody.m)
 OpenSimAddMatlabTest(osimTableStruct testosimTableStruct.m)
 OpenSimAddMatlabTest(testOsimVec3 testOsimVec3.m)
 OpenSimAddMatlabTest(testOsimC3D testOsimC3D.m)
+OpenSimAddMatlabTest(testOsimList2MatlabCell testOsimList2MatlabCell.m)
 
 # Copy resources.
 file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/arm26.osim"
