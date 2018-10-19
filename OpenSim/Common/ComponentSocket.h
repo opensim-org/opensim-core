@@ -900,10 +900,9 @@ private:
         }
 
         if (!isListSocket()) {
-            // Remove the existing connectee (if it exists).
-            disconnect();
+            _connectees.clear();
+            _aliases.clear();
         }
-
         _connectees.emplace_back(chanT);
         _aliases.push_back(alias);
     }
