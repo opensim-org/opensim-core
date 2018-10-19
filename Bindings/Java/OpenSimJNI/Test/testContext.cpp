@@ -231,7 +231,7 @@ int main()
     try {
         // create an invalid model where joint connects two frames on ground,
         // the test will verify the connectee has not been changed 
-        context->setSocketConnecteeName(socket, "ground");
+        context->setSocketConnecteePath(socket, "ground");
     }
     catch (const std::exception& e) {
         // Expect meaningful error message explaining why initsystem failed
@@ -243,7 +243,7 @@ int main()
     try {
         // Try to create an invalid model again, this call should leave the 
         // model untouched since change invalidates psocket
-        context->setSocketConnecteeName(psocket, "r_ulna_radius_hand");
+        context->setSocketConnecteePath(psocket, "r_ulna_radius_hand");
 
     }
     catch (const std::exception& e) {

@@ -953,13 +953,13 @@ public:
         if (it != _socketsTable.end()) {
             // The following allows one to use a Socket immediately after
             // copying the component;
-            // e.g., myComponent.clone().getSocket("a").getConnecteeName().
+            // e.g., myComponent.clone().getSocket("a").getConnecteePath().
             // Since we use the default copy constructor for Component,
             // the copied AbstractSocket cannot know its new owner
             // immediately after copying.
             if (!it->second->hasOwner()) {
                 // The `this` pointer must be non-const because the Socket
-                // will want to be able to modify the connectee name property.
+                // will want to be able to modify the connectee path property.
                 const_cast<AbstractSocket*>(it->second.get())->setOwner(
                         const_cast<Self&>(*this));
             }
@@ -1074,7 +1074,7 @@ public:
         if (it != _inputsTable.end()) {
             // The following allows one to use an Input immediately after
             // copying the component;
-            // e.g., myComponent.clone().getInput("a").getConnecteeName().
+            // e.g., myComponent.clone().getInput("a").getConnecteePath().
             // Since we use the default copy constructor for Component,
             // the copied AbstractSocket (base class of AbstractInput)
             // cannot know its new owner immediately after copying.
@@ -1581,11 +1581,11 @@ public:
     void printSubcomponentInfo() const;
     
     /** List all the Sockets of this component and whether or not they are 
-    connected. Also list the connectee names for sockets that are connected. */
+    connected. Also list the connectee paths for sockets that are connected. */
     void printSocketInfo() const;
 
     /** List all the inputs of this component and whether or not they are 
-    connected. Also list the (desired) connectee names for the inputs.       */
+    connected. Also list the (desired) connectee paths for the inputs.       */
     void printInputInfo() const;
 
     template<typename C>
@@ -2426,7 +2426,7 @@ protected:
     * type and enables the Component to automatically traverse its dependencies
     * and provide a meaningful message if the provided Component is
     * incompatible or non-existent. This function also creates a Property in
-    * this component to store the connectee name for this socket; the
+    * this component to store the connectee path for this socket; the
     * propertyComment argument is the comment to use for that Property. */
     template <typename T>
     PropertyIndex constructSocket(const std::string& name,
@@ -2558,7 +2558,7 @@ protected:
      * dependsOnStage is above the Input's requiredAtStage, an Exception is
      * thrown because the output cannot satisfy the Input's requirement. 
      * This function also creates a Property in this component to store the
-     * connectee names for this input; the
+     * connectee paths for this input; the
      * propertyComment argument is the comment to use for that Property. */
     template <typename T>
     PropertyIndex constructInput(const std::string& name, bool isList,
@@ -3036,7 +3036,7 @@ template<class C>
 void Socket<C>::finalizeConnection(const Component& root) {
 
     // If the reference to the connectee is set, use that. Otherwise, use the
-    // connectee name property.
+    // connectee path property.
     if (isConnected()) {
         const auto& comp = *connectee;
         const auto& rootOfConnectee = comp.getRoot();
@@ -3054,14 +3054,14 @@ void Socket<C>::finalizeConnection(const Component& root) {
         std::string ownerPathName = getOwner().getAbsolutePathString();
         // otherwise store the relative path name to the object
         std::string relPathName = connectee->getRelativePathName(getOwner());
-        updConnecteeNameProp().setValue(0, relPathName);
+        updConnecteePathProp().setValue(0, relPathName);
         
     } else {
-        const auto connecteeName = getConnecteeName();
-        OPENSIM_THROW_IF(connecteeName.empty(), ConnecteeNotSpecified,
+        const auto connecteePath = getConnecteePath();
+        OPENSIM_THROW_IF(connecteePath.empty(), ConnecteeNotSpecified,
                         *this, getOwner());
 
-        ComponentPath path(connecteeName);
+        ComponentPath path(connecteePath);
         const C* comp = nullptr;
         if (path.isAbsolute()) {
             comp = &root.template getComponent<C>(path);
@@ -3110,7 +3110,7 @@ void Input<T>::finalizeConnection(const Component& root) {
     _connectees.clear();
     _aliases.clear();
     if (!_registeredChannels.empty()) {
-        clearConnecteeName();
+        clearConnecteePath();
         OPENSIM_THROW_IF(!isListSocket() && getChannels().size() > 1,
                          Exception,
                          "Cannot connect single-value input to multiple channels.");
@@ -3137,12 +3137,12 @@ void Input<T>::finalizeConnection(const Component& root) {
                 rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
             ++i;
-            // Update the connectee name as
+            // Update the connectee path as
             // <RelOwnerPath>/<Output><:Channel><(annotation)>
             ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
                     getOwner()));
 
-            auto pathStr = composeConnecteeName(path.toString(),
+            auto pathStr = composeConnecteePath(path.toString(),
                                                 chan->getOutput().getName(),
                                                 chan->getOutput().isListOutput()
                                                 ?
@@ -3151,15 +3151,15 @@ void Input<T>::finalizeConnection(const Component& root) {
                                                 _aliases[i]);
 
             if (isListSocket())
-                updConnecteeNameProp().appendValue(pathStr);
+                updConnecteePathProp().appendValue(pathStr);
             else
-                updConnecteeNameProp().setValue(pathStr);
+                updConnecteePathProp().setValue(pathStr);
         }
     } else {
-        if (!isListSocket() && getConnecteeName().empty()) return;
+        if (!isListSocket() && getConnecteePath().empty()) return;
         std::string compPathStr, outputName, channelName, alias;
         for (unsigned ix = 0; ix < getNumConnectees(); ++ix) {
-            parseConnecteeName(getConnecteeName(ix),
+            parseConnecteePath(getConnecteePath(ix),
                                compPathStr, outputName, channelName, alias);
             ComponentPath compPath(compPathStr);
             const AbstractOutput* output = nullptr;

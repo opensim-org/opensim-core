@@ -130,10 +130,10 @@ void PrescribedForce::constructProperties()
 }
 
 void PrescribedForce::setFrameName(const std::string& frameName) {
-    updSocket<PhysicalFrame>("frame").setConnecteeName(frameName);
+    updSocket<PhysicalFrame>("frame").setConnecteePath(frameName);
 }
 const std::string& PrescribedForce::getFrameName() const {
-    return getSocket<PhysicalFrame>("frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("frame").getConnecteePath();
 }
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)

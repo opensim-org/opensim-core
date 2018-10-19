@@ -87,7 +87,7 @@ void Marker::constructProperties()
 
 void Marker::setParentFrameName(const string& name)
 {
-    updSocket<PhysicalFrame>("parent_frame").setConnecteeName(name);
+    updSocket<PhysicalFrame>("parent_frame").setConnecteePath(name);
 }
 
 //_____________________________________________________________________________
@@ -98,7 +98,7 @@ void Marker::setParentFrameName(const string& name)
 
 const string& Marker::getParentFrameName() const
 {
-    return getSocket<PhysicalFrame>("parent_frame").getConnecteeName();
+    return getSocket<PhysicalFrame>("parent_frame").getConnecteePath();
 }
 
 

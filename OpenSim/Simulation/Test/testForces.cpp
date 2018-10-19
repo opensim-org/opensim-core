@@ -742,7 +742,7 @@ void testTwoFrameLinkerUpdateFromXMLNode() {
     const BushingForce& bushingForce =
         osimModel.getComponent<BushingForce>("./forceset/bushing");
 
-    // It's necessary to correct the connectee names in the BushingForce, which
+    // It's necessary to correct the connectee paths in the BushingForce, which
     // we can do with finalizeConnections() (they are incorrect otherwise
     // because `spring` is initially orphaned).
     osimModel.finalizeConnections();

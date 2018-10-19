@@ -82,7 +82,7 @@ reporter = TableReporterVec3.safeDownCast(...
 % We can access the names of the outputs that the reporter is connected to.
 disp('Outputs connected to the reporter:');
 for i = 0:(reporter.getInput('inputs').getNumConnectees() - 1)
-    disp(reporter.getInput('inputs').getConnecteeName(i));
+    disp(reporter.getInput('inputs').getConnecteePath(i));
 end
 
 % Simulate the model.

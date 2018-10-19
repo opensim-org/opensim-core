@@ -171,12 +171,12 @@ extendSetPropertiesFromState(const SimTK::State& state) {
  * Following methods set attributes of the weld constraint */
 void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("rolling_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("rolling_body").setConnecteePath(aBodyName);
 }
 
 void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("surface_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("surface_body").setConnecteePath(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */

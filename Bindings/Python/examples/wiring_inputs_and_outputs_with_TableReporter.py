@@ -80,7 +80,7 @@ reporter = osim.TableReporterVec3.safeDownCast(
 # We can access the names of the outputs that the reporter is connected to.
 print('Outputs connected to the reporter:')
 for i in range(reporter.getInput('inputs').getNumConnectees()):
-    print(reporter.getInput('inputs').getConnecteeName(i))
+    print(reporter.getInput('inputs').getConnecteePath(i))
 
 # Simulate the model.
 manager = osim.Manager(deserialized_model)

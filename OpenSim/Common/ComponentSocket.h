@@ -83,20 +83,20 @@ public:
  * like Model or Instance.
  *
  * Programmatically, the connectee can be specified as an object reference
- * or via a path (connectee name):
+ * or via a connectee path:
  *
  * @code{.cpp}
  * // Specifying the connectee using an object reference.
  * socket.connect(myConnectee);
  * // Specifying the connectee via a path.
- * socket.setConnecteeName("/path/to/connectee");
+ * socket.setConnecteePath("/path/to/connectee");
  * @endcode
  *
  * Use finalizeConnection() to synchronize the object reference and connectee
- * name. It is preferable to use connect() instead of setConnecteeName().
- * If *both* are set, then the object reference overrides the connectee name.
+ * name. It is preferable to use connect() instead of setConnecteePath().
+ * If *both* are set, then the object reference overrides the connectee path.
  *
- * The connectee name appears in XML files and is how a connection is maintained
+ * The connectee path appears in XML files and is how a connection is maintained
  * across serialization (writing to an XML file) and deserialization (reading
  * from an XML file).
  *
@@ -122,10 +122,10 @@ public:
     bool isListSocket() const { return _isList; }
     /** The number of slots to fill in order to satisfy this socket.
      * This is 1 for a non-list socket. This is the number of elements in the
-     * connectee name property; to sync this with the number of connectee
+     * connectee path property; to sync this with the number of connectee
      * objects, call finalizeConnection(). */
     unsigned getNumConnectees() const {
-        return static_cast<unsigned>(getConnecteeNameProp().size());
+        return static_cast<unsigned>(getConnecteePathProp().size());
     }
 
     //--------------------------------------------------------------------------
@@ -150,7 +150,7 @@ public:
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
-    /** Connect this %Socket according to its connectee name property
+    /** Connect this %Socket according to its connectee path property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
     virtual void finalizeConnection(const Component& root) {
@@ -158,67 +158,67 @@ public:
                         "for this type of socket", __FILE__, __LINE__);
     }
 
-    /** Clear references to connectees. The connectee name property is not
-     * affected. Calling finalizeConnection() will use the connectee name
+    /** Clear references to connectees. The connectee path property is not
+     * affected. Calling finalizeConnection() will use the connectee path
      * property to satisfy the socket. */
     virtual void disconnect() = 0;
 
-    /** %Set connectee name. This function can only be used if this socket is
+    /** %Set connectee path. This function can only be used if this socket is
      * not a list socket. If a connectee reference is set (with connect()) the
-     * connectee name is ignored; call disconnect() if you want the socket to be
-     * connected using the connectee name.
+     * connectee path is ignored; call disconnect() if you want the socket to be
+     * connected using the connectee path.
      *
      * It is preferable to use connect() instead of this function. */
-    void setConnecteeName(const std::string& name) {
+    void setConnecteePath(const std::string& name) {
         OPENSIM_THROW_IF(_isList,
                          Exception,
                          "An index must be provided for a list Socket.");
-        setConnecteeName(name, 0);
+        setConnecteePath(name, 0);
     }
 
-    /** %Set connectee name of a connectee among a list of connectees. This
+    /** %Set connectee path of a connectee among a list of connectees. This
      * function is used if this socket is a list socket. If a connectee
-     * reference is set (with connect()) the connectee name is ignored; call
+     * reference is set (with connect()) the connectee path is ignored; call
      * disconnect() if you want the socket to be connected using the connectee
      * name.
      *
      * It is preferable to use connect() instead of this function. */
-    void setConnecteeName(const std::string& name, unsigned ix) {
+    void setConnecteePath(const std::string& name, unsigned ix) {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::setConnecteeName()");
-        updConnecteeNameProp().setValue(ix, name);
+                                "AbstractSocket::setConnecteePath()");
+        updConnecteePathProp().setValue(ix, name);
     }
 
-    /** Get connectee name. This function can only be used if this socket is
+    /** Get connectee path. This function can only be used if this socket is
     not a list socket.                                                     */
-    const std::string& getConnecteeName() const {
+    const std::string& getConnecteePath() const {
         OPENSIM_THROW_IF(_isList,
                          Exception,
                          "An index must be provided for a list Socket.");
-        return getConnecteeName(0);
+        return getConnecteePath(0);
     }
 
-    /** Get connectee name of a connectee among a list of connectees.         */
-    const std::string& getConnecteeName(unsigned ix) const {
+    /** Get connectee path of a connectee among a list of connectees.         */
+    const std::string& getConnecteePath(unsigned ix) const {
         using SimTK::isIndexInRange;
         SimTK_INDEXCHECK_ALWAYS(ix, getNumConnectees(),
-                                "AbstractSocket::getConnecteeName()");
-        return getConnecteeNameProp().getValue(ix);
+                                "AbstractSocket::getConnecteePath()");
+        return getConnecteePathProp().getValue(ix);
     }
 
-    void appendConnecteeName(const std::string& name) {
+    void appendConnecteePath(const std::string& name) {
         OPENSIM_THROW_IF((getNumConnectees() > 0 && !_isList), Exception,
-            "Multiple connectee names can only be appended to a list Socket.");
-        updConnecteeNameProp().appendValue(name);
+            "Multiple connectee paths can only be appended to a list Socket.");
+        updConnecteePathProp().appendValue(name);
     }
 
-    /** Clear all connectee names in the connectee name property. */
-    void clearConnecteeName() {
+    /** Clear all connectee paths in the connectee path property. */
+    void clearConnecteePath() {
         if (isListSocket())
-            updConnecteeNameProp().clear();
+            updConnecteePathProp().clear();
         else
-            updConnecteeNameProp().setValue(0, "");
+            updConnecteePathProp().setValue(0, "");
     }
 
     /** Get owner component of this socket */
@@ -232,25 +232,25 @@ protected:
     connected.
     @param name               name of the socket, usually describes its 
                               dependency.
-    @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Socket's connectee name(s).
+    @param connecteePathIndex Index of the property in the containing Component
+                              that holds this Socket's connectee path(s).
     @param connectAtStage     Stage at which Socket should be connected.
     @param owner              Component to which this Socket belongs. */
     AbstractSocket(const std::string& name,
-                   const PropertyIndex& connecteeNameIndex,
+                   const PropertyIndex& connecteePathIndex,
                    const SimTK::Stage& connectAtStage,
                    Component& owner) :
             _name(name),
             _connectAtStage(connectAtStage),
-            _connecteeNameIndex(connecteeNameIndex),
+            _connecteePathIndex(connecteePathIndex),
             _owner(&owner),
-            _isList(getConnecteeNameProp().isListProperty()) {}
+            _isList(getConnecteePathProp().isListProperty()) {}
 
     /** %Set an internal pointer to the Component that contains this Socket.
     This should only be called by Component.
     This exists so that after the containing Component is copied, the 'owner'
     is the new Component. This Socket needs to be able to modify
-    the associated connectee name property in the Component. Thus, we require
+    the associated connectee path property in the Component. Thus, we require
     a writable reference. */
     // We could avoid the need for this function by writing a custom copy
     // constructor for Component.
@@ -258,17 +258,17 @@ protected:
     /** This will be false immediately after copy construction or assignment.*/
     bool hasOwner() const { return !_owner.empty(); }
     
-    /** Check if entries of the connectee name property's value is valid (if 
+    /** Check if entries of the connectee path property's value is valid (if
     it contains spaces, etc.); if so, print out a warning. */
-    void checkConnecteeNameProperty() {
-        // TODO Move this check elsewhere once the connectee name
+    void checkConnecteePathProperty() {
+        // TODO Move this check elsewhere once the connectee path
         // property is a ComponentPath (or a ChannelPath?).
         for (unsigned iname = 0u; iname < getNumConnectees(); ++iname) {
-            const auto& connecteeName = getConnecteeName(iname);
-            ComponentPath cp(connecteeName);
+            const auto& connecteePath = getConnecteePath(iname);
+            ComponentPath cp(connecteePath);
             if (!cp.isLegalPathElement(cp.getComponentName()) ) {
                 std::string msg = "In Socket '" + getName() +
-                        "', connectee name '" + connecteeName +
+                        "', connectee path '" + connecteePath +
                         "' contains illegal characters such as spaces.";
                 if (!_isList) {
                     msg += " Did you try to specify multiple connectee "
@@ -278,32 +278,32 @@ protected:
             }
             // TODO update the above for Inputs when ChannelPath exists.
             
-            // TODO There might be a bug with empty connectee name being
+            // TODO There might be a bug with empty connectee path being
             // interpreted as "this component."
         }
     }
 
 protected:
     
-    /// Const access to the connectee name property from the Component in which
+    /// Const access to the connectee path property from the Component in which
     /// this Socket resides. The name of that property is something like
     /// 'socket_<name>'. This is a special type of property
     /// that users cannot easily access (e.g., there is no macro-generated
     /// `get_socket_<name>()` function).
-    const Property<std::string>& getConnecteeNameProp() const;
-    /// Writable access to the connectee name property from the Component in
+    const Property<std::string>& getConnecteePathProp() const;
+    /// Writable access to the connectee path property from the Component in
     /// which this Socket resides. Calling this will mark the Component as
     /// not "up to date with properties"
     /// (Object::isObjectUpToDateWithProperties()).
-    Property<std::string>& updConnecteeNameProp();
+    Property<std::string>& updConnecteePathProp();
 
 
 private:
 
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
-    PropertyIndex _connecteeNameIndex;
-    // Even though updConnecteeNameProp() requires non-const access to this
+    PropertyIndex _connecteePathIndex;
+    // Even though updConnecteePathProp() requires non-const access to this
     // pointer, we make this a const pointer to reduce the chance of mis-use.
     // If this were a non-const pointer, then const functions in this class
     // would be able to edit _owner (see declaration of ReferencePtr).
@@ -368,7 +368,7 @@ public:
         connectInternal(*objT);
     }
 
-    /** Connect this Socket given its connectee name property  */
+    /** Connect this Socket given its connectee path property  */
     void finalizeConnection(const Component& root) override;
 
     void disconnect() override {
@@ -394,15 +394,15 @@ protected:
     specified name and stage at which it should be connected. Only Component
     can ever construct this class.
     @param name               name of the socket used to describe its dependency.
-    @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Socket's connectee name(s).
+    @param connecteePathIndex Index of the property in the containing Component
+                              that holds this Socket's connectee path(s).
     @param connectAtStage     Stage at which Socket should be connected.
     @param owner              The component that contains this input. */
     Socket(const std::string& name,
-           const PropertyIndex& connecteeNameIndex,
+           const PropertyIndex& connecteePathIndex,
            const SimTK::Stage& connectAtStage,
            Component& owner) :
-        AbstractSocket(name, connecteeNameIndex, connectAtStage, owner),
+        AbstractSocket(name, connecteePathIndex, connectAtStage, owner),
         connectee(nullptr) {}
         
     /** So that Component can construct a Socket. */
@@ -423,7 +423,7 @@ An AbstractInput enables maintenance of a list of unconnected Inputs.
 An Input can either be a single-value Input or a list Input. A list Input
 can connect to multiple (Output) Channels.
 
-#### XML Syntax of a connectee name
+#### XML Syntax of a connectee path
 
 For every %Input that a component has, the XML representation of the component
 contains an element named `input_<input_name>`. For example, a component
@@ -437,7 +437,7 @@ that has an Input named `desired_angle` might look like the following in XML:
     </MyComponent>
 @endcode
 You use this field to specify the outputs/channels that should be connected to
-this input (that is, the connectees). The syntax for the connectee name
+this input (that is, the connectees). The syntax for the connectee path
 property is as follows:
 @code
 <path/to/component>|<output_name>[:<channel_name>][(<alias>)]
@@ -460,10 +460,10 @@ Here are some examples:
  - `../averager|output(knee_joint_center)`: The component `../averager`
    (presumably a component that averages its inputs) has an output named
    `output`, and we are aliasing this output as `knee_joint_center`.
- - `/leg_model/soleus|activation`: This connectee name uses the absolute path
+ - `/leg_model/soleus|activation`: This connectee path uses the absolute path
    to component `soleus`, which has an output named `activation`.
 
-List inputs can contain multiple entries in its connectee name, with the
+List inputs can contain multiple entries in its connectee path, with the
 entries separated by a space. For example:
 @code
 <input_experimental_markers>
@@ -545,7 +545,7 @@ public:
     You must finalize connections (Component::finalizeConnections()) first. */
     virtual std::string getLabel(unsigned index) const = 0;
 
-    /** Break up a connectee name into its output path, channel name
+    /** Break up a connectee path into its output path, channel name
      (empty for single-value outputs), and alias. This function writes
      to the passed-in outputPath, channelName, and alias.
 
@@ -572,30 +572,30 @@ public:
      alias is "baz"
      @endverbatim
      */
-    static bool parseConnecteeName(const std::string& connecteeName,
+    static bool parseConnecteePath(const std::string& connecteePath,
                                    std::string& componentPath,
                                    std::string& outputName,
                                    std::string& channelName,
                                    std::string& alias) {
-        auto bar = connecteeName.rfind("|");
-        auto colon = connecteeName.rfind(":");
-        auto leftParen = connecteeName.rfind("(");
-        auto rightParen = connecteeName.rfind(")");
+        auto bar = connecteePath.rfind("|");
+        auto colon = connecteePath.rfind(":");
+        auto leftParen = connecteePath.rfind("(");
+        auto rightParen = connecteePath.rfind(")");
         
-        componentPath = connecteeName.substr(0, bar);
-        outputName = connecteeName.substr(bar + 1,
+        componentPath = connecteePath.substr(0, bar);
+        outputName = connecteePath.substr(bar + 1,
                                           std::min(colon, leftParen) - (bar + 1));
         
         // Channel name.
         if (colon != std::string::npos) {
-            channelName = connecteeName.substr(colon + 1, leftParen - (colon + 1));
+            channelName = connecteePath.substr(colon + 1, leftParen - (colon + 1));
         } else {
             channelName = "";
         }
         
         // Alias.
         if (leftParen != std::string::npos && rightParen != std::string::npos) {
-            alias = connecteeName.substr(leftParen + 1,
+            alias = connecteePath.substr(leftParen + 1,
                                          rightParen - (leftParen + 1));
         } else {
             alias = "";
@@ -604,8 +604,8 @@ public:
         return true;
     }
 
-    /** Compose the connectee name from its constituents. This is the opposite
-    operation of parseConnecteeName().
+    /** Compose the connectee path from its constituents. This is the opposite
+    operation of parseConnecteePath().
     Example:
     @verbatim
      if inputs are
@@ -616,7 +616,7 @@ public:
      then result --> /foo/bar|output:channel(baz)
     @endverbatim
     */
-    static std::string composeConnecteeName(const std::string& componentPath,
+    static std::string composeConnecteePath(const std::string& componentPath,
                                             const std::string& outputName,
                                             const std::string& channelName,
                                             const std::string& alias) {
@@ -637,15 +637,15 @@ protected:
     AbstractOutput specified by name and stage at which it should be connected.
     Only Component should ever construct this class.
     @param name              name of the dependent (Abstract)Output.
-    @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Input's connectee name(s).
+    @param connecteePathIndex Index of the property in the containing Component
+                              that holds this Input's connectee path(s).
     @param connectAtStage     Stage at which Input should be connected.
     @param owner              The component that contains this input. */
     AbstractInput(const std::string& name,
-                  const PropertyIndex& connecteeNameIndex,
+                  const PropertyIndex& connecteePathIndex,
                   const SimTK::Stage& connectAtStage,
                   Component& owner) :
-        AbstractSocket(name, connecteeNameIndex, connectAtStage, owner) {}
+        AbstractSocket(name, connecteePathIndex, connectAtStage, owner) {}
     
 //=============================================================================
 };  // END class AbstractInput
@@ -672,7 +672,7 @@ public:
                  const std::string& alias = "") override;
 
     /** Connect this Input given a root Component to search for
-    the Output according to the connectee name of this Input  */
+    the Output according to the connectee path of this Input  */
     void finalizeConnection(const Component& root) override;
     
     void disconnect() override {
@@ -765,21 +765,21 @@ public:
         SimTK_INDEXCHECK_ALWAYS(index, getNumConnectees(),
                                 "Input<T>::setAlias()");
 
-        const auto& connecteeName = getConnecteeName(index);
+        const auto& connecteePath = getConnecteePath(index);
         std::string componentPath{};
         std::string outputName{};
         std::string channelName{};
         std::string currAlias{};
-        parseConnecteeName(connecteeName,
+        parseConnecteePath(connecteePath,
                            componentPath,
                            outputName,
                            channelName,
                            currAlias);
-        updConnecteeNameProp().setValue(index,
-                composeConnecteeName(componentPath,
-                                     outputName,
-                                     channelName,
-                                     alias));
+        updConnecteePathProp().setValue(index,
+                                        composeConnecteePath(componentPath,
+                                                             outputName,
+                                                             channelName,
+                                                             alias));
         
         _aliases[index] = alias;
     }
@@ -852,13 +852,13 @@ protected:
     name and stage at which it should be connected. Only Component should ever
     construct an Input.
     @param name               name of the Output dependency.
-    @param connecteeNameIndex Index of the property in the containing Component
-                              that holds this Input's connectee name(s).
+    @param connecteePathIndex Index of the property in the containing Component
+                              that holds this Input's connectee path(s).
     @param connectAtStage     Stage at which Input should be connected.
     @param owner              The component that contains this input. */
-    Input(const std::string& name, const PropertyIndex& connecteeNameIndex,
+    Input(const std::string& name, const PropertyIndex& connecteePathIndex,
           const SimTK::Stage& connectAtStage, Component& owner) :
-        AbstractInput(name, connecteeNameIndex, connectAtStage, owner) {}
+        AbstractInput(name, connecteePathIndex, connectAtStage, owner) {}
     
     /** So that Component can construct an Input. */
     friend Component;
@@ -958,7 +958,7 @@ private:
     /** @name Sockets                                                    */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** In an XML file, you can set this Socket's connectee name         */ \
+    /** In an XML file, you can set this Socket's connectee path         */ \
     /** via the <b>\<socket_##cname\></b> element.                       */ \
     /** This socket was generated with the                               */ \
     /** #OpenSim_DECLARE_SOCKET macro;                                   */ \
@@ -977,8 +977,8 @@ private:
     /** @{                                                               */ \
     /** Connect the '##cname##' Socket to an object of type T##.         */ \
     /** Call finalizeConnections() afterwards to update the socket's     */ \
-    /** connectee name property. The reference to the connectee set here */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectSocket_##cname(const Object& object) {                      \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
@@ -1037,7 +1037,7 @@ private:
     /** @name Sockets                                                    */ \
     /** @{                                                               */ \
     /** comment                                                          */ \
-    /** In an XML file, you can set this socket's connectee name         */ \
+    /** In an XML file, you can set this socket's connectee path         */ \
     /** via the <b>\<socket_##cname\></b> element.                       */ \
     /** See AbstractSocket for more information.                         */ \
     /** @see connectsocket_##cname##()                                   */ \
@@ -1057,8 +1057,8 @@ private:
     /** @{                                                               */ \
     /** Connect the '##cname##' Socket to an object of type T##.         */ \
     /** Call finalizeConnections() afterwards to update the socket's     */ \
-    /** connectee name property. The reference to the connectee set here */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the connectee set here */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectSocket_##cname(const Object& object) {                      \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
@@ -1125,9 +1125,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** @{                                                               */ \
     /** comment                                                          */ \
     /** This input is needed at stage istage##.                          */ \
-    /** In an XML file, you can set this Input's connectee name          */ \
+    /** In an XML file, you can set this Input's connectee path          */ \
     /** via the <b>\<input_##iname\></b> element.                        */ \
-    /** The syntax for a connectee name is                               */ \
+    /** The syntax for a connectee path is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_INPUT macro;                                    */ \
@@ -1151,8 +1151,8 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the output.                                */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
-    /** connectee name property. The reference to the output set here    */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the output set here    */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectInput_##iname(const AbstractOutput& output,                 \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
@@ -1161,8 +1161,8 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
-    /** connectee name property. The reference to the channel set here   */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the channel set here   */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectInput_##iname(const AbstractChannel& channel,               \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \
@@ -1171,7 +1171,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
 
 // TODO create new macros to handle custom copy constructors: with
 // constructInput_() methods, etc. NOTE: constructProperty_() must be called
-// first within these macros, b/c the connectee name property must exist before
+// first within these macros, b/c the connectee path property must exist before
 // the Input etc is constructed.
 
 
@@ -1192,9 +1192,9 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** comment                                                          */ \
     /** This input can connect to multiple outputs, all of which are     */ \
     /** needed at stage istage##.                                        */ \
-    /** In an XML file, you can set this Input's connectee name          */ \
+    /** In an XML file, you can set this Input's connectee path          */ \
     /** via the <b>\<input_##iname\></b> element.                        */ \
-    /** The syntax for a connectee name is                               */ \
+    /** The syntax for a connectee path is                               */ \
     /** `<path/to/component>|<output_name>[:<channel_name>][(<alias>)]`. */ \
     /** This input was generated with the                                */ \
     /** #OpenSim_DECLARE_LIST_INPUT macro;                               */ \
@@ -1220,8 +1220,8 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** component to refer to the output; the alias will be used for all */ \
     /** channels of the output.                                          */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
-    /** connectee name property. The reference to the output set here    */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the output set here    */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectInput_##iname(const AbstractOutput& output,                 \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
@@ -1230,8 +1230,8 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** You can optionally provide an alias that will be used by this    */ \
     /** component to refer to the channel.                               */ \
     /** Call finalizeConnections() afterwards to update the input's      */ \
-    /** connectee name property. The reference to the channel set here   */ \
-    /** takes precedence over the connectee name property.               */ \
+    /** connectee path property. The reference to the channel set here   */ \
+    /** takes precedence over the connectee path property.               */ \
     void connectInput_##iname(const AbstractChannel& channel,               \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \

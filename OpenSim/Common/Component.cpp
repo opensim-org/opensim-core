@@ -195,12 +195,12 @@ void Component::finalizeFromProperties()
     for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
         // Let the Socket handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        it.second->checkConnecteePathProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
         // Let the Socket handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        it.second->checkConnecteePathProperty();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
@@ -1520,7 +1520,7 @@ void Component::AddedStateVariable::
 void Component::printSocketInfo() const {
     std::cout << "Sockets for component " << getName()
               << " of type [" << getConcreteClassName()
-              << "] along with connectee names:";
+              << "] along with connectee paths:";
     if (getNumSockets() == 0)
         std::cout << " none";
     std::cout << std::endl;
@@ -1547,7 +1547,7 @@ void Component::printSocketInfo() const {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
-                std::cout << socket->getConnecteeName(i) << " ";
+                std::cout << socket->getConnecteePath(i) << " ";
             }
             std::cout << std::endl;
         }
@@ -1557,7 +1557,7 @@ void Component::printSocketInfo() const {
 
 void Component::printInputInfo() const {
     std::cout << "Inputs for component " << getName() << " of type ["
-              << getConcreteClassName() << "] along with connectee names:";
+              << getConcreteClassName() << "] along with connectee paths:";
     if (getNumInputs() == 0)
         std::cout << " none";
     std::cout << std::endl;
@@ -1581,11 +1581,11 @@ void Component::printInputInfo() const {
                                  input->getName().length(), ' ')
                   << input->getName() << " : ";
         if (input->getNumConnectees() == 0 || 
-            (input->getNumConnectees() == 1 && input->getConnecteeName().empty())) {
+            (input->getNumConnectees() == 1 && input->getConnecteePath().empty())) {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
-                std::cout << input->getConnecteeName(i) << " ";
+                std::cout << input->getConnecteePath(i) << " ";
                 // TODO as is, requires the input connections to be satisfied. 
                 // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }
@@ -1741,7 +1741,7 @@ void Component::warnBeforePrint() const {
                 ((socket->isListSocket() &&
                   socket->getNumConnectees() == 0) ||
                  (!socket->isListSocket() &&
-                  socket->getConnecteeName().empty()))) {
+                         socket->getConnecteePath().empty()))) {
                 // TODO: Improve this condition by making sure the connectee
                 // name is correct.
                 message += "  Socket '" + socket->getName() + "' in " +

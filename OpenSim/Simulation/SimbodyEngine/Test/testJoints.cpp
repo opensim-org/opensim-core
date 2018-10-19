@@ -2172,8 +2172,8 @@ void testAutomaticJointReversal()
     auto off1Path = off1.getAbsolutePathString();
     auto off2Path = off2.getAbsolutePathString();
 
-    /*auto& pathOff1 = */sock1.getConnecteeName();
-    /*auto& pathOff2 = */sock2.getConnecteeName();
+    /*auto& pathOff1 = */sock1.getConnecteePath();
+    /*auto& pathOff2 = */sock2.getConnecteePath();
 
     auto relPathOff1 = cfoot.getRelativePathName(off1);
     auto relPathOff2 = cground.getRelativePathName(off2);

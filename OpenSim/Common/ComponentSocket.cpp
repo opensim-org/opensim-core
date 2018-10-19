@@ -27,14 +27,14 @@
 using namespace OpenSim;
 
 const Property<std::string>&
-AbstractSocket::getConnecteeNameProp() const {
-    return _owner->getProperty<std::string>(_connecteeNameIndex);
+AbstractSocket::getConnecteePathProp() const {
+    return _owner->getProperty<std::string>(_connecteePathIndex);
 }
 
 Property<std::string>&
-AbstractSocket::updConnecteeNameProp() {
+AbstractSocket::updConnecteePathProp() {
     auto* owner = const_cast<Component*>(_owner.get());
     // We do not want to flip the isObjectUpToDateWithProperties flag.
-    const auto& prop = owner->getProperty<std::string>(_connecteeNameIndex);
+    const auto& prop = owner->getProperty<std::string>(_connecteePathIndex);
     return const_cast<Property<std::string>&>(prop);
 }

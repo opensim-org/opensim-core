@@ -301,8 +301,8 @@ TwoFrameLinker<C, F>::TwoFrameLinker(const std::string &name,
     const std::string& frame2Name) : TwoFrameLinker<C, F>()
 {
     this->setName(name);
-    this->template updSocket<F>("frame1").setConnecteeName(frame1Name);
-    this->template updSocket<F>("frame2").setConnecteeName(frame2Name);
+    this->template updSocket<F>("frame1").setConnecteePath(frame1Name);
+    this->template updSocket<F>("frame2").setConnecteePath(frame2Name);
 }
 
 template <class C, class F>

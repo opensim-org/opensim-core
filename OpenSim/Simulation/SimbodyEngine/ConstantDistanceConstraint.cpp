@@ -137,12 +137,12 @@ const PhysicalFrame& ConstantDistanceConstraint::getBody2() const
 * Following methods set attributes of the constraint */
 void ConstantDistanceConstraint::setBody1ByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("body_1").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_1").setConnecteePath(aBodyName);
 }
 
 void ConstantDistanceConstraint::setBody2ByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("body_2").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("body_2").setConnecteePath(aBodyName);
 }
 
 /** Set the location for point on body 1*/

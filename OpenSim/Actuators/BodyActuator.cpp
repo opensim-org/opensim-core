@@ -76,12 +76,12 @@ void BodyActuator::constructProperties()
 
 void BodyActuator::setBodyName(const std::string& name)
 {
-    updSocket<Body>("body").setConnecteeName(name);
+    updSocket<Body>("body").setConnecteePath(name);
 }
 
 const std::string& BodyActuator::getBodyName() const
 {
-    return getSocket<Body>("body").getConnecteeName();
+    return getSocket<Body>("body").getConnecteePath();
 }
 
 //=============================================================================

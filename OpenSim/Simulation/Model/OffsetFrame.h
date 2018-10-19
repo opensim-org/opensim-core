@@ -223,7 +223,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updSocket<C>("parent").setConnecteeName(parentName);
+    this->template updSocket<C>("parent").setConnecteePath(parentName);
     setOffsetTransform(offset);
 }
 
