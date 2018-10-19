@@ -225,8 +225,9 @@ public:
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
 
-    /** TODO */
-    // TODO hide the frames property.
+    /** Add a frame to the *frames* property in this Joint. The frame is
+     * adopted, and should have been dynamically allocated.
+     * Use this function instead of append_frames(). */
     void addFrame(PhysicalOffsetFrame* frame);
 
     // Computation

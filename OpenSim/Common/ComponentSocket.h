@@ -682,10 +682,7 @@ public:
     }
     
     bool isConnected() const override {
-        // TODO not a valid way to check for single-value inputs because
-        // there is always one connectee? Should isConnected() mean it's been
-        // finalized and the reference and property are in sync?
-        return _connectees.size();
+        return _connectees.size() == getNumConnectees();
     }
     
     /** Get the value of this Input when it is connected. Redirects to connected
