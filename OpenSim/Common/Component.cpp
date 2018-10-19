@@ -704,7 +704,8 @@ std::string Component::getAbsolutePathString() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        absPathName.insert(0, "/" + up->getName());
+        if (up->hasOwner())
+            absPathName.insert(0, "/" + up->getName());
     }
 
     return absPathName;
@@ -720,7 +721,8 @@ ComponentPath Component::getAbsolutePath() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        pathVec.insert(pathVec.begin(), up->getName());
+        if (up->hasOwner())
+            pathVec.insert(pathVec.begin(), up->getName());
     }
 
     return ComponentPath(pathVec, true);
