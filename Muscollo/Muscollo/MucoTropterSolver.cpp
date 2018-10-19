@@ -59,11 +59,13 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     SimTK::Vector time((int)tropTime.size(), tropTime.data());
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
+    const auto& multiplier_names = tropSol.multiplier_names;
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
+    int numMultipliers = (int)multiplier_names.size();
     int numParameters = (int)parameter_names.size();
     SimTK::Matrix states(numTimes, numStates);
     for (int itime = 0; itime < numTimes; ++itime) {
@@ -77,9 +79,16 @@ MucoIterateType convert(const tropIterateType& tropSol) {
             controls(itime, icontrol) = tropSol.controls(icontrol, itime);
         }
     }
+    SimTK::Matrix multipliers(numTimes, numMultipliers);
+    for (int itime = 0; itime < numTimes; ++itime) {
+        for (int imultiplier = 0; imultiplier < numMultipliers; ++imultiplier) {
+            multipliers(itime, imultiplier) = tropSol.multipliers(imultiplier, 
+                itime);
+        }
+    }
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
-    return {time, state_names, control_names, parameter_names, states, 
-            controls, parameters};
+    return {time, state_names, control_names, multiplier_names, parameter_names, 
+            states, controls, multipliers, parameters};
 }
 
 MucoSolution convert(const tropter::Solution& tropSol) {
@@ -101,14 +110,17 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
 
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
+    tropIter.multiplier_names = mucoIter.getMultiplierNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
+    int numMultipliers = (int)tropIter.multiplier_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
+    const auto& multipliers = mucoIter.getMultipliersTrajectory();
     const auto& parameters = mucoIter.getParameters();
     // Muscollo's matrix is numTimes x numStates;
     // tropter's is numStates x numTimes.
@@ -119,6 +131,12 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
                 &controls(0, 0), numTimes, numControls).transpose();
     } else {
         tropIter.controls.resize(numControls, numTimes);
+    }
+    if (numMultipliers) {
+        tropIter.multipliers = Map<const MatrixXd>(
+                &multipliers(0, 0), numTimes, numMultipliers).transpose();
+    } else {
+        tropIter.multipliers.resize(numMultipliers, numTimes);
     }
     if (numParameters) {
         tropIter.parameters = Map<const VectorXd>(

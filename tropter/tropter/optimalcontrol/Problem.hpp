@@ -109,6 +109,7 @@ void Problem<T>::print_description() const {
 
     print_continuous_var_info("States", m_state_infos);
     print_continuous_var_info("Controls", m_control_infos);
+    print_continuous_var_info("Adjuncts", m_adjunct_infos);
 
     cout << "Path constraints: (total number: "
             << this->get_num_path_constraints() << ")" << endl;
@@ -217,6 +218,41 @@ set_control_guess(Iterate& guess,
 
 template<typename T>
 void Problem<T>::
+set_adjunct_guess(Iterate& guess,
+    const std::string& name,
+    const Eigen::VectorXd& value)
+{
+    // Check for errors.
+    TROPTER_THROW_IF(guess.time.size() == 0, "guess.time is empty.");
+    TROPTER_THROW_IF(value.size() != guess.time.size(),
+        "Expected value to have %i elements, but it has %i elements.",
+        guess.time.size(), value.size());
+    if (guess.adjuncts.rows() == 0) {
+        guess.adjuncts.resize(m_adjunct_infos.size(), guess.time.size());
+    }
+    else if (size_t(guess.adjuncts.rows()) != m_adjunct_infos.size() ||
+        guess.adjuncts.cols() != guess.time.size()) {
+        TROPTER_THROW("Expected guess.adjuncts to have dimensions %i x %i "
+            "but dimensions are %i x %i.",
+            m_adjunct_infos.size(), guess.time.size(),
+            guess.adjuncts.rows(), guess.adjuncts.cols());
+    }
+    // Find the adjunct index.
+    size_t adjunct_index = 0;
+    // TODO store adjunct infos in a map.
+    for (const auto& info : m_adjunct_infos) {
+        if (info.name == name) break;
+        adjunct_index++;
+    }
+    TROPTER_THROW_IF(adjunct_index == m_adjunct_infos.size(),
+        "Adjunct '%s' does not exist.", name);
+
+    // Set the guess.
+    guess.adjuncts.row(adjunct_index) = value;
+}
+
+template<typename T>
+void Problem<T>::
 set_parameter_guess(Iterate& guess,
         const std::string& name,
         const double& value)
@@ -261,6 +297,12 @@ void Problem<T>::get_all_bounds(
         Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
         Eigen::Ref<Eigen::VectorXd> final_controls_lower,
         Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+        Eigen::Ref<Eigen::VectorXd> adjuncts_lower,
+        Eigen::Ref<Eigen::VectorXd> adjuncts_upper,
+        Eigen::Ref<Eigen::VectorXd> initial_adjuncts_lower,
+        Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
+        Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
+        Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
         Eigen::Ref<Eigen::VectorXd> parameters_lower,
         Eigen::Ref<Eigen::VectorXd> parameters_upper,
         Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -306,6 +348,28 @@ void Problem<T>::get_all_bounds(
         } else {
             final_controls_lower[ic]   = info.bounds.lower;
             final_controls_upper[ic]   = info.bounds.upper;
+        }
+    }
+    for (unsigned ia = 0; ia < m_adjunct_infos.size(); ++ia) {
+        const auto& info = m_adjunct_infos[ia];
+        // TODO if (!info.bounds.is_set()), give error.
+        adjuncts_lower[ia] = info.bounds.lower;
+        adjuncts_upper[ia] = info.bounds.upper;
+        if (info.initial_bounds.is_set()) {
+            initial_adjuncts_lower[ia] = info.initial_bounds.lower;
+            initial_adjuncts_upper[ia] = info.initial_bounds.upper;
+        }
+        else {
+            initial_adjuncts_lower[ia] = info.bounds.lower;
+            initial_adjuncts_upper[ia] = info.bounds.upper;
+        }
+        if (info.final_bounds.is_set()) {
+            final_adjuncts_lower[ia] = info.final_bounds.lower;
+            final_adjuncts_upper[ia] = info.final_bounds.upper;
+        }
+        else {
+            final_adjuncts_lower[ia] = info.bounds.lower;
+            final_adjuncts_upper[ia] = info.bounds.upper;
         }
     }
     for (unsigned ip = 0; ip < m_parameter_infos.size(); ++ip) {
