@@ -5,7 +5,7 @@ clear all;close all;clc;
 import org.opensim.modeling.*
 
 %% Instantiate a model from file
-model = Model('../../../../OpenSim/Tests/shared/arm26.osim');
+model = Model('arm26.osim');
 
 %% Test Body list
 % Get a cell array of references to all the bodies in a model
@@ -18,9 +18,9 @@ for i = 1 : length(Bodies)
 end
 
 % Get the individual reference to a Body
-b = Bodies{3};
+b = Bodies{2};
 % Get the inertia of the body as a Vec3()
-in = Bodies{3}.get_inertia;
+in = Bodies{2}.get_inertia;
  
 
 

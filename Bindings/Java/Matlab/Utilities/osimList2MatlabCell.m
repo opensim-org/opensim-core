@@ -10,9 +10,9 @@ function matlabcellarray = osimList2MatlabCell(model, classname)
 %   % Get the first body in the list.  
 %   Pelvis = references{1}
 %
-%    
-%   When iterating through a list to get/set properties on multiple 
-%   components, use the list iterator directly;
+%   osimList2MatlabCell() uses the ComponentList() and Interator() classes 
+%   to iterate through a list to get the components. An example of using
+%   the iterator is below;
 %
 %   % Set a value for a property for all of the components of type 'Body'
 %   list = model.getBodyList();
