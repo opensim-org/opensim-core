@@ -74,17 +74,17 @@ public:
     /// been set and the vector passed is the incorrect size, an error is 
     /// thrown.
     void setBounds(const std::vector<MucoBounds>& bounds) {
-        updProperty_bounds().setAllowableListSize(bounds.size());
+        updProperty_bounds().clear();
         for (int i = 0; i < bounds.size(); ++i) {
-            set_bounds(i, bounds[i]);
+            updProperty_bounds().appendValue(bounds[i]);
         }
         updateNumEquationsFromProperty(getProperty_bounds());
     }
     /// @copydoc setBounds()
     void setSuffixes(const std::vector<std::string>& suffixes) {
-        updProperty_suffixes().setAllowableListSize(suffixes.size());
+        updProperty_suffixes().clear();
         for (int i = 0; i < suffixes.size(); ++i) {
-            set_suffixes(i, suffixes[i]);
+            updProperty_suffixes().appendValue(suffixes[i]);
         }
         updateNumEquationsFromProperty(getProperty_suffixes());
     }
@@ -139,8 +139,11 @@ private:
 // MucoMultibodyConstraint
 // ============================================================================
 
-/// TODO doc
-enum class KinematicLevel{
+/// The kinematic level for a scalar multibody constraint within a 
+/// MucoMultibodyConstraint. Each scalar constraint is automatically assigned
+/// a KinematicLevel enum value when a MucoMultibodyConstraint is 
+/// instantiated.
+enum class KinematicLevel {
     Position,
     DtPosition,
     Velocity,
@@ -199,9 +202,10 @@ public:
     /// SimTK::State object. This may not be the most efficient solution for 
     /// solvers, but could be useful for a quick implementation or for 
     /// debugging model constraints causing issues in an optimal control 
-    /// problem. The errors vector passed must be consistent with the number
-    /// of scalar constraint equations associated with this 
-    /// MucoMultibodyConstraintInfo.
+    /// problem. 
+    /// @precondition The errors vector passed must be consistent with the 
+    /// number of scalar constraint equations associated with this 
+    /// MucoMultibodyConstraint.
     void calcMultibodyConstraintErrors(const Model& model, 
         const SimTK::State& state, SimTK::Vector& errors);
 
@@ -254,8 +258,8 @@ public:
     /// Calculate errors in the path constraint equations. The *errors* argument 
     /// represents the concatenated error vector for all path constraints in the 
     /// MucoProblem. This method creates a view into *errors* to access the 
-    /// elements this for this MucoPathConstraint and passes this view to the 
-    /// users constraint error implementation.
+    /// elements for this MucoPathConstraint and passes this view to
+    /// calcPathConstraintErrorsImpl().
     void calcPathConstraintErrors(const SimTK::State& state,
             SimTK::Vector& errors) const {
     
@@ -271,10 +275,8 @@ public:
     void initialize(const Model& model, const int& pathConstraintIndex) const;
     
 protected:
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds, labels, "
-        "and scalar equation count for this MucoPathConstraint. The lengths of "
-        "the information stored in this property must match the length of the "
-        "errors vector returned by calcConstraintErrorsImpl().");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds and "
+        "labels and scalar equation count for this MucoPathConstraint.");
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.

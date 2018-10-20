@@ -37,27 +37,30 @@ public:
     MucoBounds() = default;
     /// The lower and upper bound are equal (the variable is constrained to this
     /// single value).
-    MucoBounds(double value) : lower(value), upper(value) {}
+    MucoBounds(double value) {
+        set_lower(value);
+        set_upper(value);
+    }
     /// The variable is constrained to be within [lower, upper].
     MucoBounds(double lower, double upper) {
         OPENSIM_THROW_IF(lower > upper, Exception,
             "Expected lower <= upper, but lower=" + std::to_string(lower)
             + " and upper=" + std::to_string(upper) + ".");
-        this->lower = lower;
-        this->upper = upper;
+        set_lower(lower);
+        set_upper(upper);
     }
     /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
-        return !SimTK::isNaN(lower) && !SimTK::isNaN(upper);
+        return !SimTK::isNaN(get_lower()) && !SimTK::isNaN(get_upper());
     }
     /// True if the lower and upper bounds are the same, resulting in an
     /// equality constraint.
     bool isEquality() const {
-        return isSet() && lower == upper;
+        return isSet() && get_lower() == get_upper();
     }
     /// Returns true if the provided value is within these bounds.
     bool isWithinBounds(const double& value) const {
-        return lower <= value && value <= upper;
+        return get_lower() <= value && value <= get_upper();
     }
     /// The returned array has either 0, 1, or 2 elements.
     /// - 0 elements: bounds are not set.
@@ -66,18 +69,18 @@ public:
     Array<double> getAsArray() const {
         Array<double> vec;
         if (isSet()) {
-            vec.append(lower);
-            if (lower != upper) vec.append(upper);
+            vec.append(get_lower());
+            if (get_lower() != get_upper()) vec.append(get_upper());
         }
         return vec;
     }
-    double getLower() const { return lower; }
-    double getUpper() const { return upper; }
+    double getLower() const { return get_lower(); }
+    double getUpper() const { return get_upper(); }
     void printDescription(std::ostream& stream) const {
         if (isEquality()) {
-            stream << lower;
+            stream << get_lower();
         } else {
-            stream << "[" << lower << ", " << upper << "]";
+            stream << "[" << get_lower() << ", " << get_upper() << "]";
         }
         stream.flush();
     }
@@ -87,18 +90,24 @@ protected:
     MucoBounds(const Property<double>& p) {
         assert(p.size() <= 2);
         if (p.size() >= 1) {
-            lower = p[0];
-            if (p.size() == 2) upper = p[1];
-            else               upper = p[0];
+            set_lower(p[0]);
+            if (p.size() == 2) set_upper(p[1]);
+            else               set_upper(p[0]);
         }
     }
 
-    double lower = SimTK::NTraits<double>::getNaN();
-    double upper = SimTK::NTraits<double>::getNaN();
+    OpenSim_DECLARE_PROPERTY(lower, double, "The lower bound value.");
+    OpenSim_DECLARE_PROPERTY(upper, double, "The upper bound value.");
 
     friend MucoPhase;
     friend MucoVariableInfo;
     friend MucoParameter;
+private:
+
+    void constructProperties() {
+        constructProperty_lower(SimTK::NTraits<double>::getNaN());
+        constructProperty_upper(SimTK::NTraits<double>::getNaN());
+    }
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
 class OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {

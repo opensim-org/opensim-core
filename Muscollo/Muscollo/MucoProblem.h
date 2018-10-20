@@ -56,11 +56,11 @@ public:
 
 protected:
 
-    OpenSim_DECLARE_PROPERTY(bounds, MucoBounds,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(bounds, MucoBounds,
             "Bounds over all time.");
-    OpenSim_DECLARE_PROPERTY(initial_bounds, MucoInitialBounds,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(initial_bounds, MucoInitialBounds,
             "Bounds on initial value.");
-    OpenSim_DECLARE_PROPERTY(final_bounds, MucoFinalBounds,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(final_bounds, MucoFinalBounds,
             "Bounds on final value.");
 
 private:
@@ -225,7 +225,7 @@ public:
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
     /// Get a MucoPathConstraint from this MucoPhase. Note: this does not 
-    /// MucoMultibodyConstraints, use getMultibodyConstraint() instead.
+    /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
     /// Get the number of scalar path constraints in the MucoProblem. This does 
     /// not include multibody constraints equations, and is only available after 
@@ -237,9 +237,9 @@ public:
         return m_num_path_constraint_eqs;
     }
     /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not 
-    /// MucoPathConstraints, use getPathConstraint() instead. Since these are
-    /// created directly from model information, this should only be called
-    /// after initialization.
+    /// include MucoPathConstraints, use getPathConstraint() instead. Since 
+    /// these are created directly from model information, this should only be 
+    /// called after initialization.
     const MucoMultibodyConstraint& 
     getMultibodyConstraint(const std::string& name) const;
     /// Get the number of scalar multibody constraints in the MucoProblem. This 
@@ -320,11 +320,11 @@ public:
             thisConstraintNumEqs = 
             m_multibody_constraints[i].getConstraintInfo().getNumEquations();
 
-            SimTK::Vector currConstraintErrors(thisConstraintNumEqs, 0.0);
+            SimTK::Vector theseErrors(thisConstraintNumEqs, 
+                errors.getContiguousScalarData() + index, true);
             m_multibody_constraints[i].calcMultibodyConstraintErrors(getModel(), 
-                state, currConstraintErrors);
-            std::copy(currConstraintErrors.begin(), currConstraintErrors.end(),
-                errors.begin() + index);
+                state, theseErrors);
+
             index += thisConstraintNumEqs;
         }
         return errors;

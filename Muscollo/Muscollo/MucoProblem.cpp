@@ -373,8 +373,9 @@ void MucoPhase::initialize(Model& model) const {
     const auto& mcBounds = get_multibody_constraint_bounds();
     const MucoBounds& multBounds = get_multiplier_bounds();
     MucoInitialBounds multInitBounds(multBounds.getLower(), 
-        multBounds.getUpper);
-    MucoFinalBounds multFinalBounds(multBounds.getLower(), multBounds.getUpper);
+        multBounds.getUpper());
+    MucoFinalBounds multFinalBounds(multBounds.getLower(), 
+        multBounds.getUpper());
     // Get model information to loop through constraints.
     const auto& matter = model.getMatterSubsystem();
     const auto NC = matter.getNumConstraints();
