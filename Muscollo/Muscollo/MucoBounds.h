@@ -34,15 +34,16 @@ class OSIMMUSCOLLO_API MucoBounds : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoBounds, Object);
 public:
     /// The bounds are NaN, which means (-inf, inf).
-    MucoBounds() = default;
+    MucoBounds() 
+    {   constructProperties(); }
     /// The lower and upper bound are equal (the variable is constrained to this
     /// single value).
-    MucoBounds(double value) {
+    MucoBounds(double value) : MucoBounds() {
         set_lower(value);
         set_upper(value);
     }
     /// The variable is constrained to be within [lower, upper].
-    MucoBounds(double lower, double upper) {
+    MucoBounds(double lower, double upper) : MucoBounds() {
         OPENSIM_THROW_IF(lower > upper, Exception,
             "Expected lower <= upper, but lower=" + std::to_string(lower)
             + " and upper=" + std::to_string(upper) + ".");
@@ -85,17 +86,6 @@ public:
         stream.flush();
     }
 protected:
-    /// Used internally to create Bounds from a list property.
-    /// The list property must have either 0, 1 or 2 elements.
-    MucoBounds(const Property<double>& p) {
-        assert(p.size() <= 2);
-        if (p.size() >= 1) {
-            set_lower(p[0]);
-            if (p.size() == 2) set_upper(p[1]);
-            else               set_upper(p[0]);
-        }
-    }
-
     OpenSim_DECLARE_PROPERTY(lower, double, "The lower bound value.");
     OpenSim_DECLARE_PROPERTY(upper, double, "The upper bound value.");
 

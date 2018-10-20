@@ -159,7 +159,7 @@ enum class KinematicLevel {
 /// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoMultibodyConstraint {
 public:
-    MucoConstraintInfo getConstraintInfo() const 
+    const MucoConstraintInfo& getConstraintInfo() const 
     {   return m_constraint_info; }
     void setConstraintInfo(const MucoConstraintInfo& cInfo) {
         OPENSIM_THROW_IF_FRMOBJ(cInfo.getNumEquations() != 
@@ -238,7 +238,7 @@ class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
 public:
     MucoPathConstraint();
         
-    MucoConstraintInfo getConstraintInfo() const 
+    const MucoConstraintInfo& getConstraintInfo() const 
     {   return get_MucoConstraintInfo(); }
     MucoConstraintInfo& updConstraintInfo() 
     {   return upd_MucoConstraintInfo(); }
