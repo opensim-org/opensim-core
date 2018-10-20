@@ -962,27 +962,27 @@ void testComponentPathNames()
     top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathString();
-    ASSERT(absPathC == "/Top/A/B/C");
+    ASSERT(absPathC == "/A/B/C");
 
     std::string absPathE = E->getAbsolutePathString();
-    ASSERT(absPathE == "/Top/A/D/E");
+    ASSERT(absPathE == "/A/D/E");
 
     // Specific tests to relative path name facilities
     std::string EWrtB = E->getRelativePathName(*B);
     ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
 
     std::string BWrtE = B->getRelativePathName(*E);
-    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+    ASSERT(BWrtE == "../../B"); // "/A/" as common
 
     // null case component wrt itself
     std::string fooWrtFoo = D->getRelativePathName(*D);
     ASSERT(fooWrtFoo == "");
 
     std::string CWrtOtherTop = C->getRelativePathName(otherTop);
-    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+    ASSERT(CWrtOtherTop == "A/B/C");
 
     std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
-    ASSERT(OtherTopWrtC == "../../../../OtherTop");
+    ASSERT(OtherTopWrtC == "../../../");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -1027,8 +1027,8 @@ void testComponentPathNames()
         bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
 
     // Verify deep copy of subcomponents
-    const Foo& foo1inA = top.getComponent<Foo>("/Top/A/Foo1");
-    const Foo& foo1inF = top.getComponent<Foo>("/Top/F/Foo1");
+    const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
+    const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
     ASSERT(&foo1inA != &foo1inF);
 
     // double check that we have the original Foo foo1 in A
@@ -1116,9 +1116,10 @@ void testTraversePathToComponent() {
     SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
     SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
     // Absolute paths.
-    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
-    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
-    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/") == &top);
 
 
     // No component.
@@ -1129,7 +1130,6 @@ void testTraversePathToComponent() {
     // Wrong type.
     SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
     // Going too high up.
-    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
@@ -2093,7 +2093,7 @@ void testAliasesAndLabels() {
     foo->connectInput_input1( bar->getOutput("Output1") );
     theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
-    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/bar|Output1");
 
     // Set alias.
     foo->updInput("input1").setAlias("waldo");
@@ -2126,10 +2126,10 @@ void testAliasesAndLabels() {
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/bar|Output1");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar|Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/bar|Output3");
 
     foo->updInput("listInput1").disconnect();
 
