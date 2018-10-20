@@ -1043,6 +1043,11 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
+    // During deserialization, some components' clone() may
+    // finalizeFromProperties(). Upating from XML can then cause stale pointers.
+    // We must make sure to clear any pointers to properties that may exist
+    // in this component.
+    reset();
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30500) {
             // In 3.3 and earlier, spaces in names were tolerated. Spaces are
