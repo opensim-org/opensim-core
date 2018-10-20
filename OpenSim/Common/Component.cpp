@@ -698,6 +698,7 @@ void Component::setOwner(const Component& owner)
 
 std::string Component::getAbsolutePathString() const
 {
+    if (!hasOwner()) return "/";
     std::string absPathName("/" + getName());
 
     const Component* up = this;
@@ -714,6 +715,8 @@ std::string Component::getAbsolutePathString() const
 
 ComponentPath Component::getAbsolutePath() const
 {
+    if (!hasOwner()) return ComponentPath({}, true);
+
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
 

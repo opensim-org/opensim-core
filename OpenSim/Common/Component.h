@@ -2325,12 +2325,7 @@ protected:
         size_t iPathEltStart = 0u;
         const Component* current = this;
         if (path.isAbsolute()) {
-            while (current->hasOwner()) current = &current->getOwner();
-            if (path.getNumPathLevels() == 0 ||
-                    current->getName() != path.getSubcomponentNameAtLevel(0))
-                return nullptr;
-            // Skip over the root name.
-            iPathEltStart = 1u;
+            current = &current->getRoot();
         } else {
             while (iPathEltStart < path.getNumPathLevels() &&
                     path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
