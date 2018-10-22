@@ -248,7 +248,9 @@ void testComponent(const Component& instanceToTest)
                 const Object* depRawPtr = dependency.get();
                 addObjectAsComponentToModel(dependency.release(), model);
 
-                // Connect the socket.
+                // Connect the socket. This should come after adding the
+                // dependency to the model, otherwise the connectee path may
+                // be incorrect.
                 socket.connect(*depRawPtr);
             }
         }

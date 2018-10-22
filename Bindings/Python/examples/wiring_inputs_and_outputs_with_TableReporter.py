@@ -59,12 +59,13 @@ def print_model():
     # one-body system. The (optional) second argument is an alias for the name
     # of the output; it is used as the column label in the table.
     reporter.addToReport(model.getOutput('com_position'), 'com_pos')
+
+    model.addComponent(reporter)
+    model.finalizeConnections()
+
     # Display what input-output connections look like in XML (in .osim files).
     print("Reporter input-output connections in XML:\n" + reporter.dump())
-    
-    model.addComponent(reporter)
 
-    model.finalizeConnections()
     model.printToXML(model_filename)
 
 

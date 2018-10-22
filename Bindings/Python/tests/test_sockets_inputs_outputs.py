@@ -256,10 +256,11 @@ class TestInputsOutputs(unittest.TestCase):
             reporter.setName('reporter')
             reporter.set_report_time_interval(0.1)
 
-            model.addComponent(reporter)
-
             reporter.addToReport(model.getOutput('com_position'))
+
+            model.addComponent(reporter)
             model.finalizeConnections()
+
             reporter.getInput('inputs').setAlias(0, 'com_pos')
 
             # Display what input-output connections look like in XML

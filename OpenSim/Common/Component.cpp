@@ -1739,7 +1739,8 @@ void Component::reset()
 void Component::warnBeforePrint() const {
     if (!isObjectUpToDateWithProperties()) return;
     std::string message;
-    auto check = [](const Component& comp, std::string& message) {
+    auto checkIfConnecteePathIsSet =
+            [](const Component& comp, std::string& message) {
         for (const auto& it : comp._socketsTable) {
             const auto& socket = it.second;
             if (socket->isConnected() &&
@@ -1756,10 +1757,10 @@ void Component::warnBeforePrint() const {
         }
     };
     if (getNumImmediateSubcomponents() == 0) {
-        check(*this, message);
+        checkIfConnecteePathIsSet(*this, message);
     } else {
         for (const auto& comp : getComponentList()) {
-            check(comp, message);
+            checkIfConnecteePathIsSet(comp, message);
         }
     }
     if (!message.empty()) {

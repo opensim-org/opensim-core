@@ -223,11 +223,6 @@ public:
     void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
     void setSocketConnecteePath(AbstractSocket& socket,
             const std::string& newValue)   SWIG_DECLARE_EXCEPTION;
-    // Deprecated.
-    void setSocketConnecteeName(AbstractSocket& socket,
-            const std::string& newValue)   SWIG_DECLARE_EXCEPTION {
-        setSocketConnecteePath(socket, newValue);
-    }
 //=============================================================================
 // DATA
 //=============================================================================
