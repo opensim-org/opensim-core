@@ -933,12 +933,6 @@ writeAdjustedModel()
     // NOTE: use operator= so actuator groups are properly copied over
     _model->updForceSet() = _originalForceSet;
 
-    // ExternalLoads were added as miscellaneous ModelComponents
-    cout << _model->updMiscModelComponentSet() << endl;
-    if (hasExternalLoads()) {
-        _model->updMiscModelComponentSet().remove(_externalLoads.release());
-    }
-
     // CMC was added as a model controller, now remove before printing out
     int c = _model->updControllerSet().getIndex("CMC");
     _model->updControllerSet().remove(c);

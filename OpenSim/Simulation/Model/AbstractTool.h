@@ -128,7 +128,9 @@ protected:
     OpenSim::PropertyStr _externalLoadsFileNameProp;
     std::string &_externalLoadsFileName;
     /** Actual external forces being applied. e.g. GRF */
-    SimTK::ReferencePtr<ExternalLoads> _externalLoads;
+    ExternalLoads   _externalLoads;
+    // Reference to model's external loads not owned by tool
+    SimTK::ReferencePtr<ExternalLoads> _modelExternalLoads;
 
 //=============================================================================
 // METHODS
@@ -253,9 +255,9 @@ public:
 
     std::string getNextAvailableForceName(const std::string prefix="Force") const;
     
-    const ExternalLoads& getExternalLoads() const { return _externalLoads.getRef(); }
-    ExternalLoads& updExternalLoads() { return _externalLoads.getRef(); }
-    bool hasExternalLoads() {return !_externalLoads.empty(); }
+    const ExternalLoads& getExternalLoads() const { return _externalLoads; }
+    ExternalLoads& updExternalLoads() { return _externalLoads; }
+    void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
 
     // External loads get/set
     const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
