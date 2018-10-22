@@ -70,6 +70,10 @@ struct DAEInput {
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
     const Eigen::Ref<const VectorX<T>>& controls;
+    /// The vector of adjuncts at time `time`.
+    /// @note If you pass this into functions that take an Eigen Vector as
+    /// input, see the note above for the `states` variable.
+    const Eigen::Ref<const VectorX<T>>& adjuncts;
     /// The vector of time-invariant parameter values.
     /// @note If you pass this into functions that take an Eigen Vector as
     /// input, see the note above for the `states` variable.
@@ -108,6 +112,10 @@ struct DAEOutput {
 /// - *controls*:  a vector of all control variables at a given time.
 /// - *controls trajectory*: a trajectory through time of controls
 ///   (control vectors).
+/// - *adjunct*: a single supplemental continuous variable. 
+/// - *adjuncts*: a vector of all adjunct varialbes at a given time.
+/// - *adjuncts trajectory*: a trajectory through time of adjuncts
+///   (adjunct vectors).
 /// - *parameter*: a single parameter variable.
 /// - *parameters*: a vector of all parameter variables.
 /// @ingroup optimalcontrol
@@ -140,6 +148,8 @@ public:
     {   return (int)m_state_infos.size(); }
     int get_num_controls() const
     {   return (int)m_control_infos.size(); }
+    int get_num_adjuncts() const
+    {   return (int)m_adjunct_infos.size(); }
     int get_num_parameters() const
     {   return (int)m_parameter_infos.size(); }
     int get_num_path_constraints() const
@@ -160,6 +170,16 @@ public:
     std::vector<std::string> get_control_names() const {
         std::vector<std::string> names;
         for (const auto& info : m_control_infos) {
+            names.push_back(info.name);
+        }
+        return names;
+    }
+    /// Get the names of all the adjuncts in the order they appear in the 
+    /// `adjuncts` input to calc_differential_algebraic_equations(), etc.
+    /// Note: this function is not free to call.
+    std::vector<std::string> get_adjunct_names() const {
+        std::vector<std::string> names;
+        for (const auto& info : m_adjunct_infos) {
             names.push_back(info.name);
         }
         return names;
@@ -216,6 +236,16 @@ public:
         // objects' "is_set()" function.
         m_control_infos.push_back({name, bounds, initial_bounds, final_bounds});
         return (int)m_control_infos.size() - 1;
+    }
+    /// This returns an index that can be used to access this specific adjunct
+    /// variable within `dynamics()`, `path_constraints()`, etc.
+    /// TODO check if an adjunct with the provided name already exists.
+    int add_adjunct(const std::string& name, const Bounds& bounds,
+            const InitialBounds& initial_bounds = InitialBounds(),
+            const FinalBounds& final_bounds = FinalBounds()) {
+
+        m_adjunct_infos.push_back({name, bounds, initial_bounds, final_bounds});
+        return (int)m_adjunct_infos.size() - 1;
     }
     /// This returns an index that can be used to access this specific parameter
     /// variable within `dynamics()` , `path_constraints()`, etc.
@@ -285,6 +315,7 @@ public:
     virtual void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
+            const VectorX<T>& multipliers,
             const VectorX<T>& parameters,
             T& integrand) const;
     /// @}
@@ -313,9 +344,9 @@ public:
     /// Set a guess for the trajectory of a single control variable with name
     /// `name` to `value`. This function relieves you of the need to know the
     /// index of a control variable. The `guess` must already have its `time`
-    /// vector filled out. If `guess.control` is empty, this function will set
+    /// vector filled out. If `guess.controls` is empty, this function will set
     /// its dimensions appropriately according to the provided `guess.time`;
-    /// otherwise, `guess.control` must have the correct dimensions (number of
+    /// otherwise, `guess.controls` must have the correct dimensions (number of
     /// controls x mesh points).
     /// @param[in,out] guess
     ///     The row of the controls matrix associated with the provided name
@@ -326,6 +357,24 @@ public:
     ///     This must have the same number of columns as `guess.time` and
     ///     `guess.controls`.
     void set_control_guess(Iterate& guess,
+            const std::string& name,
+            const Eigen::VectorXd& value);
+    /// Set a guess for the trajectory of a single adjunct variable with name
+    /// `name` to `value`. This function relieves you of the need to know the
+    /// index of a adjunct variable. The `guess` must already have its `time`
+    /// vector filled out. If `guess.adjuncts` is empty, this function will set
+    /// its dimensions appropriately according to the provided `guess.time`;
+    /// otherwise, `guess.adjuncts` must have the correct dimensions (number of
+    /// adjuncts x mesh points).
+    /// @param[in,out] guess
+    ///     The row of the adjuncts matrix associated with the provided name
+    ///     is set to value.
+    /// @param[in] name
+    ///     Name of the adjunct variable (provided in add_adjunct()).
+    /// @param[in] value
+    ///     This must have the same number of columns as `guess.time` and
+    ///     `guess.adjuncts`.
+    void set_adjunct_guess(Iterate& guess,
             const std::string& name,
             const Eigen::VectorXd& value);
     /// Set a guess for the value of a single parameter variable with name
@@ -364,6 +413,12 @@ public:
             Eigen::Ref<Eigen::VectorXd> initial_controls_upper,
             Eigen::Ref<Eigen::VectorXd> final_controls_lower,
             Eigen::Ref<Eigen::VectorXd> final_controls_upper,
+            Eigen::Ref<Eigen::VectorXd> adjuncts_lower,
+            Eigen::Ref<Eigen::VectorXd> adjuncts_upper,
+            Eigen::Ref<Eigen::VectorXd> initial_adjuncts_lower,
+            Eigen::Ref<Eigen::VectorXd> initial_adjuncts_upper,
+            Eigen::Ref<Eigen::VectorXd> final_adjuncts_lower,
+            Eigen::Ref<Eigen::VectorXd> final_adjuncts_upper,
             Eigen::Ref<Eigen::VectorXd> parameters_lower,
             Eigen::Ref<Eigen::VectorXd> parameters_upper,
             Eigen::Ref<Eigen::VectorXd> path_constraints_lower,
@@ -375,6 +430,7 @@ private:
     FinalBounds m_final_time_bounds;
     std::vector<ContinuousVariableInfo> m_state_infos;
     std::vector<ContinuousVariableInfo> m_control_infos;
+    std::vector<ContinuousVariableInfo> m_adjunct_infos;
     std::vector<ParameterInfo> m_parameter_infos;
     std::vector<PathConstraintInfo> m_path_constraint_infos;
 };
