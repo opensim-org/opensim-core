@@ -690,6 +690,11 @@ void testMisc() {
 
     cout << "Adding world3 to theWorld" << endl;
     theWorld.add(world3.clone());
+    // We now use absolute paths for the connectee name, and adding world3 to
+    // theWorld makes the previously-stored absolute path incorrect.
+    // TODO add() should update absolute connectee paths; no longer necessary.
+    theWorld.updComponent("World3/BigFoo/Foo1").updInput("input1")
+            .setConnecteePath("/World3/bar2|PotentialEnergy");
 
     // Should not be able to add the same Component twice within the same tree
     ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
@@ -1824,9 +1829,9 @@ void testListInputConnecteeSerialization() {
     std::string modelFileName = "testComponentInterface_"
                                 "testListInputConnecteeSerialization_world.xml";
     std::vector<std::string> expectedConnecteePaths{
-            "../producer|column:a",
-            "../producer|column:c",
-            "../producer|column:b(berry)"};
+            "/producer|column:a",
+            "/producer|column:c",
+            "/producer|column:b(berry)"};
     SimTK::Vector expectedInputValues;
     {
         // Create the "model," which just contains a reporter.
@@ -1978,9 +1983,9 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(input1.getConnecteePath() == "../producer|column:b");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
-                   "../producer|column:d(desert)");
+                   "/producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
         SimTK_TEST(activation.getConnecteePath() == "non/existent");
         // Now we must clear this before trying to connect, since the connectee
@@ -1995,9 +2000,9 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
         
-        SimTK_TEST(input1.getConnecteePath() == "../producer|column:b");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
-                   "../producer|column:d(desert)");
+                   "/producer|column:d(desert)");
         
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");

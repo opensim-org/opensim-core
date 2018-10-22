@@ -3045,11 +3045,12 @@ void Socket<C>::finalizeConnection(const Component& root) {
             "root component. Did you intend to add '" +
             rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
-        std::string objPathName = connectee->getAbsolutePathString();
-        std::string ownerPathName = getOwner().getAbsolutePathString();
-        // otherwise store the relative path name to the object
-        std::string relPathName = connectee->getRelativePathName(getOwner());
-        updConnecteePathProp().setValue(0, relPathName);
+        std::string connecteePath = connectee->getRelativePathName(getOwner());
+        // If the relative path start with ".." the use an absolute path
+        // instead.
+        if (connecteePath.size() >= 2 && connecteePath.substr(0, 2) == "..")
+            connecteePath = connectee->getAbsolutePathString();
+        updConnecteePathProp().setValue(0, connecteePath);
         
     } else {
         const auto connecteePath = getConnecteePath();
@@ -3133,11 +3134,15 @@ void Input<T>::finalizeConnection(const Component& root) {
 
             ++i;
             // Update the connectee path as
-            // <RelOwnerPath>/<Output><:Channel><(annotation)>
-            ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
-                    getOwner()));
+            // <OwnerPath>/<Output><:Channel><(annotation)>
+            const auto& outputOwner = chan->getOutput().getOwner();
+            std::string path = outputOwner.getRelativePathName(getOwner());
+            // If the relative path start with ".." the use an absolute path
+            // instead.
+            if (path.size() >= 2 && path.substr(0, 2) == "..")
+                path = outputOwner.getAbsolutePathString();
 
-            auto pathStr = composeConnecteePath(path.toString(),
+            auto pathStr = composeConnecteePath(path,
                                                 chan->getOutput().getName(),
                                                 chan->getOutput().isListOutput()
                                                 ?
