@@ -30,7 +30,7 @@
 using namespace OpenSim;
 using namespace std;
 
-void checkCOM(string resultsFile, string body, 
+void checkAdjustedModelCOM(string modelFile, string body, 
                 const SimTK::Vec3 &standardCOM, 
                 const Array<double> &tolerances);
 
@@ -38,7 +38,7 @@ int main() {
     try {
         RRATool rra("subject01_Setup_RRA.xml");
         if (rra.run()){
-            checkCOM( "subject01_RRA_adjusted.osim", "torso", 
+            checkAdjustedModelCOM( "subject01_RRA_adjusted.osim", "torso",
                       SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), 
                       Array<double>(1e-4, 3) );
             Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), 
@@ -59,8 +59,9 @@ int main() {
     return 0;
 }
 
-void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, const Array<double> &tolerances) {
-
+void checkAdjustedModelCOM(string resultsFile, string body,
+    const SimTK::Vec3 &standardCOM, const Array<double> &tolerances)
+{
     // compare the adjusted center of mass to OpenSim 1.9.1 values
     Model adjusted_model(resultsFile);
     const BodySet& bodies = adjusted_model.getBodySet();
@@ -72,4 +73,12 @@ void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, c
     cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
     for (int i = 0; i < 3; ++i)
         ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
+
+    auto loadsList = adjusted_model.getComponentList<ExternalLoads>();
+    OPENSIM_THROW_IF(loadsList.begin() != loadsList.end(), Exception,
+        "RRA adjusted model still contains ExternalLoads.");
+
+    auto exfList = adjusted_model.getComponentList<ExternalForce>();
+    OPENSIM_THROW_IF(exfList.begin() != exfList.end(), Exception,
+        "RRA adjusted model still contains ExternalForce(s).");
 }

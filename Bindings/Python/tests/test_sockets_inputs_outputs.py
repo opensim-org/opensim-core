@@ -41,14 +41,14 @@ class TestSockets(unittest.TestCase):
 
         # Check that the connectees point to the correct objects.
         assert (shoulder.getConnectee("child_frame").this ==
-                model.getBodySet().get("r_humerus").this)
+                shoulder.getComponent("r_humerus_offset").this)
 
         assert (
             type(shoulder.getSocket("child_frame").getConnecteeAsObject())
             == osim.OpenSimObject)
         # In Python, we are able to get the concrete type from this method.
         # by using a SWIG typemap(out).
-        assert type(shoulder.getConnectee("child_frame")) == osim.Body
+        assert type(shoulder.getConnectee("child_frame")) == osim.PhysicalOffsetFrame
 
     def test_iterate_sockets(self):
         model = osim.Model(os.path.join(test_dir, "arm26.osim"))
@@ -134,7 +134,7 @@ class TestInputsOutputs(unittest.TestCase):
         # AbstractChannel.
         coord = model.getCoordinateSet().get(0)
         self.assertEquals(coord.getOutput('speed').getChannel('').getPathName(),
-                '/arm26/r_shoulder/r_shoulder_elev|speed')
+                '/arm26/jointset/r_shoulder/r_shoulder_elev|speed')
 
         # Access the value of a concrete Channel.
         # TODO Concrete channels are not wrapped yet.
@@ -211,7 +211,7 @@ class TestInputsOutputs(unittest.TestCase):
         s = m.initSystem()
 
         # Access and iterate through AbstractInputs, using names.
-        expectedLabels = ['/model/pin/pin_coord_0|value', 'spd',
+        expectedLabels = ['/model/jointset/pin/pin_coord_0|value', 'spd',
                           '/model/source|column:col1', 'second_col']
         i = 0
         for name in rep.getInputNames():

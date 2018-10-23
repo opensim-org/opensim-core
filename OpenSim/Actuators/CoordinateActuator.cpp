@@ -170,7 +170,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
         actuator->setOptimalForce(aOptimalForce);
         as.append(actuator);
     }
-    as.invokeConnectToModel(aModel);
+
     aModel.invalidateSystem();
     return &as;
 }

@@ -789,7 +789,7 @@ void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
     if( _writeToStorage && _performAnalyses ) { 
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
-            _controllerSet->setModel(*_model);
+            _controllerSet->connectToModel(*_model);
         }
 
         OPENSIM_THROW_IF(!hasStateStorage(), Exception,

@@ -32,8 +32,8 @@ mechanism is simulated. Two PhysicalOffsetFrames have been defined for attaching
 an assistive device (to help the hopper hop higher); their absolute path names
 are:
 
-    - on the thigh: "/Dennis/thigh/deviceAttachmentPoint"
-    - on the shank: "/Dennis/shank/deviceAttachmentPoint"
+    - on the thigh: "/Dennis/bodyset/thigh/deviceAttachmentPoint"
+    - on the shank: "/Dennis/bodyset/shank/deviceAttachmentPoint"
 
 You don't need to add anything in this file, but you should know what
 buildHopper() is doing. */

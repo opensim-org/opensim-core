@@ -44,20 +44,9 @@ static const char* wrapTypeName = "doubleCylinderObst";
 /**
 * Default constructor.
 */
-WrapDoubleCylinderObst::WrapDoubleCylinderObst() :
-WrapObject(),
-_radiusUcyl(_radiusUcylProp.getValueDbl()),
-_radiusVcyl(_radiusVcylProp.getValueDbl()),
-_wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
-_wrapVcylDirectionName(_wrapVcylDirectionNameProp.getValueStr()),
-_wrapVcylHomeBodyName(_wrapVcylHomeBodyNameProp.getValueStr()),
-_xyzBodyRotationVcyl(_xyzBodyRotationVcylProp.getValueDblArray()),
-_translationVcyl(_translationVcylProp.getValueDblVec()),
-_length(_lengthProp.getValueDbl()),
-_activeState(0)
+WrapDoubleCylinderObst::WrapDoubleCylinderObst()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -68,71 +57,34 @@ WrapDoubleCylinderObst::~WrapDoubleCylinderObst()
 {
 }
 
-//_____________________________________________________________________________
-/**
-* Copy constructor.
-*
-* @param aWrapDoubleCylinderObst WrapDoubleCylinderObst to be copied.
-*/
-WrapDoubleCylinderObst::WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst) :
-WrapObject(aWrapDoubleCylinderObst),
-_radiusUcyl(_radiusUcylProp.getValueDbl()),
-_radiusVcyl(_radiusVcylProp.getValueDbl()),
-_wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
-_wrapVcylDirectionName(_wrapVcylDirectionNameProp.getValueStr()),
-_wrapVcylHomeBodyName(_wrapVcylHomeBodyNameProp.getValueStr()),
-_xyzBodyRotationVcyl(_xyzBodyRotationVcylProp.getValueDblArray()),
-_translationVcyl(_translationVcylProp.getValueDblVec()),
-_length(_lengthProp.getValueDbl()),
-_activeState(0)
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapDoubleCylinderObst);
-}
-
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
-* Set the data members of this WrapCylinder to their null values.
-*/
-void WrapDoubleCylinderObst::setNull()
-{
-    _wrapUcylDirection = righthand;
-    _wrapVcylDirection = righthand;
-}
-
-//_____________________________________________________________________________
-/**
 * Connect properties to local pointers.
 */
-void WrapDoubleCylinderObst::setupProperties()
+void WrapDoubleCylinderObst::constructProperties()
 {
+    m_wrapUcylDirection = righthand;
+    m_wrapVcylDirection = righthand;
+    _activeState = 0;
 
-    _radiusUcylProp.setName("radiusUcyl");  _radiusUcylProp.setValue(-1.0);     _propertySet.append(&_radiusUcylProp);
-    _radiusVcylProp.setName("radiusVcyl");  _radiusVcylProp.setValue(-1.0);     _propertySet.append(&_radiusVcylProp);
+    constructProperty_radiusUcyl(1.0);
+    constructProperty_radiusVcyl(1.0);
 
-    _wrapUcylDirectionNameProp.setName("wrapUcylDirection");    _wrapUcylDirectionNameProp.setValue("Unassigned");  _propertySet.append(&_wrapUcylDirectionNameProp);
-    _wrapVcylDirectionNameProp.setName("wrapVcylDirection");    _wrapVcylDirectionNameProp.setValue("Unassigned");  _propertySet.append(&_wrapVcylDirectionNameProp);
-    _wrapVcylHomeBodyNameProp.setName("wrapVcylHomeBody");  _wrapVcylHomeBodyNameProp.setValue("Unassigned");   _propertySet.append(&_wrapVcylHomeBodyNameProp);
+    constructProperty_wrapUcylDirection("righthanded");
+    constructProperty_wrapVcylDirection("righthanded");
+    constructProperty_wrapVcylHomeBodyName("Unassigned");
 
-    const double defaultRotations[] = {0.0, 0.0, 0.0};
-    _xyzBodyRotationVcylProp.setName("xyz_body_rotationVcyl");
-    _xyzBodyRotationVcylProp.setValue(3, defaultRotations);
-    _propertySet.append(&_xyzBodyRotationVcylProp);
+    const SimTK::Vec3 defaultRotations(0.0);
+    constructProperty_xyz_body_rotationVcyl(defaultRotations);
 
     const SimTK::Vec3 defaultTranslations(0.0);
-    _translationVcylProp.setName("translationVcyl");
-    _translationVcylProp.setValue(defaultTranslations);
-    //_translationProp.setAllowableListSize(3);
-    _propertySet.append(&_translationVcylProp);
+    constructProperty_translationVcyl(defaultTranslations);
 
-    _lengthProp.setName("length");
-    _lengthProp.setValue(1.0);
-    _propertySet.append(&_lengthProp);
+    constructProperty_length(1.0);
 }
 
 //_____________________________________________________________________________
@@ -142,53 +94,8 @@ void WrapDoubleCylinderObst::setupProperties()
 *
 * @param aModel simbody model
 */
-void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel,
-        PhysicalFrame& aBody)
+void WrapDoubleCylinderObst::connectToModelAndBody(OpenSim::Model& aModel, OpenSim::PhysicalFrame& aBody)
 {
-    OPENSIM_THROW_IF_FRMOBJ(!dynamic_cast<Body*>(&aBody),
-        Exception, "Non-Body PhysicalFrames not yet supported.");
-
-    // Base class
-    Super::connectToModelAndBody(aModel, aBody);
-
-    // maybe set a parent pointer, _body = aBody;
-    if ( (_radiusUcyl<0.0) || (_radiusVcyl < 0.0) )
-    {
-        string errorMessage = "Error: radii for WrapDoubleCylinderObst " + getName() + " were either not specified, or one or more is negative.";
-        throw Exception(errorMessage);
-    }
-/*
-    Cylinder* cyl = new Cylinder(_radiusUcyl, _length);
-    setGeometryQuadrants(cyl);
-*/
-    // Check wrapUcylDirectionName
-    if (_wrapUcylDirectionName == "righthand" || _wrapUcylDirectionName == "right" || _wrapUcylDirectionName == "righthanded" || _wrapUcylDirectionName == "Righthand" || _wrapUcylDirectionName == "Right" || _wrapUcylDirectionName == "Righthanded")
-        _wrapUcylDirection = righthand;
-    else
-    if (_wrapUcylDirectionName == "lefthand"  || _wrapUcylDirectionName == "left"  || _wrapUcylDirectionName == "lefthanded"  || _wrapUcylDirectionName == "Lefthand"  || _wrapUcylDirectionName == "Left"  || _wrapUcylDirectionName == "Lefthanded")
-        _wrapUcylDirection = lefthand;
-    else
-    if (_wrapUcylDirectionName == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
-        { _wrapUcylDirection = righthand;   _wrapUcylDirectionName = "righthand";   }
-    else {  // wrapUcylDirection was specified incorrectly in obstacle object definition; throw an exception
-        string errorMessage = "Error: wrapUcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
-        throw Exception(errorMessage);
-    }
-
-    // Check wrapVcylDirectionName
-    if (_wrapVcylDirectionName == "righthand" || _wrapVcylDirectionName == "right" || _wrapVcylDirectionName == "righthanded" || _wrapVcylDirectionName == "Righthand" || _wrapVcylDirectionName == "Right" || _wrapVcylDirectionName == "Righthanded")
-        _wrapVcylDirection = righthand;
-    else
-    if (_wrapVcylDirectionName == "lefthand"  || _wrapVcylDirectionName == "left"  || _wrapVcylDirectionName == "lefthanded"  || _wrapVcylDirectionName == "Lefthand"  || _wrapVcylDirectionName == "Left"  || _wrapVcylDirectionName == "Lefthanded")
-        _wrapVcylDirection = lefthand;
-    else
-    if (_wrapVcylDirectionName == "Unassigned")  // wrapDirection was not specified in obstacle object definition; use default
-        { _wrapVcylDirection = righthand;   _wrapVcylDirectionName = "righthand";   }
-    else {  // wrapVcylDirection was specified incorrectly in obstacle object definition; throw an exception
-        string errorMessage = "Error: wrapVcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
-        throw Exception(errorMessage);
-    }
-    
     // Initialize value of _activeState
     _activeState = 3;   // By default assume both cylinders are active
     _wrapUcylHomeBody = &aBody; // Save this for use in wrapLine
@@ -196,34 +103,59 @@ void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel,
 
     // Obtain wrapVcylHomeBody based on wrapVcylHomeBodyName
     // TODO should look for PhysicalFrames anywhere in the model.
-    if(!aModel.updBodySet().contains(_wrapVcylHomeBodyName)) {
-        string errorMessage = "Error: wrapVcylHomeBody " + _wrapVcylHomeBodyName + " for wrap obstacle " + getName() + " was not found in model.";
+    if(!aModel.updBodySet().contains(get_wrapVcylHomeBodyName())) {
+        string errorMessage = "Error: wrapVcylHomeBody " + get_wrapVcylHomeBodyName() + " for wrap obstacle " + getName() + " was not found in model.";
         throw Exception(errorMessage);
     }
-    _wrapVcylHomeBody = &aModel.updBodySet().get(_wrapVcylHomeBodyName);
-    
+    _wrapVcylHomeBody = &aModel.updBodySet().get(get_wrapVcylHomeBodyName());
 }
-
-//_____________________________________________________________________________
-/**
-* Copy data members from one WrapDoubleCylinderObst to another.
-*
-* @param aWrapDoubleCylinderObst WrapDoubleCylinderObst to be copied.
-*/
-void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
+void WrapDoubleCylinderObst::extendFinalizeFromProperties()
 {
-    _radiusUcyl = aWrapDoubleCylinderObst._radiusUcyl;
-    _radiusVcyl = aWrapDoubleCylinderObst._radiusVcyl;
-    _wrapUcylDirectionName = aWrapDoubleCylinderObst._wrapUcylDirectionName;
-    _wrapVcylDirectionName = aWrapDoubleCylinderObst._wrapVcylDirectionName;
-    _wrapUcylDirection = aWrapDoubleCylinderObst._wrapUcylDirection;
-    _wrapVcylDirection = aWrapDoubleCylinderObst._wrapVcylDirection;
-    _wrapVcylHomeBodyName = aWrapDoubleCylinderObst._wrapVcylHomeBodyName;
-    _wrapVcylHomeBody = aWrapDoubleCylinderObst._wrapVcylHomeBody;
-    _xyzBodyRotationVcyl = aWrapDoubleCylinderObst._xyzBodyRotationVcyl;
-    _translationVcyl = aWrapDoubleCylinderObst._translationVcyl;
-    _length = aWrapDoubleCylinderObst._length;
-    _activeState = aWrapDoubleCylinderObst._activeState;
+    // Base class
+    Super::extendFinalizeFromProperties();
+
+    // maybe set a parent pointer, _body = aBody;
+    if ( (get_radiusUcyl()<0.0) || (get_radiusVcyl() < 0.0) )
+    {
+        string errorMessage = "Error: radii for WrapDoubleCylinderObst " + getName() + " cannot be less than zero.";
+        throw Exception(errorMessage);
+    }
+/*
+    Cylinder* cyl = new Cylinder(get_radiusUcyl(), get_length());
+    setGeometryQuadrants(cyl);
+*/
+    // Check wrapUcylDirectionName
+    if (get_wrapUcylDirection() == "righthand" || get_wrapUcylDirection() == "right" || get_wrapUcylDirection() == "righthanded" || get_wrapUcylDirection() == "Righthand" || get_wrapUcylDirection() == "Right" || get_wrapUcylDirection() == "Righthanded")
+        m_wrapUcylDirection = righthand;
+    else
+    if (get_wrapUcylDirection() == "lefthand"  || get_wrapUcylDirection() == "left"  || get_wrapUcylDirection() == "lefthanded"  || get_wrapUcylDirection() == "Lefthand"  || get_wrapUcylDirection() == "Left"  || get_wrapUcylDirection() == "Lefthanded")
+        m_wrapUcylDirection = lefthand;
+    else
+    if (get_wrapUcylDirection() == "Unassigned") {  // wrapDirection was not specified in obstacle object definition; use default
+        m_wrapUcylDirection = righthand;
+        set_wrapUcylDirection("righthand");
+    }
+    else {  // wrapUcylDirection was specified incorrectly in obstacle object definition; throw an exception
+        string errorMessage = "Error: wrapUcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
+        throw Exception(errorMessage);
+    }
+
+    // Check wrapVcylDirectionName
+    if (get_wrapVcylDirection() == "righthand" || get_wrapVcylDirection() == "right" || get_wrapVcylDirection() == "righthanded" || get_wrapVcylDirection() == "Righthand" || get_wrapVcylDirection() == "Right" || get_wrapVcylDirection() == "Righthanded")
+        m_wrapVcylDirection = righthand;
+    else
+    if (get_wrapVcylDirection() == "lefthand"  || get_wrapVcylDirection() == "left"  || get_wrapVcylDirection() == "lefthanded"  || get_wrapVcylDirection() == "Lefthand"  || get_wrapVcylDirection() == "Left"  || get_wrapVcylDirection() == "Lefthanded")
+        m_wrapVcylDirection = lefthand;
+    else
+    if (get_wrapVcylDirection() == "Unassigned"){  // wrapDirection was not specified in obstacle object definition; use default
+        m_wrapVcylDirection = righthand;
+        set_wrapVcylDirection("righthand");
+    }
+    else {  // wrapVcylDirection was specified incorrectly in obstacle object definition; throw an exception
+        string errorMessage = "Error: wrapVcylDirection for wrap obstacle " + getName() + " was specified incorrectly.  Use \"righthand\" or \"lefthand\".";
+        throw Exception(errorMessage);
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -248,31 +180,10 @@ const char* WrapDoubleCylinderObst::getWrapTypeName() const
 string WrapDoubleCylinderObst::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _radiusUcyl << "\nheight " << _length;
+    dimensions << "radius " << get_radiusUcyl() << "\nheight " << get_length();
 
     return dimensions.str();
 }
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
-* Assignment operator.
-*
-* @return Reference to this object.
-*/
-WrapDoubleCylinderObst& WrapDoubleCylinderObst::operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapDoubleCylinderObst);
-
-    return(*this);
-}
-
-
-
-
 
 
 /*============================================================================*/
@@ -492,19 +403,19 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 {
 
     double U[3];    U[0]=get_translation()[0];       U[1]= get_translation()[1];       U[2]= get_translation()[2];
-    double V[3];    V[0]=_translationVcyl[0];   V[1]=_translationVcyl[1];   V[2]=_translationVcyl[2];
-    double Ru = ( _wrapUcylDirection==righthand ? _radiusUcyl : -_radiusUcyl );
-    double Rv = ( _wrapVcylDirection==righthand ? _radiusVcyl : -_radiusVcyl );
+    double V[3];    V[0]=get_translationVcyl()[0];   V[1]=get_translationVcyl()[1];   V[2]=get_translationVcyl()[2];
+    double Ru = ( m_wrapUcylDirection==righthand ? get_radiusUcyl() : -get_radiusUcyl() );
+    double Rv = ( m_wrapVcylDirection==righthand ? get_radiusVcyl() : -get_radiusVcyl() );
 
     double P[3],q[3],Q[3],Pq,qQ,QT,ru;      P[0]=aPoint1[0];    P[1]=aPoint1[1];    P[2]=aPoint1[2];
     double S[3],t[3],T[3],Tt,tS,L,rv;       S[0]=aPoint2[0];    S[1]=aPoint2[1];    S[2]=aPoint2[2];
-    
+
     // CONSTRUCT SOME ROTATION MATRICES
     double VcylObstToUcylObst[9];   // DEFINE M As Rotation Matrix from V-Cylinder to U-Cylinder Frame
     double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
-    double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
+    double xyz_body_rotationVcyl[3] = { get_xyz_body_rotationVcyl()[0],get_xyz_body_rotationVcyl()[1],get_xyz_body_rotationVcyl()[2] };
     double UcylObstToUcylBody[9];   load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
-    double VcylObstToVcylBody[9];   load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
+    double VcylObstToVcylBody[9];   load_Rxyz(xyz_body_rotationVcyl,VcylObstToVcylBody);
     double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
@@ -556,11 +467,11 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
     // Register results and return
     aFlag = true;
     aWrapResult.wrap_path_length = qQ + QT + Tt;    // PQ + TS + QT;
-    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];  
+    aWrapResult.r1[0]=q[0];  aWrapResult.r1[1]=q[1];  aWrapResult.r1[2]=q[2];
     aWrapResult.r2[0]=t[0];  aWrapResult.r2[1]=t[1];  aWrapResult.r2[2]=t[2];
-//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];  
+//  aWrapResult.c1[0]=Q[0];  aWrapResult.c1[1]=Q[1];  aWrapResult.c1[2]=Q[2];
 //  aWrapResult.sv[0]=T[0];  aWrapResult.sv[1]=T[1];  aWrapResult.sv[2]=T[2];
-    
+
     // Generate wrap_pts sequence of points tracing out wrapping path
     aWrapResult.wrap_pts.append(aWrapResult.r1);
 //  SimmPoint wppt2(aWrapResult.c1);    aWrapResult.wrap_pts.append(wppt2);
@@ -578,9 +489,9 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 void WrapDoubleCylinderObst::
 getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9]) const {
     double xyzBodyRotation[3] = { get_xyz_body_rotation()[0], get_xyz_body_rotation()[1], get_xyz_body_rotation()[2] };
-    double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
+    double xyz_body_rotationVcyl[3] = { get_xyz_body_rotationVcyl()[0],get_xyz_body_rotationVcyl()[1],get_xyz_body_rotationVcyl()[2] };
     double UcylBodyToUcylObst[9];   load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
-    double VcylBodyToVcylObst[9];   load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
+    double VcylBodyToVcylObst[9];   load_Rxyz(xyz_body_rotationVcyl,VcylBodyToVcylObst);
     double UcylBodyToGround[9];     SimTK::Mat33::updAs(UcylBodyToGround) = _wrapUcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToGround[9];     SimTK::Mat33::updAs(VcylBodyToGround) = _wrapVcylHomeBody->getTransformInGround(s).R().asMat33();
     double VcylBodyToUcylBody[9];   quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
@@ -589,7 +500,7 @@ getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9])
 }
 /*============================================================================*/
 
-    
+
 
 /*============================================================================*/
 /*==== DETERMINE WHETHER 2D PATH FROM P TO S WOULD COME WITHIN R OF ORIGIN ===*/
@@ -745,7 +656,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         /*======= COMPUTE CONSTRAINTS WHICH REPRESENT CONVERGENCE =======*/
         /*===============================================================*/
-        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);    
+        quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);
         /*===============================================================*/
         Td=TnU[0]*TnU[0]+TnU[1]*TnU[1]; Trt=Td-Ru*Ru;   Td=Ru/Td;
         if(Trt<0.0) return(-1); Trt=sqrt(Trt);
@@ -775,9 +686,9 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         /*===============================================================*/
         C[0]=T[0]-x[0]; C[1]=T[1]-x[1]; C[2]=T[2]-x[2];
         /*===============================================================*/
-    
+
         if(fabs(C[0])+fabs(C[1])+fabs(C[2])<1.0e-12) break; /* CONVERGED */
-    
+
         /*===============================================================*/
         /*========= COMPUTE ANALYTICAL GRADIENTS OF CONSTRAINTS =========*/
         /*===============================================================*/

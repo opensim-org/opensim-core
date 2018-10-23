@@ -180,6 +180,9 @@ void testComponent(const Component& instanceToTest)
     // ------------------------------
     // This will find issues with de/serialization.
     cout << "Serializing and deserializing component." << endl;
+    // Give Component opportunity to validate properties that could 
+    // be junk from randomizer
+    instance->finalizeFromProperties();
     testSerialization(instance);
 
     const size_t instanceSize = getCurrentRSS();

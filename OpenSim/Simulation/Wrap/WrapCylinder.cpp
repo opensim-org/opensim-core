@@ -76,7 +76,7 @@ WrapCylinder::~WrapCylinder()
 */
 void WrapCylinder::constructProperties()
 {
-    constructProperty_radius(-1.0);
+    constructProperty_radius(1.0);
     constructProperty_length(1.0);
 }
 
@@ -122,7 +122,13 @@ void WrapCylinder::extendFinalizeFromProperties()
         get_radius() < 0,
         InvalidPropertyValue,
         getProperty_radius().getName(),
-        "Radius must be specified and cannot be less than zero");
+        "Radius cannot be less than zero");
+
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_length() < 0,
+        InvalidPropertyValue,
+        getProperty_length().getName(),
+        "Length cannot be less than zero");
 }
 
 //_____________________________________________________________________________

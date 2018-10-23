@@ -429,7 +429,7 @@ updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOri
         // Load force set(s)
         for(int i=0;i<_forceSetFiles.getSize();i++) {
             cout<<"Adding force object set from "<<_forceSetFiles[i]<<endl;
-            ForceSet *forceSet=new ForceSet(model, _forceSetFiles[i]);
+            ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
             model.updForceSet().append(*forceSet);
         }
 
@@ -553,22 +553,31 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 
 
-bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel, const Storage *loadKinematics)
 {
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
 
+    Model copyModel = aModel;
+    // speedup realize position calculations by removing all force elements
+    // including muscles whose path calculations are most intensive
+    copyModel.updForceSet().clearAndDestroy();
+    copyModel.updControllerSet().clearAndDestroy();
+
     // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
     std::string savedCwd = IO::getCwd();
     IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
+    ExternalLoads* externalLoads = nullptr;
     try {
-        _externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+        copyModel.addModelComponent(externalLoads);
     }
-     catch (const Exception &ex) {
+    catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
@@ -577,13 +586,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         if(getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
-    _externalLoads.setMemoryOwner(false);
-    aModel.finalizeFromProperties();
-    _externalLoads.invokeConnectToModel(aModel);
 
-    string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+    string loadKinematicsFileName =
+        externalLoads->getExternalLoadsModelKinematicsFileName();
     
-    const Storage *loadKinematicsForPointTransformation = NULL;
+    const Storage *loadKinematicsForPointTransformation = nullptr;
     
     //If the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
     if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
@@ -597,14 +604,15 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
             temp = new Storage(loadKinematicsFileName);
             if(!temp){
                 IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+                throw Exception("AbstractTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
             }
         }
         // if loading the data, do whatever filtering operations are also specified
-        if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
+        if(temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
+            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "
+                << externalLoads->getLowpassCutoffFrequencyForLoadKinematics() <<"."<<endl;
             temp->pad(temp->getSize()/2);
-            temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }
         loadKinematicsForPointTransformation = temp;
     }
@@ -612,33 +620,32 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
     // if load kinematics for performing re-expressing the point of application is provided
     // then perform the transformations
     if(loadKinematicsForPointTransformation){
-        SimTK::State& s = aModel.initSystem();
-        
+        SimTK::State& s = copyModel.initSystem();
+
         // Form complete storage so that the kinematics match the state labels/ordering
         Storage *qStore=NULL;
         Storage *uStore=NULL;
-        aModel.getSimbodyEngine().formCompleteStorages(s, 
+        copyModel.getSimbodyEngine().formCompleteStorages(s,
             *loadKinematicsForPointTransformation,
-            qStore,
-            uStore);
-       
-        _externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
+            qStore, uStore);
+
+        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
         delete qStore;
         delete uStore;
-
-        aModel.invalidateSystem();
     }
+
+    //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
+    ExternalLoads* exLoadsClone = externalLoads->clone();
+    aModel.addModelComponent(exLoadsClone);
+
+    // let tool hold on to a reference to the external loads for convenience
+    _externalLoads = exLoadsClone;
     
-    // Add external loads to the set of all model forces
-    for(int i=0; i<_externalLoads.getSize(); ++i){
-        aModel.addForce(&_externalLoads[i]);
-    }
-
     if(!loadKinematics)
         delete loadKinematics;
 
     IO::chDir(savedCwd);
-    return(true);
+    return true;
 }
 
 
@@ -845,7 +852,7 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
             if (_model->getForceSet().contains(candidateName))
                 continue;
         }
-        found = !(_externalLoads.contains(candidateName));
+        found = !(_externalLoads->contains(candidateName));
     };
     return candidateName;
 }
@@ -902,11 +909,11 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
             sprintf(pad,"%d", f+1);
             std::string suffix = "ExternalForce_"+string(pad);
             xf->setName(suffix);
-            _externalLoads.adoptAndAppend(xf);
+            _externalLoads->adoptAndAppend(xf);
         }
-        _externalLoads.setDataFileName(oldFile);
+        _externalLoads->setDataFileName(oldFile);
         std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
-        _externalLoads.print(newName);
+        _externalLoads->print(newName);
         if(getDocument()) IO::chDir(savedCwd);
         cout<<"\n\n- Created ForceSet file " << newName << "to apply forces from " << oldFile << ".\n\n";
         return newName;

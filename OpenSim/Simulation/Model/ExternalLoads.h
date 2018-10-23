@@ -84,7 +84,7 @@ private:
     /* If point of applications for external forces must be re-expressed
        then build new storages to be assigned to the individual ExternalForces
        with the transformed point data. Hang-on to them so we can delete them. */
-    ArrayPtrs<Storage> _storages;
+    std::vector<std::shared_ptr<Storage>> _storages;
 
 //=============================================================================
 // METHODS
@@ -94,8 +94,11 @@ private:
     //--------------------------------------------------------------------------
 public:
     ExternalLoads();
-    ExternalLoads(Model& model);
-    ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
+
+    /**  Construct an actuator set from file.
+    * @param fileName Name of the file. */
+    ExternalLoads(const std::string &fileName, bool aUpdateFromXMLNode);
+
     ExternalLoads(const ExternalLoads &aExternalLoads);
     virtual ~ExternalLoads();
 
@@ -106,7 +109,7 @@ public:
 
     // Connect all ExternalForces inside this ExternalLoads collection to
     // their Model. Overrides ModelComponentSet method.
-    void invokeConnectToModel(Model& aModel) override;
+    void extendConnectToModel(Model& aModel) override;
 
     const std::string& getDataFileName() const { return _dataFileName;};
     void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };

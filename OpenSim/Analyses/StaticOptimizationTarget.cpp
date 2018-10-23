@@ -590,7 +590,8 @@ computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constr
         const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
-            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            // get the full coordinate speed state variable path name
+            string fullname = coord.getStateVariableNames()[1];
             ind = _statesStore->getStateIndex(fullname, 0);
             if (ind < 0){
                 string msg = "StaticOptimizationTarget::computeConstraintVector: \n";

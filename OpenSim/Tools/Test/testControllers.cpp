@@ -61,11 +61,12 @@ int main()
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
     }   
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << "TestControllers failed due to the following error(s):" << endl;
+        cout << e.what() << endl;
         return 1;
     }
-    cout << "Done" << endl;
+    cout << "TestControllers passed." << endl;
     return 0;
 }
 
@@ -217,6 +218,7 @@ void testPrescribedControllerOnBlock(bool enabled)
 
     // add the controller to the model
     osimModel.addController(&actuatorController);
+    osimModel.disownAllComponents();
     
     osimModel.print("blockWithPrescribedController.osim");
     Model modelFromFile("blockWithPrescribedController.osim");
@@ -254,7 +256,6 @@ void testPrescribedControllerOnBlock(bool enabled)
     Storage states(manager.getStateStorage());
     states.print("block_push.sto");
 
-    osimModel.disownAllComponents();
 }// end of testPrescribedControllerOnBlock()
 
 
@@ -323,7 +324,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     Model osimModel(modelFile);
 
     try{
-        ForceSet *forceSet=new ForceSet(osimModel, actuatorsFile);
+        ForceSet *forceSet=new ForceSet(actuatorsFile, true);
         osimModel.updForceSet().append(*forceSet);
     }
     catch(const std::exception& e){

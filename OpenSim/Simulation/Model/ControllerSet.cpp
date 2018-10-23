@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
  * Author(s): Frank C. Anderson, Peter Loan                                   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -31,99 +31,9 @@
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/TrackingController.h>
 #include "Actuator.h" 
-#include <OpenSim/Common/Set.h>
-#include "SimTKsimbody.h"
 
 using namespace std;
 using namespace OpenSim;
-
-#ifndef SWIG
-namespace OpenSim {
-template class OSIMSIMULATION_API ModelComponentSet<Controller>;
-}
-#endif
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-
-ControllerSet::ControllerSet(Model& model) : ModelComponentSet<Controller>(model)
-{
-}
-//_____________________________________________________________________________
-/**
- * Construct a controller set from file.
- *
- * @param aFileName Name of the file.
- */
-
-ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-     ModelComponentSet<Controller>(model, aFileName, false)
-{
-    if(aUpdateFromXMLNode) updateFromXMLDocument();
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aControllerSet ControllerSet to be copied.
- */
-ControllerSet::ControllerSet(const ControllerSet& aControllerSet) :
-    ModelComponentSet<Controller>(aControllerSet)
-{
-
-    // Class Members
-    copyData(aControllerSet);
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy the member variables of the ControllerSet.
- *
- * @param aControllerSet controller set to be copied
- */
-void ControllerSet::copyData(const ControllerSet& aControllerSet)
-{
-    _actuatorSet =  aControllerSet._actuatorSet;
-    const Storage* source = aControllerSet._controlStore.get();
-    if (source) {
-        _controlStore.reset(new Storage(*source, true));
-    } else {
-        _controlStore.reset();
-    }
-}
-
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-ControllerSet& ControllerSet::operator=(const ControllerSet &aControllerSet)
-{
-    // BASE CLASS
-    Set<Controller>::operator=(aControllerSet);
-
-    // Class Members
-    copyData(aControllerSet);
-
-    return(*this);
-}
 
 void ControllerSet::constructStorage() 
 {

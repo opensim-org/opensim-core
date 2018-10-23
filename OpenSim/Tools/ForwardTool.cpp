@@ -248,7 +248,6 @@ bool ForwardTool::run()
 
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
-
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
