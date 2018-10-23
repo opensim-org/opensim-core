@@ -153,29 +153,23 @@ void Component::addComponent(Component* subcomponent)
     updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
 
-    // TODO add comments, have addForce() etc also perform these actions.
-    for (auto& comp : subcomponent->updComponentList()) {
-        for (auto& it : comp._socketsTable) {
-            auto& socket = it.second;
-            for (int iConn = 0; iConn < socket->getNumConnectees(); ++iConn) {
-                ComponentPath path(socket->getConnecteePath(iConn));
-                // TODO std::cout << "  DEBUG " << comp.getAbsolutePathString()
-                if (path.isAbsolute()) {
-                    ComponentPath newPath("/" + subcomponent->getName());
-                    for (int iPath = 0; iPath < path.getNumPathLevels();
-                         ++iPath) {
-                        newPath.pushBack(
-                                path.getSubcomponentNameAtLevel(iPath));
-                    }
-                    socket->setConnecteePath(newPath.toString(), iConn);
-                }
-            }
-        }
-    }
+    subcomponent->prependToConnecteePath();
 
     // allow the derived Component to perform secondary operations
     // in response to the inclusion of the subcomponent
     extendAddComponent(subcomponent);
+}
+
+void Component::prependToConnecteePath() {
+    const std::string absPath = getAbsolutePathString();
+    for (auto& comp : updComponentList()) {
+        for (auto& it : comp._socketsTable) {
+            it.second->prependToConnecteePath(absPath);
+        }
+        for (auto& it : comp._inputsTable) {
+            it.second->prependToConnecteePath(absPath);
+        }
+    }
 }
 
 void Component::finalizeFromProperties()

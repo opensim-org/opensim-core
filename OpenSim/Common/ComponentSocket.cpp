@@ -38,3 +38,49 @@ AbstractSocket::updConnecteePathProp() {
     const auto& prop = owner->getProperty<std::string>(_connecteePathIndex);
     return const_cast<Property<std::string>&>(prop);
 }
+
+void AbstractSocket::prependToConnecteePath(const std::string& pathToPrepend) {
+    for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
+        ComponentPath path(getConnecteePath(iConn));
+        if (path.isAbsolute()) {
+            ComponentPath newPath(pathToPrepend);
+            for (int iPath = 0; iPath < path.getNumPathLevels();
+                 ++iPath) {
+                newPath.pushBack(
+                        path.getSubcomponentNameAtLevel(iPath));
+            }
+            setConnecteePath(newPath.toString(), iConn);
+        }
+    }
+}
+
+void AbstractInput::prependToConnecteePath(const std::string& pathToPrepend) {
+    for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
+        std::string connecteePath = getConnecteePath(iConn);
+        std::string componentPath;
+        std::string outputName;
+        std::string channelName;
+        std::string alias;
+        AbstractInput::parseConnecteePath(connecteePath,
+                                          componentPath,
+                                          outputName,
+                                          channelName,
+                                          alias);
+        ComponentPath path(componentPath);
+        if (path.isAbsolute()) {
+            ComponentPath newPath(pathToPrepend);
+            for (int iPath = 0; iPath < path.getNumPathLevels();
+                 ++iPath) {
+                newPath.pushBack(
+                        path.getSubcomponentNameAtLevel(iPath));
+            }
+            std::string newConnecteePath =
+                    AbstractInput::composeConnecteePath(
+                            newPath.toString(),
+                            outputName, channelName, alias);
+
+            setConnecteePath(newConnecteePath, iConn);
+        }
+    }
+
+}

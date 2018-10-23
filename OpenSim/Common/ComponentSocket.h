@@ -300,6 +300,11 @@ protected:
 
 private:
 
+    /// Prepend the provided name to all (if any) absolute connectee paths
+    /// stored in this socket. This is to be used when adding one component
+    /// to another.
+    virtual void prependToConnecteePath(const std::string& pathToPrepend);
+
     std::string _name;
     SimTK::Stage _connectAtStage = SimTK::Stage::Empty;
     PropertyIndex _connecteePathIndex;
@@ -646,7 +651,13 @@ protected:
                   const SimTK::Stage& connectAtStage,
                   Component& owner) :
         AbstractSocket(name, connecteePathIndex, connectAtStage, owner) {}
-    
+
+private:
+    void prependToConnecteePath(const std::string& pathToPrepend) override;
+
+    /* So that Component can invoke prependToConnecteePath(). */
+    friend Component;
+
 //=============================================================================
 };  // END class AbstractInput
 

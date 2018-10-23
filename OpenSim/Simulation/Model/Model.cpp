@@ -1003,6 +1003,7 @@ void Model::addModelComponent(ModelComponent* component)
     if(component){
         upd_ComponentSet().adoptAndAppend(component);
         finalizeFromProperties();
+        component->prependToConnecteePath();
     }
 }
 
@@ -1012,6 +1013,7 @@ void Model::addBody(OpenSim::Body* body)
     if (body){
         updBodySet().adoptAndAppend(body);
         finalizeFromProperties();
+        body->prependToConnecteePath();
     }
 }
 
@@ -1021,6 +1023,7 @@ void Model::addMarker(OpenSim::Marker* marker)
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
         finalizeFromProperties();
+        marker->prependToConnecteePath();
     }
 }
 
@@ -1031,6 +1034,7 @@ void Model::addJoint(Joint* joint)
         updJointSet().adoptAndAppend(joint);
         finalizeFromProperties();
         updCoordinateSet().populate(*this);
+        joint->prependToConnecteePath();
     }
 }
 
@@ -1040,6 +1044,7 @@ void Model::addConstraint(OpenSim::Constraint *constraint)
     if(constraint){
         updConstraintSet().adoptAndAppend(constraint);
         finalizeFromProperties();
+        constraint->prependToConnecteePath();
     }
 }
 
@@ -1049,6 +1054,7 @@ void Model::addForce(OpenSim::Force *force)
     if(force){
         updForceSet().adoptAndAppend(force);
         finalizeFromProperties();
+        force->prependToConnecteePath();
     }
 }
 
@@ -1058,6 +1064,7 @@ void Model::addProbe(OpenSim::Probe *probe)
     if(probe){
         updProbeSet().adoptAndAppend(probe);
         finalizeFromProperties();
+        probe->prependToConnecteePath();
     }
 }
 
@@ -1075,6 +1082,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
     if (contactGeometry) {
         updContactGeometrySet().adoptAndAppend(contactGeometry);
         finalizeFromProperties();
+        contactGeometry->prependToConnecteePath();
     }
 }
 
@@ -1084,6 +1092,7 @@ void Model::addController(Controller *controller)
     if (controller) {
         updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
+        controller->prependToConnecteePath();
     }
 }
 //_____________________________________________________________________________
