@@ -196,7 +196,7 @@ void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
                 if (jointName.empty())
                     jointName = IO::Lowercase(jointElem.getElementTag());
                 connectee_name = XMLDocument::updateConnecteePath30517(
-                        4, "jointset", jointName + "/" + coordName);
+                        "jointset", jointName + "/" + coordName);
             }
             return connectee_name;
         };

@@ -515,8 +515,7 @@ void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element
     //frames_node->writeToString(debug);
 }
 
-std::string XMLDocument::updateConnecteePath30517(
-        int depth,
+string XMLDocument::updateConnecteePath30517(
         const std::string& connecteeSetName,
         const std::string& connecteeName) {
     std::string connecteePath;

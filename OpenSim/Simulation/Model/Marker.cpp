@@ -149,7 +149,7 @@ void Marker::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
             // (model, markers), and Bodies were necessarily 1 level deep;
             // here we create the correct relative path (accounting for sets
             // being components).
-            bName = XMLDocument::updateConnecteePath30517(2, "bodyset", bName);
+            bName = XMLDocument::updateConnecteePath30517("bodyset", bName);
             connecteeElement.setValue(bName);
             frameElement.insertNodeAfter(frameElement.node_end(), connecteeElement);
             aNode.insertNodeAfter(bIter, connectorsElement);

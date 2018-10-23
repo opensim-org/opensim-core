@@ -92,7 +92,7 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
                 jointName = IO::Lowercase(
                         coordElem.getParentElement().getElementTag());
             connectee_name = XMLDocument::updateConnecteePath30517(
-                    4, "jointset", jointName + "/" + coordName);
+                    "jointset", jointName + "/" + coordName);
         }
 
         XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate",

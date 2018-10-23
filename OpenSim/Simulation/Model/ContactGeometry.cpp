@@ -130,8 +130,8 @@ void ContactGeometry::updateFromXMLNode(SimTK::Xml::Element& node,
             // (model, contact_geom), and Bodies are necessarily 1 level deep.
             // Here we create the correct relative path (accounting for sets
             // being components).
-            body_name = XMLDocument::updateConnecteePath30517(
-                    2, "bodyset", body_name);
+            body_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                              body_name);
             XMLDocument::addConnector(node, "Connector_PhysicalFrame_",
                     "frame", body_name);
         }
