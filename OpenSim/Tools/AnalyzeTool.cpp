@@ -596,6 +596,8 @@ bool AnalyzeTool::run(bool plotting)
 
     IO::chDir(saveWorkingDirectory);
 
+    removeExternalLoadsFromModel();
+
     return completed;
 }
 
