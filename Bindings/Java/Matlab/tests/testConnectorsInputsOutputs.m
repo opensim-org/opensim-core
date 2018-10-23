@@ -57,7 +57,7 @@ assert(body.getMass() == 2);
 offset.connectSocket_parent(ground);
 offset.updSocket('parent').connect(ground);
 model.finalizeConnections()
-assert(strcmp(offset.getSocket('parent').getConnecteePath(), '../ground'));
+assert(strcmp(offset.getSocket('parent').getConnecteePath(), '/ground'));
 
 
 
