@@ -2584,6 +2584,13 @@ protected:
     }
     /// @}
 
+    /// For internal use. Update absolute connectee paths in all sockets and
+    /// inputs in all subcomponents of this subcomponent by prepending the
+    /// absolute path of this component. To be used when adding this component
+    /// to another component.
+    // Must be public so that components can invoke this on other components.
+    void prependToConnecteePath();
+
 private:
 
     //Mark components that are properties of this Component as subcomponents of
@@ -2758,12 +2765,6 @@ protected:
     void resetSubcomponentOrder() {
         _orderedSubcomponents.clear();
     }
-
-    /// Update absolute connectee paths in all sockets and inputs in all
-    /// subcomponents of this subcomponent by prepending the absolute path of
-    /// this component. To be used when adding this component to another
-    /// component.
-    void prependToConnecteePath();
 
     /// Handle a change in XML syntax for Sockets.
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
