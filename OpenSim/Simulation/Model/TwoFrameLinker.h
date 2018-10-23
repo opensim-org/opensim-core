@@ -664,10 +664,10 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             // in the ConstraintSet and ForceSet, which means we need to go
             // two levels up (../../)  and into the bodyset to find the 
             // Bodies (frames) being linked.
-            else if(frame1Name != "ground") {
-                frame1_connectee_name = "../../bodyset/" + frame1Name;
-            } else {
-                frame1_connectee_name = "../../" + frame1Name;
+            else {
+                frame1_connectee_name =
+                        XMLDocument::updateConnecteePath30517(2, "bodyset",
+                                                              frame1Name);
             }
 
             // again for the offset frame on the child
@@ -678,10 +678,10 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                         frame2_connectee_name,
                         frame2Name, locationInFrame2, orientationInFrame2);
                 body2Element->setValue(frame2Name + "_offset");
-            } else if (frame2Name != "ground") {
-                frame2_connectee_name = "../../bodyset/" + frame2Name;
             } else {
-                frame2_connectee_name = "../../" + frame2Name;
+                frame2_connectee_name =
+                        XMLDocument::updateConnecteePath30517(2, "bodyset",
+                                                              frame2Name);
             }
 
 

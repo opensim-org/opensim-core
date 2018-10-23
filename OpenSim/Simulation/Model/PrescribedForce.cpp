@@ -85,10 +85,8 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
             // (model, forces), and Bodies are necessarily 1 level deep.
             // Here we create the correct relative path (accounting for sets
             // being components).
-            if (frame_name == "ground")
-                frame_name = "../../" + frame_name;
-            else if (!frame_name.empty())
-                frame_name = "../../bodyset/" + frame_name;
+            frame_name = XMLDocument::updateConnecteePath30517(2, "bodyset",
+                    frame_name);
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "frame", frame_name);
         }

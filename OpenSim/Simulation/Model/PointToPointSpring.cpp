@@ -217,17 +217,13 @@ void PointToPointSpring::updateFromXMLNode(SimTK::Xml::Element& aNode, int versi
             // being components).
             if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-                if (body1_name == "ground")
-                    body1_name = "../../" + body1_name;
-                else if (!body1_name.empty())
-                    body1_name = "../../bodyset/" + body1_name;
+                body1_name = XMLDocument::updateConnecteePath30517(
+                        2, "bodyset", body1_name);
             }
             if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-                if (body2_name == "ground")
-                    body2_name = "../../" + body2_name;
-                else if (!body2_name.empty())
-                    body2_name = "../../bodyset/" + body2_name;
+                body2_name = XMLDocument::updateConnecteePath30517(
+                        2, "bodyset", body2_name);
             }
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                 "body1", body1_name);
