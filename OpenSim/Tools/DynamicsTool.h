@@ -75,9 +75,11 @@ protected:
     /** Name of the file containing the external loads applied to the model. */
     OpenSim::PropertyStr _externalLoadsFileNameProp;
     std::string &_externalLoadsFileName;
-    /** External loads object that manages loading and applying external forces
-        to the model, including transformations required by the Tool */
+    /** ExternalLoads member for creating and editing applied external forces
+    (e.g. GRFs through the GUI) prior to running the Tool */
     ExternalLoads   _externalLoads;
+    // Reference to external loads added to the model but not owned by the Tool
+    SimTK::ReferencePtr<ExternalLoads> _modelExternalLoads;
 
 
 //=============================================================================
@@ -139,7 +141,11 @@ public:
         _excludedForces = aExcluded;
     }
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel, const Storage *loadKinematics=NULL);
+                              Model& aModel, const Storage *loadKinematics=NULL);
+
+    bool modelHasExternalLoads() { return !_modelExternalLoads.empty(); }
+
+    void removeExternalLoadsFromModel();
 
     virtual bool run() override SWIG_DECLARE_EXCEPTION=0;
 

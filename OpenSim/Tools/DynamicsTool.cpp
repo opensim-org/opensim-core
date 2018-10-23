@@ -218,6 +218,10 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
     }
 }
 
+
+// NOTE: The implementation here should be verbatim that of AbstractTool::
+// createExternalLoads to ensure consistent behavior of Tools in the GUI
+// TODO: Unify the code bases.
 bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel, const Storage *loadKinematics)
 {
@@ -305,10 +309,23 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
 
     // copy over created external loads to the external loads owned by the tool
     _externalLoads = *externalLoads;
+    // tool holds on to a reference of the external loads in the model so it can
+    // be removed afterwards
+    _modelExternalLoads = exLoadsClone;
 
     if(!loadKinematics)
         delete loadKinematics;
 
     IO::chDir(savedCwd);
     return true;
+}
+
+void DynamicsTool::removeExternalLoadsFromModel()
+{
+    cout << "'" << getName() << "'" << getConcreteClassName()
+        << "::removeExternalLoadsFromModel" << endl;
+    // If ExternalLoads were added to the model by the Tool, then remove them
+    if (modelHasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
+    }
 }
