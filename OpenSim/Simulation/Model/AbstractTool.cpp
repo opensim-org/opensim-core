@@ -552,7 +552,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     _model->updAnalysisSet().printResults(aBaseName,aDir,aDT,aExtension);
 }
 
-
+// NOTE: The implementation here should be verbatim that of DynamicsTool::
+// createExternalLoads to ensure consistent behavior of Tools in the GUI
+// TODO: Unify the code bases.
 bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel, const Storage *loadKinematics)
 {
@@ -640,7 +642,8 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 
     // copy over created external loads to the external loads owned by the tool
     _externalLoads = *externalLoads;
-    // let tool hold on to a reference to the external loads for convenience
+    // tool holds on to a reference of the external loads in the model so it can
+    // be removed afterwards
     _modelExternalLoads = exLoadsClone;
     
     if(!loadKinematics)
@@ -650,6 +653,15 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     return true;
 }
 
+void AbstractTool::removeExternalLoadsFromModel()
+{
+    cout << "'" << getName() << "'" << getConcreteClassName()
+        << "::removeExternalLoadsFromModel" << endl;
+    // If ExternalLoads were added to the model by the Tool, then remove them
+    if (modelHasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
+    }
+}
 
 //_____________________________________________________________________________
 /**
