@@ -2651,12 +2651,6 @@ private:
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
         {   return updSystem().updDefaultSubsystem(); }
 
-    /// Update absolute connectee paths in all sockets and inputs in all
-    /// subcomponents of this subcomponent by prepending the absolute path of
-    /// this component. To be used when adding this component to another
-    /// component.
-    void prependToConnecteePath();
-
     // Clear all modeling options, continuous and discrete state variables,
     // and cache variable allocated by this Component
     void clearStateAllocations();
@@ -2764,6 +2758,12 @@ protected:
     void resetSubcomponentOrder() {
         _orderedSubcomponents.clear();
     }
+
+    /// Update absolute connectee paths in all sockets and inputs in all
+    /// subcomponents of this subcomponent by prepending the absolute path of
+    /// this component. To be used when adding this component to another
+    /// component.
+    void prependToConnecteePath();
 
     /// Handle a change in XML syntax for Sockets.
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
