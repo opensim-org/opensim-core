@@ -209,6 +209,7 @@ void testTorqueActuator()
 
     //model->addProbe(powerProbe);
 
+    model->finalizeConnections();
     model->print("TestTorqueActuatorModel.osim");
     model->setUseVisualizer(false);
 

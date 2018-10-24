@@ -1003,6 +1003,7 @@ void Model::addModelComponent(ModelComponent* component)
     if(component){
         upd_ComponentSet().adoptAndAppend(component);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*component);
     }
 }
 
@@ -1012,6 +1013,7 @@ void Model::addBody(OpenSim::Body* body)
     if (body){
         updBodySet().adoptAndAppend(body);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*body);
     }
 }
 
@@ -1021,6 +1023,7 @@ void Model::addMarker(OpenSim::Marker* marker)
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*marker);
     }
 }
 
@@ -1031,6 +1034,7 @@ void Model::addJoint(Joint* joint)
         updJointSet().adoptAndAppend(joint);
         finalizeFromProperties();
         updCoordinateSet().populate(*this);
+        prependComponentPathToConnecteePath(*joint);
     }
 }
 
@@ -1040,6 +1044,7 @@ void Model::addConstraint(OpenSim::Constraint *constraint)
     if(constraint){
         updConstraintSet().adoptAndAppend(constraint);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*constraint);
     }
 }
 
@@ -1049,6 +1054,7 @@ void Model::addForce(OpenSim::Force *force)
     if(force){
         updForceSet().adoptAndAppend(force);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*force);
     }
 }
 
@@ -1058,6 +1064,7 @@ void Model::addProbe(OpenSim::Probe *probe)
     if(probe){
         updProbeSet().adoptAndAppend(probe);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*probe);
     }
 }
 
@@ -1075,6 +1082,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
     if (contactGeometry) {
         updContactGeometrySet().adoptAndAppend(contactGeometry);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*contactGeometry);
     }
 }
 
@@ -1084,6 +1092,7 @@ void Model::addController(Controller *controller)
     if (controller) {
         updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
+        prependComponentPathToConnecteePath(*controller);
     }
 }
 //_____________________________________________________________________________

@@ -666,7 +666,7 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
             // Bodies (frames) being linked.
             else {
                 frame1_connectee_name =
-                        XMLDocument::updateConnecteePath30517(2, "bodyset",
+                        XMLDocument::updateConnecteePath30517("bodyset",
                                                               frame1Name);
             }
 
@@ -680,7 +680,7 @@ void TwoFrameLinker<C, F>::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 body2Element->setValue(frame2Name + "_offset");
             } else {
                 frame2_connectee_name =
-                        XMLDocument::updateConnecteePath30517(2, "bodyset",
+                        XMLDocument::updateConnecteePath30517("bodyset",
                                                               frame2Name);
             }
 

@@ -57,7 +57,7 @@ assert(body.getMass() == 2);
 offset.connectSocket_parent(ground);
 offset.updSocket('parent').connect(ground);
 model.finalizeConnections()
-assert(strcmp(offset.getSocket('parent').getConnecteePath(), '../ground'));
+assert(strcmp(offset.getSocket('parent').getConnecteePath(), '/ground'));
 
 
 
@@ -82,7 +82,7 @@ concreteOutput.getValue(state);
 % --------
 % Access AbstractChannels.
 assert(strcmp(coord.getOutput('speed').getChannel('').getPathName(), ...
-              '/leg/jointset/pin/pin_coord_0|speed'));
+              '/jointset/pin/pin_coord_0|speed'));
 
 % Access the value of a concrete Channel.
 % TODO Concrete channels are not wrapped yet.
@@ -108,8 +108,8 @@ model.finalizeConnections()
 % Access (and iterate through) the AbstractInputs, using names.
 names = rep.getInputNames();
 expectedAliases = {'', 'target', '', 'second_col'};
-expectedLabels  = {'/leg/jointset/pin/pin_coord_0|value', 'target', ...
-                   '/leg/source|column:c1', 'second_col'};
+expectedLabels  = {'/jointset/pin/pin_coord_0|value', 'target', ...
+                   '/source|column:c1', 'second_col'};
 for i = 0:(names.size() - 1)
     % Actually, there is only one Input, named 'inputs'.
     % We connected it to 4 channels.

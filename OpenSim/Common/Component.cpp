@@ -153,9 +153,24 @@ void Component::addComponent(Component* subcomponent)
     updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
 
+    prependComponentPathToConnecteePath(*subcomponent);
+
     // allow the derived Component to perform secondary operations
     // in response to the inclusion of the subcomponent
     extendAddComponent(subcomponent);
+}
+
+void Component::prependComponentPathToConnecteePath(
+        Component& subcomponent) {
+    const std::string compPath = subcomponent.getAbsolutePathString();
+    for (auto& comp : subcomponent.updComponentList()) {
+        for (auto& it : comp._socketsTable) {
+            it.second->prependComponentPathToConnecteePath(compPath);
+        }
+        for (auto& it : comp._inputsTable) {
+            it.second->prependComponentPathToConnecteePath(compPath);
+        }
+    }
 }
 
 void Component::finalizeFromProperties()
@@ -698,13 +713,15 @@ void Component::setOwner(const Component& owner)
 
 std::string Component::getAbsolutePathString() const
 {
+    if (!hasOwner()) return "/";
     std::string absPathName("/" + getName());
 
     const Component* up = this;
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        absPathName.insert(0, "/" + up->getName());
+        if (up->hasOwner())
+            absPathName.insert(0, "/" + up->getName());
     }
 
     return absPathName;
@@ -713,6 +730,8 @@ std::string Component::getAbsolutePathString() const
 
 ComponentPath Component::getAbsolutePath() const
 {
+    if (!hasOwner()) return ComponentPath({}, true);
+
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
 
@@ -720,18 +739,24 @@ ComponentPath Component::getAbsolutePath() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        pathVec.insert(pathVec.begin(), up->getName());
+        if (up->hasOwner())
+            pathVec.insert(pathVec.begin(), up->getName());
     }
 
     return ComponentPath(pathVec, true);
 }
 
-std::string Component::getRelativePathName(const Component& wrt) const
+std::string Component::getRelativePathString(const Component& wrt) const
+{
+    return getRelativePath(wrt).toString();
+}
+
+ComponentPath Component::getRelativePath(const Component& wrt) const
 {
     ComponentPath thisP = getAbsolutePath();
     ComponentPath wrtP = wrt.getAbsolutePath();
 
-    return thisP.formRelativePath(wrtP).toString();
+    return thisP.formRelativePath(wrtP);
 }
 
 const Component::StateVariable* Component::

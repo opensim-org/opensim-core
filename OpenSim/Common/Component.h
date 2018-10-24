@@ -688,9 +688,13 @@ public:
      * need the path as a string. */
     ComponentPath getAbsolutePath() const;
 
-    /** Get the relative pathname of this Component with respect to another
+    /** Get the relative path of this Component with respect to another
+     * Component, as a string. */
+    std::string getRelativePathString(const Component& wrt) const;
+
+    /** Get the relative path of this Component with respect to another
      * Component. */
-    std::string getRelativePathName(const Component& wrt) const;
+    ComponentPath getRelativePath(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
      * path name. For example,
@@ -2325,12 +2329,7 @@ protected:
         size_t iPathEltStart = 0u;
         const Component* current = this;
         if (path.isAbsolute()) {
-            while (current->hasOwner()) current = &current->getOwner();
-            if (path.getNumPathLevels() == 0 ||
-                    current->getName() != path.getSubcomponentNameAtLevel(0))
-                return nullptr;
-            // Skip over the root name.
-            iPathEltStart = 1u;
+            current = &current->getRoot();
         } else {
             while (iPathEltStart < path.getNumPathLevels() &&
                     path.getSubcomponentNameAtLevel(iPathEltStart) == "..") {
@@ -2588,6 +2587,11 @@ protected:
         return propIndex;
     }
     /// @}
+
+    /// For internal use. Update absolute connectee paths in all sockets and
+    /// inputs in the subcomponent by prepending the absolute path of the
+    /// subcomponent. To be used when adding subcomponent to another component.
+    static void prependComponentPathToConnecteePath(Component& subcomponent);
 
 private:
 
@@ -3050,11 +3054,13 @@ void Socket<C>::finalizeConnection(const Component& root) {
             "root component. Did you intend to add '" +
             rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
-        std::string objPathName = connectee->getAbsolutePathString();
-        std::string ownerPathName = getOwner().getAbsolutePathString();
-        // otherwise store the relative path name to the object
-        std::string relPathName = connectee->getRelativePathName(getOwner());
-        updConnecteePathProp().setValue(0, relPathName);
+        ComponentPath connecteePath = connectee->getRelativePath(getOwner());
+        // If the relative path starts with ".." then use an absolute path
+        // instead.
+        if (connecteePath.getNumPathLevels() > 1 &&
+                connecteePath.getSubcomponentNameAtLevel(0) == "..")
+            connecteePath = connectee->getAbsolutePath();
+        updConnecteePathProp().setValue(0, connecteePath.toString());
         
     } else {
         const auto connecteePath = getConnecteePath();
@@ -3138,9 +3144,14 @@ void Input<T>::finalizeConnection(const Component& root) {
 
             ++i;
             // Update the connectee path as
-            // <RelOwnerPath>/<Output><:Channel><(annotation)>
-            ComponentPath path(chan->getOutput().getOwner().getRelativePathName(
-                    getOwner()));
+            // <OwnerPath>/<Output><:Channel><(annotation)>
+            const auto& outputOwner = chan->getOutput().getOwner();
+            ComponentPath path = outputOwner.getRelativePath(getOwner());
+            // If the relative path starts with ".." then use an absolute path
+            // instead.
+            if (path.getNumPathLevels() > 1 &&
+                    path.getSubcomponentNameAtLevel(0) == "..")
+                path = outputOwner.getAbsolutePath();
 
             auto pathStr = composeConnecteePath(path.toString(),
                                                 chan->getOutput().getName(),

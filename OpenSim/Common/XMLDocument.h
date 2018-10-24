@@ -140,7 +140,7 @@ public:
      * @param connecteeName The name of the connectee from the version 30000
      *      file.
      * Note: It is okay for connecteePath to be a reference to connecteeName. */
-    static std::string updateConnecteePath30517(int depth,
+    static std::string updateConnecteePath30517(
             const std::string& connecteeSetName,
             const std::string& connecteeName);
     /** Find the first XML Element (depth-first search) with the provided

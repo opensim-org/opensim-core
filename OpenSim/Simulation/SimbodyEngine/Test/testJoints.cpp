@@ -2162,7 +2162,7 @@ void testAutomaticJointReversal()
                                   cfoot, zvec, zvec, cground, footInGround, zvec);
     modelConstrained.addConstraint(footConstraint);
 
-    auto fcpath = footConstraint->getRelativePathName(cfoot);
+    auto fcpath = footConstraint->getRelativePathString(cfoot);
 
     auto& off1 = footConstraint->getFrame1();
     auto& sock1 = off1.getSocket<PhysicalFrame>("parent");
@@ -2175,8 +2175,8 @@ void testAutomaticJointReversal()
     /*auto& pathOff1 = */sock1.getConnecteePath();
     /*auto& pathOff2 = */sock2.getConnecteePath();
 
-    auto relPathOff1 = cfoot.getRelativePathName(off1);
-    auto relPathOff2 = cground.getRelativePathName(off2);
+    auto relPathOff1 = cfoot.getRelativePathString(off1);
+    auto relPathOff2 = cground.getRelativePathString(off2);
 
     //modelConstrained.setUseVisualizer(true);
     modelConstrained.printSubcomponentInfo();

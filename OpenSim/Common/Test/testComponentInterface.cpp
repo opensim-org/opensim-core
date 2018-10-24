@@ -679,7 +679,7 @@ void testMisc() {
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updSocket<Foo>("parentFoo").setConnecteePath(
-            compFoo.getRelativePathName(bar2));
+            compFoo.getRelativePathString(bar2));
     
     bar2.connectSocket_childFoo(compFoo.get_Foo1());
     compFoo.upd_Foo1().updInput("input1")
@@ -962,27 +962,27 @@ void testComponentPathNames()
     top.printOutputInfo();
 
     std::string absPathC = C->getAbsolutePathString();
-    ASSERT(absPathC == "/Top/A/B/C");
+    ASSERT(absPathC == "/A/B/C");
 
     std::string absPathE = E->getAbsolutePathString();
-    ASSERT(absPathE == "/Top/A/D/E");
+    ASSERT(absPathE == "/A/D/E");
 
     // Specific tests to relative path name facilities
-    std::string EWrtB = E->getRelativePathName(*B);
+    std::string EWrtB = E->getRelativePathString(*B);
     ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
 
-    std::string BWrtE = B->getRelativePathName(*E);
-    ASSERT(BWrtE == "../../B"); // "/Top/A/" as common
+    std::string BWrtE = B->getRelativePathString(*E);
+    ASSERT(BWrtE == "../../B"); // "/A/" as common
 
     // null case component wrt itself
-    std::string fooWrtFoo = D->getRelativePathName(*D);
+    std::string fooWrtFoo = D->getRelativePathString(*D);
     ASSERT(fooWrtFoo == "");
 
-    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
-    ASSERT(CWrtOtherTop == "../Top/A/B/C");
+    std::string CWrtOtherTop = C->getRelativePathString(otherTop);
+    ASSERT(CWrtOtherTop == "A/B/C");
 
-    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
-    ASSERT(OtherTopWrtC == "../../../../OtherTop");
+    std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
+    ASSERT(OtherTopWrtC == "../../../");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -991,10 +991,10 @@ void testComponentPathNames()
     auto& cref = top.getComponent(absPathC);
     auto& eref = top.getComponent(absPathE);
 
-    auto cFromE = cref.getRelativePathName(eref);
+    auto cFromE = cref.getRelativePathString(eref);
     ASSERT(cFromE == "../../B/C");
 
-    auto eFromC = eref.getRelativePathName(cref);
+    auto eFromC = eref.getRelativePathString(cref);
     ASSERT(eFromC == "../../D/E");
 
     // verify that we can also navigate relative paths properly
@@ -1024,11 +1024,11 @@ void testComponentPathNames()
     std::string aBar2AbsPath = 
         A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo = 
-        bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
+        bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
 
     // Verify deep copy of subcomponents
-    const Foo& foo1inA = top.getComponent<Foo>("/Top/A/Foo1");
-    const Foo& foo1inF = top.getComponent<Foo>("/Top/F/Foo1");
+    const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
+    const Foo& foo1inF = top.getComponent<Foo>("/F/Foo1");
     ASSERT(&foo1inA != &foo1inF);
 
     // double check that we have the original Foo foo1 in A
@@ -1116,9 +1116,10 @@ void testTraversePathToComponent() {
     SimTK_TEST(&a1->getComponent<B>("../b1") == b1);
     SimTK_TEST(&a1->getComponent<B>("../a1/b2") == b2);
     // Absolute paths.
-    SimTK_TEST(&top.getComponent<A>("/top/a1") == a1);
-    SimTK_TEST(&b1->getComponent<B>("/top/a1/b2") == b2);
-    SimTK_TEST(&b2->getComponent<A>("/top/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/a1") == a1);
+    SimTK_TEST(&b1->getComponent<B>("/a1/b2") == b2);
+    SimTK_TEST(&b2->getComponent<A>("/a1/a2") == a2);
+    SimTK_TEST(&top.getComponent<A>("/") == &top);
 
 
     // No component.
@@ -1129,7 +1130,6 @@ void testTraversePathToComponent() {
     // Wrong type.
     SimTK_TEST_MUST_THROW(top.getComponent<B>("a1/a2"));
     // Going too high up.
-    SimTK_TEST_MUST_THROW(top.getComponent<A>("/"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>(".."));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../"));
     SimTK_TEST_MUST_THROW(top.getComponent<A>("../.."));
@@ -1824,9 +1824,9 @@ void testListInputConnecteeSerialization() {
     std::string modelFileName = "testComponentInterface_"
                                 "testListInputConnecteeSerialization_world.xml";
     std::vector<std::string> expectedConnecteePaths{
-            "../producer|column:a",
-            "../producer|column:c",
-            "../producer|column:b(berry)"};
+            "/producer|column:a",
+            "/producer|column:c",
+            "/producer|column:b(berry)"};
     SimTK::Vector expectedInputValues;
     {
         // Create the "model," which just contains a reporter.
@@ -1978,9 +1978,9 @@ void testSingleValueInputConnecteeSerialization() {
         
         // Check connectee paths before *and* after connecting, since
         // the connecting process edits the connectee_name property.
-        SimTK_TEST(input1.getConnecteePath() == "../producer|column:b");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
-                   "../producer|column:d(desert)");
+                   "/producer|column:d(desert)");
         // Even if we hadn't wired this up, its name still deserializes:
         SimTK_TEST(activation.getConnecteePath() == "non/existent");
         // Now we must clear this before trying to connect, since the connectee
@@ -1995,9 +1995,9 @@ void testSingleValueInputConnecteeSerialization() {
         SimTK_TEST(!fiberLength.isListSocket());
         SimTK_TEST(!activation.isListSocket());
         
-        SimTK_TEST(input1.getConnecteePath() == "../producer|column:b");
+        SimTK_TEST(input1.getConnecteePath() == "/producer|column:b");
         SimTK_TEST(fiberLength.getConnecteePath() ==
-                   "../producer|column:d(desert)");
+                   "/producer|column:d(desert)");
         
         // Check aliases.
         SimTK_TEST(input1.getAlias(0) == "");
@@ -2093,7 +2093,7 @@ void testAliasesAndLabels() {
     foo->connectInput_input1( bar->getOutput("Output1") );
     theWorld->connect();
     SimTK_TEST(foo->getInput("input1").getAlias().empty());
-    SimTK_TEST(foo->getInput("input1").getLabel() == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("input1").getLabel() == "/bar|Output1");
 
     // Set alias.
     foo->updInput("input1").setAlias("waldo");
@@ -2126,10 +2126,10 @@ void testAliasesAndLabels() {
     ASSERT_THROW(OpenSim::Exception, foo->getInput("listInput1").getLabel());
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(0).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/world/bar|Output1");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(0) == "/bar|Output1");
 
     SimTK_TEST(foo->getInput("listInput1").getAlias(1).empty());
-    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/world/bar|Output3");
+    SimTK_TEST(foo->getInput("listInput1").getLabel(1) == "/bar|Output3");
 
     foo->updInput("listInput1").disconnect();
 

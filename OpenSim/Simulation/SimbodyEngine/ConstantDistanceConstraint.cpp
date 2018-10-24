@@ -181,13 +181,13 @@ void ConstantDistanceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
             // being components).
             if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-                body1_name = XMLDocument::updateConnecteePath30517(
-                        2, "bodyset", body1_name);
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
             }
             if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-                body2_name = XMLDocument::updateConnecteePath30517(
-                        2, "bodyset", body2_name);
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
             }
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "body_1", body1_name);

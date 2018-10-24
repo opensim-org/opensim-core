@@ -78,8 +78,8 @@ void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 // (model, muscle, geometry path), and Bodies are
                 // necessarily 1 levels deep; here we create the correct
                 // relative path (accounting for sets being components).
-                bodyName = XMLDocument::updateConnecteePath30517(
-                        4, "bodyset", bodyName);
+                bodyName = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                 bodyName);
                 XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "parent_frame", bodyName);
             }

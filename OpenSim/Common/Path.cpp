@@ -175,8 +175,13 @@ std::vector<std::string> Path::formRelativePathVec(const Path& otherPath) const
     for (size_t i = 0; i < numDotDot; ++i) {
         pathVec.push_back("..");
     }
-    for (; ind < thisPathLength; ++ind) {
-        pathVec.push_back(_path[ind]);
+    if (thisPathLength == 0) {
+        // This path points to the root, which we treat as having an empty name.
+        pathVec.push_back("");
+    } else {
+        for (; ind < thisPathLength; ++ind) {
+            pathVec.push_back(_path[ind]);
+        }
     }
 
     return pathVec;
