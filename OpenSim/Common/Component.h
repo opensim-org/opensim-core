@@ -3144,7 +3144,7 @@ void Input<T>::finalizeConnection(const Component& root) {
             // <OwnerPath>/<Output><:Channel><(annotation)>
             const auto& outputOwner = chan->getOutput().getOwner();
             std::string path = outputOwner.getRelativePathName(getOwner());
-            // If the relative path start with ".." the use an absolute path
+            // If the relative path starts with ".." then use an absolute path
             // instead.
             if (path.size() >= 2 && path.substr(0, 2) == "..")
                 path = outputOwner.getAbsolutePathString();
