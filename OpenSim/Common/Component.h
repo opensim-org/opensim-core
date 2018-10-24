@@ -3053,7 +3053,7 @@ void Socket<C>::finalizeConnection(const Component& root) {
             rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
         std::string connecteePath = connectee->getRelativePathName(getOwner());
-        // If the relative path start with ".." the use an absolute path
+        // If the relative path starts with ".." then use an absolute path
         // instead.
         if (connecteePath.size() >= 2 && connecteePath.substr(0, 2) == "..")
             connecteePath = connectee->getAbsolutePathString();
