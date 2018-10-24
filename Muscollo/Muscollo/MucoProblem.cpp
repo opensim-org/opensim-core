@@ -102,8 +102,8 @@ MucoPhase::MucoPhase() {
 }
 void MucoPhase::constructProperties() {
     constructProperty_model(Model());
-    constructProperty_time_initial_bounds();
-    constructProperty_time_final_bounds();
+    constructProperty_time_initial_bounds(MucoInitialBounds());
+    constructProperty_time_final_bounds(MucoFinalBounds());
     constructProperty_state_infos();
     constructProperty_control_infos();
     constructProperty_parameters();
@@ -164,10 +164,10 @@ void MucoPhase::addPathConstraint(const MucoPathConstraint& constraint) {
     append_path_constraints(constraint);
 }
 MucoInitialBounds MucoPhase::getTimeInitialBounds() const {
-    return MucoInitialBounds(getProperty_time_initial_bounds());
+    return get_time_initial_bounds();
 }
 MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
-    return MucoFinalBounds(getProperty_time_final_bounds());
+    return get_time_final_bounds();
 }
 std::vector<std::string> MucoPhase::createStateInfoNames() const {
     std::vector<std::string> names(getProperty_state_infos().size());
@@ -180,6 +180,17 @@ std::vector<std::string> MucoPhase::createControlInfoNames() const {
     std::vector<std::string> names(getProperty_control_infos().size());
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         names[i] = get_control_infos(i).getName();
+    }
+    return names;
+}
+std::vector<std::string> MucoPhase::createMultiplierInfoNames() const {
+    std::vector<std::string> names;
+    for (const auto& mc : m_multibody_constraints) {
+        const auto& infos = m_multiplier_infos_map.at(
+            mc.getConstraintInfo().getName());
+        for (const auto& info : infos) {
+            names.push_back(info.getName());
+        }
     }
     return names;
 }

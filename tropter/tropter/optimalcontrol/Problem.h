@@ -312,10 +312,11 @@ public:
             const VectorX<T>& final_states,
             const VectorX<T>& parameters,
             T& cost) const;
+    // TODO use something similar to a DAEInput here?
     virtual void calc_integral_cost(const T& time,
             const VectorX<T>& states,
             const VectorX<T>& controls,
-            const VectorX<T>& multipliers,
+            const VectorX<T>& adjuncts,
             const VectorX<T>& parameters,
             T& integrand) const;
     /// @}

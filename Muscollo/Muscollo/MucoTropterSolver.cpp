@@ -110,13 +110,13 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
 
     tropIter.state_names = mucoIter.getStateNames();
     tropIter.control_names = mucoIter.getControlNames();
-    tropIter.multiplier_names = mucoIter.getMultiplierNames();
+    tropIter.adjunct_names = mucoIter.getMultiplierNames();
     tropIter.parameter_names = mucoIter.getParameterNames();
 
     int numTimes = (int)time.size();
     int numStates = (int)tropIter.state_names.size();
     int numControls = (int)tropIter.control_names.size();
-    int numMultipliers = (int)tropIter.multiplier_names.size();
+    int numMultipliers = (int)tropIter.adjunct_names.size();
     int numParameters = (int)tropIter.parameter_names.size();
     const auto& states = mucoIter.getStatesTrajectory();
     const auto& controls = mucoIter.getControlsTrajectory();
@@ -133,10 +133,10 @@ tropter::Iterate convert(const MucoIterate& mucoIter) {
         tropIter.controls.resize(numControls, numTimes);
     }
     if (numMultipliers) {
-        tropIter.multipliers = Map<const MatrixXd>(
+        tropIter.adjuncts = Map<const MatrixXd>(
                 &multipliers(0, 0), numTimes, numMultipliers).transpose();
     } else {
-        tropIter.multipliers.resize(numMultipliers, numTimes);
+        tropIter.adjuncts.resize(numMultipliers, numTimes);
     }
     if (numParameters) {
         tropIter.parameters = Map<const VectorXd>(

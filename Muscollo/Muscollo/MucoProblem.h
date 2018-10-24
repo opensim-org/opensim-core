@@ -213,6 +213,8 @@ public:
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
+    /// Get the names of all the Lagrange multiplier infos;
+    std::vector<std::string> createMultiplierInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
     /// Get the names of all the MucoPathConstraints.
@@ -345,12 +347,10 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
             "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(time_initial_bounds, double, 2,
-            "1 value: required initial time. "
-            "2 values: lower, upper bounds on initial time.");
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(time_final_bounds, double, 2,
-            "1 value: required final time. "
-            "2 values: lower, upper bounds on final time.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(time_initial_bounds, MucoInitialBounds,
+            "Bounds on initial value.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(time_final_bounds, MucoFinalBounds,
+            "Bounds on final value.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos, MucoVariableInfo,
             "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos, MucoVariableInfo,
