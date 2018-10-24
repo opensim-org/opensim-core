@@ -688,9 +688,13 @@ public:
      * need the path as a string. */
     ComponentPath getAbsolutePath() const;
 
-    /** Get the relative pathname of this Component with respect to another
+    /** Get the relative path of this Component with respect to another
+     * Component, as a string. */
+    std::string getRelativePathString(const Component& wrt) const;
+
+    /** Get the relative path of this Component with respect to another
      * Component. */
-    std::string getRelativePathName(const Component& wrt) const;
+    ComponentPath getRelativePath(const Component& wrt) const;
 
     /** Query if there is a component (of any type) at the specified
      * path name. For example,
@@ -3052,12 +3056,13 @@ void Socket<C>::finalizeConnection(const Component& root) {
             "root component. Did you intend to add '" +
             rootOfConnectee.getName() + "' to '" + myRoot.getName() + "'?");
 
-        std::string connecteePath = connectee->getRelativePathName(getOwner());
+        ComponentPath connecteePath = connectee->getRelativePath(getOwner());
         // If the relative path starts with ".." then use an absolute path
         // instead.
-        if (connecteePath.size() >= 2 && connecteePath.substr(0, 2) == "..")
-            connecteePath = connectee->getAbsolutePathString();
-        updConnecteePathProp().setValue(0, connecteePath);
+        if (connecteePath.getNumPathLevels() > 1 &&
+                connecteePath.getSubcomponentNameAtLevel(0) == "..")
+            connecteePath = connectee->getAbsolutePath();
+        updConnecteePathProp().setValue(0, connecteePath.toString());
         
     } else {
         const auto connecteePath = getConnecteePath();
@@ -3143,13 +3148,14 @@ void Input<T>::finalizeConnection(const Component& root) {
             // Update the connectee path as
             // <OwnerPath>/<Output><:Channel><(annotation)>
             const auto& outputOwner = chan->getOutput().getOwner();
-            std::string path = outputOwner.getRelativePathName(getOwner());
+            ComponentPath path = outputOwner.getRelativePath(getOwner());
             // If the relative path starts with ".." then use an absolute path
             // instead.
-            if (path.size() >= 2 && path.substr(0, 2) == "..")
-                path = outputOwner.getAbsolutePathString();
+            if (path.getNumPathLevels() > 1 &&
+                    path.getSubcomponentNameAtLevel(0) == "..")
+                path = outputOwner.getAbsolutePath();
 
-            auto pathStr = composeConnecteePath(path,
+            auto pathStr = composeConnecteePath(path.toString(),
                                                 chan->getOutput().getName(),
                                                 chan->getOutput().isListOutput()
                                                 ?

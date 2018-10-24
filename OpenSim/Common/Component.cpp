@@ -745,12 +745,17 @@ ComponentPath Component::getAbsolutePath() const
     return ComponentPath(pathVec, true);
 }
 
-std::string Component::getRelativePathName(const Component& wrt) const
+std::string Component::getRelativePathString(const Component& wrt) const
+{
+    return getRelativePath(wrt).toString();
+}
+
+ComponentPath Component::getRelativePath(const Component& wrt) const
 {
     ComponentPath thisP = getAbsolutePath();
     ComponentPath wrtP = wrt.getAbsolutePath();
 
-    return thisP.formRelativePath(wrtP).toString();
+    return thisP.formRelativePath(wrtP);
 }
 
 const Component::StateVariable* Component::

@@ -679,7 +679,7 @@ void testMisc() {
     //Configure the socket to look for its dependency by this name
     //Will get resolved and connected automatically at Component connect
     bar2.updSocket<Foo>("parentFoo").setConnecteePath(
-            compFoo.getRelativePathName(bar2));
+            compFoo.getRelativePathString(bar2));
     
     bar2.connectSocket_childFoo(compFoo.get_Foo1());
     compFoo.upd_Foo1().updInput("input1")
@@ -968,20 +968,20 @@ void testComponentPathNames()
     ASSERT(absPathE == "/A/D/E");
 
     // Specific tests to relative path name facilities
-    std::string EWrtB = E->getRelativePathName(*B);
+    std::string EWrtB = E->getRelativePathString(*B);
     ASSERT(EWrtB == "../D/E"); // "/A/B/" as common
 
-    std::string BWrtE = B->getRelativePathName(*E);
+    std::string BWrtE = B->getRelativePathString(*E);
     ASSERT(BWrtE == "../../B"); // "/A/" as common
 
     // null case component wrt itself
-    std::string fooWrtFoo = D->getRelativePathName(*D);
+    std::string fooWrtFoo = D->getRelativePathString(*D);
     ASSERT(fooWrtFoo == "");
 
-    std::string CWrtOtherTop = C->getRelativePathName(otherTop);
+    std::string CWrtOtherTop = C->getRelativePathString(otherTop);
     ASSERT(CWrtOtherTop == "A/B/C");
 
-    std::string OtherTopWrtC = otherTop.getRelativePathName(*C);
+    std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
     ASSERT(OtherTopWrtC == "../../../");
 
     // Must specify a unique path to E
@@ -991,10 +991,10 @@ void testComponentPathNames()
     auto& cref = top.getComponent(absPathC);
     auto& eref = top.getComponent(absPathE);
 
-    auto cFromE = cref.getRelativePathName(eref);
+    auto cFromE = cref.getRelativePathString(eref);
     ASSERT(cFromE == "../../B/C");
 
-    auto eFromC = eref.getRelativePathName(cref);
+    auto eFromC = eref.getRelativePathString(cref);
     ASSERT(eFromC == "../../D/E");
 
     // verify that we can also navigate relative paths properly
@@ -1024,7 +1024,7 @@ void testComponentPathNames()
     std::string aBar2AbsPath = 
         A->getComponent<Bar>("Bar2").getAbsolutePathString();
     auto bar2FromBarFoo = 
-        bar2->getRelativePathName(F->getComponent<Foo>("Foo1"));
+        bar2->getRelativePathString(F->getComponent<Foo>("Foo1"));
 
     // Verify deep copy of subcomponents
     const Foo& foo1inA = top.getComponent<Foo>("/A/Foo1");
