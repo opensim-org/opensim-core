@@ -266,7 +266,7 @@ void Joint::addFrame(PhysicalOffsetFrame* frame)
                      frame->getName(), getName());
     updProperty_frames().adoptAndAppendValue(frame);
     finalizeFromProperties();
-    frame->prependToConnecteePath();
+    prependComponentPathToConnecteePath(*frame);
 }
 
 const SimTK::MobilizedBodyIndex Joint::

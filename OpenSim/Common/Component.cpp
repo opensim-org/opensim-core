@@ -153,21 +153,22 @@ void Component::addComponent(Component* subcomponent)
     updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
 
-    subcomponent->prependToConnecteePath();
+    prependComponentPathToConnecteePath(*subcomponent);
 
     // allow the derived Component to perform secondary operations
     // in response to the inclusion of the subcomponent
     extendAddComponent(subcomponent);
 }
 
-void Component::prependToConnecteePath() {
-    const std::string absPath = getAbsolutePathString();
-    for (auto& comp : updComponentList()) {
+void Component::prependComponentPathToConnecteePath(
+        Component& subcomponent) {
+    const std::string compPath = subcomponent.getAbsolutePathString();
+    for (auto& comp : subcomponent.updComponentList()) {
         for (auto& it : comp._socketsTable) {
-            it.second->prependToConnecteePath(absPath);
+            it.second->prependComponentPathToConnecteePath(compPath);
         }
         for (auto& it : comp._inputsTable) {
-            it.second->prependToConnecteePath(absPath);
+            it.second->prependComponentPathToConnecteePath(compPath);
         }
     }
 }

@@ -1003,7 +1003,7 @@ void Model::addModelComponent(ModelComponent* component)
     if(component){
         upd_ComponentSet().adoptAndAppend(component);
         finalizeFromProperties();
-        component->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*component);
     }
 }
 
@@ -1013,7 +1013,7 @@ void Model::addBody(OpenSim::Body* body)
     if (body){
         updBodySet().adoptAndAppend(body);
         finalizeFromProperties();
-        body->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*body);
     }
 }
 
@@ -1023,7 +1023,7 @@ void Model::addMarker(OpenSim::Marker* marker)
     if (marker){
         updMarkerSet().adoptAndAppend(marker);
         finalizeFromProperties();
-        marker->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*marker);
     }
 }
 
@@ -1034,7 +1034,7 @@ void Model::addJoint(Joint* joint)
         updJointSet().adoptAndAppend(joint);
         finalizeFromProperties();
         updCoordinateSet().populate(*this);
-        joint->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*joint);
     }
 }
 
@@ -1044,7 +1044,7 @@ void Model::addConstraint(OpenSim::Constraint *constraint)
     if(constraint){
         updConstraintSet().adoptAndAppend(constraint);
         finalizeFromProperties();
-        constraint->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*constraint);
     }
 }
 
@@ -1054,7 +1054,7 @@ void Model::addForce(OpenSim::Force *force)
     if(force){
         updForceSet().adoptAndAppend(force);
         finalizeFromProperties();
-        force->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*force);
     }
 }
 
@@ -1064,7 +1064,7 @@ void Model::addProbe(OpenSim::Probe *probe)
     if(probe){
         updProbeSet().adoptAndAppend(probe);
         finalizeFromProperties();
-        probe->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*probe);
     }
 }
 
@@ -1082,7 +1082,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
     if (contactGeometry) {
         updContactGeometrySet().adoptAndAppend(contactGeometry);
         finalizeFromProperties();
-        contactGeometry->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*contactGeometry);
     }
 }
 
@@ -1092,7 +1092,7 @@ void Model::addController(Controller *controller)
     if (controller) {
         updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
-        controller->prependToConnecteePath();
+        prependComponentPathToConnecteePath(*controller);
     }
 }
 //_____________________________________________________________________________

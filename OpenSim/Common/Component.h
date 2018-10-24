@@ -2397,13 +2397,6 @@ public:
      */
     const Component& getRoot() const;
 
-    /// For internal use. Update absolute connectee paths in all sockets and
-    /// inputs in all subcomponents of this subcomponent by prepending the
-    /// absolute path of this component. To be used when adding this component
-    /// to another component.
-    // Must be public so that components can invoke this on other components.
-    void prependToConnecteePath();
-
 protected:
     /** %Set this %Component's reference to its owning %Component */
     void setOwner(const Component& owner);
@@ -2594,6 +2587,11 @@ protected:
         return propIndex;
     }
     /// @}
+
+    /// For internal use. Update absolute connectee paths in all sockets and
+    /// inputs in the subcomponent by prepending the absolute path of the
+    /// subcomponent. To be used when adding subcomponent to another component.
+    static void prependComponentPathToConnecteePath(Component& subcomponent);
 
 private:
 

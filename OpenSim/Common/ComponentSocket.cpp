@@ -39,7 +39,8 @@ AbstractSocket::updConnecteePathProp() {
     return const_cast<Property<std::string>&>(prop);
 }
 
-void AbstractSocket::prependToConnecteePath(const std::string& pathToPrepend) {
+void AbstractSocket::prependComponentPathToConnecteePath(
+        const std::string& pathToPrepend) {
     for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
         ComponentPath path(getConnecteePath(iConn));
         if (path.isAbsolute()) {
@@ -54,7 +55,8 @@ void AbstractSocket::prependToConnecteePath(const std::string& pathToPrepend) {
     }
 }
 
-void AbstractInput::prependToConnecteePath(const std::string& pathToPrepend) {
+void AbstractInput::prependComponentPathToConnecteePath(
+        const std::string& pathToPrepend) {
     for (unsigned iConn = 0u; iConn < getNumConnectees(); ++iConn) {
         std::string connecteePath = getConnecteePath(iConn);
         std::string componentPath;
