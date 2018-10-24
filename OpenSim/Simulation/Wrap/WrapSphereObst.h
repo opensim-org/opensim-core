@@ -1,5 +1,5 @@
-#ifndef __WrapSphereObst_h__
-#define __WrapSphereObst_h__
+#ifndef OPENSIM_WRAP_SPHERE_OBST_H_
+#define OPENSIM_WRAP_SPHERE_OBST_H_
 /* -------------------------------------------------------------------------- *
  *                         OpenSim:  WrapSphereObst.h                         *
  * -------------------------------------------------------------------------- *
@@ -22,12 +22,13 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Simulation/Wrap/WrapObject.h>
-#include <OpenSim/Common/PropertyDbl.h>
+
+
+// INCLUDE
+#include "WrapObject.h"
 
 namespace OpenSim {
 
-class Model;
 class PathWrap;
 class WrapResult;
 
@@ -42,48 +43,36 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapSphereObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphereObst, WrapObject);
-
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-    PropertyDbl _radiusProp;
-    double& _radius;
-
-    PropertyDbl _lengthProp;
-    double& _length;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the sphere.");
+    OpenSim_DECLARE_PROPERTY(length, double, "The length of the sphere.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapSphereObst();
-    WrapSphereObst(const WrapSphereObst& aWrapSphereObst);
     virtual ~WrapSphereObst();
 
-#ifndef SWIG
-    WrapSphereObst& operator=(const WrapSphereObst& aWrapSphereObst);
-#endif
-   void copyData(const WrapSphereObst& aWrapSphereObst);
-
-    double getRadius() const { return _radius; }
-    void setRadius(double aRadius) { _radius = aRadius; }
-    double getLength() const { return _length; }
-    void setLength(double aLength) { _length = aLength; }
+    double getRadius() const { return get_radius(); }
+    void setRadius(double aRadius) { set_radius(aRadius); }
+    double getLength() const { return get_length(); }
+    void setLength(double aLength) { set_length(aLength); }
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
+
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    void setupProperties();
+
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };  // END of class WrapCylinder
@@ -92,6 +81,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapCylinder_h__
+#endif // OPENSIM_WRAP_SPHERE_OBST_H_
 
 
