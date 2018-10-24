@@ -245,6 +245,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
     try {
         externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
         copyModel.addModelComponent(externalLoads);
+        copyModel.setup();
     }
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
