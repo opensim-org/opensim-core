@@ -690,11 +690,6 @@ void testMisc() {
 
     cout << "Adding world3 to theWorld" << endl;
     theWorld.add(world3.clone());
-    // We now use absolute paths for the connectee name, and adding world3 to
-    // theWorld makes the previously-stored absolute path incorrect.
-    // TODO add() should update absolute connectee paths; no longer necessary.
-    theWorld.updComponent("World3/BigFoo/Foo1").updInput("input1")
-            .setConnecteePath("/World3/bar2|PotentialEnergy");
 
     // Should not be able to add the same Component twice within the same tree
     ASSERT_THROW( ComponentAlreadyPartOfOwnershipTree,
