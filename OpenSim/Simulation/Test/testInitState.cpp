@@ -93,9 +93,7 @@ void testStates(const string& modelFile)
     state.getY().dump("y1: State after equilibrateMuscles:");
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    Manager manager(model, integrator);
+    Manager manager(model);
     state.setTime(0.0);
     manager.initialize(state);
 
@@ -119,9 +117,7 @@ void testStates(const string& modelFile)
     state.getY().dump("y3: State after equilibrateMuscles:");
     //==========================================================================
     // Compute the force and torque at the specified times.
-
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
-    Manager manager2(model, integrator);
+    Manager manager2(model);
     state2.setTime(0.0);
     manager2.initialize(state2);
 

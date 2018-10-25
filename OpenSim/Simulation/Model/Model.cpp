@@ -337,34 +337,49 @@ void Model::constructProperties()
     _forceUnits = Units::Newtons;
 
     BodySet bodies;
+    bodies.setName(IO::Lowercase(bodies.getConcreteClassName()));
     constructProperty_BodySet(bodies);
 
     JointSet joints;
+    joints.setName(IO::Lowercase(joints.getConcreteClassName()));
     constructProperty_JointSet(joints);
 
-    ControllerSet controllerSet;
-    constructProperty_ControllerSet(controllerSet);
+    ControllerSet controllers;
+    controllers.setName(IO::Lowercase(controllers.getConcreteClassName()));
+    constructProperty_ControllerSet(controllers);
 
-    ConstraintSet constraintSet;
-    constructProperty_ConstraintSet(constraintSet);
+    ConstraintSet constraints;
+    constraints.setName(IO::Lowercase(constraints.getConcreteClassName()));
+    constructProperty_ConstraintSet(constraints);
 
-    ForceSet forceSet;
-    constructProperty_ForceSet(forceSet);
+    ForceSet forces;
+    forces.setName(IO::Lowercase(forces.getConcreteClassName()));
+    constructProperty_ForceSet(forces);
 
-    MarkerSet markerSet;
-    constructProperty_MarkerSet(markerSet);
+    MarkerSet markers;
+    markers.setName(IO::Lowercase(markers.getConcreteClassName()));
+    constructProperty_MarkerSet(markers);
 
-    ContactGeometrySet contactGeometrySet;
-    constructProperty_ContactGeometrySet(contactGeometrySet);
+    ContactGeometrySet contacts;
+    contacts.setName(IO::Lowercase(contacts.getConcreteClassName()));
+    constructProperty_ContactGeometrySet(contacts);
 
-    ComponentSet componentSet;
-    constructProperty_ComponentSet(componentSet);
+    ProbeSet probes;
+    probes.setName(IO::Lowercase(probes.getConcreteClassName()));
+    constructProperty_ProbeSet(probes);
 
-    ProbeSet probeSet;
-    constructProperty_ProbeSet(probeSet);
+    ComponentSet miscComponents;
+    miscComponents.setName(IO::Lowercase(miscComponents.getConcreteClassName()));
+    constructProperty_ComponentSet(miscComponents);
 
-    ModelVisualPreferences md;
-    constructProperty_ModelVisualPreferences(md);
+    ModelVisualPreferences mvps;
+    mvps.setName(IO::Lowercase(mvps.getConcreteClassName()));
+    constructProperty_ModelVisualPreferences(mvps);
+}
+
+// Append to the Model's validation log
+void Model::appendToValidationLog(const std::string& note) {
+    _validationLog.append(note);
 }
 
 //------------------------------------------------------------------------------
@@ -614,6 +629,54 @@ std::vector<SimTK::ReferencePtr<const Coordinate>>
     return coordinatesInTreeOrder;
 }
 
+std::string Model::getWarningMesssageForMotionTypeInconsistency() const
+{
+    std::string message;
+
+    auto enumToString = [](Coordinate::MotionType mt)->std::string {
+        switch (mt) {
+        case Coordinate::MotionType::Rotational :
+            return "Rotational";
+        case Coordinate::MotionType::Translational :
+            return "Translational";
+        case Coordinate::MotionType::Coupled :
+            return "Coupled";
+        default:
+            return "Undefined";
+        }
+    };
+
+    auto coordinates = getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType = 
+            coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+
+        if( (oldMotionType != Coordinate::MotionType::Undefined ) &&
+            (oldMotionType != motionType) ){
+            message += "Coordinate '" + coord.getName() +
+                "' was labeled as '" + enumToString(oldMotionType) +
+                "' but was found to be '" + enumToString(motionType) + "' based on the joint definition.\n";
+        }
+    }
+
+    // We have a reason to provide a warning. Add more details about the model
+    // and how to resolve future issues.
+    if (message.size()) {
+        message = "\nModel '" + getName() + "' has inconsistencies:\n" + message;
+        message += 
+            "You must update any motion files you generated in versions prior to 4.0. You can:\n"
+            "  (1) Run the updatePre40KinematicsFilesFor40MotionType() utility (in the scripting shell) OR\n"
+            "  (2) Re-run the Inverse Kinematics Tool with the updated model in 4.0.\n"
+            "In versions prior to 4.0, we allowed some Coupled coordinates to be incorrectly\n"
+            "labeled as Rotational. This leads to incorrect motion when playing back a pre-4.0\n"
+            "motion file (.mot or .sto in degrees) and incorrect inverse dynamics and\n"
+            "static optimization results.";
+    }
+
+    return message;
+}
+
 void Model::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
@@ -632,11 +695,8 @@ void Model::extendFinalizeFromProperties()
         fs.updMuscles();
     }
 
-    if (getValidationLog().size() > 0) {
-        cout << "The following Errors/Warnings were encountered ";
-        cout << "interpreting properties of the model. " <<
-            getValidationLog() << endl;
-    }
+    std::string warn = getWarningMesssageForMotionTypeInconsistency();
+    appendToValidationLog(warn);
 
     updCoordinateSet().populate(*this);
 }
@@ -1019,10 +1079,10 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *contactGeometry)
 }
 
 // Add a controller to the Model
-void Model::addController(Controller *aController)
+void Model::addController(Controller *controller)
 {
-    if (aController) {
-        updControllerSet().adoptAndAppend(aController);
+    if (controller) {
+        updControllerSet().adoptAndAppend(controller);
         finalizeFromProperties();
     }
 }

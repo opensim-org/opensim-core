@@ -125,6 +125,7 @@ public:
     * form a complete storage of the generalized coordinates (q's) and
     * generalized speeds (u's) in radians and radians/s respectively.
     *
+    * @param s Used as working memory.
     * @param aQIn Storage containing the q's or a subset of the q's.
     * @param rQComplete Storage containing all the q's.  If q's were not
     * in aQIn, the values are set to 0.0.  When a q is constrained, its value

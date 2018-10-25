@@ -205,16 +205,12 @@ int main()
         // Compute initial conditions for muscles
         osimModel.equilibrateMuscles(si);
 
-        // Create the integrator, force reporter, and manager for the simulation.
-        // Create the integrator
-        SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the force reporter
         ForceReporter* reporter = new ForceReporter(&osimModel);
         osimModel.updAnalysisSet().adoptAndAppend(reporter);
         // Create the manager
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(1.0e-6);
 
         // Print out details of the model
         osimModel.printDetailedInfo(si, std::cout);

@@ -81,8 +81,7 @@ SimTK::State OpenSim::simulate(Model& model,
         // reset the state to the initial state
         state = initialState;
         // Set up manager and simulate.
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
-        Manager manager(model, integrator);
+        Manager manager(model);
         state.setTime(initialTime);
         manager.initialize(state);
         state = manager.integrate(finalTime);
@@ -94,4 +93,85 @@ SimTK::State OpenSim::simulate(Model& model,
     } while (!simulateOnce);
 
     return state;
+}
+
+std::unique_ptr<Storage>
+OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
+        const Storage &kinematics)
+{
+    // There is no issue if the kinematics are in internal values (i.e. not
+    // converted to degrees)
+    if(!kinematics.isInDegrees()) return nullptr;
+    
+    if (pre40Model.getDocumentFileVersion() >= 30415) {
+        throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
+            "to make because the model '" + pre40Model.getName() + "'is up-to-date.\n"
+            "If input motion files were generated with this model version, "
+            "nothing further must be done. Otherwise, provide the original model "
+            "file used to generate the motion files and try again.");
+    }
+    
+    std::vector<const Coordinate*> problemCoords;
+    auto coordinates = pre40Model.getComponentList<Coordinate>();
+    for (auto& coord : coordinates) {
+        const Coordinate::MotionType oldMotionType =
+                coord.getUserSpecifiedMotionTypePriorTo40();
+        const Coordinate::MotionType motionType = coord.getMotionType();
+        
+        if ((oldMotionType != Coordinate::MotionType::Undefined) &&
+            (oldMotionType != motionType)) {
+            problemCoords.push_back(&coord);
+        }
+    }
+    
+    if (problemCoords.size() == 0)
+        return nullptr;
+    
+    std::unique_ptr<Storage> updatedKinematics(kinematics.clone());
+    // Cycle the inconsistent Coordinates
+    for (const auto& coord : problemCoords) {
+        // Get the corresponding column of data and if in degrees
+        // undo the radians to degrees conversion on that column.
+        int ix = updatedKinematics->getStateIndex(coord->getName());
+        
+        if (ix < 0) {
+            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
+            << kinematics.getName() << "' does not contain inconsistent "
+            << "coordinate '" << coord->getName() << "'." << std::endl;
+        }
+        else {
+            // convert this column back to internal values by undoing the
+            // 180/pi conversion to degrees
+            updatedKinematics->multiplyColumn(ix, SimTK_DTR);
+        }
+    }
+    return updatedKinematics;
+}
+
+    
+void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
+        const std::vector<std::string>& filePaths,
+        std::string suffix)
+{
+    // Cycle through the data files 
+    for (const auto& filePath : filePaths) {
+        Storage motion(filePath);
+        auto updatedMotion =
+            updatePre40KinematicsStorageFor40MotionType(model, motion);
+
+        if (updatedMotion == nullptr) {
+            continue; // no update was required, move on to next file
+        }
+
+        std::string outFilePath = filePath;
+        if (suffix.size()) {
+            auto back = filePath.rfind(".");
+            outFilePath = filePath.substr(0, back) + suffix +
+                            filePath.substr(back);
+        }
+        std::cout << "Writing converted motion '" << filePath << "' to '"
+            << outFilePath << "'." << std::endl;
+
+        updatedMotion->print(outFilePath);
+    }
 }

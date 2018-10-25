@@ -77,8 +77,14 @@ void ContactHalfSpace::generateDecorations(bool fixed, const ModelDisplayHints& 
     const auto& X_BF = getFrame().findTransformInBaseFrame();
     const auto& X_FP = getTransform();
     const auto X_BP = X_BF * X_FP;
-    geometry.push_back(SimTK::DecorativeBrick(Vec3{.005, 0.5, 0.5})
-        .setTransform(X_BP).setScale(1)
+    const double brickHalfThickness = 0.0005;
+    geometry.push_back(
+        SimTK::DecorativeBrick(Vec3{brickHalfThickness, 0.5, 0.5})
+        // The brick is centered on the origin. To ensure the decorative
+        // geometry is within the contact geomtry, we must offset by half
+        // the thickness of the brick.
+        .setTransform(X_BP * Transform(Vec3(brickHalfThickness, 0, 0)))
+        .setScale(1)
         .setRepresentation(get_Appearance().get_representation())
         .setBodyId(getFrame().getMobilizedBodyIndex())
         .setColor(get_Appearance().get_color())

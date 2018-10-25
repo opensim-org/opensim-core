@@ -36,8 +36,8 @@ hopper = BuildHopper();
 % [Step 1, Task A]
 % ANSWER{
 hopper.printSubcomponentInfo()
-hopper.getComponent('slider').printOutputInfo();
-hopper.getComponent('vastus').printOutputInfo(false); % ignore subcomponents.
+hopper.getComponent('jointset/slider').printOutputInfo();
+hopper.getComponent('forceset/vastus').printOutputInfo(false); % ignore subcomponents.
 % }
 
 % TODO: Create a TableReporter, give it a name, and set its reporting interval
@@ -54,9 +54,9 @@ reporter = TableReporter();
 reporter.setName('hopper_results');
 reporter.set_report_time_interval(0.2); % seconds
 reporter.addToReport(...
-    hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
+    hopper.getComponent('jointset/slider/yCoord').getOutput('value'), 'height');
 reporter.addToReport(...
-    hopper.getComponent('vastus').getOutput('activation'), 'vastus_activation');
+    hopper.getComponent('forceset/vastus').getOutput('activation'), 'vastus_activation');
 hopper.addComponent(reporter);
 % }
 

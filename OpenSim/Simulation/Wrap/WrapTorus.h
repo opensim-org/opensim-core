@@ -1,5 +1,5 @@
-#ifndef __WrapTorus_h__
-#define __WrapTorus_h__
+#ifndef OPENSIM_WRAP_TORUS_H_
+#define OPENSIM_WRAP_TORUS_H_
 /* -------------------------------------------------------------------------- *
  *                           OpenSim:  WrapTorus.h                            *
  * -------------------------------------------------------------------------- *
@@ -26,11 +26,9 @@
 
 // INCLUDE
 #include "WrapObject.h"
-#include <OpenSim/Common/PropertyDbl.h>
 
 namespace OpenSim {
 
-class Model;
 class PathWrap;
 class WrapResult;
 
@@ -50,15 +48,12 @@ private:
         double p1[3], p2[3], r;
     };
 
-//=============================================================================
-// DATA
-//=============================================================================
-
-    PropertyDbl _innerRadiusProp;
-    double& _innerRadius;
-
-    PropertyDbl _outerRadiusProp;
-    double& _outerRadius;
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    OpenSim_DECLARE_PROPERTY(inner_radius, double, "The inner radius of the Torus.");
+    OpenSim_DECLARE_PROPERTY(outer_radius, double, "The outer radius of the Torus.");
 
 //=============================================================================
 // METHODS
@@ -68,13 +63,8 @@ private:
     //--------------------------------------------------------------------------
 public:
     WrapTorus();
-    WrapTorus(const WrapTorus& aWrapTorus);
     virtual ~WrapTorus();
 
-#ifndef SWIG
-    WrapTorus& operator=(const WrapTorus& aWrapTorus);
-#endif
-    void copyData(const WrapTorus& aWrapTorus);
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     SimTK::Real getInnerRadius() const;
@@ -84,17 +74,19 @@ public:
         origin of the torus in the body's reference frame. */
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
     int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
         const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+
     /// Implement generateDecorations to draw geometry in visualizer
     void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
-    void setupProperties();
+
+    void extendFinalizeFromProperties() override;
 
 private:
-    void setNull();
+    void constructProperties();
+
     int findClosestPoint(double radius, double p1[], double p2[],
         double* xc, double* yc, double* zc,
         int wrap_sign, int wrap_axis) const;
@@ -108,6 +100,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __WrapTorus_h__
+#endif // OPENSIM_WRAP_TORUS_H_
 
 

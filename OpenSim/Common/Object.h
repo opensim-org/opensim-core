@@ -518,9 +518,13 @@ public:
         no parent node is supplied and this object doesn't already have an XML 
         node, this object will become the root node for a new XML document. If 
         this object already has an XML node associated with it, no new nodes 
-        are ever generated and the parent node is not used. 
-    **/
-    virtual void updateXMLNode(SimTK::Xml::Element& parent) const;
+        are ever generated and the parent node is not used.
+    @param      prop (optional)
+        The pointer to the property that contains this object. If it is
+        present, check if the property is unnamed and if NOT, use the property
+        name as its name when updating the XML node. **/
+    void updateXMLNode(SimTK::Xml::Element& parent,
+                       const AbstractProperty* prop=nullptr) const;
 
     /** Inlined means an in-memory Object that is not associated with
     an XMLDocument. **/
@@ -542,9 +546,7 @@ protected:
 
     This flag is cleared automatically but if you want to clear it manually
     for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
-    void setObjectIsUpToDateWithProperties() {
-        _objectIsUpToDate = true;
-    }
+    void setObjectIsUpToDateWithProperties();
 
     /** For testing or debugging purposes, manually clear the "object is up to
     date with respect to properties" flag. This is normally done automatically
@@ -553,6 +555,13 @@ protected:
     void clearObjectIsUpToDateWithProperties() {
         _objectIsUpToDate = false;
     }
+
+    /** Make sure the name of an object is consistent with its property type. A
+    name can be changed independent of the property name, which may be inconsistent
+    with any restrictions specified by the Property. For example, unnamed property
+    object should not have a name. Furthermore, named properties whose object
+    name is empty, should have the property name. **/
+    void makeObjectNamesConsistentWithProperties();
 
     /** Use this method only if you're deserializing from a file and the object
     is at the top level; that is, primarily in constructors that take a file
@@ -573,6 +582,13 @@ public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
     std::string getDocumentFileName() const;
+
+    /** If there is a document associated with this object then return its
+        version number. For example this is 30000 for OpenSim 3.x documents 
+        and is 305xx for OpenSim 4.0 beta and above. If there is no document
+        associated with the object, the method returns -1.*/
+    int getDocumentFileVersion() const;
+
     void setAllPropertiesUseDefault(bool aUseDefault);
 
     /** Write this %Object into an XML file of the given name; conventionally
@@ -789,7 +805,6 @@ private:
 
     void updateDefaultObjectsFromXMLNode();
     void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
-
 
 //==============================================================================
 // DATA

@@ -2015,7 +2015,7 @@ void testSingleValueInputConnecteeSerialization() {
         // for editing the input's connectee_name does not allow multiple
         // connectee names for a single-value input.
         auto& connectee_name = Property<std::string>::updAs(
-                        foo->updPropertyByName("input_input1_connectee_name"));
+                        foo->updPropertyByName("input_input1"));
         connectee_name.setAllowableListSize(0, 10);
         connectee_name.appendValue("apple");
         connectee_name.appendValue("banana");

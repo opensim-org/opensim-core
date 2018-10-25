@@ -166,7 +166,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
         const Storage& sto,
         bool allowMissingColumns,
         bool allowExtraColumns,
-        bool enforceConstraints) {
+        bool assemble) {
 
     // Assemble the required objects.
     // ==============================
@@ -272,7 +272,7 @@ StatesTrajectory StatesTrajectory::createFromStatesStorage(
             statesValues[kv.second] = dependentValues[kv.first];
         }
         localModel.setStateVariableValues(state, statesValues);
-        if (enforceConstraints) {
+        if (assemble) {
             localModel.assemble(state);
         }
 

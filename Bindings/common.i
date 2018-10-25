@@ -23,6 +23,7 @@
 %include <OpenSim/Common/ObjectGroup.h>
 
 %include <OpenSim/Common/Set.h>
+%template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
 %include <OpenSim/Common/StateVector.h>
 %template(ArrayStateVector) OpenSim::Array<OpenSim::StateVector>;
 %include <OpenSim/Common/StorageInterface.h>
@@ -32,7 +33,7 @@
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
-%template(SetFunctions) OpenSim::Set<OpenSim::Function>;
+%template(SetFunctions) OpenSim::Set<OpenSim::Function, OpenSim::Object>;
 %include <OpenSim/Common/FunctionSet.h>
 
 %include <OpenSim/Common/Constant.h>
@@ -110,7 +111,7 @@ namespace OpenSim {
 
 
 %include <OpenSim/Common/Scale.h>
-%template(SetScales) OpenSim::Set<OpenSim::Scale>;
+%template(SetScales) OpenSim::Set<OpenSim::Scale, OpenSim::Object>;
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
@@ -422,3 +423,24 @@ namespace OpenSim {
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
 
 %include <OpenSim/Common/GCVSplineSet.h>
+
+
+// Compensate for insufficient C++11 support in SWIG
+// =================================================
+/*
+Extend concrete Sets to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Set::Set) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_SET_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
+    NAME(const std::string& file, bool updateFromXML=true) throw(OpenSim::Exception) {
+        return new NAME(file, updateFromXML);
+    }
+};
+%enddef

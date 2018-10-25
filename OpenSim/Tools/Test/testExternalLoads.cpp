@@ -108,9 +108,8 @@ void testExternalLoad()
 
     // Integrator and integration manager
     double integ_accuracy = 1e-6;
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integ_accuracy);
     s.setTime(init_t);
     manager.initialize(s);
 
@@ -136,13 +135,11 @@ void testExternalLoad()
     ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
     xf.setName("grav");
 
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(&xf);
 
     extLoads->print("ExternalLoads_test.xml");
-
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
+    model.addModelComponent(extLoads);
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter();
@@ -166,9 +163,8 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s2, q_init);
 
-    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem() );
-    integrator2.setAccuracy(integ_accuracy);
-    Manager manager2(model,  integrator2);
+    Manager manager2(model);
+    manager2.setIntegratorAccuracy(integ_accuracy);
     s2.setTime(init_t);
     manager2.initialize(s2);
 
@@ -213,6 +209,7 @@ void testExternalLoad()
 
     ExternalForce xf2(forceStore2, id_base+"_F", point_id, id_base+"_T", pendBodyName, "ground", "ground");
     xf2.setName("xf_pInG");
+    xf2.finalizeFromProperties();
     // Empty out existing external forces
     extLoads->setMemoryOwner(false);
     extLoads->setSize(0);
@@ -220,16 +217,7 @@ void testExternalLoad()
 
     //Ask external loads to transform point expressed in ground to the applied body
     extLoads->setDataFileName(forceStore2.getName());
-    extLoads->invokeConnectToModel(model);
     extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
-
-    // remove previous external force from the model too
-    model.disownAllComponents();
-    model.updForceSet().setSize(0);
-
-    // after external loads has transformed the point of the force, then add it the model
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
 
     // recreate dynamical system to reflect new force
     SimTK::State &s3 = model.initSystem();
@@ -240,9 +228,8 @@ void testExternalLoad()
     // initial position
     model.updCoordinateSet()[0].setValue(s3, q_init);
 
-    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem() );
-    integrator3.setAccuracy(integ_accuracy);
-    Manager manager3(model,  integrator3);
+    Manager manager3(model);
+    manager3.setIntegratorAccuracy(integ_accuracy);
     s3.setTime(init_t);
     manager3.initialize(s3);
 
@@ -297,7 +284,7 @@ void testExternalLoadDefaultProperties() {
     xf->set_point_expressed_in_body(pendBodyName);
     SimTK_TEST(xf->getForceExpressedInBodyName() == "ground");
     // Leave force_expressed_in_body as default ("ground").
-    ExternalLoads* extLoads = new ExternalLoads(model);
+    ExternalLoads* extLoads = new ExternalLoads();
     extLoads->adoptAndAppend(xf);
 
     extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");

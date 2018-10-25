@@ -378,7 +378,7 @@ void testPhysicalOffsetFrameOnPhysicalOffsetFrameOrder()
 
     // Now attach them such that offsetFrameProximal is attached to rod2 of
     // the pendulum and offsetFrameDistal is attached to offsetFrameProximal
-    const Body& rod2 = pendulum.getComponent<Body>("rod2");
+    const Body& rod2 = pendulum.getComponent<Body>("./bodyset/rod2");
     offsetFrameProximal->setParentFrame(rod2);
     offsetFrameDistal->setParentFrame(*offsetFrameProximal);
 
@@ -441,8 +441,8 @@ void testFilterByFrameType()
             << " of type " << typeid(component).name() << std::endl;
     }
 
-    ASSERT_EQUAL(9, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 9 Frames in the model.");
+    ASSERT_EQUAL(11, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 11 Frames in the model.");
 
     i = 0;
     std::cout << "\nList all PhysicalFrames in the model." << std::endl;
@@ -450,8 +450,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(8, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find 8 PhysicalFrames.");
+    ASSERT_EQUAL(10, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find 10 PhysicalFrames.");
 
     i = 0;
     std::cout << "\nList all Bodies in the model." << std::endl;
@@ -471,8 +471,8 @@ void testFilterByFrameType()
         std::cout << "frame[" << ++i << "] is " << component.getName()
             << " of type " << typeid(component).name() << std::endl;
     }
-    ASSERT_EQUAL(5, i, __FILE__, __LINE__,
-        "testFilterByFrameType failed to find the 5 PhyscicalOffsetFrame in the model.");
+    ASSERT_EQUAL(7, i, __FILE__, __LINE__,
+        "testFilterByFrameType failed to find the 7 PhyscicalOffsetFrame in the model.");
 }
 
 void testVelocityAndAccelerationMethods()

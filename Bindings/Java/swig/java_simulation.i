@@ -27,6 +27,8 @@ using namespace SimTK;
    }
 %}
 
+%rename OpenSim::PathPointSet::clone unused_clone;
+
 %extend OpenSim::Body {
     void getInertia(Array<double>& rInertia) {
         SimTK::Mat33 inertia= self->getInertia().toMat33();
@@ -43,13 +45,6 @@ using namespace SimTK;
                                         aInertia[3], aInertia[4], aInertia[5]));
     }
 };
-
-
-%extend OpenSim::Manager {
-    void setIntegratorAccuracy(double accuracy){
-        self->getIntegrator().setAccuracy(accuracy);
-    }
-}
 
 %extend OpenSim::Object {
     static OpenSim::Array<std::string> getFunctionClassNames() {

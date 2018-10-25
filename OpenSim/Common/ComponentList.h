@@ -284,6 +284,9 @@ public:
     // `x = new int` is not valid but `*x = 5` is.
     T& operator*() const { return *operator->(); }
 
+    // A method rather than an operator to dereference the iterator 
+    // to be used in scripting from Matlab environment
+    T& deref() const { return  *operator->(); }
     /// Another dereferencing operator that returns a pointer.
     // The const cast is required for the case when T is not const. In the
     // case where T is const, it is okay that we do the const cast,

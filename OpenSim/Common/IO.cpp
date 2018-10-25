@@ -418,6 +418,10 @@ ReadCharacters(istream &aIS,int aNChar)
     return str;
 }
 
+bool IO::FileExists(const std::string& filePath) {
+    return std::ifstream(filePath).good();
+}
+
 //_____________________________________________________________________________
 /**
  * Open a file.

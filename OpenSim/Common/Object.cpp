@@ -96,11 +96,12 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // going all the way down to the parser to throw an exception for null document!
     // -Ayman 8/06
     OPENSIM_THROW_IF(aFileName.empty(), Exception,
-        "Object: Cannot construct from empty filename. No filename specified.");
+        getClassName() + 
+        ": Cannot construct from empty filename. No filename specified.");
 
     OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
         Exception,
-        "Object: Cannot not open file " + aFileName +
+        getClassName() + ": Cannot not open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
@@ -125,7 +126,6 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
         }
         IO::chDir(saveWorkingDirectory);
     }
-
 }
 //_____________________________________________________________________________
 /**
@@ -1017,8 +1017,8 @@ updateDefaultObjectsFromXMLNode()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void Object::
-updateXMLNode(SimTK::Xml::Element& aParent) const
+void Object::updateXMLNode(SimTK::Xml::Element& aParent,
+                           const AbstractProperty* prop) const
 {
     // Handle non-inlined object
     if(!getInlined()) {
@@ -1026,35 +1026,43 @@ updateXMLNode(SimTK::Xml::Element& aParent) const
         // Handle not-inlined objects first.
         if (!aParent.isValid()) {
             cout<<"Root node must be inlined"<<*this<<endl;
-        } else {
-            // Can we make this more efficient than recreating the node again?
-            // We can possibly check when setInlined() is invoked if we need to do it or not
-            // Create a new document and write object to it
-            string offlineFileName = getDocumentFileName();
-            if(IO::GetPrintOfflineDocuments()) {
-                // The problem is that generateChildXMLDocument makes a root which allows print
-                // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
-                // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
-                _inlined=true;
-                print(offlineFileName);
-                _inlined=false;
-                SimTK::Xml::Element myObjectElement(getConcreteClassName());
-                myObjectElement.setAttributeValue("file", offlineFileName);
-                aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
-            }
-            /*
-            if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
-            XMLNode::SetAttribute(_refNode,"file",offlineFileName);
-            XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
-            XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
+        }
+        else {
+        // Can we make this more efficient than recreating the node again?
+        // We can possibly check when setInlined() is invoked if we need to do it or not
+        // Create a new document and write object to it
+        string offlineFileName = getDocumentFileName();
+        if(IO::GetPrintOfflineDocuments()) {
+            // The problem is that generateChildXMLDocument makes a root which allows print
+            // to do its job but root is duplicated. If we don't create the node then generateXMLDocument
+            // is invoked which messes up the whole _childDocument mechanism as _document is overwritten.
+            _inlined=true;
+            print(offlineFileName);
+            _inlined=false;
+            SimTK::Xml::Element myObjectElement(getConcreteClassName());
+            myObjectElement.setAttributeValue("file", offlineFileName);
+            aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
+        }
+        /*
+        if (!_refNode) _refNode = XMLNode::AppendNewElementWithComment(aParent,getType(),getName());
+        XMLNode::SetAttribute(_refNode,"file",offlineFileName);
+        XMLNode::RemoveAttribute(_refNode,"name"); // Shouldn't have a name attribute in the reference document
+        XMLNode::RemoveChildren(_refNode); // Shouldn't have any children in the reference document*/
         }
         return;
     }
     
     // GENERATE XML NODE for object
     SimTK::Xml::Element myObjectElement(getConcreteClassName());
-    if (!getName().empty())
+    
+    // if property is provided and it is not of unnamed type, use the property name
+    if(prop && prop->isOneObjectProperty() && !prop->isUnnamedProperty()) {
+        myObjectElement.setAttributeValue("name", prop->getName());
+    } // otherwise if object has a name use it as the name value
+    else if (!getName().empty()) { 
         myObjectElement.setAttributeValue("name", getName());
+    }
+
     aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
 
     // DEFAULT OBJECTS
@@ -1241,10 +1249,15 @@ updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent)
  *
  * @return Document's filename for this object.
  */
-string Object::
-getDocumentFileName() const
+string Object::getDocumentFileName() const
 {
     return _document ? _document->getFileName() : "";
+}
+
+
+int Object::getDocumentFileVersion() const
+{ 
+    return _document ? _document->getDocumentVersion() : -1;
 }
 
 
@@ -1547,17 +1560,44 @@ makeObjectFromFile(const std::string &aFileName)
 
     catch(const std::exception& x) {
         cout << x.what() << endl;
-        return 0;
+        return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad
-        return 0;
+        return nullptr;
     }
     assert(!"Shouldn't be here");
-    return 0;
+    return nullptr;
 }
 
+void Object::makeObjectNamesConsistentWithProperties()
+{
+    // Cycle through this object's Object properties and make sure those
+    // that are objects have names that are consistent with object property. 
+    for (int i = 0; i < getNumProperties(); ++i) {
+        auto& prop = updPropertyByIndex(i);
+        // check if property is of type Object
+        if (prop.isObjectProperty()) {
+            // a property is a list so cycle through its contents
+            for (int j = 0; j < prop.size(); ++j) {
+                Object& obj = prop.updValueAsObject(j);
+                // If a single object property, set the object's name to the
+                // property's name, otherwise it will be inconsistent with
+                // what is serialized (property name).
+                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
+                    obj.setName(prop.getName());
+                }
+                // In any case, any objects that are properties of this object
+                // also need to be processed
+                obj.makeObjectNamesConsistentWithProperties();
+            }
+        }
+    }
+}
 
-
+void Object::setObjectIsUpToDateWithProperties()
+{
+    _objectIsUpToDate = true;
+}
 
 void Object::updateFromXMLDocument()
 {

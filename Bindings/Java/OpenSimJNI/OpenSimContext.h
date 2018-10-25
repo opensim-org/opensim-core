@@ -153,6 +153,8 @@ public:
     void setRangeMax(ConditionalPathPoint& via, double d);
     bool replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
+
+    void setLocation(PathPoint& mp, const SimTK::Vec3& newLocation);
     void setEndPoint(PathWrap& mw, int newEndPt);
     void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
@@ -219,6 +221,7 @@ public:
 
     void cacheModelAndState();
     void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
+    void setSocketConnecteeName(AbstractSocket& socket, const std::string& newValue )   SWIG_DECLARE_EXCEPTION;
 //=============================================================================
 // DATA
 //=============================================================================
