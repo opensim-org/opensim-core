@@ -420,6 +420,7 @@ bool InverseDynamicsTool::run()
             IO::chDir(saveWorkingDirectory);
         }
 
+        removeExternalLoadsFromModel();
     }
     catch (const OpenSim::Exception& ex) {
         std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;

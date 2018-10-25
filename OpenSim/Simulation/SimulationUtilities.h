@@ -23,11 +23,15 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Model/Model.h"
-#include "Manager/Manager.h"
-#include <simbody/internal/Visualizer_InputListener.h>
+#include "osimSimulationDLL.h"
+
+#include <SimTKcommon/internal/State.h>
+
+#include <OpenSim/Common/Storage.h>
 
 namespace OpenSim {
+
+class Model;
 
 /// @name General-purpose simulation driver for OpenSim models
 /// @{

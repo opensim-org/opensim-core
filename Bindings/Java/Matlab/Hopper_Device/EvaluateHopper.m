@@ -4,9 +4,9 @@ function [peakHeight, heightStruct] = EvaluateHopper(hopper, visualize, print)
 %
 % Parameters
 % ----------
-% model: The OpenSim Model to simulate.
-% state: The SimTK State to use as the initial state for the simulation.
+% model: The OpenSim hopper model to evaluate.
 % visualize (bool): Use the simbody-visualizer to visualize the simulation?
+% print (bool): Print peak height to the command window?
  
 %-----------------------------------------------------------------------%
 % The OpenSim API is a toolkit for musculoskeletal modeling and         %
@@ -48,12 +48,11 @@ heightRep.addToReport(...
     hopper.getComponent('slider/yCoord').getOutput('value'), 'height');
 hopperCopy.addComponent(heightRep);
 
-
 % Simulate.
 % ---------
-state = hopperCopy.initSystem();
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopperCopy, state, visualize);
+% The second argument determines if the simbody-visualizer should be used.
+% The third argument is the simulation duration.
+osimSimulate(hopperCopy, visualize, 5.0);
 
 % Process reporter tables.
 % ------------------------

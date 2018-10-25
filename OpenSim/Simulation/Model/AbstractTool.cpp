@@ -552,7 +552,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     _model->updAnalysisSet().printResults(aBaseName,aDir,aDT,aExtension);
 }
 
-
+// NOTE: The implementation here should be verbatim that of DynamicsTool::
+// createExternalLoads to ensure consistent behavior of Tools in the GUI
+// TODO: Unify the code bases.
 bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel, const Storage *loadKinematics)
 {
@@ -576,6 +578,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     try {
         externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
         copyModel.addModelComponent(externalLoads);
+        copyModel.setup();
     }
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
@@ -638,8 +641,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     ExternalLoads* exLoadsClone = externalLoads->clone();
     aModel.addModelComponent(exLoadsClone);
 
-    // let tool hold on to a reference to the external loads for convenience
-    _externalLoads = exLoadsClone;
+    // copy over created external loads to the external loads owned by the tool
+    _externalLoads = *externalLoads;
+    // tool holds on to a reference of the external loads in the model so it can
+    // be removed afterwards
+    _modelExternalLoads = exLoadsClone;
     
     if(!loadKinematics)
         delete loadKinematics;
@@ -648,6 +654,13 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     return true;
 }
 
+void AbstractTool::removeExternalLoadsFromModel()
+{
+    // If ExternalLoads were added to the model by the Tool, then remove them
+    if (modelHasExternalLoads()) {
+        _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
+    }
+}
 
 //_____________________________________________________________________________
 /**
@@ -852,7 +865,7 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
             if (_model->getForceSet().contains(candidateName))
                 continue;
         }
-        found = !(_externalLoads->contains(candidateName));
+        found = !(_externalLoads.contains(candidateName));
     };
     return candidateName;
 }
@@ -909,11 +922,11 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
             sprintf(pad,"%d", f+1);
             std::string suffix = "ExternalForce_"+string(pad);
             xf->setName(suffix);
-            _externalLoads->adoptAndAppend(xf);
+            _externalLoads.adoptAndAppend(xf);
         }
-        _externalLoads->setDataFileName(oldFile);
+        _externalLoads.setDataFileName(oldFile);
         std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
-        _externalLoads->print(newName);
+        _externalLoads.print(newName);
         if(getDocument()) IO::chDir(savedCwd);
         cout<<"\n\n- Created ForceSet file " << newName << "to apply forces from " << oldFile << ".\n\n";
         return newName;
