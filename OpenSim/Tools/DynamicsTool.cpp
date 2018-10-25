@@ -236,10 +236,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
     copyModel.updForceSet().clearAndDestroy();
     copyModel.updControllerSet().clearAndDestroy();
 
-    // This is required so that the references to other files inside ExternalLoads file are interpreted 
-    // as relative paths
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
     // Create external forces
     ExternalLoads* externalLoads = nullptr;
     try {
@@ -253,7 +249,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
         cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
         cout << ". Please make sure the file exists and that it contains an ExternalLoads";
         cout << "object or create a fresh one." << endl;
-        if (getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
 
@@ -273,7 +268,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
         if(!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")){
             temp = new Storage(loadKinematicsFileName);
             if(!temp){
-                IO::chDir(savedCwd);
                 throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
             }
         }
@@ -317,7 +311,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
     if(!loadKinematics)
         delete loadKinematics;
 
-    IO::chDir(savedCwd);
     return true;
 }
 
