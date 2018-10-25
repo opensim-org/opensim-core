@@ -462,6 +462,7 @@ void OpenSimContext::setSocketConnecteePath(AbstractSocket& socket,
         throw OpenSim::Exception(message);
     }
     // if we made it to this line then the change is safe, redo in actual model/comp/socket
+    socket.disconnect();
     socket.setConnecteePath(componentPathName);
     restoreStateFromCachedModel();
 }
