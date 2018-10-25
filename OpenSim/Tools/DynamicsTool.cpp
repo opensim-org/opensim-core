@@ -323,8 +323,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
 
 void DynamicsTool::removeExternalLoadsFromModel()
 {
-    cout << "'" << getName() << "'" << getConcreteClassName()
-        << "::removeExternalLoadsFromModel" << endl;
     // If ExternalLoads were added to the model by the Tool, then remove them
     if (modelHasExternalLoads()) {
         _model->updMiscModelComponentSet().remove(_modelExternalLoads.release());
