@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                   OpenSim:  SimulationUtilities.cpp                        *
+ *                     OpenSim:  SimulationUtilities.cpp                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,6 +22,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "SimulationUtilities.h"
+
+#include "Model/Model.h"
+#include "Manager/Manager.h"
+#include <simbody/internal/Visualizer_InputListener.h>
 
 using namespace OpenSim;
 
@@ -90,7 +94,6 @@ SimTK::State OpenSim::simulate(Model& model,
 
     return state;
 }
-/// @}
 
 std::unique_ptr<Storage>
 OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,

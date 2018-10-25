@@ -200,6 +200,7 @@ MATLAB interface
 - The configureOpenSim.m function should no longer require administrator
   privileges for most users, and gives more verbose output to assist with
   troubleshooting.
+- New MATLAB examples were added: Hopper-Device and Knee-Reflex.
 
 Python interface
 ----------------

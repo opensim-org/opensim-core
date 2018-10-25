@@ -60,9 +60,9 @@ reporter.addToReport(...
 hopper.addComponent(reporter);
 % }
 
-sHop = hopper.initSystem();
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHop, true);
+% The second argument determines if the simbody-visualizer should be used.
+% The third argument is the simulation duration.
+osimSimulate(hopper, true, 5.0);
 
 % TODO: Display the TableReporter's data, and save it to a file.
 % [Step 1, Task C]

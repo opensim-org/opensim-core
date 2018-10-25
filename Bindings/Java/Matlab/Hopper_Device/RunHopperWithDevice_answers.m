@@ -36,22 +36,22 @@ device = BuildDevice();
 %% Connect the device to the hopper.
 % ----------------------------------
 
-% TODO: Add the device to the hopper model.
-% [Step 2, Task A]
-% ANSWER{
-hopper.addComponent(device);
-% }
-% Note: After this step, simulating will not work until after completing Task F.
-
 % TODO: Print the names of the device's subcomponents, and locate the
 %       subcomponents named 'anchorA' and 'anchorB'. Also, print the names of
 %       the hopper's subcomponents, and locate the two subcomponents named
 %       'deviceAttach'.
-% [Step 2, Task B]
+% [Step 2, Task A]
 % ANSWER{
 device.printSubcomponentInfo();
 hopper.printSubcomponentInfo();
 % }
+
+% TODO: Add the device to the hopper model.
+% [Step 2, Task B]
+% ANSWER{
+hopper.addComponent(device);
+% }
+% Note: After this step, simulating will not work until after completing Task F.
 
 % TODO: Get the 'anchor' joints in the device, and downcast them to the
 %       WeldJoint class. Get the 'deviceAttach' frames in the hopper
@@ -127,9 +127,9 @@ reporter.addToReport(...
 hopper.addComponent(reporter);
 % }
 
-sHD = hopper.initSystem();
-% The last argument determines if the simbody-visualizer should be used.
-Simulate(hopper, sHD, true);
+% The second argument determines if the simbody-visualizer should be used.
+% The third argument is the simulation duration.
+osimSimulate(hopper, true, 5.0);
 
 if exist('reporter') == 1
     % (Done for you) Display the TableReporter's data, and save it to a file.
