@@ -2213,6 +2213,7 @@ protected:
     #pragma clang diagnostic pop
 #endif
 
+public:
     /** Utility method to find a component in the list of sub components of
     this component and any of their sub components, etc..., by name or state
     variable name. The search can be sped up considerably if the "path" or even
@@ -2224,14 +2225,28 @@ protected:
     component's state variable name and a StateVariable pointer is provided, the
     pointer will be set to the StateVariable object that was found. This
     facilitates the getting and setting of StateVariables by name. 
+
+    TODO update docs.
         
     NOTE: If the component name or the state variable name is ambiguous, 
     an exception is thrown. To disambiguate use the absolute path provided
     by owning component(s). */
+    template<class C = Component>
+    const C* findComponent(const ComponentPath& pathToFind) const {
+        return findComponent<C>(pathToFind, nullptr);
+    }
+
+    // TODO
+    template<class C = Component>
+    const C* findComponent(const std::string& pathToFind) const {
+        return findComponent<C>(ComponentPath(pathToFind));
+    }
+
+protected:
 #ifndef SWIG // StateVariable is protected.
     template<class C = Component>
     const C* findComponent(const ComponentPath& pathToFind,
-                           const StateVariable** rsv = nullptr) const {
+                           const StateVariable** rsv) const {
         const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";

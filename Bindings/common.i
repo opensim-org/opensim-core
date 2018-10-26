@@ -103,7 +103,11 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
+%include <OpenSim/Common/Path.h>
+%include <OpenSim/Common/ComponentPath.h>
+
 %include <OpenSim/Common/Component.h>
+%template(findComponent) OpenSim::Component::findComponent<OpenSim::Component>;
 
 %template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;

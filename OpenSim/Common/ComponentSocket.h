@@ -150,6 +150,14 @@ public:
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
+    // TODO document
+    virtual void findAndConnect(const ComponentPath& connectee) {
+        OPENSIM_THROW(Exception, "Not implemented.");
+    }
+    void findAndConnect(const std::string& connectee) {
+        findAndConnect(ComponentPath(connectee));
+    }
+
     /** Connect this %Socket according to its connectee path property
         given a root %Component to search its subcomponents for the connect_to
         Component. */
@@ -372,6 +380,13 @@ public:
         }
 
         connectInternal(*objT);
+    }
+
+    void findAndConnect(const ComponentPath& connectee) override {
+        const auto* comp = getOwner().findComponent(connectee);
+        OPENSIM_THROW_IF(!comp, Exception,
+                "Could not find '" + connectee + "'.");
+        connect(*comp);
     }
 
     /** Connect this Socket given its connectee path property  */
