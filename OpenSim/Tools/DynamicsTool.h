@@ -140,8 +140,8 @@ public:
     void setExcludedForces(const Array<std::string> &aExcluded) {
         _excludedForces = aExcluded;
     }
-    bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                              Model& aModel, const Storage *loadKinematics=NULL);
+    bool createExternalLoads( const std::string &externalLoadsFileName,
+                              Model& model);
 
     bool modelHasExternalLoads() { return !_modelExternalLoads.empty(); }
 
