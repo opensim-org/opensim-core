@@ -184,8 +184,7 @@ void OpenSim::updateConnecteesBySearch(Model& model)
             try {
                 socket.finalizeConnection(model);
             } catch (const ComponentNotFoundOnSpecifiedPath& e) {
-                const auto pathStr = socket.getConnecteePath()
-                const ComponentPath path(pathStr);
+                const ComponentPath path(socket.getConnecteePath());
                 if (path.getNumPathLevels() >= 1) { 
                     const Component* found =
                         model.findComponent(path.getComponentName());
