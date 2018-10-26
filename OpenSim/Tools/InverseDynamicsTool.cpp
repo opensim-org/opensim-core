@@ -251,7 +251,7 @@ bool InverseDynamicsTool::run()
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
 
-        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
