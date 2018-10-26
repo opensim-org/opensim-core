@@ -55,7 +55,10 @@
 
 namespace OpenSim {
 
+class Model;
 class ModelDisplayHints;
+
+void updateConnecteesBySearch(Model&);
 
 
 //==============================================================================
@@ -2317,6 +2320,8 @@ protected:
         return nullptr;
     }
 #endif
+
+    friend void updateConnecteesBySearch(Model&);
 
     template<class C>
     const C* traversePathToComponent(ComponentPath path) const

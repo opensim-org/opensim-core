@@ -175,3 +175,32 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
         updatedMotion->print(outFilePath);
     }
 }
+
+void OpenSim::updateConnecteesBySearch(Model& model)
+{
+    for (auto& comp : model.updComponentList()) {
+        for (auto& it : comp._socketsTable) {
+            auto& socket = it.second.updRef();
+            try {
+                socket.finalizeConnection(model);
+            } catch (const ComponentNotFoundOnSpecifiedPath& e) {
+                const auto pathStr = socket.getConnecteePath()
+                const ComponentPath path(pathStr);
+                if (path.getNumPathLevels() >= 1) { 
+                    const Component* found =
+                        model.findComponent(path.getComponentName());
+                    if (found) {
+                        socket.connect(*found);
+                        socket.finalizeConnection(model);
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::cout << "Warning: Caught exception when processing "
+                    "Socket " << it.first << " in " <<
+                    comp.getConcreteClassName() << " at " <<
+                    comp.getAbsolutePathString() << ": " << e.what() <<
+                    std::endl;
+            }
+        }
+    }
+}
