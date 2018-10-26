@@ -190,9 +190,11 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
             catch (const std::exception &ex) {
                 cout << "Error: failed to construct ExternalLoads from file "
                     << _dataFileName << endl;
-                if (getDocument()) IO::chDir(savedCwd);
+                if (getDocument())
+                    IO::chDir(savedCwd);
                 throw(ex);
             }
+            IO::chDir(savedCwd);
         }
 
         for (int i = 0; i < getSize(); ++i)
