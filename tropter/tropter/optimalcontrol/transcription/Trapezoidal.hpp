@@ -260,9 +260,10 @@ void Trapezoidal<T>::calc_objective(const VectorX<T>& x, T& obj_value) const
     m_integrand.setZero();
     for (int i_mesh = 0; i_mesh < m_num_mesh_points; ++i_mesh) {
         const T time = step_size * i_mesh + initial_time;
-        m_ocproblem->calc_integral_cost(time,
+        m_ocproblem->calc_integral_cost({i_mesh, time,
                 states.col(i_mesh), controls.col(i_mesh), adjuncts.col(i_mesh),
-                parameters, m_integrand[i_mesh]);
+                parameters}, 
+                m_integrand[i_mesh]);
     }
     // TODO use more intelligent quadrature? trapezoidal rule?
     T integral_cost = 0;
@@ -440,7 +441,7 @@ void Trapezoidal<T>::calc_sparsity_hessian_lagrangian(
         VectorX<T> p = x.segment(m_num_time_variables,
             m_num_parameters).template cast<T>();
         T integrand = 0;
-        m_ocproblem->calc_integral_cost(t, s, c, a, p, integrand);
+        m_ocproblem->calc_integral_cost({0, t, s, c, a, p}, integrand);
         return integrand;
     };
     SymmetricSparsityPattern integral_cost_sparsity =

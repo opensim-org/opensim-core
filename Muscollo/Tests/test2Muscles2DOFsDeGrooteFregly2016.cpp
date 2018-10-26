@@ -119,8 +119,8 @@ public:
         }
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         // -----------------
         const T& vx = in.states[m_i_vx];
@@ -163,11 +163,10 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void calc_integral_cost(const T& /*time*/,
-            const tropter::VectorX<T>& /*states*/,
-            const tropter::VectorX<T>& controls,
-            const tropter::VectorX<T>& /*parameters*/,
+    void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {
+
+        const auto& controls = in.controls;
         const auto& controlL = controls[m_i_activation_l];
         const auto& controlR = controls[m_i_activation_r];
         integrand = controlL * controlL + controlR * controlR;
@@ -283,8 +282,8 @@ public:
         }
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         // -----------------
         const T& vx = in.states[m_i_vx];
@@ -364,11 +363,10 @@ public:
                             +tensionR * (-y) / musTenLenR;
         return {netForceX,  netForceY};
     }
-    void calc_integral_cost(const T& /*time*/,
-            const tropter::VectorX<T>& /*states*/,
-            const tropter::VectorX<T>& controls,
-            const tropter::VectorX<T>& /*parameters*/,
+    void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {
+
+        const auto& controls = in.controls;
         const auto& controlL = controls[m_i_excitation_l];
         const auto& controlR = controls[m_i_excitation_r];
         integrand = controlL * controlL + controlR * controlR;

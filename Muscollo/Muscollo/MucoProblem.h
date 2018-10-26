@@ -41,11 +41,11 @@ public:
             const MucoInitialBounds&, const MucoFinalBounds&);
 
     MucoBounds getBounds() const
-    {   return get_bounds(); }
+    {   return get_MucoBounds(); }
     MucoInitialBounds getInitialBounds() const
-    {   return get_initial_bounds(); }
+    {   return get_MucoInitialBounds(); }
     MucoFinalBounds getFinalBounds() const
-    {   return get_final_bounds(); }
+    {   return get_MucoFinalBounds(); }
 
     /// Throws an exception if initial and final bounds are not within bounds.
     // TODO Move to finalizeFromProperties() and cache MucoBounds.
@@ -55,12 +55,10 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(bounds, MucoBounds,
-            "Bounds over all time.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(initial_bounds, MucoInitialBounds,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoBounds, "Bounds over all time.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoInitialBounds,
             "Bounds on initial value.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(final_bounds, MucoFinalBounds,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoFinalBounds,
             "Bounds on final value.");
 
 private:
@@ -347,9 +345,9 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
             "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
-    OpenSim_DECLARE_UNNAMED_PROPERTY(time_initial_bounds, MucoInitialBounds,
+    OpenSim_DECLARE_PROPERTY(time_initial_bounds, MucoInitialBounds,
             "Bounds on initial value.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(time_final_bounds, MucoFinalBounds,
+    OpenSim_DECLARE_PROPERTY(time_final_bounds, MucoFinalBounds,
             "Bounds on final value.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos, MucoVariableInfo,
             "The state variables' bounds.");

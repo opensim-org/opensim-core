@@ -93,7 +93,7 @@ public:
     /// zero-indexed, numeric suffixes will be applied as a default. The length
     /// of the returned vector is equal to the value returned by 
     /// getNumEquations().
-    std::vector<std::string> getConstraintLabels();
+    std::vector<std::string> getConstraintLabels() const;
 
     /// Print the name, type, number of scalar equations, and bounds for this 
     /// constraint.
@@ -162,7 +162,7 @@ public:
     const MucoConstraintInfo& getConstraintInfo() const 
     {   return m_constraint_info; }
     void setConstraintInfo(const MucoConstraintInfo& cInfo) {
-        OPENSIM_THROW_IF_FRMOBJ(cInfo.getNumEquations() != 
+        OPENSIM_THROW_IF(cInfo.getNumEquations() != 
             m_constraint_info.getNumEquations(), Exception, "Size of "
             "properties in constraint info passed are not consistent with the "
             "number of scalar constraint equations in this multibody "
@@ -234,7 +234,7 @@ private:
 /// A path constraint to be enforced in the optimal control problem.
 /// @ingroup mucoconstraint
 class OSIMMUSCOLLO_API MucoPathConstraint : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MucoPathConstraint, Object);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(MucoPathConstraint, Object);
 public:
     MucoPathConstraint();
         
@@ -280,10 +280,20 @@ protected:
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.
+    /// The number of scalar constraint equations this MucoPathConstraint 
+    /// implements must be defined here (see setNumEquations() below).
     /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input, in addition to
     /// the checks provided in initialize().
-    virtual void initializeImpl() const {}
+    virtual void initializeImpl() const = 0;
+    /// Set the number of scalar equations for this MucoPathConstraint. This 
+    /// must be set within initializeImpl(), otherwise an exception is thrown
+    /// during initialization.
+    void setNumEquations(int numEqs) const  {
+        // TODO avoid const_cast
+        const_cast<MucoPathConstraint*>(this)
+            ->updConstraintInfo().setNumEquations(numEqs);
+    }
     /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code

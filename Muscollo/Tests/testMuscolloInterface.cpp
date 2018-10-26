@@ -807,8 +807,9 @@ void testMucoIterate() {
     {
         const std::string fname = "testMuscolloInterface_testMucoIterate.sto";
         SimTK::Vector time(3); time[0] = 0; time[1] = 0.1; time[2] = 0.25;
-        MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m", "n"},
-                SimTK::Test::randMatrix(3, 2), SimTK::Test::randMatrix(3, 4),
+        MucoIterate orig(time, {"a", "b"}, {"g", "h", "i", "j"}, {"m"},
+                {"n", "o"}, SimTK::Test::randMatrix(3, 2), 
+                SimTK::Test::randMatrix(3, 4), SimTK::Test::randMatrix(3, 1),
                 SimTK::Test::randVector(2).transpose());
         orig.write(fname);
 
@@ -869,11 +870,12 @@ void testMucoIterate() {
                     SimTK::Test::randDouble(), SimTK::Test::randDouble());
         }
         SimTK::Vector time = createVectorLinspace(NT, t0, t0 + duration);
-        MucoIterate a(time, snames, cnames, {}, states, controls, 
-                SimTK::RowVector());
-        MucoIterate b(time, snames, cnames, {},
+        MucoIterate a(time, snames, cnames, {}, {}, states, controls, 
+                SimTK::Matrix(), SimTK::RowVector());
+        MucoIterate b(time, snames, cnames, {}, {},
                 states.elementwiseAddScalar(error),
                 controls.elementwiseAddScalar(error),
+                SimTK::Matrix(),
                 SimTK::RowVector());
         // If error is constant:
         // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
@@ -916,10 +918,10 @@ void testMucoIterate() {
         std::vector<std::string> pnames;
         for (int i = 0; i < NP; ++i) pnames.push_back("p" + std::to_string(i));
         SimTK::RowVector parameters = SimTK::Test::randVector(NP).transpose();
-        MucoIterate a(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
-            SimTK::Matrix(), parameters);
-        MucoIterate b(SimTK::Vector(), {}, {}, pnames, SimTK::Matrix(),
-            SimTK::Matrix(),
+        MucoIterate a(SimTK::Vector(), {}, {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(), SimTK::Matrix(), parameters);
+        MucoIterate b(SimTK::Vector(), {}, {}, {}, pnames, SimTK::Matrix(),
+            SimTK::Matrix(), SimTK::Matrix(),
             parameters.elementwiseAddScalar(error).getAsRowVector());
         // If error is constant:
         // sqrt(sum_i^N (err_{i}^2) / N) = err

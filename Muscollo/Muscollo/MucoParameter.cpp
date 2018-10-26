@@ -32,7 +32,7 @@ MucoParameter::MucoParameter(const std::string& name,
     const MucoBounds& bounds,
     const int& propertyElt) : MucoParameter() {
     setName(name);
-    set_bounds(bounds.getAsArray());
+    set_MucoBounds(bounds);
     Array<std::string> compPaths;
     for (auto& str : componentPaths) {
         compPaths.append(str);
@@ -66,7 +66,7 @@ MucoParameter::MucoParameter(const std::string& name,
     MucoParameter(name, componentPaths, propertyName, bounds, -1) {}
 
 void MucoParameter::constructProperties() {
-    constructProperty_bounds();
+    constructProperty_MucoBounds(MucoBounds());
     constructProperty_component_paths();
     constructProperty_property_name("");
     constructProperty_property_element();

@@ -20,6 +20,7 @@
 
 #include "osimMuscolloDLL.h"
 
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Array.h>
 

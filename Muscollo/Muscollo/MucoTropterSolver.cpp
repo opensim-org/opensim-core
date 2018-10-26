@@ -59,7 +59,7 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     SimTK::Vector time((int)tropTime.size(), tropTime.data());
     const auto& state_names = tropSol.state_names;
     const auto& control_names = tropSol.control_names;
-    const auto& multiplier_names = tropSol.multiplier_names;
+    const auto& multiplier_names = tropSol.adjunct_names;
     const auto& parameter_names = tropSol.parameter_names;
 
     int numTimes = (int)time.size();
@@ -82,7 +82,7 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     SimTK::Matrix multipliers(numTimes, numMultipliers);
     for (int itime = 0; itime < numTimes; ++itime) {
         for (int imultiplier = 0; imultiplier < numMultipliers; ++imultiplier) {
-            multipliers(itime, imultiplier) = tropSol.multipliers(imultiplier, 
+            multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier, 
                 itime);
         }
     }
@@ -160,10 +160,10 @@ tropter::FinalBounds convert(const MucoFinalBounds& mb) {
 template <typename T>
 class MucoTropterSolver::OCProblem : public tropter::Problem<T> {
 public:
-    OCProblem(const MucoSolver& solver)
+    OCProblem(const MucoTropterSolver& solver)
             // TODO set name properly.
             : tropter::Problem<T>(solver.getProblem().getName()),
-              m_mucoSolver(solver),
+              m_mucoTropterSolver(solver),
               m_mucoProb(solver.getProblem()),
               m_phase0(m_mucoProb.getPhase(0)) {
         m_model = m_phase0.getModel();
@@ -175,6 +175,7 @@ public:
             controller.set_enabled(false);
         }
         m_state = m_model.initSystem();
+        m_mucoProb.initialize(m_model);
 
         this->set_time(convert(m_phase0.getTimeInitialBounds()),
                 convert(m_phase0.getTimeFinalBounds()));
@@ -193,17 +194,17 @@ public:
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames = 
-            m_phase0.createMultibodyConstraintInfoNames();
+            m_phase0.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
-            const auto& mcInfo = m_phase0.getMultibodyConstraintInfo(mcName);
+            const auto& mc = m_phase0.getMultibodyConstraint(mcName);
             const auto& multInfos = m_phase0.getMultiplierInfos(mcName);
-            cid = mcInfo.getSimbodyConstraintIndex();
-            mp = mcInfo.getNumPositionEquations();
-            mv = mcInfo.getNumVelocityEquations();
-            ma = mcInfo.getNumAccelerationEquations();
-            bounds = mcInfo.getBounds();
-            labels = mcInfo.getConstraintLabels();
-            kinLevels = mcInfo.getKinematicLevels();
+            cid = mc.getSimbodyConstraintIndex();
+            mp = mc.getNumPositionEquations();
+            mv = mc.getNumVelocityEquations();
+            ma = mc.getNumAccelerationEquations();
+            bounds = mc.getConstraintInfo().getBounds();
+            labels = mc.getConstraintInfo().getConstraintLabels();
+            kinLevels = mc.getKinematicLevels();
 
             m_mpSum += mp;
             // Only considering holonomic constraints for now.
@@ -245,9 +246,9 @@ public:
                 // If the index for this path constraint represents an 
                 // a non-derivative scalar constraint equation, also add a 
                 // Lagrange multplier to the problem.
-                if (kinLevel[i] == KinematicLevel::Position ||
-                    kinLevel[i] == KinematicLevel::Velocity || 
-                    kinLevel[i] == KinematicLevel::Acceleration) {
+                if (kinLevels[i] == KinematicLevel::Position ||
+                    kinLevels[i] == KinematicLevel::Velocity || 
+                    kinLevels[i] == KinematicLevel::Acceleration) {
 
                     const auto& multInfo = multInfos[multIndexThisConstraint];
                     this->add_adjunct(multInfo.getName(), 
@@ -273,7 +274,9 @@ public:
             }
         }
         m_numPathConstraintEqs = m_phase0.getNumPathConstraintEquations();
-        m_pathConstraintErrors.resize(m_numPathConstraintEqs, 0.0);
+        // Allocate path constraint error memory.
+        m_pathConstraintErrors.resize(m_numPathConstraintEqs);
+        m_pathConstraintErrors.setToZero();
 
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
@@ -297,8 +300,8 @@ public:
         this->applyParametersToModel(parameters);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
 
         // TODO convert to implicit formulation.
 
@@ -378,6 +381,7 @@ public:
 
         // Copy errors from generic path constraints into output struct.
         m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+        //std::cout << "path errors: " << m_pathConstraintErrors << std::endl;
         std::copy(m_pathConstraintErrors.begin(),
                   m_pathConstraintErrors.end(),
                   out.path.data() + m_numMultibodyConstraintEqs);
@@ -387,10 +391,15 @@ public:
                   out.dynamics.data());   
     }
     
-    void calc_integral_cost(const T& time,
-            const VectorX<T>& states,
-            const VectorX<T>& controls, 
-            const VectorX<T>& parameters, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in, 
+            T& integrand) const override {
+        // Unpack variables.
+        const auto& time = in.time;
+        const auto& states = in.states;
+        const auto& controls = in.controls;
+        const auto& adjuncts = in.adjuncts;
+        const auto& parameters = in.parameters;
+
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
         m_state.setTime(time);
@@ -416,7 +425,8 @@ public:
         // constraints in the OCP, this term exists in order to impose
         // uniqueness in the Lagrange multipliers. 
         for (int i = 0; i < m_numMultibodyConstraintEqs; ++i) {
-            integrand += get_multiplier_weight() * adjuncts[i] * adjuncts[i];
+            integrand += m_mucoTropterSolver.get_multiplier_weight() 
+                * adjuncts[i] * adjuncts[i];
         }
         // }
         
@@ -433,7 +443,7 @@ public:
     }
 
 private:
-    const MucoSolver& m_mucoSolver;
+    const MucoTropterSolver& m_mucoTropterSolver;
     const MucoProblem& m_mucoProb;
     const MucoPhase& m_phase0;
     mutable Model m_model;

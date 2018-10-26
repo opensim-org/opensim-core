@@ -51,15 +51,12 @@ public:
         this->add_parameter("p", {-1.5, 1.5});
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.controls[0];
     }
-    void calc_integral_cost(const T& /*time*/,
-                       const VectorX<T>& /*states*/,
-                       const VectorX<T>& controls,
-                       const VectorX<T>& /*parameters*/,
-                       T& integrand) const override {
+    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
+        const auto& controls = in.controls;
         integrand = 0.001 * pow(controls[0], 2);
     }
     /// This function has minima at `x = \pm 1/\sqrt(2)`.

@@ -29,7 +29,7 @@ MucoConstraintInfo::MucoConstraintInfo() {
     if (getName().empty()) setName("path_constraint");
 }
 
-std::vector<std::string> MucoConstraintInfo::getConstraintLabels() {
+std::vector<std::string> MucoConstraintInfo::getConstraintLabels() const {
     std::vector<std::string> labels(getNumEquations());
     for (int i = 0; i < getNumEquations(); ++i) {
         if (getProperty_suffixes().empty()) {
@@ -129,14 +129,13 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
 void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
     const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
 
-    OPENSIM_THROW_IF_FRMOBJ(
+    OPENSIM_THROW_IF(
         errors.size() != m_constraint_info.getNumEquations(), Exception,
         "The size of the errors vector passed is not consistent with the "
         "number of scalar equations this MucoMultibodyConstraintInfo "
         "represents.");
 
     // Get the Simbody constraint.
-    SimTK::Vector errors(m_constraint_info.getNumEquations());
     const auto& matter = model.getMatterSubsystem();
     const SimTK::Constraint& constraint = 
         matter.getConstraint(getSimbodyConstraintIndex());
@@ -175,15 +174,12 @@ void MucoPathConstraint::initialize(const Model& model,
     m_model.reset(&model);
     initializeImpl();
 
+    OPENSIM_THROW_IF_FRMOBJ(get_MucoConstraintInfo().getNumEquations() <= 0,
+        Exception, "Invalid number of equations. Either no equation number was "
+        "set or a non-positive integer was provided.");
+
     OPENSIM_THROW_IF_FRMOBJ(pathConstraintIndex < 0, Exception, "Invalid "
         "constraint index provided. The index must be greater than or equal to "
         "zero.");
-    m_path_constraint_index = pathConstraintIndex;
-
-    // Set the number of scalar equations based on the user's constraint error 
-    // implementation.
-    SimTK::Vector errors;
-    calcPathConstraintErrorsImpl(model.getWorkingState(), errors);
-    const_cast<MucoPathConstraint*>(this)
-        ->updConstraintInfo().setNumEquations(errors.size());
+    m_path_constraint_index = pathConstraintIndex;    
 }

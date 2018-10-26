@@ -110,8 +110,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         // -----------------
         const T& angle = in.states[0];

@@ -133,7 +133,7 @@ initialize_on_iterate(const VectorX<T>&) const
 
 template<typename T>    
 void Problem<T>::
-calc_differential_algebraic_equations(const DAEInput<T>&, DAEOutput<T>) const
+calc_differential_algebraic_equations(const Input<T>&, Output<T>) const
 {}
 
 template<typename T>
@@ -143,8 +143,7 @@ calc_endpoint_cost(const T&, const VectorX<T>&, const VectorX<T>&, T&) const
 
 template<typename T>
 void Problem<T>::
-calc_integral_cost(const T&, const VectorX<T>&, const VectorX<T>&, 
-        const VectorX<T>&, T&) const
+calc_integral_cost(const Input<T>&, T&) const
 {}
 
 template<typename T>

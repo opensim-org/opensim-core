@@ -36,9 +36,9 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
         const MucoBounds& bounds, const MucoInitialBounds& initial,
         const MucoFinalBounds& final) : MucoVariableInfo() {
     setName(name);
-    set_bounds(bounds);
-    set_initial_bounds(initial);
-    set_final_bounds(final);
+    set_MucoBounds(bounds);
+    set_MucoInitialBounds(initial);
+    set_MucoFinalBounds(final);
     validate();
 }
 
@@ -88,9 +88,9 @@ void MucoVariableInfo::printDescription(std::ostream& stream) const {
 }
 
 void MucoVariableInfo::constructProperties() {
-    constructProperty_bounds(MucoBounds());
-    constructProperty_initial_bounds(MucoInitialBounds());
-    constructProperty_final_bounds(MucoFinalBounds());
+    constructProperty_MucoBounds(MucoBounds());
+    constructProperty_MucoInitialBounds(MucoInitialBounds());
+    constructProperty_MucoFinalBounds(MucoFinalBounds());
 }
 
 
@@ -117,8 +117,8 @@ void MucoPhase::setModel(const Model& model) {
 }
 void MucoPhase::setTimeBounds(const MucoInitialBounds& initial,
         const MucoFinalBounds& final) {
-    set_time_initial_bounds(initial.getAsArray());
-    set_time_final_bounds(final.getAsArray());
+    set_time_initial_bounds(initial);
+    set_time_final_bounds(final);
 }
 void MucoPhase::setStateInfo(const std::string& name, const MucoBounds& bounds,
         const MucoInitialBounds& initial, const MucoFinalBounds& final) {
@@ -214,6 +214,7 @@ std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
     for (int i = 0; i < m_multibody_constraints.size(); ++i) {
         names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
     }
+    return names;
 }
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
@@ -393,6 +394,8 @@ void MucoPhase::initialize(Model& model) const {
     const auto& state = model.getWorkingState();
     int mp, mv, ma;
     m_num_multibody_constraint_eqs = 0;
+    m_multibody_constraints.clear();
+    m_multiplier_infos_map.clear();
     for (SimTK::ConstraintIndex cid(0); cid < NC; ++cid) {
         const SimTK::Constraint& constraint = matter.getConstraint(cid);
         if (!constraint.isDisabled(state)) {

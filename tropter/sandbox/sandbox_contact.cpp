@@ -31,7 +31,7 @@ public:
         this->add_state("vy", {-10, 10}, 0);
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         const T& y = in.states[0];
         const T& vy = in.states[1];
         out.dynamics[0] = vy;
@@ -72,7 +72,7 @@ public:
         this->add_state("vy", {-10, 10}, 0);
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         const T& y = in.states[0];
         const T& vy = in.states[1];
         out.dynamics[0] = vy;
@@ -192,7 +192,7 @@ public:
         this->add_state("vy", {-10, 10}, 0);
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         const T& x = in.states[0];
         const T& y = in.states[1];
         const T& vx = in.states[2];

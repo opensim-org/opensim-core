@@ -46,10 +46,11 @@ struct FinalBounds : public Bounds {
 };
 
 /// This struct holds inputs to
-/// OptimalControlProblem::calc_differntial_algebraic_equations().
+/// OptimalControlProblem::calc_differntial_algebraic_equations() and
+/// OptimalControlProblem::calc_integral_cost().
 /// @ingroup optimalcontrol
 template<typename T>
-struct DAEInput {
+struct Input {
     /// This index may be helpful for using a cache computed in
     /// OptimalControlProblem::initialize_on_mesh().
     const int mesh_index;
@@ -83,7 +84,7 @@ struct DAEInput {
 /// OptimalControlProblem::calc_differntial_algebraic_equations().
 /// @ingroup optimalcontrol
 template<typename T>
-struct DAEOutput {
+struct Output {
     /// Store the right-hand-side of the differential equations in this
     /// variable. The length of this vector is num_states.
     /// This is a reference to memory that is managed by the direct
@@ -296,7 +297,7 @@ public:
     /// cannot be assumed to be 0, etc. You must set entries to 0 explicitly if
     /// you want that.
     virtual void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const;
+            const Input<T>& in, Output<T> out) const;
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixX<T>& x, MatrixX<T>& xdot) const = 0;
     // TODO Maybe this one signature could be used for both the "continuous,
@@ -312,13 +313,7 @@ public:
             const VectorX<T>& final_states,
             const VectorX<T>& parameters,
             T& cost) const;
-    // TODO use something similar to a DAEInput here?
-    virtual void calc_integral_cost(const T& time,
-            const VectorX<T>& states,
-            const VectorX<T>& controls,
-            const VectorX<T>& adjuncts,
-            const VectorX<T>& parameters,
-            T& integrand) const;
+    virtual void calc_integral_cost(const Input<T>& in, T& integrand) const;
     /// @}
 
     /// @name Helpers for setting an initial guess

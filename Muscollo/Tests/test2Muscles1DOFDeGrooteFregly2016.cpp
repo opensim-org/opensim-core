@@ -78,8 +78,8 @@ public:
                 max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         const T& position = in.states[0];
         const T& speed = in.states[1];
@@ -220,8 +220,8 @@ public:
             max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-        const tropter::DAEInput<T>& in,
-        tropter::DAEOutput<T> out) const override {
+        const tropter::Input<T>& in,
+        tropter::Output<T> out) const override {
         // Unpack variables.
         const T& position = in.states[0];
         const T& speed = in.states[1];
