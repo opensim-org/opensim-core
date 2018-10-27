@@ -150,10 +150,15 @@ public:
         otherwise, the provided connectee replaces the single connectee. */
     virtual void connect(const Object& connectee) = 0;
 
-    // TODO document
+    /** Find the connectee using a search with a partial path. Use this if you
+     * do not want to specify an exact path (maybe you don't quite know where
+     * the connectee is located).
+     * */
     virtual void findAndConnect(const ComponentPath& connectee) {
         OPENSIM_THROW(Exception, "Not implemented.");
     }
+    /** Same as findAndConnect(const ComponentPath&), but using a string
+     * argument. */
     void findAndConnect(const std::string& connectee) {
         findAndConnect(ComponentPath(connectee));
     }
@@ -382,10 +387,18 @@ public:
         connectInternal(*objT);
     }
 
+    /** Find a component using a partial path or component name of the correct
+     * type anywhere in the model (using Component::findComponent()) and
+     * connect to that component.
+     *
+     * Throws an exception If you provide only a component name and the
+     * model has multiple components with that nume.
+     * */
     void findAndConnect(const ComponentPath& connectee) override {
-        const auto* comp = getOwner().findComponent(connectee);
+        const auto* comp =
+            getOwner().getRoot().template findComponent<T>(connectee);
         OPENSIM_THROW_IF(!comp, Exception,
-                "Could not find '" + connectee + "'.");
+                "Could not find '" + connectee.toString() + "'.");
         connect(*comp);
     }
 
