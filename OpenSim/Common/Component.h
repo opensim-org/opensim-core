@@ -2205,37 +2205,23 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-#if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunsupported-friend"
-#endif
-    template<class C>
-    friend void Socket<C>::finalizeConnection(const Component& root);
-    template<class T>
-    friend void Input<T>::finalizeConnection(const Component& root);
-#if defined(__clang__)
-    #pragma clang diagnostic pop
-#endif
+public:
 
-    /** Utility method to find a component in the list of sub components of
-    this component and any of their sub components, etc..., by name or state
-    variable name. The search can be sped up considerably if the "path" or even
-    partial path name is known. For example name = "forearm/elbow/elbow_flexion"
-    will find the Coordinate component of the elbow joint that connects the
-    forearm body in linear time (linear search for name at each component level.
-    Whereas supplying "elbow_flexion" requires a tree search. Returns NULL if
-    Component of that specified name cannot be found. If the name provided is a
-    component's state variable name and a StateVariable pointer is provided, the
-    pointer will be set to the StateVariable object that was found. This
-    facilitates the getting and setting of StateVariables by name. 
+    /** Find a component in the list of sub components of
+    this component and any of their sub components, etc..., by name or path
+    (and type via template argument).
+    The search can be sped up considerably if the path or even partial path
+    name is known. For example, "forearm/elbow/elbow_flexion" will find
+    the Coordinate component of the elbow joint that connects the forearm body
+    in linear time (linear search for name at each component level). Whereas
+    supplying "elbow_flexion" requires a tree search. Returns nullptr (None in
+    Python, empty array in Matlab) if Component of that specified name cannot
+    be found.
         
-    NOTE: If the component name or the state variable name is ambiguous, 
-    an exception is thrown. To disambiguate use the absolute path provided
-    by owning component(s). */
-#ifndef SWIG // StateVariable is protected.
+    NOTE: If the component name is ambiguous, an exception is thrown. To
+    disambiguate, provide an absolute path. */
     template<class C = Component>
-    const C* findComponent(const ComponentPath& pathToFind,
-                           const StateVariable** rsv = nullptr) const {
+    const C* findComponent(const ComponentPath& pathToFind) const {
         const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
@@ -2300,15 +2286,6 @@ protected:
             return foundCs[0];
         }
 
-        std::map<std::string, StateVariableInfo>::const_iterator it;
-        it = _namedStateVariableInfo.find(name);
-        if (it != _namedStateVariableInfo.end()) {
-            if (rsv) {
-                *rsv = it->second.stateVariable.get();
-            }
-            return dynamic_cast<const C*>(this);
-        }
-
         // Only error cases remain
         // too many components of the right type with the same name
         if (foundCs.size() > 1) {
@@ -2320,7 +2297,15 @@ protected:
         // Not found
         return nullptr;
     }
-#endif
+
+    /** Same as findComponent(const ComponentPath&), but accepting a string as
+     * input. */
+    template<class C = Component>
+    const C* findComponent(const std::string& pathToFind) const {
+        return findComponent<C>(ComponentPath(pathToFind));
+    }
+
+protected:
 
     friend void updateConnecteesBySearch(Model&);
 
