@@ -2203,9 +2203,29 @@ protected:
 
 public:
 
-    /** Find a component in the list of sub components of
-    this component and any of their sub components, etc..., by name or path
-    (and type via template argument).
+    /** Find a Component to which this Component is an ancestor---in other
+    words, a Component that is directly owned by this Component or is owned
+    by one of its sub-components, sub-sub-components, etc. The Component can
+    be found by type (by specifying a template argument) and either path or
+    name.
+
+    Here is an example of searching for a component of any type with the name
+    'elbow_flexion':
+    @code{.cpp}
+    if (const Component* found =
+            model.findComponent(ComponentPath("elbow_flexion"))) {
+        std::cout << found.getName() << std::endl;
+    }
+    @endcode
+
+    Here, we require that 'elbow_flexion' is of type Coordinate.
+    @code{.cpp}
+    if (const Coordinate* found =
+            model.findComponent<Coordinate>(ComponentPath("elbow_flexion"))) {
+        std::cout << "Coordinate " << found.getName() << std::endl;
+    }
+    @endcode
+
     The search can be sped up considerably if the path or even partial path
     name is known. For example, "forearm/elbow/elbow_flexion" will find
     the Coordinate component of the elbow joint that connects the forearm body
@@ -2215,7 +2235,8 @@ public:
     be found.
         
     NOTE: If the component name is ambiguous, an exception is thrown. To
-    disambiguate, provide an absolute path. */
+    disambiguate, more information must be provided, such as the template
+    argument to specify the type and/or a path rather than just the name. */
     template<class C = Component>
     const C* findComponent(const ComponentPath& pathToFind) const {
         const std::string name = pathToFind.toString();
@@ -2294,8 +2315,8 @@ public:
         return nullptr;
     }
 
-    /** Same as findComponent(const ComponentPath&), but accepting a string as
-     * input. */
+    /** Same as findComponent(const ComponentPath&), but accepting a string (a
+    path or just a name) as input. */
     template<class C = Component>
     const C* findComponent(const std::string& pathToFind) const {
         return findComponent<C>(ComponentPath(pathToFind));
