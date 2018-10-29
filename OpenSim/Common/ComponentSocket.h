@@ -397,8 +397,8 @@ public:
     void findAndConnect(const ComponentPath& connectee) override {
         const auto* comp =
             getOwner().getRoot().template findComponent<T>(connectee);
-        OPENSIM_THROW_IF(!comp, Exception,
-                "Could not find '" + connectee.toString() + "'.");
+        OPENSIM_THROW_IF(!comp, ComponentNotFound, connectee.toString(),
+                getConnecteeTypeName(), getOwner().getAbsolutePathString());
         connect(*comp);
     }
 
