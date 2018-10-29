@@ -58,6 +58,7 @@ namespace OpenSim {
 class Model;
 class ModelDisplayHints;
 
+OSIMCOMMON_API
 void updateConnecteesBySearch(Model&);
 
 
