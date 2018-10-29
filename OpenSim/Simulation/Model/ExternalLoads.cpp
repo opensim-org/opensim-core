@@ -134,7 +134,8 @@ void ExternalLoads::setupSerializedMembers()
     _propertySet.append(&_dataFileNameProp);
 
     _externalLoadsModelKinematicsFileName="";
-    comment =   "Optional motion file (.mot) or storage file (.sto) containing the model kinematics "
+    comment =   "The option is deprecated and unnecessary to apply external loads. " 
+                "A motion file (.mot) or storage file (.sto) containing the model kinematics "
                 "used to transform a point expressed in ground to the body of force application."
                 "If the point is not expressed in ground, the point is not transformed";
     _externalLoadsModelKinematicsFileNameProp.setComment(comment);
@@ -176,8 +177,26 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
     // BASE CLASS
     Super::extendConnectToModel(aModel);
 
+    Storage *forceData = nullptr;
     if (_dataFileName.length() > 0) {
-        Storage *forceData = new Storage(_dataFileName);
+        if(IO::FileExists(_dataFileName))
+            forceData = new Storage(_dataFileName);
+        else if(getDocument()) { // ExternalLoads constructed from file
+            // then change working directory the ExternalLoads location
+            std::string savedCwd = IO::getCwd();
+            IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+            try {
+                forceData = new Storage(_dataFileName);
+            }
+            catch (const std::exception &ex) {
+                cout << "Error: failed to construct ExternalLoads from file "
+                    << _dataFileName << endl;
+                if (getDocument())
+                    IO::chDir(savedCwd);
+                throw(ex);
+            }
+            IO::chDir(savedCwd);
+        }
 
         for (int i = 0; i < getSize(); ++i)
             get(i).setDataSource(*forceData);

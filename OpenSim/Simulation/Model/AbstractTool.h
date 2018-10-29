@@ -368,8 +368,8 @@ public:
     virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");
 
-    bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel, const Storage *loadKinematics=NULL);
+    bool createExternalLoads( const std::string& externalLoadsFileName,
+                              Model& model);
     void removeExternalLoadsFromModel();
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
