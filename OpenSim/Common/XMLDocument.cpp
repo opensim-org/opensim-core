@@ -515,6 +515,18 @@ void XMLDocument::addPhysicalOffsetFrame30505_30517(SimTK::Xml::Element& element
     //frames_node->writeToString(debug);
 }
 
+string XMLDocument::updateConnecteePath30517(
+        const std::string& connecteeSetName,
+        const std::string& connecteeName) {
+    std::string connecteePath;
+    if (connecteeSetName == "bodyset" && connecteeName == "ground") {
+        connecteePath = "/" + connecteeName;
+    } else{
+        connecteePath = "/" + connecteeSetName + "/" + connecteeName;
+    }
+    return connecteePath;
+}
+
 SimTK::Xml::Element XMLDocument::findElementWithName(
         SimTK::Xml::Element& element, const std::string& name) {
     using namespace SimTK;

@@ -153,7 +153,7 @@ protected:
     virtual void implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>&) const = 0;
 
-    void extendConnect(Component& root) override;
+    void extendFinalizeConnections(Component& root) override;
 
 private:
     // Compute Transform of this geometry relative to its base frame, utilizing 

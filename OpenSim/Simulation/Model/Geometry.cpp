@@ -44,7 +44,7 @@ Geometry::Geometry() {
 
 void Geometry::setFrame(const Frame& frame)
 {
-    updSocket<Frame>("frame").setConnecteeName(frame.getRelativePathName(*this));
+    updSocket<Frame>("frame").setConnecteePath(frame.getRelativePathString(*this));
 }
 
 const OpenSim::Frame& Geometry::getFrame() const
@@ -52,9 +52,9 @@ const OpenSim::Frame& Geometry::getFrame() const
     return getSocket<Frame>("frame").getConnectee();
 }
 
-void Geometry::extendConnect(Component& root)
+void Geometry::extendFinalizeConnections(Component& root)
 {
-    Super::extendConnect(root);
+    Super::extendFinalizeConnections(root);
 
     bool attachedToFrame = getSocket<Frame>("frame").isConnected();
     bool hasInputTransform = getInput("transform").isConnected();

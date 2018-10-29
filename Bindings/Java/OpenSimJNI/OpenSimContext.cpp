@@ -434,7 +434,7 @@ void OpenSimContext::restoreStateFromCachedModel()
     this->realizePosition();
 }
 
-void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
+void OpenSimContext::setSocketConnecteePath(AbstractSocket& socket,
                                    const std::string& componentPathName) {
     // Since some socket changes can form an invalid system
     // we will make the change in a more conservative manner, by:
@@ -448,7 +448,7 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
     const Component& comp = socket.getOwner();
     Component& componentInClone = clonedModel->updComponent(comp.getAbsolutePath());
     auto& clonesocket = componentInClone.updSocket(socket.getName());
-    clonesocket.setConnecteeName(componentPathName);
+    clonesocket.setConnecteePath(componentPathName);
     // The following line either succeeds or throws, if the latter happens then
     // neither model or socket are changed and the message will be caught by GUI
     try {
@@ -462,7 +462,8 @@ void OpenSimContext::setSocketConnecteeName(AbstractSocket& socket,
         throw OpenSim::Exception(message);
     }
     // if we made it to this line then the change is safe, redo in actual model/comp/socket
-    socket.setConnecteeName(componentPathName);
+    socket.disconnect();
+    socket.setConnecteePath(componentPathName);
     restoreStateFromCachedModel();
 }
 } // namespace

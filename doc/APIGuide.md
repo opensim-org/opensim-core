@@ -485,7 +485,7 @@ All components are given the opportunity finalize their specification from their
 
   2. Similarly, Sockets are handled automatically by the base Component, which establishes that the dependency exists and is connected (throws an Exception otherwise).  Additional connection details or checks are often necessary, in which case you must override:
   ~~~cpp
-  void OpenSim::Component::extendConnect(Component& root)
+  void OpenSim::Component::extendFinalizeConnections(Component& root)
   ~~~
      for a Component, or
   ~~~cpp

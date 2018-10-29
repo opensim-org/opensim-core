@@ -53,7 +53,7 @@ void PathPoint::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
     updStation().upd_location() = get_location();
     updStation().updSocket("parent_frame").
-        setConnecteeName(updSocket("parent_frame").getConnecteeName());
+            setConnecteePath(updSocket("parent_frame").getConnecteePath());
 }
 
 void PathPoint::setLocation(const SimTK::Vec3& location) {

@@ -209,6 +209,7 @@ void testTorqueActuator()
 
     //model->addProbe(powerProbe);
 
+    model->finalizeConnections();
     model->print("TestTorqueActuatorModel.osim");
     model->setUseVisualizer(false);
 
@@ -355,6 +356,7 @@ void testClutchedPathSpring()
     controller->prescribeControlForActuator("clutch_spring", controlfunc);
     model->addController(controller);
 
+    model->finalizeConnections();
     model->print("ClutchedPathSpringModel.osim");
 
     //Test deserialization
