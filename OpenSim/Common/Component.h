@@ -91,7 +91,7 @@ public:
     }
 };
 
-class ComponentNotFoundOnSpecifiedPath : public Exception {
+class ComponentNotFoundOnSpecifiedPath : public ComponentNotFound {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
@@ -99,7 +99,7 @@ public:
         const std::string& toFindName,
         const std::string& toFindClassName,
         const std::string& thisName) :
-        Exception(file, line, func) {
+        ComponentNotFound(file, line, func) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
         msg += "' of type " + toFindClassName + ". ";
@@ -2201,37 +2201,44 @@ protected:
     // End of System Creation and Access Methods.
     //@} 
 
-#if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wunsupported-friend"
-#endif
-    template<class C>
-    friend void Socket<C>::finalizeConnection(const Component& root);
-    template<class T>
-    friend void Input<T>::finalizeConnection(const Component& root);
-#if defined(__clang__)
-    #pragma clang diagnostic pop
-#endif
+public:
 
-    /** Utility method to find a component in the list of sub components of
-    this component and any of their sub components, etc..., by name or state
-    variable name. The search can be sped up considerably if the "path" or even
-    partial path name is known. For example name = "forearm/elbow/elbow_flexion"
-    will find the Coordinate component of the elbow joint that connects the
-    forearm body in linear time (linear search for name at each component level.
-    Whereas supplying "elbow_flexion" requires a tree search. Returns NULL if
-    Component of that specified name cannot be found. If the name provided is a
-    component's state variable name and a StateVariable pointer is provided, the
-    pointer will be set to the StateVariable object that was found. This
-    facilitates the getting and setting of StateVariables by name. 
+    /** Find a Component to which this Component is an ancestor---in other
+    words, a Component that is directly owned by this Component or is owned
+    by one of its sub-components, sub-sub-components, etc. The Component can
+    be found by type (by specifying a template argument) and either path or
+    name.
+
+    Here is an example of searching for a component of any type with the name
+    'elbow_flexion':
+    @code{.cpp}
+    if (const Component* found =
+            model.findComponent(ComponentPath("elbow_flexion"))) {
+        std::cout << found.getName() << std::endl;
+    }
+    @endcode
+
+    Here, we require that 'elbow_flexion' is of type Coordinate.
+    @code{.cpp}
+    if (const Coordinate* found =
+            model.findComponent<Coordinate>(ComponentPath("elbow_flexion"))) {
+        std::cout << "Coordinate " << found.getName() << std::endl;
+    }
+    @endcode
+
+    The search can be sped up considerably if the path or even partial path
+    name is known. For example, "forearm/elbow/elbow_flexion" will find
+    the Coordinate component of the elbow joint that connects the forearm body
+    in linear time (linear search for name at each component level). Whereas
+    supplying "elbow_flexion" requires a tree search. Returns nullptr (None in
+    Python, empty array in Matlab) if Component of that specified name cannot
+    be found.
         
-    NOTE: If the component name or the state variable name is ambiguous, 
-    an exception is thrown. To disambiguate use the absolute path provided
-    by owning component(s). */
-#ifndef SWIG // StateVariable is protected.
+    NOTE: If the component name is ambiguous, an exception is thrown. To
+    disambiguate, more information must be provided, such as the template
+    argument to specify the type and/or a path rather than just the name. */
     template<class C = Component>
-    const C* findComponent(const ComponentPath& pathToFind,
-                           const StateVariable** rsv = nullptr) const {
+    const C* findComponent(const ComponentPath& pathToFind) const {
         const std::string name = pathToFind.toString();
         std::string msg = getConcreteClassName() + "'" + getName() +
                           "'::findComponent() ";
@@ -2296,15 +2303,6 @@ protected:
             return foundCs[0];
         }
 
-        std::map<std::string, StateVariableInfo>::const_iterator it;
-        it = _namedStateVariableInfo.find(name);
-        if (it != _namedStateVariableInfo.end()) {
-            if (rsv) {
-                *rsv = it->second.stateVariable.get();
-            }
-            return dynamic_cast<const C*>(this);
-        }
-
         // Only error cases remain
         // too many components of the right type with the same name
         if (foundCs.size() > 1) {
@@ -2316,7 +2314,15 @@ protected:
         // Not found
         return nullptr;
     }
-#endif
+
+    /** Same as findComponent(const ComponentPath&), but accepting a string (a
+    path or just a name) as input. */
+    template<class C = Component>
+    const C* findComponent(const std::string& pathToFind) const {
+        return findComponent<C>(ComponentPath(pathToFind));
+    }
+
+protected:
 
     template<class C>
     const C* traversePathToComponent(ComponentPath path) const

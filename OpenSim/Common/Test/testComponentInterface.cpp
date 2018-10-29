@@ -1054,6 +1054,61 @@ void testComponentPathNames()
     top.connect();
 }
 
+void testFindComponent() {
+    class A : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
+    public:
+        A(const std::string& name) { setName(name); }
+    };
+    class B : public Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(B, Component);
+    public:
+        OpenSim_DECLARE_SOCKET(socket_a, A, "");
+        B(const std::string& name) { setName(name); }
+    };
+
+    // Build a model.
+    A top("top");
+    B* b1 = new B("b1");
+    b1->connectSocket_socket_a(top);
+    top.addComponent(b1);
+    B* b2 = new B("b2");
+    b1->addComponent(b2);
+    B* b3 = new B("b3");
+    b2->addComponent(b3);
+
+    // Test findComponent().
+    B* duplicate1 = new B("duplicate");
+    b1->addComponent(duplicate1);
+    B* duplicate2 = new B("duplicate");
+    b2->addComponent(duplicate2);
+    SimTK_TEST(top.findComponent("nonexistant") == nullptr);
+    SimTK_TEST(top.findComponent("b1") == b1);
+    SimTK_TEST(top.findComponent<B>("b1") == b1);
+    SimTK_TEST(b3->findComponent("b1") == nullptr);
+    SimTK_TEST(top.findComponent<A>("b1") == nullptr);
+
+    SimTK_TEST_MUST_THROW_EXC(top.findComponent("duplicate"),
+            OpenSim::Exception);
+
+    // Test AbstractSocket::findAndConnect().
+    b3->updSocket("socket_a").findAndConnect("top");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == &top);
+    // Connectee has the wrong type.
+    SimTK_TEST_MUST_THROW_EXC(b3->updSocket("socket_a").findAndConnect("b1"),
+            OpenSim::Exception);
+
+    // Test partial paths.
+    A* a3 = new A("a3");
+    b2->addComponent(a3);
+    b3->updSocket("socket_a").findAndConnect("b2/a3");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == a3);
+
+    // This works, even though a3 is not in b3.
+    b3->updSocket("socket_a").findAndConnect("b3/a3");
+    SimTK_TEST(&b3->getConnectee<A>("socket_a") == a3);
+}
+
 void testTraversePathToComponent() {
     class A : public Component {
         OpenSim_DECLARE_CONCRETE_OBJECT(A, Component);
@@ -2218,6 +2273,7 @@ int main() {
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
         SimTK_SUBTEST(testComponentPathNames);
+        SimTK_SUBTEST(testFindComponent);
         SimTK_SUBTEST(testTraversePathToComponent);
         SimTK_SUBTEST(testGetStateVariableValue);
         SimTK_SUBTEST(testInputOutputConnections);
