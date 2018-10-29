@@ -44,10 +44,6 @@ Frame::Frame() : ModelComponent()
 {
     setAuthors("Matt DeMers, Ajay Seth");
 
-    FrameGeometry default_frame_geometry;
-    default_frame_geometry.setName("frame_geometry");
-    constructProperty_frame_geometry(default_frame_geometry);
-
     constructProperty_attached_geometry();
 }
 
@@ -56,7 +52,7 @@ void Frame::extendConnectToModel(Model& model)
     Super::extendConnectToModel(model);
     // All the Geometry attached to this Frame should have
     // their frame connections automatically set to this Frame.
-    upd_frame_geometry().setFrame(*this);
+    updMemberSubcomponent<FrameGeometry>(frameGeometryIdx).setFrame(*this);
     int nag = getProperty_attached_geometry().size();
     for (int i = 0; i < nag; ++i) {
         upd_attached_geometry(i).setFrame(*this);

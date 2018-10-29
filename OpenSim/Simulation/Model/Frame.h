@@ -83,8 +83,6 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(frame_geometry, FrameGeometry,
-        "The geometry used to display the axes of this Frame.");
     OpenSim_DECLARE_LIST_PROPERTY(attached_geometry, Geometry,
         "List of geometry attached to this Frame. Note, the geometry "
         "are treated as fixed to the frame and they share the transform "
@@ -378,6 +376,10 @@ private:
     /** Extend how concrete Frame determines its base Frame. */
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
+    
+    // The geometry used to display the axes of this Frame.
+    MemberSubcomponentIndex frameGeometryIdx {
+      constructSubcomponent<FrameGeometry>("frame_geometry") };
 
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;

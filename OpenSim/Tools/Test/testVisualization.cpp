@@ -135,8 +135,8 @@ int main()
         testVisModelAgainstStandard(testModel3, standard);
         std::cout << "double_pendulum33 test Passed" << std::endl;
 
-        // Now a model from 3.3 where both GeometrySet and individual DisplayGeometry 
-        // have a non-trivial transform.
+        // Now a model from 3.3 where both GeometrySet and individual
+        // DisplayGeometry have a non-trivial transform.
         Model composedTransformsModel("doubletransform33.osim");
         composedTransformsModel.updDisplayHints().set_show_frames(true);
         populate_composedTransformPrimitives(standard);
@@ -303,6 +303,11 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    // Frame rod 1
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Offset frame rod1
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White).setIndexOnBody(0).setScale(0.2)
@@ -314,17 +319,17 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
-    // Frame rod 1
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Block rod 1
     stdPrimitives.push_back(
         DecorativeMeshFile("block.vtp").setBodyId(1).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(1).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
 
+    // Frame body 2
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Offset frame rod2
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
@@ -337,11 +342,6 @@ void populate_doublePendulumPrimitives(SimTK::Array_<DecorativeGeometry>& stdPri
         .setIndexOnBody(0).setScaleFactors(Vec3{ 0.02,0.5,0.02 }).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0., .25, 0 })));
-    // Frame body 2
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(2).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // Block rod 2
     stdPrimitives.push_back(
         DecorativeMeshFile("block.vtp").setBodyId(2).setColor(SimTK::White)
@@ -379,6 +379,10 @@ void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& std
         DecorativeFrame(1.0).setBodyId(0).setColor(SimTK::White)
         .setIndexOnBody(0).setScale(0.2).setOpacity(1)
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
+    stdPrimitives.push_back(
+        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
+        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
+        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
     // This the frame of the composed transform and attached geometry
     stdPrimitives.push_back(
         DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
@@ -391,10 +395,6 @@ void populate_composedTransformPrimitives(SimTK::Array_<DecorativeGeometry>& std
         .setRepresentation(SimTK::DecorativeGeometry::DrawSurface)
         .setTransform(SimTK::Transform(Vec3{ 0.3, 0.3, 0.3 })));
 
-    stdPrimitives.push_back(
-        DecorativeFrame(1.0).setBodyId(1).setColor(SimTK::White)
-        .setIndexOnBody(0).setScale(0.2).setOpacity(1)
-        .setRepresentation(SimTK::DecorativeGeometry::DrawSurface));
 
 
     stdPrimitives.push_back(

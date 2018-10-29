@@ -2060,7 +2060,7 @@ void testAutomaticJointReversal()
 
     //OpenSim bodies
     Ground& ground = model.updGround();
-    ground.upd_frame_geometry().setColor(SimTK::Vec3(1, 1, 0));
+    // ground.upd_frame_geometry().setColor(SimTK::Vec3(1, 1, 0));
 
     auto pelvis = new Body("pelvis", 10.0, SimTK::Vec3(0), 
         SimTK::Inertia::brick(SimTK::Vec3(0.1, 0.15, 0.25)));
@@ -2074,15 +2074,15 @@ void testAutomaticJointReversal()
     auto foot = new Body("foot", footMass.getMass(), footMass.getMassCenter(),
                             footMass.getInertia());
     
-    pelvis->upd_frame_geometry().setColor(SimTK::Vec3(0, 1, 0));  // GREEN
+    // pelvis->upd_frame_geometry().setColor(SimTK::Vec3(0, 1, 0));  // GREEN
 
-    thigh->upd_frame_geometry().setColor(SimTK::Vec3(0, 0, 1));   // BLUE
+    // thigh->upd_frame_geometry().setColor(SimTK::Vec3(0, 0, 1));   // BLUE
     
     //ModelComponent::addGeometry makes a copy of the passed in Geometry
     shank->attachGeometry(new Cylinder(0.02, 0.243800));
-    shank->upd_attached_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
+    // shank->upd_attached_geometry(0).setColor(SimTK::Vec3(0, 1, 1));   // CYAN
     foot->attachGeometry(new Brick(SimTK::Vec3(0.09, 0.025, 0.06)));
-    foot->upd_attached_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
+    // foot->upd_attached_geometry(0).setColor(SimTK::Vec3(1, 0, 0));    // RED
 
     // add them to the model
     model.addBody(foot);
