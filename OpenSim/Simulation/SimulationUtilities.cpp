@@ -179,8 +179,9 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
 void OpenSim::updateConnecteesBySearch(Model& model)
 {
     for (auto& comp : model.updComponentList()) {
-        for (auto& it : comp._socketsTable) {
-            auto& socket = it.second.updRef();
+        const auto socketNames = comp.getSocketNames();
+        for (int i = 0; i < socketNames.size(); ++i) {
+            auto& socket = comp.updSocket(socketNames[i]);
             try {
                 socket.finalizeConnection(model);
             } catch (const ComponentNotFoundOnSpecifiedPath&) {
@@ -195,7 +196,7 @@ void OpenSim::updateConnecteesBySearch(Model& model)
                 }
             } catch (const std::exception& e) {
                 std::cout << "Warning: Caught exception when processing "
-                    "Socket " << it.first << " in " <<
+                    "Socket " << socketNames[i] << " in " <<
                     comp.getConcreteClassName() << " at " <<
                     comp.getAbsolutePathString() << ": " << e.what() <<
                     std::endl;

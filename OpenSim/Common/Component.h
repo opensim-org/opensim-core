@@ -58,10 +58,6 @@ namespace OpenSim {
 class Model;
 class ModelDisplayHints;
 
-OSIMCOMMON_API
-void updateConnecteesBySearch(Model&);
-
-
 //==============================================================================
 /// Component Exceptions
 //==============================================================================
@@ -2306,8 +2302,6 @@ public:
     }
 
 protected:
-
-    friend void updateConnecteesBySearch(Model&);
 
     template<class C>
     const C* traversePathToComponent(ComponentPath path) const
