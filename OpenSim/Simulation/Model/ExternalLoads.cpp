@@ -134,7 +134,8 @@ void ExternalLoads::setupSerializedMembers()
     _propertySet.append(&_dataFileNameProp);
 
     _externalLoadsModelKinematicsFileName="";
-    comment =   "Optional motion file (.mot) or storage file (.sto) containing the model kinematics "
+    comment =   "The option is deprecated and unnecessary to apply external loads. " 
+                "A motion file (.mot) or storage file (.sto) containing the model kinematics "
                 "used to transform a point expressed in ground to the body of force application."
                 "If the point is not expressed in ground, the point is not transformed";
     _externalLoadsModelKinematicsFileNameProp.setComment(comment);
