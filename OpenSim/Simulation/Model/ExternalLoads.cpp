@@ -189,13 +189,19 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
                 forceData = new Storage(_dataFileName);
             }
             catch (const std::exception &ex) {
-                cout << "Error: failed to construct ExternalLoads from file "
-                    << _dataFileName << endl;
+                cout << "Error: failed to read ExternalLoads data file '"
+                    << _dataFileName <<"'." << endl;
                 if (getDocument())
                     IO::chDir(savedCwd);
                 throw(ex);
             }
             IO::chDir(savedCwd);
+        }
+        else {
+            // Cannot find the data file and do not have an ExternalLoads (XML)
+            // document to test if file is in its directory.
+            throw Exception("Error: unable to read ExternalLoads data file '" +
+                _dataFileName + "'.");
         }
 
         for (int i = 0; i < getSize(); ++i)
