@@ -29,7 +29,7 @@
 % Written by: James Dunne, Tom Uchida, Chris Dembia, Ajay Seth,
 %                   Ayman Habib, Jen Hicks,Shrinidhi K. Lakshmikanth.
 
-function timeseriesosimtable = osimTableFromStruct_rogers(s)
+function timeseriesosimtable = osimTableFromStruct(s)
 %% import Java Libraries
 import org.opensim.modeling.*
 

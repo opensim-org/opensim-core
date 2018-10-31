@@ -1,4 +1,3 @@
-
 %% clear working space
 clear all;close all;clc;
 %% import opensim libraries
