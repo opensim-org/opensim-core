@@ -244,6 +244,8 @@ linkGeometry.setColor(Vec3(0.8, 0.1, 0.1));
 thigh.attachGeometry(linkGeometry);
 shank.attachGeometry(linkGeometry.clone());
 
+hopper.finalizeConnections();
+
 %% Print model
 if printModel
     hopper.print('hopper.osim');
