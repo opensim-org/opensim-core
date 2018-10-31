@@ -513,13 +513,29 @@ construct_iterate(const Iterate& traj, bool interpolate) const
             m_num_parameters, traj.parameters.size());
     // Check columns.
     if (interpolate) {
-        TROPTER_THROW_IF(   traj.time.size() != traj.states.cols()
-                         || traj.time.size() != traj.controls.cols()
-                         || traj.time.size() != traj.adjuncts.cols(),
-                "Expected time, states, controls, and adjuncts to have the "  
-                        "same number of columns (they have %i, %i, %i, %i " 
-                        "column(s), respectively).", traj.time.size(), 
-                traj.states.cols(), traj.controls.cols(), traj.adjuncts.cols());
+        // If interpolating, only check that non-empty matrices have the same
+        // number of columns as elements in time vector.
+        if (traj.states.cols()) {
+            TROPTER_THROW_IF(traj.time.size() != traj.states.cols(),
+                    "Expected time and states to have the same number of "  
+                            "columns, but they have %i and %i column(s), " 
+                            "respectively.", 
+                    traj.time.size(), traj.states.cols());
+        }
+        if (traj.controls.cols()) {
+            TROPTER_THROW_IF(traj.time.size() != traj.controls.cols(),
+                    "Expected time and controls to have the same number of "
+                        "columns, but they have %i and %i column(s), "
+                        "respectively.",
+                    traj.time.size(), traj.controls.cols());
+        }
+        if (traj.adjuncts.cols()) {
+            TROPTER_THROW_IF(traj.time.size() != traj.adjuncts.cols(),
+                    "Expected time and adjuncts to have the same number of "
+                        "columns, but they have %i and %i column(s), "
+                        "respectively.",
+                    traj.time.size(), traj.adjuncts.cols());
+        }
     } else {
         TROPTER_THROW_IF(traj.time.size() != m_num_mesh_points,
                 "Expected time to have %i element(s), but it has %i.",

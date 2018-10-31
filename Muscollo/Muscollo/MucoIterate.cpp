@@ -331,7 +331,7 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
     m_controls = table->getMatrixBlock(0, numStates,
             table->getNumRows(), numControls);
-    if (numMultipliers) {
+   if (numMultipliers) {
         m_multipliers = table->getMatrixBlock(0, numStates + numControls,
                 table->getNumRows(), numMultipliers);
     }
@@ -498,8 +498,11 @@ bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
 bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
         const {
     ensureUnsealed();
+
+
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
+            m_multiplier_names == other.m_multiplier_names &&
             m_parameter_names == other.m_parameter_names &&
             SimTK::Test::numericallyEqual(m_time, other.m_time, 1, tol) &&
             SimTK::Test::numericallyEqual(m_states, other.m_states, 1, tol) &&

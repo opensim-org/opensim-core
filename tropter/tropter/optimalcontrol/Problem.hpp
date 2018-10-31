@@ -274,8 +274,6 @@ set_parameter_guess(Iterate& guess,
     }
     TROPTER_THROW_IF(parameter_index == m_parameter_infos.size(),
         "Parameter '%s' does not exist.", name);
-    std::cout << "debug: " << parameter_index << std::endl;
-    std::cout << "debug2: " << value << std::endl;
     // Set the guess.
     guess.parameters(parameter_index) = value;
 }

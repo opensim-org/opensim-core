@@ -48,6 +48,7 @@ public:
         this->add_state("x", {-1.5, 1.5}, {0});
         this->add_state("v", {-10, 10}, {0}, {0});
         this->add_control("F", {-50, 50});
+        this->add_adjunct("l", {-10, 10});
         this->add_parameter("p", {-1.5, 1.5});
     }
     void calc_differential_algebraic_equations(
@@ -57,7 +58,8 @@ public:
     }
     void calc_integral_cost(const Input<T>& in, T& integrand) const override {
         const auto& controls = in.controls;
-        integrand = 0.001 * pow(controls[0], 2);
+        const auto& adjuncts = in.adjuncts;
+        integrand = 0.001 * pow(controls[0], 2) + pow(adjuncts[0], 2);
     }
     /// This function has minima at `x = \pm 1/\sqrt(2)`.
     static T two_minima(const T& x) {
@@ -90,12 +92,14 @@ TEST_CASE("Final position and parameter cost with two local optima", "[initial_g
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, -1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
+        ocp->set_adjunct_guess(guess, "l", RowVectorXd::Zero(N));
         ocp->set_parameter_guess(guess, "p", -1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == -1/sqrt(2));
         REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == -1/sqrt(2));
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);   
     }
     // Guess high.
     {
@@ -110,12 +114,14 @@ TEST_CASE("Final position and parameter cost with two local optima", "[initial_g
         ocp->set_state_guess(guess, "x", RowVectorXd::LinSpaced(N, 0, +1));
         ocp->set_state_guess(guess, "v", RowVectorXd::Zero(N));
         ocp->set_control_guess(guess, "F", RowVectorXd::Zero(N));
+        ocp->set_adjunct_guess(guess, "l", RowVectorXd::Zero(N));
         ocp->set_parameter_guess(guess, "p", +1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
         REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
                         == +1/sqrt(2));
         REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == +1/sqrt(2));
+        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
 }
 
@@ -164,11 +170,12 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     guess.time.resize(N - 10);     // incorrect.
     guess.states.resize(2, N);     // correct.
     guess.controls.resize(1, N);   // correct.
+    guess.adjuncts.resize(1, N);   // correct.
     guess.parameters.resize(1, 1); // correct.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time, states, and controls to have"
-                    " the same number of columns (they have 5, "
-                    "15, 15 column(s), respectively)."));
+            Contains("Expected time and states to have "
+                    "the same number of columns, but they have 5 "
+                    "and 15 column(s), respectively."));
 
     guess.time.resize(N);        // correct.
     guess.states.resize(6, N);   // incorrect.
@@ -177,9 +184,9 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     guess.states.resize(2, N + 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time, states, and controls to have"
-                    " the same number of columns (they have 15, "
-                    "16, 15 column(s), respectively)."));
+            Contains("Expected time and states to have "
+                    "the same number of columns, but they have 15 "
+                    "and 16 column(s), respectively."));
 
     guess.states.resize(2, N);   // correct.
     guess.controls.resize(4, N); // incorrect.
@@ -188,10 +195,18 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
 
     guess.controls.resize(1, N - 3); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess),
-            Contains("Expected time, states, and controls to have"
-                    " the same number of columns (they have 15, "
-                    "15, 12 column(s), respectively)."));
+            Contains("Expected time and controls to have "
+                    "the same number of columns, but they have 15 "
+                    "and 12 column(s), respectively."));
 
+    guess.controls.resize(1, N); // correct.
+    guess.adjuncts.resize(1, N + 2); // incorrect.
+    REQUIRE_THROWS_WITH(dircol.solve(guess),
+            Contains("Expected time and adjuncts to have "
+                    "the same number of columns, but they have 15 "
+                    "and 17 column(s), respectively."));
+
+    guess.adjuncts.resize(1, N); // correct.
     guess.parameters.resize(2, 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess), 
             Contains("Expected parameters to have 1 elements(s), "
@@ -205,6 +220,7 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     int num_times = 15;
     int num_states = 3;
     int num_controls = 2;
+    int num_adjuncts = 1;
     int num_parameters = 2;
     it0.time.resize(num_times);
     it0.time.setRandom();
@@ -215,11 +231,15 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     it0.controls.resize(num_controls, num_times);
     it0.controls.setRandom();
 
+    it0.adjuncts.resize(num_adjuncts, num_times);
+    it0.adjuncts.setRandom();
+
     it0.parameters.resize(num_parameters);
     it0.parameters.setRandom();
 
     it0.state_names = {"a", "b", "c"};
     it0.control_names = {"x", "y"};
+    it0.adjunct_names = {"l"};
     it0.parameter_names = {"p0", "p1"};
 
     // Serialize.
@@ -233,10 +253,12 @@ TEST_CASE("(De)serialization of Iterate", "[iterate_readwrite]") {
     TROPTER_REQUIRE_EIGEN(it0.time, it1.time, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.states, it1.states, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.controls, it1.controls, 1e-5);
+    TROPTER_REQUIRE_EIGEN(it0.adjuncts, it1.adjuncts, 1e-5);
     TROPTER_REQUIRE_EIGEN(it0.parameters, it1.parameters, 1e-5);
 
     REQUIRE(it0.state_names == it1.state_names);
     REQUIRE(it0.control_names == it1.control_names);
+    REQUIRE(it0.adjunct_names == it1.adjunct_names);
     REQUIRE(it0.parameter_names == it1.parameter_names);
 }
 
@@ -254,6 +276,7 @@ TEST_CASE("Interpolating an initial guess") {
         int num_times = 5;
         int num_states = 2;
         int num_controls = 3;
+        int num_adjuncts = 1;
         it0.time.resize(num_times);
         it0.time << 0, 1, 2, 3, 5; // non-uniform.
 
@@ -266,13 +289,18 @@ TEST_CASE("Interpolating an initial guess") {
                          0,   3, -3,  1,  1,
                          5,   3,  3,  3,  3;
 
+        it0.adjuncts.resize(num_adjuncts, num_times);
+        it0.adjuncts << 0, -1, 2, -3, 4; 
+
         it0.state_names = {"alpha", "beta"};
         it0.control_names = {"gamma", "rho", "phi"};
+        it0.adjunct_names = {"omega"};
 
         // Upsampling.
         Iterate it1 = it0.interpolate(9);
         REQUIRE(it1.state_names == it0.state_names);
         REQUIRE(it1.control_names == it0.control_names);
+        REQUIRE(it1.adjunct_names == it0.adjunct_names);
         TROPTER_REQUIRE_EIGEN(it1.time,
                 vec({0, 0.625, 1.25, 1.875, 2.5, 3.125, 3.75, 4.375, 5}),
                 1e-15);
@@ -290,14 +318,20 @@ TEST_CASE("Interpolating an initial guess") {
         TROPTER_REQUIRE_EIGEN(it1.controls.row(2),
                 vec({5, 3.75, 3, 3, 3, 3, 3, 3, 3}), 1e-15);
 
+        TROPTER_REQUIRE_EIGEN(it1.adjuncts.row(0),
+            vec({0, -0.625, -0.25, 1.625, -0.5, -2.5625, -0.375, 1.8125, 4}), 
+            1e-15);
+
         SECTION("Requesting the same number of points") {
             // We use it0 here.
             auto it2 = it0.interpolate(5);
             REQUIRE(it2.state_names == it0.state_names);
             REQUIRE(it2.control_names == it0.control_names);
+            REQUIRE(it2.adjunct_names == it0.adjunct_names);
             TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
             TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
             TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
+            TROPTER_REQUIRE_EIGEN(it2.adjuncts, it0.adjuncts, 1e-15);
         }
     }
 
@@ -307,6 +341,7 @@ TEST_CASE("Interpolating an initial guess") {
         int num_times = 5;
         int num_states = 2;
         int num_controls = 3;
+        int num_adjuncts = 1;
         it0.time.resize(num_times);
         it0.time << 0, 1, 2, 3, 4;
         it0.states.resize(num_states, num_times);
@@ -316,13 +351,20 @@ TEST_CASE("Interpolating an initial guess") {
         it0.controls << -1,   0, -1,  0, -1,
                          0,   3, -3,  1,  1,
                          5,   3,  3,  3,  3;
+        it0.adjuncts.resize(num_adjuncts, num_times);
+        it0.adjuncts << 0, -1, 2, -3, 4;
+        it0.state_names = {"alpha", "beta"};
+        it0.control_names = {"gamma", "rho", "phi"};
+        it0.adjunct_names = {"omega"};
         auto it1 = it0.interpolate(9);
         auto it2 = it1.interpolate(5);
         REQUIRE(it2.state_names == it0.state_names);
         REQUIRE(it2.control_names == it0.control_names);
+        REQUIRE(it2.adjunct_names == it0.adjunct_names);
         TROPTER_REQUIRE_EIGEN(it2.time, it0.time, 1e-15);
         TROPTER_REQUIRE_EIGEN(it2.states, it0.states, 1e-15);
         TROPTER_REQUIRE_EIGEN(it2.controls, it0.controls, 1e-15);
+        TROPTER_REQUIRE_EIGEN(it2.adjuncts, it0.adjuncts, 1e-15);
     }
 
     SECTION("Original times must be sorted") {

@@ -478,8 +478,10 @@ solveForTrajectory_GSO(const Model& model) {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
-    // Skip the "num_states=#", "num_controls=#", and "num_parameters=#" lines.
+    // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
+    // and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -558,8 +560,10 @@ solveForTrajectory_INDYGO(const Model& model) {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
-    // Skip the "num_states=#", "num_controls=#", and "num_parameters=#" lines.
+    // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
+    // and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);

@@ -78,12 +78,18 @@ MucoIterateType convert(const tropIterateType& tropSol) {
         for (int icontrol = 0; icontrol < numControls; ++icontrol) {
             controls(itime, icontrol) = tropSol.controls(icontrol, itime);
         }
+    
     }
-    SimTK::Matrix multipliers(numTimes, numMultipliers);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int imultiplier = 0; imultiplier < numMultipliers; ++imultiplier) {
-            multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier, 
-                itime);
+    // Only allocate memory if multipliers exist, otherwise return an empty 
+    // matrix.
+    SimTK::Matrix multipliers;
+    if (numMultipliers) {
+        multipliers.resize(numTimes, numMultipliers);
+        for (int itime = 0; itime < numTimes; ++itime) {
+            for (int imultiplier = 0; imultiplier < numMultipliers; ++imultiplier) {
+                multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier, 
+                    itime);
+            }
         }
     }
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());

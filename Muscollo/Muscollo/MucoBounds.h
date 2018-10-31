@@ -35,22 +35,12 @@ class OSIMMUSCOLLO_API MucoBounds : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoBounds, Object);
 public:
     /// The bounds are NaN, which means (-inf, inf).
-    MucoBounds() 
-    {   constructProperties(); }
+    MucoBounds();
     /// The lower and upper bound are equal (the variable is constrained to this
     /// single value).
-    MucoBounds(double value) : MucoBounds() {
-        set_lower(value);
-        set_upper(value);
-    }
+    MucoBounds(double value);
     /// The variable is constrained to be within [lower, upper].
-    MucoBounds(double lower, double upper) : MucoBounds() {
-        OPENSIM_THROW_IF(lower > upper, Exception,
-            "Expected lower <= upper, but lower=" + std::to_string(lower)
-            + " and upper=" + std::to_string(upper) + ".");
-        set_lower(lower);
-        set_upper(upper);
-    }
+    MucoBounds(double lower, double upper);
     /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
         return !SimTK::isNaN(get_lower()) && !SimTK::isNaN(get_upper());
@@ -68,24 +58,12 @@ public:
     /// - 0 elements: bounds are not set.
     /// - 1 element: equality constraint
     /// - 2 elements: range (inequality constraint).
-    Array<double> getAsArray() const {
-        Array<double> vec;
-        if (isSet()) {
-            vec.append(get_lower());
-            if (get_lower() != get_upper()) vec.append(get_upper());
-        }
-        return vec;
-    }
+    Array<double> getAsArray() const;
+
     double getLower() const { return get_lower(); }
     double getUpper() const { return get_upper(); }
-    void printDescription(std::ostream& stream) const {
-        if (isEquality()) {
-            stream << get_lower();
-        } else {
-            stream << "[" << get_lower() << ", " << get_upper() << "]";
-        }
-        stream.flush();
-    }
+
+    void printDescription(std::ostream& stream) const;
 protected:
     OpenSim_DECLARE_PROPERTY(lower, double, "The lower bound value.");
     OpenSim_DECLARE_PROPERTY(upper, double, "The upper bound value.");
@@ -95,10 +73,7 @@ protected:
     friend MucoParameter;
 private:
 
-    void constructProperties() {
-        constructProperty_lower(SimTK::NTraits<double>::getNaN());
-        constructProperty_upper(SimTK::NTraits<double>::getNaN());
-    }
+    void constructProperties();
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
 class OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {

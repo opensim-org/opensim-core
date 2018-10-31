@@ -195,6 +195,7 @@ Iterate::interpolate(int desired_num_columns) const {
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
     out.adjuncts = interp1(time, adjuncts, out.time);
+
     return out;
 }
 
