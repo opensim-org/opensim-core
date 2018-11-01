@@ -213,9 +213,9 @@ for d = 1:length(devices)
     anchorA = WeldJoint.safeDownCast(device.updComponent('anchorA'));
     anchorB = WeldJoint.safeDownCast(device.updComponent('anchorB'));
     thighAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('thigh/deviceAttach'));
+        hopper.getComponent('bodyset/thigh/deviceAttach'));
     shankAttach = PhysicalFrame.safeDownCast(...
-        hopper.getComponent('shank/deviceAttach'));
+        hopper.getComponent('bodyset/shank/deviceAttach'));
     
     % Connect the parent frame sockets of the device's anchor joints to the
     % attachment frames on the hopper; attach anchorA to the thigh, and
@@ -232,7 +232,7 @@ for d = 1:length(devices)
         elseif strcmp(deviceNames{d},'device_active')
             cable = PathActuator.safeDownCast(device.updComponent('cableAtoBactive'));
         end
-        patellaPath = 'thigh/patellaFrame/patella';
+        patellaPath = 'bodyset/thigh/patellaFrame/wrapobjectset/patella';
         wrapObject = WrapCylinder.safeDownCast(hopper.updComponent(patellaPath));
         cable.updGeometryPath().addPathWrap(wrapObject);
     end
@@ -248,9 +248,11 @@ for d = 1:length(devices)
     % control input.
     if strcmp(deviceNames{d},'device_active') && isActivePropMyo
         device.updComponent('controller').updInput('activation').connect(...
-            hopper.getComponent('vastus').getOutput('activation'));
+            hopper.getComponent('forceset/vastus').getOutput('activation'));
     end
     
 end
+
+hopper.finalizeConnections();
 
 end

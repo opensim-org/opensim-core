@@ -100,7 +100,6 @@ OpenSim::ModelComponentSet<OpenSim::Constraint>;
 OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ControllerSet.h>
 
-%template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 %include <OpenSim/Simulation/Model/CoordinateLimitForce.h>

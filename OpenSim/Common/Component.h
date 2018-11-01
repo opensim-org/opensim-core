@@ -91,7 +91,7 @@ public:
     }
 };
 
-class ComponentNotFoundOnSpecifiedPath : public Exception {
+class ComponentNotFoundOnSpecifiedPath : public ComponentNotFound {
 public:
     ComponentNotFoundOnSpecifiedPath(const std::string& file,
         size_t line,
@@ -99,7 +99,7 @@ public:
         const std::string& toFindName,
         const std::string& toFindClassName,
         const std::string& thisName) :
-        Exception(file, line, func) {
+        ComponentNotFound(file, line, func) {
         std::string msg = "Component '" + thisName;
         msg += "' could not find '" + toFindName;
         msg += "' of type " + toFindClassName + ". ";
