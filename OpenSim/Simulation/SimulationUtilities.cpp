@@ -176,8 +176,9 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
     }
 }
 
-void OpenSim::updateConnecteesBySearch(Model& model)
+void OpenSim::updateSocketConnecteesBySearch(Model& model)
 {
+    int numSocketsUpdated = 0;
     for (auto& comp : model.updComponentList()) {
         const auto socketNames = comp.getSocketNames();
         for (int i = 0; i < socketNames.size(); ++i) {
@@ -192,6 +193,7 @@ void OpenSim::updateConnecteesBySearch(Model& model)
                     if (found) {
                         socket.connect(*found);
                         socket.finalizeConnection(model);
+                        numSocketsUpdated += 1;
                     }
                 }
             } catch (const std::exception& e) {
@@ -202,5 +204,14 @@ void OpenSim::updateConnecteesBySearch(Model& model)
                     std::endl;
             }
         }
+    }
+    if (numSocketsUpdated) {
+        std::cout << "OpenSim::updateSocketConnecteesBySearch(): updated "
+                << numSocketsUpdated << " sockets in Model '"
+                << model.getName() << "'." << std::endl;
+    } else {
+        std::cout << "OpenSim::updateSocketConnecteesBySearch(): "
+                     "no sockets updated in Model '"
+                  << model.getName() << "'." << std::endl;
     }
 }
