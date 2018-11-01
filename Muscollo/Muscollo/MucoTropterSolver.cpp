@@ -67,31 +67,41 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     int numControls = (int)control_names.size();
     int numMultipliers = (int)multiplier_names.size();
     int numParameters = (int)parameter_names.size();
+    // Create and populate states matrix.
     SimTK::Matrix states(numTimes, numStates);
     for (int itime = 0; itime < numTimes; ++itime) {
         for (int istate = 0; istate < numStates; ++istate) {
             states(itime, istate) = tropSol.states(istate, itime);
         }
     }
-    SimTK::Matrix controls(numTimes, numControls);
-    for (int itime = 0; itime < numTimes; ++itime) {
-        for (int icontrol = 0; icontrol < numControls; ++icontrol) {
-            controls(itime, icontrol) = tropSol.controls(icontrol, itime);
+    // Instantiating a SimTK::Matrix with a zero row or column does not create
+    // an empty matrix. For example,
+    //      SimTK::Matrix controls(5, 0);
+    // will create a matrix with five empty rows. So, for variables other than 
+    // states, only allocate memory if necessary. Otherwise, return an empty 
+    // matrix. This will prevent weird comparison errors between two iterates 
+    // that should be equal but have slightly different "empty" values.
+    SimTK::Matrix controls;
+    if (numControls) {
+        controls.resize(numTimes, numControls);
+        for (int itime = 0; itime < numTimes; ++itime) {
+            for (int icontrol = 0; icontrol < numControls; ++icontrol) {
+                controls(itime, icontrol) = tropSol.controls(icontrol, itime);
+            }
         }
-    
     }
-    // Only allocate memory if multipliers exist, otherwise return an empty 
-    // matrix.
     SimTK::Matrix multipliers;
     if (numMultipliers) {
         multipliers.resize(numTimes, numMultipliers);
         for (int itime = 0; itime < numTimes; ++itime) {
-            for (int imultiplier = 0; imultiplier < numMultipliers; ++imultiplier) {
+            for (int imultiplier = 0; imultiplier < numMultipliers; 
+                    ++imultiplier) {
                 multipliers(itime, imultiplier) = tropSol.adjuncts(imultiplier, 
                     itime);
             }
         }
     }
+    // This produces an empty RowVector if numParameters is zero.
     SimTK::RowVector parameters(numParameters, tropSol.parameters.data());
     return {time, state_names, control_names, multiplier_names, parameter_names, 
             states, controls, multipliers, parameters};

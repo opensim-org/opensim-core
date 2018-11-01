@@ -329,9 +329,11 @@ MucoIterate::MucoIterate(const std::string& filepath) {
     m_time = SimTK::Vector((int)time.size(), time.data());
 
     m_states = table->getMatrixBlock(0, 0, table->getNumRows(), numStates);
-    m_controls = table->getMatrixBlock(0, numStates,
-            table->getNumRows(), numControls);
-   if (numMultipliers) {
+    if (numControls) {
+        m_controls = table->getMatrixBlock(0, numStates,
+                table->getNumRows(), numControls);
+    }
+    if (numMultipliers) {
         m_multipliers = table->getMatrixBlock(0, numStates + numControls,
                 table->getNumRows(), numMultipliers);
     }
