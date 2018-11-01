@@ -68,8 +68,6 @@ for u = 0 : 9
     end
 end
 
-disp('New Table is the same as the original')
-
 %% Add new Data to a struct, then convert into an OpenSim table
 % Make copies of the data tables
 s = mData_d; sV3 = mData; 

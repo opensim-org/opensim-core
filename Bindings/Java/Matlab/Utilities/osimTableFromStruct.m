@@ -50,7 +50,8 @@ s = rmfield(s,'time');
 % remove time from the labels
 labels(tIndex) = [];
 nfields = length(labels);
-%% Check the structure for 'shape' consistency across fields. 
+
+%% Check the structure for row and column length consistency across fields. 
 for i = 1 : nfields
     % For all fields in s, check that the array size is either nX1 or nX3,
     % other array sizes are unsupported. 
@@ -71,69 +72,51 @@ for i = 1 : nfields
     end
 end
 
-%% Pre-allocate an empty data table from data type. 
+%% Instantiate an empty OpenSim TimesSeriesTable()
 if colRef == 1
-    osimtable = DataTable();
+    timeseriesosimtable = TimeSeriesTable();
 else
-    osimtable = DataTableVec3();
+    timeseriesosimtable = TimeSeriesTableVec3();
 end
 
-%% set the osimtable column names
+% Set the TimesSeriesTable() column names
 osimlabels =  StdVectorString();
 for i = 1 : nfields
     osimlabels.add( labels{i} );
 end
-osimtable.setColumnLabels(osimlabels);
+timeseriesosimtable.setColumnLabels(osimlabels);
 
-%% Build the osimtable row by row, filling a row vector from left to
-% right and then appending the row to the OpenSim osimtable. 
+%% Build the TimesSeriesTable()
 if colRef == 1
     % Get an OpenSim Row Vector
     row = RowVector(nfields, NaN);
-    % create and fill a row of data 
+    % Fill row vector with data 
     for iRow = 1 : nRows 
         for iCol = 1 : nfields 
-           % Get the row value of the array from each field and set that
-           % value in the OpenSim Row
+           % Get the row value from each field of the struct
            row.set(iCol-1, s.(labels{iCol})(iRow) );
         end
         % Append the row vector to the opensim table
-        osimtable.appendRow(iRow-1, row);
+        timeseriesosimtable.appendRow(iRow-1, row);
     end
 else
-    % Get an empty Vec3 
-	elems = StdVectorVec3();
-    % Fill rows and elements with 
+    % Get an OpenSim Row Vector
+    row = RowVectorOfVec3(nfields);
     for iRow = 1 : nRows
-        % create and fill a row of data
+        % Create and fill a row of data
         for iCol = 1 : nfields 
-            % get the data from the input structure
-            elemtdata = s.(labels{iCol})(iRow,:);
-            % make a vec3 element from the rowdata
-            elem = Vec3(elemtdata(1), elemtdata(2), elemtdata(3));
-            % append the Vec3 element to the vec3 vector
-            elems.add(elem);
+            % Make a vec3 element from the rowdata
+            row.set(iCol-1, osimVec3FromArray(s.(labels{iCol})(iRow,:)));
         end
-        % type change the elems vector to a RowVectorofVec3's
-        row = RowVectorOfVec3(elems);
-        % append the RowVectorofVec3's to the opensim table
-        osimtable.appendRow(iRow-1, row);
-        % set the time value for the appended row
-        timeColumn.set(iRow-1, s.(labels{tIndex})(iRow));
+        % Append the RowVectorofVec3's to the opensim table
+        timeseriesosimtable.appendRow(iRow-1, row);
     end
 end
 
-%% Set the Time values
-DataTabletime = osimtable.getIndependentColumn();
+%% Set the Time Column values
+timeColumn = timeseriesosimtable.getIndependentColumn();
 for i = 1 : nRows 
-      DataTabletime.set(i-1, time(i));
-end
-  
-%% Type change the DataTable to a TimeSeriesTable 
-if nCols == 1
-   timeseriesosimtable = TimeSeriesTable(osimtable);    
-else
-    timeseriesosimtable = TimeSeriesTableVec3(osimtable);
+      timeColumn.set(i-1, time(i));
 end
 
 end
