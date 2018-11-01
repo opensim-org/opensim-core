@@ -1977,7 +1977,7 @@ void Model::formStateStorage(const Storage& originalStorage,
         stateVec.getData().setSize(numStates); 
         for(int column=0; column< numStates; column++) {
             if (mapColumns[column] != -1)
-                originalVec->getDataValue(mapColumns[column] - 1, assignedValue);
+                originalVec->getDataValue(mapColumns[column], assignedValue);
             else
                 assignedValue = defaultStateValues[column];
 
