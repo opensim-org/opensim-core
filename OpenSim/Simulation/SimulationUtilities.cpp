@@ -194,6 +194,12 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                         socket.connect(*found);
                         socket.finalizeConnection(model);
                         numSocketsUpdated += 1;
+                    } else {
+                        std::cout << "Socket '" << socketNames[i] << "' in "
+                                << "Component " << comp.getAbsolutePathString()
+                                << " needs updating but a connectee with the "
+                                   "specified name could not be found."
+                                << std::endl;
                     }
                 }
             } catch (const std::exception& e) {
@@ -207,11 +213,11 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
     }
     if (numSocketsUpdated) {
         std::cout << "OpenSim::updateSocketConnecteesBySearch(): updated "
-                << numSocketsUpdated << " sockets in Model '"
+                << numSocketsUpdated << " Sockets in Model '"
                 << model.getName() << "'." << std::endl;
     } else {
         std::cout << "OpenSim::updateSocketConnecteesBySearch(): "
-                     "no sockets updated in Model '"
+                     "no Sockets updated in Model '"
                   << model.getName() << "'." << std::endl;
     }
 }
