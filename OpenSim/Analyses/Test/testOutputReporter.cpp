@@ -184,7 +184,7 @@ void simulateMuscle(
     //==========================================================================
     OutputReporter* outputReporter = new OutputReporter(&model);
     outputReporter->append_output_paths("/|kinetic_energy");
-    outputReporter->append_output_paths("jointset/slider/tx|value");
+    outputReporter->append_output_paths("/jointset/slider/tx|value");
     outputReporter->append_output_paths("/bodyset/ball|linear_velocity");
     outputReporter->append_output_paths("/bodyset/ball|angular_acceleration");
     // Paths can also be relative to the model.
