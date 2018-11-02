@@ -68,7 +68,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OutputReporter, Analysis);
 public:
 OpenSim_DECLARE_LIST_PROPERTY(output_paths, std::string,
     "The names of Outputs to be reported. To select specific Component Outputs"
-    ", provide its path name. For example, '/joinset/slider/tx|value' is an "
+    ", provide its path name. For example, '/jointset/slider/tx|value' is an "
     "Output for the value of a Coordinate 'tx' belonging to the Joint "
     "'slider'.");
 
