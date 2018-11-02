@@ -73,8 +73,12 @@ if(OPENMP_FOUND)
     endif()
 endif()
 
-target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
-target_link_libraries(tropter PRIVATE ${IPOPT_LIBRARIES})
+if(WIN32)
+	target_link_libraries(tropter PRIVATE ipopt)
+else()
+    target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
+    target_link_libraries(tropter PRIVATE ${IPOPT_LIBRARIES})
+endif()
 if(LINUX)
     # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
     # We only include Ipopt in cpp files, so our clients don't need
@@ -88,7 +92,7 @@ if(TROPTER_WITH_SNOPT)
 endif()
 
 if(WIN32)
-    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
+    add_dependencies(tropter Copy_ADOLC_DLLs) #  Copy_IPOPT_DLLs)
     #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 

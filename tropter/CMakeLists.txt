@@ -88,16 +88,16 @@ if(UNIX)
     # https://stackoverflow.com/questions/25043458/does-cmake-have-something-like-target-link-options
     link_directories(${IPOPT_LIBRARY_DIRS})
 else()
-    find_package(IPOPT REQUIRED)
+    find_package(Ipopt REQUIRED CONFIG)
     set_package_properties(IPOPT PROPERTIES
             URL https://projects.coin-or.org/Ipopt
             TYPE REQUIRED
             PURPOSE "Nonlinear optimization")
     # Flags to use when building a shared library.
     # TODO move these flags to a specific target.
-    set(CMAKE_SHARED_LINKER_FLAGS
-            "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-    tropter_copy_dlls(IPOPT "${IPOPT_DIR}/bin")
+    # TODO set(CMAKE_SHARED_LINKER_FLAGS
+    # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
+    tropter_copy_dlls(IPOPT "${Ipopt_ROOT_DIR}/bin")
 endif()
 
 # OpenMP allows parallelization (of evaluating dynamics and path constraints
