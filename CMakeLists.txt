@@ -70,10 +70,6 @@ if(NOT CMAKE_PREFIX_PATH
             "Directories containing dependencies.")
     set(ADOLC_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
             "Path to ADOL-C install directory.")
-    if(WIN32)
-        set(IPOPT_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/ipopt" CACHE PATH
-            "Path to IPOPT install directory.")
-    endif()
 endif()
 
 # Make targets go in the same binary directory.
