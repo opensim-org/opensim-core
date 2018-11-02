@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2017 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): Daniel A. Jacobs
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -68,6 +68,9 @@ rightKneeMagnet.setExpression('0.01/d^2');
 % Add the force to the model
 new_model.addComponent(leftKneeMagnet);
 new_model.addComponent(rightKneeMagnet);
+
+% Finalize connections
+new_model.finalizeConnections()
 
 % Print a new model file
 newFilename = 'WalkerModel_KneeMagnet.osim';

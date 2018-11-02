@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="30516">
+<OpenSimDocument Version="30517">
 	<Model name="WalkerModelTerrain">
 		<!--The model's ground reference frame.-->
 		<Ground name="ground">
 			<!--The geometry used to display the axes of this Frame.-->
 			<FrameGeometry name="frame_geometry">
 				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-				<socket_frame_connectee_name>..</socket_frame_connectee_name>
-				<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-				<input_transform_connectee_name></input_transform_connectee_name>
+				<socket_frame>..</socket_frame>
 				<!--Scale factors in X, Y, Z directions respectively.-->
 				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 			</FrameGeometry>
@@ -16,7 +14,7 @@
 		<!--Credits (e.g., model author names) associated with the model.-->
 		<credits>Daniel A. Jacobs, Ajay Seth</credits>
 		<!--List of bodies that make up this model.-->
-		<BodySet>
+		<BodySet name="bodyset">
 			<objects>
 				<Body name="Platform">
 					<!--List of components that this component owns and serializes.-->
@@ -25,9 +23,7 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
@@ -35,15 +31,13 @@
 							<attached_geometry>
 								<Brick name="Platform_offset_frame_geom_1">
 									<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-									<socket_frame_connectee_name>..</socket_frame_connectee_name>
-									<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-									<input_transform_connectee_name></input_transform_connectee_name>
+									<socket_frame>..</socket_frame>
 									<!--Half lengths in X, Y, Z respectively.-->
 									<half_lengths>5 0.025000000000000001 0.5</half_lengths>
 								</Brick>
 							</attached_geometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>..</socket_parent_connectee_name>
+							<socket_parent>..</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>4.5 0 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -53,9 +47,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -68,9 +60,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -78,9 +68,7 @@
 					<attached_geometry>
 						<Ellipsoid name="Pelvis_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>..</socket_frame_connectee_name>
-							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-							<input_transform_connectee_name></input_transform_connectee_name>
+							<socket_frame>..</socket_frame>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.10000000000000001 0.10000000000000001 0.20000000000000001</radii>
 						</Ellipsoid>
@@ -94,9 +82,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -104,9 +90,7 @@
 					<attached_geometry>
 						<Ellipsoid name="LeftThigh_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>..</socket_frame_connectee_name>
-							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-							<input_transform_connectee_name></input_transform_connectee_name>
+							<socket_frame>..</socket_frame>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.02 0.20000000000000001 0.02</radii>
 						</Ellipsoid>
@@ -120,9 +104,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -130,9 +112,7 @@
 					<attached_geometry>
 						<Ellipsoid name="RightThigh_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>..</socket_frame_connectee_name>
-							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-							<input_transform_connectee_name></input_transform_connectee_name>
+							<socket_frame>..</socket_frame>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.02 0.20000000000000001 0.02</radii>
 						</Ellipsoid>
@@ -146,9 +126,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -156,9 +134,7 @@
 					<attached_geometry>
 						<Ellipsoid name="LeftShank_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>..</socket_frame_connectee_name>
-							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-							<input_transform_connectee_name></input_transform_connectee_name>
+							<socket_frame>..</socket_frame>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.021749999999999999 0.2175 0.021749999999999999</radii>
 						</Ellipsoid>
@@ -172,9 +148,7 @@
 					<!--The geometry used to display the axes of this Frame.-->
 					<FrameGeometry name="frame_geometry">
 						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-						<socket_frame_connectee_name>..</socket_frame_connectee_name>
-						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-						<input_transform_connectee_name></input_transform_connectee_name>
+						<socket_frame>..</socket_frame>
 						<!--Scale factors in X, Y, Z directions respectively.-->
 						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 					</FrameGeometry>
@@ -182,9 +156,7 @@
 					<attached_geometry>
 						<Ellipsoid name="RightShank_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-							<socket_frame_connectee_name>..</socket_frame_connectee_name>
-							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-							<input_transform_connectee_name></input_transform_connectee_name>
+							<socket_frame>..</socket_frame>
 							<!--Radii of Ellipsoid.-->
 							<radii>0.021749999999999999 0.2175 0.021749999999999999</radii>
 						</Ellipsoid>
@@ -198,27 +170,25 @@
 			<groups />
 		</BodySet>
 		<!--List of joints that connect the bodies.-->
-		<JointSet>
+		<JointSet name="jointset">
 			<objects>
 				<WeldJoint name="PlatformToGround">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>ground_offset</socket_parent_frame_connectee_name>
+					<socket_parent_frame>ground_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>Platform_offset</socket_child_frame_connectee_name>
+					<socket_child_frame>Platform_offset</socket_child_frame>
 					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
 					<frames>
 						<PhysicalOffsetFrame name="ground_offset">
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../ground</socket_parent_connectee_name>
+							<socket_parent>/ground</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -228,14 +198,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../Platform</socket_parent_connectee_name>
+							<socket_parent>/bodyset/Platform</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -245,9 +213,9 @@
 				</WeldJoint>
 				<PlanarJoint name="PelvisToPlatform">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>../Platform</socket_parent_frame_connectee_name>
+					<socket_parent_frame>/bodyset/Platform</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>../Pelvis</socket_child_frame_connectee_name>
+					<socket_child_frame>/bodyset/Pelvis</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="Pelvis_rz">
@@ -272,9 +240,9 @@
 				</PlanarJoint>
 				<PinJoint name="LThighToPelvis">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>Pelvis_offset</socket_parent_frame_connectee_name>
+					<socket_parent_frame>Pelvis_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>LeftThigh_offset</socket_child_frame_connectee_name>
+					<socket_child_frame>LeftThigh_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="LHip_rz">
@@ -290,14 +258,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../Pelvis</socket_parent_connectee_name>
+							<socket_parent>/bodyset/Pelvis</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 -0.20000000000000001</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -307,14 +273,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../LeftThigh</socket_parent_connectee_name>
+							<socket_parent>/bodyset/LeftThigh</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.20000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -324,9 +288,9 @@
 				</PinJoint>
 				<PinJoint name="RThighToPelvis">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>Pelvis_offset</socket_parent_frame_connectee_name>
+					<socket_parent_frame>Pelvis_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>RightThigh_offset</socket_child_frame_connectee_name>
+					<socket_child_frame>RightThigh_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="RHip_rz">
@@ -342,14 +306,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../Pelvis</socket_parent_connectee_name>
+							<socket_parent>/bodyset/Pelvis</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0 0.20000000000000001</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -359,14 +321,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../RightThigh</socket_parent_connectee_name>
+							<socket_parent>/bodyset/RightThigh</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.20000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -376,9 +336,9 @@
 				</PinJoint>
 				<PinJoint name="LShankToLThigh">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>LeftThigh_offset</socket_parent_frame_connectee_name>
+					<socket_parent_frame>LeftThigh_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>LeftShank_offset</socket_child_frame_connectee_name>
+					<socket_child_frame>LeftShank_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="LKnee_rz">
@@ -394,14 +354,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../LeftThigh</socket_parent_connectee_name>
+							<socket_parent>/bodyset/LeftThigh</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.20000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -411,14 +369,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../LeftShank</socket_parent_connectee_name>
+							<socket_parent>/bodyset/LeftShank</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.2175 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -428,9 +384,9 @@
 				</PinJoint>
 				<PinJoint name="RShankToRThigh">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
-					<socket_parent_frame_connectee_name>RightThigh_offset</socket_parent_frame_connectee_name>
+					<socket_parent_frame>RightThigh_offset</socket_parent_frame>
 					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
-					<socket_child_frame_connectee_name>RightShank_offset</socket_child_frame_connectee_name>
+					<socket_child_frame>RightShank_offset</socket_child_frame>
 					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
 					<coordinates>
 						<Coordinate name="RKnee_rz">
@@ -446,14 +402,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../RightThigh</socket_parent_connectee_name>
+							<socket_parent>/bodyset/RightThigh</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 -0.20000000000000001 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -463,14 +417,12 @@
 							<!--The geometry used to display the axes of this Frame.-->
 							<FrameGeometry name="frame_geometry">
 								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
-								<socket_frame_connectee_name>..</socket_frame_connectee_name>
-								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
-								<input_transform_connectee_name></input_transform_connectee_name>
+								<socket_frame>..</socket_frame>
 								<!--Scale factors in X, Y, Z directions respectively.-->
 								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
 							</FrameGeometry>
 							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
-							<socket_parent_connectee_name>../../RightShank</socket_parent_connectee_name>
+							<socket_parent>/bodyset/RightShank</socket_parent>
 							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
 							<translation>0 0.2175 0</translation>
 							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
@@ -482,12 +434,12 @@
 			<groups />
 		</JointSet>
 		<!--Controllers that provide the control inputs for Actuators.-->
-		<ControllerSet>
+		<ControllerSet name="controllerset">
 			<objects />
 			<groups />
 		</ControllerSet>
 		<!--Forces in the model (includes Actuators).-->
-		<ForceSet>
+		<ForceSet name="forceset">
 			<objects>
 				<HuntCrossleyForce name="LFootForce">
 					<!--Material properties.-->
@@ -698,11 +650,11 @@
 			<groups />
 		</ForceSet>
 		<!--Geometry to be used in contact forces.-->
-		<ContactGeometrySet>
+		<ContactGeometrySet name="contactgeometryset">
 			<objects>
 				<ContactSphere name="LFootContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../LeftShank</socket_frame_connectee_name>
+					<socket_frame>/bodyset/LeftShank</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 -0.16749999999999998 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -712,7 +664,7 @@
 				</ContactSphere>
 				<ContactSphere name="RFootContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../RightShank</socket_frame_connectee_name>
+					<socket_frame>/bodyset/RightShank</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 -0.16749999999999998 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -722,7 +674,7 @@
 				</ContactSphere>
 				<ContactSphere name="LKneeContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../LeftShank</socket_frame_connectee_name>
+					<socket_frame>/bodyset/LeftShank</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.2175 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -732,7 +684,7 @@
 				</ContactSphere>
 				<ContactSphere name="RKneeContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../RightShank</socket_frame_connectee_name>
+					<socket_frame>/bodyset/RightShank</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.2175 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -742,7 +694,7 @@
 				</ContactSphere>
 				<ContactSphere name="LHipContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Pelvis</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Pelvis</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -752,7 +704,7 @@
 				</ContactSphere>
 				<ContactSphere name="RHipContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Pelvis</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Pelvis</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -762,7 +714,7 @@
 				</ContactSphere>
 				<ContactHalfSpace name="PlatformContact">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>0 0.025000000000000001 0</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -770,7 +722,7 @@
 				</ContactHalfSpace>
 				<ContactSphere name="Obstacle1">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>5.6488414693503177 -0.034553368473436298 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -780,7 +732,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle2">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.83059299629614 -0.036921020547336474 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -790,7 +742,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle3">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.7804886202688355 -0.021683957252809159 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -800,7 +752,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle4">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>6.6652374256713056 -0.038157324844782632 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -810,7 +762,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle5">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.3675847663017215 -0.037972006757830697 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -820,7 +772,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle6">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.2392968687457451 -0.018405272127053167 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -830,7 +782,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle7">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>6.5238959317978109 -0.03401297590942931 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -840,7 +792,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle8">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.9937988322094391 -0.015857080285780555 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -850,7 +802,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle9">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.3271446791724939 -0.031289643716586567 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -860,7 +812,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle10">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.8828699190970184 -0.024413448468820036 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -870,7 +822,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle11">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.0911527753647841 -0.03194510611247061 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -880,7 +832,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle12">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>3.3170032598107175 -0.016108113375147698 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -890,7 +842,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle13">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.9146505297436232 -0.03167588695141961 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -900,7 +852,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle14">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.2852908632204691 -0.015826705932069814 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -910,7 +862,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle15">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.8429969470614012 -0.033372402915576062 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -920,7 +872,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle16">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.1537540596610203 -0.026754345498917552 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -930,7 +882,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle17">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.1705260750097652 -0.032024755940593744 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -940,7 +892,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle18">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.23852093006046 -0.031312864244488203 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -950,7 +902,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle19">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.4856164109829688 -0.017855944357401045 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -960,7 +912,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle20">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.7201044932038787 -0.023169257439987205 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -970,7 +922,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle21">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.2129649803903053 -0.033030409423335676 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -980,7 +932,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle22">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.1887185424501805 -0.031777841343760473 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -990,7 +942,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle23">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>6.3676603476610207 -0.028133172719131273 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1000,7 +952,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle24">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>4.5640398295957114 -0.021180198098969677 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1010,7 +962,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle25">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.0959211277646475 -0.034542835825651597 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1020,7 +972,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle26">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>6.5552351643886073 -0.023399610383635409 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1030,7 +982,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle27">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.1275121711004665 -0.029785072227519339 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1040,7 +992,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle28">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.8876728146332162 -0.03493988706951099 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1050,7 +1002,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle29">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.8106214916659518 -0.037012647931915443 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1060,7 +1012,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle30">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.9881982052063005 -0.03308949826268389 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1070,7 +1022,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle31">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.0892991643129522 -0.016820502949513531 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1080,7 +1032,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle32">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>4.0704683695058934 -0.033700013522448273 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1090,7 +1042,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle33">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.326761706720994 -0.028651767860932632 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1100,7 +1052,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle34">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>5.7311744329442416 -0.023090943465573159 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1110,7 +1062,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle35">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>9.2898050504074234 -0.022469161009075325 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1120,7 +1072,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle36">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>8.2393142195191587 -0.029447566593639278 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1130,7 +1082,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle37">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>5.905035655738736 -0.031541148075360195 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1140,7 +1092,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle38">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.7368636305931116 -0.017011713071926386 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1150,7 +1102,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle39">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>7.4819968735448104 -0.018657072455261353 0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
@@ -1160,7 +1112,7 @@
 				</ContactSphere>
 				<ContactSphere name="Obstacle40">
 					<!--Path to a Component that satisfies the Socket 'frame' of type PhysicalFrame (description: The frame to which this geometry is attached.).-->
-					<socket_frame_connectee_name>../Platform</socket_frame_connectee_name>
+					<socket_frame>/bodyset/Platform</socket_frame>
 					<!--Location of geometry center in the PhysicalFrame.-->
 					<location>5.382110001333432 -0.038907233199045259 -0.20000000000000001</location>
 					<!--Orientation of geometry in the PhysicalFrame (body-fixed XYZ Euler angles).-->
