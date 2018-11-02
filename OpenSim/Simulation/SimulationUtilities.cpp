@@ -175,3 +175,49 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
         updatedMotion->print(outFilePath);
     }
 }
+
+void OpenSim::updateSocketConnecteesBySearch(Model& model)
+{
+    int numSocketsUpdated = 0;
+    for (auto& comp : model.updComponentList()) {
+        const auto socketNames = comp.getSocketNames();
+        for (int i = 0; i < socketNames.size(); ++i) {
+            auto& socket = comp.updSocket(socketNames[i]);
+            try {
+                socket.finalizeConnection(model);
+            } catch (const ComponentNotFoundOnSpecifiedPath&) {
+                const ComponentPath path(socket.getConnecteePath());
+                if (path.getNumPathLevels() >= 1) { 
+                    const Component* found =
+                        model.findComponent(path.getComponentName());
+                    if (found) {
+                        socket.connect(*found);
+                        socket.finalizeConnection(model);
+                        numSocketsUpdated += 1;
+                    } else {
+                        std::cout << "Socket '" << socketNames[i] << "' in "
+                                << "Component " << comp.getAbsolutePathString()
+                                << " needs updating but a connectee with the "
+                                   "specified name could not be found."
+                                << std::endl;
+                    }
+                }
+            } catch (const std::exception& e) {
+                std::cout << "Warning: Caught exception when processing "
+                    "Socket " << socketNames[i] << " in " <<
+                    comp.getConcreteClassName() << " at " <<
+                    comp.getAbsolutePathString() << ": " << e.what() <<
+                    std::endl;
+            }
+        }
+    }
+    if (numSocketsUpdated) {
+        std::cout << "OpenSim::updateSocketConnecteesBySearch(): updated "
+                << numSocketsUpdated << " Sockets in Model '"
+                << model.getName() << "'." << std::endl;
+    } else {
+        std::cout << "OpenSim::updateSocketConnecteesBySearch(): "
+                     "no Sockets updated in Model '"
+                  << model.getName() << "'." << std::endl;
+    }
+}
