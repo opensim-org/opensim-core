@@ -36,6 +36,7 @@ public:
     AbstractProblem(unsigned num_variables, unsigned num_constraints)
             :m_num_variables(num_variables),
              m_num_constraints(num_constraints) { }
+    virtual ~AbstractProblem() = default;
     unsigned get_num_variables() const { return m_num_variables; }
     unsigned get_num_constraints() const { return m_num_constraints; }
     const Eigen::VectorXd&
