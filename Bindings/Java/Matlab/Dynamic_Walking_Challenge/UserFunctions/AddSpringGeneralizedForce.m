@@ -55,5 +55,8 @@ leftSpring.setViscosity(viscosity);
 walkerModel.addForce(rightSpring);
 walkerModel.addForce(leftSpring);
 
+% Finalize connections
+walkerModel.finalizeConnections()
+
 % Print a new model file
 walkerModel.print('../Model/WalkerModelTerrainAddSpringGeneralizedForce.osim');

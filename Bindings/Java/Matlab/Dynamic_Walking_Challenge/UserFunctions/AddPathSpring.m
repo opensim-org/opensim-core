@@ -62,5 +62,8 @@ leftSpring.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addComponent(leftSpring);
 
+% Finalize connections
+walkerModel.finalizeConnections()
+
 % Print a new model file
 walkerModel.print('../Model/WalkerModel_PathSpring.osim');

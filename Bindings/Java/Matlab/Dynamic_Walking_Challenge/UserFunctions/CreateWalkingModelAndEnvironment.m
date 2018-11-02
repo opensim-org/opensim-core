@@ -474,6 +474,7 @@ if addObstacles
     osimModel.addForce(ObstacleForces);
 
 end
+
 % -----------------------------------------------------------------------
 % Ensure there are no errors with how the model was built.
 osimModel.initSystem();

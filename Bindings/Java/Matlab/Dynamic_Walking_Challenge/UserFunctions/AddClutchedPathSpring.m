@@ -27,10 +27,10 @@ import org.opensim.modeling.*
 % your desired result!
 
 % Open the model
-walkerModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Change the name
-walkerModel.setName('DW2013_WalkerModelTerrainAddPathSpring');
+walkerModel.setName('WalkerModelTerrainAddPathSpring');
 
 % Create a Path Spring on the right leg
 stiffness = 100;
@@ -62,5 +62,8 @@ leftSpring.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addForce(leftSpring);
 
+% Finalize connections
+walkerModel.finalizeConnections()
+
 % Print a new model file
-walkerModel.print('../Model/DW2013_WalkerModel_ClutchedPathSpring.osim');
+walkerModel.print('../Model/WalkerModel_ClutchedPathSpring.osim');

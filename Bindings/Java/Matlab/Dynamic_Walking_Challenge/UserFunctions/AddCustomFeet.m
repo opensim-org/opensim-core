@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,
 % R24 HD065690) and by DARPA through the Warrior Web program.
 %
-% Copyright (c) 2005-2017 Stanford University and the Authors
+% Copyright (c) 2005-2018 Stanford University and the Authors
 % Author(s): Daniel A. Jacobs
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
@@ -132,6 +132,9 @@ elasticforce_r.setViscousFriction(viscousFriction);
 % add forces.
 model.addForce(elasticforce_l);
 model.addForce(elasticforce_r);
+
+% finalize connections
+model.finalizeConnections()
 
 % print new model to file.
 newFilename = 'WalkerModel_customFeet.osim';

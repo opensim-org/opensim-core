@@ -60,5 +60,8 @@ leftMuscle.updGeometryPath().appendNewPathPoint('left_thigh',leftThighBody,Vec3(
 % Add the force to the model
 walkerModel.addForce(leftMuscle);
 
+% Finalize connections
+walkerModel.finalizeConnections()
+
 % Print a new model file
 walkerModel.print('../Model/WalkerModel_AddMillardMuscle.osim');

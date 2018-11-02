@@ -58,6 +58,9 @@ pathAct.addNewPathPoint('pathAct_point2',body2,point2);
 % Add the force to the model.
 walkerModel.addComponent(pathAct);
 
+% Finalize connections
+walkerModel.finalizeConnections()
+
 % Save the new model file.
 modelFile_new = '../Model/WalkerModel_PathAct.osim';
 walkerModel.print(modelFile_new);

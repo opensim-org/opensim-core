@@ -69,6 +69,9 @@ rightKneeMagnet.setExpression('0.01/d^2');
 new_model.addComponent(leftKneeMagnet);
 new_model.addComponent(rightKneeMagnet);
 
+% Finalize connections
+new_model.finalizeConnections()
+
 % Print a new model file
 newFilename = 'WalkerModel_KneeMagnet.osim';
 isSuccessful = model.print(['../Model/',newFilename]);
