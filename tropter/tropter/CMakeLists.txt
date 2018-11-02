@@ -91,7 +91,7 @@ if(TROPTER_WITH_SNOPT)
 endif()
 
 if(WIN32)
-    add_dependencies(tropter Copy_ADOLC_DLLs) #  Copy_IPOPT_DLLs)
+    add_dependencies(tropter Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
     #add_dependencies(tropter Copy_COLPACK_DLLs Copy_ADOLC_DLLs Copy_IPOPT_DLLs)
 endif()
 
