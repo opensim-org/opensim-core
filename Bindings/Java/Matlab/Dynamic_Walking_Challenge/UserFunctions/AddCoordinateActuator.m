@@ -50,6 +50,9 @@ coordAct.setMaxControl(inf);                % Maximum control signal allowed
 % Add the force to the model.
 walkerModel.addForce(coordAct);
 
+% Finalize connections
+walkerModel.finalizeConnections();
+
 % Save the new model file.
 modelFile_new = '../Model/WalkerModelTerrain_CoordAct.osim';
 walkerModel.print(modelFile_new);
