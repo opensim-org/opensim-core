@@ -48,9 +48,16 @@ MucoIterate::MucoIterate(const SimTK::Vector& time,
             Exception, "Inconsistent number of controls.");
     OPENSIM_THROW_IF((int)m_multiplier_names.size() != m_multipliers.ncol(),
             Exception, "Inconsistent number of multipliers.");
-    OPENSIM_THROW_IF(time.size() != m_states.nrow() ||
-            time.size() != m_controls.nrow(), Exception,
-            "Inconsistent number of times.");
+    OPENSIM_THROW_IF(time.size() != m_states.nrow(), Exception,
+            "Inconsistent number of times in states trajectory.");
+    if (m_controls.ncol()) {
+        OPENSIM_THROW_IF(time.size() != m_controls.nrow(), Exception,
+            "Inconsistent number of times in controls trajectory.");
+    }
+    if (m_multipliers.ncol()) {
+        OPENSIM_THROW_IF(time.size() != m_multipliers.nrow(), Exception,
+            "Inconsistent number of times in multipliers trajectory.");
+    }
     OPENSIM_THROW_IF((int)m_parameter_names.size() != m_parameters.nelt(),
             Exception, "Inconsistent number of parameters.");
 }
