@@ -86,4 +86,8 @@ solution.write('sliding_mass_solution.sto');
 
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
     muco.visualize(solution);
+    plot(solution.getTimeMat(), solution.getStatesTrajectoryMat());
+    xlabel('time (s)');
+    ylabel('states');
+    legend('slider/position/value', 'slider/position/speed');
 end

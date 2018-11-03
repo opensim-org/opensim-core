@@ -123,6 +123,10 @@ it.setTime([15, 25, 35]);
 assert(it.getTime().get(0) == 15);
 assert(it.getTime().get(1) == 25);
 assert(it.getTime().get(2) == 35);
+timeMat = it.getTimeMat();
+assert(timeMat(1) == 15);
+assert(timeMat(2) == 25);
+assert(timeMat(3) == 35);
 
 it.setState('s0', [5, 3, 10]);
 s0traj = it.getState('s0');
@@ -134,6 +138,10 @@ s1traj = it.getState('s1');
 assert(s1traj.get(0) == 2);
 assert(s1traj.get(1) == 6);
 assert(s1traj.get(2) == 1);
+s1trajMat = it.getStateMat('s1');
+assert(s1trajMat(1) == 2);
+assert(s1trajMat(2) == 6);
+assert(s1trajMat(3) == 1);
 
 it.setControl('c0', [10, 46, -5]);
 c0traj = it.getControl('c0');
@@ -145,11 +153,25 @@ c2traj = it.getControl('c2');
 assert(c2traj.get(0) == 5);
 assert(c2traj.get(1) == 12);
 assert(c2traj.get(2) == -1);
+c2trajMat = it.getControlMat('c2');
+assert(c2trajMat(1) == 5);
+assert(c2trajMat(2) == 12);
+assert(c2trajMat(3) == -1);
 
 it.setParameter('p0', 25);
 it.setParameter('p1', 30);
 p = it.getParameters();
 assert(p.get(0) == 25);
 assert(p.get(1) == 30);
+pMat = it.getParametersMat();
+assert(pMat(1) == 25);
+assert(pMat(2) == 30);
 p0 = it.getParameter('p0');
 assert(p0 == 25);
+
+st = it.getStatesTrajectoryMat();
+assert(st(1, 1) == 5);
+assert(st(3, 2) == 1);
+ct = it.getControlsTrajectoryMat();
+assert(ct(1, 1) == 10);
+assert(ct(3, 3) == -1);
