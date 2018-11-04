@@ -191,6 +191,7 @@ public:
             controller.set_enabled(false);
         }
         m_state = m_model.initSystem();
+        // TODO avoid multiple calls to initialize
         m_mucoProb.initialize(m_model);
 
         this->set_time(convert(m_phase0.getTimeInitialBounds()),
@@ -397,7 +398,6 @@ public:
 
         // Copy errors from generic path constraints into output struct.
         m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
-        //std::cout << "path errors: " << m_pathConstraintErrors << std::endl;
         std::copy(m_pathConstraintErrors.begin(),
                   m_pathConstraintErrors.end(),
                   out.path.data() + m_numMultibodyConstraintEqs);

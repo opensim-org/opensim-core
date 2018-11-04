@@ -508,7 +508,6 @@ bool MucoIterate::isNumericallyEqual(const MucoIterate& other, double tol)
         const {
     ensureUnsealed();
 
-
     return m_state_names == other.m_state_names &&
             m_control_names == other.m_control_names &&
             m_multiplier_names == other.m_multiplier_names &&
@@ -558,13 +557,14 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     }
 }
 
-double MucoIterate::compareStatesControlsRMS(const MucoIterate& other,
+double MucoIterate::compareContinuousVariablesRMS(const MucoIterate& other,
         std::vector<std::string> stateNames,
-        std::vector<std::string> controlNames) const {
+        std::vector<std::string> controlNames,
+        std::vector<std::string> multiplierNames) const {
     ensureUnsealed();
 
-    // Process state and control names.
-    // --------------------------------
+    // Process state, control, and multiplier names.
+    // ---------------------------------------------
     if (stateNames.empty()) {
         OPENSIM_THROW_IF(!sameContents(m_state_names, other.m_state_names),
                 Exception,
@@ -590,7 +590,22 @@ double MucoIterate::compareStatesControlsRMS(const MucoIterate& other,
         checkContains("control", controlNames, m_control_names,
                 other.m_control_names);
     }
-
+    if (multiplierNames.empty()) {
+        OPENSIM_THROW_IF(!sameContents(m_multiplier_names,
+            other.m_multiplier_names),
+            Exception,
+            "Expected both iterates to have the same multiplier names; "
+            "consider specifying the multipliers to compare.");
+        multiplierNames = m_multiplier_names;
+    }
+    else if (multiplierNames.size() == 1 && multiplierNames[0] == "none") {
+        multiplierNames.clear();
+    }
+    else {
+        // Will hold elements of stateNames that are not in m_state_names, etc.
+        checkContains("multiplier", multiplierNames, m_multiplier_names,
+            other.m_multiplier_names);
+    }
 
     std::vector<double> selfTime =
             std::vector<double>(&m_time[0], &m_time[0] + m_time.size());
@@ -645,10 +660,16 @@ double MucoIterate::compareStatesControlsRMS(const MucoIterate& other,
             m_states, m_state_names, other.m_states, other.m_state_names);
     const auto controlISS = integralSumSquaredError(controlNames, m_controls,
             m_control_names, other.m_controls, other.m_control_names);
+    const auto multiplierISS = integralSumSquaredError(multiplierNames, 
+        m_multipliers, m_multiplier_names, other.m_multipliers, 
+        other.m_multiplier_names);
 
-    // sqrt(1/T * integral_t (sum_is error_is^2 + sum_ic error_ic^2)
-    // `is`: index for states; `ic`: index for controls.
-    return sqrt((stateISS + controlISS) / (finalTime - initialTime));
+    // sqrt(1/T * integral_t (sum_is error_is^2 + sum_ic error_ic^2 
+    //                                          + sum_im error_im^2)
+    // `is`: index for states; `ic`: index for controls; 
+    // `im`: index for multipliers.
+    return sqrt((stateISS + controlISS + multiplierISS) / 
+                (finalTime - initialTime));
 }
 
 double MucoIterate::compareParametersRMS(const MucoIterate& other, 

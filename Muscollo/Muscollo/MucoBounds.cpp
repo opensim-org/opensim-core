@@ -25,38 +25,27 @@ MucoBounds::MucoBounds() {
 }
 
 MucoBounds::MucoBounds(double value) : MucoBounds() {
-    set_lower(value);
-    set_upper(value);
+    append_bounds(value);
 }
 
 MucoBounds::MucoBounds(double lower, double upper) : MucoBounds() {
     OPENSIM_THROW_IF(lower > upper, Exception,
         "Expected lower <= upper, but lower=" + std::to_string(lower)
         + " and upper=" + std::to_string(upper) + ".");
-    set_lower(lower);
-    set_upper(upper);
+    append_bounds(lower);
+    append_bounds(upper);
 }
 
 void MucoBounds::constructProperties() {
-    constructProperty_lower(SimTK::NTraits<double>::getNaN());
-    constructProperty_upper(SimTK::NTraits<double>::getNaN());
-}
-
-Array<double> MucoBounds::getAsArray() const {
-    Array<double> vec;
-    if (isSet()) {
-        vec.append(get_lower());
-        if (get_lower() != get_upper()) vec.append(get_upper());
-    }
-    return vec;
+    constructProperty_bounds();
 }
 
 void MucoBounds::printDescription(std::ostream& stream) const {
     if (isEquality()) {
-        stream << get_lower();
+        stream << getLower();
     }
     else {
-        stream << "[" << get_lower() << ", " << get_upper() << "]";
+        stream << "[" << getLower() << ", " << getUpper() << "]";
     }
     stream.flush();
 }

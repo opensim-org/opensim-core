@@ -753,7 +753,9 @@ protected:
         getModel().realizeVelocity(state);
 
         const auto& controls = getModel().getControls(state);
-        errors[0] = abs(controls[1]) - abs(controls[0]);
+        // In the problem below, the actuators are bilateral and act in 
+        // opposite directions, so we use addition to create the residual here.
+        errors[0] = controls[1] + controls[0];
     }
 };
 
@@ -813,9 +815,21 @@ void testDoublePendulumEqualControl() {
     // TODO why does the forward solution match so poorly here?
     MucoIterate forwardSolution = runForwardSimulation(model, solution, 2);
     //muco.visualize(forwardSolution);
+
+    // Test de/serialization.
+    // ======================
+    std::string setup_fname 
+        = "testConstraints_testDoublePendulumEqualControl.omuco";
+    muco.print(setup_fname);
+    MucoSolution solutionDeserialized;
+    MucoTool mucoDeserialize(setup_fname);
+    solutionDeserialized = mucoDeserialize.solve();
+    SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
 
 int main() {
+    OpenSim::Object::registerType(EqualControlConstraint());
+
     SimTK_START_TEST("testConstraints");
         // DAE calculation subtests.
         SimTK_SUBTEST(testWeldConstraint);

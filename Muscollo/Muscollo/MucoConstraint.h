@@ -276,7 +276,7 @@ public:
     
 protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MucoConstraintInfo, "The bounds and "
-        "labels and scalar equation count for this MucoPathConstraint.");
+        "labels for this MucoPathConstraint.");
 
     /// Perform any caching. Make sure to first clear any caches, as this is
     /// invoked every time the problem is solved.

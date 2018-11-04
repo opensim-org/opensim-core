@@ -43,36 +43,44 @@ public:
     MucoBounds(double lower, double upper);
     /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
-        return !SimTK::isNaN(get_lower()) && !SimTK::isNaN(get_upper());
+        return !getProperty_bounds().empty();
     }
     /// True if the lower and upper bounds are the same, resulting in an
     /// equality constraint.
     bool isEquality() const {
-        return isSet() && get_lower() == get_upper();
+        return isSet() && getLower() == getUpper();
     }
     /// Returns true if the provided value is within these bounds.
     bool isWithinBounds(const double& value) const {
-        return get_lower() <= value && value <= get_upper();
+        return getLower() <= value && value <= getUpper();
     }
-    /// The returned array has either 0, 1, or 2 elements.
-    /// - 0 elements: bounds are not set.
-    /// - 1 element: equality constraint
-    /// - 2 elements: range (inequality constraint).
-    Array<double> getAsArray() const;
-
-    double getLower() const { return get_lower(); }
-    double getUpper() const { return get_upper(); }
+    double getLower() const {
+        if (!isSet()) {
+            return SimTK::NTraits<double>::getNaN();
+        } else {
+            return get_bounds(0);
+        }
+    }
+    double getUpper() const {
+        if (!isSet()) {
+            return SimTK::NTraits<double>::getNaN();
+        } else if (getProperty_bounds().size() == 1) {
+            return get_bounds(0);
+        } else {
+            return get_bounds(1);
+        }
+    }
 
     void printDescription(std::ostream& stream) const;
 protected:
-    OpenSim_DECLARE_PROPERTY(lower, double, "The lower bound value.");
-    OpenSim_DECLARE_PROPERTY(upper, double, "The upper bound value.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
+        "1 value: required value over all time. "
+        "2 values: lower, upper bounds on value over all time.");
 
     friend MucoPhase;
     friend MucoVariableInfo;
     friend MucoParameter;
 private:
-
     void constructProperties();
 };
 /// Used for specifying the bounds on a variable at the start of a phase.

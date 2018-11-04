@@ -38,7 +38,8 @@ using namespace Catch;
 /// This problem seeks to move a point mass to a specified final position with
 /// minimum effort. There are two final positions (+/- 1/sqrt(2)) that are
 /// equally desirable; the initial guess should determine which final position
-/// the optimizer finds.
+/// the optimizer finds. The adjunct and parameter variables in the problem are
+/// included for testing purposes only and have no effect on the solution.
 template<typename T>
 class FinalPositionLocalOptima : public tropter::Problem<T> {
 public:
@@ -209,7 +210,7 @@ TEST_CASE("Exceptions for setting optimal control guess", "[initial_guess]") {
     guess.adjuncts.resize(1, N); // correct.
     guess.parameters.resize(2, 1); // incorrect.
     REQUIRE_THROWS_WITH(dircol.solve(guess), 
-            Contains("Expected parameters to have 1 elements(s), "
+            Contains("Expected parameters to have 1 element(s), "
                      "but it has 2."));
 }
 
