@@ -110,7 +110,7 @@ build_script:
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\deps\adol-c" -DIPOPT_DIR="..\deps\ipopt" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
+  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
@@ -130,7 +130,9 @@ after_test:
   ## On master branch, upload binaries to AppVeyor.
   # https://www.appveyor.com/docs/packaging-artifacts/
   # Detect if we are on the master branch.
-  - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  # - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
+  # Deploy always.
+  - SET DISTR=TRUE
   - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
   - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
   # Upload pre-built dependencies to speed up local development.

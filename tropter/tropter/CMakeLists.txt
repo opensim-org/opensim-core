@@ -73,14 +73,17 @@ if(OPENMP_FOUND)
     endif()
 endif()
 
-target_include_directories(tropter SYSTEM PRIVATE ${IPOPT_INCLUDE_DIRS})
-target_link_libraries(tropter PRIVATE ${IPOPT_LIBRARIES})
-if(LINUX)
-    # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
-    # We only include Ipopt in cpp files, so our clients don't need
-    # this flag.
-    target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
+if(UNIX)
+    target_link_libraries(tropter PRIVATE PkgConfig::IPOPT)
+else()
+    target_link_libraries(tropter PRIVATE ipopt)
 endif()
+# if(LINUX)
+#     # On Ubuntu, this is useful for setting the HAVE_CSTDDEF definition.
+#     # We only include Ipopt in cpp files, so our clients don't need
+#     # this flag.
+#     target_compile_options(tropter PRIVATE ${IPOPT_CFLAGS_OTHER})
+# endif()
 # TODO IPOPT_DEFINITIONS, IPOPT_LINK_FLAGS
 
 if(TROPTER_WITH_SNOPT)
