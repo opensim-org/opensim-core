@@ -776,7 +776,7 @@ void testGuessTimeStepping() {
 
     {
         MucoIterate guess = solver.createGuess("time-stepping");
-        SimTK_TEST(solutionSim.compareStatesControlsRMS(guess) < 1e-2);
+        SimTK_TEST(solutionSim.compareContinuousVariablesRMS(guess) < 1e-2);
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
@@ -788,7 +788,7 @@ void testGuessTimeStepping() {
                 MucoIterate::createFromStatesControlsTables(
                 muco.updProblem(), manager.getStatesTable(),
                         modelCopy.getControlsTable());
-        SimTK_TEST(solutionSim.compareStatesControlsRMS(iterateFromManager) <
+        SimTK_TEST(solutionSim.compareContinuousVariablesRMS(iterateFromManager) <
                         1e-2);
     }
 
@@ -849,16 +849,19 @@ void testMucoIterate() {
     }
 
 
-    // compareStatesControlsRMS
-    auto testCompareStatesControlsRMS = [](int NT, int NS, int NC,
+    // compareContinuousVariablesRMS
+    auto testCompareContinuousVariablesRMS = [](int NT, int NS, int NC, int NM,
             double duration, double error,
             std::vector<std::string> statesToCompare = {},
-            std::vector<std::string> controlsToCompare = {}) {
+            std::vector<std::string> controlsToCompare = {},
+            std::vector<std::string> multipliersToCompare = {}) {
         const double t0 = 0.2;
         std::vector<std::string> snames;
         for (int i = 0; i < NS; ++i) snames.push_back("s" + std::to_string(i));
         std::vector<std::string> cnames;
         for (int i = 0; i < NC; ++i) cnames.push_back("c" + std::to_string(i));
+        std::vector<std::string> mnames;
+        for (int i = 0; i < NM; ++i) mnames.push_back("m" + std::to_string(i));
         SimTK::Matrix states(NT, NS);
         for (int i = 0; i < NS; ++i) {
             states.updCol(i) = createVectorLinspace(NT,
@@ -869,18 +872,23 @@ void testMucoIterate() {
             controls.updCol(i) = createVectorLinspace(NT,
                     SimTK::Test::randDouble(), SimTK::Test::randDouble());
         }
+        SimTK::Matrix multipliers(NT, NM);
+        for (int i = 0; i < NM; ++i) {
+            multipliers.updCol(i) = createVectorLinspace(NT,
+                SimTK::Test::randDouble(), SimTK::Test::randDouble());
+        }
         SimTK::Vector time = createVectorLinspace(NT, t0, t0 + duration);
-        MucoIterate a(time, snames, cnames, {}, {}, states, controls, 
-                SimTK::Matrix(), SimTK::RowVector());
-        MucoIterate b(time, snames, cnames, {}, {},
+        MucoIterate a(time, snames, cnames, mnames, {}, states, controls, 
+                multipliers, SimTK::RowVector());
+        MucoIterate b(time, snames, cnames, mnames, {},
                 states.elementwiseAddScalar(error),
                 controls.elementwiseAddScalar(error),
-                SimTK::Matrix(),
+                multipliers.elementwiseAddScalar(error),
                 SimTK::RowVector());
         // If error is constant:
         // sqrt(1/T * integral_t (sum_i^N (err_{i,t}^2))) = sqrt(N)*err
-        auto rmsBA = b.compareStatesControlsRMS(a, statesToCompare, 
-            controlsToCompare);
+        auto rmsBA = b.compareContinuousVariablesRMS(a, statesToCompare, 
+            controlsToCompare, multipliersToCompare);
         int N = 0;
         if (statesToCompare.empty()) N += NS;
         else if (statesToCompare[0] == "none") N += 0;
@@ -888,28 +896,32 @@ void testMucoIterate() {
         if (controlsToCompare.empty()) N += NC;
         else if (controlsToCompare[0] == "none") N += 0;
         else N += (int)controlsToCompare.size();
+        if (multipliersToCompare.empty()) N += NM;
+        else if (multipliersToCompare[0] == "none") N += 0;
+        else N += (int)multipliersToCompare.size();
         auto rmsExpected = sqrt(N) * error;
         SimTK_TEST_EQ(rmsBA, rmsExpected);
-        auto rmsAB = a.compareStatesControlsRMS(b, statesToCompare, 
-            controlsToCompare);
+        auto rmsAB = a.compareContinuousVariablesRMS(b, statesToCompare, 
+            controlsToCompare, multipliersToCompare);
         SimTK_TEST_EQ(rmsAB, rmsExpected);
     };
 
-    testCompareStatesControlsRMS(10, 2, 1, 0.6, 0.05);
-    testCompareStatesControlsRMS(21, 2, 0, 15.0, 0.01);
+    testCompareContinuousVariablesRMS(10, 2, 1, 1, 0.6, 0.05);
+    testCompareContinuousVariablesRMS(21, 2, 0, 2, 15.0, 0.01);
     // 6 is the minimum required number of times; ensure that it works.
-    testCompareStatesControlsRMS(6, 0, 3, 0.1, 0.9);
+    testCompareContinuousVariablesRMS(6, 0, 3, 0, 0.1, 0.9);
 
     // Providing a subset of states/columns to compare.
-    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"s1"});
-    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {}, {"c1"});
-    testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"none"}, {"none"});
+    testCompareContinuousVariablesRMS(10, 2, 3, 1, 0.6, 0.05, {"s1"});
+    testCompareContinuousVariablesRMS(10, 2, 3, 1, 0.6, 0.05, {}, {"c1"});
+    testCompareContinuousVariablesRMS(10, 2, 3, 1, 0.6, 0.05, {"none"}, 
+        {"none"}, {"none"});
     // Can't provide "none" along with other state names.
     SimTK_TEST_MUST_THROW_EXC(
-        testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {"none", "s1"}),
+        testCompareContinuousVariablesRMS(10, 2, 3,  0.6, 0.05, {"none", "s1"}),
         Exception);
     SimTK_TEST_MUST_THROW_EXC(
-        testCompareStatesControlsRMS(10, 2, 3, 0.6, 0.05, {}, {"none, c0"}),
+        testCompareContinuousVariablesRMS(10, 2, 3, 0.6, 0.05, {}, {"none, c0"}),
         Exception);
 
     // compareParametersRMS

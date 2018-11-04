@@ -463,13 +463,13 @@ MucoIterate runForwardSimulation(Model model, const MucoSolution& solution,
     // Compare controls between foward simulation and OCP solution. These
     // should match very closely, since the foward simulation controls are 
     // created from splines of the OCP solution controls
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(forwardSolution,
-        {"none"}, {}), 0, 1e-9);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
+        {"none"}, {}, {}), 0, 1e-9);
 
     // Compare states trajectory between forward simulation and OCP solution.
     // The states trajectory may not match as well as the controls.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(forwardSolution,
-        {}, {"none"}), 0, tol);
+    SimTK_TEST_EQ_TOL(solution.compareContinousVariablesRMS(forwardSolution,
+        {}, {"none"}, {}), 0, tol);
 
     return forwardSolution;
 }
@@ -709,24 +709,24 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // These should match well, since position-level values are enforced 
     // directly via a path constraint in the current problem formulation (see 
     // MucoTropterSolver for details).
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline, 
-        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-12);
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution,
-        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-12);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline, 
+        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
     // Only compare the velocity-level values between the current solution 
     // states and the states from the previous test (original and splined).  
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline,
+        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is 
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, 
-        {"none"}, {"tau0", "tau1"}), 0, 1);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution, 
+        {"none"}, {"tau0", "tau1"}, {"none"}), 0, 1);
 
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states

@@ -321,7 +321,7 @@ public:
     /// controls, and multipliers are compared, and it is expected that both 
     /// iterates have the same states, controls, and multipliers. Alternatively,
     /// you can specify the specific states, controls, and multipliers to 
-    /// compare. To skip ver all states, specify a single element of "none" for 
+    /// compare. To skip over all states, specify a single element of "none" for 
     /// stateNames; likewise for controlNames and multiplierNames. Both iterates 
     /// must have at least 6 time nodes.
     double compareContinuousVariablesRMS(const MucoIterate& other,

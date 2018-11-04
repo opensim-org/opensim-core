@@ -74,8 +74,8 @@ public:
     void printDescription(std::ostream& stream) const;
 protected:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
-        "1 value: required value over all time. "
-        "2 values: lower, upper bounds on value over all time.");
+        "1 value: required value. "
+        "2 values: lower, upper bounds on value.");
 
     friend MucoPhase;
     friend MucoVariableInfo;
