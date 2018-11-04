@@ -918,11 +918,11 @@ void testMucoIterate() {
         {"none"}, {"none"});
     // Can't provide "none" along with other state names.
     SimTK_TEST_MUST_THROW_EXC(
-        testCompareContinuousVariablesRMS(10, 2, 3,  0.6, 0.05, {"none", "s1"}),
-        Exception);
+        testCompareContinuousVariablesRMS(10, 2, 3, 1, 0.6, 0.05, 
+            {"none", "s1"}), Exception);
     SimTK_TEST_MUST_THROW_EXC(
-        testCompareContinuousVariablesRMS(10, 2, 3, 0.6, 0.05, {}, {"none, c0"}),
-        Exception);
+        testCompareContinuousVariablesRMS(10, 2, 3, 1, 0.6, 0.05, {}, 
+            {"none, c0"}), Exception);
 
     // compareParametersRMS
     auto testCompareParametersRMS = [](int NP, double error, 
