@@ -9,7 +9,7 @@ add_library(osimMuscollo SHARED
         MucoTool.h
         MucoTool.cpp
         MucoBounds.h
-		MucoBounds.cpp
+        MucoBounds.cpp
         MucoProblem.h
         MucoProblem.cpp
         MucoCost.h
