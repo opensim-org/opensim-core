@@ -302,7 +302,7 @@ void MucoTropterSolver::clearProblemImpl() {
     clearGuess();
 }
 
-void MucoTropterSolver::setProblemImpl(const MucoProblem& /*problem*/) {
+void MucoTropterSolver::setProblemImpl(const MucoProblemProxy& /*proxy*/) {
     clearProblemImpl();
 }
 

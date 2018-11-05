@@ -389,6 +389,90 @@ void testBuildingProblem() {
     }
 }
 
+void testWorkflow() {
+    {
+        MucoTool muco;
+        MucoProblem& problem = muco.updProblem();
+        Model model = createSlidingMassModel();
+        problem.setModel(model);
+
+        problem.setTimeBounds(0, {0, 10});
+        problem.setStateInfo("slider/position/value", {0, 1}, 0, 1);
+        problem.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
+        problem.setControlInfo("actuator", {-10, 10});
+        problem.addCost(MucoFinalTimeCost());
+
+        MucoTropterSolver& solver = muco.initSolver();
+        solver.set_num_mesh_points(20);
+        solver.setGuess("random");
+        muco.solve();
+
+        problem.setTimeBounds(0, {5.8, 10});
+        // Ensure that if a property in the problem is edited, then
+        // the solver's problem is cleared.
+        // TODO which solver settings should be preserved?
+        // TODO manage notifications if the problem is dirtied.
+        SimTK_TEST(solver.getGuess().empty());
+        MucoSolution solution5 = muco.solve();
+
+        SimTK_TEST_EQ(solution5.getFinalTime(), 5.8);
+    }
+
+    // Default bounds.
+    {
+        MucoTool muco;
+        MucoProblem& problem = muco.updProblem();
+        Model model = createSlidingMassModel();
+        model.finalizeFromProperties();
+        auto& coord = model.updComponent<Coordinate>("slider/position");
+        coord.setRangeMin(-10); coord.setRangeMax(15);
+        problem.setModel(model);
+        // TODO should any initialization be necessary at this point?
+        // TODO problem should have `createProxy()`.
+        MucoProblemProxy proxy(problem);
+        const auto& info = proxy.getStateInfo("slider/position/value");
+        SimTK_TEST(info.getBounds().getLower(), -10);
+        SimTK_TEST(info.getBounds().getUpper(),  15);
+    }
+
+    // TODO MucoCost and MucoParameter cache pointers into some model.
+    {
+        MucoFinalTimeCost cost;
+        // TODO must be initialized first.
+        SimTK_TEST_MUST_THROW_EXC(cost.calcEndpointCost(state));
+    }
+
+
+    // Cache could live in:
+    //  - MucoProblem
+    //  - MucoProblemDelegate (like Decorator in tropter)
+    //  - MucoSolver (base class)
+    // Do we need a model phase?
+    // Do we want users to be able to access the automatically-set bounds?
+
+    // Do *NOT* want to edit the properties by adding
+    // TODO the state_infos etc. could be cached outside of the properties;
+    // finalizeFromProperties().
+
+    // Find a way to automatically clear the cache stored in MucoCosts, etc.,
+    // upon solving a problem multiple times.
+
+    // Look into the logic surrounding the stored guess and how we clear it
+    // if the model is updated in any way (a new delegate is required).
+
+    // If we have a delegate; would each MucoCost have its own "cache" type?
+    // We would pass in an object that holds the cache?
+
+    // TODO maybe we make a copy of the Cost every time we solve a problem
+    // (when solve() is called); perhaps the delegate holds the copy of the
+    // cost. That way there's no risk of a stale cache in the MucoProblem.
+
+    // TODO if we leave the MucoCost caching as it is,
+    // when the problem is done being solved, we need to have a way of
+    // clearing the cache.
+
+}
+
 void testStateTracking() {
     // TODO move to another test file?
     auto makeTool = []() {
@@ -847,6 +931,42 @@ void testMucoIterate() {
         SimTK_TEST_MUST_THROW_EXC(iterate.getNumTimes(), MucoIterateIsSealed);
     }
 
+    // getInitialTime(), getFinalTime()
+    {
+        {
+            // With 0 times, these functions throw an exception.
+            MucoIterate it;
+            SimTK_TEST_MUST_THROW_EXC(it.getInitialTime());
+            SimTK_TEST_MUST_THROW_EXC(it.getFinalTime());
+        }
+
+        {
+            SimTK::Vector time = createVectorLinspace(5, -3.1, 8.9);
+            std::vector<std::string> snames{"s0", "s1"};
+            std::vector<std::string> cnames{"c0"};
+            SimTK::Matrix states = SimTK::Test::randMatrix(5, 2);
+            SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
+            MucoIterate it(time, snames, cnames, {}, states, controls,
+                    SimTK::RowVector());
+
+            SimTK_TEST(it.getInitialTime(), -3.1);
+            SimTK_TEST(it.getFinalTime(), 8.9);
+        }
+
+        {
+            SimTK::Vector time(1, 7.2);
+            std::vector<std::string> snames{"s0", "s1"};
+            std::vector<std::string> cnames{"c0"};
+            SimTK::Matrix states = SimTK::Test::randMatrix(1, 2);
+            SimTK::Matrix controls = SimTK::Test::randMatrix(1, 1);
+            MucoIterate it(time, snames, cnames, {}, states, controls,
+                    SimTK::RowVector());
+
+            SimTK_TEST(it.getInitialTime(), 7.2);
+            SimTK_TEST(it.getFinalTime(), 7.2);
+        }
+    }
+
 
     // compareStatesControlsRMS
     auto testCompareStatesControlsRMS = [](int NT, int NS, int NC,
@@ -966,17 +1086,19 @@ int main() {
     SimTK_START_TEST("testMuscolloInterface");
         SimTK_SUBTEST(testSlidingMass);
         SimTK_SUBTEST(testSolverOptions);
-        SimTK_SUBTEST(testStateTracking);
-        SimTK_SUBTEST(testGuess);
-        SimTK_SUBTEST(testGuessTimeStepping);
-        SimTK_SUBTEST(testMucoIterate);
-
         //SimTK_SUBTEST(testEmpty);
         //SimTK_SUBTEST(testCopy);
         //SimTK_SUBTEST(testSolveRepeatedly);
         //SimTK_SUBTEST(testOMUCOSerialization);
         SimTK_SUBTEST(testBounds);
         SimTK_SUBTEST(testBuildingProblem);
+        SimTK_SUBTEST(testWorkflow);
+
+        SimTK_SUBTEST(testStateTracking);
+        SimTK_SUBTEST(testGuess);
+        SimTK_SUBTEST(testGuessTimeStepping);
+        SimTK_SUBTEST(testMucoIterate);
+
 
         SimTK_SUBTEST(testInterpolate);
     SimTK_END_TEST();

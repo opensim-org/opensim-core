@@ -358,6 +358,12 @@ private:
     void constructProperties();
 };
 
+class OSIMMUSCOLLO_API MucoProblemProxy {
+public:
+    MucoProblemProxy(const MucoProblem& problem);
+
+};
+
 } // namespace OpenSim
 
 #endif // MUSCOLLO_MUCOPROBLEM_H

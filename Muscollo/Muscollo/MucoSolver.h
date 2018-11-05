@@ -67,12 +67,12 @@ public:
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
     // TODO use a wrapper class (like MODelegate).
-    void setProblem(const MucoProblem& problem);
+    void setProblem(MucoProblemProxy proxy);
 
-    const MucoProblem& getProblem() const {
-        OPENSIM_THROW_IF(!m_problem, Exception,
+    const MucoProblemProxy& getProblemProxy() const {
+        OPENSIM_THROW_IF(!m_proxy, Exception,
                 "Problem not set; call setProblem().");
-        return m_problem.getRef();
+        return m_proxy.getRef();
     }
 
 protected:
@@ -97,12 +97,13 @@ private:
     virtual void clearProblemImpl() = 0;
     /// Perform any necessary caching based on the MucoProblem.
     /// @
-    virtual void setProblemImpl(const MucoProblem& problem) = 0;
+    virtual void setProblemImpl(const MucoProblemProxy& proxy) = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;
 
-    SimTK::ReferencePtr<const MucoProblem> m_problem;
+    // TODO unique_ptr, stack variable?
+    SimTK::ReferencePtr<const MucoProblemProxy> m_proxy;
 
 };
 

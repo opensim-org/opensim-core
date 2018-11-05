@@ -23,10 +23,6 @@ using namespace OpenSim;
 
 MucoSolver::MucoSolver() {}
 
-MucoSolver::MucoSolver(const MucoProblem& problem) : MucoSolver() {
-    setProblem(problem);
-}
-
 void MucoSolver::clearProblem() {
     m_problem.reset();
     clearProblemImpl();

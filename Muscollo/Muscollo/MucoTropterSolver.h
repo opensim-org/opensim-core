@@ -72,8 +72,6 @@ public:
 
     MucoTropterSolver();
 
-    explicit MucoTropterSolver(const MucoProblem& problem);
-
     /// @name Specifying an initial guess
     /// @{
 
@@ -153,7 +151,7 @@ protected:
     getTropterProblem() const;
 
     void clearProblemImpl() override;
-    void setProblemImpl(const MucoProblem& problem) override;
+    void setProblemImpl(const MucoProblemProxy& proxy) override;
     // TODO ensure that user-provided guess is within bounds.
     MucoSolution solveImpl() const override;
 

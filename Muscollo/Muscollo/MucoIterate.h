@@ -248,6 +248,12 @@ public:
     {   ensureUnsealed(); return m_time.size(); }
     const SimTK::Vector& getTime() const
     {   ensureUnsealed(); return m_time; }
+    /// The first time in the time vector.
+    /// @throws Exception If numTimes is 0.
+    const SimTK::Vector& getInitialTime() const;
+    /// The last time in the time vector.
+    /// @throws Exception If numTimes is 0.
+    const SimTK::Vector& getFinalTime() const;
     // TODO inconsistent plural "state names" vs "states trajectory"
     const std::vector<std::string>& getStateNames() const
     {   ensureUnsealed(); return m_state_names; }

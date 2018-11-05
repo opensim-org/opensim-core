@@ -151,6 +151,17 @@ void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
     }
 }
 
+const SimTK::Vector& MucoIterate::getInitialTime() const {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
+    return m_time[0];
+}
+
+const SimTK::Vector& MucoIterate::getFinalTime() const {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
+    return m_time[m_time.size() - 1];
+}
 
 SimTK::VectorView MucoIterate::getState(const std::string& name) const {
     ensureUnsealed();
