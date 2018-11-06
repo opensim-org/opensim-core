@@ -68,7 +68,7 @@ protected:
     /// Upon entry, getModel() is available.
     /// Use this opportunity to check for errors in user input.
     virtual void initializeImpl() const {}
-    /// Precondition: state is realized to SimTK::Stage::Position.
+    /// @precondition The state is realized to SimTK::Stage::Position.
     /// If you need access to the controls, you must realize to Velocity:
     /// @code
     /// getModel().realizeVelocity(state);

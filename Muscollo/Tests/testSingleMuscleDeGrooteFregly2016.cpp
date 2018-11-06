@@ -80,8 +80,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         const T& position = in.states[0];
         const T& speed = in.states[1];
@@ -126,8 +126,10 @@ solveForTrajectoryGSO() {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
-    // Skip the "num_states=#", "num_controls=#", and "num_parameters=#" lines.
+    // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
+    // and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -229,8 +231,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // Unpack variables.
         const T& position = in.states[0];
         const T& speed = in.states[1];
@@ -292,8 +294,10 @@ solveForTrajectoryINDYGO() {
     std::string trajFileWithHeader = trajectoryFile;
     trajFileWithHeader.replace(trajectoryFile.rfind(".csv"), 4,
                                "_with_header.csv");
-    // Skip the "num_states=#", "num_controls=#", and "num_parameters=#" lines.
+    // Skip the "num_states=#", "num_controls=#", "num_adjuncts=#",
+    // and "num_parameters=#" lines.
     std::string line;
+    std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
     std::getline(fRead, line);
@@ -676,10 +680,10 @@ int main() {
 //                       T& cost) const override {
 //        cost = final_time;
 //    }
-//    //void calc_integral_cost(const T& /*time*/,
-//    //                   const tropter::VectorX<T>& /*states*/,
-//    //                   const tropter::VectorX<T>& controls,
+//    //void calc_integral_cost(const tropter::Input<T>& in,
 //    //                   T& integrand) const override {
+//    //
+//    //    const auto& controls = in.controls;
 //    //    integrand = controls[0] * controls[0];
 //    //}
 //};

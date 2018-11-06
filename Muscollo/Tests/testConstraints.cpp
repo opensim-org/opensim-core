@@ -393,7 +393,7 @@ Model createDoublePendulumModel() {
 
 /// Run a forward simulation using controls from an OCP solution and compare the
 /// state trajectories.
-void runForwardSimulation(Model model, const MucoSolution& solution, 
+MucoIterate runForwardSimulation(Model model, const MucoSolution& solution, 
     const double& tol) {
 
     // Get actuator names.
@@ -425,6 +425,15 @@ void runForwardSimulation(Model model, const MucoSolution& solution,
     statesRep->setName("states_reporter");
     statesRep->set_report_time_interval(0.001);
     model.addComponent(statesRep);
+
+    // Add a TableReporter to collect the controls.
+    auto* controlsRep = new TableReporter();
+    for (int i = 0; i < actuNames.size(); ++i) {
+        controlsRep->addToReport(
+            model.getComponent(actuNames[i]).getOutput("actuation"), 
+            actuNames[i]);
+    }
+    model.addComponent(controlsRep);
     
     // Simulate!
     SimTK::State state = model.initSystem();
@@ -437,18 +446,32 @@ void runForwardSimulation(Model model, const MucoSolution& solution,
     // Export results from states reporter to a TimeSeries Table
     TimeSeriesTable states;
     states = statesRep->getStates().exportToTable(model);
+
+
+    TimeSeriesTable controls;
+    controls = controlsRep->getTable();
     
     // Create a MucoIterate to facilitate states trajectory comparison (with
-    // dummy data for the controls, which we'll ignore).
+    // dummy data for the multipliers, which we'll ignore).
     const auto& statesTimes = states.getIndependentColumn();
     SimTK::Vector timeVec((int)statesTimes.size(), statesTimes.data(), true);
     auto forwardSolution = MucoIterate(timeVec, states.getColumnLabels(),
-        states.getColumnLabels(), {}, states.getMatrix(),
-        states.getMatrix(), SimTK::RowVector(0));
+        controls.getColumnLabels(), states.getColumnLabels(), {}, 
+        states.getMatrix(), controls.getMatrix(), states.getMatrix(),
+        SimTK::RowVector(0));
+    
+    // Compare controls between foward simulation and OCP solution. These
+    // should match very closely, since the foward simulation controls are 
+    // created from splines of the OCP solution controls
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
+        {"none"}, {}, {"none"}), 0, 1e-9);
 
     // Compare states trajectory between forward simulation and OCP solution.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(forwardSolution,
-        {}, {"none"}), 0, tol);
+    // The states trajectory may not match as well as the controls.
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(forwardSolution,
+        {}, {"none"}, {"none"}), 0, tol);
+
+    return forwardSolution;
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -479,21 +502,17 @@ void testDoublePendulumPointOnLine() {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't get used right now, these control infos are set in 
-    // order for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-    mp.setControlInfo("lambda_0_1", {-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(15);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
@@ -515,7 +534,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-2);
+    runForwardSimulation(model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
@@ -558,9 +577,6 @@ void testDoublePendulumCoordinateCoupler(MucoSolution& solution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds don't get used right now, this control info is set in order
-    // for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -632,10 +648,6 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     mp.setStateInfo("j1/q1/speed", {-50, 50});
     mp.setControlInfo("tau0", {-100, 100});
     mp.setControlInfo("tau1", {-100, 100});
-    // TODO bounds get used right now, these control infos are set in 
-    // order for the MucoIterate guess to be compatible with the MucoProblem.
-    mp.setControlInfo("lambda_0_0", {-1000, 1000});
-    mp.setControlInfo("lambda_1_0", {-1000, 1000});
 
     MucoControlCost effort;
     mp.addCost(effort);
@@ -684,13 +696,12 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
         solution.getStateNames());
 
     // Create a MucoIterate containing the splined state values. The splined
-    // state values are also set for the controls as dummy data to avoid 
-    // exceptions (this only works since there happens to be the same number of
-    // controls as states).
+    // state values are also set for the controls and adjuncts as dummy data.
     const auto& statesTimes = splineStateValues.getIndependentColumn();
     SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
     auto mucoIterSpline = MucoIterate(time, splineStateValues.getColumnLabels(),
-        solution.getControlNames(), {}, splineStateValues.getMatrix(),
+        splineStateValues.getColumnLabels(), splineStateValues.getColumnLabels(), 
+        {}, splineStateValues.getMatrix(), splineStateValues.getMatrix(), 
         splineStateValues.getMatrix(), SimTK::RowVector(0));
 
     // Only compare the position-level values between the current solution 
@@ -698,24 +709,24 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     // These should match well, since position-level values are enforced 
     // directly via a path constraint in the current problem formulation (see 
     // MucoTropterSolver for details).
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline, 
-        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-12);
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution,
-        {"j0/q0/value", "j1/q1/value"}, {"none"}), 0, 1e-12);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline, 
+        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+        {"j0/q0/value", "j1/q1/value"}, {"none"}, {"none"}), 0, 1e-12);
     // Only compare the velocity-level values between the current solution 
     // states and the states from the previous test (original and splined).  
     // These won't match as well as the position-level values, since velocity-
     // level errors are not enforced in the current problem formulation.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(mucoIterSpline,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution,
-        {"j0/q0/speed", "j1/q1/speed"}, {"none"}), 0, 1e-2);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mucoIterSpline,
+        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+        {"j0/q0/speed", "j1/q1/speed"}, {"none"}, {"none"}), 0, 1e-2);
     // Compare only the actuator controls. These match worse compared to the
     // velocity-level states. It is currently unclear to what extent this is 
     // related to velocity-level states not matching well or the how the model
     // constraints are enforced in the current formulation.
-    SimTK_TEST_EQ_TOL(solution.compareStatesControlsRMS(couplerSolution, 
-        {"none"}, {"tau0", "tau1"}), 0, 1);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution, 
+        {"none"}, {"tau0", "tau1"}, {"none"}), 0, 1);
 
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
@@ -723,7 +734,102 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     runForwardSimulation(model, solution, 1e-2);
 }
 
+class EqualControlConstraint : public MucoPathConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MucoPathConstraint);
+protected:
+    void initializeImpl() const override {
+        // Make sure the model generates a state object with the two controls we 
+        // expect, no more and no less.
+        const auto state = getModel().getWorkingState();
+        getModel().realizeVelocity(state);
+        OPENSIM_THROW_IF(getModel().getControls(state).size() != 2, Exception,
+            "State has incorrect number of controls (two expected).");
+
+        // There is only constraint equation: match the two model controls.
+        setNumEquations(1);
+    }
+    void calcPathConstraintErrorsImpl(const SimTK::State& state,
+            SimTK::Vector& errors) const override {
+        getModel().realizeVelocity(state);
+
+        const auto& controls = getModel().getControls(state);
+        // In the problem below, the actuators are bilateral and act in 
+        // opposite directions, so we use addition to create the residual here.
+        errors[0] = controls[1] + controls[0];
+    }
+};
+
+/// Solve an optimal control problem where a double pendulum must reach a 
+/// specified final configuration while subject to a constraint that its
+/// actuators must produce an equal control trajectory.
+void testDoublePendulumEqualControl() {
+    MucoTool muco;
+    muco.setName("double_pendulum_equal_control");
+    MucoProblem& mp = muco.updProblem();
+    Model model = createDoublePendulumModel();
+    mp.setModel(model);
+    
+    MucoConstraintInfo cInfo;
+    cInfo.setBounds(std::vector<MucoBounds>(1, {0, 0}));
+    EqualControlConstraint equalControlConstraint;
+    equalControlConstraint.setConstraintInfo(cInfo);
+    mp.addPathConstraint(equalControlConstraint);
+
+    mp.setTimeBounds(0, 1);
+    // Coordinate value state boundary conditions are consistent with the 
+    // point-on-line constraint and should require the model to "unfold" itself.
+    mp.setStateInfo("j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
+    mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
+    mp.setStateInfo("j1/q1/value", {-10, 10});
+    mp.setStateInfo("j1/q1/speed", {-50, 50}, 0, 0);
+    mp.setControlInfo("tau0", {-100, 100});
+    mp.setControlInfo("tau1", {-100, 100});
+
+    MucoControlCost effort;
+    mp.addCost(effort);
+
+    MucoTropterSolver& ms = muco.initSolver();
+    ms.set_num_mesh_points(100);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
+    //ms.set_optim_ipopt_print_level(5);
+    ms.set_optim_hessian_approximation("limited-memory");
+    ms.setGuess("bounds");
+
+    MucoSolution solution = muco.solve();
+    solution.write("testConstraints_testDoublePendulumEqualControl.sto");
+    //muco.visualize(solution);
+
+    const auto& controlsTraj = solution.getControlsTrajectory();
+
+    const auto& control_tau0 = solution.getControl("tau0");
+    const auto& control_tau1 = solution.getControl("tau1");
+    const auto& control_res = control_tau1.abs() - control_tau0.abs();
+
+    SimTK_TEST_EQ_TOL(control_res.normRMS(), 0, 1e-6);
+    
+    // Run a forward simulation using the solution controls in prescribed 
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    // TODO why does the forward solution match so poorly here?
+    MucoIterate forwardSolution = runForwardSimulation(model, solution, 2);
+    //muco.visualize(forwardSolution);
+
+    // Test de/serialization.
+    // ======================
+    std::string setup_fname 
+        = "testConstraints_testDoublePendulumEqualControl.omuco";
+    muco.print(setup_fname);
+    MucoSolution solutionDeserialized;
+    MucoTool mucoDeserialize(setup_fname);
+    solutionDeserialized = mucoDeserialize.solve();
+    SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
+}
+
 int main() {
+    OpenSim::Object::registerType(EqualControlConstraint());
+
     SimTK_START_TEST("testConstraints");
         // DAE calculation subtests.
         SimTK_SUBTEST(testWeldConstraint);
@@ -738,5 +844,6 @@ int main() {
         MucoSolution couplerSolution;
         SimTK_SUBTEST1(testDoublePendulumCoordinateCoupler, couplerSolution);
         SimTK_SUBTEST1(testDoublePendulumPrescribedMotion, couplerSolution);
+        SimTK_SUBTEST(testDoublePendulumEqualControl);
     SimTK_END_TEST();
 }
