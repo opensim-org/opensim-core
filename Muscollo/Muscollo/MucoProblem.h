@@ -42,7 +42,7 @@ public:
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    MucoBounds getBounds() const
+    MucoBounds getBounds() const 
     {   return MucoBounds(getProperty_bounds()); }
     /// @copydoc getBounds()
     MucoInitialBounds getInitialBounds() const

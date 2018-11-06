@@ -86,19 +86,13 @@ public:
     void printDescription(std::ostream& stream) const;
 
 protected:
+    /// Used internally to create Bounds from a list property.
+    /// The list property must have either 0, 1 or 2 elements.
+    MucoBounds(const Property<double>& p);
+
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value. "
         "2 values: lower, upper bounds on value.");
-
-    /// Used internally to create Bounds from a list property.
-    /// The list property must have either 0, 1 or 2 elements.
-    MucoBounds(const Property<double>& p) {
-        assert(p.size() <= 2);
-        if (p.size() >= 1) {
-            append_bounds(p[0]);
-            if (p.size() == 2) append_bounds(p[1]);
-        }
-    }
 
     friend MucoPhase;
     friend MucoVariableInfo;

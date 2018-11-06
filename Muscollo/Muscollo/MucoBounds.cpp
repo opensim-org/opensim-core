@@ -40,6 +40,20 @@ MucoBounds::MucoBounds(double lower, double upper) : MucoBounds() {
     append_bounds(upper);
 }
 
+MucoBounds::MucoBounds(const Property<double>& p) : MucoBounds() {
+    assert(p.size() <= 2);
+    if (p.size() >= 1) {
+        OPENSIM_THROW_IF(SimTK::isNaN(p[0]), Exception, "NaN value detected. "
+            "Please provide a non-NaN value for the bounds.");
+        append_bounds(p[0]);
+        if (p.size() == 2) {
+            OPENSIM_THROW_IF(SimTK::isNaN(p[1]), Exception, "NaN value "
+                "detected. Please provide a non-NaN value for the bounds.");
+            append_bounds(p[1]);
+        }
+    }
+}
+
 void MucoBounds::constructProperties() {
     constructProperty_bounds();
 }

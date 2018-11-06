@@ -507,12 +507,12 @@ void testDoublePendulumPointOnLine() {
     mp.addCost(effort);
 
     MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_points(15);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
-    ms.set_optim_hessian_approximation("limited-memory");
+    ms.set_optim_hessian_approximation("exact");
     ms.setGuess("bounds");
 
     MucoSolution solution = muco.solve();
@@ -534,7 +534,7 @@ void testDoublePendulumPointOnLine() {
     // Run a forward simulation using the solution controls in prescribed 
     // controllers for the model actuators and see if we get the correct states
     // trajectory back.
-    runForwardSimulation(model, solution, 1e-2);
+    runForwardSimulation(model, solution, 1e-1);
 }
 
 /// Solve an optimal control problem where a double pendulum must reach a 
