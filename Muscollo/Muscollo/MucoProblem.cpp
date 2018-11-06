@@ -36,9 +36,9 @@ MucoVariableInfo::MucoVariableInfo(const std::string& name,
         const MucoBounds& bounds, const MucoInitialBounds& initial,
         const MucoFinalBounds& final) : MucoVariableInfo() {
     setName(name);
-    set_MucoBounds(bounds);
-    set_MucoInitialBounds(initial);
-    set_MucoFinalBounds(final);
+    set_bounds(bounds.getAsArray());
+    set_initial_bounds(initial.getAsArray());
+    set_final_bounds(final.getAsArray());
     validate();
 }
 
@@ -88,9 +88,9 @@ void MucoVariableInfo::printDescription(std::ostream& stream) const {
 }
 
 void MucoVariableInfo::constructProperties() {
-    constructProperty_MucoBounds(MucoBounds());
-    constructProperty_MucoInitialBounds(MucoInitialBounds());
-    constructProperty_MucoFinalBounds(MucoFinalBounds());
+    constructProperty_bounds();
+    constructProperty_initial_bounds();
+    constructProperty_final_bounds();
 }
 
 

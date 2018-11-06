@@ -509,7 +509,7 @@ construct_iterate(const Iterate& traj, bool interpolate) const
             "Expected adjuncts to have %i row(s), but it has %i.",
             m_num_adjuncts, traj.adjuncts.rows());
     TROPTER_THROW_IF(traj.parameters.rows() != m_num_parameters,
-            "Expected parameters to have %i elements(s), but it has %i.",
+            "Expected parameters to have %i element(s), but it has %i.",
             m_num_parameters, traj.parameters.size());
     // Check columns.
     if (interpolate) {

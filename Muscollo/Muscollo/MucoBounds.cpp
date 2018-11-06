@@ -25,10 +25,14 @@ MucoBounds::MucoBounds() {
 }
 
 MucoBounds::MucoBounds(double value) : MucoBounds() {
+    OPENSIM_THROW_IF(SimTK::isNaN(value), Exception, "NaN value detected. "
+        "Please provide a non-NaN value for the bounds.");
     append_bounds(value);
 }
 
 MucoBounds::MucoBounds(double lower, double upper) : MucoBounds() {
+    OPENSIM_THROW_IF(SimTK::isNaN(lower) || SimTK::isNaN(upper), Exception, 
+        "NaN value detected. Please provide a non-NaN values for the bounds.");
     OPENSIM_THROW_IF(lower > upper, Exception,
         "Expected lower <= upper, but lower=" + std::to_string(lower)
         + " and upper=" + std::to_string(upper) + ".");

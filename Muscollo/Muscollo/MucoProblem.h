@@ -40,12 +40,16 @@ public:
     MucoVariableInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds&, const MucoFinalBounds&);
 
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBounds() const
-    {   return get_MucoBounds(); }
+    {   return MucoBounds(getProperty_bounds()); }
+    /// @copydoc getBounds()
     MucoInitialBounds getInitialBounds() const
-    {   return get_MucoInitialBounds(); }
+    {   return MucoInitialBounds(getProperty_initial_bounds()); }
+    /// @copydoc getBounds()
     MucoFinalBounds getFinalBounds() const
-    {   return get_MucoFinalBounds(); }
+    {   return MucoFinalBounds(getProperty_final_bounds()); }
 
     /// Throws an exception if initial and final bounds are not within bounds.
     // TODO Move to finalizeFromProperties() and cache MucoBounds.
@@ -55,14 +59,19 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoBounds, "Bounds over all time.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoInitialBounds,
-            "Bounds on initial value.");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoFinalBounds,
-            "Bounds on final value.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
+        "1 value: required value over all time. "
+        "2 values: lower, upper bounds on value over all time.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(initial_bounds, double, 2,
+        "1 value: required initial value. "
+        "2 values: lower, upper bounds on initial value.");
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(final_bounds, double, 2,
+        "1 value: required final value. "
+        "2 values: lower, upper bounds on final value.");
 
 private:
     void constructProperties();
+
 };
 
 

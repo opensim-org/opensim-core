@@ -287,8 +287,6 @@ void testBounds() {
     {
         SimTK_TEST(!MucoBounds().isSet());
         SimTK_TEST(MucoBounds(5.3).isSet());
-        SimTK_TEST(!MucoBounds(5.3, SimTK::NaN).isSet());
-        SimTK_TEST(!MucoBounds(SimTK::NaN, 5.3).isSet());
         SimTK_TEST(MucoBounds(5.3).isEquality());
         SimTK_TEST(MucoBounds(5.3, 5.3).isSet());
         SimTK_TEST(MucoBounds(5.3, 5.3).isEquality());
