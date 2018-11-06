@@ -267,7 +267,7 @@ script:
   - if [ "$WRAP" = "on" ]; then /usr/bin/python -m unittest discover --start-directory opensim/tests --verbose; fi
     
   ## Set up ssh for sourceforge.
-  - if [[ "$DEPLOY" = "yes" || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+  - if [[ ("$DEPLOY" = "yes" && "$TRAVIS_PULL_REQUEST" = "false") || ("$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" && "$TRAVIS_PULL_REQUEST" != "false") ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
   # Decrypt the private key stored in the repository to the tmp dir.
   - if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_b368d71b8a89_key -iv $encrypted_b368d71b8a89_iv -in $TRAVIS_BUILD_DIR/.github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
   # Start the ssh agent.
