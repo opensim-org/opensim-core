@@ -49,6 +49,9 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoMarkerTrackingCost());
         Object::registerType(MucoMarkerEndpointCost());
         Object::registerType(MucoControlCost());
+        Object::registerType(MucoBounds());
+        Object::registerType(MucoInitialBounds());
+        Object::registerType(MucoFinalBounds());
         Object::registerType(MucoPhase());
         Object::registerType(MucoVariableInfo());
         Object::registerType(MucoProblem());

@@ -54,11 +54,12 @@ NaNs.
 num_controls=<number-of-control-variables>
 num_parameters=<number-of-parameter-variables>
 num_states=<number-of-state-variables>
-time,<state-0-name>,...,<control-0-name>,...,<parameter-0-name>,...
-<#>,<#>,...,<#>,...,<#>,...
-<#>,<#>,...,<#>,...,<NaN>,...
- : , : ,..., : ,...,  :  ,...
-<#>,<#>,...,<#>,...,<NaN>,...
+time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,...,
+                                                         <parameter-0-name>,...
+<#>,<#>,...,<#>,...,<#>,...,<#>,...
+<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
+ : , : ,..., : ,..., : ,...,  :  ,...
+<#>,<#>,...,<#>,...,<#>,...,<NaN>,...
 @endsamplefile
 (If stored in a STO file, the delimiters are tabs, not commas.) */
 // Not using three-slash doxygen comments because that messes up verbatim.
@@ -68,9 +69,11 @@ public:
     MucoIterate(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
             std::vector<std::string> parameter_names,
             const SimTK::Matrix& statesTrajectory,
             const SimTK::Matrix& controlsTrajectory,
+            const SimTK::Matrix& multipliersTrajectory,
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
@@ -86,8 +89,9 @@ public:
     bool empty() const {
         ensureUnsealed();
         return !(m_time.size() || m_states.nelt() || m_controls.nelt() ||
-                m_parameters.nelt() || m_state_names.size() || 
-                m_control_names.size() || m_parameter_names.size());
+                m_multipliers.nelt() || m_parameters.nelt() || 
+                m_state_names.size() || m_control_names.size() || 
+                m_multiplier_names.size() || m_parameter_names.size());
     }
 
     /// @name Change the length of the trajectory
@@ -108,6 +112,8 @@ public:
         m_states.setToNaN();
         m_controls.resize(numTimes, m_controls.ncol());
         m_controls.setToNaN();
+        m_multipliers.resize(numTimes, m_multipliers.ncol());
+        m_multipliers.setToNaN();
     }
     /// Uniformly resample (interpolate) the iterate so that it retains the
     /// same initial and final times but now has the provided number of time
@@ -161,6 +167,13 @@ public:
     /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
     void setControl(const std::string& name, const SimTK::Vector& trajectory);
+    /// Set the value of a single Lagrange multiplier variable across time. The
+    /// provided vector must have length getNumTimes().
+    /// @note Using `setMultiplier(name, {5, 10})` uses the initializer list
+    /// overload below; it does *not* construct a 5-element vector with the 
+    /// value 10.
+    void setMultiplier(const std::string& name, 
+                       const SimTK::Vector& trajectory);
     /// Set the value of a single parameter variable. This value is invariant
     /// across time.
     void setParameter(const std::string& name, const SimTK::Real& value);
@@ -209,6 +222,21 @@ public:
         for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
             v[i] = *it;
         setControl(name, v);
+    }
+    /// Set the value of a single Lagrange multiplier variable across time. The
+    /// provided vector must have length getNumTimes().
+    /// This variant supports use of an initializer list:
+    /// @code{.cpp}
+    /// iterate.setMultiplier("lambda_cid0_p0", {0, 0.5, 1.0});
+    /// @endcode
+    void setMultiplier(const std::string& name,
+            std::initializer_list<double> trajectory) {
+        ensureUnsealed();
+        SimTK::Vector v((int)trajectory.size());
+        int i = 0;
+        for (auto it = trajectory.begin(); it != trajectory.end(); ++it, ++i)
+            v[i] = *it;
+        setMultiplier(name, v);
     }
 
     /// Set the states trajectory. The provided data is interpolated at the
@@ -259,15 +287,20 @@ public:
     {   ensureUnsealed(); return m_state_names; }
     const std::vector<std::string>& getControlNames() const
     {   ensureUnsealed(); return m_control_names; }
+    const std::vector<std::string>& getMultiplierNames() const
+    {   ensureUnsealed(); return m_multiplier_names; }
     const std::vector<std::string>& getParameterNames() const
     {   ensureUnsealed(); return m_parameter_names; }
     SimTK::VectorView_<double> getState(const std::string& name) const;
     SimTK::VectorView_<double> getControl(const std::string& name) const;
+    SimTK::VectorView_<double> getMultiplier(const std::string& name) const;
     const SimTK::Real& getParameter(const std::string& name) const;
     const SimTK::Matrix& getStatesTrajectory() const
     {   ensureUnsealed(); return m_states; }
     const SimTK::Matrix& getControlsTrajectory() const
     {   ensureUnsealed(); return m_controls; }
+    const SimTK::Matrix& getMultipliersTrajectory() const
+    {   ensureUnsealed(); return m_multipliers; }
     const SimTK::RowVector& getParameters() const
     {   ensureUnsealed(); return m_parameters; }
 
@@ -286,21 +319,23 @@ public:
     bool isNumericallyEqual(const MucoIterate& other,
             double tol = SimTK::NTraits<SimTK::Real>::getDefaultTolerance())
             const;
-    /// Compute the root-mean-square error between this iterate and another.
-    /// The RMS is computed by numerically integrating the sum of squared
-    /// error across states and controls and dividing by the larger of the
-    /// two time ranges. When one iterate does not cover the same time range as
-    /// the other, we assume values of 0 for the iterate with "missing" time.
-    /// Numerical integration is performed using the trapezoidal rule.
-    /// By default, all states and controls are compared, and it is expected
-    /// that both iterates have the same states and controls. Alternatively,
-    /// you can specify the specific states and controls to compare. To skip
-    /// over all states, specify a single element of "none" for stateNames;
-    /// likewise for controlNames.
-    /// Both iterates must have at least 6 time nodes.
-    double compareStatesControlsRMS(const MucoIterate& other,
+    /// Compute the root-mean-square error between the continuous variables of
+    /// this iterate and another. The RMS is computed by numerically integrating 
+    /// the sum of squared error across states, controls, and Lagrange 
+    /// multipliers and dividing by the larger of the two time ranges. When one 
+    /// iterate does not cover the same time range as the other, we assume 
+    /// values of 0 for the iterate with "missing" time. Numerical integration 
+    /// is performed using the trapezoidal rule. By default, all states, 
+    /// controls, and multipliers are compared, and it is expected that both 
+    /// iterates have the same states, controls, and multipliers. Alternatively,
+    /// you can specify the specific states, controls, and multipliers to 
+    /// compare. To skip over all states, specify a single element of "none" for 
+    /// stateNames; likewise for controlNames and multiplierNames. Both iterates 
+    /// must have at least 6 time nodes.
+    double compareContinuousVariablesRMS(const MucoIterate& other,
             std::vector<std::string> stateNames = {},
-            std::vector<std::string> controlNames = {}) const;
+            std::vector<std::string> controlNames = {},
+            std::vector<std::string> multiplierNames = {}) const;
     /// Compute the root-mean-square error between the parameters in this
     /// iterate and another. The RMS is computed by dividing the the sum of the
     /// squared errors between corresponding parameters and then dividing by the
@@ -357,11 +392,14 @@ private:
     SimTK::Vector m_time;
     std::vector<std::string> m_state_names;
     std::vector<std::string> m_control_names;
+    std::vector<std::string> m_multiplier_names;
     std::vector<std::string> m_parameter_names;
     // Dimensions: time x states
     SimTK::Matrix m_states;
     // Dimensions: time x controls
     SimTK::Matrix m_controls;
+    // Dimensions: time x multipliers
+    SimTK::Matrix m_multipliers;
     // Dimensions: 1 x parameters
     SimTK::RowVector m_parameters;
 

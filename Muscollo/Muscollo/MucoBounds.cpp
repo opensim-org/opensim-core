@@ -1,11 +1,9 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoBounds.cpp                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,21 +16,36 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoWeightSet.h"
-#include "MucoStateTrackingCost.h"
-#include "MucoMarkerTrackingCost.h"
-#include "MucoMarkerEndpointCost.h"
-#include "MucoControlCost.h"
-#include "MucoIterate.h"
 #include "MucoBounds.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
-#include "MucoParameter.h"
-#include "MucoConstraint.h"
 
-#include "RegisterTypes_osimMuscollo.h"
+using namespace OpenSim;
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+MucoBounds::MucoBounds() {
+    constructProperties();
+}
+
+MucoBounds::MucoBounds(double value) : MucoBounds() {
+    append_bounds(value);
+}
+
+MucoBounds::MucoBounds(double lower, double upper) : MucoBounds() {
+    OPENSIM_THROW_IF(lower > upper, Exception,
+        "Expected lower <= upper, but lower=" + std::to_string(lower)
+        + " and upper=" + std::to_string(upper) + ".");
+    append_bounds(lower);
+    append_bounds(upper);
+}
+
+void MucoBounds::constructProperties() {
+    constructProperty_bounds();
+}
+
+void MucoBounds::printDescription(std::ostream& stream) const {
+    if (isEquality()) {
+        stream << getLower();
+    }
+    else {
+        stream << "[" << getLower() << ", " << getUpper() << "]";
+    }
+    stream.flush();
+}

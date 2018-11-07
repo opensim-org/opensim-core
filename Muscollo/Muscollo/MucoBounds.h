@@ -20,6 +20,7 @@
 
 #include "osimMuscolloDLL.h"
 
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/Array.h>
 
@@ -30,82 +31,70 @@ class MucoVariableInfo;
 class MucoParameter;
 
 /// Small struct to handle bounds.
-struct OSIMMUSCOLLO_API MucoBounds {
+class OSIMMUSCOLLO_API MucoBounds : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoBounds, Object);
+public:
     /// The bounds are NaN, which means (-inf, inf).
-    MucoBounds() = default;
+    MucoBounds();
     /// The lower and upper bound are equal (the variable is constrained to this
     /// single value).
-    MucoBounds(double value) : lower(value), upper(value) {}
+    MucoBounds(double value);
     /// The variable is constrained to be within [lower, upper].
-    MucoBounds(double lower, double upper) {
-        OPENSIM_THROW_IF(lower > upper, Exception,
-            "Expected lower <= upper, but lower=" + std::to_string(lower)
-            + " and upper=" + std::to_string(upper) + ".");
-        this->lower = lower;
-        this->upper = upper;
-    }
+    MucoBounds(double lower, double upper);
     /// True if the lower and upper bounds are both not NaN.
     bool isSet() const {
-        return !SimTK::isNaN(lower) && !SimTK::isNaN(upper);
+        return !getProperty_bounds().empty();
     }
     /// True if the lower and upper bounds are the same, resulting in an
     /// equality constraint.
     bool isEquality() const {
-        return isSet() && lower == upper;
+        return isSet() && getLower() == getUpper();
     }
     /// Returns true if the provided value is within these bounds.
     bool isWithinBounds(const double& value) const {
-        return lower <= value && value <= upper;
+        return getLower() <= value && value <= getUpper();
     }
-    /// The returned array has either 0, 1, or 2 elements.
-    /// - 0 elements: bounds are not set.
-    /// - 1 element: equality constraint
-    /// - 2 elements: range (inequality constraint).
-    Array<double> getAsArray() const {
-        Array<double> vec;
-        if (isSet()) {
-            vec.append(lower);
-            if (lower != upper) vec.append(upper);
-        }
-        return vec;
-    }
-    double getLower() const { return lower; }
-    double getUpper() const { return upper; }
-    void printDescription(std::ostream& stream) const {
-        if (isEquality()) {
-            stream << lower;
+    double getLower() const {
+        if (!isSet()) {
+            return SimTK::NTraits<double>::getNaN();
         } else {
-            stream << "[" << lower << ", " << upper << "]";
+            return get_bounds(0);
         }
-        stream.flush();
     }
-protected:
-    /// Used internally to create Bounds from a list property.
-    /// The list property must have either 0, 1 or 2 elements.
-    MucoBounds(const Property<double>& p) {
-        assert(p.size() <= 2);
-        if (p.size() >= 1) {
-            lower = p[0];
-            if (p.size() == 2) upper = p[1];
-            else               upper = p[0];
+    double getUpper() const {
+        if (!isSet()) {
+            return SimTK::NTraits<double>::getNaN();
+        } else if (getProperty_bounds().size() == 1) {
+            return get_bounds(0);
+        } else {
+            return get_bounds(1);
         }
     }
 
-    double lower = SimTK::NTraits<double>::getNaN();
-    double upper = SimTK::NTraits<double>::getNaN();
+    void printDescription(std::ostream& stream) const;
+protected:
+    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
+        "1 value: required value. "
+        "2 values: lower, upper bounds on value.");
 
     friend MucoPhase;
     friend MucoVariableInfo;
     friend MucoParameter;
+private:
+    void constructProperties();
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
-struct OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
+class OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoInitialBounds, MucoBounds);
+
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;
 };
 /// Used for specifying the bounds on a variable at the end of a phase.
-struct OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
+class OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
+OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalBounds, MucoBounds);
+
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;

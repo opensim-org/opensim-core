@@ -437,7 +437,8 @@ void testHangingMuscleMinimumTime(bool ignoreTendonCompliance) {
             solutionFilename += "_rigidtendon";
         solutionFilename += ".sto";
         solutionTrack.write(solutionFilename);
-        double error = solutionTrack.compareStatesControlsRMS(solutionTrajOpt);
+        double error = 
+            solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
         std::cout << "RMS error for states and controls: " << error
                 << std::endl;
     }
