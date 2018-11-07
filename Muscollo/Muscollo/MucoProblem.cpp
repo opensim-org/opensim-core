@@ -211,7 +211,7 @@ std::vector<std::string> MucoPhase::createPathConstraintNames() const {
 std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
     std::vector<std::string> names(m_multibody_constraints.size());
     // Multibody constraint names are stored in the internal constraint info.
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
     }
     return names;
@@ -295,7 +295,7 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     else
         stream << " (total: " << m_multibody_constraints.size() << ")";
     stream << "\n";
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         stream << "  ";
         m_multibody_constraints[i].getConstraintInfo().printDescription(stream);
     }
