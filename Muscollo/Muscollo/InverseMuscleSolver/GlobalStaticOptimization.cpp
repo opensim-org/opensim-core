@@ -210,8 +210,8 @@ public:
     }
 
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         const auto& i_mesh = in.mesh_index;
 
         // Actuator equilibrium.
@@ -259,11 +259,10 @@ public:
         out.path = _desiredMoments.col(i_mesh).template cast<adouble>()
                  - genForce;
     }
-    void calc_integral_cost(const T& /*time*/,
-            const tropter::VectorX<T>& /*states*/,
-            const tropter::VectorX<T>& controls,
-            const tropter::VectorX<T>& /*parameters*/,
+    void calc_integral_cost(const tropter::Input<T>& in,
             T& integrand) const override {
+
+        const auto& controls = in.controls;
         integrand = controls.squaredNorm();
     }
     GlobalStaticOptimization::Solution deconstruct_iterate(

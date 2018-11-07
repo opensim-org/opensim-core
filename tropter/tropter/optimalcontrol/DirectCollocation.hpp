@@ -90,10 +90,12 @@ Solution DirectCollocationSolver<T>::solve(
     solution.time = traj.time;
     solution.states = traj.states;
     solution.controls = traj.controls;
+    solution.adjuncts = traj.adjuncts;
     solution.parameters = traj.parameters;
     solution.objective = optsol.objective;
     solution.state_names = traj.state_names;
     solution.control_names = traj.control_names;
+    solution.adjunct_names = traj.adjunct_names;
     solution.parameter_names = traj.parameter_names;
     solution.success = optsol.success;
     solution.status = optsol.status;

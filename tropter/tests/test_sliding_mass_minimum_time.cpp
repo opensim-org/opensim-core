@@ -39,7 +39,7 @@ public:
         this->add_control("F", {-Fmax, Fmax});
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.controls[0]/mass;
     }
