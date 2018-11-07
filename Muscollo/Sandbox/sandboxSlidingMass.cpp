@@ -586,8 +586,8 @@ public:
     }
     // TODO rename argument "states" to "state".
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
 
         // TODO convert to implicit formulation.
 
@@ -616,10 +616,13 @@ public:
                 out.dynamics.data());
 
     }
-    void calc_integral_cost(const T& time,
-            const VectorX<T>& states,
-            const VectorX<T>& controls, 
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in, 
+            T& integrand) const override {
+
+        // Unpack variables.
+        const auto& states = in.states;
+        const auto& controls = in.controls;
+
         integrand = 0;
         m_state.setTime(time);
         std::copy(states.data(), states.data() + states.size(),

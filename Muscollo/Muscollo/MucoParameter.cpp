@@ -32,7 +32,7 @@ MucoParameter::MucoParameter(const std::string& name,
     const MucoBounds& bounds,
     const int& propertyElt) : MucoParameter() {
     setName(name);
-    set_bounds(bounds.getAsArray());
+    set_MucoBounds(bounds);
     Array<std::string> compPaths;
     for (auto& str : componentPaths) {
         compPaths.append(str);
@@ -66,7 +66,7 @@ MucoParameter::MucoParameter(const std::string& name,
     MucoParameter(name, componentPaths, propertyName, bounds, -1) {}
 
 void MucoParameter::constructProperties() {
-    constructProperty_bounds();
+    constructProperty_MucoBounds(MucoBounds());
     constructProperty_component_paths();
     constructProperty_property_name("");
     constructProperty_property_element();
@@ -104,27 +104,51 @@ void MucoParameter::initialize(Model& model) const {
                 "Expected property element to be non-negative, but "
                 + std::to_string(get_property_element()) + " was provided.");
             if (auto* p = dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
-                OPENSIM_THROW_IF(get_property_element() > 2, Exception,
+                OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
                     "The property element for a Vec3 property must be between "
                     "0 and 2, but the value "
                     + std::to_string(get_property_element()) + "was provided.");
                 m_data_type = Type_Vec3;
             }
             else if (auto* p = dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
-                OPENSIM_THROW_IF(get_property_element() > 5, Exception,
+                OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
                     "The property element for a Vec6 property must be between "
                     "0 and 5, but the value "
                     + std::to_string(get_property_element()) + "was provided.");
                 m_data_type = Type_Vec6;
             }
             else {
-                OPENSIM_THROW(Exception,
+                OPENSIM_THROW_FRMOBJ(Exception,
                     "Data type of specified model property not supported.");
             }
         }
 
         m_property_refs.emplace_back(ap);
     }
+}
+
+void MucoParameter::printDescription(std::ostream& stream) const {
+    stream << getName();
+    stream << ". model property name: " << getPropertyName();
+    stream << ". component paths: ";
+    const std::vector<std::string> componentPaths = getComponentPaths();
+    for (int i = 0; i < componentPaths.size(); ++i) {
+        stream << componentPaths[i];
+        if (i < componentPaths.size()-1) {
+           stream << ", ";
+        } else {
+           stream << ". ";
+        }   
+    }
+    stream << "property element: ";
+    if (getProperty_property_element().empty()) {
+        stream << "n/a";
+    } else {
+        stream << getProperty_property_element().getValue();
+    }
+    stream << ". bounds: ";
+    getBounds().printDescription(stream);
+    stream << std::endl;
 }
 
 void MucoParameter::applyParameterToModel(const double& value) const {
