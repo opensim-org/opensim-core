@@ -74,8 +74,10 @@ public:
             const SimTK::RowVector& parameters);
     /// Read a MucoIterate from a data file (e.g., STO, CSV). See output of
     /// write() for the correct format.
-    // TODO describe format.
     explicit MucoIterate(const std::string& filepath);
+
+    virtual ~MucoIterate() = default;
+
     /// Returns a dynamically-allocated copy of this iterate. You must manage
     /// the memory for return value.
     /// @note This works even if the iterate is sealed.
@@ -314,8 +316,9 @@ public:
     /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
     ///
     /// Controls are not carried over to the states storage.
-    // TODO use TimeSeriesTable instead?
     Storage exportToStatesStorage() const;
+    /// Same as exportToStatesStorage() except using TimeSeriesTable.
+    TimeSeriesTable exportToStatesTable() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MucoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.

@@ -9,6 +9,7 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Muscollo/MucoWeightSet.h>
 %include <Muscollo/MucoStateTrackingCost.h>
 %include <Muscollo/MucoMarkerTrackingCost.h>
+%include <Muscollo/MucoMarkerEndpointCost.h>
 %include <Muscollo/MucoControlCost.h>
 
 %include <Muscollo/MucoBounds.h>
@@ -27,8 +28,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoInitialBounds);
 EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoFinalBounds);
 
 
-/* SWIG does not support initializer_list, but we can use Java arrays to
- * achieve similar syntax in MATLAB. */
+// SWIG does not support initializer_list, but we can use Java arrays to
+// achieve similar syntax in MATLAB.
 %ignore OpenSim::MucoIterate::setTime(std::initializer_list<double>);
 %ignore OpenSim::MucoIterate::setState(const std::string&,
         std::initializer_list<double>);
@@ -45,4 +46,3 @@ namespace OpenSim {
 }
 %include <Muscollo/MucoTropterSolver.h>
 %include <Muscollo/MucoTool.h>
-

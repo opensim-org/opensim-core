@@ -252,6 +252,10 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     }
 }
 
+void OpenSim::visualize(Model model, TimeSeriesTable table) {
+    visualize(std::move(model), convertTableToStorage(table));
+}
+
 std::unordered_map<std::string, int>
 OpenSim::createSystemYIndexMap(const Model& model) {
     std::unordered_map<std::string, int> sysYIndices;

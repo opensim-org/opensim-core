@@ -39,6 +39,7 @@ class ProblemDecorator {
 public:
     ProblemDecorator(const AbstractProblem& problem)
             :m_problem(problem) { }
+    virtual ~ProblemDecorator() = default;
     unsigned get_num_variables() const
     {   return m_problem.get_num_variables(); }
     unsigned get_num_constraints() const

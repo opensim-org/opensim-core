@@ -181,6 +181,7 @@ set(SUPERBUILD_adolc ON CACHE BOOL
     "Automatically download, configure, build and install adolc")
 set(SUPERBUILD_ipopt ON CACHE BOOL 
     "Automatically download, configure, build and install ipopt")
+
 if (WIN32)
 
     if(SUPERBUILD_adolc)
@@ -199,18 +200,31 @@ if (WIN32)
 
 
     if(SUPERBUILD_ipopt)
-        # Ipopt: Download pre-built binaries from the YARP/iCub project.
-        # This binary distribution comes with MUMPS (which contains Fortran
-        # code compiled with the proprietary Intel Fortran compiler).
-        # TODO obtain from Microsoft's VCPKG package manager.
+    
+        # Ipopt: Download pre-built binaries built by chrisdembia.
+        # This binary distribution comes with MUMPS and OpenBLAS.
+        # Compiled with clang-cl 5.0 and flang, using conda.   
         set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
         ExternalProject_Add(ipopt
-            URL http://www.icub.org/download/3rd-party/ipopt-3.12.7_msvc14_x86_amd64.zip
+            URL https://sourceforge.net/projects/myosin/files/ipopt/ipopt-mumps-flang-openblas-win64.zip
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
+            
+        # Ipopt: Download pre-built binaries from the YARP/iCub project.
+        # This binary distribution comes with MUMPS (which contains Fortran
+        # code compiled with the proprietary Intel Fortran compiler).
+        # TODO obtain from Microsoft's VCPKG package manager.
+        # set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
+            # "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
+            # "${CMAKE_INSTALL_PREFIX}/ipopt")
+        # ExternalProject_Add(ipopt
+            # URL http://www.icub.org/download/3rd-party/ipopt-3.12.7_msvc14_x86_amd64.zip
+            # CONFIGURE_COMMAND ""
+            # BUILD_COMMAND ""
+            # INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
     endif()
 else()
 

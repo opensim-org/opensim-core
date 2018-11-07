@@ -74,7 +74,7 @@ void MucoControlCost::initializeImpl() const {
         }
     }
 
-    // Make sure there are no weights for nonexistant controls.
+    // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();
         if (std::find(actuPaths.begin(), actuPaths.end(), thisName) ==

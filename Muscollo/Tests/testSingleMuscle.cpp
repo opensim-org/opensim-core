@@ -75,10 +75,10 @@ void testIsometricMuscleRoundtrip() {
         actu->setActivation(state, 0.5);
         actu->setFiberLength(state, 0.1);
         model.equilibrateMuscles(state);
-        SimTK::RungeKuttaMersonIntegrator integrator(model.getSystem());
+        Manager manager(model);
         // This is necessary to achieve a smooth solution for excitation.
-        integrator.setAccuracy(1e-5);
-        Manager manager(model, state, integrator);
+        manager.setIntegratorAccuracy(1e-5);
+        manager.initialize(state);
         state = manager.integrate(1.0);
 
         // Print the model and states trajectory to files.

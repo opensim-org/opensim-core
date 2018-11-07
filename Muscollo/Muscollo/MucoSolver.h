@@ -56,6 +56,8 @@ public:
     /// This calls resetProblem() with the provided problem.
     explicit MucoSolver(const MucoProblem& problem);
 
+    virtual ~MucoSolver() = default;
+
     /// Clear the internally-set MucoProblem.
     void clearProblem();
 

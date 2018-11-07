@@ -1,7 +1,5 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoMarkerEndpointCost.cpp                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,20 +16,24 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoWeightSet.h"
-#include "MucoStateTrackingCost.h"
-#include "MucoMarkerTrackingCost.h"
 #include "MucoMarkerEndpointCost.h"
-#include "MucoControlCost.h"
-#include "MucoIterate.h"
-#include "MucoBounds.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
-#include "MucoParameter.h"
 
-#include "RegisterTypes_osimMuscollo.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+using namespace OpenSim;
+
+void MucoMarkerEndpointCost::initializeImpl() const {
+    m_point.reset(&getModel().getComponent<Point>(get_point_name()));
+}
+
+void MucoMarkerEndpointCost::calcEndpointCostImpl(
+        const SimTK::State& finalState, double& cost) const {
+    getModel().realizePosition(finalState);
+    const auto& actualLocation = m_point->getLocationInGround(finalState);
+    cost = (actualLocation - get_reference_location()).normSqr();
+}
+
+void MucoMarkerEndpointCost::constructProperties() {
+    constructProperty_point_name("");
+    constructProperty_reference_location(SimTK::Vec3(0));
+}

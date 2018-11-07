@@ -14,6 +14,11 @@ set(MUSCOLLO_PYTHON_VERSION 2 CACHE STRING
 # To create a drop-down in the CMake GUI:
 set_property(CACHE MUSCOLLO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 
+option(MUSCOLLO_BUILD_EXECUTABLE
+    "Build the opensim-muscollo executable." ON)
+option(MUSCOLLO_BUILD_EXAMPLES
+    "Build, test, and install Muscollo C++ examples." ON)
+
 
 # CMake settings.
 # ---------------
@@ -58,17 +63,13 @@ if(NOT CMAKE_PREFIX_PATH
     message(STATUS
             "Attempting to use dependencies from ${MUSCOLLO_DEPENDENCIES_DIR}")
     set(dep_install_dirs)
-    foreach(dep opensim-core colpack ipopt)
+    foreach(dep opensim-core colpack ipopt eigen)
         list(APPEND dep_install_dirs "${MUSCOLLO_DEPENDENCIES_DIR}/${dep}")
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
             "Directories containing dependencies.")
     set(ADOLC_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/adol-c" CACHE PATH
             "Path to ADOL-C install directory.")
-    if(WIN32)
-        set(IPOPT_DIR "${MUSCOLLO_DEPENDENCIES_DIR}/ipopt" CACHE PATH
-            "Path to IPOPT install directory.")
-    endif()
 endif()
 
 # Make targets go in the same binary directory.

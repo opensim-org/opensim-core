@@ -255,7 +255,7 @@ void MucoPhase::initialize(Model& model) const {
     for (int i = 0; i < getProperty_state_infos().size(); ++i) {
         const auto& name = get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                "State info provided for nonexistant state '" + name + "'.");
+                "State info provided for nonexistent state '" + name + "'.");
     }
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = model.getAbsolutePath();
@@ -269,14 +269,9 @@ void MucoPhase::initialize(Model& model) const {
     // For now, don't throw error if control is a Lagrange multiplier. 
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
-        bool isLagrangeMultiplier = false;
-        if (name.find("lambda") != std::string::npos) {
-            isLagrangeMultiplier = true;
-        }
-        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1 && 
-                !isLagrangeMultiplier, Exception,
-                "Control info provided for nonexistant actuator or Lagrange "
-                        "multiplier '" + name + "'.");
+        OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
+                "Control info provided for nonexistent actuator '"
+                        + name + "'.");
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {

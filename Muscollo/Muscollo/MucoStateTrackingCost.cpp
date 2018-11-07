@@ -65,7 +65,7 @@ void MucoStateTrackingCost::initializeImpl() const {
     m_sysYIndices.clear();
     m_state_weights.clear();
 
-    // Throw exception if a weight is specified for a nonexistant state.
+    // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(getModel());
     for (int i = 0; i < get_state_weights().getSize(); ++i) {
         const auto& weightName = get_state_weights().get(i).getName();

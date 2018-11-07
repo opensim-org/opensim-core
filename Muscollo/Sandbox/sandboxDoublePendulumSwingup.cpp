@@ -61,6 +61,8 @@ Model createDoublePendulumModel() {
     tau1->setOptimalForce(1);
     model.addComponent(tau1);
 
+    auto* marker = new Marker("marker", *b1, Vec3(0));
+    model.addMarker(marker);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
@@ -92,33 +94,6 @@ Model createDoublePendulumModel() {
     return model;
 }
 
-class MucoMarkerEndpointCost : public MucoCost {
-OpenSim_DECLARE_CONCRETE_OBJECT(MucoMarkerEndpointCost, MucoCost);
-public:
-    OpenSim_DECLARE_PROPERTY(frame_name, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(point_on_frame, SimTK::Vec3, "TODO");
-    OpenSim_DECLARE_PROPERTY(point_to_track, SimTK::Vec3,
-            "TODO Expressed in ground.");
-    MucoMarkerEndpointCost() {
-        constructProperties();
-    }
-protected:
-    void calcEndpointCostImpl(const SimTK::State& finalState,
-            double& cost) const override {
-        getModel().realizePosition(finalState);
-        const auto& frame = getModel().getComponent<Frame>(get_frame_name());
-        auto actualLocation =
-                frame.findStationLocationInGround(finalState,
-                        get_point_on_frame());
-        cost = (actualLocation - get_point_to_track()).normSqr();
-    }
-private:
-    void constructProperties() {
-        constructProperty_frame_name("");
-        constructProperty_point_on_frame(SimTK::Vec3(0));
-        constructProperty_point_to_track(SimTK::Vec3(0));
-    }
-};
 
 int main() {
 
@@ -151,10 +126,10 @@ int main() {
 
     MucoMarkerEndpointCost endpointCost;
     endpointCost.setName("endpoint");
-    endpointCost.set_frame_name("b1");
     endpointCost.set_weight(1000.0);
-    endpointCost.set_point_on_frame(SimTK::Vec3(0));
-    endpointCost.set_point_to_track(SimTK::Vec3(0, 2, 0));
+    endpointCost.setPointName("marker");
+    endpointCost.setReferenceLocation(SimTK::Vec3(0, 2, 0));
+
     mp.addCost(endpointCost);
 
     // Configure the solver.
