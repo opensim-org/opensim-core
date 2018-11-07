@@ -36,8 +36,8 @@ cache:
   - C:\projects\deps\ipopt -> dependencies\CMakeLists.txt
   - C:\projects\deps\opensim-core -> dependencies\opensim-core.cmake
   
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml # swig.exe
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml # supporting swig Lib files.
+  - C:\ProgramData\chocolatey\bin -> .appveyor.yml # swig.exe
+  - C:\ProgramData\chocolatey\lib -> .appveyor.yml # supporting swig Lib files.
 
 install:
   - cmake --version
