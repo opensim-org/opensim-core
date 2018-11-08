@@ -1,11 +1,9 @@
-#ifndef MUSCOLLO_OSIMMUSCOLLO_H
-#define MUSCOLLO_OSIMMUSCOLLO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: osimMuscollo.h                                           *
+ * OpenSim Muscollo: MucoJointReactionNormCost.h                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -18,22 +16,33 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MucoWeightSet.h"
-#include "MucoStateTrackingCost.h"
-#include "MucoMarkerTrackingCost.h"
-#include "MucoMarkerEndpointCost.h"
-#include "MucoControlCost.h"
 #include "MucoJointReactionNormCost.h"
-#include "MucoIterate.h"
-#include "MucoBounds.h"
-#include "MucoProblem.h"
-#include "MucoSolver.h"
-#include "MucoTool.h"
-#include "MucoTropterSolver.h"
-#include "MuscolloUtilities.h"
-#include "MucoParameter.h"
-#include "MucoConstraint.h"
+#include <OpenSim/Simulation/Model/Model.h>
+    
+using namespace OpenSim;
 
-#include "RegisterTypes_osimMuscollo.h"
+MucoJointReactionNormCost::MucoJointReactionNormCost() {
+    constructProperties();
+}
 
-#endif // MUSCOLLO_OSIMMUSCOLLO_H
+void MucoJointReactionNormCost::constructProperties() {
+    constructProperty_joint_path("");
+}
+
+void MucoJointReactionNormCost::initializeImpl() const {
+
+    OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
+        "Empty model joint path detected. Please provide a valid joint path.");
+
+    OPENSIM_THROW_IF_FRMOBJ(!getModel().hasComponent<Joint>(get_joint_path()),
+        Exception, "Joint at path " + get_joint_path() + " not found in the "
+        "model. Please provide a valid joint path.");
+}
+
+void MucoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,
+        double& integrand) const {
+
+    getModel().realizeAcceleration(state);
+    const auto& joint = getModel().getComponent<Joint>(get_joint_path());
+    integrand = joint.calcReactionOnChildExpressedInGround(state).norm();
+}

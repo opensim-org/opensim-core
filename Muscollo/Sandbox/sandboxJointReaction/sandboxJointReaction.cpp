@@ -87,8 +87,9 @@ void minimizePendulumReactionLoads() {
     mp.setStateInfo("j0/q0/speed", {-50, 50}, 0, 0);
     mp.setControlInfo("tau0", {-100, 100});
 
-    JointReactionCost reaction;
-    mp.addCost(reaction);
+    MucoJointReactionNormCost reactionNormCost;
+    reactionNormCost.setJointPath("j0");
+    mp.addCost(reactionNormCost);
 
     MucoTropterSolver& ms = muco.initSolver();
     ms.set_num_mesh_points(50);
@@ -102,7 +103,6 @@ void minimizePendulumReactionLoads() {
     MucoSolution solution = muco.solve();
     solution.write("sandboxJointReaction_minimizePendulumReactionLoads.sto");
     muco.visualize(solution);
-
 }
 
 void minimizeControlEffort() {
