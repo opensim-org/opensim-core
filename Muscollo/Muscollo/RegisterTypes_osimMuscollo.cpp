@@ -31,6 +31,7 @@
 #include "MucoMarkerTrackingCost.h"
 #include "MucoMarkerEndpointCost.h"
 #include "MucoControlCost.h"
+#include "MucoJointReactionNormCost.h"
 #include "MucoParameter.h"
 
 #include <exception>
@@ -49,6 +50,7 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoMarkerTrackingCost());
         Object::registerType(MucoMarkerEndpointCost());
         Object::registerType(MucoControlCost());
+        Object::registerType(MucoJointReactionNormCost());
         Object::registerType(MucoBounds());
         Object::registerType(MucoInitialBounds());
         Object::registerType(MucoFinalBounds());
