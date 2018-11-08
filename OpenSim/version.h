@@ -22,19 +22,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#if defined(__cplusplus) || defined(SWIG)
-
-#include <string>
-
-// Defined in OpenSim/Common/About.cpp
-namespace OpenSim {
-    std::string GetVersionAndDate();
-    std::string GetVersion();
-    std::string GetOSInfoVerbose();
-    std::string GetOSInfo();
-    std::string GetCompilerVersion();
-}
-
-#endif
+#include <OpenSim/Common/About.h>
 
 #endif // OPENSIM_version_H_
