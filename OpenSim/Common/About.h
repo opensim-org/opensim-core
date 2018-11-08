@@ -37,11 +37,11 @@ OSIMCOMMON_API
 #if defined(__cplusplus) || defined(SWIG)
 #include <string>
 namespace OpenSim {
-std::string GetVersionAndDate();
-std::string GetVersion();
-std::string GetOSInfoVerbose();
-std::string GetOSInfo();
-std::string GetCompilerVersion();
+OSIMCOMMON_API std::string GetVersionAndDate();
+OSIMCOMMON_API std::string GetVersion();
+OSIMCOMMON_API std::string GetOSInfoVerbose();
+OSIMCOMMON_API std::string GetOSInfo();
+OSIMCOMMON_API std::string GetCompilerVersion();
 }
 #endif
 
