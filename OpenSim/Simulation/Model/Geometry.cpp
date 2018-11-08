@@ -261,10 +261,10 @@ void Mesh::extendFinalizeFromProperties() {
         bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
         if (!foundIt) {
-            if (getDebugLevel()==0) { return; }
 
-            std::cout << "ModelVisualizer couldn't find file '" << file
-                << "'; tried\n";
+            std::cout << "Couldn't find file '" << file << "'." << std::endl;
+            if (getDebugLevel() == 0) { return; }
+            std::cout << "The following locations were tried:\n";
             for (unsigned i = 0; i < attempts.size(); ++i)
                 std::cout << "\n  " << attempts[i];
             std::cout << std::endl;
