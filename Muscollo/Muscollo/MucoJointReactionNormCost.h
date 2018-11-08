@@ -23,8 +23,9 @@
 namespace OpenSim {
 
 /// Minimize the reaction loads on the child body of a specified joint. 
-/// The norm of the reaction forces and moments integrated over the phase, is 
+/// The norm of the reaction forces and moments integrated over the phase is 
 /// the specific quantity minimized.
+/// This cost requires realizing to the Acceleration stage.
 // TODO allow a list property of multiple joints?
 // TODO allow specification of the components of the reaction load SpatialVec
 //      to be minimized.
@@ -36,6 +37,7 @@ public:
     MucoJointReactionNormCost();
     /// Provide a valid model path for joint whose reaction loads will be
     /// minimized. 
+    // TODO when using implicit dynamics, we will need to revisit this cost.
     void setJointPath(const std::string& path) 
     {   set_joint_path(path); }
 
