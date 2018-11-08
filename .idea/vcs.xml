@@ -2,5 +2,9 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dependencies/colpack" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dependencies/docopt" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/dependencies/simbody" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/opensim-core" vcs="Git" />
   </component>
 </project>

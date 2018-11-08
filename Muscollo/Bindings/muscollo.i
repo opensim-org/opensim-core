@@ -35,6 +35,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoFinalBounds);
         std::initializer_list<double>);
 %ignore OpenSim::MucoIterate::setControl(const std::string&,
         std::initializer_list<double>);
+%ignore OpenSim::MucoIterate::setMultiplier(const std::string&,
+        std::initializer_list<double>);
 
 %include <Muscollo/MucoIterate.h>
 

@@ -243,6 +243,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
         setControl(name, v);
     }
+    public void setMultiplier(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setMultiplier(name, v);
+    }
     public double[] getTimeMat() {
         Vector time = getTime();
         double[] ret = new double[time.size()];
@@ -259,6 +265,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         VectorView control = getControl(name);
         double[] ret = new double[control.size()];
         for (int i = 0; i < control.size(); ++i) { ret[i] = control.get(i); };
+        return ret;
+    }
+    public double[] getMultiplierMat(String name) {
+        VectorView mult = getMultiplier(name);
+        double[] ret = new double[mult.size()];
+        for (int i = 0; i < mult.size(); ++i) { ret[i] = mult.get(i); };
         return ret;
     }
     public double[] getParametersMat() {
