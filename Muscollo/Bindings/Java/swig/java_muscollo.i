@@ -189,6 +189,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
         setControl(name, v);
     }
+    public void setMultiplier(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setMultiplier(name, v);
+}
 %}
 
 %import "java_actuators.i"

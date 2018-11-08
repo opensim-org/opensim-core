@@ -111,13 +111,16 @@ cn = StdVectorString();
 cn.add('c0');
 cn.add('c1');
 cn.add('c2');
+mn = StdVectorString();
+mn.add('m0');
 pn = StdVectorString();
 pn.add('p0');
 pn.add('p1');
 st = Matrix(3, 2);
 ct = Matrix(3, 3);
+mt = Matrix(3, 1);
 p = RowVector(2, 0.0);
-it = MucoIterate(time, sn, cn, pn, st, ct, p);
+it = MucoIterate(time, sn, cn, mn, pn, st, ct, mt, p);
 
 it.setTime([15, 25, 35]);
 assert(it.getTime().get(0) == 15);
@@ -145,6 +148,12 @@ c2traj = it.getControl('c2');
 assert(c2traj.get(0) == 5);
 assert(c2traj.get(1) == 12);
 assert(c2traj.get(2) == -1);
+
+it.setMultiplier('m0', [326, 1, 42]);
+m0traj = it.getMultiplier('m0');
+assert(m0traj.get(0) == 326);
+assert(m0traj.get(1) == 1);
+assert(m0traj.get(2) == 42);
 
 it.setParameter('p0', 25);
 it.setParameter('p1', 30);
