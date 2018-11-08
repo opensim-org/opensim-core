@@ -262,7 +262,7 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (!foundIt) {
 
-            std::cout << "Couldn't find file '" << file << std::endl;
+            std::cout << "Couldn't find file '" << file << "'." << std::endl;
             if (getDebugLevel() == 0) { return; }
             std::cout << "Following locations were tried\n";
             for (unsigned i = 0; i < attempts.size(); ++i)
