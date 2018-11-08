@@ -98,7 +98,7 @@ public:
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
     MucoBounds getBounds() const
-    {   return MucoBounds(getProperty_bounds()); }
+    {   return get_MucoBounds(); }
     std::string getPropertyName() const
     {   return get_property_name(); }
     std::vector<std::string> getComponentPaths() const
@@ -111,7 +111,7 @@ public:
        return componentPaths;
     }
     void setBounds(const MucoBounds& bounds)
-    {   set_bounds(bounds.getAsArray()); }
+    {   set_MucoBounds(bounds); }
     void setPropertyName(const std::string& propertyName)
     {   set_property_name(propertyName); }
     void appendComponentPath(const std::string& componentPath)
@@ -125,10 +125,13 @@ public:
     /// Set the value of the model property to the passed-in parameter value.
     void applyParameterToModel(const double& value) const;
 
+    /// Print the name, property name, component paths, property element (if it
+    /// exists), and bounds for this parameter.
+    void printDescription(std::ostream& stream = std::cout) const;
+
 private:
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
-        "1 value: required value over all time. "
-        "2 values: lower, upper bounds on value.");
+    OpenSim_DECLARE_UNNAMED_PROPERTY(MucoBounds,
+        "Bounds over all time.");
     OpenSim_DECLARE_LIST_PROPERTY(component_paths, std::string, "The path to "
         "the model component that owns the property associated with the "
         "MucoParameter.");

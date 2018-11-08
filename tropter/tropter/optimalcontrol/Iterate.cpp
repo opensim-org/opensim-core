@@ -30,8 +30,8 @@ Iterate::Iterate(const std::string& filepath) {
     std::ifstream f(filepath);
     TROPTER_THROW_IF(!f, "Could not read '%s'.", filepath);
 
-    // Grab the number of state, control, and parameter variables.
-    // -----------------------------------------------------------
+    // Grab the number of state, control, adjunct, and parameter variables.
+    // --------------------------------------------------------------------
     std::string line;
     TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_states=") != 0,
             "Could not read num_states from '%s'.", filepath);
@@ -42,6 +42,11 @@ Iterate::Iterate(const std::string& filepath) {
             "Could not read num_controls from '%s'.", filepath);
     std::string num_controls_str = line.substr(line.find('=') + 1);
     int num_controls = std::stoi(num_controls_str);
+
+    TROPTER_THROW_IF(!std::getline(f, line) || line.find("num_adjuncts=") != 0,
+        "Could not read num_adjuncts from '%s'.", filepath);
+    std::string num_adjuncts_str = line.substr(line.find('=') + 1);
+    int num_adjuncts = std::stoi(num_adjuncts_str);
 
     TROPTER_THROW_IF(!std::getline(f, line) || 
             line.find("num_parameters=") != 0,
@@ -67,14 +72,18 @@ Iterate::Iterate(const std::string& filepath) {
             state_names.push_back(label);
         else if (i_label < num_states + num_controls)
             control_names.push_back(label);
+        else if (i_label < num_states + num_controls + num_adjuncts)
+            adjunct_names.push_back(label);
         else
             parameter_names.push_back(label);
         ++i_label;
     }
-    TROPTER_THROW_IF(i_label != num_states + num_controls + num_parameters,
+    TROPTER_THROW_IF(i_label != num_states + num_controls + num_adjuncts + 
+                num_parameters,
             "In '%s', expected %i columns but got %i columns.",
             // Add 1 for the time column.
-            filepath, 1 + num_states + num_controls + num_parameters, 
+            filepath, 1 + num_states + num_controls + num_adjuncts + 
+                num_parameters, 
             1 + i_label);
 
     // Get number of times.
@@ -94,6 +103,7 @@ Iterate::Iterate(const std::string& filepath) {
     // File and in-memory matrices are transposed.
     states.resize(num_states, num_times);
     controls.resize(num_controls, num_times);
+    adjuncts.resize(num_adjuncts, num_times);
     parameters.resize(num_parameters);
     std::string element;
     // For each line of data.
@@ -112,9 +122,13 @@ Iterate::Iterate(const std::string& filepath) {
                 element_ss >> states(i_var, i_time);
             else if (i_var < num_states + num_controls)
                 element_ss >> controls(i_var - num_states, i_time);
+            else if (i_var < num_states + num_controls + num_adjuncts)
+                element_ss >> adjuncts(i_var - num_states - num_controls, 
+                    i_time);
             else 
                 if (i_time == 0)
-                    element_ss >> parameters(i_var - num_states - num_controls);
+                    element_ss >> parameters(i_var - num_states - num_controls
+                        - num_adjuncts);
             ++i_var;
         }
         ++i_time;
@@ -175,31 +189,39 @@ Iterate::interpolate(int desired_num_columns) const {
     Iterate out;
     out.state_names = state_names;
     out.control_names = control_names;
+    out.adjunct_names = adjunct_names;
     out.time = Eigen::RowVectorXd::LinSpaced(desired_num_columns,
                                              time[0], time.tail<1>()[0]);
     out.states = interp1(time, states, out.time);
     out.controls = interp1(time, controls, out.time);
+    out.adjuncts = interp1(time, adjuncts, out.time);
+
     return out;
 }
 
-/// Write the states and controls trajectories to a plain-text CSV file.
+/// Write the states, controls, and adjuncts trajectories and the parameter
+/// values to a plain-text CSV file.
 void Iterate::write(const std::string& filepath) const {
     std::ofstream f(filepath);
 
     // Header.
     f << "num_states=" << states.rows() << std::endl;
     f << "num_controls=" << controls.rows() << std::endl;
+    f << "num_adjuncts=" << adjuncts.rows() << std::endl;
     f << "num_parameters=" << parameters.rows() << std::endl;
 
     // Column labels.
     f << "time";
     if (state_names.size() == (size_t)states.rows() &&
             control_names.size() == (size_t)controls.rows() &&
+            adjunct_names.size() == (size_t)adjuncts.rows() &&
             parameter_names.size() == (size_t)parameters.rows()) {
         for (int i_state = 0; i_state < states.rows(); ++i_state)
             f << "," << state_names[i_state];
         for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << "," << control_names[i_control];
+        for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
+            f << "," << adjunct_names[i_adjunct];
         for (int i_parameter = 0; i_parameter < parameters.rows(); 
                 ++i_parameter)
             f << "," << parameter_names[i_parameter];
@@ -208,6 +230,8 @@ void Iterate::write(const std::string& filepath) const {
             f << ",state" << i_state;
         for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << ",control" << i_control;
+        for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
+            f << ",adjunct" << i_adjunct;
         for (int i_parameter = 0; i_parameter < parameters.rows(); 
                 ++i_parameter)
             f << ",parameter" << i_parameter;
@@ -221,6 +245,8 @@ void Iterate::write(const std::string& filepath) const {
             f << "," << states(i_state, i_mesh);
         for (int i_control = 0; i_control < controls.rows(); ++i_control)
             f << "," << controls(i_control, i_mesh);
+        for (int i_adjunct = 0; i_adjunct < adjuncts.rows(); ++i_adjunct)
+            f << "," << adjuncts(i_adjunct, i_mesh);
         for (int i_parameter = 0; i_parameter < parameters.rows(); 
                 ++i_parameter)
             if (i_mesh == 0) {

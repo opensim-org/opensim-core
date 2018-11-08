@@ -36,11 +36,9 @@ public:
         this->add_parameter("x1", {-5, 5});
     }
 
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& /*states*/,
-            const VectorX<T>& /*controls*/,
-            const VectorX<T>& parameters,
-            T& integrand) const override {
+    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
+        
+        const auto& parameters = in.parameters;
         integrand = (parameters[0] - 1.5) * (parameters[0] - 1.5)
             + (parameters[1] + 2.0) * (parameters[1] + 2.0);
     }
@@ -102,7 +100,7 @@ public:
     }
 
     void calc_differential_algebraic_equations(
-        const DAEInput<T>& in, DAEOutput<T> out) const override {
+        const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.parameters[0];
     }
@@ -167,7 +165,7 @@ public:
     }
 
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = -(STIFFNESS / in.parameters[0]) * in.states[0];
     }
