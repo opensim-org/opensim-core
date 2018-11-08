@@ -11,7 +11,11 @@ if(MUSCOLLO_COPY_DEPENDENCIES AND APPLE)
     # editing of libtropter's link libraries is done after libtropter.dylib
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(Muscollo)).
-    install(SCRIPT MuscolloInstallMacDependencyLibraries.cmake)
+    set(script
+        ${CMAKE_CURRENT_BINARY_DIR}/MuscolloInstallMacDependencyLibraries.cmake)
+    configure_file(MuscolloInstallMacDependencyLibraries.cmake.in
+            "${script}" @ONLY)
+    install(SCRIPT "${script}")
 
 endif()
 

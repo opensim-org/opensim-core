@@ -137,6 +137,11 @@ using namespace SimTK;
     void setControl(const std::string& name, const std::vector<double>& traj) {
         $self->setControl(name, SimTK::Vector((int)traj.size(), traj.data()));
     }
+    void setMultiplier(const std::string& name, const std::vector<double>& traj)
+    {
+        $self->setMultiplier(name,
+                SimTK::Vector((int)traj.size(), traj.data()));
+    }
 }
 
 // Include all the OpenSim code.

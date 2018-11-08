@@ -159,11 +159,11 @@ void testSolverOptions() {
     SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
     ms.set_verbosity(2);
 
-    ms.set_optim_solver("nonexistant");
+    ms.set_optim_solver("nonexistent");
     SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
     ms.set_optim_solver("ipopt");
 
-    ms.set_optim_hessian_approximation("nonexistant");
+    ms.set_optim_hessian_approximation("nonexistent");
     SimTK_TEST_MUST_THROW(muco.solve());
     ms.set_optim_hessian_approximation("limited-memory");
 
@@ -329,14 +329,14 @@ void testBounds() {
             MucoTool muco;
             MucoProblem& mp = muco.updProblem();
             mp.setModel(model);
-            mp.setStateInfo("nonexistant", {0, 1});
+            mp.setStateInfo("nonexistent", {0, 1});
             SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
         }
         {
             MucoTool muco;
             MucoProblem& mp = muco.updProblem();
             mp.setModel(model);
-            mp.setControlInfo("nonexistant", {0, 1});
+            mp.setControlInfo("nonexistent", {0, 1});
             SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
         }
     }
@@ -641,7 +641,7 @@ void testGuess() {
 
         // Errors.
 
-        // Nonexistant state/control.
+        // Nonexistent state/control.
         SimTK_TEST_MUST_THROW_EXC(guess.setState("none", SimTK::Vector(2)),
                 Exception);
         SimTK_TEST_MUST_THROW_EXC(guess.setControl("none", SimTK::Vector(2)),

@@ -211,7 +211,7 @@ std::vector<std::string> MucoPhase::createPathConstraintNames() const {
 std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
     std::vector<std::string> names(m_multibody_constraints.size());
     // Multibody constraint names are stored in the internal constraint info.
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
     }
     return names;
@@ -295,7 +295,7 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     else
         stream << " (total: " << m_multibody_constraints.size() << ")";
     stream << "\n";
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         stream << "  ";
         m_multibody_constraints[i].getConstraintInfo().printDescription(stream);
     }
@@ -356,7 +356,7 @@ void MucoPhase::initialize(Model& model) const {
     for (int i = 0; i < getProperty_state_infos().size(); ++i) {
         const auto& name = get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                "State info provided for nonexistant state '" + name + "'.");
+                "State info provided for nonexistent state '" + name + "'.");
     }
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = model.getAbsolutePath();
@@ -369,8 +369,8 @@ void MucoPhase::initialize(Model& model) const {
     for (int i = 0; i < getProperty_control_infos().size(); ++i) {
         const auto& name = get_control_infos(i).getName();
         OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
-                "Control info provided for nonexistant actuator "
-                "'" + name + "'.");
+                "Control info provided for nonexistent actuator '"
+                        + name + "'.");
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {

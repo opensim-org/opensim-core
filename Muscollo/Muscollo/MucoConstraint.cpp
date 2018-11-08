@@ -48,7 +48,7 @@ void MucoConstraintInfo::printDescription(std::ostream& stream) const {
 
     const std::vector<MucoBounds> bounds = getBounds();
     stream << ". bounds: ";
-    for (int i = 0; i < bounds.size(); ++i) {
+    for (int i = 0; i < (int)bounds.size(); ++i) {
         bounds[i].printDescription(stream);
     }
     stream << std::endl;
