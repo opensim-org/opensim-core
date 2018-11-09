@@ -101,7 +101,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 
     OPENSIM_THROW_IF(!ifstream(aFileName.c_str(), ios_base::in).good(),
         Exception,
-        getClassName() + ": Cannot not open file " + aFileName +
+        getClassName() + ": Cannot open file " + aFileName +
         ". It may not exist or you do not have permission to read it.");
 
     _document = new XMLDocument(aFileName);
