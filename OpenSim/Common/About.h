@@ -1,7 +1,7 @@
-#ifndef OPENSIM_OSIMCOMMON_H_
-#define OPENSIM_OSIMCOMMON_H_
+#ifndef OPENSIM_COMMON_ABOUT_H_
+#define OPENSIM_COMMON_ABOUT_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  osimCommon.h                           *
+ *                            OpenSim:  About.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Ayman Habib                                                     *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -23,44 +23,26 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "About.h"
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
+#include "osimCommonDLL.h"
 
-#include "Scale.h"
-#include "SimmSpline.h"
-#include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
-#include "LinearFunction.h"
-#include "PiecewiseConstantFunction.h"
-#include "PiecewiseLinearFunction.h"
+extern "C" {
 
-#include "MultiplierFunction.h"
-#include "PolynomialFunction.h"
+OSIMCOMMON_API
+    void opensim_version_common(int* major, int* minor, int* build);
+OSIMCOMMON_API
+    void opensim_about_common(const char* key, int maxlen, char* value);
 
-#include "SignalGenerator.h"
+}
 
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
+#if defined(__cplusplus) || defined(SWIG)
+#include <string>
+namespace OpenSim {
+OSIMCOMMON_API std::string GetVersionAndDate();
+OSIMCOMMON_API std::string GetVersion();
+OSIMCOMMON_API std::string GetOSInfoVerbose();
+OSIMCOMMON_API std::string GetOSInfo();
+OSIMCOMMON_API std::string GetCompilerVersion();
+}
+#endif
 
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
-#include "Reporter.h"
-
-#include "ModelDisplayHints.h"
-
-#endif // OPENSIM_OSIMCOMMON_H_
+#endif // OPENSIM_COMMON_ABOUT_H_
