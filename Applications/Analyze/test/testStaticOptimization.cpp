@@ -42,6 +42,8 @@ void testLapackErrorDLASD4();
 
 void testModelWithPassiveForces();
 
+void testRelativePathInExternalLoads();
+
 int main()
 {
     Array<string> muscleModelNames;
@@ -83,6 +85,14 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testLapackErrorDLASD4");
+    }
+
+    try {
+        testRelativePathInExternalLoads();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testRelativePathInExternalLoads");
     }
 
     if (!failures.empty()) {
@@ -217,5 +227,14 @@ void testLapackErrorDLASD4() {
     //     "** On entry to DLASD4 parameter number -1 had an illegal value"
     AnalyzeTool analyze("subject01_Setup_StaticOptimization.xml");
     analyze.setResultsDir("Results_subject01_StaticOptimization_LapackError");
+    analyze.run();
+}
+
+void testRelativePathInExternalLoads() {
+    // Ensure that we can handle relative paths in the ExternalLoads XML file.
+    // It's important that we do not run with the current working directory as
+    // the location of Setup_SO.xml.
+    AnalyzeTool analyze("UsingRelativePaths/Setup_SO.xml");
+    analyze.setResultsDir("Results_UsingRelativePaths");
     analyze.run();
 }
