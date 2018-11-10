@@ -39,7 +39,7 @@ public:
         this->add_control("u", {-50, 50});
     }
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         const auto& x = in.states;
         const auto& u = in.controls;
         out.dynamics[0] = x[1];
@@ -47,11 +47,9 @@ public:
         // xdot.row(0) = x.row(1);
         // xdot.row(1) = -x.row(1) + u.row(0);
     }
-    void calc_integral_cost(const T& /*t*/,
-            const VectorX<T>& /*x*/,
-            const VectorX<T>& u,
-            const VectorX<T>& /*p*/,
-            T& integrand) const override {
+    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
+
+        const auto& u = in.controls;
         integrand = 0.5 * u[0] * u[0];
     }
     MatrixXd states_solution(const VectorXd& time) const {

@@ -40,17 +40,15 @@ public:
     }
     const double mass = 10.0;
     void calc_differential_algebraic_equations(
-            const DAEInput<T>& in, DAEOutput<T> out) const override {
+            const Input<T>& in, Output<T> out) const override {
         out.dynamics[0] = in.states[1];
         out.dynamics[1] = in.controls[0] / mass;
     }
     // TODO alternate form that takes a matrix; state at every time.
     //virtual void continuous(const MatrixXd& x, MatrixXd& xdot) const = 0;
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& /*states*/,
-            const VectorX<T>& controls,
-            const VectorX<T>& /*parameters*/,
-            T& integrand) const override {
+    void calc_integral_cost(const Input<T>& in, T& integrand) const override {
+
+        const auto& controls = in.controls;
         integrand = controls[0] * controls[0];
     }
 };

@@ -26,6 +26,7 @@ namespace OpenSim {
 /// Minimize the sum of squared controls, integrated over the phase.
 /// The default weight for each control is 1.0; this can be changed by
 /// calling setWeight() or editing the `control_weights` property in XML.
+/// @ingroup mucocost
 // TODO want a related cost for minimizing the value of state variables like
 // activation.
 // TODO allow leaving out some controls.

@@ -52,8 +52,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // TODO compare directly with fiber length state.
         // Unpack variables.
         const T& activation = in.states[0];
@@ -89,10 +89,10 @@ public:
         // Fiber dynamics.
         out.dynamics[1] = normTenForceRate;
     }
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& /*states*/,
-            const VectorX<T>& controls, 
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in, 
+            T& integrand) const override {
+
+        const auto& controls = in.controls;
         integrand = controls[0] * controls[0];
     }
 private:
@@ -126,8 +126,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // TODO compare directly with fiber length state.
         // Unpack variables.
         const T& activation = in.states[0];
@@ -158,10 +158,10 @@ public:
         // Fiber dynamics.
         out.dynamics[1] = max_contraction_velocity * normFibVel;
     }
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& /*states*/,
-            const VectorX<T>& controls,
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in, 
+            T& integrand) const override {
+
+        const auto& controls = in.controls;
         integrand = controls[0] * controls[0];
     }
 private:
@@ -203,8 +203,8 @@ public:
     // TODO must test implicit form in the case where you want activation to
     // increase as quickly (and decrease as quickly as possible).
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // TODO compare directly with fiber length state.
         // Unpack variables.
         const T& activation = in.states[0];
@@ -244,10 +244,11 @@ public:
         // Fiber dynamics.
         out.dynamics[1] = normTenForceRate;
     }
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& states,
-            const VectorX<T>& controls, 
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in,
+            T& integrand) const override {
+
+        const auto& states = in.states;
+        const auto& controls = in.controls;
         integrand = states[0] * states[0] + 0.01 * controls[0] * controls[0];
     }
 private:
@@ -287,8 +288,8 @@ public:
                 pennation_angle_at_optimal, max_contraction_velocity);
     }
     void calc_differential_algebraic_equations(
-            const tropter::DAEInput<T>& in,
-            tropter::DAEOutput<T> out) const override {
+            const tropter::Input<T>& in,
+            tropter::Output<T> out) const override {
         // TODO compare directly with fiber length state.
         // Unpack variables.
         const T& activation = in.states[0];
@@ -321,10 +322,11 @@ public:
         // Fiber dynamics.
         out.dynamics[1] = max_contraction_velocity * normFibVel;
     }
-    void calc_integral_cost(const T& /*time*/,
-            const VectorX<T>& states,
-            const VectorX<T>& controls, 
-            const VectorX<T>& /*parameters*/, T& integrand) const override {
+    void calc_integral_cost(const tropter::Input<T>& in, 
+            T& integrand) const override {
+
+        const auto& states = in.states;
+        const auto& controls = in.controls;
         integrand = states[0] * states[0] + 0.01 * controls[0] * controls[0];
     }
 private:

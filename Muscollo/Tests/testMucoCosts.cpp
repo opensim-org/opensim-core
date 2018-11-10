@@ -159,7 +159,7 @@ void testMucoControlCost() {
             sol1.getControl("actuator"), 1e-5);
     }
 
-    // Cannot set a weight for a nonexistant control.
+    // Cannot set a weight for a nonexistent control.
     {
         MucoTool muco;
         muco.setName("sliding_mass");
@@ -170,7 +170,7 @@ void testMucoControlCost() {
         mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
         mp.setControlInfo("actuator", MucoBounds(-10, 10));
         MucoControlCost effort;
-        effort.setWeight("nonexistant", 1.5);
+        effort.setWeight("nonexistent", 1.5);
         mp.addCost(effort);
         MucoTropterSolver& ms = muco.initSolver();
         ms.set_num_mesh_points(8);

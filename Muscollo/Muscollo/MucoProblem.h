@@ -21,6 +21,7 @@
 #include "MucoCost.h"
 #include "MucoBounds.h"
 #include "MucoParameter.h"
+#include "MucoConstraint.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -41,7 +42,7 @@ public:
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
-    MucoBounds getBounds() const
+    MucoBounds getBounds() const 
     {   return MucoBounds(getProperty_bounds()); }
     /// @copydoc getBounds()
     MucoInitialBounds getInitialBounds() const
@@ -58,19 +59,19 @@ public:
     void printDescription(std::ostream& stream = std::cout) const;
 
 protected:
-
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
-            "1 value: required value over all time. "
-            "2 values: lower, upper bounds on value over all time.");
+        "1 value: required value over all time. "
+        "2 values: lower, upper bounds on value over all time.");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(initial_bounds, double, 2,
-            "1 value: required initial value. "
-            "2 values: lower, upper bounds on initial value.");
+        "1 value: required initial value. "
+        "2 values: lower, upper bounds on initial value.");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(final_bounds, double, 2,
-            "1 value: required final value. "
-            "2 values: lower, upper bounds on final value.");
+        "1 value: required final value. "
+        "2 values: lower, upper bounds on final value.");
 
 private:
     void constructProperties();
+
 };
 
 
@@ -167,6 +168,17 @@ public:
     // TODO by default, use the actuator's control_min and control_max.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set the bounds on *all* of the multibody constraint equations in this
+    /// phase. During initialization, these bounds are used to create 
+    /// MucoConstraintInfo's for each multibody constraint equation in the 
+    /// phase.
+    void setMultibodyConstraintBounds(const MucoBounds& bounds)
+    {   set_multibody_constraint_bounds(bounds); }
+    /// Set the bounds on *all* of the Lagrange multipliers in this phase. 
+    /// During initialization, these bounds are used to create 
+    /// MucoVariableInfo's for each Lagrange multiplier in the phase.
+    void setMultiplierBounds(const MucoBounds& bounds)
+    {   set_multiplier_bounds(bounds); }
     /// Add a parameter to this phase. The passed-in parameter is copied, and
     /// thus any subsequent edits have no effect.
     /// Parameter variables must have a name (MucoParameter::setName()), and it
@@ -185,6 +197,16 @@ public:
     /// @precondition
     ///     The completed model must be set.
     void addCost(const MucoCost&);
+    /// Add a path constraint to this phase. The passed-in constriant is copied, 
+    /// and thus any subsequent edits have not effect.
+    /// Path constraints must have a name (MucoPathConstraint::setName()), and 
+    /// it must be unique. Note that path constraints have the name 
+    /// "path_constraint" by default, so if you only have one path constraint, 
+    /// you don't need to set its name manually.
+    ///
+    /// @precondition
+    ///     The completed model must be set.
+    void addPathConstraint(const MucoPathConstraint&);
 
     const Model& getModel() const { return get_model(); }
     Model& updModel() { return upd_model(); }
@@ -198,19 +220,57 @@ public:
     std::vector<std::string> createStateInfoNames() const;
     /// Get the control names of all the control infos.
     std::vector<std::string> createControlInfoNames() const;
+    /// Get the names of all the Lagrange multiplier infos;
+    std::vector<std::string> createMultiplierInfoNames() const;
     /// Get the names of all the parameters.
     std::vector<std::string> createParameterNames() const;
+    /// Get the names of all the MucoPathConstraints.
+    std::vector<std::string> createPathConstraintNames() const;
+    /// Get the constraint names of all the multibody constraints. Note: this
+    /// should only be called after initialization().
+    std::vector<std::string> createMultibodyConstraintNames() const;
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
-
+    /// Get a MucoPathConstraint from this MucoPhase. Note: this does not 
+    /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
+    const MucoPathConstraint& getPathConstraint(const std::string& name) const;
+    /// Get the number of scalar path constraints in the MucoProblem. This does 
+    /// not include multibody constraints equations, and is only available after 
+    /// initialization. 
+    int getNumPathConstraintEquations() const {   
+        OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
+            "The number of scalar path constraint equations is not available "
+            "until after initialization.");
+        return m_num_path_constraint_eqs;
+    }
+    /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not 
+    /// include MucoPathConstraints, use getPathConstraint() instead. Since 
+    /// these are created directly from model information, this should only be 
+    /// called after initialization.
+    const MucoMultibodyConstraint& 
+    getMultibodyConstraint(const std::string& name) const;
+    /// Get the number of scalar multibody constraints in the MucoProblem. This 
+    /// does not include path constraints equations, and is only available after 
+    /// initialization. 
+    int getNumMultibodyConstraintEquations() const {
+        OPENSIM_THROW_IF(m_num_multibody_constraint_eqs == -1, Exception,
+            "The number of scalar multibody constraint equations is not "
+            "available until after initialization.");
+        return m_num_multibody_constraint_eqs;
+    }
+    /// Given a multibody constraint name, get a vector of MucoVariableInfos 
+    /// corresponding to the Lagrange multipliers for that multibody constraint.
+    /// Note: Since these are created directly from model constraint
+    /// information, this should only be called after initialization.
+    const std::vector<MucoVariableInfo>& 
+    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
 
     // TODO add getCost() and/or updCost().
 
     /// Print a brief description of the costs and variables in this phase.
     void printDescription(std::ostream& stream = std::cout) const;
-
 
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
@@ -241,6 +301,44 @@ public:
         }
         return cost;
     }
+    /// Calculate the errors in all the scalar path constraint equations in this
+    /// phase.
+    void calcPathConstraintErrors(const SimTK::State& state, 
+        SimTK::Vector& errors) const {
+        
+        OPENSIM_THROW_IF_FRMOBJ(
+            errors.size() != getNumPathConstraintEquations(), Exception,
+            "The size of the errors vector passed is not consistent with the "
+            "number of scalar path constraint equations in this MucoProblem.");
+
+        for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
+            get_path_constraints(i).calcPathConstraintErrors(state, errors);
+        }
+    }
+    /// Calculate the errors in all the scalar multibody constraint equations in
+    /// this phase. This may not be the most efficient solution for solvers, but 
+    /// is rather intended as a convenience method for a quick implementation or 
+    /// for debugging model constraints causing issues in an optimal control 
+    /// problem.
+    SimTK::Vector calcMultibodyConstraintErrors(const SimTK::State& state) const 
+    {
+        SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
+        int index = 0;
+        int thisConstraintNumEqs;
+        for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+            thisConstraintNumEqs = 
+            m_multibody_constraints[i].getConstraintInfo().getNumEquations();
+
+            SimTK::Vector theseErrors(thisConstraintNumEqs, 
+                errors.getContiguousScalarData() + index, true);
+            m_multibody_constraints[i].calcMultibodyConstraintErrors(getModel(), 
+                state, theseErrors);
+
+            index += thisConstraintNumEqs;
+        }
+        return errors;
+    }
+
     /// Apply paramater values to the model passed to initialize() within the
     /// current MucoProblem. Values must be consistent with the order of 
     /// parameters returned from createParameterNames().
@@ -256,12 +354,10 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(model, Model,
             "OpenSim Model to provide dynamics.");
     // TODO error if not provided.
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(time_initial_bounds, double, 2,
-            "1 value: required initial time. "
-            "2 values: lower, upper bounds on initial time.");
-    OpenSim_DECLARE_LIST_PROPERTY_ATMOST(time_final_bounds, double, 2,
-            "1 value: required final time. "
-            "2 values: lower, upper bounds on final time.");
+    OpenSim_DECLARE_PROPERTY(time_initial_bounds, MucoInitialBounds,
+            "Bounds on initial value.");
+    OpenSim_DECLARE_PROPERTY(time_final_bounds, MucoFinalBounds,
+            "Bounds on final value.");
     OpenSim_DECLARE_LIST_PROPERTY(state_infos, MucoVariableInfo,
             "The state variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos, MucoVariableInfo,
@@ -270,9 +366,27 @@ protected: // Protected so that doxygen shows the properties.
             "Parameter variables (model properties) to optimize.");
     OpenSim_DECLARE_LIST_PROPERTY(costs, MucoCost,
             "Quantities to minimize in the cost functional.");
+    OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MucoPathConstraint,
+            "Path constraints to enforce in the optimal control problem.");
+    // TODO make this a list property of MucoConstraintInfos when we are able to
+    // map OpenSim constraint names to Simbody constraints.
+    OpenSim_DECLARE_PROPERTY(multibody_constraint_bounds, MucoBounds,
+        "The bounds on all the multibody constraints in the model to be "
+        "enforced. By default the constraints are strictly enforced (zero "
+        "bounds).");
+    OpenSim_DECLARE_PROPERTY(multiplier_bounds, MucoBounds,
+        "Variable info to apply to all Lagrange multipliers in the problem. "
+        "The default bounds are [-1000 1000].");
 
 private:
     void constructProperties();
+    mutable int m_num_path_constraint_eqs = -1;
+    mutable int m_num_multibody_constraint_eqs = -1;
+    mutable std::vector<MucoMultibodyConstraint> 
+        m_multibody_constraints;
+    mutable std::map<std::string, std::vector<MucoVariableInfo>>
+        m_multiplier_infos_map;
+
 };
 
 
@@ -309,10 +423,16 @@ public:
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MucoBounds&,
             const MucoInitialBounds& = {}, const MucoFinalBounds& = {});
+    /// Set bounds for the multibody constraints in phase 0.
+    void setMultibodyConstraintBounds(const MucoBounds& bounds);
+    /// Set bounds for the Lagrange multipliers in phase 0.
+    void setMultiplierBounds(const MucoBounds& bounds);
     /// Add a parameter variable for phase 0.
     void addParameter(const MucoParameter&);
     /// Add a cost term for phase 0.
     void addCost(const MucoCost&);
+    /// Add a constraint for phase 0.
+    void addPathConstraint(const MucoPathConstraint&);
     /// @}
 
     // TODO access phase by name

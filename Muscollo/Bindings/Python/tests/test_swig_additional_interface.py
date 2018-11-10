@@ -100,9 +100,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         time.set(2, 0.2)
         st = osim.Matrix(3, 2)
         ct = osim.Matrix(3, 3)
+        mt = osim.Matrix(3, 1)
         p = osim.RowVector(2, 0.0)
         it = osim.MucoIterate(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
-                              ['p0', 'p1'], st, ct, p)
+                              ['m0'],
+                              ['p0', 'p1'], st, ct, mt, p)
         
         it.setTime([15, 25, 35])
         assert(it.getTime().get(0) == 15)
@@ -130,6 +132,12 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(c2traj[0] == 5)
         assert(c2traj[1] == 12)
         assert(c2traj[2] == -1)
+
+        it.setMultiplier('m0', [326, 1, 42])
+        m0traj = it.getMultiplier('m0')
+        assert(m0traj[0] == 326)
+        assert(m0traj[1] == 1)
+        assert(m0traj[2] == 42)
 
         it.setParameter('p0', 25)
         it.setParameter('p1', 30)
