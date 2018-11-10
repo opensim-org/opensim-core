@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    
 % R24 HD065690) and by DARPA through the Warrior Web program.             
 %                                                                         
-% Copyright (c) 2005-2017 Stanford University and the Authors             
+% Copyright (c) 2005-2019 Stanford University and the Authors             
 % Author(s): Daniel A. Jacobs                                             
 % Contributor(s): Hannah O'Day, Chris Dembia
 %                                                                         
@@ -474,6 +474,7 @@ if addObstacles
     osimModel.addForce(ObstacleForces);
 
 end
+
 % -----------------------------------------------------------------------
 % Ensure there are no errors with how the model was built.
 osimModel.initSystem();

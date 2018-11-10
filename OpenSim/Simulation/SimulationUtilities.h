@@ -94,6 +94,21 @@ void updatePre40KinematicsFilesFor40MotionType(const Model& model,
         const std::vector<std::string>& filePaths,
         std::string suffix="_updated");
 
+/** This function attempts to update the connectee path for any Socket anywhere
+ * in the model whose connectee path does not point to an existing component.
+ * The paths are updated by searching the model for a component with the
+ * correct name. For example, a connectee path like
+ * `../../some/invalid/path/to/foo` will be updated to `/bodyset/foo` if a Body
+ * named `foo` exists in the Model's BodySet. If a socket specifies a Body `foo` and
+ * more than one Body `foo` exists in the model, we emit a warning and the
+ * socket that specified `foo` is not altered.
+ *
+ * This method is intended for use with models loaded from version-30516 XML
+ * files to bring them up to date with the 4.0 interface.
+ * */
+OSIMSIMULATION_API
+void updateSocketConnecteesBySearch(Model& model);
+
 } // end of namespace OpenSim
 
 #endif // OPENSIM_SIMULATION_UTILITIES_H_

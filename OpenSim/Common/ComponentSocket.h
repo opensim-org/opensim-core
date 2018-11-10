@@ -655,8 +655,7 @@ public:
                                             const std::string& channelName,
                                             const std::string& alias) {
         auto path = componentPath;
-        if(!path.empty())
-            path += "|";
+        path += "|";
         path += outputName;
         if(!channelName.empty())
             path += ":" + channelName;

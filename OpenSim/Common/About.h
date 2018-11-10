@@ -1,5 +1,7 @@
+#ifndef OPENSIM_COMMON_ABOUT_H_
+#define OPENSIM_COMMON_ABOUT_H_
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  ComponentOutput.cpp                         *
+ *                            OpenSim:  About.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -7,8 +9,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
- * Author(s): Chris Dembia                                                    *
+ * Copyright (c) 2005-2018 Stanford University and the Authors                *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,11 +23,26 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ComponentOutput.h"
-#include "Component.h"
+#include "osimCommonDLL.h"
 
-using namespace OpenSim;
+extern "C" {
 
-std::string AbstractOutput::getPathName() const {
-    return getOwner().getAbsolutePathString() + "|" + getName();
+OSIMCOMMON_API
+    void opensim_version_common(int* major, int* minor, int* build);
+OSIMCOMMON_API
+    void opensim_about_common(const char* key, int maxlen, char* value);
+
 }
+
+#if defined(__cplusplus) || defined(SWIG)
+#include <string>
+namespace OpenSim {
+OSIMCOMMON_API std::string GetVersionAndDate();
+OSIMCOMMON_API std::string GetVersion();
+OSIMCOMMON_API std::string GetOSInfoVerbose();
+OSIMCOMMON_API std::string GetOSInfo();
+OSIMCOMMON_API std::string GetCompilerVersion();
+}
+#endif
+
+#endif // OPENSIM_COMMON_ABOUT_H_

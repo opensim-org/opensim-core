@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    
 % R24 HD065690) and by DARPA through the Warrior Web program.             
 %                                                                         
-% Copyright (c) 2005-2017 Stanford University and the Authors             
+% Copyright (c) 2005-2019 Stanford University and the Authors             
 % Author(s): Daniel A. Jacobs                                             
 %                                                                         
 % Licensed under the Apache License, Version 2.0 (the "License");         
@@ -28,7 +28,7 @@
 import org.opensim.modeling.*;
 
 % Open a Model by name
-osimModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+osimModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Use the visualizer (must be done before the call to init system)
 osimModel.setUseVisualizer(true);

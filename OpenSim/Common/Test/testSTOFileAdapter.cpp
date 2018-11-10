@@ -86,6 +86,9 @@ void compareHeaders(std::ifstream& filenameA,
         if(line.find("version") != std::string::npos)
           continue;
 
+        if(line.find("OpenSimVersion") != std::string::npos)
+            continue;
+
         headerA.insert(line);
     }
     while(std::getline(filenameB, line)) {
@@ -108,6 +111,9 @@ void compareHeaders(std::ifstream& filenameA,
         // will have older version number.
         if(line.find("version") != std::string::npos)
           continue;
+
+        if(line.find("OpenSimVersion") != std::string::npos)
+            continue;
 
         headerB.insert(line);
     }

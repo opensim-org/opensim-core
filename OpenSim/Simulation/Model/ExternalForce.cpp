@@ -200,11 +200,8 @@ void ExternalForce::extendConnectToModel(Model& model)
     }
 
     if(!_dataSource){
-        // No property set either
-        if((dataSourceProp.size()==0) || (dataSourceProp.getValue(0) == "")){
-            throw(Exception("ExternalForce: Not Data source has been set."));
-        }
-        // else: TODO load the data from the source. Currently this is overly
+        throw Exception("ExternalForce: No Data source has been set.");
+        // TODO: Load the data from dataSourceProp. Currently this is overly
         // complicated and handled by the ExternalLoads class.
     }
     else if(dataSourceProp.size()) {

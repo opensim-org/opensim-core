@@ -55,8 +55,8 @@
 
 namespace OpenSim {
 
+class Model;
 class ModelDisplayHints;
-
 
 //==============================================================================
 /// Component Exceptions

@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2017 Stanford University and the Authors             %
+% Copyright (c) 2005-2019 Stanford University and the Authors             %
 % Author(s): Daniel A. Jacobs                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -29,10 +29,10 @@
 import org.opensim.modeling.*
 
 % Open the model
-walkerModel = Model('../Model/DW2013_WalkerModelTerrain.osim');
+walkerModel = Model('../Model/WalkerModelTerrain.osim');
 
 % Change the name
-walkerModel.setName('DW2013_WalkerModelTerrainAddMagnet');
+walkerModel.setName('WalkerModelTerrainAddMagnet');
 
 % Define the body and points location in each body's coordinate frame
 locBody1 = Vec3(0.05,-0.2, 0);
@@ -66,5 +66,8 @@ rightKneeMagnet.setName('RightKneeMagnet')
 % walkerModel.addForce(leftKneeMagnet);
 % walkerModel.addForce(rightKneeMagnet);
 
+% Finalize connections 
+model.finalizeConnections()
+
 % Print a new model file
-walkerModel.print('../Model/DW2013_WalkerModelTerrainAddMagnet.osim');
+walkerModel.print('../Model/WalkerModelTerrainAddMagnet.osim');

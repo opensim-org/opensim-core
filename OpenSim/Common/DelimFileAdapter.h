@@ -24,9 +24,10 @@
 
 #include "SimTKcommon.h"
 
+#include "About.h"
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
-#include <OpenSim/Common/IO.h>
+#include "OpenSim/Common/IO.h"
 
 #include <string>
 #include <fstream>
@@ -193,6 +194,8 @@ private:
     static const std::string _dataTypeString;
     /** Key used to read/write file version number.                           */
     static const std::string _versionString;
+    /** Key used to read/write OpenSim version number.                        */
+    static const std::string _opensimVersionString;
     /** File version number.                                                  */
     static const std::string _versionNumber;
 };
@@ -259,7 +262,11 @@ DelimFileAdapter<T>::_versionString = "version";
 
 template<typename T>
 const std::string
-DelimFileAdapter<T>::_versionNumber = "2";
+DelimFileAdapter<T>::_versionNumber = "3";
+
+template<typename T>
+const std::string
+DelimFileAdapter<T>::_opensimVersionString = "OpenSimVersion";
 
 template<typename T>
 std::string
@@ -339,21 +346,24 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             auto key = matchRes[1].str();
             auto value = matchRes[2].str();
             if(!key.empty() && !value.empty()) {
-              const auto trimmed_key = trim(key);
-              if(trimmed_key == _dataTypeString) {
-                // Discard key-value pair specifying datatype. Datatype is 
-                // known at this point.
+                const auto trimmed_key = trim(key);
+                if(trimmed_key == _dataTypeString) {
+                    // Discard key-value pair specifying datatype. Datatype is
+                    // known at this point.
                     OPENSIM_THROW_IF(value != dataTypeName(),
                                      DataTypeMismatch,
                                      dataTypeName(),
                                      value);
-              } else if(trimmed_key == _versionString) {
-                // Discard version number. Version number is added during
-                // writing. 
-              } else {
-                table->updTableMetaData().setValueForKey(key, value);
-              }
-              continue;
+                } else if(trimmed_key == _versionString) {
+                    // Discard STO version number. Version number is added
+                    // during writing.
+                } else if(trimmed_key == _opensimVersionString) {
+                    // Discard OpenSim version number. Version number is added
+                    // during writing.
+                } else {
+                    table->updTableMetaData().setValueForKey(key, value);
+                }
+                continue;
             }
         }
 
@@ -569,6 +579,7 @@ DelimFileAdapter<T>::extendWrite(const InputTables& absTables,
     out_stream << _dataTypeString << "=" << dataTypeName() << "\n";
     // Write version number.
     out_stream << _versionString << "=" << _versionNumber << "\n";
+    out_stream << _opensimVersionString << "=" << GetVersion() << "\n";
     out_stream << _endHeaderString << "\n";
 
     // Line containing column labels.

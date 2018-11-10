@@ -60,7 +60,8 @@ ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode
     Super(fileName, false),
     _dataFileName(_dataFileNameProp.getValueStr()),
     _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+    _loadedFromFile(fileName)
 {
     setNull();
 
@@ -117,6 +118,7 @@ void ExternalLoads::copyData(const ExternalLoads &aAbsExternalLoads)
     _externalLoadsModelKinematicsFileName = aAbsExternalLoads._externalLoadsModelKinematicsFileName;
     _lowpassCutoffFrequencyForLoadKinematics = aAbsExternalLoads._lowpassCutoffFrequencyForLoadKinematics;
     _storages = aAbsExternalLoads._storages;
+    _loadedFromFile = aAbsExternalLoads._loadedFromFile;
 }
 
 //_____________________________________________________________________________
@@ -178,24 +180,33 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
     Super::extendConnectToModel(aModel);
 
     Storage *forceData = nullptr;
-    if (_dataFileName.length() > 0) {
-        if(IO::FileExists(_dataFileName))
-            forceData = new Storage(_dataFileName);
-        else if(getDocument()) { // ExternalLoads constructed from file
-            // then change working directory the ExternalLoads location
+    auto loadDataFromDirectoryAdjacentToFile =
+        [this, &forceData](const std::string& filepath) {
+            // Change working directory the ExternalLoads location
             std::string savedCwd = IO::getCwd();
-            IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+            IO::chDir(IO::getParentDirectory(filepath));
             try {
-                forceData = new Storage(_dataFileName);
+                forceData = new Storage(this->_dataFileName);
             }
             catch (const std::exception &ex) {
                 cout << "Error: failed to read ExternalLoads data file '"
-                    << _dataFileName <<"'." << endl;
-                if (getDocument())
+                    << this->_dataFileName <<"'." << endl;
+                if (this->getDocument())
                     IO::chDir(savedCwd);
                 throw(ex);
             }
             IO::chDir(savedCwd);
+    };
+    if (_dataFileName.length() > 0) {
+        if(IO::FileExists(_dataFileName))
+            forceData = new Storage(_dataFileName);
+        else if(getDocument()) { // ExternalLoads constructed from file
+            loadDataFromDirectoryAdjacentToFile(getDocumentFileName());
+        }
+        else if (!_loadedFromFile.empty()) {
+            // Might be dealing with a copy of an ExternalLoads constructed
+            // from file.
+            loadDataFromDirectoryAdjacentToFile(_loadedFromFile);
         }
         else {
             // Cannot find the data file and do not have an ExternalLoads (XML)
