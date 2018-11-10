@@ -6,11 +6,9 @@
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-/* rest of header files to be wrapped */
-%include <OpenSim/version.h>
-
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
+%include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
