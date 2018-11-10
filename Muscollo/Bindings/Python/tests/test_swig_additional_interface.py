@@ -58,15 +58,19 @@ class TestSwigAddtlInterface(unittest.TestCase):
         self.assertAlmostEqual(ph0.getTimeInitialBounds().getUpper(), 2.3)
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getLower(), 4.5)
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getUpper(), 4.5)
-        
-        
+
+
+        model = osim.Model(ph0.updModel())
+        model.initSystem();
         mp.setStateInfo('slider/position/value', osim.MucoBounds(-5, 5),
             osim.MucoInitialBounds(0))
-        assert-5 == ph0.getStateInfo('slider/position/value').getBounds().getLower()
+        mp.initialize(model);
+        assert -5 == ph0.getStateInfo('slider/position/value').getBounds().getLower()
         assert 5 == ph0.getStateInfo('slider/position/value').getBounds().getUpper()
         assert isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getLower())
         assert isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getUpper())
         mp.setStateInfo('slider/position/speed', [-50, 50], [-3], 1.5)
+        mp.initialize(model);
         assert -50 == ph0.getStateInfo('slider/position/speed').getBounds().getLower()
         assert  50 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper()
         assert -3 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower()
@@ -78,6 +82,7 @@ class TestSwigAddtlInterface(unittest.TestCase):
         
         # Use setter on MucoPhase.
         ph0.setStateInfo('slider/position/speed', [-6, 10], [-4, 3], [0])
+        mp.initialize(model);
         assert -6 == ph0.getStateInfo('slider/position/speed').getBounds().getLower()
         assert 10 == ph0.getStateInfo('slider/position/speed').getBounds().getUpper()
         assert -4 == ph0.getStateInfo('slider/position/speed').getInitialBounds().getLower()
@@ -87,9 +92,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         
         # Controls.
         mp.setControlInfo('actuator', osim.MucoBounds(-50, 50))
+        mp.initialize(model);
         assert -50 == ph0.getControlInfo('actuator').getBounds().getLower()
         assert  50 == ph0.getControlInfo('actuator').getBounds().getUpper()
         mp.setControlInfo('actuator', [18])
+        mp.initialize(model);
         assert 18 == ph0.getControlInfo('actuator').getBounds().getLower()
         assert 18 == ph0.getControlInfo('actuator').getBounds().getUpper()
 

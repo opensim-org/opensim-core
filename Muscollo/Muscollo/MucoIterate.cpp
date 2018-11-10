@@ -433,7 +433,7 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
 }
 
 /*static*/ MucoIterate MucoIterate::createFromStatesControlsTables(
-        const MucoProblem& problem,
+        const MucoProblem& /*problem*/,
         const TimeSeriesTable& statesTrajectory,
         const TimeSeriesTable& controlsTrajectory) {
     const int statesNumRows = (int)statesTrajectory.getNumRows();
@@ -491,6 +491,22 @@ bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
 
     auto cn(m_control_names);
     std::sort(cn.begin(), cn.end());
+
+    for (const auto& elem : mpsn) {
+       std::cout << "DEBUG mpsn " << elem << std::endl;
+    }
+
+    for (const auto& elem : sn) {
+        std::cout << "DEBUG sn " << elem << std::endl;
+    }
+
+    for (const auto& elem : mpcn) {
+        std::cout << "DEBUG mpcn " << elem << std::endl;
+    }
+
+    for (const auto& elem : cn) {
+        std::cout << "DEBUG cn " << elem << std::endl;
+    }
 
     auto mn(m_multiplier_names);
     std::sort(mn.begin(), mn.end());

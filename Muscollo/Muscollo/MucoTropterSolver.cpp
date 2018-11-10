@@ -334,7 +334,7 @@ public:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
-        const auto& matter = m_model.getMatterSubsystem();
+        // const auto& matter = m_model.getMatterSubsystem();
 
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
@@ -414,7 +414,7 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
-        const auto& parameters = in.parameters;
+        // const auto& parameters = in.parameters;
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
@@ -448,7 +448,7 @@ public:
         
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            const VectorX<T>& parameters, T& cost) const override {
+            const VectorX<T>& /*parameters*/, T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
@@ -617,6 +617,8 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
+    // Make sure to initialize the problem. TODO put in a better place.
+    getTropterProblem();
     guess.isCompatible(getProblem(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);

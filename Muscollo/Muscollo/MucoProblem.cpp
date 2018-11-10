@@ -171,6 +171,7 @@ MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
     return get_time_final_bounds();
 }
 std::vector<std::string> MucoPhase::createStateInfoNames() const {
+    // TODO: Must initialize first.
     std::vector<std::string> names(m_state_infos.size());
     int i = 0;
     for (const auto& info : m_state_infos) {
@@ -180,6 +181,7 @@ std::vector<std::string> MucoPhase::createStateInfoNames() const {
     return names;
 }
 std::vector<std::string> MucoPhase::createControlInfoNames() const {
+    // TODO: Must initialize first.
     std::vector<std::string> names(m_control_infos.size());
     int i = 0;
     for (const auto& info : m_control_infos) {
@@ -223,12 +225,14 @@ std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
 }
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
+    // TODO: Must initialize first.
     OPENSIM_THROW_IF_FRMOBJ(m_state_infos.count(name) == 0, Exception,
             "No info available for state '" + name + "'.");
     return m_state_infos[name];
 }
 const MucoVariableInfo& MucoPhase::getControlInfo(
         const std::string& name) const {
+    // TODO: Must initialize first.
     OPENSIM_THROW_IF_FRMOBJ(m_control_infos.count(name) == 0, Exception,
             "No info available for control '" + name + "'.");
     return m_control_infos[name];
