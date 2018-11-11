@@ -13,6 +13,60 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+// Any time const SimTK::Vector& appears as an argument or a return type,
+// use a Java double array instead.
+// %typemap(jtype) (const SimTK::Vector&) "double[]"
+// %typemap(jstype) (const SimTK::Vector&) "double[]"
+// %typemap(jni) (const SimTK::Vector&) "jdoubleArray"
+// %typemap(javain) (const SimTK::Vector&) "$javainput"
+// %typemap(in) (const SimTK::Vector&) {
+//     const int size = (int) JCALL1(GetArrayLength, jenv, $input);
+//     const double* data = JCALL2(GetDoubleArrayElements, jenv, $input, 0);
+//     $1 = new SimTK::Vector(size, data);
+// }
+// %typemap(freearg) (const SimTK::Vector&) {
+//     if ($1) {
+//         delete $1;
+//     }
+// }
+// %typemap(argout) (const SimTK::Vector&) {
+//     delete $1;
+//     $1 = NULL;
+// }
+// // VectorView
+// %typemap(jtype) (const SimTK::Vector&) "double[]"
+// %typemap(jstype) (const SimTK::Vector&) "double[]"
+// %typemap(jni) (const SimTK::Vector&) "jdoubleArray"
+// %typemap(javain) (const SimTK::Vector&) "$javainput"
+// %typemap(in) (const SimTK::Vector&) {
+//     const int size = (int) JCALL1(GetArrayLength, jenv, $input);
+//     const double* data = JCALL2(GetDoubleArrayElements, jenv, $input, 0);
+//     $1 = new SimTK::Vector(size, data);
+// }
+// %typemap(freearg) (const SimTK::Vector&) {
+//     if ($1) {
+//         delete $1;
+//     }
+// }
+// %typemap(argout) (const SimTK::Vector&) {
+//     delete $1;
+//     $1 = NULL;
+// }
+//
+// // When const SimTK::Vector& is the return type.
+// // Change the implementation of, e.g., MucoIterate.setTime() in MucoIterate.java
+// // from "return new Vector($jnicall)" to "return $jnicall" (since we no longer
+// // return a Vector).
+// %typemap(javaout) (const SimTK::Vector&) {
+//     return $jnicall;
+// }
+// // In java_muscollo.cxx, convert the SimTK::Vector to a Java double array.
+// // "&(*$1)[0] is the pointer to the start of array underlying the SimTK::Vector.
+// %typemap(out) (const SimTK::Vector&) {
+//     $result = JCALL1(NewDoubleArray, jenv, $1->size());
+//     JCALL4(SetDoubleArrayRegion, jenv, $result, 0, $1->size(), &(*$1)[0]);
+// }
+
 /* Load the required libraries when this module is loaded.                    */
 /* TODO be more clever about detecting location of library. */
 %pragma(java) jniclassclassmodifiers="public class"
@@ -194,7 +248,57 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         v.resize(traj.length);
         for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
         setMultiplier(name, v);
-}
+    }
+    public double[] getTimeMat() {
+        Vector time = getTime();
+        double[] ret = new double[time.size()];
+        for (int i = 0; i < time.size(); ++i) { ret[i] = time.get(i); };
+        return ret;
+    }
+    public double[] getStateMat(String name) {
+        VectorView state = getState(name);
+        double[] ret = new double[state.size()];
+        for (int i = 0; i < state.size(); ++i) { ret[i] = state.get(i); };
+        return ret;
+    }
+    public double[] getControlMat(String name) {
+        VectorView control = getControl(name);
+        double[] ret = new double[control.size()];
+        for (int i = 0; i < control.size(); ++i) { ret[i] = control.get(i); };
+        return ret;
+    }
+    public double[] getMultiplierMat(String name) {
+        VectorView mult = getMultiplier(name);
+        double[] ret = new double[mult.size()];
+        for (int i = 0; i < mult.size(); ++i) { ret[i] = mult.get(i); };
+        return ret;
+    }
+    public double[] getParametersMat() {
+        RowVector params = getParameters();
+        double[] ret = new double[params.size()];
+        for (int i = 0; i < params.size(); ++i) { ret[i] = params.get(i); };
+        return ret;
+    }
+    public double[][] getStatesTrajectoryMat() {
+        Matrix matrix = getStatesTrajectory();
+        double[][] ret = new double[matrix.nrow()][matrix.ncol()];
+        for (int i = 0; i < matrix.nrow(); ++i) {
+            for (int j = 0; j < matrix.ncol(); ++j) {
+                ret[i][j] = matrix.getElt(i, j);
+            }
+        }
+        return ret;
+    }
+    public double[][] getControlsTrajectoryMat() {
+        Matrix matrix = getControlsTrajectory();
+        double[][] ret = new double[matrix.nrow()][matrix.ncol()];
+            for (int i = 0; i < matrix.nrow(); ++i) {
+                for (int j = 0; j < matrix.ncol(); ++j) {
+                    ret[i][j] = matrix.getElt(i, j);
+                }
+            }
+        return ret;
+    }
 %}
 
 %import "java_actuators.i"

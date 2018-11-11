@@ -325,7 +325,7 @@ public:
         SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
         int index = 0;
         int thisConstraintNumEqs;
-        for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+        for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
             thisConstraintNumEqs = 
             m_multibody_constraints[i].getConstraintInfo().getNumEquations();
 

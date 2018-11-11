@@ -75,7 +75,7 @@ public:
     /// thrown.
     void setBounds(const std::vector<MucoBounds>& bounds) {
         updProperty_bounds().clear();
-        for (int i = 0; i < bounds.size(); ++i) {
+        for (int i = 0; i < (int)bounds.size(); ++i) {
             updProperty_bounds().appendValue(bounds[i]);
         }
         updateNumEquationsFromProperty(getProperty_bounds());
@@ -83,7 +83,7 @@ public:
     /// @copydoc setBounds()
     void setSuffixes(const std::vector<std::string>& suffixes) {
         updProperty_suffixes().clear();
-        for (int i = 0; i < suffixes.size(); ++i) {
+        for (int i = 0; i < (int)suffixes.size(); ++i) {
             updProperty_suffixes().appendValue(suffixes[i]);
         }
         updateNumEquationsFromProperty(getProperty_suffixes());

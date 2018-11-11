@@ -32,11 +32,11 @@ endmacro()
 
 
 
-install_name_tool_change(osimMuscollo adolc.2 /usr/local/opt/adol-c/lib)
+install_name_tool_change(osimMuscollo adolc.2 "@ADOLC_DIR@/lib64")
 
 
 
-execute_process(COMMAND install_name_tool
-        -change /usr/local/opt/llvm/lib/libc++.1.dylib
-        /usr/lib/libc++.1.dylib
-        "${bindir}/opensim-muscollo")
+#execute_process(COMMAND install_name_tool
+#        -change /usr/local/opt/llvm/lib/libc++.1.dylib
+#        /usr/lib/libc++.1.dylib
+#        "${bindir}/opensim-muscollo")

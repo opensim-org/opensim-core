@@ -11,6 +11,7 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Muscollo/MucoMarkerTrackingCost.h>
 %include <Muscollo/MucoMarkerEndpointCost.h>
 %include <Muscollo/MucoControlCost.h>
+%include <Muscollo/MucoJointReactionNormCost.h>
 
 %include <Muscollo/MucoBounds.h>
 %include <Muscollo/MucoProblem.h>

@@ -113,7 +113,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # TODO treat Ipopt and such as system headers to ignore their warnings.
 if(CMAKE_CXX_COMPILER_ID MATCHES Clang # includes AppleClang
         OR CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-    add_compile_options(-Wall -Wextra)
+    add_compile_options(-Wall -Wextra -Werror)
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         add_compile_options(-Wshorten-64-to-32)
