@@ -444,7 +444,7 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
 }
 
 /*static*/ MucoIterate MucoIterate::createFromStatesControlsTables(
-        const MucoProblem& problem,
+        const MucoProblem& /*problem*/,
         const TimeSeriesTable& statesTrajectory,
         const TimeSeriesTable& controlsTrajectory) {
     const int statesNumRows = (int)statesTrajectory.getNumRows();

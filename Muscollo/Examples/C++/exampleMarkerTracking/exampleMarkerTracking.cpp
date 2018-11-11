@@ -51,10 +51,14 @@ Model createDoublePendulumModel() {
     auto* j0 = new PinJoint("j0", model.getGround(), Vec3(0), Vec3(0),
         *b0, Vec3(-1, 0, 0), Vec3(0));
     auto& q0 = j0->updCoordinate();
+    q0.setRangeMin(-10);
+    q0.setRangeMax(10);
     q0.setName("q0");
     auto* j1 = new PinJoint("j1",
         *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
     auto& q1 = j1->updCoordinate();
+    q1.setRangeMin(-10);
+    q1.setRangeMax(10);
     q1.setName("q1");
     model.addJoint(j0);
     model.addJoint(j1);
@@ -63,12 +67,16 @@ Model createDoublePendulumModel() {
     tau0->setCoordinate(&j0->updCoordinate());
     tau0->setName("tau0");
     tau0->setOptimalForce(1);
+    tau0->setMinControl(-40);
+    tau0->setMaxControl(40);
     model.addComponent(tau0);
 
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
     tau1->setName("tau1");
     tau1->setOptimalForce(1);
+    tau1->setMinControl(-40);
+    tau1->setMaxControl(40);
     model.addComponent(tau1);
 
     // Add display geometry.
@@ -101,12 +109,6 @@ int main() {
     // -------
     double finalTime = 1.0;
     problem.setTimeBounds(0, finalTime);
-    problem.setStateInfo("j0/q0/value", { -10, 10 });
-    problem.setStateInfo("j0/q0/speed", { -50, 50 });
-    problem.setStateInfo("j1/q1/value", { -10, 10 });
-    problem.setStateInfo("j1/q1/speed", { -50, 50 });
-    problem.setControlInfo("tau0", { -40, 40 });
-    problem.setControlInfo("tau1", { -40, 40 });
 
     // Cost.
     // -----
