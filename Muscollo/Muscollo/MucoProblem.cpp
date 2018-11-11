@@ -128,6 +128,8 @@ void MucoPhase::setStateInfo(const std::string& name, const MucoBounds& bounds,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_state_infos(info);
     else           upd_state_infos(idx) = info;
+
+    m_state_infos[name] = info;
 }
 void MucoPhase::setControlInfo(const std::string& name,
         const MucoBounds& bounds,
@@ -137,6 +139,8 @@ void MucoPhase::setControlInfo(const std::string& name,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
+
+    m_control_infos[name] = info;
 }
 void MucoPhase::addParameter(const MucoParameter& parameter) {
     OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,

@@ -334,8 +334,6 @@ public:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
 
-        // const auto& matter = m_model.getMatterSubsystem();
-
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
             auto& osimControls = m_model.updControls(m_state);
@@ -414,7 +412,6 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
-        // const auto& parameters = in.parameters;
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?

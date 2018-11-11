@@ -227,7 +227,7 @@ public:
     /// Get the names of all the MucoPathConstraints.
     std::vector<std::string> createPathConstraintNames() const;
     /// Get the constraint names of all the multibody constraints. Note: this
-    /// should only be called after initialization().
+    /// should only be called after initialize().
     std::vector<std::string> createMultibodyConstraintNames() const;
     /// Get information for state variables. If info was not specified for
     /// a coordinate value, the coordinate range is used for the bounds.
