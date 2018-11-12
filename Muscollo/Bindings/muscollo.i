@@ -4,7 +4,6 @@
 typedef SimTK::RowVector_<double> RowVector;
 
 %include <Muscollo/osimMuscolloDLL.h>
-%include <Muscollo/MuscolloUtilities.h>
 %include <Muscollo/MucoCost.h>
 %include <Muscollo/MucoWeightSet.h>
 %include <Muscollo/MucoStateTrackingCost.h>
@@ -51,3 +50,4 @@ namespace OpenSim {
 %include <Muscollo/MucoTool.h>
 
 %include <Muscollo/ActivationCoordinateActuator.h>
+%include <Muscollo/MuscolloUtilities.h>

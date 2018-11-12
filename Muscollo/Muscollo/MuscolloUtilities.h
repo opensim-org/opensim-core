@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Storage.h>
-#include "MucoIterate.h"
 
 #include <set>
 
@@ -31,6 +30,7 @@ namespace OpenSim {
 
 class StatesTrajectory;
 class Model;
+class MucoIterate;
 
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.

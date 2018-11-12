@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MuscolloUtilities.h"
+#include "MucoIterate.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -259,7 +260,6 @@ void OpenSim::visualize(Model model, TimeSeriesTable table) {
 
 void OpenSim::prescribeControlsToModel(const MucoIterate& iterate, 
         Model& model) {
-
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -283,7 +283,6 @@ void OpenSim::prescribeControlsToModel(const MucoIterate& iterate,
         controller->prescribeControlForActuator(actuNames[i], controlFunction);
     }
     model.addController(controller);
-
 }
 
 std::unordered_map<std::string, int>

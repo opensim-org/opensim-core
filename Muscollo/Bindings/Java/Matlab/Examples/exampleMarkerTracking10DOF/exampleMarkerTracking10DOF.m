@@ -22,12 +22,11 @@ import org.opensim.modeling.*
 
 % Create the 10-DOF skeletal model.
 % =================================
-
 % Load the base model from file.
 model = Model('subject01.osim');
 
-% Add coordinate actuators for each DOF in the model using a convenience
-% function. See below for details.
+% Add CoordinateActuators for each DOF in the model using a 
+% convenience function. See below for details.
 addCoordinateActuator(model, 'lumbar_extension', 500);
 addCoordinateActuator(model, 'pelvis_tilt', 500);
 addCoordinateActuator(model, 'pelvis_tx', 1000);
@@ -63,24 +62,14 @@ problem.setModel(model);
 %   problem.setControlInfo('actuator', [0, 1]);
 % Only the time bounds need to be set here.
 problem.setTimeBounds(0, 1.25);
-problem.setStateInfo('tau_lumbar_extension/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_pelvis_tilt/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_pelvis_tx/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_pelvis_ty/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_hip_flexion_r/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_knee_angle_r/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_ankle_angle_r/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_hip_flexion_l/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_knee_angle_l/activation', [ -1, 1 ]);
-problem.setStateInfo('tau_ankle_angle_l/activation', [ -1, 1 ]);
 
 % Cost.
 % -----
-% Create a marker tracking cost term. This is the squared difference
-% between the model markers and the experimental markers, integrated over
-% the phase.
-tracking = MucoMarkerTrackingCost();
-tracking.setName('marker_tracking');
+% Create a marker tracking cost term. This term will compute the squared 
+% difference between the model markers and the experimental markers, 
+% integrated over the phase.
+markerTrackingCost = MucoMarkerTrackingCost();
+markerTrackingCost.setName('marker_tracking');
 
 % First, obtain the experimental marker trajectories from the sample TRC
 % file.
@@ -103,21 +92,29 @@ markerWeights.cloneAndAppend(MarkerWeight('L.Toe.Tip',2));
 % cost term uses this marker reference to compute the weighted, squared
 % marker tracking error internally.
 markersRef = MarkersReference(markerTraj, markerWeights);
-tracking.setMarkersReference(markersRef);
+markerTrackingCost.setMarkersReference(markersRef);
 
 % This setting gives the marker tracking cost permission to ignore data in
 % the markers reference for markers that don't exist in the model. For
 % example, there are anatomical markers in the TRC file that got carried 
 % over to markers reference that we'd like to ignore, so this flag is 
 % enabled.
-tracking.setAllowUnusedReferences(true);
+markerTrackingCost.setAllowUnusedReferences(true);
 
 % Add the tracking cost to the problem.
-problem.addCost(tracking);
+problem.addCost(markerTrackingCost);
+
+% Add a low-weighted control effort cost to reduce oscillations in the 
+% actuator controls.
+controlCost = MucoControlCost();
+controlCost.set_weight(0.1);
+problem.addCost(controlCost);
 
 % Configure the solver.
 % =====================
 solver = muco.initSolver();
+% 10 mesh points ~ 1 minute to solve
+% 25 mesh points ~ 5 minutes to solve
 solver.set_num_mesh_points(10);
 solver.set_optim_hessian_approximation('exact');
 solver.setGuess('bounds');
@@ -170,7 +167,7 @@ import org.opensim.modeling.*
 
 coordSet = model.updCoordinateSet();
 
-actu = ActivationCoordinateActuator();
+actu = CoordinateActuator();
 actu.setName(['tau_' coordName]);
 actu.setCoordinate(coordSet.get(coordName));
 actu.setOptimalForce(optimalForce);

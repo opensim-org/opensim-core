@@ -4,7 +4,6 @@
 */
 
 #include <Muscollo/osimMuscolloDLL.h>
-#include <Muscollo/MuscolloUtilities.h>
 #include <Muscollo/MucoCost.h>
 #include <Muscollo/MucoWeightSet.h>
 #include <Muscollo/MucoStateTrackingCost.h>
@@ -19,5 +18,6 @@
 #include <Muscollo/MucoTropterSolver.h>
 #include <Muscollo/MucoTool.h>
 #include <Muscollo/ActivationCoordinateActuator.h>
+#include <Muscollo/MuscolloUtilities.h>
 
 #endif // MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_
