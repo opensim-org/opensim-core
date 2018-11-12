@@ -146,7 +146,7 @@ statesTraj = solution.exportToStatesTrajectory(problem);
 % This function adds the solution controls as prescribed controllers to the 
 % model. This ensures that the correct reaction loads are computed when 
 % realizing to acceleration.
-model = prescribeSolutionControlsToModel(solution, model);
+opensimMuscollo.prescribeControlsToModel(solution, model);
 model.initSystem();
 
 % Compute reaction loads.
