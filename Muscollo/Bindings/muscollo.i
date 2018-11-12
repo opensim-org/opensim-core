@@ -49,3 +49,5 @@ namespace OpenSim {
 }
 %include <Muscollo/MucoTropterSolver.h>
 %include <Muscollo/MucoTool.h>
+
+%include <Muscollo/ActivationCoordinateActuator.h>

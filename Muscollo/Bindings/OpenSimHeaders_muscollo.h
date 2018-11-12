@@ -18,5 +18,6 @@
 #include <Muscollo/MucoIterate.h>
 #include <Muscollo/MucoTropterSolver.h>
 #include <Muscollo/MucoTool.h>
+#include <Muscollo/ActivationCoordinateActuator.h>
 
 #endif // MUSCOLLO_OPENSIM_HEADERS_MUSCOLLO_H_

@@ -19,11 +19,11 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Storage.h>
+#include "osimMuscollo.h"
 
 #include <set>
 
 #include "osimMuscolloDLL.h"
-#include "osimMuscollo.h"
 
 #include <set>
 

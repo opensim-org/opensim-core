@@ -54,9 +54,14 @@ problem.setModel(model);
 
 % Bounds.
 % -------
-% All bounds for state variables and model actuators are set based on model
-% defaults or, for the coordinate speeds, defaults set by the problem. 
-% Therefore, only the time bounds need to be set here.
+% All bounds for coordinate position values and actuator controls are set 
+% based on model default ranges. The coordinate speeds are set to [-50, 50]
+% by the problem as a default. All of these values can be modified on the 
+% problem itself. For example,
+%   problem.setStateInfo('joint/coord/value', [-10, 10]);
+%   problem.setStateInfo('joint/coord/speed', [-30, 30]);
+%   problem.setControlInfo('actuator', [0, 1]);
+% Only the time bounds need to be set here.
 problem.setTimeBounds(0, 1.25);
 
 % Cost.
@@ -99,10 +104,6 @@ tracking.setAllowUnusedReferences(true);
 
 % Add the tracking cost to the problem.
 problem.addCost(tracking);
-
-effort = MucoControlCost();
-effort.set_weight(0.1);
-problem.addCost(effort);
 
 % Configure the solver.
 % =====================
@@ -163,6 +164,8 @@ actu = CoordinateActuator();
 actu.setName(['tau_' coordName]);
 actu.setCoordinate(coordSet.get(coordName));
 actu.setOptimalForce(optimalForce);
+% Set the min and max control defaults to automatically generate bounds for
+% each actuator in the problem.
 actu.setMinControl(-1);
 actu.setMaxControl(1);
 model.addComponent(actu);

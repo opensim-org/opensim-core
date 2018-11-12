@@ -12,7 +12,7 @@ install(FILES
             "${SANDBOX_MARKER_TRACKING_DIR}/marker_trajectories.trc"
             "${SANDBOX_MARKER_TRACKING_DIR}/subject01.osim"
         DESTINATION 
-            "${MUSCOLLO_INSTALL_MATLABEXDIR}/exampleMarkerTracking_gait1018")
+            "${MUSCOLLO_INSTALL_MATLABEXDIR}/exampleMarkerTracking10DOF")
 
 # The configureMuscollo.m script contains paths into the Muscollo installation
 # that may be different on different platforms, so we configure it with CMake

@@ -144,8 +144,8 @@ legend('actuator')
 statesTraj = solution.exportToStatesTrajectory(problem);
 
 % This function adds the solution controls as prescribed controllers to the 
-% model. This is to ensure that the correct reaction loads are computed when 
-% calling realizeAcceleration for a given state.
+% model. This ensures that the correct reaction loads are computed when 
+% realizing to acceleration.
 model = prescribeSolutionControlsToModel(solution, model);
 model.initSystem();
 
