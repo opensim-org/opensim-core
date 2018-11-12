@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Common/Storage.h>
-#include "osimMuscollo.h"
+#include "MucoIterate.h"
 
 #include <set>
 

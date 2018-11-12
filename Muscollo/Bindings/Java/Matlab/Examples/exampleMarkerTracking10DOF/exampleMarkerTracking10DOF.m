@@ -63,6 +63,16 @@ problem.setModel(model);
 %   problem.setControlInfo('actuator', [0, 1]);
 % Only the time bounds need to be set here.
 problem.setTimeBounds(0, 1.25);
+problem.setStateInfo('tau_lumbar_extension/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_pelvis_tilt/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_pelvis_tx/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_pelvis_ty/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_hip_flexion_r/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_knee_angle_r/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_ankle_angle_r/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_hip_flexion_l/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_knee_angle_l/activation', [ -1, 1 ]);
+problem.setStateInfo('tau_ankle_angle_l/activation', [ -1, 1 ]);
 
 % Cost.
 % -----
@@ -108,7 +118,7 @@ problem.addCost(tracking);
 % Configure the solver.
 % =====================
 solver = muco.initSolver();
-solver.set_num_mesh_points(30);
+solver.set_num_mesh_points(10);
 solver.set_optim_hessian_approximation('exact');
 solver.setGuess('bounds');
 
@@ -160,7 +170,7 @@ import org.opensim.modeling.*
 
 coordSet = model.updCoordinateSet();
 
-actu = CoordinateActuator();
+actu = ActivationCoordinateActuator();
 actu.setName(['tau_' coordName]);
 actu.setCoordinate(coordSet.get(coordName));
 actu.setOptimalForce(optimalForce);
