@@ -101,12 +101,13 @@ tracking.setAllowUnusedReferences(true);
 problem.addCost(tracking);
 
 effort = MucoControlCost();
+effort.set_weight(0.1);
 problem.addCost(effort);
 
 % Configure the solver.
 % =====================
 solver = muco.initSolver();
-solver.set_num_mesh_points(10);
+solver.set_num_mesh_points(30);
 solver.set_optim_hessian_approximation('exact');
 solver.setGuess('bounds');
 

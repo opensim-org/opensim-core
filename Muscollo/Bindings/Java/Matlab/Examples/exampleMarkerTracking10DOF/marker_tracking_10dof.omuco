@@ -1648,7 +1648,8 @@
 						<allow_unused_references>true</allow_unused_references>
 					</MucoMarkerTrackingCost>
 					<MucoControlCost name="cost">
-						<!--All properties of this object have their default values.-->
+						<!--The cost value is multiplied by this weight (default: 1).-->
+						<weight>0.10000000000000001</weight>
 					</MucoControlCost>
 				</costs>
 			</MucoPhase>
@@ -1656,7 +1657,7 @@
 		<!--The optimal control algorithm for solving the problem.-->
 		<MucoTropterSolver name="solver">
 			<!--The number of mesh points for discretizing the problem (default: 100).-->
-			<num_mesh_points>10</num_mesh_points>
+			<num_mesh_points>30</num_mesh_points>
 			<!--'limited-memory' (default) for quasi-Newton, or 'exact' for full Newton.-->
 			<optim_hessian_approximation>exact</optim_hessian_approximation>
 			<!--A MucoIterate file storing an initial guess.-->

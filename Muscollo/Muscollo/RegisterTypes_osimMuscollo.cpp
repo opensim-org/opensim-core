@@ -33,6 +33,7 @@
 #include "MucoControlCost.h"
 #include "MucoJointReactionNormCost.h"
 #include "MucoParameter.h"
+#include "ActivationCoordinateActuator.h"
 
 #include <exception>
 #include <iostream>
@@ -61,6 +62,7 @@ OSIMMUSCOLLO_API void RegisterTypes_osimMuscollo() {
         Object::registerType(MucoTropterSolver());
         Object::registerType(MucoParameter());
 
+        Object::registerType(ActivationCoordinateActuator());
         Object::registerType(GlobalStaticOptimization());
         Object::registerType(INDYGO());
     } catch (const std::exception& e) {
