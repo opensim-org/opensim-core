@@ -52,7 +52,7 @@ SimTK::Vector interpolate(const SimTK::Vector& x,
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
-/// Lowpass filter the data in a TimeSeriesTable at a provide cutoff frequency.
+/// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
 /// The table is converted to a Storage object to use the lowpassIIR() method
 /// to filter, and then converted back to TimeSeriesTable.
 OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
