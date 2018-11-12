@@ -17,18 +17,20 @@
  * -------------------------------------------------------------------------- */
 
 #include "MuscolloUtilities.h"
+#include "MucoIterate.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <simbody/internal/Visualizer_InputListener.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Common/GCVSpline.h>
 
 #include <cstdarg>
 #include <cstdio>
 
 using namespace OpenSim;
-
 
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
@@ -73,8 +75,8 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     return sto;
 }
 
-/// TODO: doc
-OSIMMUSCOLLO_API TimeSeriesTable OpenSim::filterLowpass(const TimeSeriesTable & table, double cutoffFreq, bool padData) {
+TimeSeriesTable OpenSim::filterLowpass(const TimeSeriesTable & table, 
+        double cutoffFreq, bool padData) {
     auto storage = convertTableToStorage(table);
     if (padData) {
         storage.pad(storage.getSize() / 2);
@@ -254,6 +256,33 @@ void OpenSim::visualize(Model model, Storage statesSto) {
 
 void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
+}
+
+void OpenSim::prescribeControlsToModel(const MucoIterate& iterate, 
+        Model& model) {
+    // Get actuator names.
+    model.initSystem();
+    OpenSim::Array<std::string> actuNames;
+    const auto modelPath = model.getAbsolutePath();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        actuNames.append(
+            actu.getAbsolutePath().formRelativePath(modelPath).toString());
+    }
+
+    // Add prescribed controllers to actuators in the model, where the control
+    // functions are splined versions of the actuator controls from the OCP 
+    // solution.
+    const SimTK::Vector& time = iterate.getTime();
+    auto* controller = new PrescribedController();
+    controller->setName("prescribed_controller");
+    for (int i = 0; i < actuNames.size(); ++i) {
+        const auto control = iterate.getControl(actuNames[i]);
+        auto* controlFunction = new GCVSpline(5, time.nrow(), &time[0],
+            &control[0]);
+        controller->addActuator(model.getComponent<Actuator>(actuNames[i]));
+        controller->prescribeControlForActuator(actuNames[i], controlFunction);
+    }
+    model.addController(controller);
 }
 
 std::unordered_map<std::string, int>

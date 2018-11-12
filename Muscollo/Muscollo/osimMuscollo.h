@@ -33,6 +33,7 @@
 #include "MuscolloUtilities.h"
 #include "MucoParameter.h"
 #include "MucoConstraint.h"
+#include "ActivationCoordinateActuator.h"
 
 #include "RegisterTypes_osimMuscollo.h"
 

@@ -29,67 +29,6 @@
 
 using namespace OpenSim;
 
-/// Similar to CoordinateActuator (simply produces a generalized force) but
-/// with first-order linear activation dynamics. This actuator has one state
-/// variable, `activation`, with \f$ \dot{a} = (u - a) / \tau \f$, where
-/// \f$ a \f$ is activation, \f$ u $\f is excitation, and \f$ \tau \f$ is the
-/// activation time constant (there is no separate deactivation time constant).
-/// <b>Default %Property Values</b>
-/// @verbatim
-/// activation_time_constant: 0.01
-/// default_activation: 0.5
-/// @dverbatim
-class /*OSIMMUSCOLLO_API*/
-    ActivationCoordinateActuator : public CoordinateActuator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
-        CoordinateActuator);
-public:
-    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Larger value means activation can change more rapidly "
-        "(units: seconds).");
-
-    OpenSim_DECLARE_PROPERTY(default_activation, double,
-        "Value of activation in the default state returned by initSystem().");
-
-    ActivationCoordinateActuator() {
-        constructProperties();
-    }
-
-    void extendAddToSystem(SimTK::MultibodySystem& system) const override {
-        Super::extendAddToSystem(system);
-        addStateVariable("activation", SimTK::Stage::Dynamics);
-    }
-
-    void extendInitStateFromProperties(SimTK::State& s) const override {
-        Super::extendInitStateFromProperties(s);
-        setStateVariableValue(s, "activation", get_default_activation());
-    }
-
-    void extendSetPropertiesFromState(const SimTK::State& s) override {
-        Super::extendSetPropertiesFromState(s);
-        set_default_activation(getStateVariableValue(s, "activation"));
-    }
-
-    // TODO no need to do clamping, etc; CoordinateActuator is bidirectional.
-    void computeStateVariableDerivatives(const SimTK::State& s) const override 
-    {
-        const auto& tau = get_activation_time_constant();
-        const auto& u = getControl(s);
-        const auto& a = getStateVariableValue(s, "activation");
-        const SimTK::Real adot = (u - a) / tau;
-        setStateVariableDerivativeValue(s, "activation", adot);
-    }
-
-    double computeActuation(const SimTK::State& s) const override {
-        return getStateVariableValue(s, "activation") * getOptimalForce();
-    }
-private:
-    void constructProperties() {
-        constructProperty_activation_time_constant(0.010);
-        constructProperty_default_activation(0.5);
-    }
-};
-
 class /*OSIMMUSCOLLO_API*/
     ActivationMuscleLikeCoordinateActuator : 
             public MuscleLikeCoordinateActuator {
@@ -351,13 +290,6 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     MucoMarkerTrackingCost tracking;
     tracking.setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
-    TimeSeriesTable refFilt = filterLowpass(ref.flatten(), 6.0, true);
-    auto refPacked = refFilt.pack<double>();
-    TimeSeriesTableVec3 refToUse(refPacked);
-
-    // Convert from millimeters to meters.
-    auto& table = refToUse.updMatrix();
-    table = table / 1000.0; 
 
     // Set marker weights to match IK task weights.
     Set<MarkerWeight> markerWeights;
@@ -369,7 +301,7 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     markerWeights.cloneAndAppend({ "R.Toe.Tip", 2 });
     markerWeights.cloneAndAppend({ "L.Heel", 2 });
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
-    MarkersReference markersRef(refToUse, &markerWeights);
+    MarkersReference markersRef(ref, &markerWeights);
     
     tracking.setMarkersReference(markersRef);
     tracking.setAllowUnusedReferences(true);
