@@ -377,13 +377,6 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     MucoMarkerTrackingCost tracking;
     tracking.setName("tracking");
     auto ref = TRCFileAdapter::read("marker_trajectories.trc");
-    TimeSeriesTable refFilt = filterLowpass(ref.flatten(), 6.0, true);
-    auto refPacked = refFilt.pack<double>();
-    TimeSeriesTableVec3 refToUse(refPacked);
-
-    // Convert from millimeters to meters.
-    auto& table = refToUse.updMatrix();
-    table = table / 1000.0; 
 
     // Set marker weights to match IK task weights.
     Set<MarkerWeight> markerWeights;
@@ -395,7 +388,7 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     markerWeights.cloneAndAppend({ "R.Toe.Tip", 2 });
     markerWeights.cloneAndAppend({ "L.Heel", 2 });
     markerWeights.cloneAndAppend({ "L.Toe.Tip", 2 });
-    MarkersReference markersRef(refToUse, &markerWeights);
+    MarkersReference markersRef(ref, &markerWeights);
     
     tracking.setMarkersReference(markersRef);
     tracking.setAllowUnusedReferences(true);

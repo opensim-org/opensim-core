@@ -66,6 +66,10 @@ OSIMMUSCOLLO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
 
+/// todo
+OSIMMUSCOLLO_API void prescribeControlsToModel(const MucoIterate& iterate, 
+    Model& model);
+
 #ifndef SWIG
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
