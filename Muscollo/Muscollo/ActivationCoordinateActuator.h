@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim\Actuators\CoordinateActuator.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 namespace OpenSim {
 
