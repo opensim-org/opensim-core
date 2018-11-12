@@ -331,4 +331,3 @@ trackedSolution = solveMarkerTracking(markersRef, trackedSolution)
 
 
 
-    

@@ -50,6 +50,8 @@ Model createSlidingMassModel() {
     actu->setCoordinate(&coord);
     actu->setName("actuator");
     actu->setOptimalForce(1);
+    actu->setMinControl(-10);
+    actu->setMaxControl(10);
     model.addComponent(actu);
 
     return model;
@@ -65,7 +67,6 @@ MucoTool createSlidingMassMucoTool() {
     mp.setStateInfo("slider/position/value", MucoBounds(0, 1),
             MucoInitialBounds(0), MucoFinalBounds(1));
     mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
-    mp.setControlInfo("actuator", MucoBounds(-10, 10));
     MucoFinalTimeCost ftCost;
     mp.addCost(ftCost);
 
