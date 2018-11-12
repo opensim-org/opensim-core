@@ -100,6 +100,9 @@ tracking.setAllowUnusedReferences(true);
 % Add the tracking cost to the problem.
 problem.addCost(tracking);
 
+effort = MucoControlCost();
+problem.addCost(effort);
+
 % Configure the solver.
 % =====================
 solver = muco.initSolver();

@@ -257,7 +257,8 @@ void OpenSim::visualize(Model model, TimeSeriesTable table) {
     visualize(std::move(model), convertTableToStorage(table));
 }
 
-void prescribeControlsToModel(const MucoIterate& iterate, Model& model) {
+void OpenSim::prescribeControlsToModel(const MucoIterate& iterate, 
+        Model& model) {
 
     // Get actuator names.
     model.initSystem();
