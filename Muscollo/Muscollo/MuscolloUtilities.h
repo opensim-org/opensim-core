@@ -52,7 +52,9 @@ SimTK::Vector interpolate(const SimTK::Vector& x,
 // TODO move to the Storage class.
 OSIMMUSCOLLO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
-/// TODO: doc
+/// Lowpass filter the data in a TimeSeriesTable at a provide cutoff frequency.
+/// The table is converted to a Storage object to use the lowpassIIR() method
+/// to filter, and then converted back to TimeSeriesTable.
 OSIMMUSCOLLO_API TimeSeriesTable filterLowpass(const TimeSeriesTable& table, 
     double cutoffFreq, bool padData = false);
 
@@ -67,7 +69,11 @@ OSIMMUSCOLLO_API void visualize(Model, Storage);
 /// the states are provided in a TimeSeriesTable.
 OSIMMUSCOLLO_API void visualize(Model, TimeSeriesTable);
 
-/// todo
+/// Given a valid MucoSolution obtained from solving a MucoProblem and the 
+/// associated OpenSim model, return the model with a prescribed controller
+/// appended that will compute the control values from the MucoSolution. This 
+/// can be useful when computing state-dependent model quantities that require
+/// realization to the Dynamics stage or later.
 OSIMMUSCOLLO_API void prescribeControlsToModel(const MucoIterate& iterate, 
     Model& model);
 

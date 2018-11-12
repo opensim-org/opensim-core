@@ -1,3 +1,5 @@
+#ifndef MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
+#define MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: ActivationCoordinateActuator.h                           *
  * -------------------------------------------------------------------------- *
@@ -15,6 +17,10 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+
+#include <OpenSim\Actuators\CoordinateActuator.h>
+
+namespace OpenSim {
 
 /// Similar to CoordinateActuator (simply produces a generalized force) but
 /// with first-order linear activation dynamics. This actuator has one state
@@ -76,3 +82,7 @@ private:
         constructProperty_default_activation(0.5);
     }
 };
+
+} // namespace OpenSim
+
+#endif // MUSCOLLO_ACTIVATIONCOORDINATEACTUATOR_H
