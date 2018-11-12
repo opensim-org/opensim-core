@@ -18,12 +18,13 @@
 
 function exampleMarkerTracking10DOF()
 
-import org.opensim.modeling.*
+import org.opensim.modeling.*;
 
 % Create the 10-DOF skeletal model.
 % =================================
 % Load the base model from file.
-model = Model('subject01.osim');
+scriptdir = fileparts(mfilename('fullpath'));
+model = Model(fullfile(scriptdir, 'subject01.osim'));
 
 % Add CoordinateActuators for each DOF in the model using a 
 % convenience function. See below for details.
@@ -71,11 +72,7 @@ problem.setTimeBounds(0, 1.25);
 markerTrackingCost = MucoMarkerTrackingCost();
 markerTrackingCost.setName('marker_tracking');
 
-% First, obtain the experimental marker trajectories from the sample TRC
-% file.
-markerTraj = TRCFileAdapter().read('marker_trajectories.trc');
-
-% Next, create a set of marker weights to define the relative importance for
+% Create a set of marker weights to define the relative importance for
 % tracking individual markers.
 markerWeights = SetMarkerWeights();
 markerWeights.cloneAndAppend(MarkerWeight('Top.Head', 3));
@@ -91,7 +88,8 @@ markerWeights.cloneAndAppend(MarkerWeight('L.Toe.Tip',2));
 % trajectories and the marker weights and pass it to the tracking cost. The
 % cost term uses this marker reference to compute the weighted, squared
 % marker tracking error internally.
-markersRef = MarkersReference(markerTraj, markerWeights);
+markersRef = MarkersReference(fullfile(scriptdir, 'marker_trajectories.trc'));
+markersRef.setMarkerWeightSet(markerWeights);
 markerTrackingCost.setMarkersReference(markersRef);
 
 % This setting gives the marker tracking cost permission to ignore data in
@@ -163,7 +161,7 @@ end
 
 function addCoordinateActuator(model, coordName, optimalForce)
 
-import org.opensim.modeling.*
+import org.opensim.modeling.*;
 
 coordSet = model.updCoordinateSet();
 
