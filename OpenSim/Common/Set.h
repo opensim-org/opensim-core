@@ -177,7 +177,7 @@ public:
  * _memoryOwner is set to true. So, the result is two independent,
  * identical sets, with the possible exception of the _memoryOwner flag.
  *
- * @param aSet Set to be copied.
+ * @param set The Set to be copied.
  * @return Reference to this set.
  */
 #ifndef SWIG
