@@ -134,8 +134,6 @@ public:
         const SimTK::Vec3& location, const SimTK::Vec3& orientation);
     /** Convert component names into the appropriate paths based on where we
      * know components were located in version 30000 model files.
-     * @param depth What's the tree depth of the component containing the
-     *      relevant socket?
      * @param connecteeSetName "bodyset", "jointset", etc.
      * @param connecteeName The name of the connectee from the version 30000
      *      file.

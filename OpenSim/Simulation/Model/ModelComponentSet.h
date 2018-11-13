@@ -62,28 +62,6 @@ class ModelComponentSet : public Set<T, ModelComponent> {
 //=============================================================================
 public:
     using Set<T, ModelComponent>::Set;
-    /** Default constructor creates an empty Set with no associated Model. 
-    ModelComponentSet() : Super() {
-    }
-    */
-    /** Create an empty set associated to the specified Model. 
-    explicit ModelComponentSet(Model& model) : _model(&model) {
-    }
-    */
-    /** Construct from file.
-     *
-     * @param[in]   model       The Model to which this set is associated.
-     * @param[in]   fileName    Name of the file.
-     * @param[in]   aUpdateFromXMLNode  
-     *                          (Advanced) Used to avoid duplicate XML parsing.
-
-    ModelComponentSet(Model& model, const std::string& fileName, 
-                      bool aUpdateFromXMLNode = true) : 
-        Super(fileName, aUpdateFromXMLNode), _model(&model) {
-    }
-    */
-    /** Associate the model that owns this ModelComponentSet */
-//    void setModel(Model& model) { _model.reset(&model); }
     void extendFinalizeFromProperties() override final {
         Super::extendFinalizeFromProperties();
         // ModelComponentSets are unnamed properties of models, but as
