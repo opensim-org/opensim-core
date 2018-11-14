@@ -54,6 +54,8 @@ Model createSlidingMassModel() {
     actu->setMaxControl(10);
     model.addComponent(actu);
 
+    model.finalizeConnections();
+
     return model;
 }
 
@@ -64,9 +66,9 @@ MucoTool createSlidingMassMucoTool() {
     MucoProblem& mp = muco.updProblem();
     mp.setModel(createSlidingMassModel());
     mp.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(0, 10));
-    mp.setStateInfo("slider/position/value", MucoBounds(0, 1),
+    mp.setStateInfo("/slider/position/value", MucoBounds(0, 1),
             MucoInitialBounds(0), MucoFinalBounds(1));
-    mp.setStateInfo("slider/position/speed", {-100, 100}, 0, 0);
+    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
     MucoFinalTimeCost ftCost;
     mp.addCost(ftCost);
 
@@ -102,9 +104,11 @@ Model createPendulumModel() {
     // Add display geometry.
     Ellipsoid bodyGeometry(0.1, 0.5, 0.1);
     SimTK::Transform transform(SimTK::Vec3(0, 0.5, 0));
-    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", *b0, transform);
     b0->addComponent(b0Center);
     b0Center->attachGeometry(bodyGeometry.clone());
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -118,10 +122,10 @@ void testSlidingMass() {
 
     // Check dimensions and metadata of the solution.
     SimTK_TEST((solution.getStateNames() == std::vector<std::string>{
-            "slider/position/value",
-            "slider/position/speed"}));
+            "/slider/position/value",
+            "/slider/position/speed"}));
     SimTK_TEST((solution.getControlNames() ==
-            std::vector<std::string>{"actuator"}));
+            std::vector<std::string>{"/actuator"}));
     SimTK_TEST(solution.getTime().size() == numTimes);
     const auto& states = solution.getStatesTrajectory();
     SimTK_TEST(states.nrow() == numTimes);
@@ -397,9 +401,9 @@ void testStateTracking() {
         MucoProblem& mp = muco.updProblem();
         mp.setModel(createSlidingMassModel());
         mp.setTimeBounds(0, 1);
-        mp.setStateInfo("slider/position/value", {-1, 1});
-        mp.setStateInfo("slider/position/speed", {-100, 100});
-        mp.setControlInfo("actuator", {-50, 50});
+        mp.setStateInfo("/slider/position/value", {-1, 1});
+        mp.setStateInfo("/slider/position/speed", {-100, 100});
+        mp.setControlInfo("/actuator", {-50, 50});
         return muco;
     };
 
@@ -407,7 +411,7 @@ void testStateTracking() {
     std::string fname = "testMuscolloInterface_testStateTracking_ref.sto";
     {
         TimeSeriesTable ref;
-        ref.setColumnLabels({"slider/position/value"});
+        ref.setColumnLabels({"/slider/position/value"});
         using SimTK::Pi;
         for (double time = -0.01; time < 1.02; time += 0.01) {
             // Move at constant speed from x=0 to x=1. Really basic stuff.
@@ -478,9 +482,9 @@ void testGuess() {
     ms.set_num_mesh_points(N);
 
     std::vector<std::string> expectedStateNames{
-            "slider/position/value", "slider/position/speed"
+            "/slider/position/value", "/slider/position/speed"
     };
-    std::vector<std::string> expectedControlNames{"actuator"};
+    std::vector<std::string> expectedControlNames{"/actuator"};
 
     SimTK::Matrix expectedStatesTraj(N, 2);
     expectedStatesTraj.col(0) = 0.5; // bounds are [0, 1].
@@ -579,7 +583,7 @@ void testGuess() {
     {
         MucoIterate guess = ms.createGuess("bounds");
         // Use weird number to ensure the solver actually loads the file:
-        guess.setControl("actuator", SimTK::Vector(N, 13.28));
+        guess.setControl("/actuator", SimTK::Vector(N, 13.28));
         const std::string fname = "testMuscolloInterface_testGuess_file.sto";
         guess.write(fname);
         ms.setGuessFile(fname);
@@ -617,27 +621,27 @@ void testGuess() {
 
         // TODO look at how TimeSeriesTable handles this.
         // Make sure this uses the initializer list variant.
-        guess.setState("slider/position/value", {2, 0.3});
+        guess.setState("/slider/position/value", {2, 0.3});
         SimTK::Vector expectedv(2);
         expectedv[0] = 2;
         expectedv[1] = 0.3;
-        SimTK_TEST_EQ(guess.getState("slider/position/value"), expectedv);
+        SimTK_TEST_EQ(guess.getState("/slider/position/value"), expectedv);
 
         // Can use SimTK::Vector.
         expectedv[1] = 9.4;
-        guess.setState("slider/position/value", expectedv);
-        SimTK_TEST_EQ(guess.getState("slider/position/value"), expectedv);
+        guess.setState("/slider/position/value", expectedv);
+        SimTK_TEST_EQ(guess.getState("/slider/position/value"), expectedv);
 
         // Controls
-        guess.setControl("actuator", {1, 0.6});
+        guess.setControl("/actuator", {1, 0.6});
         SimTK::Vector expecteda(2);
         expecteda[0] = 1.0;
         expecteda[1] = 0.6;
-        SimTK_TEST_EQ(guess.getControl("actuator"), expecteda);
+        SimTK_TEST_EQ(guess.getControl("/actuator"), expecteda);
 
         expecteda[0] = 0.7;
-        guess.setControl("actuator", expecteda);
-        SimTK_TEST_EQ(guess.getControl("actuator"), expecteda);
+        guess.setControl("/actuator", expecteda);
+        SimTK_TEST_EQ(guess.getControl("/actuator"), expecteda);
 
 
         // Errors.
@@ -652,10 +656,11 @@ void testGuess() {
 
         // Incorrect length.
         SimTK_TEST_MUST_THROW_EXC(
-                guess.setState("slider/position/value", SimTK::Vector(1)),
+                guess.setState("/slider/position/value", SimTK::Vector(1)),
                 Exception);
         SimTK_TEST_MUST_THROW_EXC(
-                guess.setControl("actuator", SimTK::Vector(3)), Exception);
+                guess.setControl("/actuator", SimTK::Vector(3)),
+                Exception);
 
     }
 
@@ -663,7 +668,8 @@ void testGuess() {
     {
         ms.set_num_mesh_points(5);
         MucoIterate guess0 = ms.createGuess();
-        guess0.setControl("actuator", createVectorLinspace(5, 2.8, 7.3));
+        guess0.setControl("/actuator",
+                createVectorLinspace(5, 2.8, 7.3));
         SimTK_TEST(guess0.getTime().size() == 5); // midpoint of [0, 10]
         SimTK_TEST_EQ(guess0.getTime()[4], 5);
 
@@ -675,7 +681,7 @@ void testGuess() {
             SimTK_TEST_EQ(guess.getTime()[9], 5);
             SimTK_TEST(guess.getStatesTrajectory().nrow() == 10);
             SimTK_TEST(guess.getControlsTrajectory().nrow() == 10);
-            SimTK_TEST_EQ(guess.getControl("actuator"),
+            SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(10, 2.8, 7.3));
         }
 
@@ -694,7 +700,7 @@ void testGuess() {
             SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST(
                     guess.getControlsTrajectory().nrow() == expectedNumTimes);
-            SimTK_TEST_EQ(guess.getControl("actuator"),
+            SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
         }
 
@@ -712,7 +718,7 @@ void testGuess() {
             SimTK_TEST(guess.getStatesTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST(
                     guess.getControlsTrajectory().nrow() == expectedNumTimes);
-            SimTK_TEST_EQ(guess.getControl("actuator"),
+            SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
         }
 
@@ -757,9 +763,9 @@ void testGuessTimeStepping() {
     const SimTK::Real initialAngle = 0.25 * SimTK::Pi;
     // Make the simulation interesting.
     problem.setTimeBounds(0, 1);
-    problem.setStateInfo("j0/q0/value", {-10, 10}, initialAngle);
-    problem.setStateInfo("j0/q0/speed", {-50, 50}, 0);
-    problem.setControlInfo("tau0", 0);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, initialAngle);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
+    problem.setControlInfo("/forceset/tau0", 0);
     MucoTropterSolver& solver = muco.initSolver();
     solver.set_num_mesh_points(20);
     solver.setGuess("random");
@@ -779,14 +785,17 @@ void testGuessTimeStepping() {
 
         Model modelCopy(muco.updProblem().getPhase().getModel());
         SimTK::State state = modelCopy.initSystem();
-        modelCopy.setStateVariableValue(state, "j0/q0/value", initialAngle);
+        modelCopy.setStateVariableValue(state, "/jointset/j0/q0/value", initialAngle);
         Manager manager(modelCopy, state);
         manager.integrate(1.0);
 
+        auto controlsTable = modelCopy.getControlsTable();
+        auto labels = controlsTable.getColumnLabels();
+        for (auto& label : labels) { label = "/forceset/" + label; }
+        controlsTable.setColumnLabels(labels);
         const auto iterateFromManager =
                 MucoIterate::createFromStatesControlsTables(
-                muco.updProblem(), manager.getStatesTable(),
-                        modelCopy.getControlsTable());
+                muco.updProblem(), manager.getStatesTable(), controlsTable);
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(iterateFromManager) <
                         1e-2);
     }

@@ -574,8 +574,10 @@ construct_iterate(const Iterate& traj, bool interpolate) const
     // dimensions do not match.
     this->make_states_trajectory_view(iterate) = traj_to_use->states;
     this->make_controls_trajectory_view(iterate) = traj_to_use->controls;
-    this->make_adjuncts_trajectory_view(iterate) = traj_to_use->adjuncts;
-    this->make_parameters_view(iterate) = traj_to_use->parameters;
+    if (traj_to_use->adjuncts.cols())
+        this->make_adjuncts_trajectory_view(iterate) = traj_to_use->adjuncts;
+    if (traj_to_use->parameters.size())
+        this->make_parameters_view(iterate) = traj_to_use->parameters;
 
     return iterate;
 }

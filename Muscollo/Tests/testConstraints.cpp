@@ -81,6 +81,8 @@ Model createModel() {
             model.addJoint(joint);
         }
     }
+
+    model.finalizeConnections();
     
     return model;
 }
@@ -171,9 +173,10 @@ void calcAccelerationsFromMultipliers(const Model& model, const State& state,
 void testWeldConstraint() {
     State state;
     Model model = createModel();
-    const std::string& firstBodyName = model.getBodySet().get(0).getName();
-    const std::string& lastBodyName = 
-        model.getBodySet().get(NUM_BODIES-1).getName();
+    const std::string& firstBodyName =
+            model.getBodySet().get(0).getAbsolutePathString();
+    const std::string& lastBodyName =
+            model.getBodySet().get(NUM_BODIES-1).getAbsolutePathString();
     WeldConstraint* constraint = new WeldConstraint("weld", firstBodyName, 
         lastBodyName);
     model.addConstraint(constraint);
@@ -800,8 +803,6 @@ void testDoublePendulumEqualControl() {
     MucoSolution solution = muco.solve();
     solution.write("testConstraints_testDoublePendulumEqualControl.sto");
     //muco.visualize(solution);
-
-    const auto& controlsTraj = solution.getControlsTrajectory();
 
     const auto& control_tau0 = solution.getControl("tau0");
     const auto& control_tau1 = solution.getControl("tau1");

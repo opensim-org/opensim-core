@@ -3,7 +3,7 @@
 # We list (and update) the opensim-core submodule commit here so that AppVeyor
 # will invalidate its cached opensim-core installation if we change the commit.
 # This commented commit hash is not actually used in the superbuild.
-# opensim-core commit: a920936085dcd98ef4aa04debc29c4ab328301af
+# opensim-core commit: a7bf61b894368a9e1a374796a9693248fc3c04ee
 
 AddDependency(NAME       opensim-core
               URL        ${CMAKE_SOURCE_DIR}/../opensim-core

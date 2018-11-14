@@ -147,8 +147,8 @@ solveForTrajectoryGSO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
+    kinematics.setColumnLabels({"/joint/height/value",
+                                "/joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -311,8 +311,8 @@ solveForTrajectoryINDYGO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({ "joint/height/value",
-        "joint/height/speed" });
+    kinematics.setColumnLabels({ "/joint/height/value",
+        "/joint/height/speed" });
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -365,6 +365,7 @@ OpenSim::Model buildLiftingMassModel() {
     actu_2->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(actu_2);
 
+    model.finalizeConnections();
     return model;
 }
 
@@ -394,10 +395,10 @@ void testLiftingMassGSO(
 
     // The rationale for the tolerances: as tight as they could be for the
     // test to pass.
-    rootMeanSquare(solution.activation, "/hanging_muscles/muscle_1",
+    rootMeanSquare(solution.activation, "/muscle_1",
         ocpSolution, "activation_1", 
         0.05);
-    rootMeanSquare(solution.activation, "/hanging_muscles/muscle_2",
+    rootMeanSquare(solution.activation, "/muscle_2",
         ocpSolution, "activation_2", 
         0.05);
 }
@@ -436,30 +437,30 @@ void testLiftingMassINDYGO(
     // Compare the solution to the initial trajectory optimization solution.
     // ---------------------------------------------------------------------
 
-    rootMeanSquare(solution.activation, "/hanging_muscles/muscle_1",
+    rootMeanSquare(solution.activation, "/muscle_1",
         ocpSolution, "activation_1",
         0.04);
-    rootMeanSquare(solution.activation, "/hanging_muscles/muscle_2",
+    rootMeanSquare(solution.activation, "/muscle_2",
         ocpSolution, "activation_2",
         0.04);
-    compare(solution.norm_fiber_length, "/hanging_muscles/muscle_1",
+    compare(solution.norm_fiber_length, "/muscle_1",
         ocpSolution, "norm_fiber_length_1",
         0.005);
-    compare(solution.norm_fiber_length, "/hanging_muscles/muscle_2",
+    compare(solution.norm_fiber_length, "/muscle_2",
         ocpSolution, "norm_fiber_length_2",
         0.005);
 
     // We use a weaker check for the controls; they don't match as well.
-    rootMeanSquare(solution.excitation, "/hanging_muscles/muscle_1",
+    rootMeanSquare(solution.excitation, "/muscle_1",
         ocpSolution, "excitation_1",
         0.25);
-    rootMeanSquare(solution.excitation, "/hanging_muscles/muscle_2",
+    rootMeanSquare(solution.excitation, "/muscle_2",
         ocpSolution, "excitation_2",
         0.25);
-    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscles/muscle_1",
+    rootMeanSquare(solution.norm_fiber_velocity, "/muscle_1",
         ocpSolution, "norm_fiber_velocity_1",
         0.03);
-    rootMeanSquare(solution.norm_fiber_velocity, "/hanging_muscles/muscle_2",
+    rootMeanSquare(solution.norm_fiber_velocity, "/muscle_2",
         ocpSolution, "norm_fiber_velocity_2",
         0.03);
 }

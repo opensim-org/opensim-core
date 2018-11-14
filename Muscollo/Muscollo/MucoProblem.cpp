@@ -372,8 +372,7 @@ void MucoPhase::initialize(Model& model) const {
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = model.getAbsolutePath();
     for (const auto& actu : model.getComponentList<ScalarActuator>()) {
-        actuNames.append(
-                actu.getAbsolutePath().formRelativePath(modelPath).toString());
+        actuNames.append(actu.getAbsolutePathString());
     }
 
     // TODO can only handle ScalarActuators?
@@ -393,15 +392,13 @@ void MucoPhase::initialize(Model& model) const {
         m_state_infos[name] = get_state_infos(i);
     }
     for (const auto& coord : model.getComponentList<Coordinate>()) {
-        const std::string coordPath =
-                coord.getAbsolutePath().formRelativePath(modelPath).toString();
-        const std::string coordValueName = coordPath + "/value";
+        const std::string coordValueName = coord.getStateVariableNames()[0];
         if (m_state_infos.count(coordValueName) == 0) {
             const auto info = MucoVariableInfo(coordValueName,
                     {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
             m_state_infos[coordValueName] = info;
         }
-        const std::string coordSpeedName = coordPath + "/speed";
+        const std::string coordSpeedName = coord.getStateVariableNames()[1];
         if (m_state_infos.count(coordSpeedName) == 0) {
             const auto info = MucoVariableInfo(coordSpeedName,
                     get_default_speed_bounds(), {}, {});
@@ -413,8 +410,7 @@ void MucoPhase::initialize(Model& model) const {
         m_control_infos[name] = get_control_infos(i);
     }
     for (const auto& actu : model.getComponentList<ScalarActuator>()) {
-        const std::string actuName =
-                actu.getAbsolutePath().formRelativePath(modelPath).toString();
+        const std::string actuName = actu.getAbsolutePathString();
         if (m_control_infos.count(actuName) == 0) {
             const auto info = MucoVariableInfo(actuName,
                     {actu.getMinControl(), actu.getMaxControl()}, {}, {});

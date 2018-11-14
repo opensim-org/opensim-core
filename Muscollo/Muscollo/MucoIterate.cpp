@@ -379,7 +379,9 @@ TimeSeriesTable MucoIterate::convertToTable() const {
 
     SimTK::Matrix data(numTimes, (int)labels.size());
     data.updBlock(0, 0, numTimes, numStates) = m_states;
-    data.updBlock(0, numStates, numTimes, numControls) = m_controls;
+    if (numControls) {
+        data.updBlock(0, numStates, numTimes, numControls) = m_controls;
+    }
     if (numMultipliers) {
         data.updBlock(0, numStates + numControls, numTimes, numMultipliers)
             = m_multipliers;
