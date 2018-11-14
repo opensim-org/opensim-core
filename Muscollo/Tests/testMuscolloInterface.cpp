@@ -331,14 +331,14 @@ void testBounds() {
             MucoProblem& mp = muco.updProblem();
             mp.setModel(model);
             mp.setStateInfo("nonexistent", {0, 1});
-            SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
+            SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
         }
         {
             MucoTool muco;
             MucoProblem& mp = muco.updProblem();
             mp.setModel(model);
             mp.setControlInfo("nonexistent", {0, 1});
-            SimTK_TEST_MUST_THROW_EXC(mp.initialize(model), Exception);
+            SimTK_TEST_MUST_THROW_EXC(mp.createRep(), Exception);
         }
     }
     // TODO what if bounds are missing for some states?
@@ -403,6 +403,8 @@ void testWorkflow() {
 
         MucoTropterSolver& solver = muco.initSolver();
         solver.set_num_mesh_points(20);
+        MucoIterate guess = solver.createGuess("random");
+        guess.setTime(createVectorLinspace(20, 0.0, 3.0));
         solver.setGuess("random");
         muco.solve();
 
@@ -411,10 +413,14 @@ void testWorkflow() {
         // the solver's problem is cleared.
         // TODO which solver settings should be preserved?
         // TODO manage notifications if the problem is dirtied.
-        SimTK_TEST(solver.getGuess().empty());
-        MucoSolution solution5 = muco.solve();
+        // TODO ideally the guess is not cleared.
+        SimTK_TEST(!solver.getGuess().empty());
+        // TODO guess now violates the bounds...what happens?
+        SimTK_TEST_MUST_THROW_EXC(muco.solve(), Exception);
 
-        SimTK_TEST_EQ(solution5.getFinalTime(), 5.8);
+        guess.setTime(createVectorLinspace(20, 0.0, 7.0));
+        MucoSolution solution = muco.solve();
+        SimTK_TEST_EQ(solution.getFinalTime(), 5.8);
     }
 
     // Default bounds.
@@ -425,22 +431,66 @@ void testWorkflow() {
         model.finalizeFromProperties();
         auto& coord = model.updComponent<Coordinate>("slider/position");
         coord.setRangeMin(-10); coord.setRangeMax(15);
+        auto& actu = model.updComponent<ScalarActuator>("actuator");
+        actu.setMinControl(35);
+        actu.setMaxControl(56);
         problem.setModel(model);
-        // TODO should any initialization be necessary at this point?
-        // TODO problem should have `createProxy()`.
-        MucoProblemProxy proxy(problem);
-        const auto& info = proxy.getStateInfo("slider/position/value");
-        SimTK_TEST(info.getBounds().getLower(), -10);
-        SimTK_TEST(info.getBounds().getUpper(),  15);
+        const auto& phase0 = problem.getPhase(0);
+        // User did not specify state info explicitly.
+        SimTK_TEST_MUST_THROW_EXC(
+                phase0.getStateInfo("slider/position/value"),
+                Exception);
+        MucoProblemRep rep = problem.createRep();
+        {
+            const auto& info = rep.getStateInfo("slider/position/value");
+            SimTK_TEST_EQ(info.getBounds().getLower(), -10);
+            SimTK_TEST_EQ(info.getBounds().getUpper(),  15);
+        }
+        {
+            const auto& info = rep.getStateInfo("slider/position/speed");
+            SimTK_TEST_EQ(info.getBounds().getLower(), -50);
+            SimTK_TEST_EQ(info.getBounds().getUpper(),  50);
+        }
+        {
+            const auto& info = rep.getControlInfo("actuator");
+            SimTK_TEST_EQ(info.getBounds().getLower(), 35);
+            SimTK_TEST_EQ(info.getBounds().getUpper(), 56);
+        }
     }
 
     // TODO MucoCost and MucoParameter cache pointers into some model.
-    {
-        MucoFinalTimeCost cost;
-        // TODO must be initialized first.
-        SimTK_TEST_MUST_THROW_EXC(cost.calcEndpointCost(state));
-    }
+    // TODO {
+    // TODO     MucoFinalTimeCost cost;
+    // TODO     // TODO must be initialized first.
+    // TODO     // TODO MucoPhase shouldn't even have a public calcEndpointCost function.
+    // TODO     SimTK_TEST_MUST_THROW_EXC(cost.calcEndpointCost(state), Exception);
+    // TODO }
 
+    {
+        // TODO disable the copy constructor for MucoProblem.
+        MucoTool muco;
+        SimTK_TEST_MUST_THROW_EXC(MucoProblem problem = muco.updProblem(),
+                Exception);
+    }
+    // TODO {
+    // TODO     // TODO change how costs are added to a model.
+    // TODO     MucoTool muco;
+    // TODO     MucoProblem& problem = muco.updProblem();
+    // TODO     auto& cost = problem.addCost<MucoFinalTimeCost>();
+    // TODO }
+
+    // TODO {
+    // TODO     // TODO allow removing costs. (TODO similar for Parameters, etc.).
+    // TODO     MucoTool muco;
+    // TODO     MucoProblem& problem = muco.updProblem();
+    // TODO     {
+    // TODO         // Remove by name.
+    // TODO         auto& cost = problem.addCost<MucoFinalTimeCost>();
+    // TODO         cost.setName("cost0");
+    // TODO         problem.removeCost(cost);
+    // TODO         SimTK_TEST_MUST_THROW_EXC(problem.getCost("cost0"), Exception);
+    // TODO     }
+    // TODO }
 
     // Cache could live in:
     //  - MucoProblem
@@ -869,7 +919,7 @@ void testGuessTimeStepping() {
 
         const auto iterateFromManager =
                 MucoIterate::createFromStatesControlsTables(
-                muco.updProblem(), manager.getStatesTable(),
+                muco.getProblem().createRep(), manager.getStatesTable(),
                         modelCopy.getControlsTable());
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(iterateFromManager) <
                         1e-2);
@@ -936,8 +986,8 @@ void testMucoIterate() {
         {
             // With 0 times, these functions throw an exception.
             MucoIterate it;
-            SimTK_TEST_MUST_THROW_EXC(it.getInitialTime());
-            SimTK_TEST_MUST_THROW_EXC(it.getFinalTime());
+            SimTK_TEST_MUST_THROW_EXC(it.getInitialTime(), Exception);
+            SimTK_TEST_MUST_THROW_EXC(it.getFinalTime(), Exception);
         }
 
         {
@@ -946,11 +996,11 @@ void testMucoIterate() {
             std::vector<std::string> cnames{"c0"};
             SimTK::Matrix states = SimTK::Test::randMatrix(5, 2);
             SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
-            MucoIterate it(time, snames, cnames, {}, states, controls,
-                    SimTK::RowVector());
+            MucoIterate it(time, snames, cnames, {}, {}, states, controls,
+                    SimTK::Matrix(), SimTK::RowVector());
 
-            SimTK_TEST(it.getInitialTime(), -3.1);
-            SimTK_TEST(it.getFinalTime(), 8.9);
+            SimTK_TEST_EQ(it.getInitialTime(), -3.1);
+            SimTK_TEST_EQ(it.getFinalTime(), 8.9);
         }
 
         {
@@ -959,11 +1009,11 @@ void testMucoIterate() {
             std::vector<std::string> cnames{"c0"};
             SimTK::Matrix states = SimTK::Test::randMatrix(1, 2);
             SimTK::Matrix controls = SimTK::Test::randMatrix(1, 1);
-            MucoIterate it(time, snames, cnames, {}, states, controls,
-                    SimTK::RowVector());
+            MucoIterate it(time, snames, cnames, {}, {}, states, controls,
+                    SimTK::Matrix(), SimTK::RowVector());
 
-            SimTK_TEST(it.getInitialTime(), 7.2);
-            SimTK_TEST(it.getFinalTime(), 7.2);
+            SimTK_TEST_EQ(it.getInitialTime(), 7.2);
+            SimTK_TEST_EQ(it.getFinalTime(), 7.2);
         }
     }
 

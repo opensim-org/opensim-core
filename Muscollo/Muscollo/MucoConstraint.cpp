@@ -127,7 +127,9 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
 }
 
 void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
-    const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
+        const Model& model,
+        const SimTK::State& state,
+        SimTK::Vector& errors) const {
 
     OPENSIM_THROW_IF(
         errors.size() != m_constraint_info.getNumEquations(), Exception,

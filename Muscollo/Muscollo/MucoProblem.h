@@ -27,6 +27,125 @@
 
 namespace OpenSim {
 
+template <class T, void (*F)(T&)>
+class InvokeOnCopy : public T {
+
+    /** @cond **/ // These confuse doxygen.
+    static_assert(!std::is_array<T>::value,
+            "InvokeOnCopy<T> does not allow T to be an array.");
+
+    static_assert(   std::is_copy_constructible<T>::value
+                    && std::is_copy_assignable<T>::value,
+            "InvokeOnCopy<T> requires type T to have an accessible copy "
+            "constructor and copy assignment operator.");
+
+    static_assert(std::is_destructible<T>::value,
+            "InvokeOnCopy<T> requires type T to have an accessible destructor.");
+    /** @endcond **/
+
+public:
+    // TODO using T::T;
+    // TODO using T::operator=;
+
+    /** Default constructor is deleted; use ResetOnCopy instead. **/
+    InvokeOnCopy() = default;
+
+    /** Copy constructor sets the value and remembered initial value to the
+    initial value in the source, using type `T`'s copy constructor. The
+    current value of the source is ignored. **/
+    InvokeOnCopy(const InvokeOnCopy& source)
+            :   T(source.getT()) {
+        F(updT());
+    }
+
+    // TODO explicit InvokeOnCopy(const T& value)
+    // TODO         :   T(value) {}
+
+    /** Move constructor is simply a pass-through to the move constructor of
+    the contained object for both the current and initial values. **/
+    // TODO InvokeOnCopy(InvokeOnCopy&& source)
+    // TODO         :   Super(static_cast<Super&&>(source)) {} // default
+
+    /** Copy assignment reinitializes this object to its original condition; the
+    source argument is ignored. **/
+    // InvokeOnCopy& operator=(const InvokeOnCopy& ignored)
+    // {   Super::operator=(static_cast<const Super&>(ignored)); return *this; }
+    InvokeOnCopy& operator=(const InvokeOnCopy& other) {
+        T::operator=(other.getT());
+        F(updT());
+        return *this;
+    }
+
+    /** Move assignment uses type `T`'s move assignment for the current value
+    but does not change the remembered initial value here. **/
+    // TODO InvokeOnCopy& operator=(InvokeOnCopy&& source)
+    // TODO {   Super::operator=(static_cast<Super&&>(source)); return *this; }
+
+    /** Assignment from an object of type `T` uses `T`'s copy assignment
+    operator; affects only the current value but does not change the remembered
+    initial value. **/
+    InvokeOnCopy& operator=(const T& value)
+    {   T::operator=(value); F(updT()); return *this; }
+
+    /** Assignment from an rvalue object of type `T` uses `T`'s move or copy
+    assignment operator; affects only the current value but does not change the
+    remembered initial value. **/
+    // TODO InvokeOnCopy& operator=(T&& value)
+    // TODO {   Super::operator=(std::move(value)); return *this; }
+
+    /** Return a const reference to the contained object of type `T`. **/
+    const T& getT() const {return static_cast<const T&>(*this);}
+    /** Return a writable reference to the contained object of type `T`. **/
+    T&       updT()       {return static_cast<T&>(*this);}
+
+};
+
+/* InvokeOnCopy helper class specialization for any type `T` that is not a
+built-in ("scalar") type and that is `CopyConstructible` and `CopyAssignable`.
+Those operators are used to reinitialize the object to a stored initial value
+when copy constructor or copy assignment is performed. */
+//template <class T>
+//class InvokeOnCopyHelper<T,false> : public T {
+//public:
+
+    // Move construction moves both the value and initial value from the
+    // source object. This is the same as default move construction.
+    // TDOO InvokeOnCopyHelper(InvokeOnCopyHelper&& source)
+    // TODO         :   T(std::move(source.getT())), m_function(std::move(source.m_function)) {}
+
+    // Constructor from lvalue `T` sets the value and remembered initial value
+    // to the given value, using type `T`'s copy constructor.
+
+    // Copy constructor sets the value and remembered initial value to the
+    // initial value in the source, using type `T`'s copy constructor. The
+    // current value of the source is ignored.
+
+    // Move assignment moves the *value* from source to `this` but does not
+    // move the recorded initial value which may differ.
+    // TODO InvokeOnCopyHelper& operator=(InvokeOnCopyHelper&& source)
+    // TODO {   T::operator=(std::move(source)); m_function(*this); return *this; }
+
+    // Copy assignment resets the current value to the remembered initial value
+    // using type `T`'s copy assignment operator. The source is ignored.
+    // TODO InvokeOnCopyHelper& operator=(const InvokeOnCopyHelper& other)
+    // TODO {   T::operator=(static_cast<const T&>(other)); m_function(*this); return *this; }
+ //   InvokeOnCopyHelper& operator=(const InvokeOnCopyHelper& other) = default;
+
+    // Allow assignment from an lvalue object of type T; affects only the
+    // current value. Uses type `T`'s copy assignment operator.
+    // InvokeOnCopyHelper& operator=(const T& value)
+    // {   T::operator=(value); return *this; }
+
+    // Allow assignment from an rvalue object of type T; affects only the
+    // current value. Uses type `T`'s move assignment operator.
+    // TODO what to do wit m_function?
+    // TDOO InvokeOnCopyHelper& operator=(T&& value)
+    // TODO {   T::operator=(std::move(value)); return *this; }
+
+//};
+
+/** @endcond **/
+
 // ============================================================================
 // MucoVariableInfo
 // ============================================================================
@@ -74,6 +193,176 @@ private:
 
 };
 
+// TODO move to its own file.
+class MucoProblem;
+
+class OSIMMUSCOLLO_API MucoProblemRep {
+public:
+    MucoProblemRep() = default;
+    const std::string& getName() const;
+    const Model& getModel() const { return m_model; }
+    // TODO update doc
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    MucoInitialBounds getTimeInitialBounds() const;
+    /// @copydoc getTimeInitialBounds()
+    MucoFinalBounds getTimeFinalBounds() const;
+    /// Get the state names of all the state infos.
+    std::vector<std::string> createStateInfoNames() const;
+    /// Get the control names of all the control infos.
+    std::vector<std::string> createControlInfoNames() const;
+    /// Get the names of all the MucoPathConstraints.
+    std::vector<std::string> createPathConstraintNames() const;
+    /// Get the names of all the Lagrange multiplier infos.
+    std::vector<std::string> createMultiplierInfoNames() const;
+    /// Get the constraint names of all the multibody constraints. Note: this
+    /// should only be called after initialize().
+    std::vector<std::string> createMultibodyConstraintNames() const;
+    /// Get the names of all the parameters.
+    // TODO reorder
+    std::vector<std::string> createParameterNames() const;
+    /// Get information for state variables. If info was not specified for
+    /// a coordinate value, the coordinate range is used for the bounds.
+    /// If info was not specified for a coordinate speed, the
+    /// default_speed_bounds property is used.
+    const MucoVariableInfo& getStateInfo(const std::string& name) const;
+    /// Get information for actuator controls. If info was not specified for
+    /// an actuator, the actuator's min and max control are used for the bounds.
+    const MucoVariableInfo& getControlInfo(const std::string& name) const;
+    const MucoParameter& getParameter(const std::string& name) const;
+    /// Get a MucoPathConstraint from this MucoPhase. Note: this does not
+    /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
+    const MucoPathConstraint& getPathConstraint(const std::string& name) const;
+
+    /// Get the number of scalar path constraints in the MucoProblem. This does
+    /// not include multibody constraints equations.
+    int getNumPathConstraintEquations() const {
+        OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
+                "The number of scalar path constraint equations is not available "
+                "until after initialization.");
+        return m_num_path_constraint_eqs;
+    }
+    /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not
+    /// include MucoPathConstraints, use getPathConstraint() instead. Since
+    /// these are created directly from model information, this should only be
+    /// called after initialization. TODO
+    const MucoMultibodyConstraint&
+    getMultibodyConstraint(const std::string& name) const;
+    /// Get the number of scalar multibody constraints in the MucoProblem. This
+    /// does not include path constraints equations.
+    int getNumMultibodyConstraintEquations() const {
+        OPENSIM_THROW_IF(m_num_multibody_constraint_eqs == -1, Exception,
+                "The number of scalar multibody constraint equations is not "
+                "available until after initialization.");
+        return m_num_multibody_constraint_eqs;
+    }
+    /// Given a multibody constraint name, get a vector of MucoVariableInfos
+    /// corresponding to the Lagrange multipliers for that multibody constraint.
+    /// Note: Since these are created directly from model constraint
+    /// information, this should only be called after initialization. TODO
+    const std::vector<MucoVariableInfo>&
+    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
+
+    /// Print a description of this problem, including costs and variable
+    /// bounds. By default, the description is printed to the console (cout),
+    /// but you can provide your own stream.
+    void printDescription(std::ostream& stream = std::cout) const;
+
+    /// @name Interface for solvers
+    /// These functions are for use by MucoSolver%s, but can also be called
+    /// by users for debugging. Make sure to call initialize() before invoking
+    /// any other functions in this group.
+    /// @{
+    /// Calculate the sum of integrand over all the integral cost terms in this
+    /// phase for the provided state. That is, the returned value is *not* an
+    /// integral over time.
+    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
+        SimTK::Real integrand = 0;
+        for (const auto& cost : m_costs) {
+            integrand += cost->calcIntegralCost(state);
+        }
+        return integrand;
+    }
+    /// Calculate the sum of all the endpoint cost terms in this phase.
+    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
+        SimTK::Real sum = 0;
+        // TODO cannot use controls.
+        for (const auto& cost : m_costs) {
+            sum += cost->calcEndpointCost(finalState);
+        }
+        return sum;
+    }
+    /// Calculate the errors in all the scalar path constraint equations in this
+    /// phase.
+    void calcPathConstraintErrors(const SimTK::State& state,
+            SimTK::Vector& errors) const {
+
+        OPENSIM_THROW_IF(
+                errors.size() != getNumPathConstraintEquations(), Exception,
+                "The size of the errors vector passed is not consistent with the "
+                "number of scalar path constraint equations in this MucoProblem.");
+
+        for (const auto& pc : m_path_constraints) {
+            pc->calcPathConstraintErrors(state, errors);
+        }
+    }
+    /// Calculate the errors in all the scalar multibody constraint equations in
+    /// this phase. This may not be the most efficient solution for solvers, but
+    /// is rather intended as a convenience method for a quick implementation or
+    /// for debugging model constraints causing issues in an optimal control
+    /// problem.
+    SimTK::Vector calcMultibodyConstraintErrors(const SimTK::State& state) const
+    {
+        SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
+        int index = 0;
+        int thisConstraintNumEqs;
+        for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
+            thisConstraintNumEqs =
+                    m_multibody_constraints[i].getConstraintInfo().getNumEquations();
+
+            SimTK::Vector theseErrors(thisConstraintNumEqs,
+                    errors.getContiguousScalarData() + index, true);
+            m_multibody_constraints[i].calcMultibodyConstraintErrors(
+                    getModel(), state, theseErrors);
+
+            index += thisConstraintNumEqs;
+        }
+        return errors;
+    }
+
+    /// Apply paramater values to the model passed to initialize() within the
+    /// current MucoProblem. Values must be consistent with the order of
+    /// parameters returned from createParameterNames().
+    ///
+    /// Note: initSystem() must be called on the model after calls to this
+    /// method in order for provided parameter values to be applied to the
+    /// model.
+    void applyParametersToModel(const SimTK::Vector& parameterValues) const;
+
+private:
+    explicit MucoProblemRep(const MucoProblem& problem);
+    friend MucoProblem;
+
+    const MucoProblem* m_problem;
+
+    static void ModelInitSystem(Model& m) { m.initSystem(); }
+    InvokeOnCopy<Model, ModelInitSystem> m_model;
+    // Model m_model;
+
+    // TODO reorder these.
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoPathConstraint>>>
+            m_path_constraints;
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoParameter>>>
+            m_parameters;
+    std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoCost>>> m_costs;
+    int m_num_path_constraint_eqs = -1;
+    int m_num_multibody_constraint_eqs = -1;
+    std::unordered_map<std::string, MucoVariableInfo> m_state_infos;
+    std::unordered_map<std::string, MucoVariableInfo> m_control_infos;
+    std::vector<MucoMultibodyConstraint> m_multibody_constraints;
+    std::map<std::string, std::vector<MucoVariableInfo>> m_multiplier_infos_map;
+};
+
 
 // ============================================================================
 // MucoPhase
@@ -104,7 +393,7 @@ public:
     /// Set the Model whose dynamics should be used for this phase.
     /// The model is copied into the MucoPhase; further changes made to the
     /// passed-in model will have no effect on this MucoPhase.
-    void setModel(const Model&);
+    void setModel(Model model);
     /// Set the bounds on the initial and final time for this phase.
     /// If you want to constrain the initial time to a single value, pass
     /// that value to the constructor of MucoInitialBounds. If you want the
@@ -216,143 +505,16 @@ public:
     MucoInitialBounds getTimeInitialBounds() const;
     /// @copydoc getTimeInitialBounds()
     MucoFinalBounds getTimeFinalBounds() const;
-    /// Get the state names of all the state infos.
-    std::vector<std::string> createStateInfoNames() const;
-    /// Get the control names of all the control infos.
-    std::vector<std::string> createControlInfoNames() const;
-    /// Get the names of all the Lagrange multiplier infos;
-    std::vector<std::string> createMultiplierInfoNames() const;
-    /// Get the names of all the parameters.
-    std::vector<std::string> createParameterNames() const;
-    /// Get the names of all the MucoPathConstraints.
-    std::vector<std::string> createPathConstraintNames() const;
-    /// Get the constraint names of all the multibody constraints. Note: this
-    /// should only be called after initialize().
-    std::vector<std::string> createMultibodyConstraintNames() const;
-    /// Get information for state variables. If info was not specified for
-    /// a coordinate value, the coordinate range is used for the bounds.
-    /// If info was not specified for a coordinate speed, the
-    /// default_speed_bounds property is used.
+    /// TODO user-supplied.
     const MucoVariableInfo& getStateInfo(const std::string& name) const;
-    /// Get information for actuator controls. If info was not specified for
-    /// an actuator, the actuator's min and max control are used for the bounds.
     const MucoVariableInfo& getControlInfo(const std::string& name) const;
     const MucoParameter& getParameter(const std::string& name) const;
     MucoParameter& updParameter(const std::string& name);
     /// Get a MucoPathConstraint from this MucoPhase. Note: this does not 
     /// include MucoMultibodyConstraints, use getMultibodyConstraint() instead.
     const MucoPathConstraint& getPathConstraint(const std::string& name) const;
-    /// Get the number of scalar path constraints in the MucoProblem. This does 
-    /// not include multibody constraints equations, and is only available after 
-    /// initialization. 
-    int getNumPathConstraintEquations() const {   
-        OPENSIM_THROW_IF(m_num_path_constraint_eqs == -1, Exception,
-            "The number of scalar path constraint equations is not available "
-            "until after initialization.");
-        return m_num_path_constraint_eqs;
-    }
-    /// Get a MucoMultibodyConstraint from this MucoPhase. Note: this does not 
-    /// include MucoPathConstraints, use getPathConstraint() instead. Since 
-    /// these are created directly from model information, this should only be 
-    /// called after initialization.
-    const MucoMultibodyConstraint& 
-    getMultibodyConstraint(const std::string& name) const;
-    /// Get the number of scalar multibody constraints in the MucoProblem. This 
-    /// does not include path constraints equations, and is only available after 
-    /// initialization. 
-    int getNumMultibodyConstraintEquations() const {
-        OPENSIM_THROW_IF(m_num_multibody_constraint_eqs == -1, Exception,
-            "The number of scalar multibody constraint equations is not "
-            "available until after initialization.");
-        return m_num_multibody_constraint_eqs;
-    }
-    /// Given a multibody constraint name, get a vector of MucoVariableInfos 
-    /// corresponding to the Lagrange multipliers for that multibody constraint.
-    /// Note: Since these are created directly from model constraint
-    /// information, this should only be called after initialization.
-    const std::vector<MucoVariableInfo>& 
-    getMultiplierInfos(const std::string& multibodyConstraintInfoName) const;
 
     // TODO add getCost() and/or updCost().
-
-    /// Print a brief description of the costs and variables in this phase.
-    void printDescription(std::ostream& stream = std::cout) const;
-
-    /// @name Interface for solvers
-    /// These functions are for use by MucoSolver%s, but can also be called
-    /// by users for debugging. Make sure to call initialize() before invoking
-    /// any other functions in this group.
-    /// @{
-
-    /// Invoked by the solver in preparation for solving the problem.
-    /// The passed-in model is a non-const reference because MucoParameter needs
-    /// the ability to make changes to the model.
-    void initialize(Model&) const;
-    /// Calculate the sum of integrand over all the integral cost terms in this
-    /// phase for the provided state. That is, the returned value is *not* an
-    /// integral over time.
-    SimTK::Real calcIntegralCost(const SimTK::State& state) const {
-        SimTK::Real integrand = 0;
-        for (int i = 0; i < getProperty_costs().size(); ++i) {
-            integrand += get_costs(i).calcIntegralCost(state);
-        }
-        return integrand;
-    }
-    /// Calculate the sum of all the endpoint cost terms in this phase.
-    SimTK::Real calcEndpointCost(const SimTK::State& finalState) const {
-        SimTK::Real cost = 0;
-        // TODO cannot use controls.
-        for (int i = 0; i < getProperty_costs().size(); ++i) {
-            cost = get_costs(i).calcEndpointCost(finalState);
-        }
-        return cost;
-    }
-    /// Calculate the errors in all the scalar path constraint equations in this
-    /// phase.
-    void calcPathConstraintErrors(const SimTK::State& state, 
-        SimTK::Vector& errors) const {
-        
-        OPENSIM_THROW_IF_FRMOBJ(
-            errors.size() != getNumPathConstraintEquations(), Exception,
-            "The size of the errors vector passed is not consistent with the "
-            "number of scalar path constraint equations in this MucoProblem.");
-
-        for (int i = 0; i < getProperty_path_constraints().size(); ++i) {
-            get_path_constraints(i).calcPathConstraintErrors(state, errors);
-        }
-    }
-    /// Calculate the errors in all the scalar multibody constraint equations in
-    /// this phase. This may not be the most efficient solution for solvers, but 
-    /// is rather intended as a convenience method for a quick implementation or 
-    /// for debugging model constraints causing issues in an optimal control 
-    /// problem.
-    SimTK::Vector calcMultibodyConstraintErrors(const SimTK::State& state) const 
-    {
-        SimTK::Vector errors(getNumMultibodyConstraintEquations(), 0.0);
-        int index = 0;
-        int thisConstraintNumEqs;
-        for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
-            thisConstraintNumEqs = 
-            m_multibody_constraints[i].getConstraintInfo().getNumEquations();
-
-            SimTK::Vector theseErrors(thisConstraintNumEqs, 
-                errors.getContiguousScalarData() + index, true);
-            m_multibody_constraints[i].calcMultibodyConstraintErrors(getModel(), 
-                state, theseErrors);
-
-            index += thisConstraintNumEqs;
-        }
-        return errors;
-    }
-
-    /// Apply paramater values to the model passed to initialize() within the
-    /// current MucoProblem. Values must be consistent with the order of 
-    /// parameters returned from createParameterNames().
-    ///
-    /// Note: initSystem() must be called on the model after calls to this
-    /// method in order for provided parameter values to be applied to the 
-    /// model.
-    void applyParametersToModel(const SimTK::Vector& parameterValues) const;
 
     /// @}
 
@@ -389,16 +551,8 @@ protected: // Protected so that doxygen shows the properties.
 
 private:
     void constructProperties();
-    mutable int m_num_path_constraint_eqs = -1;
-    mutable int m_num_multibody_constraint_eqs = -1;
-    mutable std::unordered_map<std::string, MucoVariableInfo>
-        m_state_infos;
-    mutable std::unordered_map<std::string, MucoVariableInfo>
-        m_control_infos;
-    mutable std::vector<MucoMultibodyConstraint>
-        m_multibody_constraints;
-    mutable std::map<std::string, std::vector<MucoVariableInfo>>
-        m_multiplier_infos_map;
+
+    friend MucoProblemRep;
 
 };
 
@@ -427,7 +581,7 @@ public:
     /// @{
 
     /// Set the model to use for phase 0.
-    void setModel(const Model&);
+    void setModel(Model model);
     /// Set time bounds for phase 0.
     void setTimeBounds(const MucoInitialBounds&, const MucoFinalBounds&);
     /// Set bounds for a state variable for phase 0.
@@ -459,23 +613,14 @@ public:
     const MucoPhase& getPhase(int index = 0) const
     {   return get_phases(index); }
 
-    /// Print a description of this problem, including costs and variable
-    /// bounds. By default, the description is printed to the console (cout),
-    /// but you can provide your own stream.
-    void printDescription(std::ostream& stream = std::cout) const;
-
     /// @name Interface for solvers
     /// These functions are for use by MucoSolver%s, but can also be called
     /// by users for debugging.
     /// @{
 
-    /// Invoked by the solver in preparation for solving the problem.
-    /// This also performs error checks on the Problem.
-    // TODO create intermediate classes so that the solvers can have a
-    // non-const intermediate that contains a const MucoProblem; the
-    // intermediate can determine what parts of the MucoProblem to
-    // reveal/allow changing.
-    void initialize(Model&) const;
+    /// TODO
+    MucoProblemRep createRep() const { return MucoProblemRep(*this); }
+    friend MucoProblemRep;
 
     /// @}
 
@@ -489,12 +634,6 @@ protected: // We'd prefer private, but protected means it shows up in Doxygen.
 
 private:
     void constructProperties();
-};
-
-class OSIMMUSCOLLO_API MucoProblemProxy {
-public:
-    MucoProblemProxy(const MucoProblem& problem);
-
 };
 
 } // namespace OpenSim

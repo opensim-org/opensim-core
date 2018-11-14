@@ -207,7 +207,7 @@ public:
     /// number of scalar constraint equations associated with this 
     /// MucoMultibodyConstraint.
     void calcMultibodyConstraintErrors(const Model& model, 
-        const SimTK::State& state, SimTK::Vector& errors);
+        const SimTK::State& state, SimTK::Vector& errors) const;
 
 private:
     MucoConstraintInfo m_constraint_info;
@@ -224,7 +224,7 @@ private:
     /// correct information is passed to set the default property values, which 
     /// should be sufficient for most users. 
     MucoMultibodyConstraint(SimTK::ConstraintIndex cid, int mp, int mv, int ma);
-    friend class MucoPhase;
+    friend class MucoProblemRep;
 };
 
 // ============================================================================

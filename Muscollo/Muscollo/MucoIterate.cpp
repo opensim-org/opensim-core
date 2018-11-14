@@ -180,13 +180,13 @@ void MucoIterate::setStatesTrajectory(const TimeSeriesTable& states,
     }
 }
 
-const SimTK::Vector& MucoIterate::getInitialTime() const {
+double MucoIterate::getInitialTime() const {
     ensureUnsealed();
     OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
     return m_time[0];
 }
 
-const SimTK::Vector& MucoIterate::getFinalTime() const {
+double MucoIterate::getFinalTime() const {
     ensureUnsealed();
     OPENSIM_THROW_IF(m_time.size() == 0, Exception, "Time vector is empty.");
     return m_time[m_time.size() - 1];
@@ -444,7 +444,7 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
 }
 
 /*static*/ MucoIterate MucoIterate::createFromStatesControlsTables(
-        const MucoProblem& /*problem*/,
+        const MucoProblemRep& /*problem*/,
         const TimeSeriesTable& statesTrajectory,
         const TimeSeriesTable& controlsTrajectory) {
     const int statesNumRows = (int)statesTrajectory.getNumRows();
@@ -485,16 +485,17 @@ StatesTrajectory MucoIterate::exportToStatesTrajectory(
             SimTK::RowVector(0)); // TODO (parameters)
 }
 
-bool MucoIterate::isCompatible(const MucoProblem& mp, bool throwOnError) const {
+bool MucoIterate::isCompatible(const MucoProblemRep& mp,
+        bool throwOnError) const {
     ensureUnsealed();
 
-    auto mpsn = mp.getPhase().createStateInfoNames();
+    auto mpsn = mp.createStateInfoNames();
     std::sort(mpsn.begin(), mpsn.end());
-    auto mpcn = mp.getPhase().createControlInfoNames();
+    auto mpcn = mp.createControlInfoNames();
     std::sort(mpcn.begin(), mpcn.end());
-    auto mpmn = mp.getPhase().createMultiplierInfoNames();
+    auto mpmn = mp.createMultiplierInfoNames();
     std::sort(mpmn.begin(), mpmn.end());
-    auto mppn = mp.getPhase().createParameterNames();
+    auto mppn = mp.createParameterNames();
     std::sort(mppn.begin(), mppn.end());
 
     auto sn(m_state_names);

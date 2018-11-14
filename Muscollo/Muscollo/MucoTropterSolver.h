@@ -158,7 +158,7 @@ protected:
     getTropterProblem() const;
 
     void clearProblemImpl() override;
-    void setProblemImpl(const MucoProblemProxy& proxy) override;
+    void setProblemImpl(const MucoProblemRep&) override;
     // TODO ensure that user-provided guess is within bounds.
     MucoSolution solveImpl() const override;
 
