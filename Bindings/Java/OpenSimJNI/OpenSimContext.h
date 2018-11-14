@@ -88,8 +88,8 @@ OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 public:
     OpenSimContext(SimTK::State* s, Model* model);
 
-    void setState( SimTK::State* s) { _configState = s; }
-    void setModel( Model* m) { _model = m; }
+    void setState( SimTK::State* s) { _configState.reset(s); }
+    void setModel( Model* m) { _model.reset(m); }
 
     /** Get reference to the single instance of SimTK::State maintained by the Context object **/
     const SimTK::State& getCurrentStateRef() const { return (*_configState); };
@@ -153,6 +153,8 @@ public:
     void setRangeMax(ConditionalPathPoint& via, double d);
     bool replacePathPoint(GeometryPath& p, AbstractPathPoint& mp, AbstractPathPoint& newPoint);
     void setLocation(PathPoint& mp, int i, double d);
+
+    void setLocation(PathPoint& mp, const SimTK::Vec3& newLocation);
     void setEndPoint(PathWrap& mw, int newEndPt);
     void addPathPoint(GeometryPath& p, int menuChoice, PhysicalFrame& body);
     bool deletePathPoint(GeometryPath& p, int menuChoice);
@@ -219,17 +221,19 @@ public:
 
     void cacheModelAndState();
     void restoreStateFromCachedModel()  SWIG_DECLARE_EXCEPTION;
+    void setSocketConnecteePath(AbstractSocket& socket,
+            const std::string& newValue)   SWIG_DECLARE_EXCEPTION;
 //=============================================================================
 // DATA
 //=============================================================================
 
 private:
     // SimTK::State supporting the OpenSim::Model 
-    SimTK::State* _configState;
+    SimTK::ReferencePtr<SimTK::State> _configState;
     // The OpenSim::model 
-    Model* _model;
+    SimTK::ReferencePtr<Model> _model;
 
-    Model* clonedModel;
+    SimTK::ResetOnCopy<std::unique_ptr<Model> > clonedModel;
     SimTK::State clonedState;
 }; // class OpenSimContext
 

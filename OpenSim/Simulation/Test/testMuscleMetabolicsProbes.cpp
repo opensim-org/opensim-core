@@ -632,12 +632,10 @@ Storage simulateModel(Model& model, double t0, double t1)
     model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
     model.equilibrateMuscles(state);
 
-    // Prepare integrator.
+    // Prepare manager.
     const double integrationAccuracy = 1.0e-8;
-    SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-    integrator.setAccuracy(integrationAccuracy);
-
-    Manager manager(model, integrator);
+    Manager manager(model);
+    manager.setIntegratorAccuracy(integrationAccuracy);
     state.setTime(t0);
     manager.initialize(state);
 

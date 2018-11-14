@@ -52,13 +52,9 @@ static const char* wrapTypeName = "torus";
 /**
  * Default constructor.
  */
-WrapTorus::WrapTorus() :
-    WrapObject(),
-   _innerRadius(_innerRadiusProp.getValueDbl()),
-   _outerRadius(_outerRadiusProp.getValueDbl())
+WrapTorus::WrapTorus()
 {
-    setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -69,50 +65,17 @@ WrapTorus::~WrapTorus()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aWrapTorus WrapTorus to be copied.
- */
-WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
-    WrapObject(aWrapTorus),
-   _innerRadius(_innerRadiusProp.getValueDbl()),
-   _outerRadius(_outerRadiusProp.getValueDbl())
-{
-    setNull();
-    setupProperties();
-    copyData(aWrapTorus);
-}
-
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this WrapTorus to their null values.
- */
-void WrapTorus::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
  * Connect properties to local pointers.
  */
-void WrapTorus::setupProperties()
+void WrapTorus::constructProperties()
 {
-    // BASE CLASS
-    //WrapObject::setupProperties();
-
-    _innerRadiusProp.setName("inner_radius");
-    _innerRadiusProp.setValue(-1.0);
-    _propertySet.append(&_innerRadiusProp);
-
-    _outerRadiusProp.setName("outer_radius");
-    _outerRadiusProp.setValue(-1.0);
-    _propertySet.append(&_outerRadiusProp);
+    constructProperty_inner_radius(0.01);
+    constructProperty_outer_radius(0.05);
 }
 
 void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
@@ -137,8 +100,8 @@ void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 
     const double averageXYScale =
         (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
-   _innerRadius *= averageXYScale;
-   _outerRadius *= averageXYScale;
+   upd_inner_radius() *= averageXYScale;
+   upd_outer_radius() *= averageXYScale;
 }
 
 //_____________________________________________________________________________
@@ -146,41 +109,36 @@ void WrapTorus::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel pointer to OpenSim Model 
+ * @param aModel pointer to OpenSim Model
  */
-void WrapTorus::connectToModelAndBody(Model& aModel, PhysicalFrame& aBody)
+void WrapTorus::extendFinalizeFromProperties()
 {
     // Base class
-    Super::connectToModelAndBody(aModel, aBody);
+    Super::extendFinalizeFromProperties();
 
-   // maybe set a parent pointer, _body = aBody;
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_inner_radius() <= 0,
+        InvalidPropertyValue,
+        getProperty_inner_radius().getName(),
+        "Inner radius cannot be equal or less than zero");
 
-    if (_innerRadius < 0.0)
-    {
-        string errorMessage = "Error: inner_radius for WrapTorus " + getName() + " was either not specified, or is negative.";
-        throw Exception(errorMessage);
-    }
+    // maybe set a parent pointer, _body = aBody;
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_outer_radius() <= 0,
+        InvalidPropertyValue,
+        getProperty_outer_radius().getName(),
+        "Outer Radius cannot be equal or less than zero");
 
-    if (_outerRadius <= _innerRadius)
-    {
-        string errorMessage = "Error: outer_radius for WrapTorus " + getName() + " is less than or equal to inner_radius.";
-        throw Exception(errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_outer_radius() <= get_inner_radius(),
+        InvalidPropertyValue,
+        getProperty_outer_radius().getName(),
+        "Outer Radius cannot be equal or less than inner radius");
+
 /*  Torus* torus = new Torus(_innerRadius, (_outerRadius-_innerRadius));
     setGeometryQuadrants(torus);
 */
-}
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one WrapTorus to another.
- *
- * @param aWrapTorus WrapTorus to be copied.
- */
-void WrapTorus::copyData(const WrapTorus& aWrapTorus)
-{
-    _innerRadius = aWrapTorus._innerRadius;
-    _outerRadius = aWrapTorus._outerRadius;
 }
 
 //_____________________________________________________________________________
@@ -205,7 +163,7 @@ const char* WrapTorus::getWrapTypeName() const
 string WrapTorus::getDimensionsString() const
 {
     stringstream dimensions;
-    dimensions << "radius " << _innerRadius << " " << _outerRadius;
+    dimensions << "radius " << get_inner_radius() << " " << get_outer_radius();
 
     return dimensions.str();
 }
@@ -217,7 +175,7 @@ string WrapTorus::getDimensionsString() const
  */
 SimTK::Real WrapTorus::getInnerRadius() const
 {
-    return SimTK::Real(_innerRadius);
+    return get_inner_radius();
 }
 //_____________________________________________________________________________
 /**
@@ -227,23 +185,7 @@ SimTK::Real WrapTorus::getInnerRadius() const
  */
 SimTK::Real WrapTorus::getOuterRadius() const
 {
-    return SimTK::Real(_outerRadius);
-}
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
-{
-    // BASE CLASS
-    WrapObject::operator=(aWrapTorus);
-
-    return(*this);
+    return get_outer_radius();
 }
 
 //=============================================================================
@@ -269,14 +211,14 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     //bool far_side_wrap = false;
     aFlag = true;
 
-    if (findClosestPoint(_outerRadius, &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
+    if (findClosestPoint(get_outer_radius(), &aPoint1[0], &aPoint2[0], &closestPt[0], &closestPt[1], &closestPt[2], _wrapSign, _wrapAxis) == 0)
         return noWrap;
 
     // Now put a cylinder at closestPt and call the cylinder wrap code.
     WrapCylinder cyl;//(rot, trans, quadrant, body, radius, length);
     SimTK::Vec3 cylXaxis, cylYaxis, cylZaxis; // cylinder axes in torus reference frame
 
-    cyl.set_radius(_innerRadius);
+    cyl.set_radius(get_inner_radius());
     cyl.set_length(CYL_LENGTH);
     cyl.set_quadrant("+x");
 
@@ -343,7 +285,7 @@ int WrapTorus::findClosestPoint(double radius, double p1[], double p2[],
    double ftol = 1e-4, xtol = 1e-4, gtol = 0.0;
    double epsfcn = 0.0, step_factor = 0.2;
    // work arrays
-   int ipvt[2];  
+   int ipvt[2];
    double diag[2], qtf[2], wa1[2], wa2[2], wa3[2], wa4[2];
    // Circle variables
    double u, mag, nx, ny, nz, x, y, z, a1[3], a2[3], distance1, distance2, betterPt = 0;
@@ -510,7 +452,7 @@ void WrapTorus::calcCircleResids(int numResid, int numQs, double q[],
 }
 
 
-// Implement generateDecorations by WrapTorus to replace the previous out of place implementation 
+// Implement generateDecorations by WrapTorus to replace the previous out of place implementation
 // in ModelVisualizer, not implemented yet in API visualizer
 void WrapTorus::generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const {

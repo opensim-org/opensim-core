@@ -141,6 +141,9 @@ public:
         Model::assemble(state) once all Coordinate values have been set.
         Alternatively, use Model::setStateVariableValues() to set all coordinate
         values and their speeds at once followed by Model::assemble(state).
+      
+        The provided value will be clamped to the coordinate's range if
+        the coordinate is clamped and enforceConstraints is true.
         */
     void setValue(SimTK::State& s, double aValue, bool enforceContraints=true) const;
 
@@ -218,6 +221,11 @@ public:
     SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
     /**@}**/
 
+    /* For internal consistency checking. Returns the user-specified MotionType
+       serialized with pre-4.0 model files if one is provided, otherwise
+        returns MotionType::Undefined. */
+    const MotionType& getUserSpecifiedMotionTypePriorTo40() const;
+
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
@@ -244,6 +252,11 @@ protected:
     // Only the coordinate or the joint itself can specify the owner
     // of Coordinate
     void setJoint(const Joint& aOwningJoint);
+
+    // Override to account for version updates in the XML format.
+    void updateFromXMLNode(SimTK::Xml::Element& aNode,
+        int versionNumber = -1) override;
+
 
 //=============================================================================
 // MODEL DATA
@@ -315,6 +328,9 @@ private:
 
     /* The OpenSim::Joint that owns this coordinate. */
     SimTK::ReferencePtr<const Joint> _joint;
+
+    /* User set MotionType from versions of OpenSim that predate 4.0 */
+    MotionType _userSpecifiedMotionTypePriorTo40{ Undefined };
 
     mutable bool _lockedWarningGiven;
 

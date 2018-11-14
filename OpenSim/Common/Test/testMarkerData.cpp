@@ -58,9 +58,8 @@ void testSTOFileAdapterWithMarkerData() {
 int main() {
     // Create a storage from a std file "std_storage.sto"
     try {
-        //MarkerData md("TRCFileWithNANs.trc");
-        MarkerData md("TRCFileWithNANs.trc");
-        //MarkerData md = MarkerData("TRCFileWithNANS.trc");
+        MarkerData md("dataWithNaNsOfDifferentCases.trc");
+
         int rStartFrame=-1;
         int rEndFrame=-1;
         md.findFrameRange(0.0, 1.0, rStartFrame, rEndFrame);
@@ -70,7 +69,7 @@ int main() {
         ASSERT(rStartFrame==1);
         ASSERT(rEndFrame==3);
         // ToBeTested void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
-        ASSERT(md.getFileName()=="TRCFileWithNANs.trc");
+        ASSERT(md.getFileName()=="dataWithNaNsOfDifferentCases.trc");
         Storage storage;
         md.makeRdStorage(storage);
         ASSERT(md.getUnits().getType()==Units(string("mm")).getType(), __FILE__, __LINE__);
@@ -89,7 +88,7 @@ int main() {
         ASSERT(md.getCameraRate()==250., __FILE__, __LINE__);
         //ToBeTested md.convertToUnits(Units(Units::Meters));
 
-        MarkerData md2("testNaNsParsing.trc");
+        MarkerData md2("dataWithNaNsWithSpaces.trc");
         double expectedData[] = {1006.513977, 1014.924316,-195.748917};
         const MarkerFrame& frame2 = md2.getFrame(1);
         ASSERT(frame2.getFrameTime()==.01, __FILE__, __LINE__);
@@ -101,7 +100,7 @@ int main() {
         SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
         ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
 
-        MarkerData md3("testEformatParsing.trc");
+        MarkerData md3("dataWithEformat.trc");
         double expectedData3[] = {-1.52E-01,    2.45E-01,   -1.71E+00};
         const MarkerFrame& frame3 = md3.getFrame(0);
         const SimTK::Array_<SimTK::Vec3>& markers3 = frame3.getMarkers();

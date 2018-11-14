@@ -9,6 +9,8 @@
 tmp
 # Ignore build trees.
 /build*
+# CLion integrated development environment
+/cmake-build-*
 # Ignore install dir.
 install
 # Ignore settings from the CLion IDE (from JetBrains).
@@ -25,3 +27,4 @@ dependencies/*
 
 # MAC File System files
 .DS_Store
+

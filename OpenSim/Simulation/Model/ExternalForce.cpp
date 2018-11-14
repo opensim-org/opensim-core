@@ -88,38 +88,17 @@ ExternalForce::ExternalForce(SimTK::Xml::Element& node) : Super(node)
 {
     setNull();
     constructProperties();
-    updateFromXMLNode(node);
+    updateFromXMLNode(node, -1);
 }
 
 void ExternalForce::setNull()
 {
     setAuthors("Ajay Seth");
-    _dataSource = NULL;
-    _appliedToBody = NULL;
-    _forceExpressedInBody = NULL;
-    _pointExpressedInBody = NULL; 
+    _dataSource = nullptr;
+    _appliedToBody = nullptr;
+    _forceExpressedInBody = nullptr;
+    _pointExpressedInBody = nullptr; 
 }
-
-
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void ExternalForce::
-updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
-{
-    // Base class
-    Force::updateFromXMLNode(aNode, versionNumber);
-
-    if( getProperty_force_identifier().empty() 
-        && getProperty_torque_identifier().empty()){
-        throw Exception("ExternalForce:: no force or torque identified.");
-    }
-}   
-
 
 /**
  * Connect properties to local pointers.
@@ -127,12 +106,12 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void ExternalForce::constructProperties()
 {
     constructProperty_applied_to_body("");
-    constructProperty_force_expressed_in_body("");
-    constructProperty_point_expressed_in_body("");
-    constructProperty_force_identifier("");
-    constructProperty_point_identifier("");
-    constructProperty_torque_identifier("");
-    constructProperty_data_source_name("");
+    constructProperty_force_expressed_in_body("ground");
+    constructProperty_point_expressed_in_body("ground");
+    constructProperty_force_identifier();
+    constructProperty_point_identifier();
+    constructProperty_torque_identifier();
+    constructProperty_data_source_name();
 }
 
 void ExternalForce::setDataSource(const Storage &dataSource)
@@ -145,50 +124,84 @@ void ExternalForce::setDataSource(const Storage &dataSource)
     set_data_source_name(_dataSource->getName());
 }
 
+void ExternalForce::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+
+    if( getProperty_force_identifier().empty() 
+        && getProperty_torque_identifier().empty()){
+        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue, 
+            getName(), "ExternalForce:: no force or torque identified.");
+    }
+    
+    _appliesForce = appliesForce();
+    _specifiesPoint = specifiesPoint();
+    _appliesTorque = appliesTorque();
+}
+
 void ExternalForce::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
 
+    //TODO Use Sockets!
     const string& appliedToBodyName = get_applied_to_body();
     const string& forceExpressedInBodyName = get_force_expressed_in_body();
+    const string& pointExpressedInBodyName =  get_point_expressed_in_body();
 
     // This might not have been supplied in which case it will have size()==0.
     const Property<string>& dataSourceProp = getProperty_data_source_name();
 
-    _appliesForce = appliesForce();
-    _specifiesPoint = specifiesPoint();
-    _appliesTorque = appliesTorque();
-
     // hook up body pointers from names
-    if (_model){
-        _appliedToBody = 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(appliedToBodyName));
-        _forceExpressedInBody = 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(forceExpressedInBodyName));
-        _pointExpressedInBody = _specifiesPoint ? 
-            static_cast<const PhysicalFrame*>(&_model->getComponent(get_point_expressed_in_body()))
-            : nullptr;
+    _appliedToBody.reset();
+    _forceExpressedInBody.reset();
+    _pointExpressedInBody.reset();
+    if (hasModel()) {
+        if (getModel().hasComponent<PhysicalFrame>(appliedToBodyName))
+            _appliedToBody = &_model->getComponent<PhysicalFrame>(
+                    appliedToBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + appliedToBodyName))
+            _appliedToBody = &getModel().getComponent<PhysicalFrame>(
+                "./bodyset/" + appliedToBodyName);
+
+        if (getModel().hasComponent<PhysicalFrame>(forceExpressedInBodyName))
+            _forceExpressedInBody = &getModel().getComponent<PhysicalFrame>(
+                    forceExpressedInBodyName);
+        else if(getModel().hasComponent<PhysicalFrame>(
+            "./bodyset/" + forceExpressedInBodyName))
+            _forceExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                "./bodyset/" + forceExpressedInBodyName);
+
+        if (_specifiesPoint) {
+            if (getModel().hasComponent<PhysicalFrame>(
+                pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    pointExpressedInBodyName);
+            else if (getModel().hasComponent<PhysicalFrame>(
+                "./bodyset/" + pointExpressedInBodyName))
+                _pointExpressedInBody = &_model->getComponent<PhysicalFrame>(
+                    "./bodyset/" + pointExpressedInBodyName);
+        }
     }
 
     if(!_appliedToBody){
-        throw(Exception("ExternalForce: Could not find body '"+appliedToBodyName+"' to apply force to." ));
+        throw(Exception("ExternalForce: Could not find body '" + appliedToBodyName +
+            "' to apply force to." ));
     }
-    if(!_forceExpressedInBody){
-        cout << "WARNING::ExternalForce could not find body '"+forceExpressedInBodyName+"' that force is expressed in-"
+    if(!_forceExpressedInBody) {
+        cout << "WARNING::ExternalForce could not find body '" +
+            forceExpressedInBodyName + "' that force is expressed in-"
                 "  ground is being assumed." << endl;
+        _forceExpressedInBody = &_model->getGround();
     }
     if(_specifiesPoint && !_pointExpressedInBody){
         cout << "WARNING::ExternalForce could not find body '"+get_point_expressed_in_body()+"' that point is expressed in-"
                 "  ground is being assumed." << endl;
-        _pointExpressedInBody = &_model->updBodySet().get("ground");
+        _pointExpressedInBody = &_model->getGround();
     }
 
     if(!_dataSource){
-        // No property set either
-        if((dataSourceProp.size()==0) || (dataSourceProp.getValue(0) == "")){
-            throw(Exception("ExternalForce: Not Data source has been set."));
-        }
-        // else: TODO load the data from the source. Currently this is overly
+        throw Exception("ExternalForce: No Data source has been set.");
+        // TODO: Load the data from dataSourceProp. Currently this is overly
         // complicated and handled by the ExternalLoads class.
     }
     else if(dataSourceProp.size()) {

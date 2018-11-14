@@ -120,7 +120,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     // Setup OpenSim model
     Model *osimModel = new Model;
     //OpenSim bodies
-    const Ground& ground = osimModel->getGround();;
+    const Ground& ground = osimModel->getGround();
     OpenSim::Body ball;
     ball.setName("ball");
 
@@ -158,6 +158,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     ball.setInertia(ballMass.getInertia());
 
     osimModel->setGravity(gravity_vec);
+    osimModel->finalizeConnections();
     osimModel->print("TestPrescribedForceModel.osim");
 
     delete osimModel;
@@ -171,8 +172,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
 
     const OpenSim::Body& body = osimModel->getBodySet().get("ball");
     osim_state.setTime(0.0);
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    Manager manager(*osimModel,  integrator);
+    Manager manager(*osimModel);
     manager.initialize(osim_state);
     
     for (unsigned int i = 0; i < times.size(); ++i)

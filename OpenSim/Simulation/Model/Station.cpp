@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "Station.h"
-#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
 
 //=============================================================================

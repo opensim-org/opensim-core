@@ -33,6 +33,21 @@ namespace OpenSim {
 
 class Model;
 
+class JointFramesAreTheSame : public Exception {
+public:
+    JointFramesAreTheSame(const std::string& file,
+        size_t line,
+        const std::string& func,
+        const std::string& thisName,
+        const std::string& sameName) :
+        Exception(file, line, func) {
+        std::string msg = "Joint '" + thisName + "' cannot connect frame '" +
+            sameName + "' to itself.";
+        addMessage(msg);
+    }
+};
+
+
 /**
 An OpenSim Joint is an OpenSim::ModelComponent which connects two PhysicalFrames
 together and specifies their relative permissible motion as described in
@@ -210,6 +225,11 @@ public:
     // Utility
     bool isCoordinateUsed(const Coordinate& aCoordinate) const;
 
+    /** Add a frame to the *frames* property in this Joint. The frame is
+     * adopted, and should have been dynamically allocated.
+     * Use this function instead of append_frames(). */
+    void addFrame(PhysicalOffsetFrame* frame);
+
     // Computation
     /** Given some system mobility (generalized) forces, calculate the 
     equivalent spatial body force for this Joint. Keep in mind that there are 
@@ -308,6 +328,7 @@ protected:
 
     // build Joint transforms from properties
     void extendFinalizeFromProperties() override;
+    void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
     void extendSetPropertiesFromState(const SimTK::State& state) override;
@@ -468,10 +489,10 @@ private:
         return mobod.getDefaultQ().size();
     }
 
-    // Only Model's connectToModel can access private
-    // members of the Joint to set Joint connected to a slave body
-    // of a master body.
-    friend Model; // void Model::extendConnectToModel(Model &model);
+    // Only Model::extendConnectToModel() should access private members
+    // of the Joint to set whether the Joint is connected to a slave body.
+    // See Model::createMultibodyTree();
+    friend Model;
 
     void setSlaveBodyForParent(Body& slaveForParent){
         _slaveBodyForParent = slaveForParent;
@@ -496,8 +517,6 @@ private:
     SimTK::ReferencePtr<Body> _slaveBodyForChild;
 
     SimTK::Array_<Coordinate::MotionType> _motionTypes;
-
-    friend class JointSet;
 
 //==============================================================================
 };  // END of class Joint

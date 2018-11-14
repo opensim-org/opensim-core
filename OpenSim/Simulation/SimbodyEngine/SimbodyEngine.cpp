@@ -43,9 +43,6 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-static std::string SimbodyGroundName = "ground";
-
-
 //=============================================================================
 // EXCEPTIONS
 //=============================================================================
@@ -801,23 +798,6 @@ void SimbodyEngine::convertQuaternionsToDirectionCosines(double aQ1, double aQ2,
 //=============================================================================
 // CONFIGURATION
 //=============================================================================
-/**
- * From a potentially partial specification of the generalized coordinates,
- * form a complete storage of the generalized coordinates (q's) and
- * generalized speeds (u's).
- *
- * @param aQIn Storage containing the q's or a subset of the q's.  Rotational
- * q's should be in degrees.
- * @param rQComplete Storage containing all the q's.  If q's were not
- * in aQIn, the values are set to 0.0.  When a q is constrained, its value
- * is altered to be consistent with the constraint.  The caller is responsible
- * for deleting the memory associated with this storage.
- * @param rUComplete Storage containing all the u's.  The generalized speeds
- * are obtained by spline fitting the q's and differentiating the splines.
- * When a u is constrained, its value is altered to be consistent with the
- * constraint.  The caller is responsible for deleting the memory
- * associated with this storage.
- */
 void SimbodyEngine::
 formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     OpenSim::Storage *&rQComplete,OpenSim::Storage *&rUComplete) const
@@ -836,10 +816,9 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     int sizeCoordSet = coordinateSet.getSize();
     for(i=0;i<sizeCoordSet;i++) {
         Coordinate& coord = coordinateSet.get(i);
-        string prefix = coord.getJoint().getName() + "/" + coord.getName() + "/";
         coordStateNames = coord.getStateVariableNames();
-        columnLabels.append(prefix+coordStateNames[0]);
-        speedLabels.append(prefix+coordStateNames[1]);
+        columnLabels.append(coordStateNames[0]);
+        speedLabels.append(coordStateNames[1]);
         int fix = aQIn.getStateIndex(coord.getName());
         if (fix < 0) {
             fix = aQIn.getStateIndex(columnLabels[i+1]);
@@ -883,7 +862,6 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     if (aQIn.isInDegrees())
         convertDegreesToRadians(*qStore);
 
-
     // Compute generalized speeds
     GCVSplineSet tempQset(5,qStore);
     std::unique_ptr<Storage> uStore{tempQset.constructStorage(1)};
@@ -915,13 +893,9 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
     
     delete qStore;
     
-    // Compute storage object for simulation
-    // Need to set column labels before converting rad->deg
+    // Set column labels before returning
     rQComplete->setColumnLabels(columnLabels);
     rUComplete->setColumnLabels(speedLabels);
-    // Convert back to degrees
-    convertRadiansToDegrees(*rQComplete);
-    convertRadiansToDegrees(*rUComplete);
 }
 
 //=============================================================================

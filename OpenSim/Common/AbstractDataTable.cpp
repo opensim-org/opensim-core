@@ -129,31 +129,20 @@ AbstractDataTable::setColumnLabel(const size_t columnIndex,
     using namespace SimTK;
     using namespace std;
 
-    OPENSIM_THROW_IF(!hasColumnLabels(),
-                     NoColumnLabels);
+    OPENSIM_THROW_IF(!hasColumnLabels(), NoColumnLabels);
 
-    ValueArray<std::string> newLabels{};
-    const auto& oldLabels = 
-        _dependentsMetaData.getValueArrayForKey("labels");
+    auto labels = getColumnLabels();
 
-    OPENSIM_THROW_IF(columnIndex >= oldLabels.size(),
-                     ColumnIndexOutOfRange,
-                     columnIndex, 0, 
-                     static_cast<unsigned>(oldLabels.size() - 1));
-
-    for(unsigned i = 0; i < oldLabels.size(); ++i) {
-        if(i == columnIndex) {
-            newLabels.upd().push_back(Value<string>(columnLabel));
-        } else {
-            auto value = Value<string>(oldLabels[i].getValue<string>());
-            newLabels.upd().push_back(value);
-        }
+    if(columnIndex < labels.size()) {
+        labels.at(columnIndex) = columnLabel;
+    }
+    else {
+        OPENSIM_THROW(ColumnIndexOutOfRange,
+            columnIndex, 0,
+            static_cast<unsigned>(labels.size()) );
     }
 
-    _dependentsMetaData.removeValueArrayForKey("labels");
-    _dependentsMetaData.setValueArrayForKey("labels", newLabels);
-
-    validateDependentsMetaData();
+    setColumnLabels(labels);
 }
 
 size_t 

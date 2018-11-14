@@ -32,6 +32,8 @@
 using namespace std;
 using namespace OpenSim;
 
+const char* Ground::GroundNameString{ "ground" };
+
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -41,8 +43,20 @@ using namespace OpenSim;
 */
 Ground::Ground() : PhysicalFrame()
 {
-    setName("ground");
+    setName(GroundNameString);
     setAuthors("Ajay Seth");
+}
+
+/* Ground should never change name */
+void Ground::extendFinalizeFromProperties() {
+    Super::extendFinalizeFromProperties();
+    // Ground is always named "ground"
+    if (getName() != GroundNameString) {
+        std::string msg = getConcreteClassName() + " '" + getName() + "' ";
+        setName(GroundNameString);
+        msg += "was renamed and is being reset to '" + getName() + "'.";
+        std::cout << msg << std::endl;
+    }
 }
 
 /*

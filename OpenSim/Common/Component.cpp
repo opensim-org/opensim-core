@@ -28,6 +28,7 @@
 #include "XMLDocument.h"
 #include <unordered_map>
 #include <set>
+#include <regex>
 
 using namespace SimTK;
 
@@ -126,8 +127,7 @@ Component::Component(SimTK::Xml::Element& element) : Object(element)
     constructProperty_components();
 }
 
-void Component::addComponent(Component* subcomponent)
-{
+bool Component::isComponentInOwnershipTree(const Component* subcomponent) const {
     //get to the root Component
     const Component* root = this;
     while (root->hasOwner()) {
@@ -138,24 +138,50 @@ void Component::addComponent(Component* subcomponent)
     if ((root->getNumImmediateSubcomponents() > 0)) {
         auto components = root->getComponentList<Component>();
         for (auto& c : components) {
-            if (subcomponent == &c) {
-                OPENSIM_THROW(ComponentAlreadyPartOfOwnershipTree,
-                    subcomponent->getName(), getName());
-            }
+            if (subcomponent == &c) return true;
         }
     }
+    return false;
+}
+
+void Component::addComponent(Component* subcomponent)
+{
+    OPENSIM_THROW_IF(isComponentInOwnershipTree(subcomponent),
+                     ComponentAlreadyPartOfOwnershipTree,
+                      subcomponent->getName(), getName());
 
     updProperty_components().adoptAndAppendValue(subcomponent);
     finalizeFromProperties();
+
+    prependComponentPathToConnecteePath(*subcomponent);
 
     // allow the derived Component to perform secondary operations
     // in response to the inclusion of the subcomponent
     extendAddComponent(subcomponent);
 }
 
+void Component::prependComponentPathToConnecteePath(
+        Component& subcomponent) {
+    const std::string compPath = subcomponent.getAbsolutePathString();
+    for (auto& comp : subcomponent.updComponentList()) {
+        for (auto& it : comp._socketsTable) {
+            it.second->prependComponentPathToConnecteePath(compPath);
+        }
+        for (auto& it : comp._inputsTable) {
+            it.second->prependComponentPathToConnecteePath(compPath);
+        }
+    }
+}
+
 void Component::finalizeFromProperties()
 {
     reset();
+
+    // last opportunity to modify Object names based on properties
+    if (!hasOwner()) {
+        // only call when Component is root since method is recursive
+        makeObjectNamesConsistentWithProperties();
+    }
 
     // TODO use a flag to set whether we are lenient on having nameless
     // Components. For backward compatibility we need to be able to 
@@ -184,12 +210,12 @@ void Component::finalizeFromProperties()
     for (auto& it : _socketsTable) {
         it.second->setOwner(*this);
         // Let the Socket handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        it.second->checkConnecteePathProperty();
     }
     for (auto& it : _inputsTable) {
         it.second->setOwner(*this);
         // Let the Socket handle any errors in the connectee_name property.
-        it.second->checkConnecteeNameProperty();
+        it.second->checkConnecteePathProperty();
     }
     for (auto& it : _outputsTable) {
         it.second->setOwner(*this);
@@ -276,9 +302,8 @@ void Component::finalizeConnections(Component& root)
 
     for (auto& it : _socketsTable) {
         auto& socket = it.second;
-        socket->disconnect();
         try {
-            socket->findAndConnect(root);
+            socket->finalizeConnection(root);
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Socket '" +
@@ -290,23 +315,8 @@ void Component::finalizeConnections(Component& root)
 
     for (auto& it : _inputsTable) {
         auto& input = it.second;
-
-        if (!input->isListSocket() && input->getConnecteeName(0).empty()) {
-            // TODO When we support verbose/debug logging we should include
-            // message about unspecified Outputs but generally this OK
-            // if the Input's value is not required.
-            /**
-            std::cout << getConcreteClassName() << "'" << getName() << "'";
-            std::cout << "::connect() Input<" << input.getConnecteeTypeName();
-            std::cout << ">`" << input.getName();
-            std::cout << "' Output has not been specified." << std::endl;
-            */
-            continue;
-        }
-
-        input->disconnect();
         try {
-            input->findAndConnect(root);
+            input->finalizeConnection(root);
         }
         catch (const std::exception& x) {
             OPENSIM_THROW_FRMOBJ(Exception, "Failed to connect Input '" +
@@ -318,10 +328,10 @@ void Component::finalizeConnections(Component& root)
     // Allow derived Components to handle/check their connections and also 
     // override the order in which its subcomponents are ordered when 
     // adding subcomponents to the System
-    extendConnect(root);
+    extendFinalizeConnections(root);
 
     // Allow subcomponents to form their connections
-    componentsConnect(root);
+    componentsFinalizeConnections(root);
 
     // Forming connections changes the Socket which is a property
     // Remark as upToDate.
@@ -329,7 +339,7 @@ void Component::finalizeConnections(Component& root)
 }
 
 // invoke connect on all (sub)components of this component
-void Component::componentsConnect(Component& root) 
+void Component::componentsFinalizeConnections(Component& root)
 {
     // enable the subcomponents the opportunity to connect themselves
     for (unsigned int i = 0; i<_memberSubcomponents.size(); ++i) {
@@ -679,6 +689,14 @@ bool Component::hasOwner() const
     return !_owner.empty();
 }
 
+const Component& Component::getRoot() const {
+    const Component* root = this;
+    while (root->hasOwner()) {
+        root = &root->getOwner();
+    }
+    return *root;
+}
+
 void Component::setOwner(const Component& owner)
 {
     if (&owner == this) {
@@ -695,13 +713,15 @@ void Component::setOwner(const Component& owner)
 
 std::string Component::getAbsolutePathString() const
 {
+    if (!hasOwner()) return "/";
     std::string absPathName("/" + getName());
 
     const Component* up = this;
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        absPathName.insert(0, "/" + up->getName());
+        if (up->hasOwner())
+            absPathName.insert(0, "/" + up->getName());
     }
 
     return absPathName;
@@ -710,6 +730,8 @@ std::string Component::getAbsolutePathString() const
 
 ComponentPath Component::getAbsolutePath() const
 {
+    if (!hasOwner()) return ComponentPath({}, true);
+
     std::vector<std::string> pathVec;
     pathVec.push_back(getName());
 
@@ -717,18 +739,24 @@ ComponentPath Component::getAbsolutePath() const
 
     while (up && up->hasOwner()) {
         up = &up->getOwner();
-        pathVec.insert(pathVec.begin(), up->getName());
+        if (up->hasOwner())
+            pathVec.insert(pathVec.begin(), up->getName());
     }
 
     return ComponentPath(pathVec, true);
 }
 
-std::string Component::getRelativePathName(const Component& wrt) const
+std::string Component::getRelativePathString(const Component& wrt) const
+{
+    return getRelativePath(wrt).toString();
+}
+
+ComponentPath Component::getRelativePath(const Component& wrt) const
 {
     ComponentPath thisP = getAbsolutePath();
     ComponentPath wrtP = wrt.getAbsolutePath();
 
-    return thisP.formRelativePath(wrtP).toString();
+    return thisP.formRelativePath(wrtP);
 }
 
 const Component::StateVariable* Component::
@@ -747,7 +775,7 @@ const Component::StateVariable* Component::
             return it->second.stateVariable.get();
         }
     } else if (svPath.getNumPathLevels() > 1) {
-        const auto& compPath = svPath.getParentPathString();
+        const auto& compPath = svPath.getParentPath();
         const Component* comp = traversePathToComponent<Component>(compPath);
         if (comp) {
             // This is the leaf of the path:
@@ -765,9 +793,8 @@ Array<std::string> Component::getStateVariableNames() const
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    Array<std::string> names = getStateVariablesNamesAddedByComponent();
+    Array<std::string> stateNames = getStateVariableNamesAddedByComponent();
 
-/** TODO: Use component iterator  like below
     for (int i = 0; i < stateNames.size(); ++i) {
         stateNames[i] = (getAbsolutePathString() + "/" + stateNames[i]);
     }
@@ -775,58 +802,13 @@ Array<std::string> Component::getStateVariableNames() const
     for (auto& comp : getComponentList<Component>()) {
         const std::string& pathName = comp.getAbsolutePathString();// *this);
         Array<std::string> subStateNames = 
-            comp.getStateVariablesNamesAddedByComponent();
+            comp.getStateVariableNamesAddedByComponent();
         for (int i = 0; i < subStateNames.size(); ++i) {
             stateNames.append(pathName + "/" + subStateNames[i]);
         }
     }
-*/
 
-    // Include the states of its subcomponents
-    for (unsigned int i = 0; i<_memberSubcomponents.size(); i++) {
-        Array<std::string> subnames = _memberSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName = _memberSubcomponents[i]->getName();
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if (back >= front) // have non-whitespace name
-            prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
-        }
-    }
-    for(unsigned int i=0; i<_propertySubcomponents.size(); i++){
-        Array<std::string> subnames = _propertySubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName =  _propertySubcomponents[i]->getName();
-        // TODO: We should implement checks that names do not have whitespace at the time 
-        // they are assigned and not here where it is a waste of time - aseth
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if(back >= front) // have non-whitespace name
-            prefix = subCompName+"/";
-        for(int j =0; j<nsubs; ++j){
-            names.append(prefix+subnames[j]);
-        }
-    }
-
-    for (unsigned int i = 0; i<_adoptedSubcomponents.size(); i++) {
-        Array<std::string> subnames = _adoptedSubcomponents[i]->getStateVariableNames();
-        int nsubs = subnames.getSize();
-        const std::string& subCompName = _adoptedSubcomponents[i]->getName();
-        std::string::size_type front = subCompName.find_first_not_of(" \t\r\n");
-        std::string::size_type back = subCompName.find_last_not_of(" \t\r\n");
-        std::string prefix = "";
-        if (back >= front) // have non-whitespace name
-            prefix = subCompName + "/";
-        for (int j = 0; j<nsubs; ++j) {
-            names.append(prefix + subnames[j]);
-        }
-    }
-
-    return names;
+    return stateNames;
 }
 
 // Get the value of a state variable allocated by this Component.
@@ -843,7 +825,7 @@ double Component::
     }
     
     std::stringstream msg;
-    msg << "Component::getStateVariable: ERR- state named '" << name 
+    msg << "Component::getStateVariableValue: ERR- state named '" << name 
         << "' not found in " << getName() << " of type " << getConcreteClassName();
     throw Exception(msg.str(),__FILE__,__LINE__);
 
@@ -1084,6 +1066,11 @@ void Component::setNextSubcomponentInSystem(const Component& sub) const
 
 void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
+    // During deserialization, some components' clone() may
+    // finalizeFromProperties(). Upating from XML can then cause stale pointers.
+    // We must make sure to clear any pointers to properties that may exist
+    // in this component.
+    reset();
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30500) {
             // In 3.3 and earlier, spaces in names were tolerated. Spaces are
@@ -1137,6 +1124,29 @@ void Component::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
                 }
             }
             
+        }
+        if (versionNumber <= 30516) {
+            // Rename xml tags for socket_*_connectee_name to socket_*
+            std::string connecteeNameString = "_connectee_name";
+            for (auto iter = node.element_begin();
+                iter != node.element_end();
+                ++iter) {
+                auto tagname = iter->getElementTag();
+                if (std::regex_match(tagname, std::regex("(socket_|input_)(.*)(_connectee_name)"))) {
+                    auto pos = tagname.find(connecteeNameString);
+                    if (pos != std::string::npos) {
+                        tagname.replace(pos, connecteeNameString.length(), "");
+                        iter->setElementTag(tagname);
+                    }
+                }
+                else if (std::regex_match(tagname, std::regex("(input_)(.*)(_connectee_names)"))) {
+                    auto pos = tagname.find(connecteeNameString);
+                    if (pos != std::string::npos) {
+                        tagname.replace(pos, connecteeNameString.length()+1, "");
+                        iter->setElementTag(tagname);
+                    }
+                }
+            }
         }
     }
     Super::updateFromXMLNode(node, versionNumber);
@@ -1345,7 +1355,7 @@ getCacheVariableIndex(const std::string& name) const
 }
 
 Array<std::string> Component::
-getStateVariablesNamesAddedByComponent() const
+getStateVariableNamesAddedByComponent() const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.begin();
@@ -1538,8 +1548,9 @@ void Component::AddedStateVariable::
 
 
 void Component::printSocketInfo() const {
-    std::cout << "Sockets for component " << getName() << " of type ["
-              << getConcreteClassName() << "] along with connectee names:";
+    std::cout << "Sockets for component " << getName()
+              << " of type [" << getConcreteClassName()
+              << "] along with connectee paths:";
     if (getNumSockets() == 0)
         std::cout << " none";
     std::cout << std::endl;
@@ -1566,7 +1577,7 @@ void Component::printSocketInfo() const {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < socket->getNumConnectees(); ++i) {
-                std::cout << socket->getConnecteeName(i) << " ";
+                std::cout << socket->getConnecteePath(i) << " ";
             }
             std::cout << std::endl;
         }
@@ -1576,7 +1587,7 @@ void Component::printSocketInfo() const {
 
 void Component::printInputInfo() const {
     std::cout << "Inputs for component " << getName() << " of type ["
-              << getConcreteClassName() << "] along with connectee names:";
+              << getConcreteClassName() << "] along with connectee paths:";
     if (getNumInputs() == 0)
         std::cout << " none";
     std::cout << std::endl;
@@ -1600,11 +1611,11 @@ void Component::printInputInfo() const {
                                  input->getName().length(), ' ')
                   << input->getName() << " : ";
         if (input->getNumConnectees() == 0 || 
-            (input->getNumConnectees() == 1 && input->getConnecteeName().empty())) {
+            (input->getNumConnectees() == 1 && input->getConnecteePath().empty())) {
             std::cout << "no connectees" << std::endl;
         } else {
             for (unsigned i = 0; i < input->getNumConnectees(); ++i) {
-                std::cout << input->getConnecteeName(i) << " ";
+                std::cout << input->getConnecteePath(i) << " ";
                 // TODO as is, requires the input connections to be satisfied. 
                 // std::cout << " (alias: " << input.getAlias(i) << ") ";
             }
@@ -1745,7 +1756,45 @@ void Component::reset()
     _simTKcomponentIndex.invalidate();
     clearStateAllocations();
 
+    _propertySubcomponents.clear();
+    _adoptedSubcomponents.clear();
     resetSubcomponentOrder();
+}
+
+void Component::warnBeforePrint() const {
+    if (!isObjectUpToDateWithProperties()) return;
+    std::string message;
+    auto checkIfConnecteePathIsSet =
+            [](const Component& comp, std::string& message) {
+        for (const auto& it : comp._socketsTable) {
+            const auto& socket = it.second;
+            if (socket->isConnected() &&
+                ((socket->isListSocket() &&
+                  socket->getNumConnectees() == 0) ||
+                 (!socket->isListSocket() &&
+                         socket->getConnecteePath().empty()))) {
+                // TODO: Improve this condition by making sure the connectee
+                // name is correct.
+                message += "  Socket '" + socket->getName() + "' in " +
+                           comp.getConcreteClassName() + " at " +
+                           comp.getAbsolutePathString() + "\n";
+            }
+        }
+    };
+    if (getNumImmediateSubcomponents() == 0) {
+        checkIfConnecteePathIsSet(*this, message);
+    } else {
+        for (const auto& comp : getComponentList()) {
+            checkIfConnecteePathIsSet(comp, message);
+        }
+    }
+    if (!message.empty()) {
+        std::cout << "Warning in " << getConcreteClassName()
+                << "::print(): The following connections are not finalized "
+                   "and will not appear in the resulting XML file. "
+                   "Call finalizeConnections() before print().\n"
+                << message << std::endl;
+    }
 }
 
 } // end of namespace OpenSim

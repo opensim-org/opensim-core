@@ -117,10 +117,17 @@ void ExpressionBasedPointToPointForce::extendConnectToModel(Model& model)
     const string& body1Name = getBody1Name();
     const string& body2Name = getBody2Name();
 
-    _body1 =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body1Name));
-    _body2 =
-        static_cast<const PhysicalFrame*>(&getModel().getComponent(body2Name));
+    if(getModel().hasComponent(body1Name))
+        _body1 = &(getModel().getComponent<PhysicalFrame>(body1Name));
+    else
+        _body1 = &(getModel().getComponent<PhysicalFrame>(
+            "./bodyset/" + body1Name));
+
+    if (getModel().hasComponent(body2Name))
+        _body2 = &(getModel().getComponent<PhysicalFrame>(body2Name));
+    else
+        _body2 = &(getModel().getComponent<PhysicalFrame>(
+            "./bodyset/" + body2Name));
 
     if(getName() == "")
         setName("expressionP2PForce_"+body1Name+"To"+body2Name);

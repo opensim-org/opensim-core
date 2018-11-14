@@ -54,11 +54,7 @@ public:
         numControls(numParameters), 
         si(s),
         osimModel(aModel)
-    {
-        // Create the integrator for the simulation.
-        p_integrator = new RungeKuttaMersonIntegrator(osimModel.getMultibodySystem());
-        p_integrator->setAccuracy(desired_accuracy);
-    }
+    {}
                 
     int objectiveFunc(const Vector &newControls,
         bool new_coefficients, Real& f) const override {
@@ -70,7 +66,8 @@ public:
         osimModel.updDefaultControls() = newControls;
                 
         // Integrate from initial time to final time
-        Manager manager(osimModel, *p_integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
         s.setTime(initialTime);
 
         osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
@@ -83,7 +80,7 @@ public:
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
-        const auto& hand = osimModel.getComponent<OpenSim::Body>("r_ulna_radius_hand");
+        const auto& hand = osimModel.getBodySet().get("r_ulna_radius_hand");
         osimModel.getMultibodySystem().realize(s, Stage::Velocity);
         Vec3 massCenter = hand.getMassCenter();
         Vec3 velocity = hand.findStationVelocityInGround(s, massCenter);
@@ -197,9 +194,8 @@ int main()
         ofile.close(); 
 
         // Re-run simulation with optimal controls.
-        RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-        integrator.setAccuracy(desired_accuracy);
-        Manager manager(osimModel, integrator);
+        Manager manager(osimModel);
+        manager.setIntegratorAccuracy(desired_accuracy);
         osimModel.updDefaultControls() = controls;
 
         // Integrate from initial time to final time.

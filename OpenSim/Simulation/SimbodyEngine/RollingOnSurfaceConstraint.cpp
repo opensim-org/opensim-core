@@ -171,12 +171,12 @@ extendSetPropertiesFromState(const SimTK::State& state) {
  * Following methods set attributes of the weld constraint */
 void RollingOnSurfaceConstraint::setRollingBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("rolling_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("rolling_body").setConnecteePath(aBodyName);
 }
 
 void RollingOnSurfaceConstraint::setSurfaceBodyByName(const std::string& aBodyName)
 {
-    updSocket<PhysicalFrame>("surface_body").setConnecteeName(aBodyName);
+    updSocket<PhysicalFrame>("surface_body").setConnecteePath(aBodyName);
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
@@ -409,14 +409,17 @@ void RollingOnSurfaceConstraint::updateFromXMLNode(SimTK::Xml::Element& aNode, i
             // extract their values.
             // Constraints in pre-4.0 models are necessarily 1 level deep
             // (model, constraints), and Bodies are necessarily 1 level deep.
-            // Prepend "../" to get the correct relative path.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
             if (body1Element != aNode.element_end()) {
                 body1Element->getValueAs<std::string>(body1_name);
-                if (!body1_name.empty()) body1_name = "../" + body1_name;
+                body1_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body1_name);
             }
             if (body2Element != aNode.element_end()) {
                 body2Element->getValueAs<std::string>(body2_name);
-                if (!body2_name.empty()) body2_name = "../" + body2_name;
+                body2_name = XMLDocument::updateConnecteePath30517("bodyset",
+                                                                   body2_name);
             }
             XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
                     "rolling_body", body1_name);

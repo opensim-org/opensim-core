@@ -85,10 +85,14 @@ void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& node,
                 coordElem.getParentElement().getOptionalAttributeValue("name");
             // PathPoints in pre-4.0 models are necessarily
             // 3 levels deep (model, muscle, geometry path), and Coordinates 
-            // are necessarily 2 levels deep: prepend "../../../<joint-name>/"
-            // to get the correct relative path.
-            if (!jointName.empty())
-                connectee_name = "../../../" + jointName + "/" + coordName;
+            // are necessarily 2 levels deep.
+            // Here we create the correct relative path (accounting for sets
+            // being components).
+            if (jointName.empty())
+                jointName = IO::Lowercase(
+                        coordElem.getParentElement().getElementTag());
+            connectee_name = XMLDocument::updateConnecteePath30517(
+                    "jointset", jointName + "/" + coordName);
         }
 
         XMLDocument::addConnector(node, "Connector_Coordinate_", "coordinate",

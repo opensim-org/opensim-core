@@ -50,26 +50,11 @@ std::string Manager::_displayName = "Simulator";
 //=============================================================================
 Manager::Manager(Model& model) : Manager(model, true)
 {
-    _defaultInteg.reset(
-            new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
-    _integ = *_defaultInteg;
-}
-
-Manager::Manager(Model& model, SimTK::Integrator& integ)
-        : Manager(model, true) 
-{
-    setIntegrator(integ);
+    _integ.reset(new SimTK::RungeKuttaMersonIntegrator(_model->getMultibodySystem()));
 }
 
 Manager::Manager(Model& model, const SimTK::State& state)
         : Manager(model) 
-{
-    initialize(state);
-}
-
-Manager::Manager(Model& model, const SimTK::State& state, 
-    SimTK::Integrator& integ)
-    : Manager(model, integ) 
 {
     initialize(state);
 }
@@ -514,6 +499,61 @@ setModel(Model& model)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
+  * Set the integrator.
+  */
+void Manager::setIntegratorMethod(IntegratorMethod integMethod)
+{
+    if (_timeStepper) {
+        std::string msg = "Cannot set a new integrator on this Manager";
+        msg += "after Manager::initialize() has been called.";
+        OPENSIM_THROW(Exception, msg);
+    }
+
+    auto& sys = _model->getMultibodySystem();
+    switch (integMethod) {
+        //case IntegratorMethod::CPodes:
+        //    _integ.reset(new SimTK::CPodesIntegrator(sys));
+        //    break;
+
+        case IntegratorMethod::ExplicitEuler:
+            _integ.reset(new SimTK::ExplicitEulerIntegrator(sys));
+            break;
+
+        case IntegratorMethod::RungeKutta2:
+            _integ.reset(new SimTK::RungeKutta2Integrator(sys));
+            break;
+
+        case IntegratorMethod::RungeKutta3:
+            _integ.reset(new SimTK::RungeKutta3Integrator(sys));
+            break;
+
+        case IntegratorMethod::RungeKuttaFeldberg:
+            _integ.reset(new SimTK::RungeKuttaFeldbergIntegrator(sys));
+            break;
+
+        case IntegratorMethod::RungeKuttaMerson:
+            _integ.reset(new SimTK::RungeKuttaMersonIntegrator(sys));
+            break;
+
+        //case Integrator::SemiExplicitEuler:
+        //    _integ.reset(SimTK::SemiExplicitEulerIntegrator(sys, stepSize));
+        //    break;
+
+        case IntegratorMethod::SemiExplicitEuler2:
+            _integ.reset(new SimTK::SemiExplicitEuler2Integrator(sys));
+            break;
+
+        case IntegratorMethod::Verlet:
+            _integ.reset(new SimTK::VerletIntegrator(sys));
+            break;
+
+        default:
+            std::string msg = "Integrator method not recognized.";
+            OPENSIM_THROW(Exception, msg);
+    }
+}
+
+/**
  * Get the integrator.
  */
 SimTK::Integrator& Manager::
@@ -521,24 +561,41 @@ getIntegrator() const
 {
     return *_integ;
 }
+
 /**
- * Set the integrator.
- */
-void Manager::
-setIntegrator(SimTK::Integrator& integrator) 
-{   
-    if (_integ.get() == &integrator) return;
-    if (_timeStepper) {
-        std::string msg = "Cannot set a new integrator on this Manager";
-        msg += "after Manager::integrate() has been called at least once.";
+  * Set the Integrator's accuracy. 
+  */
+void Manager::setIntegratorAccuracy(double accuracy)
+{
+    if (!_integ->methodHasErrorControl()) {
+        std::string msg = "Integrator method ";
+        msg += _integ->getMethodName();
+        msg += " does not support error control.";
         OPENSIM_THROW(Exception, msg);
     }
 
-    _integ = &integrator;
-    // If we had been using the _defaultInteg, we no longer need it.
-    _defaultInteg.reset();
+    _integ->setAccuracy(accuracy);
 }
 
+void Manager::setIntegratorMinimumStepSize(double hmin)
+{
+    _integ->setMinimumStepSize(hmin);
+}
+
+void Manager::setIntegratorMaximumStepSize(double hmax)
+{
+    _integ->setMaximumStepSize(hmax);
+}
+
+//void Manager::setIntegratorFixedStepSize(double stepSize)
+//{
+//    _integ->setFixedStepSize(stepSize);
+//}
+
+void Manager::setIntegratorInternalStepLimit(int nSteps)
+{
+    _integ->setInternalStepLimit(nSteps);
+}
 
 //=============================================================================
 // EXECUTION
@@ -732,7 +789,7 @@ void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
     if( _writeToStorage && _performAnalyses ) { 
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
-            _controllerSet->setModel(*_model);
+            _controllerSet->connectToModel(*_model);
         }
 
         OPENSIM_THROW_IF(!hasStateStorage(), Exception,

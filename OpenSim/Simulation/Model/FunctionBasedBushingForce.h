@@ -88,8 +88,18 @@ public:
     /** Default constructor leaves bodies unspecified, sets the bushing frames
       * to be at their body origins, and sets all bushing parameters to zero. **/
     FunctionBasedBushingForce();
-    /** This convenience constructor defines and sets the bushing frames on 
+    /** This convenience constructor defines and sets the bushing frames on
       * each body, and sets all bushing functions to zero.  **/
+    FunctionBasedBushingForce(const std::string& name,
+                              const PhysicalFrame& frame1,
+                              const SimTK::Vec3& point1,
+                              const SimTK::Vec3& orientation1,
+                              const PhysicalFrame& frame2,
+                              const SimTK::Vec3& point2,
+                              const SimTK::Vec3& orientation2);
+    /** This convenience constructor defines and sets the bushing frames on
+      * each body, and sets all bushing functions to zero. The frames are
+      * specified by name (path). **/
     FunctionBasedBushingForce(const std::string& name, 
                             const std::string& frame1Name,
                             const SimTK::Vec3& point1,
@@ -101,16 +111,30 @@ public:
       * primitive bushing.  Stiffnesses are used to define linear functions for
       * force deflection profiles.**/
     FunctionBasedBushingForce(const std::string& name,
-                            const std::string& frame1Name,
-                            const SimTK::Vec3& point1,
-                            const SimTK::Vec3& orientation1,
-                            const std::string& frame2Name,
-                            const SimTK::Vec3& point2,
-                            const SimTK::Vec3& orientation2,
-                            const SimTK::Vec3& transStiffness,
-                            const SimTK::Vec3& rotStiffness,
-                            const SimTK::Vec3& transDamping,
-                            const SimTK::Vec3& rotDamping);
+                              const PhysicalFrame& frame1,
+                              const SimTK::Vec3& point1,
+                              const SimTK::Vec3& orientation1,
+                              const PhysicalFrame& frame2,
+                              const SimTK::Vec3& point2,
+                              const SimTK::Vec3& orientation2,
+                              const SimTK::Vec3& transStiffness,
+                              const SimTK::Vec3& rotStiffness,
+                              const SimTK::Vec3& transDamping,
+                              const SimTK::Vec3& rotDamping);
+    /** This convenience constructor defines a bushing that behaves like a
+      * primitive bushing.  Stiffnesses are used to define linear functions for
+      * force deflection profiles. The frames are specified by name (path). **/
+    FunctionBasedBushingForce(const std::string& name,
+                              const std::string& frame1Name,
+                              const SimTK::Vec3& point1,
+                              const SimTK::Vec3& orientation1,
+                              const std::string& frame2Name,
+                              const SimTK::Vec3& point2,
+                              const SimTK::Vec3& orientation2,
+                              const SimTK::Vec3& transStiffness,
+                              const SimTK::Vec3& rotStiffness,
+                              const SimTK::Vec3& transDamping,
+                              const SimTK::Vec3& rotDamping);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.

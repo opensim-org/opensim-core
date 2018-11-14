@@ -1,9 +1,8 @@
-
 %% clear working space
 clear all;close all;clc;
 %% import opensim libraries
 import org.opensim.modeling.*
-%% Build a vec3 times series table programmatically 
+%% Build an OpenSim Times Series Table Programmatically 
 table = DataTableVec3();
 labels = StdVectorString();
 labels.add('marker1');labels.add('marker2');
@@ -28,7 +27,7 @@ for i = 0 : 9
     indCol.set(i, i/100)
 end
 
-%% Turn DataTable to a timesSeriesTable, then flatten
+% Turn DataTable to a timesSeriesTable, then flatten
 tsTable = TimeSeriesTableVec3(table);
 tsTable_d = tsTable().flatten();
 
@@ -49,7 +48,6 @@ assert(nCol == nCol_2 & nRow == nRow_2,'Vec3 conversion OpenSim-Matlab_OpenSim i
 assert(nCold == nCold_2 & nRowd == nRowd_2,'dbl conversion OpenSim-Matlab_OpenSim incorrect: Rows or Columns not preserved');
 
 %% Check data across is conserved across conversions. 
-
 for u = 0 : 9
     for i = 0 : 3
         % get the data from the element
@@ -70,20 +68,36 @@ for u = 0 : 9
     end
 end
 
-disp('New Table is the same as the original')
+%% Add new Data to a struct, then convert into an OpenSim table
+% Make copies of the data tables
+s = mData_d; sV3 = mData; 
+% Add new fields to the data
+f = fieldnames(s);
+for i = 1:length(f)-1
+    s.([f{i} '_new']) = s.(f{i});
+end
+f = fieldnames(sV3);
+for i = 1:length(f)-1
+    sV3.([f{i} '_new']) = sV3.(f{i});
+end
 
+% Convert the new struct into a another table.
+try 
+   oTable   = osimTableFromStruct(s);
+catch
+    error('Failed to convert structure (of doubles) with added fields to table')
+end
 
+try 
+    oTableV3 = osimTableFromStruct(sV3);
+catch
+    error('Failed to convert structure (of Vec3s) with added fields to table')
+end
 
+% Convert tables back into stucts
+s_new           = osimTableToStruct(oTable);
+sV3_new         = osimTableToStruct(oTableV3);
 
-
-
-
-
-
-
-
-
-
-
-
-
+% Check that the number of fields have been preserved. 
+assert(length(fieldnames(s)) == length(fieldnames(s_new)), 'Number of fields in s and s_new are different')
+assert(length(fieldnames(sV3)) == length(fieldnames(sV3_new)), 'Number of fields in sV3 and sV3_new are different')

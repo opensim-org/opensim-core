@@ -223,7 +223,7 @@ OffsetFrame<C>::OffsetFrame(const std::string& name,
     : OffsetFrame()
 {
     this->setName(name);
-    this->template updSocket<C>("parent").setConnecteeName(parentName);
+    this->template updSocket<C>("parent").setConnecteePath(parentName);
     setOffsetTransform(offset);
 }
 
@@ -358,7 +358,7 @@ template<class C>
 void OffsetFrame<C>::extendConnectToModel(Model& model)
 {
     Super::extendConnectToModel(model);
-    OPENSIM_THROW_IF(*this == getParentFrame(), Exception,
+    OPENSIM_THROW_IF(this == &getParentFrame(), Exception,
         getConcreteClassName() + " cannot connect to itself!");
 }
 

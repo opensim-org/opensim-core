@@ -243,12 +243,9 @@ int main(int argc, char* argv[]) {
         luxo.addAnalysis(reporter);
         
         //setup simulation
-        // Create the integrator for integrating system dynamics
-        SimTK::RungeKuttaMersonIntegrator integrator(luxo.getMultibodySystem());
-        integrator.setAccuracy(1.0e-6);
-        
         // Create the manager managing the forward integration and its outputs
-        Manager manager(luxo,  integrator);
+        Manager manager(luxo);
+        manager.setIntegratorAccuracy(1.0e-6);
         
         // Print out details of the model
         luxo.printDetailedInfo(state, std::cout);
@@ -313,7 +310,7 @@ int main(int argc, char* argv[]) {
  * Method for building the Luxo Jr articulating model. It sets up the system of
  * rigid bodies and joint articulations to define Luxo Jr lamp geometry.
  */
-void createLuxoJr(OpenSim::Model &model){
+void createLuxoJr(OpenSim::Model& model){
     
     // Create base
     //--------------
@@ -345,7 +342,7 @@ void createLuxoJr(OpenSim::Model &model){
                                    SimTK::CoordinateAxis::XCoordinateAxis()),
                           Vec3(0.0, bracket_location, 0.0));
 
-    PhysicalOffsetFrame pivot_frame_on_base("pivot_frame_on_base",
+    auto* pivot_frame_on_base = new PhysicalOffsetFrame("pivot_frame_on_base",
             *base, *shift_and_rotate);
 
     // Create bottom bracket
@@ -358,7 +355,7 @@ void createLuxoJr(OpenSim::Model &model){
     
     // Fix a frame to the bracket for attaching joint
     shift_and_rotate->setP(Vec3(0.0));
-    PhysicalOffsetFrame pivot_frame_on_bottom_bracket(
+    auto* pivot_frame_on_bottom_bracket = new PhysicalOffsetFrame(
         "pivot_frame_on_bottom_bracket", *bottom_bracket, *shift_and_rotate);
     
     // Add visible geometry
@@ -367,20 +364,20 @@ void createLuxoJr(OpenSim::Model &model){
     // Make bottom bracket to twist on base with vertical pin joint.
     // You can create a joint from any existing physical frames attached to
     // rigid bodies. One way to reference them is by name, like this...
-    PinJoint* base_pivot = new PinJoint("base_pivot", pivot_frame_on_base,
-                                        pivot_frame_on_bottom_bracket);
-    
-    base_pivot->append_frames(pivot_frame_on_base);
-    base_pivot->append_frames(pivot_frame_on_bottom_bracket);
+    PinJoint* base_pivot = new PinJoint("base_pivot", *pivot_frame_on_base,
+                                        *pivot_frame_on_bottom_bracket);
+
+    base_pivot->addFrame(pivot_frame_on_base);
+    base_pivot->addFrame(pivot_frame_on_bottom_bracket);
     // add base pivot joint to the model
     model.addJoint(base_pivot);
     
     // add some damping to the pivot
     // initialized to zero stiffness and damping
     BushingForce* pivotDamper = new BushingForce("pivot_bushing",
-                                         "pivot_frame_on_base",
-                                         "pivot_frame_on_bottom_bracket");
-    
+                                            *pivot_frame_on_base,
+                                            *pivot_frame_on_bottom_bracket);
+
     pivotDamper->set_rotational_damping(pivot_damping);
     
     model.addForce(pivotDamper);
@@ -394,11 +391,11 @@ void createLuxoJr(OpenSim::Model &model){
     
     posteriorLegBar->attachGeometry(new Mesh("Leg_meters.obj"));
 
-    PhysicalOffsetFrame posterior_knee_on_bottom_bracket(
+    auto* posterior_knee_on_bottom_bracket = new PhysicalOffsetFrame(
         "posterior_knee_on_bottom_bracket",
             *bottom_bracket, Transform(posterior_bracket_hinge_location) );
 
-    PhysicalOffsetFrame posterior_knee_on_posterior_bar(
+    auto* posterior_knee_on_posterior_bar = new PhysicalOffsetFrame(
         "posterior_knee_on_posterior_bar",
             *posteriorLegBar, Transform(inferior_bar_hinge_location) );
 
@@ -406,11 +403,11 @@ void createLuxoJr(OpenSim::Model &model){
     // Another way to reference physical frames in a joint is by creating them
     // in place, like this...
     OpenSim::PinJoint* posteriorKnee = new OpenSim::PinJoint("posterior_knee",
-                                    posterior_knee_on_bottom_bracket,
-                                    posterior_knee_on_posterior_bar);
+                                    *posterior_knee_on_bottom_bracket,
+                                    *posterior_knee_on_posterior_bar);
     // posteriorKnee will own and serialize the attachment offset frames 
-    posteriorKnee->append_frames(posterior_knee_on_bottom_bracket);
-    posteriorKnee->append_frames(posterior_knee_on_posterior_bar);
+    posteriorKnee->addFrame(posterior_knee_on_bottom_bracket);
+    posteriorKnee->addFrame(posterior_knee_on_posterior_bar);
 
     
     // add posterior leg to model
@@ -430,22 +427,22 @@ void createLuxoJr(OpenSim::Model &model){
     leg_Hlink->attachGeometry(new Mesh("H_Piece_meters.obj"));
     
     
-    PhysicalOffsetFrame anterior_knee_on_bottom_bracket(
+    auto* anterior_knee_on_bottom_bracket = new PhysicalOffsetFrame(
         "anterior_knee_on_bottom_bracket",
             *bottom_bracket, Transform(anterior_bracket_hinge_location));
 
     
-    PhysicalOffsetFrame anterior_knee_on_anterior_bar(
+    auto* anterior_knee_on_anterior_bar = new PhysicalOffsetFrame(
         "anterior_knee_on_anterior_bar",
             *leg_Hlink, Transform(inferior_Hlink_hinge_location));
 
 
     // Connect anterior leg to bottom bracket via pin joint
     OpenSim::PinJoint* anterior_knee = new OpenSim::PinJoint("anterior_knee",
-                                    anterior_knee_on_bottom_bracket,
-                                    anterior_knee_on_anterior_bar);
-    anterior_knee->append_frames(anterior_knee_on_bottom_bracket);
-    anterior_knee->append_frames(anterior_knee_on_anterior_bar);
+                                    *anterior_knee_on_bottom_bracket,
+                                    *anterior_knee_on_anterior_bar);
+    anterior_knee->addFrame(anterior_knee_on_bottom_bracket);
+    anterior_knee->addFrame(anterior_knee_on_anterior_bar);
 
     
     // add anterior leg to model
@@ -468,19 +465,19 @@ void createLuxoJr(OpenSim::Model &model){
     SimTK::Transform pelvis_anterior_shift(
                                         anterior_superior_pelvis_pin_location);
 
-    PhysicalOffsetFrame anterior_hip_on_Hlink(
+    auto* anterior_hip_on_Hlink = new PhysicalOffsetFrame(
         "anterior_hip_on_Hlink",
         *leg_Hlink, Transform(superior_Hlink_hinge_location));
 
-    PhysicalOffsetFrame anterior_hip_on_pelvis(
+    auto* anterior_hip_on_pelvis = new PhysicalOffsetFrame(
             "anterior_hip_on_pelvis",
         *pelvisBracket, pelvis_anterior_shift);
 
     OpenSim::PinJoint* anteriorHip = new OpenSim::PinJoint("anterior_hip",
-                                                    anterior_hip_on_Hlink,
-                                                    anterior_hip_on_pelvis);
-    anteriorHip->append_frames(anterior_hip_on_Hlink);
-    anteriorHip->append_frames(anterior_hip_on_pelvis);
+                                                    *anterior_hip_on_Hlink,
+                                                    *anterior_hip_on_pelvis);
+    anteriorHip->addFrame(anterior_hip_on_Hlink);
+    anteriorHip->addFrame(anterior_hip_on_pelvis);
     
     // add anterior leg to model
     model.addBody(pelvisBracket); model.addJoint(anteriorHip);
@@ -497,10 +494,10 @@ void createLuxoJr(OpenSim::Model &model){
     OpenSim::PointOnLineConstraint* posteriorHip =
         new OpenSim::PointOnLineConstraint();
     
-    posteriorHip->setLineBodyByName(pelvisBracket->getName());
+    posteriorHip->connectSocket_line_body(*pelvisBracket);
     posteriorHip->setLineDirection(Vec3(0.0,0.0,1.0));
     posteriorHip->setPointOnLine(inferior_pelvis_pin_location);
-    posteriorHip->setFollowerBodyByName(posteriorLegBar->getName());
+    posteriorHip->connectSocket_follower_body(*posteriorLegBar);
     posteriorHip->setPointOnFollower(superior_bar_hinge_location);
     
     // add constraint to model
@@ -514,21 +511,21 @@ void createLuxoJr(OpenSim::Model &model){
     
     chest->attachGeometry(new Mesh("Anterior_torso_bar.obj"));
 
-    PhysicalOffsetFrame anterior_torso_hinge_on_pelvis(
+    auto* anterior_torso_hinge_on_pelvis = new PhysicalOffsetFrame(
         "anterior_torso_hinge_on_pelvis",
         *pelvisBracket, Transform(anterior_superior_pelvis_pin_location) );
 
-    PhysicalOffsetFrame anterior_torso_hinge_on_chest(
+    auto* anterior_torso_hinge_on_chest = new PhysicalOffsetFrame(
         "anterior_torso_hinge_on_chest",
         *chest, Transform(inferior_torso_hinge_location) );
     
     // Attach chest piece to pelvice with pin joint
     OpenSim::PinJoint* anteriorTorsoHinge = new OpenSim::PinJoint(
                                               "anterior_torso_hinge",
-                                              anterior_torso_hinge_on_pelvis,
-                                              anterior_torso_hinge_on_chest);
-    anteriorTorsoHinge->append_frames(anterior_torso_hinge_on_pelvis);
-    anteriorTorsoHinge->append_frames(anterior_torso_hinge_on_chest);
+                                              *anterior_torso_hinge_on_pelvis,
+                                              *anterior_torso_hinge_on_chest);
+    anteriorTorsoHinge->addFrame(anterior_torso_hinge_on_pelvis);
+    anteriorTorsoHinge->addFrame(anterior_torso_hinge_on_chest);
     
     // add posterior leg to model
     model.addBody(chest); model.addJoint(anteriorTorsoHinge);
@@ -544,21 +541,21 @@ void createLuxoJr(OpenSim::Model &model){
     
     back->attachGeometry(new Mesh("Posterior_torso_bar.obj"));
 
-    PhysicalOffsetFrame posterior_torso_hinge_on_pelvis(
+    auto* posterior_torso_hinge_on_pelvis = new PhysicalOffsetFrame(
         "posterior_torso_hinge_on_pelvis",
         *pelvisBracket, Transform(posterior_superior_pelvis_pin_location) );
 
-    PhysicalOffsetFrame posterior_torso_hinge_on_back(
+    auto* posterior_torso_hinge_on_back = new PhysicalOffsetFrame(
         "posterior_torso_hinge_on_back",
         *back, Transform(back_peg_center) );
     
     // Attach chest piece to pelvis with pin joint
     OpenSim::PinJoint* posteriorTorsoHinge = new OpenSim::PinJoint(
                                           "posterior_torso_hinge",
-                                          posterior_torso_hinge_on_pelvis,
-                                          posterior_torso_hinge_on_back);
-    posteriorTorsoHinge->append_frames(posterior_torso_hinge_on_pelvis);
-    posteriorTorsoHinge->append_frames(posterior_torso_hinge_on_back);
+                                          *posterior_torso_hinge_on_pelvis,
+                                          *posterior_torso_hinge_on_back);
+    posteriorTorsoHinge->addFrame(posterior_torso_hinge_on_pelvis);
+    posteriorTorsoHinge->addFrame(posterior_torso_hinge_on_back);
     
     // add posterior leg to model
     model.addBody(back); model.addJoint(posteriorTorsoHinge);
@@ -579,21 +576,21 @@ void createLuxoJr(OpenSim::Model &model){
     // add anterior leg to model
     model.addBody(shoulderBracket);
 
-    PhysicalOffsetFrame anterior_thoracic_joint_on_chest(
+    auto* anterior_thoracic_joint_on_chest = new PhysicalOffsetFrame(
         "anterior_thoracic_joint_on_chest",
         *chest, Transform(superior_torso_hinge_location) );
 
-    PhysicalOffsetFrame anterior_thoracic_joint_on_shoulder(
+    auto* anterior_thoracic_joint_on_shoulder = new PhysicalOffsetFrame(
         "anterior_thoracic_joint_on_shoulder",
         *shoulderBracket, Transform(anterior_thoracic_joint_center));
     
     // Connect pelvis to Hlink via pin joint
     OpenSim::PinJoint* anteriorThoracicJoint =
                         new OpenSim::PinJoint("anterior_thoracic_joint",
-                                       anterior_thoracic_joint_on_chest,
-                                       anterior_thoracic_joint_on_shoulder);
-    anteriorThoracicJoint->append_frames(anterior_thoracic_joint_on_chest);
-    anteriorThoracicJoint->append_frames(anterior_thoracic_joint_on_shoulder);
+                                       *anterior_thoracic_joint_on_chest,
+                                       *anterior_thoracic_joint_on_shoulder);
+    anteriorThoracicJoint->addFrame(anterior_thoracic_joint_on_chest);
+    anteriorThoracicJoint->addFrame(anterior_thoracic_joint_on_shoulder);
     // add back joint
     model.addJoint(anteriorThoracicJoint);
     
@@ -607,12 +604,12 @@ void createLuxoJr(OpenSim::Model &model){
     //------------------------------------------------------------------
     // Create and configure point on line constraint
     OpenSim::PointOnLineConstraint* posteriorShoulder =
-    new OpenSim::PointOnLineConstraint();
+        new OpenSim::PointOnLineConstraint();
     
-    posteriorShoulder->setLineBodyByName(shoulderBracket->getName());
+    posteriorShoulder->connectSocket_line_body(*shoulderBracket);
     posteriorShoulder->setLineDirection(Vec3(0.0,0.0,1.0));
     posteriorShoulder->setPointOnLine(posterior_thoracic_joint_center);
-    posteriorShoulder->setFollowerBodyByName(back->getName());
+    posteriorShoulder->connectSocket_follower_body(*back);
     posteriorShoulder->setPointOnFollower(superior_torso_hinge_location);
 
     // add constraint to model
@@ -626,19 +623,21 @@ void createLuxoJr(OpenSim::Model &model){
     head->attachGeometry(new Mesh("Bulb_meters.obj"));
     model.addBody(head);
 
-    PhysicalOffsetFrame cervical_joint_on_shoulder("cervical_joint_on_shoulder",
+    auto* cervical_joint_on_shoulder = new PhysicalOffsetFrame(
+        "cervical_joint_on_shoulder",
         *shoulderBracket, Transform(superior_shoulder_hinge_location) );
 
-    PhysicalOffsetFrame cervical_joint_on_head("cervical_joint_on_head",
+    auto* cervical_joint_on_head = new PhysicalOffsetFrame(
+        "cervical_joint_on_head",
         *head, Transform(cervicle_joint_center));
 
     // attach to shoulder via pin joint
     OpenSim::PinJoint* cervicalJoint = new OpenSim::PinJoint("cervical_joint",
-                                  cervical_joint_on_shoulder,
-                                  cervical_joint_on_head);
+                                  *cervical_joint_on_shoulder,
+                                  *cervical_joint_on_head);
 
-    cervicalJoint->append_frames(cervical_joint_on_shoulder);
-    cervicalJoint->append_frames(cervical_joint_on_head);
+    cervicalJoint->addFrame(cervical_joint_on_shoulder);
+    cervicalJoint->addFrame(cervical_joint_on_head);
     // add a neck joint
      model.addJoint(cervicalJoint);
     
@@ -722,11 +721,18 @@ void createLuxoJr(OpenSim::Model &model){
     kneeExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorRight);
     
-    // add a second copy of this knee extensor for the left side
+    // create a left knee extensor
     Millard2012EquilibriumMuscle* kneeExtensorLeft =
-                                new Millard2012EquilibriumMuscle(*kneeExtensorRight);
-    kneeExtensorLeft->setName("kneeExtensorLeft");
-    
+            new Millard2012EquilibriumMuscle("knee_extensor_left",
+                            knee_extensor_F0, knee_extensor_lm0,
+                            knee_extensor_lts, pennationAngle);
+
+    kneeExtensorLeft->addNewPathPoint("knee_extensor_left_origin", *leg_Hlink,
+                                  knee_extensor_origin);
+    kneeExtensorLeft->addNewPathPoint("knee_extensor_left_insertion",
+                                      *bottom_bracket,
+                                        knee_extensor_insertion);
+
     // flip the z coordinates of all path points
     PathPointSet& points = kneeExtensorLeft->updGeometryPath().updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {
@@ -736,7 +742,7 @@ void createLuxoJr(OpenSim::Model &model){
     kneeExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(kneeExtensorLeft);
     
-    // add a back extensor to controll the upper 4-bar linkage
+    // add a back extensor to control the upper 4-bar linkage
     Millard2012EquilibriumMuscle* backExtensorRight = new Millard2012EquilibriumMuscle(
                                             "back_extensor_right",
                                             back_extensor_F0, back_extensor_lm0,
@@ -749,12 +755,16 @@ void createLuxoJr(OpenSim::Model &model){
     backExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorRight);
     
-    // copy right back extensor and use to make left extensor
+    // add another back extensor.
     Millard2012EquilibriumMuscle* backExtensorLeft =
-            new Millard2012EquilibriumMuscle(*backExtensorRight);
-    
-    backExtensorLeft->setName("back_extensor_left");
-    
+            new Millard2012EquilibriumMuscle("back_extensor_left",
+                                    back_extensor_F0, back_extensor_lm0,
+                                    back_extensor_lts, pennationAngle);
+    backExtensorLeft->addNewPathPoint("back_extensor_left_origin", *chest,
+                                      back_extensor_origin);
+    backExtensorLeft->addNewPathPoint("back_extensor_left_insertion", *back,
+                                      back_extensor_insertion);
+
     PathPointSet& pointsLeft = backExtensorLeft->updGeometryPath()
         .updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {

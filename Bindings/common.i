@@ -6,11 +6,9 @@
 %rename(OpenSimObject) OpenSim::Object;
 %rename(OpenSimException) OpenSim::Exception;
 
-/* rest of header files to be wrapped */
-%include <OpenSim/version.h>
-
 // osimCommon Library
 %include <OpenSim/Common/osimCommonDLL.h>
+%include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
@@ -23,6 +21,7 @@
 %include <OpenSim/Common/ObjectGroup.h>
 
 %include <OpenSim/Common/Set.h>
+%template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
 %include <OpenSim/Common/StateVector.h>
 %template(ArrayStateVector) OpenSim::Array<OpenSim::StateVector>;
 %include <OpenSim/Common/StorageInterface.h>
@@ -32,7 +31,7 @@
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
-%template(SetFunctions) OpenSim::Set<OpenSim::Function>;
+%template(SetFunctions) OpenSim::Set<OpenSim::Function, OpenSim::Object>;
 %include <OpenSim/Common/FunctionSet.h>
 
 %include <OpenSim/Common/Constant.h>
@@ -102,7 +101,11 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
+%include <OpenSim/Common/Path.h>
+%include <OpenSim/Common/ComponentPath.h>
+
 %include <OpenSim/Common/Component.h>
+%template(findComponent) OpenSim::Component::findComponent<OpenSim::Component>;
 
 %template(ComponentsList) OpenSim::ComponentList<const OpenSim::Component>;
 %template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
@@ -110,7 +113,7 @@ namespace OpenSim {
 
 
 %include <OpenSim/Common/Scale.h>
-%template(SetScales) OpenSim::Set<OpenSim::Scale>;
+%template(SetScales) OpenSim::Set<OpenSim::Scale, OpenSim::Object>;
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerFrame.h>
 %include <OpenSim/Common/MarkerData.h>
@@ -382,6 +385,27 @@ namespace OpenSim {
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/C3DFileAdapter.h>
 
+%extend OpenSim::C3DFileAdapter {
+    Tables read(const std::string& fileName, unsigned int wrt) {
+        C3DFileAdapter::ForceLocation location;
+        switch(wrt) {
+            case 0:
+                location = C3DFileAdapter::ForceLocation::OriginOfForcePlate;
+                break;
+            case 1:
+                location = C3DFileAdapter::ForceLocation::CenterOfPressure;
+                break;
+            case 2:
+                location = C3DFileAdapter::ForceLocation::PointOfWrenchApplication;
+                break;
+            default:
+                throw OpenSim::Exception{
+                    "An invalid C3DFileAdapter::ForceLocation was provided."};
+        }
+        return C3DFileAdapter::read(fileName, location);
+    };
+};
+
 namespace OpenSim {
     %ignore TableSource_::TableSource_(TableSource_ &&);
 }
@@ -401,3 +425,24 @@ namespace OpenSim {
 %template(ConsoleReporterVec3) OpenSim::ConsoleReporter_<SimTK::Vec3>;
 
 %include <OpenSim/Common/GCVSplineSet.h>
+
+
+// Compensate for insufficient C++11 support in SWIG
+// =================================================
+/*
+Extend concrete Sets to use the inherited base constructors.
+This is only necessary because SWIG does not generate these inherited
+constructors provided by C++11's 'using' (e.g. using Set::Set) declaration.
+Note that CustomJoint and EllipsoidJoint do implement their own
+constructors because they have additional arguments.
+*/
+%define EXPOSE_SET_CONSTRUCTORS_HELPER(NAME)
+%extend OpenSim::NAME {
+    NAME() {
+        return new NAME();
+    }
+    NAME(const std::string& file, bool updateFromXML=true) throw(OpenSim::Exception) {
+        return new NAME(file, updateFromXML);
+    }
+};
+%enddef

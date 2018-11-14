@@ -187,9 +187,8 @@ int testBouncingBall(bool useMesh, const std::string mesh_filename)
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
@@ -323,10 +322,9 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     // Simulate it and see if it bounces correctly.
     cout << "stateY=" << osim_state.getY() << std::endl;
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    integrator.setAccuracy(integ_accuracy);
-    integrator.setMaximumStepSize(100*integ_accuracy);
-    Manager manager(*osimModel, integrator);
+    Manager manager(*osimModel);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    manager.setIntegratorMaximumStepSize(100*integ_accuracy);
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
     osim_state = manager.integrate(duration);
@@ -490,9 +488,8 @@ void testIntermediateFrames() {
         coord.setValue(state, 0.15 * SimTK::Pi);
 
         // Integrate.
-        RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
-        integrator.setAccuracy(integ_accuracy);
-        Manager manager(model, integrator);
+        Manager manager(model);
+        manager.setIntegratorAccuracy(integ_accuracy);
         state.setTime(0.0);
         manager.initialize(state);
         state = manager.integrate(1.0);

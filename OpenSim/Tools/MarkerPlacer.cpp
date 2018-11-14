@@ -259,9 +259,9 @@ bool MarkerPlacer::processModel(Model* aModel,
 
     const auto avgRow = staticPoseTable.averageRow(_timeRange[0],
                                                    _timeRange[1]);
-    for(size_t r = staticPoseTable.getNumRows() - 1; r > 0; --r)
+    for(size_t r = staticPoseTable.getNumRows(); r-- > 0; )
         staticPoseTable.removeRowAtIndex(r);
-    staticPoseTable.updRowAtIndex(0) = avgRow;
+    staticPoseTable.appendRow(_timeRange[0], avgRow);
     
     OPENSIM_THROW_IF(!staticPoseTable.hasTableMetaDataKey("Units"),
                      Exception,
@@ -294,6 +294,7 @@ bool MarkerPlacer::processModel(Model* aModel,
 
     // Construct the system and get the working state when done changing the model
     SimTK::State& s = aModel->initSystem();
+    s.updTime() = _timeRange[0];
     
     // Create references and WeightSets needed to initialize InverseKinemaicsSolver
     Set<MarkerWeight> markerWeightSet;
@@ -384,12 +385,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     
     _outputStorage.reset(new Storage(statesReporter.updStatesStorage()));
     _outputStorage->setName("static pose");
-    //_outputStorage->print("statesReporterOutput.sto");
-    Storage markerStorage;
-    staticPose->makeRdStorage(*_outputStorage);
     _outputStorage->getStateVector(0)->setTime(s.getTime());
-    statesReporter.updStatesStorage().addToRdStorage(*_outputStorage, s.getTime(), s.getTime());
-    //_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
     if(_printResultFiles) {
         std::string savedCwd = IO::getCwd();

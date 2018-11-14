@@ -633,6 +633,15 @@ int main() {
 
         std::cout << tableDouble << std::endl;
 
+        auto tableDoubleCopy = tableDouble;
+        Vector row2{ tableDoubleCopy.getRowAtIndex(2).transpose() };
+        tableDoubleCopy.removeRowAtIndex(1);
+        Vector row1{ tableDoubleCopy.getRowAtIndex(1).transpose() };
+        ASSERT_EQUAL(row1, row2, 0.0);
+        tableDoubleCopy.removeRowAtIndex(0);
+        Vector row0{ tableDoubleCopy.getRowAtIndex(0).transpose() };
+        ASSERT_EQUAL(row0, row2, 0.0);
+
         std::cout << "Test TimeSeriesTable packing for Vec3 with suffix"
                      " specified."
                   << std::endl;
@@ -698,6 +707,8 @@ int main() {
     }
 
     {
+        std::cout << "Test that TimeSeriesTable can have 0 columns."
+                  << std::endl;
         TimeSeriesTable table(std::vector<double>{1.5, 2.5, 3.5});
         std::vector<std::string> expLabels = {};
         ASSERT(table.getColumnLabels() == expLabels);

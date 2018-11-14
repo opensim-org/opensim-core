@@ -19,6 +19,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
@@ -46,9 +47,10 @@
 
 namespace OpenSim {
 
-OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
-    _configState(s),
-  _model(model) {}
+OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) {
+    _configState.reset(s);
+    _model.reset(model);
+}
 
 
 // Transforms
@@ -236,6 +238,11 @@ void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
     recreateSystemKeepStage();
 }
 
+void OpenSimContext::setLocation(PathPoint& mp, const SimTK::Vec3& newLocation) {
+    mp.setLocation(newLocation);
+    recreateSystemKeepStage();
+}
+
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     mw.setEndPoint(*_configState, newEndPt );
     recreateSystemKeepStage();
@@ -291,6 +298,9 @@ void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
 
 void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
     p.addPathWrap( awo );
+    // Adding WrapObject to a GeometryPath requires initSystem similar to other Path edit operations
+    recreateSystemKeepStage();
+    p.updateGeometry(*_configState);
     return;
 }
 
@@ -359,11 +369,11 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
                      const std::string& aPathToSubject,
                      double aFinalMass) {
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updWorkingState();
+    _configState.reset(&aModel->updWorkingState());
   bool retValue= modelScaler.processModel(aModel, aPathToSubject, aFinalMass);
   // Model has changed need to recreate a valid state
   aModel->getMultibodySystem().realizeTopology();
-    _configState=&aModel->updWorkingState();
+    _configState.reset(&aModel->updWorkingState());
   aModel->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
   return retValue;
 }
@@ -399,7 +409,7 @@ void OpenSimContext::realizeVelocity() {
 
 void OpenSimContext::cacheModelAndState() 
 {
-    clonedModel = _model->clone();
+    clonedModel.reset(_model->clone());
     clonedState = this->getCurrentStateCopy();
 }
 
@@ -422,6 +432,38 @@ void OpenSimContext::restoreStateFromCachedModel()
     }
     this->setState(&(_model->updWorkingState()));
     this->realizePosition();
-    delete clonedModel;
+}
+
+void OpenSimContext::setSocketConnecteePath(AbstractSocket& socket,
+                                   const std::string& componentPathName) {
+    // Since some socket changes can form an invalid system
+    // we will make the change in a more conservative manner, by:
+    // 1. Making clone of this OpenSimContext's _model and State
+    // 2. Find the socket in the cloned model and apply the change to it
+    // 3. If successful, change is safe, continue with edit on socket
+    // 4. If failure, then exception is thrown and we return and model is
+    //    unchanged.
+    cacheModelAndState();
+
+    const Component& comp = socket.getOwner();
+    Component& componentInClone = clonedModel->updComponent(comp.getAbsolutePath());
+    auto& clonesocket = componentInClone.updSocket(socket.getName());
+    clonesocket.setConnecteePath(componentPathName);
+    // The following line either succeeds or throws, if the latter happens then
+    // neither model or socket are changed and the message will be caught by GUI
+    try {
+        clonedModel->initSystem();
+    }
+    catch(const std::exception& ex) {
+        std::string message = "Unable to connect Socket<"
+            + socket.getConnecteeTypeName() + "> '" + socket.getName() +
+            "' to Component '" + componentPathName + "'.\n Reason: " +
+            ex.what();
+        throw OpenSim::Exception(message);
+    }
+    // if we made it to this line then the change is safe, redo in actual model/comp/socket
+    socket.disconnect();
+    socket.setConnecteePath(componentPathName);
+    restoreStateFromCachedModel();
 }
 } // namespace

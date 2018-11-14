@@ -76,7 +76,7 @@ WrapCylinder::~WrapCylinder()
 */
 void WrapCylinder::constructProperties()
 {
-    constructProperty_radius(-1.0);
+    constructProperty_radius(1.0);
     constructProperty_length(1.0);
 }
 
@@ -118,13 +118,17 @@ void WrapCylinder::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     // maybe set a parent pointer, _body = aBody;
-    if (get_radius() < 0.0)
-    {
-        string errorMessage = getProperty_radius().getName()
-            + " is not specified or is negative.";
-        OPENSIM_THROW_FRMOBJ(InvalidPropertyValue,
-            getProperty_radius().getName(), errorMessage);
-    }
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_radius() < 0,
+        InvalidPropertyValue,
+        getProperty_radius().getName(),
+        "Radius cannot be less than zero");
+
+    OPENSIM_THROW_IF_FRMOBJ(
+        get_length() < 0,
+        InvalidPropertyValue,
+        getProperty_length().getName(),
+        "Length cannot be less than zero");
 }
 
 //_____________________________________________________________________________

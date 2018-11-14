@@ -101,14 +101,14 @@ public:
     /** Connect this ModelComponent to its aggregate- a  Model */
     void connectToModel(Model& model);
 
-    /**
-     * Get a const reference to the Model this component is part of.
-     */
+    /** Get a const reference to the Model this component is part of. */
     const Model& getModel() const;
-    /**
-     * Get a modifiable reference to the Model this component is part of.
-     */
+
+    /** Get a modifiable reference to the Model this component is part of. */
     Model& updModel();
+
+    /** Does this ModelComponent have a Model associated with it? */
+    bool hasModel() const { return !_model.empty(); }
 
     /** Perform any computations that must occur before ModelComponent::scale()
         is invoked on all ModelComponents in the Model. For example, a
@@ -261,9 +261,10 @@ template <class T> friend class ModelComponentSet;
 
 private:
     /** Satisfy the general Component interface, but this is not part of the
-    * ModelComponent interface. ModelComponent::extendConnect() ensures that
-    * extendConnectToModel() on ModelComponent subcomponents are invoked. **/
-    void extendConnect(Component& root) override final;
+    * ModelComponent interface. ModelComponent::extendFinalizeConnections()
+    * ensures that extendConnectToModel() on ModelComponent subcomponents are
+    * invoked. **/
+    void extendFinalizeConnections(Component& root) override final;
 
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const;
     const SimTK::DefaultSystemSubsystem& updDefaultSubsystem();

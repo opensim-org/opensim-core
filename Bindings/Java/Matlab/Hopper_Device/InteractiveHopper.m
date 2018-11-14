@@ -84,6 +84,10 @@ handles = InteractiveHopperSettings(handles,'load','setDefaults',true);
 handles.muscleExcitationDefault.Value = handles.muscleExcitation.Value;
 handles.deviceControlDefault.Value = handles.deviceControl.Value;
 
+% Increase font size used in GUI elements. Useful if presenting on a Mac.
+% set(findall(handles.interactive_hopper, '-property', 'fontsize'), ...
+%         'fontsize', 16);
+
 % Label control axes
 axes(handles.control_axes)
 resetControlAxes()
@@ -162,7 +166,7 @@ end
 % Other GUI, visualization features
 visualize = handles.visualize.Value;
 
-hopper = BuildInteractiveHopperSolution('muscle', muscle, ...
+hopper = BuildCustomHopper('muscle', muscle, ...
     'muscleExcitation', muscleExcitation, ...
     'addPassiveDevice', addPassiveDevice, ...
     'passivePatellaWrap', passivePatellaWrap, ...

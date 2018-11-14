@@ -151,4 +151,8 @@ muscleController.prescribeControlForActuator('muscle2', LinearFunction(slopeAndI
 % Add the control set controller to the model
 model.addController(muscleController);
 
+% Finalize connections so that sockets connectees are stored in the
+% OSIM file.
+model.finalizeConnections();
+
 model.print('tug_of_war_muscles_controller.osim');

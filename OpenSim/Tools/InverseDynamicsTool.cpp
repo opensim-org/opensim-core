@@ -250,16 +250,16 @@ bool InverseDynamicsTool::run()
         _model->printBasicInfo();
 
         cout<<"Running tool " << getName() <<".\n"<<endl;
-
-        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
-        // Initialize the model's underlying computational system and get its default state.
-        SimTK::State& s = _model->initSystem();
-
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
         string saveWorkingDirectory = IO::getCwd();
         string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
         IO::chDir(directoryOfSetupFile);
+
+        /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
+        // Initialize the model's underlying computational system and get its default state.
+        SimTK::State& s = _model->initSystem();
+
 
         auto coords = _model->getCoordinatesInMultibodyTreeOrder();
         int nq = _model->getNumCoordinates();
@@ -420,6 +420,7 @@ bool InverseDynamicsTool::run()
             IO::chDir(saveWorkingDirectory);
         }
 
+        removeExternalLoadsFromModel();
     }
     catch (const OpenSim::Exception& ex) {
         std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;

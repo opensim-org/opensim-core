@@ -344,10 +344,11 @@ record(const SimTK::State& s)
         const Coordinate& coord = *coordinates[_accelerationIndices[i]];
         int ind = _statesStore->getStateIndex(coord.getSpeedName(), 0);
         if (ind < 0){
-            string fullname = coord.getJoint().getName() + "/" + coord.getSpeedName();
+            // get the full coordinate speed state variable path name
+            string fullname = coord.getStateVariableNames()[1];
             ind = _statesStore->getStateIndex(fullname, 0);
             if (ind < 0){
-                string msg = "StaticOptimizationTarget::computeConstraintVector: \n";
+                string msg = "InverseDynamics::record(): \n";
                 msg += "target motion for coordinate '";
                 msg += coord.getName() + "' not found.";
                 throw Exception(msg);
