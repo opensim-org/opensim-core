@@ -43,7 +43,7 @@ tool.setModel(osimModel);
 % Set the start and end times of the simulaiton
 tool.setStartTime(0);
 tool.setFinalTime(3);
-% Set the simulation to solve for euilibrium states of the muscle.
+% Set the simulation to solve for equilibrium states of the muscle.
 tool.setSolveForEquilibrium(true);
 % Run the simulation
 tool.run();
