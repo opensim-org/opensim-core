@@ -70,13 +70,13 @@ install:
   # TODO vcpkg is pretty slow; using superbuild for now.
   #- vcpkg install eigen3:x64-windows
 
-  - mkdir ..\muscollo_deps_build
-  - cd ..\muscollo_deps_build
+  - mkdir ..\muoco_deps_build
+  - cd ..\moco_deps_build
   # /W0 disables warnings. The other CXX flags are copied from CMake's default
   # CMAKE_CXX_FLAGS.
   # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
   # - set CXXFLAGS="/W0"
-  - cmake ..\muscollo\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\muscollo_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
+  - cmake ..\moco\dependencies -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\projects\moco_deps_install" -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=ON -DOPENSIM_PYTHON_WRAPPING=ON -DSUPERBUILD_eigen=OFF -DSUPERBUILD_colpack=OFF -DSUPERBUILD_adolc=OFF -DSUPERBUILD_ipopt=OFF -DSUPERBUILD_opensim-core=OFF
 
   - IF NOT EXIST C:\projects\deps mkdir C:\projects\deps
   - dir C:\projects\
@@ -93,24 +93,24 @@ install:
   # difficult to read.
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 # TODO /verbosity:quiet
   - dir C:\projects\
-  - IF EXIST C:\projects\muscollo_deps_install dir C:\projects\muscollo_deps_install
+  - IF EXIST C:\projects\moco_deps_install dir C:\projects\moco_deps_install
 
   # To get the caching mechanism to work, we had to use a different directory
   # for the cache (maybe b/c CMake makes empty folders in
-  # muscollo_deps_install?).
-  - IF NOT EXIST C:\projects\deps\eigen cmake -E copy_directory C:\projects\muscollo_deps_install\eigen C:\projects\deps\eigen
-  - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\muscollo_deps_install\colpack C:\projects\deps\colpack
-  - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\muscollo_deps_install\adol-c C:\projects\deps\adol-c
-  - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\muscollo_deps_install\ipopt C:\projects\deps\ipopt
-  - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\muscollo_deps_install\opensim-core C:\projects\deps\opensim-core
+  # moco_deps_install?).
+  - IF NOT EXIST C:\projects\deps\eigen cmake -E copy_directory C:\projects\moco_deps_install\eigen C:\projects\deps\eigen
+  - IF NOT EXIST C:\projects\deps\colpack cmake -E copy_directory C:\projects\moco_deps_install\colpack C:\projects\deps\colpack
+  - IF NOT EXIST C:\projects\deps\adol-c cmake -E copy_directory C:\projects\moco_deps_install\adol-c C:\projects\deps\adol-c
+  - IF NOT EXIST C:\projects\deps\ipopt cmake -E copy_directory C:\projects\moco_deps_install\ipopt C:\projects\deps\ipopt
+  - IF NOT EXIST C:\projects\deps\opensim-core cmake -E copy_directory C:\projects\moco_deps_install\opensim-core C:\projects\deps\opensim-core
 
 build_script:
 
-  # Install Muscollo.
+  # Install Moco.
   - mkdir ..\build
   - cd ..\build
   # Turn warnings into errors (/WX)
-  - cmake -E env CXXFLAGS="/WX" cmake ..\muscollo -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\muscollo" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
+  - cmake -E env CXXFLAGS="/WX" cmake ..\moco -G"Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX="C:\moco" -DADOLC_DIR="..\deps\adol-c" -DCMAKE_PREFIX_PATH="C:\projects\deps\eigen;C:\projects\deps\colpack;C:\projects\deps\opensim-core;C:\projects\deps\ipopt" -DMUSCOLLO_PYTHON_BINDINGS=ON -DMUSCOLLO_JAVA_BINDINGS=ON
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
@@ -133,8 +133,8 @@ after_test:
   # - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   # Deploy always.
   - SET DISTR=TRUE
-  - IF DEFINED DISTR 7z a C:\opensim-muscollo.zip C:\muscollo
-  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-muscollo.zip
+  - IF DEFINED DISTR 7z a C:\opensim-moco.zip C:\moco
+  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco.zip
   # Upload pre-built dependencies to speed up local development.
   # Change the modified timestamp of dependencies because otherwise these files
   # may have been written "in the future" (b/c of the time zone difference
@@ -144,8 +144,8 @@ after_test:
   # https://stackoverflow.com/questions/18847145/loop-through-files-in-a-directory-using-powershell
   # https://superuser.com/questions/10426/windows-equivalent-of-the-linux-command-touch
   - ps: Get-ChildItem -Path "C:\projects\deps" -Recurse -Include ** | Foreach-Object { $_.LastWriteTime = (Get-Date).AddDays(-1) }
-  - 7z a C:\opensim-muscollo-dependencies.zip C:\projects\deps
-  - appveyor PushArtifact C:\opensim-muscollo-dependencies.zip
+  - 7z a C:\opensim-moco-dependencies.zip C:\projects\deps
+  - appveyor PushArtifact C:\opensim-moco-dependencies.zip
   # The published binaries can be downloaded from this link: https://ci.appveyor.com/api/projects/opensim-org/muscollo/artifacts/opensim-muscollo.zip
   # Create and upload NuGet package.
   #- IF DEFINED DISTR nuget pack .github/opensim-muscollo.nuspec -BasePath C:\muscollo

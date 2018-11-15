@@ -189,80 +189,6 @@ void setBounds(MucoProblem& mp) {
     mp.setStateInfo("tau_ankle_angle_l/activation", { -1, 1 });
 }
 
-/// Solve a full-body (10 DOF) tracking problem by having each model 
-/// generalized coordinate track the coordinate value obtained from 
-/// inverse kinematics.
-///
-/// Estimated time to solve: 7.5-35 minutes.
-MucoSolution solveStateTrackingProblem(bool usingMuscleLikeActuators, 
-        bool prevSolutionInitialization) {
-
-    MucoTool muco;
-    muco.setName("whole_body_state_tracking");
-
-    // Define the optimal control problem.
-    // ===================================
-    MucoProblem& mp = muco.updProblem();
-
-    // Model(dynamics).
-    // -----------------
-    mp.setModel(setupModel(usingMuscleLikeActuators));
-
-    // Bounds.
-    // -------
-    setBounds(mp);
-
-    // Cost.
-    // -----
-    MucoStateTrackingCost tracking;
-    auto ref = STOFileAdapter::read("state_reference.mot");
-    auto refFilt = filterLowpass(ref, 6.0, true);
-    tracking.setReference(refFilt);
-    //tracking.setAllowUnusedReferences(true);
-    mp.addCost(tracking);
-
-    // Configure the solver.
-    // =====================
-    MucoTropterSolver& ms = muco.initSolver();
-    ms.set_num_mesh_points(50);
-    ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_hessian_approximation("exact");
-
-    // Create guess.
-    // =============
-    if (prevSolutionInitialization) {
-        MucoIterate prevSolution(
-            "sandboxMarkerTrackingWholeBody_states_solution.sto");
-        ms.setGuess(prevSolution);
-    }
-    else {
-        MucoIterate guess = ms.createGuess();
-        auto model = mp.getPhase().getModel();
-        model.initSystem();
-        auto refFilt2 = refFilt;
-        model.getSimbodyEngine().convertDegreesToRadians(refFilt2);
-        STOFileAdapter::write(refFilt2, "state_reference_radians.sto");
-        guess.setStatesTrajectory(refFilt2, true, true);
-        ms.setGuess(guess);
-    }
-
-    // Solve the problem.
-    // ==================
-    MucoSolution solution = muco.solve();
-    std::string output;
-    if (usingMuscleLikeActuators) {
-        output = "sandboxMarkerTrackingWholeBody_states_solution_AMLCAs.sto";
-    } else {
-        output = "sandboxMarkerTrackingWholeBody_states_solution_ACAs.sto";
-    }
-    solution.write(output);
-
-    muco.visualize(solution);
-
-    return solution;
-}
-
 /// Solve a full-body (10 DOF) tracking problem by having the model markers
 /// track the marker trajectories directly.
 ///
@@ -321,16 +247,6 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
         MucoIterate prevSolution(
             "sandboxMarkerTrackingWholeBody_marker_solution.sto");
         ms.setGuess(prevSolution);
-    } else {
-        MucoIterate guess = ms.createGuess();
-        auto model = mp.getPhase().getModel();
-        model.initSystem();
-        auto statesRef = STOFileAdapter::read("state_reference.mot");
-        auto statesRefFilt = filterLowpass(statesRef, 6.0, true);
-        model.getSimbodyEngine().convertDegreesToRadians(statesRefFilt);
-        STOFileAdapter::write(statesRefFilt, "state_reference_radians.sto");
-        guess.setStatesTrajectory(statesRefFilt, true, true);
-        ms.setGuess(guess);
     }
 
     // Solve the problem.
@@ -349,11 +265,8 @@ MucoSolution solveMarkerTrackingProblem(bool usingMuscleLikeActuators,
     return solution;
 }
 
-/// Solve both problems and compare.
 int main() {
 
-    // MucoSolution stateTrackingSolution = solveStateTrackingProblem(true, 
-    //   false);
 
     MucoSolution markerTrackingSolution = solveMarkerTrackingProblem(true, 
         false);
