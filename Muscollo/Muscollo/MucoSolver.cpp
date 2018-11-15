@@ -25,9 +25,7 @@ MucoSolver::MucoSolver() {}
 
 void MucoSolver::clearProblem() {
     m_problem.reset();
-    std::cout << "DEBUG clearProblem before " << &m_problemRep << std::endl;
     m_problemRep = MucoProblemRep();
-    std::cout << "DEBUG clearProblem after " << &m_problemRep << std::endl;
     clearProblemImpl();
 }
 
