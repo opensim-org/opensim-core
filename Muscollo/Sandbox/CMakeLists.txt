@@ -38,6 +38,6 @@ MuscolloAddSandboxExecutable(NAME sandboxMuscle
             shared/DeGrooteFregly2016Muscle.cpp
         LIB_DEPENDS osimMuscollo)
 
-
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
+add_subdirectory(sandboxJointReaction)

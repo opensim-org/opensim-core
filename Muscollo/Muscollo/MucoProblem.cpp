@@ -104,6 +104,7 @@ void MucoPhase::constructProperties() {
     constructProperty_model(Model());
     constructProperty_time_initial_bounds(MucoInitialBounds());
     constructProperty_time_final_bounds(MucoFinalBounds());
+    constructProperty_default_speed_bounds(MucoBounds(-50, 50));
     constructProperty_state_infos();
     constructProperty_control_infos();
     constructProperty_parameters();
@@ -127,6 +128,8 @@ void MucoPhase::setStateInfo(const std::string& name, const MucoBounds& bounds,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_state_infos(info);
     else           upd_state_infos(idx) = info;
+
+    m_state_infos[name] = info;
 }
 void MucoPhase::setControlInfo(const std::string& name,
         const MucoBounds& bounds,
@@ -136,6 +139,8 @@ void MucoPhase::setControlInfo(const std::string& name,
     MucoVariableInfo info(name, bounds, initial, final);
     if (idx == -1) append_control_infos(info);
     else           upd_control_infos(idx) = info;
+
+    m_control_infos[name] = info;
 }
 void MucoPhase::addParameter(const MucoParameter& parameter) {
     OPENSIM_THROW_IF_FRMOBJ(parameter.getName().empty(), Exception,
@@ -170,16 +175,22 @@ MucoFinalBounds MucoPhase::getTimeFinalBounds() const {
     return get_time_final_bounds();
 }
 std::vector<std::string> MucoPhase::createStateInfoNames() const {
-    std::vector<std::string> names(getProperty_state_infos().size());
-    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
-        names[i] = get_state_infos(i).getName();
+    // TODO: Must initialize first.
+    std::vector<std::string> names(m_state_infos.size());
+    int i = 0;
+    for (const auto& info : m_state_infos) {
+        names[i] = info.first;
+        ++i;
     }
     return names;
 }
 std::vector<std::string> MucoPhase::createControlInfoNames() const {
-    std::vector<std::string> names(getProperty_control_infos().size());
-    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
-        names[i] = get_control_infos(i).getName();
+    // TODO: Must initialize first.
+    std::vector<std::string> names(m_control_infos.size());
+    int i = 0;
+    for (const auto& info : m_control_infos) {
+        names[i] = info.first;
+        ++i;
     }
     return names;
 }
@@ -211,25 +222,24 @@ std::vector<std::string> MucoPhase::createPathConstraintNames() const {
 std::vector<std::string> MucoPhase::createMultibodyConstraintNames() const {
     std::vector<std::string> names(m_multibody_constraints.size());
     // Multibody constraint names are stored in the internal constraint info.
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         names[i] = m_multibody_constraints[i].getConstraintInfo().getName();
     }
     return names;
 }
 const MucoVariableInfo& MucoPhase::getStateInfo(
         const std::string& name) const {
-    int idx = getProperty_state_infos().findIndexForName(name);
-    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
+    // TODO: Must initialize first.
+    OPENSIM_THROW_IF_FRMOBJ(m_state_infos.count(name) == 0, Exception,
             "No info available for state '" + name + "'.");
-    return get_state_infos(idx);
+    return m_state_infos[name];
 }
 const MucoVariableInfo& MucoPhase::getControlInfo(
         const std::string& name) const {
-
-    int idx = getProperty_control_infos().findIndexForName(name);
-    OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            "No info provided for control for '" + name + "'.");
-    return get_control_infos(idx);
+    // TODO: Must initialize first.
+    OPENSIM_THROW_IF_FRMOBJ(m_control_infos.count(name) == 0, Exception,
+            "No info available for control '" + name + "'.");
+    return m_control_infos[name];
 }
 const MucoParameter& MucoPhase::getParameter(
         const std::string& name) const {
@@ -278,6 +288,7 @@ const std::vector<MucoVariableInfo>& MucoPhase::getMultiplierInfos(
     }
 }
 void MucoPhase::printDescription(std::ostream& stream) const {
+    // TODO: Make sure the problem has been initialized.
     stream << "Costs:";
     if (getProperty_costs().empty())
         stream << " none";
@@ -295,7 +306,7 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     else
         stream << " (total: " << m_multibody_constraints.size() << ")";
     stream << "\n";
-    for (int i = 0; i < m_multibody_constraints.size(); ++i) {
+    for (int i = 0; i < (int)m_multibody_constraints.size(); ++i) {
         stream << "  ";
         m_multibody_constraints[i].getConstraintInfo().printDescription(stream);
     }
@@ -312,27 +323,27 @@ void MucoPhase::printDescription(std::ostream& stream) const {
     }
 
     stream << "States:";
-    if (getProperty_state_infos().empty())
+    if (m_state_infos.empty())
         stream << " none";
     else
-        stream << " (total: " << getProperty_state_infos().size() << ")";
+        stream << " (total: " << m_state_infos.size() << ")";
     stream << "\n";
     // TODO want to loop through the model's state variables and controls, not
     // just the infos.
-    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+    for (const auto& info : m_state_infos) {
         stream << "  ";
-        get_state_infos(i).printDescription(stream);
+        info.second.printDescription(stream);
     }
 
     stream << "Controls:";
-    if (getProperty_control_infos().empty())
+    if (m_control_infos.empty())
         stream << " none";
     else
-        stream << " (total: " << getProperty_control_infos().size() << "):";
+        stream << " (total: " << m_control_infos.size() << "):";
     stream << "\n";
-    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+    for (const auto& info : m_control_infos) {
         stream << "  ";
-        get_control_infos(i).printDescription(stream);
+        info.second.printDescription(stream);
     }
 
     stream << "Parameters:";
@@ -360,7 +371,7 @@ void MucoPhase::initialize(Model& model) const {
     }
     OpenSim::Array<std::string> actuNames;
     const auto modelPath = model.getAbsolutePath();
-    for (const auto& actu : model.getComponentList<Actuator>()) {
+    for (const auto& actu : model.getComponentList<ScalarActuator>()) {
         actuNames.append(
                 actu.getAbsolutePath().formRelativePath(modelPath).toString());
     }
@@ -371,6 +382,44 @@ void MucoPhase::initialize(Model& model) const {
         OPENSIM_THROW_IF(actuNames.findIndex(name) == -1, Exception,
                 "Control info provided for nonexistent actuator '"
                         + name + "'.");
+    }
+
+    // Create internal record of state and control infos, automatically
+    // populated from coordinates and actuators.
+    m_state_infos.clear();
+    m_control_infos.clear();
+    for (int i = 0; i < getProperty_state_infos().size(); ++i) {
+        const auto& name = get_state_infos(i).getName();
+        m_state_infos[name] = get_state_infos(i);
+    }
+    for (const auto& coord : model.getComponentList<Coordinate>()) {
+        const std::string coordPath =
+                coord.getAbsolutePath().formRelativePath(modelPath).toString();
+        const std::string coordValueName = coordPath + "/value";
+        if (m_state_infos.count(coordValueName) == 0) {
+            const auto info = MucoVariableInfo(coordValueName,
+                    {coord.getRangeMin(), coord.getRangeMax()}, {}, {});
+            m_state_infos[coordValueName] = info;
+        }
+        const std::string coordSpeedName = coordPath + "/speed";
+        if (m_state_infos.count(coordSpeedName) == 0) {
+            const auto info = MucoVariableInfo(coordSpeedName,
+                    get_default_speed_bounds(), {}, {});
+            m_state_infos[coordSpeedName] = info;
+        }
+    }
+    for (int i = 0; i < getProperty_control_infos().size(); ++i) {
+        const auto& name = get_control_infos(i).getName();
+        m_control_infos[name] = get_control_infos(i);
+    }
+    for (const auto& actu : model.getComponentList<ScalarActuator>()) {
+        const std::string actuName =
+                actu.getAbsolutePath().formRelativePath(modelPath).toString();
+        if (m_control_infos.count(actuName) == 0) {
+            const auto info = MucoVariableInfo(actuName,
+                    {actu.getMinControl(), actu.getMaxControl()}, {}, {});
+            m_control_infos[actuName] = info;
+        }
     }
 
     for (int i = 0; i < getProperty_parameters().size(); ++i) {

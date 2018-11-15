@@ -678,7 +678,7 @@ void testDoublePendulumPrescribedMotion(MucoSolution& couplerSolution) {
     SimTK::Matrix depData((int)statesTraj.getSize(), 
         (int)solution.getStateNames().size());
     Vector timeVec(1);
-    for (int i = 0; i < statesTraj.getSize(); ++i) {
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
         const auto& s = statesTraj.get(i);
         const SimTK::Real& time = s.getTime();
         indVec[i] = time;

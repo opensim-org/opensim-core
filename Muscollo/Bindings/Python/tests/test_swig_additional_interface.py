@@ -58,11 +58,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         self.assertAlmostEqual(ph0.getTimeInitialBounds().getUpper(), 2.3)
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getLower(), 4.5)
         self.assertAlmostEqual(ph0.getTimeFinalBounds().getUpper(), 4.5)
-        
-        
+
+
         mp.setStateInfo('slider/position/value', osim.MucoBounds(-5, 5),
             osim.MucoInitialBounds(0))
-        assert-5 == ph0.getStateInfo('slider/position/value').getBounds().getLower()
+        assert -5 == ph0.getStateInfo('slider/position/value').getBounds().getLower()
         assert 5 == ph0.getStateInfo('slider/position/value').getBounds().getUpper()
         assert isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getLower())
         assert isnan(ph0.getStateInfo('slider/position/value').getFinalBounds().getUpper())
