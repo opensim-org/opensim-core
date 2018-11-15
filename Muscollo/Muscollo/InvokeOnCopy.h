@@ -1,3 +1,5 @@
+#ifndef MUSCOLLO_INVOKEONCOPY_H
+#define MUSCOLLO_INVOKEONCOPY_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Muscollo: InvokeOnCopy.h                                           *
  * -------------------------------------------------------------------------- *
@@ -16,8 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef MUSCOLLO_INVOKEONCOPY_H
-#define MUSCOLLO_INVOKEONCOPY_H
+#include <type_traits>
 
 /// Invoke a function F on an object of type T whenever making a copy of it.
 /// This class template is based on SimTK::ReinitOnCopy.
