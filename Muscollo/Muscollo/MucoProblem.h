@@ -22,129 +22,9 @@
 #include "MucoBounds.h"
 #include "MucoParameter.h"
 #include "MucoConstraint.h"
-
-#include <OpenSim/Simulation/Model/Model.h>
+#include "InvokeOnCopy.h"
 
 namespace OpenSim {
-
-template <class T, void (*F)(T&)>
-class InvokeOnCopy : public T {
-
-    /** @cond **/ // These confuse doxygen.
-    static_assert(!std::is_array<T>::value,
-            "InvokeOnCopy<T> does not allow T to be an array.");
-
-    static_assert(   std::is_copy_constructible<T>::value
-                    && std::is_copy_assignable<T>::value,
-            "InvokeOnCopy<T> requires type T to have an accessible copy "
-            "constructor and copy assignment operator.");
-
-    static_assert(std::is_destructible<T>::value,
-            "InvokeOnCopy<T> requires type T to have an accessible destructor.");
-    /** @endcond **/
-
-public:
-    // TODO using T::T;
-    // TODO using T::operator=;
-
-    /** Default constructor is deleted; use ResetOnCopy instead. **/
-    InvokeOnCopy() = default;
-
-    /** Copy constructor sets the value and remembered initial value to the
-    initial value in the source, using type `T`'s copy constructor. The
-    current value of the source is ignored. **/
-    InvokeOnCopy(const InvokeOnCopy& source)
-            :   T(source.getT()) {
-        F(updT());
-    }
-
-    // TODO explicit InvokeOnCopy(const T& value)
-    // TODO         :   T(value) {}
-
-    /** Move constructor is simply a pass-through to the move constructor of
-    the contained object for both the current and initial values. **/
-    // TODO InvokeOnCopy(InvokeOnCopy&& source)
-    // TODO         :   Super(static_cast<Super&&>(source)) {} // default
-
-    /** Copy assignment reinitializes this object to its original condition; the
-    source argument is ignored. **/
-    // InvokeOnCopy& operator=(const InvokeOnCopy& ignored)
-    // {   Super::operator=(static_cast<const Super&>(ignored)); return *this; }
-    InvokeOnCopy& operator=(const InvokeOnCopy& other) {
-        T::operator=(other.getT());
-        F(updT());
-        return *this;
-    }
-
-    /** Move assignment uses type `T`'s move assignment for the current value
-    but does not change the remembered initial value here. **/
-    // TODO InvokeOnCopy& operator=(InvokeOnCopy&& source)
-    // TODO {   Super::operator=(static_cast<Super&&>(source)); return *this; }
-
-    /** Assignment from an object of type `T` uses `T`'s copy assignment
-    operator; affects only the current value but does not change the remembered
-    initial value. **/
-    InvokeOnCopy& operator=(const T& value)
-    {   T::operator=(value); F(updT()); return *this; }
-
-    /** Assignment from an rvalue object of type `T` uses `T`'s move or copy
-    assignment operator; affects only the current value but does not change the
-    remembered initial value. **/
-    // TODO InvokeOnCopy& operator=(T&& value)
-    // TODO {   Super::operator=(std::move(value)); return *this; }
-
-    /** Return a const reference to the contained object of type `T`. **/
-    const T& getT() const {return static_cast<const T&>(*this);}
-    /** Return a writable reference to the contained object of type `T`. **/
-    T&       updT()       {return static_cast<T&>(*this);}
-
-};
-
-/* InvokeOnCopy helper class specialization for any type `T` that is not a
-built-in ("scalar") type and that is `CopyConstructible` and `CopyAssignable`.
-Those operators are used to reinitialize the object to a stored initial value
-when copy constructor or copy assignment is performed. */
-//template <class T>
-//class InvokeOnCopyHelper<T,false> : public T {
-//public:
-
-    // Move construction moves both the value and initial value from the
-    // source object. This is the same as default move construction.
-    // TDOO InvokeOnCopyHelper(InvokeOnCopyHelper&& source)
-    // TODO         :   T(std::move(source.getT())), m_function(std::move(source.m_function)) {}
-
-    // Constructor from lvalue `T` sets the value and remembered initial value
-    // to the given value, using type `T`'s copy constructor.
-
-    // Copy constructor sets the value and remembered initial value to the
-    // initial value in the source, using type `T`'s copy constructor. The
-    // current value of the source is ignored.
-
-    // Move assignment moves the *value* from source to `this` but does not
-    // move the recorded initial value which may differ.
-    // TODO InvokeOnCopyHelper& operator=(InvokeOnCopyHelper&& source)
-    // TODO {   T::operator=(std::move(source)); m_function(*this); return *this; }
-
-    // Copy assignment resets the current value to the remembered initial value
-    // using type `T`'s copy assignment operator. The source is ignored.
-    // TODO InvokeOnCopyHelper& operator=(const InvokeOnCopyHelper& other)
-    // TODO {   T::operator=(static_cast<const T&>(other)); m_function(*this); return *this; }
- //   InvokeOnCopyHelper& operator=(const InvokeOnCopyHelper& other) = default;
-
-    // Allow assignment from an lvalue object of type T; affects only the
-    // current value. Uses type `T`'s copy assignment operator.
-    // InvokeOnCopyHelper& operator=(const T& value)
-    // {   T::operator=(value); return *this; }
-
-    // Allow assignment from an rvalue object of type T; affects only the
-    // current value. Uses type `T`'s move assignment operator.
-    // TODO what to do wit m_function?
-    // TDOO InvokeOnCopyHelper& operator=(T&& value)
-    // TODO {   T::operator=(std::move(value)); return *this; }
-
-//};
-
-/** @endcond **/
 
 // ============================================================================
 // MucoVariableInfo
@@ -347,7 +227,6 @@ private:
 
     static void ModelInitSystem(Model& m) { m.initSystem(); }
     InvokeOnCopy<Model, ModelInitSystem> m_model;
-    // Model m_model;
 
     // TODO reorder these.
     std::vector<SimTK::ResetOnCopy<std::unique_ptr<MucoPathConstraint>>>

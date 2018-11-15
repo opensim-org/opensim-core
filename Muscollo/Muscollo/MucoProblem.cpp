@@ -216,10 +216,8 @@ MucoProblemRep::MucoProblemRep(const MucoProblem& problem)
         : m_problem(&problem) {
     /// Must use the model provided in this function, *not* the one stored as
     /// a property in this class.
-    std::cout << "DEBUG MucoProblemRep() " << this << std::endl;
 
     const auto& ph0 = problem.getPhase(0);
-    m_model.initSystem();
     m_model = problem.getPhase(0).getModel();
     m_model.initSystem();
 

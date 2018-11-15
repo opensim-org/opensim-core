@@ -182,7 +182,6 @@ public:
               m_mucoTropterSolver(solver),
               m_mucoProb(solver.getProblemRep()),
               m_model(m_mucoProb.getModel()) {
-        std::cout << "DEBUG OCProblem " << &m_mucoProb << std::endl;
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
         auto controllers = m_model.getComponentList<Controller>();
