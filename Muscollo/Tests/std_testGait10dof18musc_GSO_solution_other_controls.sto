@@ -1,7 +1,7 @@
 DataType=double
 version=2
 endheader
-time	/walk_subject01/reserve_hip_r_hip_flexion_r	/walk_subject01/reserve_knee_r_knee_angle_r	/walk_subject01/reserve_ankle_r_ankle_angle_r
+time	/reserve__jointset_hip_r_hip_flexion_r	/reserve__jointset_knee_r_knee_angle_r	/reserve__jointset_ankle_r_ankle_angle_r
 0.58	1.083214452607303e-06	-4.406438841001152e-06	1.323696313194712e-06
 0.585	1.102241394569028e-06	-4.419942781622163e-06	1.304759261897444e-06
 0.59	1.11287055412844e-06	-4.357512900057305e-06	1.267598806156587e-06

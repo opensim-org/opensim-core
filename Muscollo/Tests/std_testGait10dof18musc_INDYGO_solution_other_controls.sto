@@ -1,7 +1,7 @@
 DataType=double
 version=2
 endheader
-time	/walk_subject01/reserve_ankle_r_ankle_angle_r
+time	/reserve__jointset_ankle_r_ankle_angle_r
 0.46	2.802585450113608e-07
 0.4633415841584159	-3.285088233554965e-06
 0.4666831683168317	4.926172964285197e-06

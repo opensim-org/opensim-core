@@ -80,13 +80,14 @@ def createDoublePendulumModel():
     # Add display geometry.
     bodyGeometry = osim.Ellipsoid(0.5, 0.1, 0.1)
     transform = osim.Transform(osim.Vec3(-0.5, 0, 0))
-    b0Center = osim.PhysicalOffsetFrame("b0_center", "b0", transform)
+    b0Center = osim.PhysicalOffsetFrame("b0_center", b0, transform)
     b0.addComponent(b0Center)
     b0Center.attachGeometry(bodyGeometry.clone())
-    b1Center = osim.PhysicalOffsetFrame("b1_center", "b1", transform)
+    b1Center = osim.PhysicalOffsetFrame("b1_center", b1, transform)
     b1.addComponent(b1Center)
     b1Center.attachGeometry(bodyGeometry.clone())
 
+    model.finalizeConnections()
     model.printToXML("double_pendulum.osim")
     return model
 
@@ -115,12 +116,12 @@ def solvePrediction():
     # Arguments are name, [lower bound, upper bound],
     #                     initial [lower bound, upper bound],
     #                     final [lower bound, upper bound].
-    problem.setStateInfo("j0/q0/value", [-10, 10], 0)
-    problem.setStateInfo("j0/q0/speed", [-50, 50], 0, 0)
-    problem.setStateInfo("j1/q1/value", [-10, 10], 0)
-    problem.setStateInfo("j1/q1/speed", [-50, 50], 0, 0)
-    problem.setControlInfo("tau0", [-100, 100])
-    problem.setControlInfo("tau1", [-100, 100])
+    problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j0/q0/speed", [-50, 50], 0, 0)
+    problem.setStateInfo("/jointset/j1/q1/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j1/q1/speed", [-50, 50], 0, 0)
+    problem.setControlInfo("/tau0", [-100, 100])
+    problem.setControlInfo("/tau1", [-100, 100])
 
     # Cost: minimize final time and error from desired 
     #       end effector position.
@@ -131,7 +132,7 @@ def solvePrediction():
     endpointCost = osim.MucoMarkerEndpointCost()
     endpointCost.setName("endpoint")
     endpointCost.set_weight(1000.0)
-    endpointCost.setPointName("m1")
+    endpointCost.setPointName("/markerset/m1")
     endpointCost.setReferenceLocation(osim.Vec3(0, 2, 0))
     problem.addCost(endpointCost)
 
@@ -145,12 +146,12 @@ def solvePrediction():
     guess = solver.createGuess();
     guess.setNumTimes(2);
     guess.setTime([0, 1]);
-    guess.setState("j0/q0/value", [0, -math.pi]);
-    guess.setState("j1/q1/value", [0, 2*math.pi]);
-    guess.setState("j0/q0/speed", [0, 0]);
-    guess.setState("j1/q1/speed", [0, 0]);
-    guess.setControl("tau0", [0, 0]);
-    guess.setControl("tau1", [0, 0]);
+    guess.setState("/jointset/j0/q0/value", [0, -math.pi]);
+    guess.setState("/jointset/j1/q1/value", [0, 2*math.pi]);
+    guess.setState("/jointset/j0/q0/speed", [0, 0]);
+    guess.setState("/jointset/j1/q1/speed", [0, 0]);
+    guess.setControl("/tau0", [0, 0]);
+    guess.setControl("/tau1", [0, 0]);
     guess.resampleWithNumTimes(10);
     solver.setGuess(guess);
 
@@ -179,20 +180,20 @@ def computeMarkersReference(predictedSolution):
     statesTraj = osim.StatesTrajectory.createFromStatesStorage(model, states)
     
     markerTrajectories = osim.TimeSeriesTableVec3()
-    markerTrajectories.setColumnLabels(["m0", "m1"]);
+    markerTrajectories.setColumnLabels(["/markerset/m0", "/markerset/m1"]);
 
     for state in statesTraj:
         model.realizePosition(state)
-        m0 = model.getComponent("m0")
-        m1 = model.getComponent("m1")
+        m0 = model.getComponent("markerset/m0")
+        m1 = model.getComponent("markerset/m1")
         markerTrajectories.appendRow(state.getTime(),
             osim.RowVectorOfVec3([m0.getLocationInGround(state),
                                   m1.getLocationInGround(state)]))
                                   
     # Assign a weight to each marker.
     markerWeights = osim.SetMarkerWeights()
-    markerWeights.cloneAndAppend(osim.MarkerWeight("m0", 1))
-    markerWeights.cloneAndAppend(osim.MarkerWeight("m1", 5))
+    markerWeights.cloneAndAppend(osim.MarkerWeight("/markerset/m0", 1))
+    markerWeights.cloneAndAppend(osim.MarkerWeight("/markerset/m1", 5))
     
     return osim.MarkersReference(markerTrajectories, markerWeights)
 
@@ -213,12 +214,12 @@ def solveStateTracking(stateRef):
     #                     final [lower bound, upper bound].
     finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
-    problem.setStateInfo("j0/q0/value", [-10, 10], 0)
-    problem.setStateInfo("j0/q0/speed", [-10, 10], 0)
-    problem.setStateInfo("j1/q1/value", [-10, 10], 0)
-    problem.setStateInfo("j1/q1/speed", [-10, 10], 0)
-    problem.setControlInfo("tau0", [-40, 40])
-    problem.setControlInfo("tau1", [-40, 40])
+    problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j0/q0/speed", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j1/q1/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j1/q1/speed", [-10, 10], 0)
+    problem.setControlInfo("/tau0", [-40, 40])
+    problem.setControlInfo("/tau1", [-40, 40])
 
     # Cost: track provided state data.
     stateTracking = osim.MucoStateTrackingCost()
@@ -266,12 +267,12 @@ def solveMarkerTracking(markersRef, guess):
     #                     final [lower bound, upper bound].
     finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
-    problem.setStateInfo("j0/q0/value", [-10, 10], 0)
-    problem.setStateInfo("j0/q0/speed", [-10, 10], 0)
-    problem.setStateInfo("j1/q1/value", [-10, 10], 0)
-    problem.setStateInfo("j1/q1/speed", [-10, 10], 0)
-    problem.setControlInfo("tau0", [-40, 40])
-    problem.setControlInfo("tau1", [-40, 40])
+    problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j0/q0/speed", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j1/q1/value", [-10, 10], 0)
+    problem.setStateInfo("/jointset/j1/q1/speed", [-10, 10], 0)
+    problem.setControlInfo("/tau0", [-40, 40])
+    problem.setControlInfo("/tau1", [-40, 40])
 
     # Cost: track provided marker data.
     markerTracking = osim.MucoMarkerTrackingCost()

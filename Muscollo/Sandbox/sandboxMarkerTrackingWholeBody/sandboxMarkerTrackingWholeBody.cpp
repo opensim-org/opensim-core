@@ -177,16 +177,16 @@ void setBounds(MucoProblem& mp) {
 
     double finalTime = 1.25;
     mp.setTimeBounds(0, finalTime);
-    mp.setStateInfo("tau_lumbar_extension/activation", { -1, 1 });
-    mp.setStateInfo("tau_pelvis_tilt/activation", {-1, 1});
-    mp.setStateInfo("tau_pelvis_tx/activation", { -1, 1 });
-    mp.setStateInfo("tau_pelvis_ty/activation", { -1, 1 });
-    mp.setStateInfo("tau_hip_flexion_r/activation", { -1, 1 });
-    mp.setStateInfo("tau_knee_angle_r/activation", { -1, 1 });
-    mp.setStateInfo("tau_ankle_angle_r/activation", { -1, 1 });
-    mp.setStateInfo("tau_hip_flexion_l/activation", { -1, 1 });
-    mp.setStateInfo("tau_knee_angle_l/activation", { -1, 1 });
-    mp.setStateInfo("tau_ankle_angle_l/activation", { -1, 1 });
+    mp.setStateInfo("/tau_lumbar_extension/activation", { -1, 1 });
+    mp.setStateInfo("/tau_pelvis_tilt/activation", {-1, 1});
+    mp.setStateInfo("/tau_pelvis_tx/activation", { -1, 1 });
+    mp.setStateInfo("/tau_pelvis_ty/activation", { -1, 1 });
+    mp.setStateInfo("/tau_hip_flexion_r/activation", { -1, 1 });
+    mp.setStateInfo("/tau_knee_angle_r/activation", { -1, 1 });
+    mp.setStateInfo("/tau_ankle_angle_r/activation", { -1, 1 });
+    mp.setStateInfo("/tau_hip_flexion_l/activation", { -1, 1 });
+    mp.setStateInfo("/tau_knee_angle_l/activation", { -1, 1 });
+    mp.setStateInfo("/tau_ankle_angle_l/activation", { -1, 1 });
 }
 
 /// Solve a full-body (10 DOF) tracking problem by having the model markers

@@ -82,12 +82,14 @@ Model createDoublePendulumModel() {
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
-    auto* b0Center = new PhysicalOffsetFrame("b0_center", "b0", transform);
+    auto* b0Center = new PhysicalOffsetFrame("b0_center", *b0, transform);
     b0->addComponent(b0Center);
     b0Center->attachGeometry(bodyGeometry.clone());
-    auto* b1Center = new PhysicalOffsetFrame("b1_center", "b1", transform);
+    auto* b1Center = new PhysicalOffsetFrame("b1_center", *b1, transform);
     b1->addComponent(b1Center);
     b1Center->attachGeometry(bodyGeometry.clone());
+
+    model.finalizeConnections();
 
     return model;
 }
@@ -114,7 +116,7 @@ int main() {
     // -----
     // Create marker trajectories based on exampleTracking.cpp joint angles.
     TimeSeriesTableVec3 markerTrajectories;
-    markerTrajectories.setColumnLabels({"m0", "m1"});
+    markerTrajectories.setColumnLabels({"/markerset/m0", "/markerset/m1"});
     for (double time = 0; time < finalTime; time += 0.01) {
 
         SimTK::Real q0 = (time / 1.0) * 0.5 * SimTK::Pi;
@@ -127,8 +129,8 @@ int main() {
 
     // Assign a weight to each marker.
     Set<MarkerWeight> markerWeights;
-    markerWeights.cloneAndAppend({"m0", 100});
-    markerWeights.cloneAndAppend({"m1", 10});
+    markerWeights.cloneAndAppend({"/markerset/m0", 100});
+    markerWeights.cloneAndAppend({"/markerset/m1", 10});
 
     // Create the MarkersReference to be passed to the cost.
     //MarkersReference ref(markerTrajectories);

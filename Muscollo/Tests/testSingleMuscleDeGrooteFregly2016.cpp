@@ -142,8 +142,8 @@ solveForTrajectoryGSO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
+    kinematics.setColumnLabels({"/joint/height/value",
+                                "/joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -310,8 +310,8 @@ solveForTrajectoryINDYGO() {
     // Create a table containing only the position and speed of the mass.
     TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
     TimeSeriesTable kinematics;
-    kinematics.setColumnLabels({"joint/height/value",
-                                "joint/height/speed"});
+    kinematics.setColumnLabels({"/joint/height/value",
+                                "/joint/height/speed"});
     const auto& position = ocpSolution.getDependentColumn("position");
     const auto& speed = ocpSolution.getDependentColumn("speed");
     for (int iRow = 0; iRow < (int)ocpSolution.getNumRows(); ++iRow) {
@@ -375,6 +375,8 @@ OpenSim::Model buildLiftingMassModel() {
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(actu);
+
+    model.finalizeConnections();
     return model;
 }
 

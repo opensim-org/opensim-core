@@ -62,9 +62,11 @@ model.addForce(actu);
 
 geom = Ellipsoid(0.5, 0.1, 0.1);
 transform = Transform(Vec3(-0.5, 0, 0));
-body_center = PhysicalOffsetFrame('body_center', 'body', transform);
+body_center = PhysicalOffsetFrame('body_center', body, transform);
 body.addComponent(body_center);
 body_center.attachGeometry(geom);
+
+model.finalizeConnections();
 
 % Create MucoTool.
 % ================
@@ -85,13 +87,13 @@ problem.setModel(model);
 problem.setTimeBounds(MucoInitialBounds(0), MucoFinalBounds(1));
 
 % Initial position must be 0, final position must be 180 degrees.
-problem.setStateInfo('pin/angle/value', MucoBounds(-10, 10), ...
+problem.setStateInfo('/pin/angle/value', MucoBounds(-10, 10), ...
     MucoInitialBounds(0), MucoFinalBounds(pi));
 % Initial and final speed must be 0. Use compact syntax.
-problem.setStateInfo('pin/angle/speed', [-50, 50], [0], [0]);
+problem.setStateInfo('/pin/angle/speed', [-50, 50], [0], [0]);
 
 % Applied moment must be between -100 and 100 N-m.
-problem.setControlInfo('actuator', MucoBounds(-100, 100));
+problem.setControlInfo('/forceset/actuator', MucoBounds(-100, 100));
 
 % Cost.
 % -----
@@ -101,7 +103,7 @@ problem.addCost(cost);
 % =====================
 solver = muco.initSolver();
 solver.set_num_mesh_points(50);
-solver.set_optim_convergence_tolerance(1E-3);
+solver.set_optim_convergence_tolerance(1e-3);
 
 % Now that we've finished setting up the tool, print it to a file.
 muco.print([name '.omuco']);

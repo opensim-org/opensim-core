@@ -38,6 +38,8 @@ class TestSlidingMass {
     actu.setOptimalForce(1);
     model.addComponent(actu);
 
+    model.finalizeConnections();
+
     return model;
   }
 
@@ -60,14 +62,14 @@ class TestSlidingMass {
     mp.setTimeBounds(new MucoInitialBounds(0.), new MucoFinalBounds(0., 5.));
 
     // Initial position must be 0, final position must be 1.
-    mp.setStateInfo("slider/position/value", new MucoBounds(-5, 5),
+    mp.setStateInfo("/slider/position/value", new MucoBounds(-5, 5),
         new MucoInitialBounds(0), new MucoFinalBounds(1));
     // Initial and final speed must be 0. Use compact syntax.
-    mp.setStateInfo("slider/position/speed", new double[]{-50, 50},
+    mp.setStateInfo("/slider/position/speed", new double[]{-50, 50},
         new double[]{0}, new double[]{0});
 
     // Applied force must be between -50 and 50.
-    mp.setControlInfo("actuator", new MucoBounds(-50, 50));
+    mp.setControlInfo("/actuator", new MucoBounds(-50, 50));
 
     // Cost.
     // -----

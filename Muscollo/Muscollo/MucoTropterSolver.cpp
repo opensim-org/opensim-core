@@ -62,8 +62,6 @@ MucoIterateType convert(const tropIterateType& tropSol) {
     const auto& multiplier_names = tropSol.adjunct_names;
     const auto& parameter_names = tropSol.parameter_names;
 
-    std::cout << "DEBUG convert " << control_names[0] << std::endl;
-
     int numTimes = (int)time.size();
     int numStates = (int)state_names.size();
     int numControls = (int)control_names.size();
@@ -300,7 +298,6 @@ public:
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getAbsolutePathString();
-            std::cout << "DEBUG OCProblem " << actuName << std::endl;
             const auto& info = m_phase0.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
