@@ -5,15 +5,14 @@ if(Matlab_FOUND AND BUILD_TESTING)
 endif()
 
 install(DIRECTORY Examples/ DESTINATION "${MUSCOLLO_INSTALL_MATLABEXDIR}")
-set(EXAMPLE_MARKER_TRACKING_DIR
-	"${MUSCOLLO_INSTALL_MATLABEXDIR}/exampleMarkerTracking10DOF")
+
+# Copy example model and data files to use in Sandbox example.
 set(SANDBOX_MARKER_TRACKING_DIR 
-    "${CMAKE_SOURCE_DIR}/Muscollo/Sandbox/sandboxMarkerTrackingWholeBody")
-
-install(FILES "${EXAMPLE_MARKER_TRACKING_DIR}/marker_trajectories.trc"
-              "${EXAMPLE_MARKER_TRACKING_DIR}/subject01.osim"
-        DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
-
+    "${CMAKE_BINARY_DIR}/Muscollo/Sandbox/sandboxMarkerTrackingWholeBody")
+file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
+		  "Examples/exampleMarkerTracking10DOF/subject01.osim"
+	 DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
+	
 # The configureMuscollo.m script contains paths into the Muscollo installation
 # that may be different on different platforms, so we configure it with CMake
 # variables.
