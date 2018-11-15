@@ -21,13 +21,15 @@
 
 #include "MucoIterate.h"
 
+// TODO should only need the MucoProblemProxy.
+#include "MucoProblem.h"
+
 #include <OpenSim/Common/Object.h>
 
 #include <SimTKcommon/internal/ReferencePtr.h>
 
 namespace OpenSim {
 
-class MucoProblem;
 class MucoTool;
 
 // TODO create typed versions?
@@ -66,14 +68,15 @@ public:
     // TODO @precondition The problem is well-posed (MucoProblem::isWellPosed
     // ()). Move isWellPosed() to Solver, since evaluating this might require
     // creating the solver.
-    // TODO use a wrapper class (like MODelegate).
-    void setProblem(MucoProblemProxy proxy);
+    void setProblem(const MucoProblem& problem);
 
+    /* TODO
     const MucoProblemProxy& getProblemProxy() const {
         OPENSIM_THROW_IF(!m_proxy, Exception,
                 "Problem not set; call setProblem().");
         return m_proxy.getRef();
     }
+     */
 
 protected:
 
@@ -84,6 +87,11 @@ protected:
     /// but this class is a friend of MucoSolution.
     static void setSolutionStats(MucoSolution&,
             bool success, const std::string& status, int numIterations);
+
+    // TODO must use a different rep when solving vs just when initializing.
+    const MucoProblemRep& getProblemRep() const {
+        return m_problemRep;
+    }
 
 private:
 
@@ -97,13 +105,14 @@ private:
     virtual void clearProblemImpl() = 0;
     /// Perform any necessary caching based on the MucoProblem.
     /// @
-    virtual void setProblemImpl(const MucoProblemProxy& proxy) = 0;
+    virtual void setProblemImpl(const MucoProblemRep& proxy) = 0;
 
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MucoSolution solveImpl() const = 0;
 
     // TODO unique_ptr, stack variable?
-    SimTK::ReferencePtr<const MucoProblemProxy> m_proxy;
+    SimTK::ReferencePtr<const MucoProblem> m_problem;
+    MucoProblemRep m_problemRep;
 
 };
 

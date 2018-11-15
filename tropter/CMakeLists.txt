@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 11)
 # Using c++11 is not optional.
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Copy dependencies' libraries into Tropter's installation?
+# Copy dependencies' libraries into tropter's installation?
 set(TROPTER_COPY_DEPENDENCIES ON)
 
 # Configurable settings.

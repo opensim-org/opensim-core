@@ -70,9 +70,26 @@ public:
             return get_bounds(1);
         }
     }
+    /// The returned array has either 0, 1, or 2 elements.
+    /// - 0 elements: bounds are not set.
+    /// - 1 element: equality constraint
+    /// - 2 elements: range (inequality constraint).
+    Array<double> getAsArray() const {
+        Array<double> vec;
+        if (isSet()) {
+            vec.append(getLower());
+            if (getLower() != getUpper()) vec.append(getUpper());
+        }
+        return vec;
+    }
 
     void printDescription(std::ostream& stream) const;
+
 protected:
+    /// Used internally to create Bounds from a list property.
+    /// The list property must have either 0, 1 or 2 elements.
+    MucoBounds(const Property<double>& p);
+
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value. "
         "2 values: lower, upper bounds on value.");
@@ -80,13 +97,14 @@ protected:
     friend MucoPhase;
     friend MucoVariableInfo;
     friend MucoParameter;
+
 private:
     void constructProperties();
+
 };
 /// Used for specifying the bounds on a variable at the start of a phase.
 class OSIMMUSCOLLO_API MucoInitialBounds : public MucoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoInitialBounds, MucoBounds);
-
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;
@@ -94,7 +112,6 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MucoInitialBounds, MucoBounds);
 /// Used for specifying the bounds on a variable at the end of a phase.
 class OSIMMUSCOLLO_API MucoFinalBounds : public MucoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MucoFinalBounds, MucoBounds);
-
     using MucoBounds::MucoBounds;
     friend MucoPhase;
     friend MucoVariableInfo;

@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Muscollo: MucoSolver.cpp                                           *
+ * OpenSim Muscollo: MucoJointReactionNormCost.h                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -15,38 +15,34 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "MucoSolver.h"
 
-#include "MucoProblem.h"
-
+#include "MucoJointReactionNormCost.h"
+#include <OpenSim/Simulation/Model/Model.h>
+    
 using namespace OpenSim;
 
-MucoSolver::MucoSolver() {}
-
-void MucoSolver::clearProblem() {
-    m_problem.reset();
-    std::cout << "DEBUG clearProblem before " << &m_problemRep << std::endl;
-    m_problemRep = MucoProblemRep();
-    std::cout << "DEBUG clearProblem after " << &m_problemRep << std::endl;
-    clearProblemImpl();
+MucoJointReactionNormCost::MucoJointReactionNormCost() {
+    constructProperties();
 }
 
-void MucoSolver::setProblem(const MucoProblem& problem) {
-    m_problem.reset(&problem);
-    m_problemRep = problem.createRep();
-    setProblemImpl(m_problemRep);
+void MucoJointReactionNormCost::constructProperties() {
+    constructProperty_joint_path("");
 }
 
-MucoSolution MucoSolver::solve() const {
-    OPENSIM_THROW_IF(!m_problem, Exception, "Problem not set.");
-    return solveImpl();
+void MucoJointReactionNormCost::initializeImpl() const {
+
+    OPENSIM_THROW_IF_FRMOBJ(get_joint_path().empty(), Exception,
+        "Empty model joint path detected. Please provide a valid joint path.");
+
+    OPENSIM_THROW_IF_FRMOBJ(!getModel().hasComponent<Joint>(get_joint_path()),
+        Exception, "Joint at path " + get_joint_path() + " not found in the "
+        "model. Please provide a valid joint path.");
 }
 
-void MucoSolver::setSolutionStats(MucoSolution& sol,
-        bool success, const std::string& status, int numIterations) {
-    sol.setSuccess(success);
-    sol.setStatus(status);
-    sol.setNumIterations(numIterations);
+void MucoJointReactionNormCost::calcIntegralCostImpl(const SimTK::State& state,
+        double& integrand) const {
+
+    getModel().realizeAcceleration(state);
+    const auto& joint = getModel().getComponent<Joint>(get_joint_path());
+    integrand = joint.calcReactionOnChildExpressedInGround(state).norm();
 }
-
-

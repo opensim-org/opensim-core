@@ -11,6 +11,7 @@ typedef SimTK::RowVector_<double> RowVector;
 %include <Muscollo/MucoMarkerTrackingCost.h>
 %include <Muscollo/MucoMarkerEndpointCost.h>
 %include <Muscollo/MucoControlCost.h>
+%include <Muscollo/MucoJointReactionNormCost.h>
 
 %include <Muscollo/MucoBounds.h>
 %include <Muscollo/MucoProblem.h>
@@ -34,6 +35,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MucoFinalBounds);
 %ignore OpenSim::MucoIterate::setState(const std::string&,
         std::initializer_list<double>);
 %ignore OpenSim::MucoIterate::setControl(const std::string&,
+        std::initializer_list<double>);
+%ignore OpenSim::MucoIterate::setMultiplier(const std::string&,
         std::initializer_list<double>);
 
 %include <Muscollo/MucoIterate.h>

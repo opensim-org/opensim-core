@@ -178,27 +178,27 @@ class MucoTropterSolver::OCProblem : public tropter::Problem<T> {
 public:
     OCProblem(const MucoTropterSolver& solver)
             // TODO set name properly.
-            : tropter::Problem<T>(solver.getProblem().getName()),
+            : tropter::Problem<T>(solver.getProblemRep().getName()),
               m_mucoTropterSolver(solver),
-              m_mucoProb(solver.getProblem()),
-              m_phase0(m_mucoProb.getPhase(0)) {
-        m_model = m_phase0.getModel();
+              m_mucoProb(solver.getProblemRep()),
+              m_model(m_mucoProb.getModel()) {
         // Disable all controllers.
         // TODO temporary; don't want to actually do this.
-        m_model.finalizeFromProperties();
-        auto controllers = m_model.updComponentList<Controller>();
+        auto controllers = m_model.getComponentList<Controller>();
         for (auto& controller : controllers) {
-            controller.set_enabled(false);
+            OPENSIM_THROW_IF(controller.get_enabled(), Exception,
+                    "MucoTropterSolver does not support OpenSim Controllers. "
+                    "Disable all controllers in the model.");
         }
-        m_state = m_model.initSystem();
+        m_state = m_model.getWorkingState();
         // TODO avoid multiple calls to initialize
-        m_mucoProb.initialize(m_model);
+        // TODO m_mucoProb.initialize(m_model);
 
-        this->set_time(convert(m_phase0.getTimeInitialBounds()),
-                convert(m_phase0.getTimeFinalBounds()));
+        this->set_time(convert(m_mucoProb.getTimeInitialBounds()),
+                convert(m_mucoProb.getTimeFinalBounds()));
         auto svNamesInSysOrder = createStateVariableNamesInSystemOrder(m_model);
         for (const auto& svName : svNamesInSysOrder) {
-            const auto& info = m_phase0.getStateInfo(svName);
+            const auto& info = m_mucoProb.getStateInfo(svName);
             this->add_state(svName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
@@ -211,10 +211,10 @@ public:
         std::vector<std::string> labels;
         std::vector<KinematicLevel> kinLevels;
         std::vector<std::string> mcNames = 
-            m_phase0.createMultibodyConstraintNames();
+            m_mucoProb.createMultibodyConstraintNames();
         for (const auto& mcName : mcNames) {
-            const auto& mc = m_phase0.getMultibodyConstraint(mcName);
-            const auto& multInfos = m_phase0.getMultiplierInfos(mcName);
+            const auto& mc = m_mucoProb.getMultibodyConstraint(mcName);
+            const auto& multInfos = m_mucoProb.getMultiplierInfos(mcName);
             cid = mc.getSimbodyConstraintIndex();
             mp = mc.getNumPositionEquations();
             mv = mc.getNumVelocityEquations();
@@ -280,9 +280,9 @@ public:
         }
         
         // Add any generic path constraints included in the problem. 
-        for (std::string pcName : m_phase0.createPathConstraintNames()) {
+        for (std::string pcName : m_mucoProb.createPathConstraintNames()) {
             const MucoPathConstraint& constraint = 
-                m_phase0.getPathConstraint(pcName);
+                m_mucoProb.getPathConstraint(pcName);
             auto pcInfo = constraint.getConstraintInfo();
             auto labels = pcInfo.getConstraintLabels();
             auto bounds = pcInfo.getBounds();
@@ -290,7 +290,7 @@ public:
                 this->add_path_constraint(labels[i], convert(bounds[i])); 
             }
         }
-        m_numPathConstraintEqs = m_phase0.getNumPathConstraintEquations();
+        m_numPathConstraintEqs = m_mucoProb.getNumPathConstraintEquations();
         // Allocate path constraint error memory.
         m_pathConstraintErrors.resize(m_numPathConstraintEqs);
         m_pathConstraintErrors.setToZero();
@@ -298,18 +298,18 @@ public:
         for (const auto& actu : m_model.getComponentList<Actuator>()) {
             // TODO handle a variable number of control signals.
             const auto& actuName = actu.getName();
-            const auto& info = m_phase0.getControlInfo(actuName);
+            const auto& info = m_mucoProb.getControlInfo(actuName);
             this->add_control(actuName, convert(info.getBounds()),
                     convert(info.getInitialBounds()),
                     convert(info.getFinalBounds()));
         }
-        for (std::string name : m_phase0.createParameterNames()) {
-            const MucoParameter& parameter = m_phase0.getParameter(name);
+        for (std::string name : m_mucoProb.createParameterNames()) {
+            const MucoParameter& parameter = m_mucoProb.getParameter(name);
             this->add_parameter(name, convert(parameter.getBounds()));
         }
     }
     void initialize_on_mesh(const Eigen::VectorXd&) const override {
-        m_mucoProb.initialize(m_model);
+        // TODO m_mucoProb.initialize(m_model);
     }
     void initialize_on_iterate(const Eigen::VectorXd& parameters)
             const override {
@@ -333,8 +333,6 @@ public:
         // TODO do not copy? I think this will still make a copy:
         // TODO use m_state.updY() = SimTK::Vector(states.size(), states.data(), true);
         //m_state.setY(SimTK::Vector(states.size(), states.data(), true));
-
-        const auto& matter = m_model.getMatterSubsystem();
 
         // Set the controls for actuators in the OpenSim model.
         if (m_model.getNumControls()) {
@@ -397,7 +395,7 @@ public:
         }
 
         // Copy errors from generic path constraints into output struct.
-        m_phase0.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
+        m_mucoProb.calcPathConstraintErrors(m_state, m_pathConstraintErrors);
         std::copy(m_pathConstraintErrors.begin(),
                   m_pathConstraintErrors.end(),
                   out.path.data() + m_numMultibodyConstraintEqs);
@@ -414,7 +412,6 @@ public:
         const auto& states = in.states;
         const auto& controls = in.controls;
         const auto& adjuncts = in.adjuncts;
-        const auto& parameters = in.parameters;
 
         // TODO would it make sense to a vector of States, one for each mesh
         // point, so that each can preserve their cache?
@@ -433,7 +430,7 @@ public:
             m_model.realizePosition(m_state);
         }
 
-        integrand = m_phase0.calcIntegralCost(m_state);
+        integrand = m_mucoProb.calcIntegralCost(m_state);
 
         // TODO if (get_enforce_holonomic_constraints_only()) {
         // Add squared multiplers cost to integrand. Since we currently don't
@@ -448,21 +445,20 @@ public:
         
     }
     void calc_endpoint_cost(const T& final_time, const VectorX<T>& states,
-            const VectorX<T>& parameters, T& cost) const override {
+            const VectorX<T>& /*parameters*/, T& cost) const override {
         // TODO avoid all of this if there are no endpoint costs.
         m_state.setTime(final_time);
         std::copy(states.data(), states.data() + states.size(),
                 &m_state.updY()[0]);
         // TODO cannot use control signals...
         m_model.updControls(m_state).setToNaN();
-        cost = m_phase0.calcEndpointCost(m_state);
+        cost = m_mucoProb.calcEndpointCost(m_state);
     }
 
 private:
     const MucoTropterSolver& m_mucoTropterSolver;
-    const MucoProblem& m_mucoProb;
-    const MucoPhase& m_phase0;
-    mutable Model m_model;
+    const MucoProblemRep& m_mucoProb;
+    const Model& m_model;
     mutable SimTK::State m_state;
     // This member variable avoids unnecessary extra allocation of memory for
     // spatial accelerations, which are incidental to the computation of
@@ -491,11 +487,12 @@ private:
             // Warning: memory borrowed, not copied (when third argument to
             // SimTK::Vector constructor is true)
             SimTK::Vector mucoParams(
-                (int)m_phase0.createParameterNames().size(),
+                (int)m_mucoProb.createParameterNames().size(),
                 parameters.data(), true);
 
-            m_phase0.applyParametersToModel(mucoParams);
-            m_model.initSystem();
+            m_mucoProb.applyParametersToModel(mucoParams);
+            // TODO: Avoid this const_cast.
+            const_cast<Model&>(m_model).initSystem();
         }
     }
 };
@@ -530,10 +527,11 @@ MucoTropterSolver::getTropterProblem() const {
 
 void MucoTropterSolver::clearProblemImpl() {
     clearGuess();
+    m_tropProblem.reset();
 }
 
-void MucoTropterSolver::setProblemImpl(const MucoProblemProxy& /*proxy*/) {
-    clearProblemImpl();
+void MucoTropterSolver::setProblemImpl(const MucoProblemRep&) {
+    // TODO not necessary clearProblemImpl();
 }
 
 MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
@@ -570,16 +568,15 @@ MucoIterate MucoTropterSolver::createGuess(const std::string& type) const {
 }
 
 MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
-    const auto& problem = getProblem();
-    const auto& phase = problem.getPhase();
-    const auto& initialTime = phase.getTimeInitialBounds().getUpper();
-    const auto& finalTime = phase.getTimeFinalBounds().getLower();
+    const auto& probrep = getProblemRep();
+    const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
+    const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
         "Expected lower bound on final time to be greater than "
         "upper bound on initial time, but "
         "final_time.lower: " + std::to_string(finalTime) + "; " +
         "initial_time.upper: " + std::to_string(initialTime) + ".");
-    Model model(phase.getModel());
+    Model model(probrep.getModel());
 
     // Disable all controllers?
     SimTK::State state = model.initSystem();
@@ -588,7 +585,8 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
     Array<std::string> svNames = model.getStateVariableNames();
     for (int isv = 0; isv < svNames.getSize(); ++isv) {
         const auto& svName = svNames[isv];
-        const auto& initBounds = phase.getStateInfo(svName).getInitialBounds();
+        const auto& initBounds =
+                probrep.getStateInfo(svName).getInitialBounds();
         const auto defaultValue = model.getStateVariableValue(state, svName);
         SimTK::Real valueToUse = defaultValue;
         if (initBounds.isEquality()) {
@@ -612,12 +610,15 @@ MucoIterate MucoTropterSolver::createGuessTimeStepping() const {
 
     // TODO handle parameters.
     return MucoIterate::createFromStatesControlsTables(
-            problem, statesTable, controlsTable);
+            probrep, statesTable, controlsTable);
 }
 
 void MucoTropterSolver::setGuess(MucoIterate guess) {
     // Ensure the guess is compatible with this solver/problem.
-    guess.isCompatible(getProblem(), true);
+    // Make sure to initialize the problem. TODO put in a better place.
+    getTropterProblem();
+    // TODO allow implicit conversion to MucoProblemRep?
+    guess.isCompatible(getProblemRep(), true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -639,7 +640,7 @@ const MucoIterate& MucoTropterSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MucoIterate guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblem(), true);
+            guessFromFile.isCompatible(getProblemRep(), true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -671,7 +672,7 @@ MucoSolution MucoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MucoTropterSolver starting.\n";
         std::cout << std::string(79, '-') << std::endl;
-        getProblem().printDescription();
+        getProblemRep().printDescription();
         // We can provide more detail about our problem than tropter can.
         // ocp->print_description();
     }

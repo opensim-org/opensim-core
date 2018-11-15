@@ -78,6 +78,9 @@ public:
     /// Load a MucoTool setup file.
     MucoTool(const std::string& omucoFile);
 
+    // TODO
+    const MucoProblem& getProblem() const;
+
     /// Throws an exception if you try calling this after initSolver() and
     /// before solve().
     /// If using this method in C++, make sure to include the "&" in the

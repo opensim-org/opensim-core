@@ -48,7 +48,7 @@ void MucoConstraintInfo::printDescription(std::ostream& stream) const {
 
     const std::vector<MucoBounds> bounds = getBounds();
     stream << ". bounds: ";
-    for (int i = 0; i < bounds.size(); ++i) {
+    for (int i = 0; i < (int)bounds.size(); ++i) {
         bounds[i].printDescription(stream);
     }
     stream << std::endl;
@@ -127,7 +127,9 @@ MucoMultibodyConstraint::MucoMultibodyConstraint(SimTK::ConstraintIndex cid,
 }
 
 void MucoMultibodyConstraint::calcMultibodyConstraintErrors(
-    const Model& model, const SimTK::State& state, SimTK::Vector& errors) {
+        const Model& model,
+        const SimTK::State& state,
+        SimTK::Vector& errors) const {
 
     OPENSIM_THROW_IF(
         errors.size() != m_constraint_info.getNumEquations(), Exception,

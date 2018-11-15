@@ -23,6 +23,7 @@
 #include "MucoMarkerTrackingCost.h"
 #include "MucoMarkerEndpointCost.h"
 #include "MucoControlCost.h"
+#include "MucoJointReactionNormCost.h"
 #include "MucoIterate.h"
 #include "MucoBounds.h"
 #include "MucoProblem.h"
