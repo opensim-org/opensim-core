@@ -70,7 +70,7 @@ install:
   # TODO vcpkg is pretty slow; using superbuild for now.
   #- vcpkg install eigen3:x64-windows
 
-  - mkdir ..\muoco_deps_build
+  - mkdir ..\moco_deps_build
   - cd ..\moco_deps_build
   # /W0 disables warnings. The other CXX flags are copied from CMake's default
   # CMAKE_CXX_FLAGS.
